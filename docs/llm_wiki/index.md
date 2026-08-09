@@ -1,0 +1,1104 @@
+# LLM Wiki Index
+
+Guides lead supported tasks. The generated indexes are exhaustive reference inventories of the selected source.
+
+## Surface Overview
+
+| Surface | Count | Start here |
+|---|---:|---|
+| Entities | 457 | [Open section](#entities) |
+| Modules | 145 | [Open section](#modules) |
+| Workflows | 12 | [Open section](#workflows) |
+| Guides | 6 | [Open section](#guides) |
+| Entry-point flows | 415 | [Open section](#entry-point-flows) |
+| Infrastructure | 0 | No pages |
+| HTTP API contracts | 0 | No pages |
+| Dependency architecture | 2 | [Open section](#dependency-architecture) |
+| Log | 1 | [Open log](log.md) |
+
+## Entities
+
+- [Actor](entities/Actor.md)
+- [ActorKind](entities/ActorKind.md)
+- [AliasType](entities/AliasType.md)
+- [ApiContractError](entities/ApiContractError.md)
+- [ApiContractResult](entities/ApiContractResult.md)
+- [ApplyDiffContext](entities/ApplyDiffContext.md)
+- [ArtifactIntegrityError](entities/ArtifactIntegrityError.md)
+- [ArtifactSnapshot](entities/ArtifactSnapshot.md)
+- [ArtifactWriteState](entities/ArtifactWriteState.md)
+- [AssetIndex](entities/AssetIndex.md)
+- [BootstrapContractError](entities/BootstrapContractError.md)
+- [BootstrapExtractionError](entities/BootstrapExtractionError.md)
+- [BootstrapGenerationResult](entities/BootstrapGenerationResult.md)
+- [BootstrapPageMaps](entities/BootstrapPageMaps.md)
+- [BootstrapRequest](entities/BootstrapRequest.md)
+- [BootstrapRequestError](entities/BootstrapRequestError.md)
+- [BootstrapResult](entities/BootstrapResult.md)
+- [BootstrapRunOptions](entities/BootstrapRunOptions.md)
+- [BootstrapRunState](entities/BootstrapRunState.md)
+- [BootstrapServiceError](entities/BootstrapServiceError.md)
+- [BoundedGeneratedDiagram](entities/BoundedGeneratedDiagram.md)
+- [BoundedProcessResult](entities/BoundedProcessResult.md)
+- [BoundedQueryResult](entities/BoundedQueryResult.md)
+- [BoundedResult](entities/BoundedResult.md)
+- [BuildContext](entities/BuildContext.md)
+- [BundleRecord](entities/BundleRecord.md)
+- [BundledSkill](entities/BundledSkill.md)
+- [CalleesResult](entities/CalleesResult.md)
+- [CallersResult](entities/CallersResult.md)
+- [Candidate](entities/Candidate.md)
+- [CapturedContextRead](entities/CapturedContextRead.md)
+- [CapturedStream](entities/CapturedStream.md)
+- [CheckerContract](entities/CheckerContract.md)
+- [CommitStage](entities/CommitStage.md)
+- [CommittedRuntimeProvenance](entities/CommittedRuntimeProvenance.md)
+- [CompatibilityModule](entities/CompatibilityModule.md)
+- [ComponentVisitor](entities/ComponentVisitor.md)
+- [ComposeParserState](entities/ComposeParserState.md)
+- [ComputedFreshness](entities/ComputedFreshness.md)
+- [ConceptAllocation](entities/ConceptAllocation.md)
+- [ConceptFacets](entities/ConceptFacets.md)
+- [ConceptFreshnessBasis](entities/ConceptFreshnessBasis.md)
+- [ConceptFreshnessResult](entities/ConceptFreshnessResult.md)
+- [ConceptGovernanceReference](entities/ConceptGovernanceReference.md)
+- [ConceptIdentityError](entities/ConceptIdentityError.md)
+- [ConceptKind](entities/ConceptKind.md)
+- [ConceptKindValue](entities/ConceptKindValue.md)
+- [ConceptObservationBasis](entities/ConceptObservationBasis.md)
+- [ConceptRecord](entities/ConceptRecord.md)
+- [ConceptReference](entities/ConceptReference.md)
+- [ConceptResult](entities/ConceptResult.md)
+- [ConceptSectionsResult](entities/ConceptSectionsResult.md)
+- [ConsumedInput](entities/ConsumedInput.md)
+- [ConsumedInputKind](entities/ConsumedInputKind.md)
+- [ContextBasisComparison](entities/ContextBasisComparison.md)
+- [ContextPacketError](entities/ContextPacketError.md)
+- [ContextPacketMalformedError](entities/ContextPacketMalformedError.md)
+- [ContextPacketPathPolicyError](entities/ContextPacketPathPolicyError.md)
+- [ContextPacketReconciliation](entities/ContextPacketReconciliation.md)
+- [ContextPacketSourceMutationError](entities/ContextPacketSourceMutationError.md)
+- [ContextPacketUnavailableError](entities/ContextPacketUnavailableError.md)
+- [ContextPacketValidation](entities/ContextPacketValidation.md)
+- [ContextPayload](entities/ContextPayload.md)
+- [ContextRequired](entities/ContextRequired.md)
+- [DataEffectVisitor](entities/DataEffectVisitor.md)
+- [DataFlowAnalysisContext](entities/DataFlowAnalysisContext.md)
+- [DataFlowForEntrypointResult](entities/DataFlowForEntrypointResult.md)
+- [DependencyNeighborhoodResult](entities/DependencyNeighborhoodResult.md)
+- [DependencyResult](entities/DependencyResult.md)
+- [DiagnosticCoverage](entities/DiagnosticCoverage.md)
+- [DoctorAvailability](entities/DoctorAvailability.md)
+- [DoctorDrift](entities/DoctorDrift.md)
+- [DoctorFreshness](entities/DoctorFreshness.md)
+- [DoctorGovernance](entities/DoctorGovernance.md)
+- [DoctorReport](entities/DoctorReport.md)
+- [DoctorResult](entities/DoctorResult.md)
+- [DoctorSnapshotParity](entities/DoctorSnapshotParity.md)
+- [DoctorStatus](entities/DoctorStatus.md)
+- [DoctorVerificationReceipt](entities/DoctorVerificationReceipt.md)
+- [DocumentRecord](entities/DocumentRecord.md)
+- [DocumentationAgentPacket](entities/DocumentationAgentPacket.md)
+- [DocumentationAgentResult](entities/DocumentationAgentResult.md)
+- [DocumentationCalibrationError](entities/DocumentationCalibrationError.md)
+- [DocumentationClaimEvidenceError](entities/DocumentationClaimEvidenceError.md)
+- [DocumentationExportResult](entities/DocumentationExportResult.md)
+- [DocumentationGraphQueryService](entities/DocumentationGraphQueryService.md)
+- [DocumentationIntakeBrief](entities/DocumentationIntakeBrief.md)
+- [DocumentationIntegrityError](entities/DocumentationIntegrityError.md)
+- [DocumentationModelEscalationRule](entities/DocumentationModelEscalationRule.md)
+- [DocumentationModelOverride](entities/DocumentationModelOverride.md)
+- [DocumentationModelPolicyError](entities/DocumentationModelPolicyError.md)
+- [DocumentationModelRoute](entities/DocumentationModelRoute.md)
+- [DocumentationModelRoutingPolicy](entities/DocumentationModelRoutingPolicy.md)
+- [DocumentationModelRoutingRequest](entities/DocumentationModelRoutingRequest.md)
+- [DocumentationModelSelection](entities/DocumentationModelSelection.md)
+- [DocumentationMutationPolicy](entities/DocumentationMutationPolicy.md)
+- [DocumentationNativeError](entities/DocumentationNativeError.md)
+- [DocumentationNativeFreshness](entities/DocumentationNativeFreshness.md)
+- [DocumentationNativeRefresh](entities/DocumentationNativeRefresh.md)
+- [DocumentationNativeRuntime](entities/DocumentationNativeRuntime.md)
+- [DocumentationPageMaps](entities/DocumentationPageMaps.md)
+- [DocumentationPersistedStateError](entities/DocumentationPersistedStateError.md)
+- [DocumentationPolicyError](entities/DocumentationPolicyError.md)
+- [DocumentationQueryError](entities/DocumentationQueryError.md)
+- [DocumentationReviewError](entities/DocumentationReviewError.md)
+- [DocumentationReviewFinding](entities/DocumentationReviewFinding.md)
+- [DocumentationReviewLedger](entities/DocumentationReviewLedger.md)
+- [DocumentationReviewPacket](entities/DocumentationReviewPacket.md)
+- [DocumentationRun](entities/DocumentationRun.md)
+- [DocumentationRunError](entities/DocumentationRunError.md)
+- [DocumentationRunStatus](entities/DocumentationRunStatus.md)
+- [DocumentationSchemaError](entities/DocumentationSchemaError.md)
+- [DocumentationTransitionError](entities/DocumentationTransitionError.md)
+- [DocumentationVerificationReport](entities/DocumentationVerificationReport.md)
+- [DocumentationWikiInputError](entities/DocumentationWikiInputError.md)
+- [DocumentationWikiSnapshot](entities/DocumentationWikiSnapshot.md)
+- [DocumentationWorkItem](entities/DocumentationWorkItem.md)
+- [DocumentationWorklist](entities/DocumentationWorklist.md)
+- [DocumentationWorklistError](entities/DocumentationWorklistError.md)
+- [EdgeAccumulator](entities/EdgeAccumulator.md)
+- [EntityModuleResult](entities/EntityModuleResult.md)
+- [EntryPointDetectionResult](entities/EntryPointDetectionResult.md)
+- [EnvelopeInputs](entities/EnvelopeInputs.md)
+- [EvaluatedEnvelope](entities/EvaluatedEnvelope.md)
+- [EvaluationPlan](entities/EvaluationPlan.md)
+- [EvaluationPlanError](entities/EvaluationPlanError.md)
+- [EvidenceBasis](entities/EvidenceBasis.md)
+- [EvidenceExplanationResult](entities/EvidenceExplanationResult.md)
+- [EvidenceFileSnapshot](entities/EvidenceFileSnapshot.md)
+- [EvidenceState](entities/EvidenceState.md)
+- [ExistingPage](entities/ExistingPage.md)
+- [ExpectedLinkOutcome](entities/ExpectedLinkOutcome.md)
+- [ExternalBrokerAuthenticationUnavailable](entities/ExternalBrokerAuthenticationUnavailable.md)
+- [ExternalSourceOptions](entities/ExternalSourceOptions.md)
+- [ExtractPayloadResult](entities/ExtractPayloadResult.md)
+- [ExtractSourceRequired](entities/ExtractSourceRequired.md)
+- [ExtractSourceResult](entities/ExtractSourceResult.md)
+- [ExtractedSyncInventory](entities/ExtractedSyncInventory.md)
+- [ExtractionJobPlan](entities/ExtractionJobPlan.md)
+- [ExtractionJobRequest](entities/ExtractionJobRequest.md)
+- [ExtractionJobsAction](entities/ExtractionJobsAction.md)
+- [ExtractionOutcome](entities/ExtractionOutcome.md)
+- [ExtractionPlan](entities/ExtractionPlan.md)
+- [ExtractorFailureError](entities/ExtractorFailureError.md)
+- [ExtractorProtocol](entities/ExtractorProtocol.md)
+- [ExtractorStatus](entities/ExtractorStatus.md)
+- [FastAPIScanner](entities/FastAPIScanner.md)
+- [FaultInjector](entities/FaultInjector.md)
+- [FlowForEntrypointResult](entities/FlowForEntrypointResult.md)
+- [FlowResult](entities/FlowResult.md)
+- [FrontMatterParseResult](entities/FrontMatterParseResult.md)
+- [GeneratedSectionContext](entities/GeneratedSectionContext.md)
+- [GeneratedSurfacePruneError](entities/GeneratedSurfacePruneError.md)
+- [GeneratedSurfaceTransition](entities/GeneratedSurfaceTransition.md)
+- [GitCommandResult](entities/GitCommandResult.md)
+- [GitIgnoreMatcher](entities/GitIgnoreMatcher.md)
+- [GitResult](entities/GitResult.md)
+- [GitignoreRule](entities/GitignoreRule.md)
+- [GoExtractionRequest](entities/GoExtractionRequest.md)
+- [GoExtractor](entities/GoExtractor.md)
+- [GoModuleScope](entities/GoModuleScope.md)
+- [GovernanceActor](entities/GovernanceActor.md)
+- [GovernanceAlias](entities/GovernanceAlias.md)
+- [GovernanceAllocation](entities/GovernanceAllocation.md)
+- [GovernanceConflictError](entities/GovernanceConflictError.md)
+- [GovernanceError](entities/GovernanceError.md)
+- [GovernanceLedger](entities/GovernanceLedger.md)
+- [GovernanceLoadResult](entities/GovernanceLoadResult.md)
+- [GovernanceWriteResult](entities/GovernanceWriteResult.md)
+- [GovernanceWriteStage](entities/GovernanceWriteStage.md)
+- [GraphConcept](entities/GraphConcept.md)
+- [HashedInputFile](entities/HashedInputFile.md)
+- [HaskellExtractionRequest](entities/HaskellExtractionRequest.md)
+- [HaskellExtractor](entities/HaskellExtractor.md)
+- [HeadingCandidate](entities/HeadingCandidate.md)
+- [HelperPrepareResult](entities/HelperPrepareResult.md)
+- [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
+- [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
+- [HostBrokerAuthenticationUnavailable](entities/HostBrokerAuthenticationUnavailable.md)
+- [HostBrokerAuthenticator](entities/HostBrokerAuthenticator.md)
+- [HrefParser](entities/HrefParser.md)
+- [HtmlMediaParser](entities/HtmlMediaParser.md)
+- [HubWikiSource](entities/HubWikiSource.md)
+- [IdentityAlias](entities/IdentityAlias.md)
+- [IdentityCollision](entities/IdentityCollision.md)
+- [IdentityCollisionError](entities/IdentityCollisionError.md)
+- [IdentityUpdate](entities/IdentityUpdate.md)
+- [InfrastructureResult](entities/InfrastructureResult.md)
+- [InfrastructureSyncError](entities/InfrastructureSyncError.md)
+- [InfrastructureSyncPlan](entities/InfrastructureSyncPlan.md)
+- [InitialPrepareTransaction](entities/InitialPrepareTransaction.md)
+- [InputFile](entities/InputFile.md)
+- [InputResourceBudget](entities/InputResourceBudget.md)
+- [InputTree](entities/InputTree.md)
+- [IntegrityDifference](entities/IntegrityDifference.md)
+- [InvalidRequestError](entities/InvalidRequestError.md)
+- [InvalidSurfaceJson](entities/InvalidSurfaceJson.md)
+- [InventoryBuildContext](entities/InventoryBuildContext.md)
+- [InventoryCache](entities/InventoryCache.md)
+- [InventoryCacheOptions](entities/InventoryCacheOptions.md)
+- [InventoryCacheStats](entities/InventoryCacheStats.md)
+- [InventoryNormalizationError](entities/InventoryNormalizationError.md)
+- [InventoryPlanningResult](entities/InventoryPlanningResult.md)
+- [InventoryRequest](entities/InventoryRequest.md)
+- [InventoryResult](entities/InventoryResult.md)
+- [JoinedPage](entities/JoinedPage.md)
+- [KnowledgeAggregateSummary](entities/KnowledgeAggregateSummary.md)
+- [KnowledgeArtifactError](entities/KnowledgeArtifactError.md)
+- [KnowledgeAvailability](entities/KnowledgeAvailability.md)
+- [KnowledgeCommitPlan](entities/KnowledgeCommitPlan.md)
+- [KnowledgeCommitResult](entities/KnowledgeCommitResult.md)
+- [KnowledgeEnvelopeError](entities/KnowledgeEnvelopeError.md)
+- [KnowledgeFreshnessError](entities/KnowledgeFreshnessError.md)
+- [KnowledgeFreshnessReport](entities/KnowledgeFreshnessReport.md)
+- [KnowledgeGenerationError](entities/KnowledgeGenerationError.md)
+- [KnowledgeGenerationInputs](entities/KnowledgeGenerationInputs.md)
+- [KnowledgeGraphError](entities/KnowledgeGraphError.md)
+- [KnowledgeGraphInputs](entities/KnowledgeGraphInputs.md)
+- [KnowledgeIndex](entities/KnowledgeIndex.md)
+- [KnowledgeIndexBuildError](entities/KnowledgeIndexBuildError.md)
+- [KnowledgeIndexInputs](entities/KnowledgeIndexInputs.md)
+- [KnowledgeLinkError](entities/KnowledgeLinkError.md)
+- [KnowledgeLintState](entities/KnowledgeLintState.md)
+- [KnowledgeLintSummary](entities/KnowledgeLintSummary.md)
+- [KnowledgeLoadIssue](entities/KnowledgeLoadIssue.md)
+- [KnowledgeLoadResult](entities/KnowledgeLoadResult.md)
+- [KnowledgeLoadState](entities/KnowledgeLoadState.md)
+- [KnowledgeMismatchPolicy](entities/KnowledgeMismatchPolicy.md)
+- [KnowledgeModelError](entities/KnowledgeModelError.md)
+- [KnowledgePhaseDurations](entities/KnowledgePhaseDurations.md)
+- [KnowledgeProjection](entities/KnowledgeProjection.md)
+- [KnowledgeProjectionError](entities/KnowledgeProjectionError.md)
+- [KnowledgeProjectionProfile](entities/KnowledgeProjectionProfile.md)
+- [KnowledgeReadCounts](entities/KnowledgeReadCounts.md)
+- [KnowledgeReadMode](entities/KnowledgeReadMode.md)
+- [KnowledgeReadReason](entities/KnowledgeReadReason.md)
+- [KnowledgeReadView](entities/KnowledgeReadView.md)
+- [KnowledgeStateLoadError](entities/KnowledgeStateLoadError.md)
+- [LanguagePlugin](entities/LanguagePlugin.md)
+- [LazyCalibrationAnnotations](entities/LazyCalibrationAnnotations.md)
+- [Lifecycle](entities/Lifecycle.md)
+- [LifecycleEvent](entities/LifecycleEvent.md)
+- [LinkObservation](entities/LinkObservation.md)
+- [LinkSyntax](entities/LinkSyntax.md)
+- [LintInputs](entities/LintInputs.md)
+- [LintIssue](entities/LintIssue.md)
+- [LintProfiler](entities/LintProfiler.md)
+- [LintReport](entities/LintReport.md)
+- [LiveKnowledgeEvaluation](entities/LiveKnowledgeEvaluation.md)
+- [LlmWikiApiError](entities/LlmWikiApiError.md)
+- [LlmWikiPlugin](entities/LlmWikiPlugin.md)
+- [LlmWikiSettingTab](entities/LlmWikiSettingTab.md)
+- [LlmWikiSettings](entities/LlmWikiSettings.md)
+- [LocalEgressCanary](entities/LocalEgressCanary.md)
+- [LockAcquisitionError](entities/LockAcquisitionError.md)
+- [MCPDependencyError](entities/MCPDependencyError.md)
+- [MachineVerificationAvailability](entities/MachineVerificationAvailability.md)
+- [MachineVerificationReadView](entities/MachineVerificationReadView.md)
+- [Manifest](entities/Manifest.md)
+- [ManifestArtifactHashes](entities/ManifestArtifactHashes.md)
+- [ManifestEvidenceBaseline](entities/ManifestEvidenceBaseline.md)
+- [ManifestPageSource](entities/ManifestPageSource.md)
+- [ManifestScope](entities/ManifestScope.md)
+- [ManifestTombstone](entities/ManifestTombstone.md)
+- [MarkdownContextResult](entities/MarkdownContextResult.md)
+- [MarkdownInspection](entities/MarkdownInspection.md)
+- [MarkdownLinkTarget](entities/MarkdownLinkTarget.md)
+- [MarkdownSection](entities/MarkdownSection.md)
+- [MarkdownSectionDocument](entities/MarkdownSectionDocument.md)
+- [MaterializationState](entities/MaterializationState.md)
+- [McpHttpApplication](entities/McpHttpApplication.md)
+- [McpServerConfig](entities/McpServerConfig.md)
+- [McpWikiError](entities/McpWikiError.md)
+- [McpWikiService](entities/McpWikiService.md)
+- [MediaReference](entities/MediaReference.md)
+- [MigrationChunk](entities/MigrationChunk.md)
+- [MigrationPlan](entities/MigrationPlan.md)
+- [MixedTableProjection](entities/MixedTableProjection.md)
+- [ModuleDependencyDiagram](entities/ModuleDependencyDiagram.md)
+- [ModulePathResolver](entities/ModulePathResolver.md)
+- [NativeEvidenceTransaction](entities/NativeEvidenceTransaction.md)
+- [ObservationScope](entities/ObservationScope.md)
+- [ObsidianError](entities/ObsidianError.md)
+- [ObsidianOperation](entities/ObsidianOperation.md)
+- [ObsidianReport](entities/ObsidianReport.md)
+- [OciAdmissionProbeEnvironment](entities/OciAdmissionProbeEnvironment.md)
+- [OciAdmissionProbeOutcome](entities/OciAdmissionProbeOutcome.md)
+- [OciAdmissionProbeRequest](entities/OciAdmissionProbeRequest.md)
+- [OciAdmissionProbeResult](entities/OciAdmissionProbeResult.md)
+- [OciBrokerError](entities/OciBrokerError.md)
+- [OciDispatchContext](entities/OciDispatchContext.md)
+- [OciDispatchOutcome](entities/OciDispatchOutcome.md)
+- [OciDispatchReceipt](entities/OciDispatchReceipt.md)
+- [OciImageCommand](entities/OciImageCommand.md)
+- [OciNetworkCanaryBinding](entities/OciNetworkCanaryBinding.md)
+- [OciOutputLimits](entities/OciOutputLimits.md)
+- [OciProbeCheck](entities/OciProbeCheck.md)
+- [OciProbeSentinel](entities/OciProbeSentinel.md)
+- [OciProcessRunner](entities/OciProcessRunner.md)
+- [OciResourceLimits](entities/OciResourceLimits.md)
+- [OciRuntimeConfig](entities/OciRuntimeConfig.md)
+- [OciStreamEvidence](entities/OciStreamEvidence.md)
+- [Origin](entities/Origin.md)
+- [OriginValidationMiddleware](entities/OriginValidationMiddleware.md)
+- [OutputModal](entities/OutputModal.md)
+- [P0CalibrationAgentPacket](entities/P0CalibrationAgentPacket.md)
+- [P0CalibrationAgentResult](entities/P0CalibrationAgentResult.md)
+- [P0CalibrationDispatchReceipt](entities/P0CalibrationDispatchReceipt.md)
+- [P0CalibrationError](entities/P0CalibrationError.md)
+- [P0CalibrationIntegrityError](entities/P0CalibrationIntegrityError.md)
+- [P0CalibrationRecoveryError](entities/P0CalibrationRecoveryError.md)
+- [P0CalibrationRun](entities/P0CalibrationRun.md)
+- [P0CalibrationSchemaError](entities/P0CalibrationSchemaError.md)
+- [P0CalibrationStatus](entities/P0CalibrationStatus.md)
+- [P0CalibrationTransitionError](entities/P0CalibrationTransitionError.md)
+- [P0CalibrationVerificationReport](entities/P0CalibrationVerificationReport.md)
+- [PackageInfo](entities/PackageInfo.md)
+- [PageKind](entities/PageKind.md)
+- [PageRegistry](entities/PageRegistry.md)
+- [PageSectionObservations](entities/PageSectionObservations.md)
+- [PagesForSymbolResult](entities/PagesForSymbolResult.md)
+- [PathValidationError](entities/PathValidationError.md)
+- [PlannedArtifactWrite](entities/PlannedArtifactWrite.md)
+- [PluginEntryPointDetectionResult](entities/PluginEntryPointDetectionResult.md)
+- [PluginError](entities/PluginError.md)
+- [PreparedRuntimeGenerationOptions](entities/PreparedRuntimeGenerationOptions.md)
+- [PreparedSyncRun](entities/PreparedSyncRun.md)
+- [ProducerComponent](entities/ProducerComponent.md)
+- [ProducerComponentInput](entities/ProducerComponentInput.md)
+- [ProducerRecord](entities/ProducerRecord.md)
+- [ProtectedArtifactDurabilityError](entities/ProtectedArtifactDurabilityError.md)
+- [ProtectedArtifactError](entities/ProtectedArtifactError.md)
+- [ProtectedArtifactIntegrityError](entities/ProtectedArtifactIntegrityError.md)
+- [ProtectedArtifactLimitError](entities/ProtectedArtifactLimitError.md)
+- [ProtectedArtifactLockError](entities/ProtectedArtifactLockError.md)
+- [ProtectedArtifactStore](entities/ProtectedArtifactStore.md)
+- [ProtocolRequestError](entities/ProtocolRequestError.md)
+- [PythonExtractor](entities/PythonExtractor.md)
+- [QualifiedContextPacket](entities/QualifiedContextPacket.md)
+- [RefreshArchiveTransaction](entities/RefreshArchiveTransaction.md)
+- [RefreshContinuationSnapshot](entities/RefreshContinuationSnapshot.md)
+- [RelatedConceptsResult](entities/RelatedConceptsResult.md)
+- [RelationshipEvidence](entities/RelationshipEvidence.md)
+- [RelationshipKind](entities/RelationshipKind.md)
+- [RelationshipKindValue](entities/RelationshipKindValue.md)
+- [RelationshipLocation](entities/RelationshipLocation.md)
+- [RelationshipRecord](entities/RelationshipRecord.md)
+- [RelationshipTarget](entities/RelationshipTarget.md)
+- [RepositoryEvidence](entities/RepositoryEvidence.md)
+- [RepositoryIdentitySource](entities/RepositoryIdentitySource.md)
+- [RepositoryRecord](entities/RepositoryRecord.md)
+- [Resolution](entities/Resolution.md)
+- [ResultArtifactError](entities/ResultArtifactError.md)
+- [ReviewEvent](entities/ReviewEvent.md)
+- [ReviewEvidence](entities/ReviewEvidence.md)
+- [ReviewFinding](entities/ReviewFinding.md)
+- [ReviewLoopDecision](entities/ReviewLoopDecision.md)
+- [ReviewLoopResult](entities/ReviewLoopResult.md)
+- [ReviewValidity](entities/ReviewValidity.md)
+- [RootDependencyDiagram](entities/RootDependencyDiagram.md)
+- [RunnableMcpServer](entities/RunnableMcpServer.md)
+- [RuntimeGraphObservations](entities/RuntimeGraphObservations.md)
+- [RuntimeKnowledgeInputs](entities/RuntimeKnowledgeInputs.md)
+- [RuntimeLiveEvaluationInputs](entities/RuntimeLiveEvaluationInputs.md)
+- [RustExtractionRequest](entities/RustExtractionRequest.md)
+- [RustExtractor](entities/RustExtractor.md)
+- [SafeFormat](entities/SafeFormat.md)
+- [SectionObservation](entities/SectionObservation.md)
+- [SectionOwnership](entities/SectionOwnership.md)
+- [SectionOwnershipError](entities/SectionOwnershipError.md)
+- [SemanticFacet](entities/SemanticFacet.md)
+- [SemanticMergeResult](entities/SemanticMergeResult.md)
+- [SharedValidationError](entities/SharedValidationError.md)
+- [SiteExportError](entities/SiteExportError.md)
+- [SiteExportOperation](entities/SiteExportOperation.md)
+- [SiteExportReport](entities/SiteExportReport.md)
+- [SitePublicationReceipt](entities/SitePublicationReceipt.md)
+- [SitePublicationSelection](entities/SitePublicationSelection.md)
+- [SkillOperation](entities/SkillOperation.md)
+- [SkillsError](entities/SkillsError.md)
+- [SkillsReport](entities/SkillsReport.md)
+- [SnapshotBuckets](entities/SnapshotBuckets.md)
+- [SnapshotKnowledgeObservability](entities/SnapshotKnowledgeObservability.md)
+- [SnapshotRecord](entities/SnapshotRecord.md)
+- [SourceFile](entities/SourceFile.md)
+- [SourceSelectionError](entities/SourceSelectionError.md)
+- [SourceSelectionOptions](entities/SourceSelectionOptions.md)
+- [SourceSelectionPin](entities/SourceSelectionPin.md)
+- [SourceSelectionPolicy](entities/SourceSelectionPolicy.md)
+- [SourceSelectionPruneResult](entities/SourceSelectionPruneResult.md)
+- [SourceSnapshot](entities/SourceSnapshot.md)
+- [SourceSnapshotError](entities/SourceSnapshotError.md)
+- [StreamCapture](entities/StreamCapture.md)
+- [StructuralFacet](entities/StructuralFacet.md)
+- [StructureUpgradeResult](entities/StructureUpgradeResult.md)
+- [SupervisorReconciliation](entities/SupervisorReconciliation.md)
+- [SurfaceIndexEvaluation](entities/SurfaceIndexEvaluation.md)
+- [SurfaceInitializationPlan](entities/SurfaceInitializationPlan.md)
+- [SurfacePage](entities/SurfacePage.md)
+- [SurfaceRole](entities/SurfaceRole.md)
+- [SyncDiff](entities/SyncDiff.md)
+- [SyncEntryPointAnalysis](entities/SyncEntryPointAnalysis.md)
+- [SyncManifest](entities/SyncManifest.md)
+- [SyncManifestError](entities/SyncManifestError.md)
+- [SyncPageMaps](entities/SyncPageMaps.md)
+- [SyncResult](entities/SyncResult.md)
+- [SyncRunOptions](entities/SyncRunOptions.md)
+- [SyncRuntimeRefreshError](entities/SyncRuntimeRefreshError.md)
+- [TableDescriptionCell](entities/TableDescriptionCell.md)
+- [TargetClass](entities/TargetClass.md)
+- [TargetOutcome](entities/TargetOutcome.md)
+- [TargetPage](entities/TargetPage.md)
+- [TeamConfigError](entities/TeamConfigError.md)
+- [TeamConventionRequest](entities/TeamConventionRequest.md)
+- [TreeBaseline](entities/TreeBaseline.md)
+- [TsPathAliasRule](entities/TsPathAliasRule.md)
+- [TypeScriptExtractor](entities/TypeScriptExtractor.md)
+- [TypedGraphTraversalResult](entities/TypedGraphTraversalResult.md)
+- [UnknownVerificationCheckerError](entities/UnknownVerificationCheckerError.md)
+- [ValidatedKnowledgeArtifacts](entities/ValidatedKnowledgeArtifacts.md)
+- [ValidatedLiveEvaluation](entities/ValidatedLiveEvaluation.md)
+- [ValidatedWikiMetadata](entities/ValidatedWikiMetadata.md)
+- [Verification](entities/Verification.md)
+- [VerificationCheckResult](entities/VerificationCheckResult.md)
+- [VerificationContext](entities/VerificationContext.md)
+- [VerificationContractError](entities/VerificationContractError.md)
+- [VerificationDiagnostic](entities/VerificationDiagnostic.md)
+- [VerificationInvalidationReason](entities/VerificationInvalidationReason.md)
+- [VerificationReceipt](entities/VerificationReceipt.md)
+- [VerificationReceiptError](entities/VerificationReceiptError.md)
+- [VerificationReceiptEvaluation](entities/VerificationReceiptEvaluation.md)
+- [VerificationResult](entities/VerificationResult.md)
+- [WikiAssetSurface](entities/WikiAssetSurface.md)
+- [WikiGitDisposition](entities/WikiGitDisposition.md)
+- [WikiGitPolicy](entities/WikiGitPolicy.md)
+- [WikiLifecycleState](entities/WikiLifecycleState.md)
+- [WikiLock](entities/WikiLock.md)
+- [WikiPageCounts](entities/WikiPageCounts.md)
+- [WikiPageIndex](entities/WikiPageIndex.md)
+- [WikiPagesResult](entities/WikiPagesResult.md)
+- [WikiSurfaceError](entities/WikiSurfaceError.md)
+- [WikiSurfaceKind](entities/WikiSurfaceKind.md)
+- [WikiSurfacePage](entities/WikiSurfacePage.md)
+- [WindowsDirectoryGuardError](entities/WindowsDirectoryGuardError.md)
+- [WindowsDirectoryGuardUnavailableError](entities/WindowsDirectoryGuardUnavailableError.md)
+- [WindowsDurabilityError](entities/WindowsDurabilityError.md)
+- [WindowsFileGuardError](entities/WindowsFileGuardError.md)
+- [WindowsIdentityUnavailableError](entities/WindowsIdentityUnavailableError.md)
+- [WindowsObjectIdentity](entities/WindowsObjectIdentity.md)
+- [WindowsPathHandleMetadata](entities/WindowsPathHandleMetadata.md)
+- [WindowsSecurityGuardError](entities/WindowsSecurityGuardError.md)
+- [WorkflowResult](entities/WorkflowResult.md)
+- [WorkingTreeState](entities/WorkingTreeState.md)
+- [WorkspaceStateError](entities/WorkspaceStateError.md)
+- [api_types_WikiPage](entities/api_types_WikiPage.md)
+- [mcp_server_WikiPage](entities/mcp_server_WikiPage.md)
+- [obsidian_WikiPage](entities/obsidian_WikiPage.md)
+
+## Modules
+
+- [api](modules/api.md) - Supported API for extraction, wiki, native knowledge, and documentation.
+- [api_contracts](modules/api_contracts.md) - Static FastAPI and exported OpenAPI contract assembly.
+- [api_types](modules/api_types.md) - Static return contracts for the supported Python API.
+- [bootstrap_runtime](modules/bootstrap_runtime.md) - `src/llm_wiki_cli/services/bootstrap_runtime.py`
+- [bootstrap_service](modules/bootstrap_service.md) - Typed request/result contract for deterministic wiki bootstrap.
+- [broker](modules/broker.md) - Provider-neutral OCI broker for qualifying documentation calibration agents.
+- [bump_cmd](modules/bump_cmd.md) - `src/llm_wiki_cli/commands/bump_cmd.py`
+- [calibration___init__](modules/calibration___init__.md) - Isolated calibration services.
+- [calibration_contracts](modules/calibration_contracts.md) - Deterministic evidence contracts for standalone documentation calibration.
+- [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
+- [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
+- [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
+- [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
+- [concept_identity](modules/concept_identity.md) - Pure stable-identity primitives for governed knowledge concepts.
+- [config](modules/config.md) - Shared constants and utilities for agent-wiki-cli.
+- [context_packet](modules/context_packet.md) - Canonical Qualified Context Packet construction and verification.
+- [context_service](modules/context_service.md) - Structured context budgeting — return priority-ranked, token-budgeted codebase context for LLM agents.
+- [controller](modules/controller.md) - Evidence-backed admission and intake controller for documentation calibration.
+- [data_flow](modules/data_flow.md) - Static data-flow summaries for generated user-flow pages.
+- [dependency_versions](modules/dependency_versions.md) - Lossless, scope-aware dependency version observations.
+- [detectors](modules/detectors.md) - Sample entry-point detector hooks for LLM Wiki plugins.
+- [diagrams](modules/diagrams.md) - Pure Mermaid diagram renderers.
+- [docs_cmd](modules/docs_cmd.md) - Commands for deterministic standalone documentation workspaces.
+- [doctor_cmd](modules/doctor_cmd.md) - CLI adapter for the read-only knowledge health report.
+- [doctor_service](modules/doctor_service.md) - Read-only composition for the repository knowledge health report.
+- [documentation_claim_evidence](modules/documentation_claim_evidence.md) - Versioned, out-of-band evidence contracts for documentation agents.
+- [documentation_model_policy](modules/documentation_model_policy.md) - Provider-neutral model routing for documentation-agent invocations.
+- [documentation_native](modules/documentation_native.md) - Native-knowledge evaluation and refresh for standalone documentation runs.
+- [documentation_policy](modules/documentation_policy.md) - Mutation and filesystem-integrity policy for documentation workspaces.
+- [documentation_queries](modules/documentation_queries.md) - Pure documentation graph query helpers.
+- [documentation_query_builder](modules/documentation_query_builder.md) - Shared construction for supported documentation query services.
+- [documentation_review](modules/documentation_review.md) - Deterministic review-ledger and adjustment-loop contracts.
+- [documentation_run___init__](modules/documentation_run___init__.md) - Deterministic lifecycle contract for agent-driven documentation workspaces.
+- [documentation_run_contracts](modules/documentation_run_contracts.md) - Persisted contracts for documentation runs.
+- [documentation_run_dependencies](modules/documentation_run_dependencies.md) - Imports shared by the mechanically split lifecycle modules.
+- [documentation_run_schema](modules/documentation_run_schema.md) - Documentation-run schema services.
+- [documentation_wiki_input](modules/documentation_wiki_input.md) - Read-only adoption of an existing canonical LLM Wiki.
+- [documentation_worklist](modules/documentation_worklist.md) - Deterministic semantic worklists for standalone documentation runs.
+- [entrypoints](modules/entrypoints.md) - Entry-point detection and user-flow assembly.
+- [eval_lite___init__](modules/eval_lite___init__.md) - Provider-free inspection planning for paired qualified-context arms.
+- [export](modules/export.md) - Documentation-run export services.
+- [extraction_jobs](modules/extraction_jobs.md) - `src/llm_wiki_cli/services/extraction_jobs.py`
+- [extraction_service](modules/extraction_service.md) - `src/llm_wiki_cli/services/extraction_service.py`
+- [extractor_helpers](modules/extractor_helpers.md) - Preparation and lookup for external extractor helper tools.
+- [extractors___init__](modules/extractors___init__.md) - Extractor plugin architecture for agent-wiki-cli.
+- [fastapi_contracts](modules/fastapi_contracts.md) - Syntax-only FastAPI declaration extraction.
+- [filesystem_guard](modules/filesystem_guard.md) - Small cross-platform guards for security-sensitive workspace writes.
+- [generate_prompt_cmd](modules/generate_prompt_cmd.md) - `src/llm_wiki_cli/commands/generate_prompt_cmd.py`
+- [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
+- [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
+- [hook_cmd](modules/hook_cmd.md) - `src/llm_wiki_cli/commands/hook_cmd.py`
+- [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
+- [imports](modules/imports.md) - `src/llm_wiki_cli/services/imports.py`
+- [infrastructure_inventory](modules/infrastructure_inventory.md) - Inventory helpers for non-Docker infrastructure YAML files.
+- [infrastructure_sync](modules/infrastructure_sync.md) - Deterministic infrastructure discovery and incremental sync planning.
+- [init_cmd](modules/init_cmd.md) - `src/llm_wiki_cli/commands/init_cmd.py`
+- [install_cmd](modules/install_cmd.md) - `src/llm_wiki_cli/commands/install_cmd.py`
+- [integrity](modules/integrity.md) - Documentation-run integrity services.
+- [inventory_cache](modules/inventory_cache.md) - Persistent inventory cache used by lint and CI validation.
+- [io](modules/io.md) - Encoding-safe and atomic I/O helpers for wiki artifacts.
+- [knowledge_artifacts](modules/knowledge_artifacts.md) - Deterministic commit protocol for generated knowledge artifacts.
+- [knowledge_cmd](modules/knowledge_cmd.md) - Explicit durable-knowledge governance and verification commands.
+- [knowledge_consumption](modules/knowledge_consumption.md) - One read-only knowledge session shared by native consumers.
+- [knowledge_envelope](modules/knowledge_envelope.md) - Deterministic bundle, snapshot, and producer envelope construction.
+- [knowledge_evidence](modules/knowledge_evidence.md) - Deterministic encoding, hashing, and concept-observation boundaries.
+- [knowledge_freshness](modules/knowledge_freshness.md) - Pure live freshness comparison for generated knowledge concepts.
+- [knowledge_generation](modules/knowledge_generation.md) - Shared in-memory generation planner for native knowledge artifacts.
+- [knowledge_governance](modules/knowledge_governance.md) - Durable authority for stable concept identity and explicit governance.
+- [knowledge_graph](modules/knowledge_graph.md) - Pure typed-graph contract and materializer.
+- [knowledge_index](modules/knowledge_index.md) - Pure construction and validation of the native knowledge index.
+- [knowledge_links](modules/knowledge_links.md) - Lossless, deterministic observations of links in canonical Markdown.
+- [knowledge_loader](modules/knowledge_loader.md) - Authoritative validation and fallback boundary for generated knowledge state.
+- [knowledge_model](modules/knowledge_model.md) - Typed contract and stdlib validation for ``llm-wiki-knowledge/v1``.
+- [knowledge_observability](modules/knowledge_observability.md) - Privacy-safe observability for native knowledge consumers.
+- [knowledge_orchestration](modules/knowledge_orchestration.md) - Command-facing orchestration for generated native knowledge artifacts.
+- [knowledge_projection](modules/knowledge_projection.md) - Safe, deterministic projections over one validated knowledge read view.
+- [knowledge_verification](modules/knowledge_verification.md) - Read-only machine-verification evaluation for native knowledge sessions.
+- [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`
+- [llm-wiki_main](modules/llm-wiki_main.md) - `integrations/obsidian/llm-wiki/main.js`
+- [lockfile](modules/lockfile.md) - `src/llm_wiki_cli/services/lockfile.py`
+- [markdown_sections](modules/markdown_sections.md) - Deterministic Markdown section parsing and legacy sync splice helpers.
+- [mcp_cmd](modules/mcp_cmd.md) - Run llm-wiki as a local Model Context Protocol server.
+- [mcp_server](modules/mcp_server.md) - Read-only MCP service helpers for exposing an LLM Wiki to agents.
+- [metrics](modules/metrics.md) - `src/llm_wiki_cli/services/metrics.py`
+- [metrics_cmd](modules/metrics_cmd.md) - `src/llm_wiki_cli/commands/metrics_cmd.py`
+- [migrate_cmd](modules/migrate_cmd.md) - Legacy wiki migration command.
+- [module_maps](modules/module_maps.md) - Pure per-module dependency mini-map summaries.
+- [obsidian](modules/obsidian.md) - Obsidian mirror export support for LLM Wiki.
+- [obsidian_cmd](modules/obsidian_cmd.md) - Commands for exporting LLM Wiki into an Obsidian-friendly mirror.
+- [packages](modules/packages.md) - Discover Python packages within a source tree.
+- [packet](modules/packet.md) - Documentation-run packet services.
+- [paths](modules/paths.md) - Shared path normalization helpers.
+- [planner](modules/planner.md) - Deterministic, inspection-only planning for qualified-context packets.
+- [plugin_samples](modules/plugin_samples.md) - Bundled sample plugin export helpers.
+- [plugins](modules/plugins.md) - Local plugin marketplace support for llm-wiki.
+- [plugins_cmd](modules/plugins_cmd.md) - `src/llm_wiki_cli/commands/plugins_cmd.py`
+- [prepare](modules/prepare.md) - Documentation-run prepare services.
+- [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) - `src/llm_wiki_cli/commands/prepare_extractors_cmd.py`
+- [protected_artifacts](modules/protected_artifacts.md) - Protected, bounded artifact storage for controller-owned lifecycle state.
+- [python_contracts](modules/python_contracts.md) - Pure AST helpers for reconstructable Python declaration contracts.
+- [python_extractor](modules/python_extractor.md) - Python AST extractor for agent-wiki-cli.
+- [record](modules/record.md) - Documentation-run record services.
+- [redaction](modules/redaction.md) - Shared best-effort redaction for credential-like text.
+- [refresh](modules/refresh.md) - Documentation-run refresh services.
+- [relationships](modules/relationships.md) - Pure entity and callable relationship summaries.
+- [release_cmd](modules/release_cmd.md) - release_cmd — stamp the [Unreleased] CHANGELOG section with the current version.
+- [render_summary](modules/render_summary.md) - Render a GitHub job summary from the stable doctor JSON contract.
+- [resource_diagnostics](modules/resource_diagnostics.md) - `src/llm_wiki_cli/services/resource_diagnostics.py`
+- [review_cmd](modules/review_cmd.md) - `src/llm_wiki_cli/commands/review_cmd.py`
+- [rust_extractor](modules/rust_extractor.md) - Rust AST extractor for agent-wiki-cli.
+- [section_ownership](modules/section_ownership.md) - Conservative section ownership, scoped hashes, and semantic merge policy.
+- [secure_file](modules/secure_file.md) - Helpers for writing local runtime files with best-effort privacy.
+- [services_contracts](modules/services_contracts.md) - Stable machine-readable contracts exposed by source-adapter commands.
+- [services_dependencies](modules/services_dependencies.md) - Internal dependency-graph analysis and external reconciliation.
+- [services_schema](modules/services_schema.md) - Shared schema utilities for agent constraint blocks.
+- [site_cmd](modules/site_cmd.md) - Commands for exporting LLM Wiki into a static-site-friendly mirror.
+- [site_export](modules/site_export.md) - Pure static-site mirror export support for LLM Wiki.
+- [site_html_check](modules/site_html_check.md) - Built static-site HTML link validation.
+- [skills](modules/skills.md) - Bundled agent skill management for LLM Wiki.
+- [skills_cmd](modules/skills_cmd.md) - Commands for listing, exporting, and installing bundled agent skills.
+- [source_selection](modules/source_selection.md) - Canonical repository source-selection policy and provenance helpers.
+- [source_snapshot](modules/source_snapshot.md) - Shared source-tree discovery for inventory, Docker, and package scans.
+- [src_main](modules/src_main.md) - `integrations/obsidian/llm-wiki/src/main.ts`
+- [status_cmd](modules/status_cmd.md) - `src/llm_wiki_cli/commands/status_cmd.py`
+- [styles](modules/styles.md) - Sample bounded diagram-style hooks for LLM Wiki plugins.
+- [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
+- [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
+- [sync_manifest](modules/sync_manifest.md) - Service-level persistence boundary for the sync manifest v5 contract.
+- [team](modules/team.md) - Shared team policy and conservative wiki conflict resolution.
+- [team_cmd](modules/team_cmd.md) - `src/llm_wiki_cli/commands/team_cmd.py`
+- [trigger_cmd](modules/trigger_cmd.md) - `src/llm_wiki_cli/commands/trigger_cmd.py`
+- [ts_extractor](modules/ts_extractor.md) - TypeScript AST extractor for agent-wiki-cli.
+- [uninstall_cmd](modules/uninstall_cmd.md) - `src/llm_wiki_cli/commands/uninstall_cmd.py`
+- [upgrade_cmd](modules/upgrade_cmd.md) - llm-wiki upgrade — refresh all framework-managed artifacts in place.
+- [validation](modules/validation.md) - Shared, side-effect-free validators for service-layer contracts.
+- [verification_contracts](modules/verification_contracts.md) - Pure, application-owned machine-verification contracts.
+- [verify](modules/verify.md) - Documentation-run verify services.
+- [versioning](modules/versioning.md) - `src/llm_wiki_cli/services/versioning.py`
+- [wiki_git_policy](modules/wiki_git_policy.md) - Read-only Git policy for handing generated wiki files to version control.
+- [wiki_lifecycle](modules/wiki_lifecycle.md) - Read-only classification for wiki bootstrap, sync, and migration routing.
+- [wiki_media](modules/wiki_media.md) - Media reference parsing for wiki pages and agent-owned assets.
+- [wiki_scaffold](modules/wiki_scaffold.md) - Canonical bytes for a pristine wiki scaffold.
+- [wiki_surface](modules/wiki_surface.md) - Canonical wiki page surface registry.
+- [wiki_surface_index](modules/wiki_surface_index.md) - Machine-readable index for generated wiki surfaces.
+- [workspace](modules/workspace.md) - Documentation-run workspace services.
+
+## Workflows
+
+- [append_log](workflows/append_log.md) - entry: `sync_cmd._append_log`
+- [apply_diff](workflows/apply_diff.md) - entry: `sync_cmd._apply_diff`
+- [apply_sync_changes](workflows/apply_sync_changes.md) - entry: `sync_cmd._apply_sync_changes`
+- [build_apply_diff_context](workflows/build_apply_diff_context.md) - entry: `sync_cmd._build_apply_diff_context`
+- [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
+- [exit_if_large_unforced_diff](workflows/exit_if_large_unforced_diff.md) - entry: `sync_cmd._exit_if_large_unforced_diff`
+- [finalize_bootstrap](workflows/finalize_bootstrap.md) - entry: `bootstrap_runtime._finalize_bootstrap`
+- [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
+- [generate_dependencies_md](workflows/generate_dependencies_md.md) - entry: `bootstrap_runtime._generate_dependencies_md`
+- [get_inventory](workflows/get_inventory.md) - entry: `context_service.get_inventory`
+- [print_dry_run_plan](workflows/print_dry_run_plan.md) - entry: `sync_cmd._print_dry_run_plan`
+- [runtime_live_concept_bases](workflows/runtime_live_concept_bases.md) - entry: `knowledge_orchestration._runtime_live_concept_bases`
+
+## Guides
+
+- [CLI and Python API](guides/cli-and-python-api.md)
+- [Getting Started](guides/getting-started.md)
+- [Integrations](guides/integrations.md)
+- [MCP Integration](guides/mcp-integration.md)
+- [Source Selection and Configuration](guides/source-selection-and-configuration.md)
+- [Troubleshooting and Security](guides/troubleshooting-and-security.md)
+
+<a id="entry-point-flows"></a>
+<a id="user-flows"></a>
+## Entry-point flows <!-- llm-wiki-generated:index:entry-point-flows -->
+
+**api**
+
+- [api-add_alias](flows/api-add_alias.md) - entry: `add_alias`
+- [api-add_identity_alias](flows/api-add_identity_alias.md) - entry: `add_identity_alias`
+- [api-add_review_event](flows/api-add_review_event.md) - entry: `add_review_event`
+- [api-admit_calibration_run-api](flows/api-admit_calibration_run-api.md) - entry: `admit_calibration_run`
+- [api-admit_calibration_run-controller](flows/api-admit_calibration_run-controller.md) - entry: `admit_calibration_run`
+- [api-alias_key](flows/api-alias_key.md) - entry: `alias_key`
+- [api-aliases_for_move](flows/api-aliases_for_move.md) - entry: `aliases_for_move`
+- [api-allocate_concept](flows/api-allocate_concept.md) - entry: `allocate_concept`
+- [api-apply_governance_projection](flows/api-apply_governance_projection.md) - entry: `apply_governance_projection`
+- [api-assemble_documentation_query_service](flows/api-assemble_documentation_query_service.md) - entry: `assemble_documentation_query_service`
+- [api-atomic_write_private_bytes](flows/api-atomic_write_private_bytes.md) - entry: `atomic_write_private_bytes`
+- [api-attach_fastapi_declarations](flows/api-attach_fastapi_declarations.md) - entry: `attach_fastapi_declarations`
+- [api-attach_machine_verification_read_view](flows/api-attach_machine_verification_read_view.md) - entry: `attach_machine_verification_read_view`
+- [api-attach_routes_to_entry_points](flows/api-attach_routes_to_entry_points.md) - entry: `attach_routes_to_entry_points`
+- [api-authored_event_time](flows/api-authored_event_time.md) - entry: `authored_event_time`
+- [api-bool_or_none](flows/api-bool_or_none.md) - entry: `bool_or_none`
+- [api-bootstrap_guidance](flows/api-bootstrap_guidance.md) - entry: `bootstrap_guidance`
+- [api-bootstrap_wiki](flows/api-bootstrap_wiki.md) - entry: `bootstrap_wiki`
+- [api-build_api_contracts](flows/api-build_api_contracts.md) - entry: `build_api_contracts`
+- [api-build_artifact_verification_context](flows/api-build_artifact_verification_context.md) - entry: `build_artifact_verification_context`
+- [api-build_calibration_agent_packet-api](flows/api-build_calibration_agent_packet-api.md) - entry: `build_calibration_agent_packet`
+- [api-build_calibration_agent_packet-controller](flows/api-build_calibration_agent_packet-controller.md) - entry: `build_calibration_agent_packet`
+- [api-build_context](flows/api-build_context.md) - entry: `build_context`
+- [api-build_context_from_captured_read](flows/api-build_context_from_captured_read.md) - entry: `build_context_from_captured_read`
+- [api-build_dependency_version_details](flows/api-build_dependency_version_details.md) - entry: `build_dependency_version_details`
+- [api-build_doctor_report](flows/api-build_doctor_report.md) - entry: `build_doctor_report`
+- [api-build_documentation_agent_packet](flows/api-build_documentation_agent_packet.md) - entry: `build_documentation_agent_packet`
+- [api-build_documentation_query_service](flows/api-build_documentation_query_service.md) - entry: `build_documentation_query_service`
+- [api-build_documentation_query_service_from_view](flows/api-build_documentation_query_service_from_view.md) - entry: `build_documentation_query_service_from_view`
+- [api-build_entity_observation_basis](flows/api-build_entity_observation_basis.md) - entry: `build_entity_observation_basis`
+- [api-build_evaluated_envelope](flows/api-build_evaluated_envelope.md) - entry: `build_evaluated_envelope`
+- [api-build_flow_evidence_census](flows/api-build_flow_evidence_census.md) - entry: `build_flow_evidence_census`
+- [api-build_infrastructure_observation_basis](flows/api-build_infrastructure_observation_basis.md) - entry: `build_infrastructure_observation_basis`
+- [api-build_infrastructure_page_map](flows/api-build_infrastructure_page_map.md) - entry: `build_infrastructure_page_map`
+- [api-build_infrastructure_sync_plan](flows/api-build_infrastructure_sync_plan.md) - entry: `build_infrastructure_sync_plan`
+- [api-build_knowledge_commit_plan](flows/api-build_knowledge_commit_plan.md) - entry: `build_knowledge_commit_plan`
+- [api-build_knowledge_generation_plan](flows/api-build_knowledge_generation_plan.md) - entry: `build_knowledge_generation_plan`
+- [api-build_knowledge_index](flows/api-build_knowledge_index.md) - entry: `build_knowledge_index`
+- [api-build_knowledge_read_view](flows/api-build_knowledge_read_view.md) - entry: `build_knowledge_read_view`
+- [api-build_live_documentation_query_service](flows/api-build_live_documentation_query_service.md) - entry: `build_live_documentation_query_service`
+- [api-build_module_observation_basis](flows/api-build_module_observation_basis.md) - entry: `build_module_observation_basis`
+- [api-build_p0_calibration_shadow](flows/api-build_p0_calibration_shadow.md) - entry: `build_p0_calibration_shadow`
+- [api-build_producer_record](flows/api-build_producer_record.md) - entry: `build_producer_record`
+- [api-build_qualified_context-api](flows/api-build_qualified_context-api.md) - entry: `build_qualified_context`
+- [api-build_qualified_context-context_packet](flows/api-build_qualified_context-context_packet.md) - entry: `build_qualified_context`
+- [api-build_repository_record](flows/api-build_repository_record.md) - entry: `build_repository_record`
+- [api-build_runtime_knowledge_plan](flows/api-build_runtime_knowledge_plan.md) - entry: `build_runtime_knowledge_plan`
+- [api-build_runtime_live_evaluation](flows/api-build_runtime_live_evaluation.md) - entry: `build_runtime_live_evaluation`
+- [api-build_snapshot_documentation_query_service](flows/api-build_snapshot_documentation_query_service.md) - entry: `build_snapshot_documentation_query_service`
+- [api-build_static_api_contracts](flows/api-build_static_api_contracts.md) - entry: `build_static_api_contracts`
+- [api-build_verification_receipt](flows/api-build_verification_receipt.md) - entry: `build_verification_receipt`
+- [api-callees](flows/api-callees.md) - entry: `callees`
+- [api-callers](flows/api-callers.md) - entry: `callers`
+- [api-canonical_json_bytes-knowledge_evidence](flows/api-canonical_json_bytes-knowledge_evidence.md) - entry: `canonical_json_bytes`
+- [api-canonical_json_bytes-protected_artifacts](flows/api-canonical_json_bytes-protected_artifacts.md) - entry: `canonical_json_bytes`
+- [api-canonical_json_text](flows/api-canonical_json_text.md) - entry: `canonical_json_text`
+- [api-capture_context_read](flows/api-capture_context_read.md) - entry: `capture_context_read`
+- [api-capture_generated_ownership](flows/api-capture_generated_ownership.md) - entry: `capture_generated_ownership`
+- [api-capture_tree_baseline](flows/api-capture_tree_baseline.md) - entry: `capture_tree_baseline`
+- [api-checker_contract](flows/api-checker_contract.md) - entry: `checker_contract`
+- [api-checker_registry](flows/api-checker_registry.md) - entry: `checker_registry`
+- [api-classify_section_ownership](flows/api-classify_section_ownership.md) - entry: `classify_section_ownership`
+- [api-classify_wiki_lifecycle](flows/api-classify_wiki_lifecycle.md) - entry: `classify_wiki_lifecycle`
+- [api-coerce_nonnegative_int](flows/api-coerce_nonnegative_int.md) - entry: `coerce_nonnegative_int`
+- [api-coerce_positive_int](flows/api-coerce_positive_int.md) - entry: `coerce_positive_int`
+- [api-coerce_trimmed_text](flows/api-coerce_trimmed_text.md) - entry: `coerce_trimmed_text`
+- [api-collect_git_repository_evidence](flows/api-collect_git_repository_evidence.md) - entry: `collect_git_repository_evidence`
+- [api-collect_runtime_repository_evidence](flows/api-collect_runtime_repository_evidence.md) - entry: `collect_runtime_repository_evidence`
+- [api-commit_knowledge_artifacts](flows/api-commit_knowledge_artifacts.md) - entry: `commit_knowledge_artifacts`
+- [api-committed_governance_bundle_id](flows/api-committed_governance_bundle_id.md) - entry: `committed_governance_bundle_id`
+- [api-committed_runtime_provenance](flows/api-committed_runtime_provenance.md) - entry: `committed_runtime_provenance`
+- [api-compare_context_packet_basis-api](flows/api-compare_context_packet_basis-api.md) - entry: `compare_context_packet_basis`
+- [api-compare_context_packet_basis-context_packet](flows/api-compare_context_packet_basis-context_packet.md) - entry: `compare_context_packet_basis`
+- [api-compare_generated_ownership](flows/api-compare_generated_ownership.md) - entry: `compare_generated_ownership`
+- [api-compare_source_plugin_tree_baseline](flows/api-compare_source_plugin_tree_baseline.md) - entry: `compare_source_plugin_tree_baseline`
+- [api-compare_source_snapshot_baseline](flows/api-compare_source_snapshot_baseline.md) - entry: `compare_source_snapshot_baseline`
+- [api-compare_tree_baseline](flows/api-compare_tree_baseline.md) - entry: `compare_tree_baseline`
+- [api-compose_doctor_report](flows/api-compose_doctor_report.md) - entry: `compose_doctor_report`
+- [api-compute_sync_diff](flows/api-compute_sync_diff.md) - entry: `compute_sync_diff`
+- [api-concept_endpoint](flows/api-concept_endpoint.md) - entry: `concept_endpoint`
+- [api-concept_kind_for_page_kind](flows/api-concept_kind_for_page_kind.md) - entry: `concept_kind_for_page_kind`
+- [api-concept_references_from_knowledge](flows/api-concept_references_from_knowledge.md) - entry: `concept_references_from_knowledge`
+- [api-consumed_inputs_from_captured_hashes](flows/api-consumed_inputs_from_captured_hashes.md) - entry: `consumed_inputs_from_captured_hashes`
+- [api-contains_control_character](flows/api-contains_control_character.md) - entry: `contains_control_character`
+- [api-create_private_windows_directory](flows/api-create_private_windows_directory.md) - entry: `create_private_windows_directory`
+- [api-current_infrastructure_bases](flows/api-current_infrastructure_bases.md) - entry: `current_infrastructure_bases`
+- [api-current_lifecycle](flows/api-current_lifecycle.md) - entry: `current_lifecycle`
+- [api-current_review_evidence](flows/api-current_review_evidence.md) - entry: `current_review_evidence`
+- [api-data_flow_for_entrypoint](flows/api-data_flow_for_entrypoint.md) - entry: `data_flow_for_entrypoint`
+- [api-dependency_neighborhood](flows/api-dependency_neighborhood.md) - entry: `dependency_neighborhood`
+- [api-derive_concept_uid-concept_identity](flows/api-derive_concept_uid-concept_identity.md) - entry: `derive_concept_uid`
+- [api-derive_concept_uid-knowledge_governance](flows/api-derive_concept_uid-knowledge_governance.md) - entry: `derive_concept_uid`
+- [api-description_table_cells](flows/api-description_table_cells.md) - entry: `description_table_cells`
+- [api-deserialize_verification_receipt](flows/api-deserialize_verification_receipt.md) - entry: `deserialize_verification_receipt`
+- [api-dispatch_calibration_agent-api](flows/api-dispatch_calibration_agent-api.md) - entry: `dispatch_calibration_agent`
+- [api-dispatch_calibration_agent-controller](flows/api-dispatch_calibration_agent-controller.md) - entry: `dispatch_calibration_agent`
+- [api-doctor](flows/api-doctor.md) - entry: `doctor`
+- [api-documentation_run_path](flows/api-documentation_run_path.md) - entry: `documentation_run_path`
+- [api-entity_observation_hash](flows/api-entity_observation_hash.md) - entry: `entity_observation_hash`
+- [api-evaluate_documentation_native_freshness](flows/api-evaluate_documentation_native_freshness.md) - entry: `evaluate_documentation_native_freshness`
+- [api-evaluate_knowledge_freshness](flows/api-evaluate_knowledge_freshness.md) - entry: `evaluate_knowledge_freshness`
+- [api-evaluate_review_event](flows/api-evaluate_review_event.md) - entry: `evaluate_review_event`
+- [api-evaluate_verification_receipt](flows/api-evaluate_verification_receipt.md) - entry: `evaluate_verification_receipt`
+- [api-evaluated_envelope_to_payload](flows/api-evaluated_envelope_to_payload.md) - entry: `evaluated_envelope_to_payload`
+- [api-explain_evidence](flows/api-explain_evidence.md) - entry: `explain_evidence`
+- [api-export_documentation_run-api](flows/api-export_documentation_run-api.md) - entry: `export_documentation_run`
+- [api-export_documentation_run-export](flows/api-export_documentation_run-export.md) - entry: `export_documentation_run`
+- [api-external_resource_endpoint](flows/api-external_resource_endpoint.md) - entry: `external_resource_endpoint`
+- [api-extract_fastapi_declarations](flows/api-extract_fastapi_declarations.md) - entry: `extract_fastapi_declarations`
+- [api-extract_source](flows/api-extract_source.md) - entry: `extract_source`
+- [api-filtered_trimmed_text_list](flows/api-filtered_trimmed_text_list.md) - entry: `filtered_trimmed_text_list`
+- [api-finalize_runtime_knowledge](flows/api-finalize_runtime_knowledge.md) - entry: `finalize_runtime_knowledge`
+- [api-find_identity_collisions](flows/api-find_identity_collisions.md) - entry: `find_identity_collisions`
+- [api-flow_for_entrypoint](flows/api-flow_for_entrypoint.md) - entry: `flow_for_entrypoint`
+- [api-format_field_differences](flows/api-format_field_differences.md) - entry: `format_field_differences`
+- [api-format_table_row](flows/api-format_table_row.md) - entry: `format_table_row`
+- [api-formatted_json_bytes](flows/api-formatted_json_bytes.md) - entry: `formatted_json_bytes`
+- [api-formatted_json_text](flows/api-formatted_json_text.md) - entry: `formatted_json_text`
+- [api-fresh_no_follow_stat](flows/api-fresh_no_follow_stat.md) - entry: `fresh_no_follow_stat`
+- [api-generated_semantics_for_file](flows/api-generated_semantics_for_file.md) - entry: `generated_semantics_for_file`
+- [api-get_calibration_run_status-api](flows/api-get_calibration_run_status-api.md) - entry: `get_calibration_run_status`
+- [api-get_calibration_run_status-controller](flows/api-get_calibration_run_status-controller.md) - entry: `get_calibration_run_status`
+- [api-get_concept](flows/api-get_concept.md) - entry: `get_concept`
+- [api-get_documentation_run_status](flows/api-get_documentation_run_status.md) - entry: `get_documentation_run_status`
+- [api-governance_bundle_id_from_knowledge](flows/api-governance_bundle_id_from_knowledge.md) - entry: `governance_bundle_id_from_knowledge`
+- [api-governance_hash_from_knowledge](flows/api-governance_hash_from_knowledge.md) - entry: `governance_hash_from_knowledge`
+- [api-governance_lock](flows/api-governance_lock.md) - entry: `governance_lock`
+- [api-guard_windows_directory_chain](flows/api-guard_windows_directory_chain.md) - entry: `guard_windows_directory_chain`
+- [api-hash_aggregate_inputs](flows/api-hash_aggregate_inputs.md) - entry: `hash_aggregate_inputs`
+- [api-hash_bytes](flows/api-hash_bytes.md) - entry: `hash_bytes`
+- [api-hash_component_configuration](flows/api-hash_component_configuration.md) - entry: `hash_component_configuration`
+- [api-hash_evaluated_envelope](flows/api-hash_evaluated_envelope.md) - entry: `hash_evaluated_envelope`
+- [api-hash_file-documentation_policy](flows/api-hash_file-documentation_policy.md) - entry: `hash_file`
+- [api-hash_file-knowledge_evidence](flows/api-hash_file-knowledge_evidence.md) - entry: `hash_file`
+- [api-hash_generation_options](flows/api-hash_generation_options.md) - entry: `hash_generation_options`
+- [api-hash_inventory](flows/api-hash_inventory.md) - entry: `hash_inventory`
+- [api-hash_json](flows/api-hash_json.md) - entry: `hash_json`
+- [api-hash_markdown_snapshot](flows/api-hash_markdown_snapshot.md) - entry: `hash_markdown_snapshot`
+- [api-hash_source_snapshot](flows/api-hash_source_snapshot.md) - entry: `hash_source_snapshot`
+- [api-identity_coordinate_key](flows/api-identity_coordinate_key.md) - entry: `identity_coordinate_key`
+- [api-infrastructure_evidence_by_page](flows/api-infrastructure_evidence_by_page.md) - entry: `infrastructure_evidence_by_page`
+- [api-input_wiki_tree_baseline](flows/api-input_wiki_tree_baseline.md) - entry: `input_wiki_tree_baseline`
+- [api-is_canonical_uuid](flows/api-is_canonical_uuid.md) - entry: `is_canonical_uuid`
+- [api-is_placeholder_description](flows/api-is_placeholder_description.md) - entry: `is_placeholder_description`
+- [api-is_portable_path_component](flows/api-is_portable_path_component.md) - entry: `is_portable_path_component`
+- [api-is_portable_relative_path](flows/api-is_portable_relative_path.md) - entry: `is_portable_relative_path`
+- [api-is_pristine_wiki_target](flows/api-is_pristine_wiki_target.md) - entry: `is_pristine_wiki_target`
+- [api-is_supported_relationship_kind](flows/api-is_supported_relationship_kind.md) - entry: `is_supported_relationship_kind`
+- [api-is_table_separator](flows/api-is_table_separator.md) - entry: `is_table_separator`
+- [api-is_valid_sha256](flows/api-is_valid_sha256.md) - entry: `is_valid_sha256`
+- [api-knowledge_freshness_disclosure](flows/api-knowledge_freshness_disclosure.md) - entry: `knowledge_freshness_disclosure`
+- [api-knowledge_freshness_hint](flows/api-knowledge_freshness_hint.md) - entry: `knowledge_freshness_hint`
+- [api-knowledge_index_to_payload-knowledge_index](flows/api-knowledge_index_to_payload-knowledge_index.md) - entry: `knowledge_index_to_payload`
+- [api-knowledge_index_to_payload-knowledge_model](flows/api-knowledge_index_to_payload-knowledge_model.md) - entry: `knowledge_index_to_payload`
+- [api-knowledge_status_payload](flows/api-knowledge_status_payload.md) - entry: `knowledge_status_payload`
+- [api-lifecycle_state_by_uid](flows/api-lifecycle_state_by_uid.md) - entry: `lifecycle_state_by_uid`
+- [api-list_concept_sections](flows/api-list_concept_sections.md) - entry: `list_concept_sections`
+- [api-list_wiki_pages](flows/api-list_wiki_pages.md) - entry: `list_wiki_pages`
+- [api-load_and_evaluate_verification_receipt](flows/api-load_and_evaluate_verification_receipt.md) - entry: `load_and_evaluate_verification_receipt`
+- [api-load_documentation_run](flows/api-load_documentation_run.md) - entry: `load_documentation_run`
+- [api-load_governance](flows/api-load_governance.md) - entry: `load_governance`
+- [api-load_knowledge_read_view](flows/api-load_knowledge_read_view.md) - entry: `load_knowledge_read_view`
+- [api-load_knowledge_schema](flows/api-load_knowledge_schema.md) - entry: `load_knowledge_schema`
+- [api-load_knowledge_state](flows/api-load_knowledge_state.md) - entry: `load_knowledge_state`
+- [api-load_machine_verification_read_view](flows/api-load_machine_verification_read_view.md) - entry: `load_machine_verification_read_view`
+- [api-load_openapi_document](flows/api-load_openapi_document.md) - entry: `load_openapi_document`
+- [api-load_snapshot_knowledge_observability](flows/api-load_snapshot_knowledge_observability.md) - entry: `load_snapshot_knowledge_observability`
+- [api-load_verification_receipt](flows/api-load_verification_receipt.md) - entry: `load_verification_receipt`
+- [api-machine_verification_summaries](flows/api-machine_verification_summaries.md) - entry: `machine_verification_summaries`
+- [api-machine_verification_summary](flows/api-machine_verification_summary.md) - entry: `machine_verification_summary`
+- [api-materialize_typed_graph](flows/api-materialize_typed_graph.md) - entry: `materialize_typed_graph`
+- [api-merge_entity_semantics](flows/api-merge_entity_semantics.md) - entry: `merge_entity_semantics`
+- [api-merge_module_semantics](flows/api-merge_module_semantics.md) - entry: `merge_module_semantics`
+- [api-merge_semantic_markdown](flows/api-merge_semantic_markdown.md) - entry: `merge_semantic_markdown`
+- [api-migration_guidance](flows/api-migration_guidance.md) - entry: `migration_guidance`
+- [api-mixed_table_projection](flows/api-mixed_table_projection.md) - entry: `mixed_table_projection`
+- [api-module_observation_hash](flows/api-module_observation_hash.md) - entry: `module_observation_hash`
+- [api-move_allocation](flows/api-move_allocation.md) - entry: `move_allocation`
+- [api-move_concept](flows/api-move_concept.md) - entry: `move_concept`
+- [api-move_windows_path_write_through](flows/api-move_windows_path_write_through.md) - entry: `move_windows_path_write_through`
+- [api-natural_key_for](flows/api-natural_key_for.md) - entry: `natural_key_for`
+- [api-nonnegative_int_or_none](flows/api-nonnegative_int_or_none.md) - entry: `nonnegative_int_or_none`
+- [api-normalize_claim_evidence_records](flows/api-normalize_claim_evidence_records.md) - entry: `normalize_claim_evidence_records`
+- [api-normalize_entity_observation](flows/api-normalize_entity_observation.md) - entry: `normalize_entity_observation`
+- [api-normalize_legacy_portable_relative_path](flows/api-normalize_legacy_portable_relative_path.md) - entry: `normalize_legacy_portable_relative_path`
+- [api-normalize_markdown](flows/api-normalize_markdown.md) - entry: `normalize_markdown`
+- [api-normalize_module_observation](flows/api-normalize_module_observation.md) - entry: `normalize_module_observation`
+- [api-normalize_observational_posix_path](flows/api-normalize_observational_posix_path.md) - entry: `normalize_observational_posix_path`
+- [api-normalize_optional_portable_relative_path](flows/api-normalize_optional_portable_relative_path.md) - entry: `normalize_optional_portable_relative_path`
+- [api-normalize_runtime_capture_records](flows/api-normalize_runtime_capture_records.md) - entry: `normalize_runtime_capture_records`
+- [api-normalize_vcs_remote](flows/api-normalize_vcs_remote.md) - entry: `normalize_vcs_remote`
+- [api-observe_page_sections](flows/api-observe_page_sections.md) - entry: `observe_page_sections`
+- [api-open_windows_guarded_lock_file](flows/api-open_windows_guarded_lock_file.md) - entry: `open_windows_guarded_lock_file`
+- [api-open_windows_private_write_file](flows/api-open_windows_private_write_file.md) - entry: `open_windows_private_write_file`
+- [api-open_windows_readonly_file](flows/api-open_windows_readonly_file.md) - entry: `open_windows_readonly_file`
+- [api-pages_for_symbol](flows/api-pages_for_symbol.md) - entry: `pages_for_symbol`
+- [api-parse_governance_ledger](flows/api-parse_governance_ledger.md) - entry: `parse_governance_ledger`
+- [api-parse_knowledge_index](flows/api-parse_knowledge_index.md) - entry: `parse_knowledge_index`
+- [api-parse_markdown_document](flows/api-parse_markdown_document.md) - entry: `parse_markdown_document`
+- [api-parse_markdown_sections](flows/api-parse_markdown_sections.md) - entry: `parse_markdown_sections`
+- [api-parse_utc_timestamp](flows/api-parse_utc_timestamp.md) - entry: `parse_utc_timestamp`
+- [api-path_is_in_top_level_directory](flows/api-path_is_in_top_level_directory.md) - entry: `path_is_in_top_level_directory`
+- [api-path_is_under](flows/api-path_is_under.md) - entry: `path_is_under`
+- [api-path_is_under_scope](flows/api-path_is_under_scope.md) - entry: `path_is_under_scope`
+- [api-path_is_within](flows/api-path_is_within.md) - entry: `path_is_within`
+- [api-paths_overlap](flows/api-paths_overlap.md) - entry: `paths_overlap`
+- [api-persist_runtime_generation_policy](flows/api-persist_runtime_generation_policy.md) - entry: `persist_runtime_generation_policy`
+- [api-plugin_producer_inputs](flows/api-plugin_producer_inputs.md) - entry: `plugin_producer_inputs`
+- [api-portable_page_component](flows/api-portable_page_component.md) - entry: `portable_page_component`
+- [api-portable_path_key](flows/api-portable_path_key.md) - entry: `portable_path_key`
+- [api-positive_int_or_none](flows/api-positive_int_or_none.md) - entry: `positive_int_or_none`
+- [api-posix_path_text](flows/api-posix_path_text.md) - entry: `posix_path_text`
+- [api-preflight_runtime_capture_records](flows/api-preflight_runtime_capture_records.md) - entry: `preflight_runtime_capture_records`
+- [api-prepare_calibration_run-api](flows/api-prepare_calibration_run-api.md) - entry: `prepare_calibration_run`
+- [api-prepare_calibration_run-controller](flows/api-prepare_calibration_run-controller.md) - entry: `prepare_calibration_run`
+- [api-prepare_documentation_run](flows/api-prepare_documentation_run.md) - entry: `prepare_documentation_run`
+- [api-prepare_runtime_generation_options](flows/api-prepare_runtime_generation_options.md) - entry: `prepare_runtime_generation_options`
+- [api-preserve_level_two_section_exact](flows/api-preserve_level_two_section_exact.md) - entry: `preserve_level_two_section_exact`
+- [api-preserve_table_description_cells](flows/api-preserve_table_description_cells.md) - entry: `preserve_table_description_cells`
+- [api-project_knowledge](flows/api-project_knowledge.md) - entry: `project_knowledge`
+- [api-projection_concept_summary](flows/api-projection_concept_summary.md) - entry: `projection_concept_summary`
+- [api-projection_json_value](flows/api-projection_json_value.md) - entry: `projection_json_value`
+- [api-prune_manifest_for_source_selection](flows/api-prune_manifest_for_source_selection.md) - entry: `prune_manifest_for_source_selection`
+- [api-qualify_claim_evidence](flows/api-qualify_claim_evidence.md) - entry: `qualify_claim_evidence`
+- [api-reconcile_claim_evidence_records](flows/api-reconcile_claim_evidence_records.md) - entry: `reconcile_claim_evidence_records`
+- [api-reconcile_concepts](flows/api-reconcile_concepts.md) - entry: `reconcile_concepts`
+- [api-reconcile_context_packet-api](flows/api-reconcile_context_packet-api.md) - entry: `reconcile_context_packet`
+- [api-reconcile_context_packet-context_packet](flows/api-reconcile_context_packet-context_packet.md) - entry: `reconcile_context_packet`
+- [api-reconcile_runtime_capture_records](flows/api-reconcile_runtime_capture_records.md) - entry: `reconcile_runtime_capture_records`
+- [api-record_calibration_agent_result-api](flows/api-record_calibration_agent_result-api.md) - entry: `record_calibration_agent_result`
+- [api-record_calibration_agent_result-controller](flows/api-record_calibration_agent_result-controller.md) - entry: `record_calibration_agent_result`
+- [api-record_documentation_agent_result](flows/api-record_documentation_agent_result.md) - entry: `record_documentation_agent_result`
+- [api-redact_credentials](flows/api-redact_credentials.md) - entry: `redact_credentials`
+- [api-refresh_documentation_native_projection](flows/api-refresh_documentation_native_projection.md) - entry: `refresh_documentation_native_projection`
+- [api-related_concepts](flows/api-related_concepts.md) - entry: `related_concepts`
+- [api-relationship_edge_key](flows/api-relationship_edge_key.md) - entry: `relationship_edge_key`
+- [api-render_api_contracts_markdown](flows/api-render_api_contracts_markdown.md) - entry: `render_api_contracts_markdown`
+- [api-render_doctor_text](flows/api-render_doctor_text.md) - entry: `render_doctor_text`
+- [api-render_flow_api_contract_section](flows/api-render_flow_api_contract_section.md) - entry: `render_flow_api_contract_section`
+- [api-replace_generated_section](flows/api-replace_generated_section.md) - entry: `replace_generated_section`
+- [api-replace_section_body](flows/api-replace_section_body.md) - entry: `replace_section_body`
+- [api-replace_windows_file_write_through](flows/api-replace_windows_file_write_through.md) - entry: `replace_windows_file_write_through`
+- [api-repository_identities_match](flows/api-repository_identities_match.md) - entry: `repository_identities_match`
+- [api-require_attestation_authentication](flows/api-require_attestation_authentication.md) - entry: `require_attestation_authentication`
+- [api-require_bool](flows/api-require_bool.md) - entry: `require_bool`
+- [api-require_bounded_int](flows/api-require_bounded_int.md) - entry: `require_bounded_int`
+- [api-require_bounded_integral_number](flows/api-require_bounded_integral_number.md) - entry: `require_bounded_integral_number`
+- [api-require_bounded_text](flows/api-require_bounded_text.md) - entry: `require_bounded_text`
+- [api-require_choice](flows/api-require_choice.md) - entry: `require_choice`
+- [api-require_enum_value](flows/api-require_enum_value.md) - entry: `require_enum_value`
+- [api-require_exact_choice](flows/api-require_exact_choice.md) - entry: `require_exact_choice`
+- [api-require_exact_fields](flows/api-require_exact_fields.md) - entry: `require_exact_fields`
+- [api-require_existing_directory](flows/api-require_existing_directory.md) - entry: `require_existing_directory`
+- [api-require_existing_file](flows/api-require_existing_file.md) - entry: `require_existing_file`
+- [api-require_int](flows/api-require_int.md) - entry: `require_int`
+- [api-require_int_at_least](flows/api-require_int_at_least.md) - entry: `require_int_at_least`
+- [api-require_list](flows/api-require_list.md) - entry: `require_list`
+- [api-require_mapping](flows/api-require_mapping.md) - entry: `require_mapping`
+- [api-require_mapping_list](flows/api-require_mapping_list.md) - entry: `require_mapping_list`
+- [api-require_mapping_tuple](flows/api-require_mapping_tuple.md) - entry: `require_mapping_tuple`
+- [api-require_member](flows/api-require_member.md) - entry: `require_member`
+- [api-require_no_control_characters](flows/api-require_no_control_characters.md) - entry: `require_no_control_characters`
+- [api-require_nonempty_text](flows/api-require_nonempty_text.md) - entry: `require_nonempty_text`
+- [api-require_nonnegative_int](flows/api-require_nonnegative_int.md) - entry: `require_nonnegative_int`
+- [api-require_portable_path_component](flows/api-require_portable_path_component.md) - entry: `require_portable_path_component`
+- [api-require_portable_relative_path](flows/api-require_portable_relative_path.md) - entry: `require_portable_relative_path`
+- [api-require_positive_int](flows/api-require_positive_int.md) - entry: `require_positive_int`
+- [api-require_process_host_broker_authenticator](flows/api-require_process_host_broker_authenticator.md) - entry: `require_process_host_broker_authenticator`
+- [api-require_receipt_authentication](flows/api-require_receipt_authentication.md) - entry: `require_receipt_authentication`
+- [api-require_repository_relative_path](flows/api-require_repository_relative_path.md) - entry: `require_repository_relative_path`
+- [api-require_safe_base_path](flows/api-require_safe_base_path.md) - entry: `require_safe_base_path`
+- [api-require_sequence](flows/api-require_sequence.md) - entry: `require_sequence`
+- [api-require_sha256](flows/api-require_sha256.md) - entry: `require_sha256`
+- [api-require_string](flows/api-require_string.md) - entry: `require_string`
+- [api-require_string_list](flows/api-require_string_list.md) - entry: `require_string_list`
+- [api-require_string_tuple](flows/api-require_string_tuple.md) - entry: `require_string_tuple`
+- [api-require_trimmed_text](flows/api-require_trimmed_text.md) - entry: `require_trimmed_text`
+- [api-require_trimmed_text_list](flows/api-require_trimmed_text_list.md) - entry: `require_trimmed_text_list`
+- [api-require_uuid](flows/api-require_uuid.md) - entry: `require_uuid`
+- [api-resolve_documentation_policy](flows/api-resolve_documentation_policy.md) - entry: `resolve_documentation_policy`
+- [api-resolve_portable_workspace_path](flows/api-resolve_portable_workspace_path.md) - entry: `resolve_portable_workspace_path`
+- [api-resolve_workspace_path](flows/api-resolve_workspace_path.md) - entry: `resolve_workspace_path`
+- [api-resolved_paths_equal](flows/api-resolved_paths_equal.md) - entry: `resolved_paths_equal`
+- [api-retained_concept_page_paths](flows/api-retained_concept_page_paths.md) - entry: `retained_concept_page_paths`
+- [api-review_scope_hash](flows/api-review_scope_hash.md) - entry: `review_scope_hash`
+- [api-run](flows/api-run.md) - entry: `run`
+- [api-run_verification](flows/api-run_verification.md) - entry: `run_verification`
+- [api-runtime_consumed_inputs](flows/api-runtime_consumed_inputs.md) - entry: `runtime_consumed_inputs`
+- [api-runtime_generation_options](flows/api-runtime_generation_options.md) - entry: `runtime_generation_options`
+- [api-runtime_generation_options_hash](flows/api-runtime_generation_options_hash.md) - entry: `runtime_generation_options_hash`
+- [api-runtime_source_snapshot_hash](flows/api-runtime_source_snapshot_hash.md) - entry: `runtime_source_snapshot_hash`
+- [api-save_documentation_run](flows/api-save_documentation_run.md) - entry: `save_documentation_run`
+- [api-save_governance](flows/api-save_governance.md) - entry: `save_governance`
+- [api-section_body](flows/api-section_body.md) - entry: `section_body`
+- [api-section_bounds](flows/api-section_bounds.md) - entry: `section_bounds`
+- [api-section_locator](flows/api-section_locator.md) - entry: `section_locator`
+- [api-section_ownership_extension](flows/api-section_ownership_extension.md) - entry: `section_ownership_extension`
+- [api-select_repository_identity](flows/api-select_repository_identity.md) - entry: `select_repository_identity`
+- [api-semantic_hash_for_file](flows/api-semantic_hash_for_file.md) - entry: `semantic_hash_for_file`
+- [api-semantic_table_key](flows/api-semantic_table_key.md) - entry: `semantic_table_key`
+- [api-serialize_evaluated_envelope](flows/api-serialize_evaluated_envelope.md) - entry: `serialize_evaluated_envelope`
+- [api-serialize_knowledge_index-knowledge_index](flows/api-serialize_knowledge_index-knowledge_index.md) - entry: `serialize_knowledge_index`
+- [api-serialize_knowledge_index-knowledge_model](flows/api-serialize_knowledge_index-knowledge_model.md) - entry: `serialize_knowledge_index`
+- [api-serialize_knowledge_projection](flows/api-serialize_knowledge_projection.md) - entry: `serialize_knowledge_projection`
+- [api-serialize_section_ownership](flows/api-serialize_section_ownership.md) - entry: `serialize_section_ownership`
+- [api-serialize_typed_graph](flows/api-serialize_typed_graph.md) - entry: `serialize_typed_graph`
+- [api-serialize_verification_receipt](flows/api-serialize_verification_receipt.md) - entry: `serialize_verification_receipt`
+- [api-set_lifecycle](flows/api-set_lifecycle.md) - entry: `set_lifecycle`
+- [api-sha256_bytes](flows/api-sha256_bytes.md) - entry: `sha256_bytes`
+- [api-should_preserve_semantic_value](flows/api-should_preserve_semantic_value.md) - entry: `should_preserve_semantic_value`
+- [api-source_identity](flows/api-source_identity.md) - entry: `source_identity`
+- [api-source_plugin_tree_baseline](flows/api-source_plugin_tree_baseline.md) - entry: `source_plugin_tree_baseline`
+- [api-source_snapshot_tree_baseline](flows/api-source_snapshot_tree_baseline.md) - entry: `source_snapshot_tree_baseline`
+- [api-source_symbol_endpoint](flows/api-source_symbol_endpoint.md) - entry: `source_symbol_endpoint`
+- [api-source_tree_baseline](flows/api-source_tree_baseline.md) - entry: `source_tree_baseline`
+- [api-split_table_row](flows/api-split_table_row.md) - entry: `split_table_row`
+- [api-strip_governance_projection](flows/api-strip_governance_projection.md) - entry: `strip_governance_projection`
+- [api-summarize_knowledge_view](flows/api-summarize_knowledge_view.md) - entry: `summarize_knowledge_view`
+- [api-sync_guidance](flows/api-sync_guidance.md) - entry: `sync_guidance`
+- [api-table_description_cells](flows/api-table_description_cells.md) - entry: `table_description_cells`
+- [api-transition_documentation_run](flows/api-transition_documentation_run.md) - entry: `transition_documentation_run`
+- [api-traverse_typed_graph](flows/api-traverse_typed_graph.md) - entry: `traverse_typed_graph`
+- [api-trim_blank_lines](flows/api-trim_blank_lines.md) - entry: `trim_blank_lines`
+- [api-trimmed_text_or_none](flows/api-trimmed_text_or_none.md) - entry: `trimmed_text_or_none`
+- [api-typed_graph_from_knowledge_extensions](flows/api-typed_graph_from_knowledge_extensions.md) - entry: `typed_graph_from_knowledge_extensions`
+- [api-unresolved_endpoint](flows/api-unresolved_endpoint.md) - entry: `unresolved_endpoint`
+- [api-use_calibration_host_broker_authenticator-api](flows/api-use_calibration_host_broker_authenticator-api.md) - entry: `use_calibration_host_broker_authenticator`
+- [api-use_calibration_host_broker_authenticator-host_broker](flows/api-use_calibration_host_broker_authenticator-host_broker.md) - entry: `use_calibration_host_broker_authenticator`
+- [api-use_p0_calibration_host_broker_authenticator](flows/api-use_p0_calibration_host_broker_authenticator.md) - entry: `use_p0_calibration_host_broker_authenticator`
+- [api-validate_alias_type](flows/api-validate_alias_type.md) - entry: `validate_alias_type`
+- [api-validate_alias_value](flows/api-validate_alias_value.md) - entry: `validate_alias_value`
+- [api-validate_bundle_id](flows/api-validate_bundle_id.md) - entry: `validate_bundle_id`
+- [api-validate_concept_kind](flows/api-validate_concept_kind.md) - entry: `validate_concept_kind`
+- [api-validate_concept_uid](flows/api-validate_concept_uid.md) - entry: `validate_concept_uid`
+- [api-validate_configured_public_identity](flows/api-validate_configured_public_identity.md) - entry: `validate_configured_public_identity`
+- [api-validate_context_packet-api](flows/api-validate_context_packet-api.md) - entry: `validate_context_packet`
+- [api-validate_context_packet-context_packet](flows/api-validate_context_packet-context_packet.md) - entry: `validate_context_packet`
+- [api-validate_governance_ledger](flows/api-validate_governance_ledger.md) - entry: `validate_governance_ledger`
+- [api-validate_governance_projection](flows/api-validate_governance_projection.md) - entry: `validate_governance_projection`
+- [api-validate_identity_registry](flows/api-validate_identity_registry.md) - entry: `validate_identity_registry`
+- [api-validate_infrastructure_generation_input](flows/api-validate_infrastructure_generation_input.md) - entry: `validate_infrastructure_generation_input`
+- [api-validate_knowledge_artifacts](flows/api-validate_knowledge_artifacts.md) - entry: `validate_knowledge_artifacts`
+- [api-validate_knowledge_index](flows/api-validate_knowledge_index.md) - entry: `validate_knowledge_index`
+- [api-validate_knowledge_payload](flows/api-validate_knowledge_payload.md) - entry: `validate_knowledge_payload`
+- [api-validate_live_query_source_selection](flows/api-validate_live_query_source_selection.md) - entry: `validate_live_query_source_selection`
+- [api-validate_locator](flows/api-validate_locator.md) - entry: `validate_locator`
+- [api-validate_natural_key](flows/api-validate_natural_key.md) - entry: `validate_natural_key`
+- [api-validate_portable_relative_path](flows/api-validate_portable_relative_path.md) - entry: `validate_portable_relative_path`
+- [api-validate_projection_summaries](flows/api-validate_projection_summaries.md) - entry: `validate_projection_summaries`
+- [api-validate_surface_index_bytes](flows/api-validate_surface_index_bytes.md) - entry: `validate_surface_index_bytes`
+- [api-validate_typed_graph](flows/api-validate_typed_graph.md) - entry: `validate_typed_graph`
+- [api-validate_verification_receipt](flows/api-validate_verification_receipt.md) - entry: `validate_verification_receipt`
+- [api-verification_receipt_path](flows/api-verification_receipt_path.md) - entry: `verification_receipt_path`
+- [api-verification_receipt_to_payload](flows/api-verification_receipt_to_payload.md) - entry: `verification_receipt_to_payload`
+- [api-verification_summaries_for_concepts](flows/api-verification_summaries_for_concepts.md) - entry: `verification_summaries_for_concepts`
+- [api-verify](flows/api-verify.md) - entry: `verify`
+- [api-verify_and_write_receipt](flows/api-verify_and_write_receipt.md) - entry: `verify_and_write_receipt`
+- [api-verify_calibration_run-api](flows/api-verify_calibration_run-api.md) - entry: `verify_calibration_run`
+- [api-verify_calibration_run-controller](flows/api-verify_calibration_run-controller.md) - entry: `verify_calibration_run`
+- [api-verify_documentation_run](flows/api-verify_documentation_run.md) - entry: `verify_documentation_run`
+- [api-verify_windows_restrictive_dacl](flows/api-verify_windows_restrictive_dacl.md) - entry: `verify_windows_restrictive_dacl`
+- [api-windows_current_user_sid](flows/api-windows_current_user_sid.md) - entry: `windows_current_user_sid`
+- [api-windows_object_identity](flows/api-windows_object_identity.md) - entry: `windows_object_identity`
+- [api-windows_object_identity_from_values](flows/api-windows_object_identity_from_values.md) - entry: `windows_object_identity_from_values`
+- [api-with_infrastructure_deselection_generation_input](flows/api-with_infrastructure_deselection_generation_input.md) - entry: `with_infrastructure_deselection_generation_input`
+- [api-with_infrastructure_generation_input](flows/api-with_infrastructure_generation_input.md) - entry: `with_infrastructure_generation_input`
+- [api-without_line_metadata](flows/api-without_line_metadata.md) - entry: `without_line_metadata`
+- [api-workspace_paths](flows/api-workspace_paths.md) - entry: `workspace_paths`
+- [api-write_verification_receipt](flows/api-write_verification_receipt.md) - entry: `write_verification_receipt`
+
+**cli**
+
+- [cli-bootstrap](flows/cli-bootstrap.md) - entry: `run`
+- [cli-bump](flows/cli-bump.md) - entry: `run`
+- [cli-ci-check](flows/cli-ci-check.md) - entry: `run`
+- [cli-context](flows/cli-context.md) - entry: `run`
+- [cli-docs](flows/cli-docs.md) - entry: `run`
+- [cli-doctor](flows/cli-doctor.md) - entry: `run`
+- [cli-extract](flows/cli-extract.md) - entry: `run`
+- [cli-generate-prompt](flows/cli-generate-prompt.md) - entry: `run`
+- [cli-init](flows/cli-init.md) - entry: `run`
+- [cli-install](flows/cli-install.md) - entry: `run`
+- [cli-install-hook](flows/cli-install-hook.md) - entry: `run`
+- [cli-knowledge](flows/cli-knowledge.md) - entry: `run`
+- [cli-lint](flows/cli-lint.md) - entry: `run`
+- [cli-mcp](flows/cli-mcp.md) - entry: `run`
+- [cli-metrics](flows/cli-metrics.md) - entry: `run`
+- [cli-migrate](flows/cli-migrate.md) - entry: `run`
+- [cli-obsidian](flows/cli-obsidian.md) - entry: `run`
+- [cli-plugins](flows/cli-plugins.md) - entry: `run`
+- [cli-prepare-extractors](flows/cli-prepare-extractors.md) - entry: `run`
+- [cli-release](flows/cli-release.md) - entry: `run`
+- [cli-review](flows/cli-review.md) - entry: `run`
+- [cli-site](flows/cli-site.md) - entry: `run`
+- [cli-skills](flows/cli-skills.md) - entry: `run`
+- [cli-status](flows/cli-status.md) - entry: `run`
+- [cli-sync](flows/cli-sync.md) - entry: `run`
+- [cli-team](flows/cli-team.md) - entry: `run`
+- [cli-trigger-agent](flows/cli-trigger-agent.md) - entry: `run`
+- [cli-uninstall](flows/cli-uninstall.md) - entry: `run`
+- [cli-upgrade](flows/cli-upgrade.md) - entry: `run`
+
+**mcp**
+
+- [mcp-check_wiki](flows/mcp-check_wiki.md) - entry: `check_wiki`
+- [mcp-explain_evidence](flows/mcp-explain_evidence.md) - entry: `explain_evidence`
+- [mcp-get_architecture_page](flows/mcp-get_architecture_page.md) - entry: `get_architecture_page`
+- [mcp-get_concept](flows/mcp-get_concept.md) - entry: `get_concept`
+- [mcp-get_context](flows/mcp-get_context.md) - entry: `get_context`
+- [mcp-get_context_packet](flows/mcp-get_context_packet.md) - entry: `get_context_packet`
+- [mcp-get_entity](flows/mcp-get_entity.md) - entry: `get_entity`
+- [mcp-get_flow](flows/mcp-get_flow.md) - entry: `get_flow`
+- [mcp-get_module](flows/mcp-get_module.md) - entry: `get_module`
+- [mcp-get_status](flows/mcp-get_status.md) - entry: `get_status`
+- [mcp-list_concept_sections](flows/mcp-list_concept_sections.md) - entry: `list_concept_sections`
+- [mcp-query_graph](flows/mcp-query_graph.md) - entry: `query_graph`
+- [mcp-related_concepts](flows/mcp-related_concepts.md) - entry: `related_concepts`
+- [mcp-search_wiki](flows/mcp-search_wiki.md) - entry: `search_wiki`
+- [mcp-traverse_typed_graph](flows/mcp-traverse_typed_graph.md) - entry: `traverse_typed_graph`
+
+**process**
+
+- [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
+- [process-render_summary](flows/process-render_summary.md) - entry: `main`
+
+## Dependency Architecture
+
+- [Dependencies](dependencies.md)
+- [Load order](load-order.md)
+
+## Log
+
+- [Architectural log](log.md)
+
+## Start Here
+
+- New to the project: [install the CLI and create a wiki](guides/getting-started.md).
+- Choosing what may be scanned: [configure the source boundary](guides/source-selection-and-configuration.md).
+- Automating the library: [use the CLI and supported Python API](guides/cli-and-python-api.md).
+- Connecting an agent: [serve the wiki through MCP](guides/mcp-integration.md).
+- Using packaged adapters: [understand the GitHub Action and Obsidian integrations](guides/integrations.md).
+- Recovering from common failures: [troubleshoot safely](guides/troubleshooting-and-security.md).
+
+For implementation detail, start with the [CLI dispatcher](modules/cli.md), the
+[extraction coordinator](modules/extraction_service.md), or the
+[bootstrap generator](modules/bootstrap_runtime.md). The
+[dependency graph](dependencies.md) and [load order](load-order.md) explain how
+those pieces fit together.
