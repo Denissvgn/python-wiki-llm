@@ -2078,6 +2078,12 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_source_snapshot.py::test_posix_path_literal_backslashes_are_not_reinterpreted_as_separators",
+      "owner_lane": "core-macos-3.14",
+      "reason": "literal backslash filename is a POSIX-only contract"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_extract_command_merges_both_languages",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"

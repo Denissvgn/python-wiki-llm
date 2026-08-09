@@ -598,11 +598,18 @@ def test_post_filter_explicit_installed_root_is_additive_to_scanned_ownership(
 def test_post_filter_trusts_absolute_scripts_path_with_literal_backslash(
     tmp_path, monkeypatch
 ):
-    scripts_dir = tmp_path / r"cache\go_scripts"
-    scripts_dir.mkdir()
+    literal_backslash = len(Path(r"cache\go_scripts").parts) == 1
+    scripts_component = (
+        r"cache\go_scripts" if literal_backslash else "cache/go_scripts"
+    )
+    ordinary_component = (
+        r"services\worker" if literal_backslash else "services/worker"
+    )
+    scripts_dir = tmp_path / scripts_component
+    scripts_dir.mkdir(parents=True)
     absolute_helper = _write_file(scripts_dir, "main.go", "package main\n")
-    ordinary_dir = tmp_path / r"services\worker"
-    ordinary_dir.mkdir()
+    ordinary_dir = tmp_path / ordinary_component
+    ordinary_dir.mkdir(parents=True)
     absolute_ordinary = _write_file(
         ordinary_dir,
         "main.go",
@@ -622,7 +629,7 @@ def test_post_filter_trusts_absolute_scripts_path_with_literal_backslash(
         absolute_ordinary.as_posix(): {"identity": "ordinary"},
         "cache/go_scripts/main.go": {"identity": "relative"},
     }
-    assert r"services\worker" in next(
+    assert ordinary_component in next(
         key for key, value in filtered.items() if value["identity"] == "ordinary"
     )
 

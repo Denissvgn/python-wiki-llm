@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shlex
 import subprocess
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import yaml
 
@@ -44,6 +45,73 @@ def test_all_workflow_actions_are_pinned_to_full_commits() -> None:
             path,
             remote,
         )
+
+
+def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None:
+    attribute_lines = [
+        line.split()
+        for line in (ROOT / ".gitattributes").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    assert attribute_lines[0] == ["*", "text=auto", "eol=lf"]
+
+    conflicts: list[tuple[str, str]] = []
+    for pattern, *assignments in attribute_lines[1:]:
+        for assignment in assignments:
+            attribute = assignment.lstrip("-!").split("=", 1)[0]
+            compatible = (
+                attribute == "text"
+                and assignment in {"text", "text=auto"}
+            ) or (attribute == "eol" and assignment == "eol=lf")
+            if attribute in {"text", "eol", "binary", "crlf"} and not compatible:
+                conflicts.append((pattern, assignment))
+    assert conflicts == []
+
+    manifest = json.loads(
+        (ROOT / "docs" / "llm_wiki" / ".llm-wiki-manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    selected_sources = set(manifest["sources"])
+    selection_inputs = {
+        item["path"]
+        for item in manifest["generation_inputs"]["source_selection_inputs"][
+            "inputs"
+        ]
+    }
+    wiki_files = {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "docs" / "llm_wiki").rglob("*")
+        if path.is_file()
+    }
+    censuses = {
+        "manifest selected sources": selected_sources,
+        "source-selection inputs": selection_inputs,
+        "committed wiki files": wiki_files,
+    }
+    assert all(censuses.values())
+
+    invalid_paths: list[tuple[str, str]] = []
+    missing_paths: list[tuple[str, str]] = []
+    unmatched_paths: list[tuple[str, str]] = []
+    for census, paths in censuses.items():
+        for relative_path in sorted(paths):
+            path = PurePosixPath(relative_path)
+            if (
+                path.is_absolute()
+                or "\\" in relative_path
+                or any(part in {"", ".", ".."} for part in path.parts)
+            ):
+                invalid_paths.append((census, relative_path))
+                continue
+            if not path.match(attribute_lines[0][0]):
+                unmatched_paths.append((census, relative_path))
+            if not ROOT.joinpath(*path.parts).is_file():
+                missing_paths.append((census, relative_path))
+
+    assert invalid_paths == []
+    assert unmatched_paths == []
+    assert missing_paths == []
 
 
 def test_dispatch_inputs_are_not_interpolated_into_shell_scripts() -> None:

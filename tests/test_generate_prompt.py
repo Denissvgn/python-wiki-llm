@@ -82,6 +82,19 @@ def _default_included_policy(monkeypatch):
     )
 
 
+def test_git_diff_treats_invalid_working_directory_as_empty(monkeypatch):
+    def invalid_working_directory(*_args: object, **_kwargs: object) -> None:
+        raise NotADirectoryError("invalid working directory")
+
+    monkeypatch.setattr(
+        generate_prompt_cmd.subprocess,
+        "run",
+        invalid_working_directory,
+    )
+
+    assert generate_prompt_cmd._git_diff("missing source") == ""
+
+
 class TestGeneratePromptWritesFile:
     def test_creates_output_file(self, tmp_project):
         args = _make_args()
@@ -125,6 +138,7 @@ class TestGeneratePromptWritesFile:
         assert Path(out_file).exists()
 
     def test_prompt_quotes_paths_with_spaces(self, tmp_project):
+        Path("src dir").mkdir()
         args = _make_args(wiki_dir="my docs/wiki", src_dir="src dir")
         generate_prompt_cmd.run(args)
 

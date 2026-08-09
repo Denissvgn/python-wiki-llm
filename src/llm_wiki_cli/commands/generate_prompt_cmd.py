@@ -66,7 +66,7 @@ def _git_diff(src_dir: str = ".") -> str:
     except (
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
-        FileNotFoundError,
+        OSError,
     ):
         return ""
 

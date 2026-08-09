@@ -3012,6 +3012,7 @@ class TestProtocolRun:
     def test_extractor_failure_returns_error_envelope(
         self, tmp_path, monkeypatch, capsys
     ):
+        monkeypatch.chdir(tmp_path)
         result = InventoryResult(
             {},
             {"python": ExtractorStatus("python", "failed", 1, "boom")},

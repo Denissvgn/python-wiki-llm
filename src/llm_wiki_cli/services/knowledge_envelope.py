@@ -70,6 +70,8 @@ _SCP_REMOTE_RE = re.compile(
     r"^(?:(?P<userinfo>[^@/:\s]+)@)?"
     r"(?P<host>[A-Za-z0-9][A-Za-z0-9.-]*):(?P<path>.+)$"
 )
+_EFFECTIVE_LINE_ENDING_CONFIG_KEYS = frozenset({"core.autocrlf", "core.eol"})
+_CORE_EOL_VALUES = frozenset({"crlf", "lf", "native"})
 
 
 @dataclass(frozen=True)
@@ -318,13 +320,17 @@ def collect_git_repository_evidence(
         excluded_paths=excluded_worktree_paths,
         excluded_globs=excluded_worktree_globs,
     )
-    if status_pathspecs is None:
+    line_ending_overrides = (
+        None if status_pathspecs is None else _effective_line_ending_overrides(checkout)
+    )
+    if status_pathspecs is None or line_ending_overrides is None:
         status = None
         filtered_dirty = None
     elif worktree_path_filter is not None:
         raw_top_level = _run_git(checkout, "rev-parse", "--show-toplevel")
         status_result = _run_git_result(
             checkout,
+            *line_ending_overrides,
             "-c",
             "core.fsmonitor=false",
             "-c",
@@ -354,6 +360,7 @@ def collect_git_repository_evidence(
     else:
         status = _run_git(
             checkout,
+            *line_ending_overrides,
             "-c",
             "core.fsmonitor=false",
             "status",
@@ -1219,6 +1226,104 @@ def _run_git_result(
         returncode=result.returncode,
         output=output,
     )
+
+
+def _run_effective_git_config(
+    root: Path,
+    key: str,
+    *,
+    value_type: str | None = None,
+) -> _GitCommandResult:
+    """Read one allowlisted scalar without exposing operational Git commands.
+
+    Normal global and system configuration is visible only to this inert
+    ``git config`` query.  Ambient ``GIT_*`` selectors and repository
+    redirections remain stripped, and ``git status`` continues to run with
+    global and system configuration disabled so configured filters cannot
+    execute during evidence collection.
+    """
+
+    if key not in _EFFECTIVE_LINE_ENDING_CONFIG_KEYS:
+        raise ValueError("effective Git config key is not allowlisted")
+    if value_type not in {None, "bool"}:
+        raise ValueError("effective Git config value type is not allowlisted")
+    git_environment = {
+        name: value for name, value in os.environ.items() if not name.startswith("GIT_")
+    }
+    git_environment["LC_ALL"] = "C"
+    git_environment["GIT_OPTIONAL_LOCKS"] = "0"
+    type_arguments = () if value_type is None else (f"--type={value_type}",)
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "--no-pager",
+                "-C",
+                str(root),
+                "config",
+                "--includes",
+                *type_arguments,
+                "--get",
+                key,
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            env=git_environment,
+            timeout=15,
+            check=False,
+        )
+    except (
+        FileNotFoundError,
+        OSError,
+        subprocess.TimeoutExpired,
+        UnicodeError,
+    ):
+        return _GitCommandResult(available=False, returncode=None)
+    return _GitCommandResult(
+        available=True,
+        returncode=result.returncode,
+        output=result.stdout.strip(),
+    )
+
+
+def _effective_line_ending_overrides(root: Path) -> tuple[str, ...] | None:
+    """Project only validated effective EOL settings into isolated status."""
+
+    autocrlf = _run_effective_git_config(
+        root,
+        "core.autocrlf",
+        value_type="bool",
+    )
+    if not autocrlf.available:
+        return None
+    if autocrlf.returncode == 1:
+        canonical_autocrlf = None
+    elif autocrlf.succeeded and autocrlf.output in {"false", "true"}:
+        canonical_autocrlf = autocrlf.output
+    else:
+        raw_autocrlf = _run_effective_git_config(root, "core.autocrlf")
+        if not raw_autocrlf.succeeded or raw_autocrlf.output.casefold() != "input":
+            return None
+        canonical_autocrlf = "input"
+
+    eol = _run_effective_git_config(root, "core.eol")
+    if not eol.available:
+        return None
+    if eol.returncode == 1:
+        canonical_eol = None
+    elif eol.succeeded and eol.output.casefold() in _CORE_EOL_VALUES:
+        canonical_eol = eol.output.casefold()
+    else:
+        return None
+
+    overrides: list[str] = []
+    if canonical_autocrlf is not None:
+        overrides.extend(("-c", f"core.autocrlf={canonical_autocrlf}"))
+    if canonical_eol is not None:
+        overrides.extend(("-c", f"core.eol={canonical_eol}"))
+    return tuple(overrides)
 
 
 def _parse_local_remote_config(

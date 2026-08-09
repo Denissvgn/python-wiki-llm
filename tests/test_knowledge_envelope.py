@@ -1391,6 +1391,123 @@ def test_git_collector_ignores_ambient_git_environment_overrides(
 
 
 @_REQUIRES_GIT
+def test_git_collector_projects_effective_eol_without_global_filters(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    git_home = tmp_path / "git-home"
+    xdg_home = tmp_path / "xdg-home"
+    git_home.mkdir()
+    xdg_home.mkdir()
+    monkeypatch.setenv("HOME", str(git_home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
+    for name in tuple(os.environ):
+        if name.startswith("GIT_"):
+            monkeypatch.delenv(name)
+
+    global_config = git_home / ".gitconfig"
+    global_config.write_bytes(b"[core]\n\tautocrlf = true\n")
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    _git(repository, "init", "--quiet")
+    _git(repository, "config", "--local", "user.name", "EOL Fixture")
+    _git(
+        repository,
+        "config",
+        "--local",
+        "user.email",
+        "eol-fixture@example.invalid",
+    )
+    attributes = repository / ".gitattributes"
+    tracked = repository / "tracked.txt"
+    attributes.write_bytes(b"*.txt filter=must-not-run\n")
+    original_bytes = b"line one\r\nline two\r\n"
+    tracked.write_bytes(original_bytes)
+    _git(repository, "add", ".gitattributes", "tracked.txt")
+    _git(repository, "commit", "--quiet", "-m", "add CRLF source")
+
+    # A broad restoration of global configuration would execute this required
+    # clean filter during status.  The collector may read the EOL scalars but
+    # must keep the filter unavailable to its operational Git command.
+    global_config.write_bytes(
+        b"[core]\n"
+        b"\tautocrlf = true\n"
+        b'[filter "must-not-run"]\n'
+        b"\tclean = llm-wiki-filter-must-not-run\n"
+        b"\trequired = true\n"
+    )
+    ambient_config = tmp_path / "ambient.gitconfig"
+    ambient_config.write_bytes(b"[core]\n\tautocrlf = false\n")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(ambient_config))
+    tracked.write_bytes(original_bytes)
+    metadata = tracked.stat()
+    os.utime(
+        tracked,
+        ns=(metadata.st_atime_ns, metadata.st_mtime_ns + 2_000_000_000),
+    )
+
+    clean = collect_git_repository_evidence(
+        repository,
+        included_worktree_paths=(tracked,),
+    )
+
+    assert clean.working_tree is WorkingTreeState.CLEAN
+
+    tracked.write_bytes(b"line one\r\nchanged\r\n")
+    dirty = collect_git_repository_evidence(
+        repository,
+        included_worktree_paths=(tracked,),
+    )
+
+    assert dirty.working_tree is WorkingTreeState.DIRTY
+
+
+@_REQUIRES_GIT
+@pytest.mark.parametrize(
+    "global_config",
+    (
+        b"[core]\n\tautocrlf = unsafe\n\teol = native\n",
+        b"[core]\n\tautocrlf = false\n\teol = unsafe\n",
+    ),
+)
+def test_git_collector_rejects_invalid_effective_eol_config(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    global_config: bytes,
+) -> None:
+    git_home = tmp_path / "git-home"
+    xdg_home = tmp_path / "xdg-home"
+    git_home.mkdir()
+    xdg_home.mkdir()
+    monkeypatch.setenv("HOME", str(git_home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_home))
+    for name in tuple(os.environ):
+        if name.startswith("GIT_"):
+            monkeypatch.delenv(name)
+
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    _git(repository, "init", "--quiet")
+    _git(repository, "config", "--local", "user.name", "EOL Fixture")
+    _git(
+        repository,
+        "config",
+        "--local",
+        "user.email",
+        "eol-fixture@example.invalid",
+    )
+    tracked = repository / "tracked.txt"
+    tracked.write_bytes(b"tracked\n")
+    _git(repository, "add", "tracked.txt")
+    _git(repository, "commit", "--quiet", "-m", "add source")
+    (git_home / ".gitconfig").write_bytes(global_config)
+
+    evidence = collect_git_repository_evidence(repository)
+
+    assert evidence.working_tree is WorkingTreeState.UNKNOWN
+
+
+@_REQUIRES_GIT
 def test_git_collector_treats_failed_branch_evaluation_as_unknown_identity(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

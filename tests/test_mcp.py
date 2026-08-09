@@ -1285,10 +1285,12 @@ class TestMcpWikiService:
 
     def test_service_boundaries_serialize_wiki_dir_with_posix_separators(
         self,
+        tmp_path,
         monkeypatch,
     ):
         from llm_wiki_cli.services import context_packet
 
+        monkeypatch.chdir(tmp_path)
         calls: dict[str, object] = {"queries": []}
 
         class QueryService:
