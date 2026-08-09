@@ -231,6 +231,36 @@ def test_prepare_extractors_help_lists_allow_external_src(monkeypatch, capsys):
     assert "directory" in help_text
 
 
+def test_prepare_extractors_help_lists_plan_formats(monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "prepare-extractors", "--help"])
+
+    with pytest.raises(SystemExit) as exc_info:
+        cli.main()
+
+    assert exc_info.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "--plan" in help_text
+    assert "--format {text,json}" in help_text
+    assert "selected helper languages" in help_text
+    assert "without preparing" in help_text
+
+
+def test_prepare_extractors_parses_json_plan(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        cli.prepare_extractors_cmd,
+        "run",
+        lambda args: seen.update({"plan": args.plan, "format": args.format}),
+    )
+    monkeypatch.setattr(
+        "sys.argv", ["llm-wiki", "prepare-extractors", "--plan", "--format", "json"]
+    )
+
+    cli.main()
+
+    assert seen == {"plan": True, "format": "json"}
+
+
 def test_prepare_extractors_parses_allow_external_src(monkeypatch):
     seen = {}
     monkeypatch.setattr(

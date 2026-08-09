@@ -439,6 +439,17 @@ def _add_prepare_extractors_command(subparsers):
         choices=["typescript", "go", "rust", "haskell"],
         help="Helper language to prepare; may be repeated",
     )
+    prepare_parser.add_argument(
+        "--plan",
+        action="store_true",
+        help="Print the selected helper languages without preparing or writing them",
+    )
+    prepare_parser.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Plan output format (default: text; requires --plan for JSON)",
+    )
     _add_source_selection_argument(prepare_parser)
 
 
