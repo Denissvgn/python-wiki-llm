@@ -122,8 +122,15 @@ def test_full_integrity_action_uses_its_own_locked_implementation() -> None:
     assert setup_python["with"] == {"python-version": "3.13"}
 
     install = _named_step(action, "Install the action package")["run"]
-    assert "python -m pip install --no-cache-dir" in install
-    assert '"${GITHUB_ACTION_PATH}/../.."' in install
+    assert shlex.split(install) == [
+        "${{ steps.setup-python.outputs.python-path }}",
+        "-I",
+        "-m",
+        "pip",
+        "install",
+        "--no-cache-dir",
+        "${GITHUB_ACTION_PATH}/../..",
+    ]
 
     setup_contracts = (
         (
@@ -201,7 +208,7 @@ def test_full_integrity_action_plans_helpers_with_a_fail_closed_contract() -> No
     assert plan["env"]["INPUT_SRC_DIR"] == "${{ inputs.src-dir }}"
     for required in (
         'plan_path="${LLM_WIKI_EVIDENCE_DIR}/extractor-plan.json"',
-        "-m llm_wiki_cli.cli prepare-extractors",
+        "-I -m llm_wiki_cli.cli prepare-extractors",
         '--src-dir "${INPUT_SRC_DIR}"',
         "--plan",
         "--format json",
@@ -214,6 +221,16 @@ def test_full_integrity_action_plans_helpers_with_a_fail_closed_contract() -> No
         'selected = "true" if language in languages else "false"',
     ):
         assert required in plan["run"]
+
+
+def test_full_integrity_action_isolates_python_modules_from_candidate_source() -> None:
+    run_text = _run_text(_action())
+
+    assert run_text.count("-I -m pip") == 1
+    assert run_text.count("-m pip") == 1
+    assert run_text.count("-I -m llm_wiki_cli.cli") == 2
+    assert run_text.count("-m llm_wiki_cli.cli") == 2
+    assert "python -m pip" not in run_text
 
 
 @pytest.mark.parametrize(
@@ -308,7 +325,7 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
     plan = _named_step(action, "Plan the automatically selected extractor helpers")
     assert plan["env"]["INPUT_SRC_DIR"] == "${{ inputs.src-dir }}"
     for required in (
-        "-m llm_wiki_cli.cli prepare-extractors",
+        "-I -m llm_wiki_cli.cli prepare-extractors",
         '--src-dir "${INPUT_SRC_DIR}"',
         "--plan",
         "--format json",
@@ -321,7 +338,7 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
     assert prepare["env"]["INPUT_SRC_DIR"] == "${{ inputs.src-dir }}"
     for required in (
         '"${{ steps.setup-python.outputs.python-path }}"',
-        "-m llm_wiki_cli.cli prepare-extractors",
+        "-I -m llm_wiki_cli.cli prepare-extractors",
         '--src-dir "${INPUT_SRC_DIR}"',
         '--cache-dir "${LLM_WIKI_CACHE_DIR}"',
         'tee "${LLM_WIKI_EVIDENCE_DIR}/prepare-extractors.log"',

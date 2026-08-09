@@ -34,7 +34,8 @@ runs:
         PYTHONUTF8: "1"
         PYTHONIOENCODING: utf-8
       run: >-
-        python -m pip install --no-cache-dir
+        "${{ steps.setup-python.outputs.python-path }}"
+        -I -m pip install --no-cache-dir
         "${GITHUB_ACTION_PATH}/../.."
 
     - name: Bind runner-temporary wiki paths
@@ -96,7 +97,7 @@ runs:
         set -euo pipefail
         plan_path="${LLM_WIKI_EVIDENCE_DIR}/extractor-plan.json"
         "${{ steps.setup-python.outputs.python-path }}" \
-          -m llm_wiki_cli.cli prepare-extractors \
+          -I -m llm_wiki_cli.cli prepare-extractors \
           --src-dir "${INPUT_SRC_DIR}" \
           --plan \
           --format json > "${plan_path}"
@@ -330,7 +331,7 @@ runs:
       run: |
         set -euo pipefail
         "${{ steps.setup-python.outputs.python-path }}" \
-          -m llm_wiki_cli.cli prepare-extractors \
+          -I -m llm_wiki_cli.cli prepare-extractors \
           --src-dir "${INPUT_SRC_DIR}" \
           --cache-dir "${LLM_WIKI_CACHE_DIR}" \
           2>&1 | tee "${LLM_WIKI_EVIDENCE_DIR}/prepare-extractors.log"

@@ -208,7 +208,7 @@ cleanup() {
 trap cleanup EXIT
 
 set +e
-"${python_executable}" -m llm_wiki_cli.cli ci-check \
+"${python_executable}" -I -m llm_wiki_cli.cli ci-check \
   --src-dir "${src_dir}" \
   --wiki-dir "${wiki_dir}" \
   --helper-cache-dir "${helper_cache_dir}" \

@@ -456,7 +456,10 @@ def test_wiki_integrity_wrapper_executes_the_direct_candidate_gate() -> None:
     else:
         assert WIKI_CI_WRAPPER.stat().st_mode & 0o111
     wrapper = WIKI_CI_WRAPPER.read_text(encoding="utf-8")
-    assert wrapper.count('"${python_executable}" -m llm_wiki_cli.cli ci-check') == 1
+    assert (
+        wrapper.count('"${python_executable}" -I -m llm_wiki_cli.cli ci-check')
+        == 1
+    )
     for required in (
         '--src-dir "${src_dir}"',
         '--wiki-dir "${wiki_dir}"',
