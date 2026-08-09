@@ -215,7 +215,33 @@ def test_full_integrity_action_reserves_and_always_uploads_bounded_evidence() ->
     upload = _named_step(action, "Upload bounded wiki integrity evidence")
     assert upload == steps[-1]
     assert upload["if"] == "always()"
-    assert upload["with"]["name"] == "llm-wiki-ci-${{ github.sha }}"
+    artifact_name = upload["with"]["name"]
+    assert artifact_name == (
+        "llm-wiki-ci-${{ github.job }}-"
+        "${{ strategy.job-index || 0 }}-${{ github.sha }}"
+    )
+
+    def resolved_artifact_name(*, job: str, matrix_index: int | None) -> str:
+        return (
+            artifact_name.replace("${{ github.job }}", job)
+            .replace(
+                "${{ strategy.job-index || 0 }}",
+                str(0 if matrix_index is None else matrix_index),
+            )
+            .replace("${{ github.sha }}", "a" * 40)
+        )
+
+    assert resolved_artifact_name(job="integrity", matrix_index=None) == (
+        f"llm-wiki-ci-integrity-0-{'a' * 40}"
+    )
+    matrix_names = {
+        resolved_artifact_name(job="integrity", matrix_index=index)
+        for index in range(3)
+    }
+    assert len(matrix_names) == 3
+    assert resolved_artifact_name(job="secondary", matrix_index=None) not in (
+        matrix_names
+    )
     assert upload["with"]["retention-days"] == 14
     assert upload["with"]["if-no-files-found"] == "warn"
     assert set(upload["with"]["path"].splitlines()) == {
