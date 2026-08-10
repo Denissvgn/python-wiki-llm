@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shlex
 import subprocess
@@ -80,12 +81,16 @@ def test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only() -
     steps = action["runs"]["steps"]
     assert [step["uses"] for step in steps if "uses" in step] == [
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
+        "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+        "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
         "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
     ]
 
     source = ACTION_PATH.read_text(encoding="utf-8")
     for reviewed_line in (
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0",
+        "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
+        "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
         "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2",
     ):
         assert source.count(reviewed_line) == 1
@@ -217,6 +222,99 @@ def test_full_integrity_action_plans_helpers_with_a_fail_closed_contract() -> No
         'selected = "true" if language in languages else "false"',
     ):
         assert required in plan["run"]
+    assert "--language" not in plan["run"]
+
+
+def test_full_integrity_action_cache_is_exact_validated_and_fork_read_only() -> None:
+    action = _action()
+    identity = _named_step(action, "Bind the exact extractor-helper cache identity")
+    assert identity["id"] == "helper-cache-identity"
+    assert (
+        identity["env"]
+        | {
+            "CACHE_RUNNER_OS": "${{ runner.os }}",
+            "CACHE_RUNNER_ARCH": "${{ runner.arch }}",
+            "CACHE_ACTION_REF": "${{ github.action_ref }}",
+        }
+        == identity["env"]
+    )
+    for required in (
+        'llm-wiki-helper-cache.py" identity',
+        '--plan "${LLM_WIKI_EVIDENCE_DIR}/extractor-plan.json"',
+        '--project-root "${GITHUB_ACTION_PATH}/../.."',
+        '--lock "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json"',
+        '--runner-os "${CACHE_RUNNER_OS}"',
+        '--runner-arch "${CACHE_RUNNER_ARCH}"',
+        '--action-ref "${CACHE_ACTION_REF}"',
+        '--github-output "${GITHUB_OUTPUT}"',
+    ):
+        assert required in identity["run"]
+
+    restore = _named_step(
+        action, "Restore the exact prepared extractor-helper cache"
+    )
+    assert restore == {
+        "name": "Restore the exact prepared extractor-helper cache",
+        "id": "helper-cache-restore",
+        "if": "steps.helper-cache-identity.outputs.has-helpers == 'true'",
+        "uses": (
+            "actions/cache/restore@"
+            "55cc8345863c7cc4c66a329aec7e433d2d1c52a9"
+        ),
+        "with": {
+            "path": "${{ runner.temp }}/llm-wiki-cache/llm-wiki-extractors",
+            "key": "${{ steps.helper-cache-identity.outputs.cache-key }}",
+        },
+    }
+    assert "restore-keys" not in restore["with"]
+
+    save = _named_step(action, "Save the exact prepared extractor-helper cache")
+    assert save["uses"] == (
+        "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9"
+    )
+    assert save["with"] == restore["with"]
+    for required in (
+        "success()",
+        "steps.helper-cache-identity.outputs.has-helpers == 'true'",
+        "steps.helper-cache-restore.outputs.cache-hit != 'true'",
+        "github.event_name == 'push'",
+        "github.ref == format('refs/heads/{0}', github.event.repository.default_branch)",
+    ):
+        assert required in save["if"]
+    assert "pull_request" not in save["if"]
+
+    prepare = _named_step(
+        action, "Prepare the automatically selected extractor helpers"
+    )
+    assert "if" not in prepare
+    assert prepare["env"]["CACHE_HIT"] == (
+        "${{ steps.helper-cache-restore.outputs.cache-hit }}"
+    )
+    for required in (
+        "prepare_started_ns=",
+        "prepare_pipeline=(\"${PIPESTATUS[@]}\")",
+        "prepare_finished_ns=",
+        "llm-wiki-helper-cache.py",
+        "metrics",
+        '--cache-hit "${CACHE_HIT}"',
+        '--output "${LLM_WIKI_EVIDENCE_DIR}/helper-cache-metrics.json"',
+        'prepare_status="${prepare_pipeline[0]}"',
+        'tee_status="${prepare_pipeline[1]}"',
+        'exit "${metrics_status}"',
+    ):
+        assert required in prepare["run"]
+    assert "cache-hit == 'true'" not in prepare["run"]
+
+    step_names = [step["name"] for step in action["runs"]["steps"]]
+    assert step_names.index(
+        "Bind the exact extractor-helper cache identity"
+    ) < step_names.index(
+        "Restore the exact prepared extractor-helper cache"
+    ) < step_names.index(
+        "Prepare the automatically selected extractor helpers"
+    ) < step_names.index(
+        "Validate committed wiki (native drift diagnostics are advisory)"
+    ) < step_names.index("Save the exact prepared extractor-helper cache")
 
 
 def test_full_integrity_action_isolates_python_modules_from_candidate_source() -> None:
@@ -367,6 +465,9 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
     assert "set +e" not in validation["run"]
 
     step_names = [step["name"] for step in action["runs"]["steps"]]
+    assert step_names.index("Install the action package") < step_names.index(
+        "Bind runner-temporary wiki paths"
+    ) < step_names.index("Plan the automatically selected extractor helpers")
     plan_index = step_names.index("Plan the automatically selected extractor helpers")
     prepare_index = step_names.index(
         "Prepare the automatically selected extractor helpers"
@@ -391,14 +492,17 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
     for required in (
         'cache_dir="${RUNNER_TEMP}/llm-wiki-cache"',
         'evidence_dir="${RUNNER_TEMP}/llm-wiki-evidence"',
+        "occupied=false",
         'for reserved_dir in "${cache_dir}" "${evidence_dir}"',
         '[[ -e "${reserved_dir}" || -L "${reserved_dir}" ]]',
+        "if ${occupied}; then",
         '/usr/bin/mktemp -d "${RUNNER_TEMP}/llm-wiki-collisions.XXXXXX"',
         '"${reserved_dir}" "${quarantine_dir}/${leaf}"',
         '/bin/rm -rf -- "${reserved_dir}"',
         '[[ ! -e "${reserved_dir}" && ! -L "${reserved_dir}" ]]',
         'mkdir -- "${reserved_dir}"',
         '[[ -d "${reserved_dir}" && ! -L "${reserved_dir}" ]]',
+        "exit 1",
         "LLM_WIKI_CACHE_DIR=%s\\n",
         "LLM_WIKI_EVIDENCE_DIR=%s\\n",
         '} >> "${GITHUB_ENV}"',
@@ -413,10 +517,13 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
     assert upload["if"] == "always()"
     artifact_name = upload["with"]["name"]
     assert artifact_name == (
-        "llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.sha }}"
+        "llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-"
+        "${{ github.sha }}-${{ github.run_attempt }}"
     )
 
-    def resolved_artifact_name(*, job: str, matrix_index: int | None) -> str:
+    def resolved_artifact_name(
+        *, job: str, matrix_index: int | None, run_attempt: int = 1
+    ) -> str:
         return (
             artifact_name.replace("${{ github.job }}", job)
             .replace(
@@ -424,10 +531,11 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
                 str(0 if matrix_index is None else matrix_index),
             )
             .replace("${{ github.sha }}", "a" * 40)
+            .replace("${{ github.run_attempt }}", str(run_attempt))
         )
 
     assert resolved_artifact_name(job="integrity", matrix_index=None) == (
-        f"llm-wiki-ci-integrity-0-{'a' * 40}"
+        f"llm-wiki-ci-integrity-0-{'a' * 40}-1"
     )
     matrix_names = {
         resolved_artifact_name(job="integrity", matrix_index=index)
@@ -437,6 +545,9 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
     assert resolved_artifact_name(job="secondary", matrix_index=None) not in (
         matrix_names
     )
+    assert resolved_artifact_name(
+        job="integrity", matrix_index=None, run_attempt=2
+    ) != resolved_artifact_name(job="integrity", matrix_index=None)
     assert upload["with"]["retention-days"] == 14
     assert upload["with"]["if-no-files-found"] == "warn"
     assert set(upload["with"]["path"].splitlines()) == {
@@ -444,6 +555,97 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt",
         "${{ runner.temp }}/llm-wiki-evidence/extractor-plan.json",
+        "${{ runner.temp }}/llm-wiki-evidence/helper-cache-metrics.json",
         "${{ runner.temp }}/llm-wiki-evidence/prepare-extractors.log",
         "${{ runner.temp }}/llm-wiki-evidence/locked-toolchain-versions.txt",
     }
+
+
+def test_full_integrity_action_reserves_clean_runner_paths(tmp_path: Path) -> None:
+    path_binding = _named_step(
+        _action(), "Bind runner-temporary wiki paths"
+    )["run"]
+    if os.name == "nt":
+        assert 'mkdir -- "${reserved_dir}"' in path_binding
+        assert '[[ -d "${reserved_dir}" && ! -L "${reserved_dir}" ]]' in path_binding
+        return
+
+    runner_temp = tmp_path / "runner-temp"
+    runner_temp.mkdir()
+    github_env = tmp_path / "github-env"
+
+    result = subprocess.run(
+        ["bash", "-c", path_binding],
+        cwd=ROOT,
+        env={
+            "PATH": "/usr/bin:/bin",
+            "RUNNER_TEMP": str(runner_temp),
+            "GITHUB_ENV": str(github_env),
+        },
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    cache_dir = runner_temp / "llm-wiki-cache"
+    evidence_dir = runner_temp / "llm-wiki-evidence"
+    assert cache_dir.is_dir() and not cache_dir.is_symlink()
+    assert evidence_dir.is_dir() and not evidence_dir.is_symlink()
+    assert github_env.read_text(encoding="utf-8") == (
+        f"LLM_WIKI_CACHE_DIR={cache_dir}\n"
+        f"LLM_WIKI_EVIDENCE_DIR={evidence_dir}\n"
+    )
+
+
+def test_full_integrity_action_quarantines_every_reserved_path_before_failure(
+    tmp_path: Path,
+) -> None:
+    path_binding = _named_step(
+        _action(), "Bind runner-temporary wiki paths"
+    )["run"]
+    if os.name == "nt":
+        # The composite runs on Ubuntu. Native Windows keeps this contract
+        # collected without attempting to execute its POSIX shell boundary.
+        for required in (
+            'for reserved_dir in "${cache_dir}" "${evidence_dir}"',
+            "if ${occupied}; then",
+            "/bin/mv --",
+            "/bin/rm -rf --",
+            '[[ ! -e "${reserved_dir}" && ! -L "${reserved_dir}" ]]',
+            "exit 1",
+        ):
+            assert required in path_binding
+        return
+
+    runner_temp = tmp_path / "runner-temp"
+    runner_temp.mkdir()
+    cache_dir = runner_temp / "llm-wiki-cache"
+    cache_dir.mkdir()
+    (cache_dir / "poison").write_text("cache\n", encoding="utf-8")
+    evidence_dir = runner_temp / "llm-wiki-evidence"
+    evidence_dir.mkdir()
+    (evidence_dir / "llm-wiki-ci-report.json").write_text(
+        "forged\n", encoding="utf-8"
+    )
+    github_env = tmp_path / "github-env"
+
+    result = subprocess.run(
+        ["bash", "-c", path_binding],
+        cwd=ROOT,
+        env={
+            "PATH": "/usr/bin:/bin",
+            "RUNNER_TEMP": str(runner_temp),
+            "GITHUB_ENV": str(github_env),
+        },
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "already occupied" in result.stderr
+    for reserved_dir in (cache_dir, evidence_dir):
+        assert not reserved_dir.exists()
+        assert not reserved_dir.is_symlink()
+    assert not github_env.exists()

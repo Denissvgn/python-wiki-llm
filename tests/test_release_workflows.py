@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 import tarfile
@@ -188,7 +187,7 @@ def test_wiki_integrity_has_stable_identity_capacity_and_independence() -> None:
     workflow, job = _wiki_integrity_job()
     assert job["name"] == "LLM Wiki integrity"
     assert job["runs-on"] == "ubuntu-24.04"
-    assert job["timeout-minutes"] == 45
+    assert job["timeout-minutes"] == 15
     assert "needs" not in job
     assert "strategy" not in job
     assert "if" not in job
@@ -246,89 +245,27 @@ def test_wiki_integrity_uses_only_the_exact_reviewed_actions() -> None:
     _workflow, job = _wiki_integrity_job()
     assert [step["uses"] for step in job["steps"] if "uses" in step] == [
         "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
-        "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
-        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+        "./integrations/wiki-integrity",
     ]
 
     source = _wiki_integrity_source()
-    for reviewed_line in (
-        "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0",
-        "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0",
-        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2",
-    ):
-        assert source.count(reviewed_line) == 1
+    assert source.count(
+        "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0"
+    ) == 1
 
 
-def test_wiki_integrity_installs_and_invokes_the_candidate_contract() -> None:
+def test_wiki_integrity_delegates_to_the_candidate_composite_contract() -> None:
     _workflow, job = _wiki_integrity_job()
-    setup_python = _named_step(job, "Set up Python 3.13")
-    assert setup_python["id"] == "setup-python"
-    assert setup_python["with"] == {"python-version": "3.13"}
-    source = _wiki_integrity_source()
-    assert "${pythonLocation}" not in source
-    assert source.count("${{ steps.setup-python.outputs.python-path }}") == 6
-
-    install = _named_step(job, "Install the candidate package")
-    assert shlex.split(install["run"]) == [
-        "${{ steps.setup-python.outputs.python-path }}",
-        "-I",
-        "-m",
-        "pip",
-        "install",
-        "--no-cache-dir",
-        ".",
+    gate = _named_step(job, "Check LLM Wiki integrity")
+    assert gate == {
+        "name": "Check LLM Wiki integrity",
+        "uses": "./integrations/wiki-integrity",
+        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki"},
+    }
+    assert [step.get("name") for step in job["steps"]] == [
+        "Check out the candidate without credentials",
+        "Check LLM Wiki integrity",
     ]
-
-    prepare = _named_step(job, "Prepare the automatically selected extractor helpers")[
-        "run"
-    ]
-    assert '"${{ steps.setup-python.outputs.python-path }}"' in prepare
-    assert "-I -m llm_wiki_cli.cli prepare-extractors" in prepare
-    assert "--src-dir ." in prepare
-    assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
-    assert 'tee "${LLM_WIKI_EVIDENCE_DIR}/prepare-extractors.log"' in prepare
-
-    validation = _named_step(
-        job,
-        "Validate committed wiki (native drift diagnostics are advisory)",
-    )["run"]
-    assert shlex.split(validation) == [
-        ".github/scripts/run-llm-wiki-ci-check.sh",
-        "--python",
-        "${{ steps.setup-python.outputs.python-path }}",
-        "--src-dir",
-        ".",
-        "--wiki-dir",
-        "docs/llm_wiki",
-        "--helper-cache-dir",
-        "${LLM_WIKI_CACHE_DIR}",
-        "--report-dir",
-        "${LLM_WIKI_EVIDENCE_DIR}",
-        "--jobs",
-        "1",
-        "--knowledge-drift-report",
-    ]
-    for required in (
-        '--python "${{ steps.setup-python.outputs.python-path }}"',
-        "--src-dir .",
-        "--wiki-dir docs/llm_wiki",
-        '--helper-cache-dir "${LLM_WIKI_CACHE_DIR}"',
-        '--report-dir "${LLM_WIKI_EVIDENCE_DIR}"',
-        "--jobs 1",
-        "--knowledge-drift-report",
-    ):
-        assert required in validation
-
-    policy_text = "\n".join(str(step.get("run", "")) for step in job["steps"])
-    for prohibited in (
-        "--source-selection",
-        "--include-tests",
-        "--language",
-        "hook install",
-        "knowledge init",
-    ):
-        assert prohibited not in policy_text.lower()
-    assert re.search(r"\b(?:bootstrap|sync|doctor)\b", policy_text) is None
 
 
 def test_isolated_wiki_integrity_python_rejects_candidate_module_shadows(
@@ -367,122 +304,6 @@ def test_isolated_wiki_integrity_python_rejects_candidate_module_shadows(
         )
         assert result.returncode == 0, result.stderr
         assert not marker.exists()
-
-
-def test_wiki_integrity_uses_locked_runner_temporary_state_and_evidence() -> None:
-    _workflow, job = _wiki_integrity_job()
-    step_names = [step.get("name") for step in job["steps"]]
-    assert step_names.index("Install the candidate package") < step_names.index(
-        "Bind runner-temporary wiki paths"
-    ) < step_names.index("Install the locked routine toolchain")
-    path_binding = _named_step(job, "Bind runner-temporary wiki paths")["run"]
-    for required in (
-        'cache_dir="${RUNNER_TEMP}/llm-wiki-cache"',
-        'evidence_dir="${RUNNER_TEMP}/llm-wiki-evidence"',
-        "occupied=false",
-        'for reserved_dir in "${cache_dir}" "${evidence_dir}"',
-        '[[ -e "${reserved_dir}" || -L "${reserved_dir}" ]]',
-        'quarantine_dir="$(',
-        '/usr/bin/mktemp -d "${RUNNER_TEMP}/llm-wiki-collisions.XXXXXX"',
-        '"${reserved_dir}" "${quarantine_dir}/${leaf}"',
-        '/bin/rm -rf -- "${reserved_dir}"',
-        'mkdir -- "${reserved_dir}"',
-        '[[ -d "${reserved_dir}" && ! -L "${reserved_dir}" ]]',
-        'LLM_WIKI_CACHE_DIR=%s\\n',
-        '"${cache_dir}"',
-        'LLM_WIKI_EVIDENCE_DIR=%s\\n',
-        '"${evidence_dir}"',
-        '} >> "${GITHUB_ENV}"',
-    ):
-        assert required in path_binding
-
-    setup = _named_step(job, "Install the locked routine toolchain")["run"]
-    assert "--mode routine" in setup
-    assert '--install-root "${RUNNER_TEMP}/llm-wiki-toolchains"' in setup
-    assert '--python "${{ steps.setup-python.outputs.python-path }}"' in setup
-
-    versions = _named_step(job, "Record locked routine toolchain versions")["run"]
-    for required in (
-        'mkdir -p -- "${LLM_WIKI_EVIDENCE_DIR}"',
-        "release/qualification.py lock-value",
-        "--key toolchains.node.version_output",
-        "--key toolchains.npm.version_output",
-        'actual_node="$(node --version)"',
-        'actual_npm="$(npm --version)"',
-        'tee "${LLM_WIKI_EVIDENCE_DIR}/locked-toolchain-versions.txt"',
-        'test "${actual_node}" = "${expected_node}"',
-        'test "${actual_npm}" = "${expected_npm}"',
-    ):
-        assert required in versions
-
-
-def test_runner_path_reservation_quarantines_all_collisions_before_failure(
-    tmp_path: Path,
-) -> None:
-    _workflow, job = _wiki_integrity_job()
-    path_binding = _named_step(job, "Bind runner-temporary wiki paths")["run"]
-    if os.name == "nt":
-        # This job executes only on Ubuntu. Windows validates the fail-closed
-        # reservation logic statically without adding a release-lane skip.
-        for required in (
-            'cache_dir="${RUNNER_TEMP}/llm-wiki-cache"',
-            'evidence_dir="${RUNNER_TEMP}/llm-wiki-evidence"',
-            "if ${occupied}; then",
-            "/bin/mv --",
-            "/bin/rm -rf --",
-            '[[ ! -e "${reserved_dir}" && ! -L "${reserved_dir}" ]]',
-            "exit 1",
-        ):
-            assert required in path_binding
-        return
-    runner_temp = tmp_path / "runner-temp"
-    runner_temp.mkdir()
-    cache_dir = runner_temp / "llm-wiki-cache"
-    cache_dir.mkdir()
-    (cache_dir / "poison").write_text("cache\n", encoding="utf-8")
-    evidence_dir = runner_temp / "llm-wiki-evidence"
-    evidence_dir.mkdir()
-    (evidence_dir / "llm-wiki-ci-report.json").write_text(
-        "forged\n", encoding="utf-8"
-    )
-    github_env = tmp_path / "github-env"
-
-    result = subprocess.run(
-        ["bash", "-c", path_binding],
-        cwd=ROOT,
-        env={
-            "PATH": "/usr/bin:/bin",
-            "RUNNER_TEMP": str(runner_temp),
-            "GITHUB_ENV": str(github_env),
-        },
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
-    assert result.returncode != 0
-    assert "already occupied" in result.stderr
-    for reserved_dir in (cache_dir, evidence_dir):
-        assert not reserved_dir.exists()
-        assert not reserved_dir.is_symlink()
-    assert not github_env.exists()
-
-
-def test_wiki_integrity_always_uploads_the_bounded_evidence_bundle() -> None:
-    _workflow, job = _wiki_integrity_job()
-    upload = _named_step(job, "Upload bounded wiki integrity evidence")
-    assert upload == job["steps"][-1]
-    assert upload["if"] == "always()"
-    assert upload["with"]["name"] == "llm-wiki-ci-${{ github.sha }}"
-    assert upload["with"]["retention-days"] == 14
-    assert upload["with"]["if-no-files-found"] == "warn"
-    assert set(upload["with"]["path"].splitlines()) == {
-        "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md",
-        "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json",
-        "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt",
-        "${{ runner.temp }}/llm-wiki-evidence/prepare-extractors.log",
-        "${{ runner.temp }}/llm-wiki-evidence/locked-toolchain-versions.txt",
-    }
 
 
 def _wiki_ci_wrapper_mode() -> int:
@@ -571,14 +392,19 @@ def test_wiki_integrity_wrapper_preserves_exit_evidence_and_cleanliness() -> Non
         "local returned_exit=\"${command_exit}\"",
         "if ${ci_completed} && [[ ${cli_exit} -ne 0 ]]; then",
         'returned_exit="${cli_exit}"',
-        '"${python_executable}" -I -c',
-        'json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))',
+        (
+            '"${python_executable}" -I -m '
+            "llm_wiki_cli.services.ci_report validate"
+        ),
+        '--report "${raw_output}"',
+        '--cli-exit "${cli_exit}"',
         'JSON_REPORT="${report_dir}/llm-wiki-ci-report.json"',
         'INVALID_REPORT="${report_dir}/llm-wiki-ci-report.invalid.txt"',
         "git status --porcelain=v1 --untracked-files=all",
         'sed -n "1,${STATUS_RECORD_LIMIT}p" "${sorted_status}"',
     ):
         assert required in wrapper
+    assert "json.loads(" not in wrapper
     assert "git diff --exit-code" not in wrapper
 
 
@@ -589,19 +415,17 @@ def test_wiki_integrity_wrapper_summary_is_bounded_and_labels_drift_advisory() -
         "readonly SUMMARY_MAX_BYTES=8192",
         "readonly STATUS_RECORD_LIMIT=20",
         "GITHUB_STEP_SUMMARY",
-        "MAX_LINES = int(sys.argv[9])",
-        "MAX_BYTES = int(sys.argv[10])",
-        "STATUS_LIMIT = int(sys.argv[11])",
-        '"${SUMMARY_MAX_LINES}"',
-        '"${SUMMARY_MAX_BYTES}"',
-        '"${STATUS_RECORD_LIMIT}"',
-        "len(lines) > MAX_LINES",
-        "len(payload) > MAX_BYTES",
-        "clip_utf8(record)",
+        "llm_wiki_cli.services.ci_report render-summary",
+        '--status-limit "${STATUS_RECORD_LIMIT}"',
+        '--max-lines "${SUMMARY_MAX_LINES}"',
+        '--max-bytes "${SUMMARY_MAX_BYTES}"',
+        "if ${json_valid}; then",
+        'summary_args+=(--report "${JSON_REPORT}")',
         "Native drift diagnostics are advisory",
         "integrity validation remains blocking",
     ):
         assert required in wrapper
+    assert "summary_program=" not in wrapper
 
 
 def test_readme_documents_the_repository_wiki_maintenance_contract() -> None:
@@ -943,13 +767,19 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     assert context["with"] == {
         "wiki-dir": "candidate/.action-selftest/wiki",
         "src-dir": "candidate/tests/fixtures/context-health-action/source",
+        "evidence-id": "valid",
         "strict": "true",
         "fail-on": "unhealthy",
     }
-    for name in ("Reject invalid strict", "Reject invalid fail-on"):
+    invalid_ids = {
+        "Reject invalid strict": "invalid-strict",
+        "Reject invalid fail-on": "invalid-fail-on",
+    }
+    for name, evidence_id in invalid_ids.items():
         invalid = _named_step(job, name)
         assert invalid["uses"] == "./candidate/integrations/github-action"
         assert invalid["continue-on-error"] is True
+        assert invalid["with"]["evidence-id"] == evidence_id
     invalid_assertion = _named_step(
         job, "Assert both invalid inputs failed closed"
     )["run"]
@@ -997,12 +827,24 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
         'test -z "$(git status --porcelain=v1 --untracked-files=all)"',
         '"${RD10_EVIDENCE_DIR}/full-integrity-action-result.json"',
         '"extractor-plan.json"',
+        '"helper-cache-metrics.json"',
         '"llm-wiki-ci-report.json"',
         '"llm-wiki-ci-report.md"',
         '"locked-toolchain-versions.txt"',
         '"prepare-extractors.log"',
         '"schema": "llm-wiki-prepare-extractors-plan/v1"',
         '"languages": ["typescript"]',
+        '"schema": "llm-wiki-helper-cache-metrics/v1"',
+        '"cache_key_schema": "llm-wiki-helpers-v1"',
+        '"cache_attempted": True',
+        "0 < len(cache_metrics_raw) <= 1024",
+        "object_pairs_hook=strict_object",
+        "parse_constant=reject_nonfinite",
+        "duplicate object key",
+        "set(cache_metrics) != expected_cache_metric_keys",
+        "unexpected helper-cache metric keys",
+        'type(cache_metrics.get("cache_hit")) is not bool',
+        'prepare_elapsed_ms > 3_600_000',
         '"knowledge_drift_gate": False',
         '"knowledge_drift_report": True',
         '"ok": True',

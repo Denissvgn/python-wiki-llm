@@ -419,26 +419,43 @@ def test_default_ci_does_not_install_or_prepare_ghc():
     assert "prepare-extractors --language haskell" not in ci_lower
 
 
-def test_wiki_integrity_uses_the_automatic_locked_routine_helper_plan():
+def test_wiki_integrity_uses_the_automatic_locked_helper_plan():
     workflow = yaml.safe_load(
         (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     )
     job = workflow["jobs"]["wiki-integrity"]
-    setup = next(
+    delegation = next(
         step
         for step in job["steps"]
-        if step.get("name") == "Install the locked routine toolchain"
+        if step.get("uses") == "./integrations/wiki-integrity"
+    )
+    assert delegation["with"] == {
+        "src-dir": ".",
+        "wiki-dir": "docs/llm_wiki",
+    }
+
+    action = yaml.safe_load(
+        (PROJECT_ROOT / "integrations" / "wiki-integrity" / "action.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    steps = action["runs"]["steps"]
+    setup = next(
+        step
+        for step in steps
+        if step.get("name")
+        == "Install the locked TypeScript and JavaScript extractor toolchain"
     )["run"]
     prepare = next(
         step
-        for step in job["steps"]
+        for step in steps
         if step.get("name") == "Prepare the automatically selected extractor helpers"
     )["run"]
 
     assert "--mode routine" in setup
     assert "--mode qualification-go" not in setup
     assert "-I -m llm_wiki_cli.cli prepare-extractors" in prepare
-    assert "--src-dir ." in prepare
+    assert '--src-dir "${INPUT_SRC_DIR}"' in prepare
     assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
     assert "--language" not in prepare
     assert "--source-selection" not in prepare

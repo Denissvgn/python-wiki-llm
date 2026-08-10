@@ -1,0 +1,256 @@
+name: LLM Wiki scheduled convergence
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: llm-wiki-convergence-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  convergence:
+    name: Real plugin-disabled LLM Wiki sync
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      CI: "true"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PIP_NO_INPUT: "1"
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+
+    steps:
+      - name: Bind the run to the repository default branch
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RUN_EVENT: ${{ github.event_name }}
+          RUN_REF: ${{ github.ref }}
+          RUN_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          case "${RUN_EVENT}" in
+            schedule|workflow_dispatch) ;;
+            *) printf 'Unsupported event: %s\n' "${RUN_EVENT}" >&2; exit 1 ;;
+          esac
+          git check-ref-format --branch "${DEFAULT_BRANCH}" >/dev/null
+          [[ "${RUN_REF}" == "refs/heads/${DEFAULT_BRANCH}" ]]
+          [[ "${RUN_SHA}" =~ ^[0-9a-f]{40}$ ]]
+
+      - name: Check out the exact default-branch commit without credentials
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Verify the checked-out commit
+        shell: bash
+        env:
+          RUN_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "${RUN_SHA}" ]]
+          [[ -z "$(git status --porcelain=v1 --untracked-files=all)" ]]
+
+      - name: Reject and quarantine an occupied evidence root
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_root="${RUNNER_TEMP}/llm-wiki-convergence-evidence"
+          if [[ -e "${evidence_root}" || -L "${evidence_root}" ]]; then
+            quarantine_dir="$(/usr/bin/mktemp -d \
+              "${RUNNER_TEMP}/llm-wiki-convergence-collision.XXXXXX")"
+            /bin/mv -- "${evidence_root}" "${quarantine_dir}/evidence"
+            [[ ! -e "${evidence_root}" && ! -L "${evidence_root}" ]]
+            printf 'Quarantined an occupied convergence evidence root.\n' >&2
+            exit 1
+          fi
+
+      - name: Set up Python 3.13
+        id: setup-python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+
+      - name: Install the checked-out package
+        shell: bash
+        run: >-
+          "${{ steps.setup-python.outputs.python-path }}"
+          -I -m pip install --no-cache-dir .
+
+      - name: Bind runner-temporary helper paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          helper_cache_dir="${RUNNER_TEMP}/llm-wiki-convergence-helpers"
+          toolchain_dir="${RUNNER_TEMP}/llm-wiki-convergence-toolchains"
+          plan_path="${RUNNER_TEMP}/llm-wiki-convergence-extractor-plan.json"
+          for reserved_path in \
+            "${helper_cache_dir}" "${toolchain_dir}" "${plan_path}"; do
+            [[ ! -e "${reserved_path}" && ! -L "${reserved_path}" ]]
+          done
+          mkdir -- "${helper_cache_dir}"
+          [[ -d "${helper_cache_dir}" && ! -L "${helper_cache_dir}" ]]
+          {
+            printf 'LLM_WIKI_CONVERGENCE_HELPER_CACHE=%s\n' "${helper_cache_dir}"
+            printf 'LLM_WIKI_CONVERGENCE_TOOLCHAINS=%s\n' "${toolchain_dir}"
+            printf 'LLM_WIKI_CONVERGENCE_PLAN=%s\n' "${plan_path}"
+          } >> "${GITHUB_ENV}"
+
+      - name: Plan the selected extractor helpers
+        id: extractor-plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          "${{ steps.setup-python.outputs.python-path }}" \
+            -I -m llm_wiki_cli.cli prepare-extractors \
+            --src-dir . \
+            --plan \
+            --format json > "${LLM_WIKI_CONVERGENCE_PLAN}"
+
+          "${{ steps.setup-python.outputs.python-path }}" \
+            -I - "${LLM_WIKI_CONVERGENCE_PLAN}" "${GITHUB_OUTPUT}" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          plan_path = pathlib.Path(sys.argv[1])
+          output_path = pathlib.Path(sys.argv[2])
+          supported = ("typescript", "go", "rust", "haskell")
+          if plan_path.is_symlink() or not plan_path.is_file():
+              raise SystemExit("extractor plan is not one bounded regular file")
+          try:
+              expected_size = plan_path.stat().st_size
+              if not (0 < expected_size <= 4096):
+                  raise SystemExit(
+                      "extractor plan is not one bounded regular file"
+                  )
+              raw = plan_path.read_bytes()
+          except OSError as exc:
+              raise SystemExit(f"extractor plan cannot be read: {exc}") from exc
+          if (
+              len(raw) != expected_size
+              or plan_path.is_symlink()
+              or not plan_path.is_file()
+          ):
+              raise SystemExit("extractor plan is not one bounded regular file")
+
+          def fail(message):
+              raise SystemExit(f"invalid extractor-helper plan: {message}")
+
+          try:
+              pairs = json.loads(
+                  raw.decode("utf-8"),
+                  object_pairs_hook=lambda value: value,
+                  parse_constant=lambda value: fail(
+                      f"non-standard JSON constant {value!r}"
+                  ),
+              )
+          except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+              fail(f"output is not strict UTF-8 JSON: {exc}")
+          if not isinstance(pairs, list) or not all(
+              isinstance(pair, tuple) and len(pair) == 2 for pair in pairs
+          ):
+              fail("top level must be an object")
+          if [key for key, _value in pairs] != ["schema", "languages"]:
+              fail("object keys or key order do not match the v1 contract")
+          payload = dict(pairs)
+          if payload["schema"] != "llm-wiki-prepare-extractors-plan/v1":
+              fail("schema is unsupported")
+          languages = payload["languages"]
+          if not isinstance(languages, list) or any(
+              type(language) is not str for language in languages
+          ):
+              fail("languages must be an array of strings")
+          if languages != [item for item in supported if item in languages]:
+              fail("languages are unknown, duplicated, or unordered")
+          with output_path.open("a", encoding="utf-8", newline="\n") as output:
+              for language in supported:
+                  output.write(
+                      f"{language}={'true' if language in languages else 'false'}\n"
+                  )
+          PY
+
+      - name: Install the locked TypeScript extractor toolchain
+        if: steps.extractor-plan.outputs.typescript == 'true'
+        shell: bash
+        run: >-
+          .github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode routine
+          --install-root "${LLM_WIKI_CONVERGENCE_TOOLCHAINS}"
+          --lock release/toolchain-lock.json
+          --python "${{ steps.setup-python.outputs.python-path }}"
+
+      - name: Install the locked Go extractor toolchain
+        if: steps.extractor-plan.outputs.go == 'true'
+        shell: bash
+        run: >-
+          .github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode extractor-go
+          --install-root "${LLM_WIKI_CONVERGENCE_TOOLCHAINS}"
+          --lock release/toolchain-lock.json
+          --python "${{ steps.setup-python.outputs.python-path }}"
+
+      - name: Install the locked Rust extractor toolchain
+        if: steps.extractor-plan.outputs.rust == 'true'
+        shell: bash
+        run: >-
+          .github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode extractor-rust
+          --install-root "${LLM_WIKI_CONVERGENCE_TOOLCHAINS}"
+          --lock release/toolchain-lock.json
+          --python "${{ steps.setup-python.outputs.python-path }}"
+
+      - name: Install the locked Haskell extractor toolchain
+        if: steps.extractor-plan.outputs.haskell == 'true'
+        shell: bash
+        run: >-
+          .github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode extractor-haskell
+          --install-root "${LLM_WIKI_CONVERGENCE_TOOLCHAINS}"
+          --lock release/toolchain-lock.json
+          --python "${{ steps.setup-python.outputs.python-path }}"
+
+      - name: Prepare the selected extractor helpers
+        shell: bash
+        run: >-
+          "${{ steps.setup-python.outputs.python-path }}"
+          -I -m llm_wiki_cli.cli prepare-extractors
+          --src-dir .
+          --cache-dir "${LLM_WIKI_CONVERGENCE_HELPER_CACHE}"
+
+      - name: Run one real LLM Wiki convergence sync
+        id: convergence
+        shell: bash
+        run: >-
+          .github/scripts/run-llm-wiki-convergence.sh
+          --python "${{ steps.setup-python.outputs.python-path }}"
+          --src-dir .
+          --wiki-dir docs/llm_wiki
+          --helper-cache-dir "${LLM_WIKI_CONVERGENCE_HELPER_CACHE}"
+          --evidence-dir "${RUNNER_TEMP}/llm-wiki-convergence-evidence"
+          --github-output "${GITHUB_OUTPUT}"
+          --jobs 1
+
+      - name: Upload fixed convergence evidence
+        if: always() && steps.convergence.outputs.evidence-ready == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: llm-wiki-convergence-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-status-before.txt
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-status-after.txt
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/worktree-status-after.txt
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-diff.patch
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/sync.log
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/convergence-result.json
+          if-no-files-found: error
+          retention-days: 14

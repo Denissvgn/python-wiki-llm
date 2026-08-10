@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import types
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -18,8 +19,14 @@ from llm_wiki_cli.commands.lint_cmd import (
     LintReport,
 )
 from llm_wiki_cli.config import PathValidationError
-from llm_wiki_cli.services import plugins
+from llm_wiki_cli.services import ci_report, plugins
+from llm_wiki_cli.services.contracts import (
+    CI_CHECK_SCHEMA_VERSION,
+    DOCTOR_SCHEMA_VERSION,
+    PROTOCOL_VERSIONS,
+)
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
+from llm_wiki_cli.services.lint_service import report_to_dict
 
 
 def _empty_execution_payload() -> dict:
@@ -33,6 +40,95 @@ def _empty_execution_payload() -> dict:
             "sequential_plan_ids": [],
             "cache_elided_plan_ids": [],
         }
+    }
+
+
+def _assert_versioned_ci_payload(payload: dict) -> dict:
+    assert payload["schema_version"] == CI_CHECK_SCHEMA_VERSION
+    health = payload["knowledge_health"]
+    assert health["schema_version"] == DOCTOR_SCHEMA_VERSION
+    assert health["strict"] is False
+    assert health["wiki_dir"] == payload["wiki_dir"]
+    assert health["src_dir"] == payload["src_dir"]
+    ci_report.validate_ci_check_payload(
+        payload,
+        cli_exit=0 if payload["ok"] else 1,
+    )
+    return health
+
+
+def test_ci_check_schema_is_registered_and_generic_lint_shape_is_unchanged(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "wiki").mkdir()
+    report = LintReport(wiki_dir="wiki", src_dir=".", strict=True)
+
+    generic = report_to_dict(report, include_execution=True)
+    payload = ci_report.build_ci_check_payload(report)
+
+    assert CI_CHECK_SCHEMA_VERSION in PROTOCOL_VERSIONS
+    assert "schema_version" not in generic
+    assert "knowledge_health" not in generic
+    assert {key: payload[key] for key in generic} == generic
+    health = _assert_versioned_ci_payload(payload)
+    assert health["status"] == "absent"
+    assert ci_report.validate_ci_check_payload(payload, cli_exit=0) is payload
+
+
+def test_readme_documents_the_versioned_ci_health_envelope() -> None:
+    readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")
+    section = readme.split("### `lint` and `ci-check`", 1)[1].split(
+        "\n### `doctor`", 1
+    )[0]
+
+    assert "llm-wiki-ci-check/v1" in section
+    assert "knowledge_health" in section
+    assert "llm-wiki-doctor/v1" in section
+    assert "same lint report, not a second source scan" in section
+    assert "authoritative blocking integrity" in section
+
+
+def test_ci_check_validator_recomputes_nested_health_classification() -> None:
+    report = LintReport(wiki_dir="missing-wiki", src_dir=".", strict=True)
+    payload = ci_report.build_ci_check_payload(report)
+    health = payload["knowledge_health"]
+    assert isinstance(health, dict)
+    health["status"] = "healthy"
+    health["exit_code"] = 0
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="status does not match its sections",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_payload_composes_health_from_the_same_report_without_strict_drift(
+    monkeypatch,
+):
+    report = LintReport(wiki_dir="wiki", src_dir="source", strict=True)
+    seen = {}
+
+    class _Health:
+        def to_payload(self):
+            return {"schema_version": DOCTOR_SCHEMA_VERSION}
+
+    def fake_compose(lint, **kwargs):
+        seen.update(lint=lint, **kwargs)
+        return _Health()
+
+    monkeypatch.setattr(ci_report, "compose_doctor_report", fake_compose)
+
+    payload = ci_report.build_ci_check_payload(report)
+
+    assert payload["knowledge_health"] == {"schema_version": DOCTOR_SCHEMA_VERSION}
+    assert seen == {
+        "lint": report,
+        "strict": False,
+        "wiki_dir": "wiki",
+        "src_dir": "source",
     }
 
 
@@ -55,10 +151,119 @@ def _ready_knowledge_summary() -> KnowledgeLintSummary:
         phase_durations_ms={"load": 1, "evaluate": 2, "check": 3},
         freshness_evaluated=True,
         concepts_total=6,
-        concepts_by_kind={"code-entity": 2},
+        concepts_by_kind={"code-entity": 6},
         evidence_by_state={"present": 3},
         freshness_by_state=freshness,
     )
+
+
+def _ready_ci_payload() -> dict:
+    report = LintReport(wiki_dir="wiki", src_dir=".", strict=True)
+    report.knowledge_summary = _ready_knowledge_summary()
+    payload = ci_report.build_ci_check_payload(report)
+    summary = report.knowledge_summary
+    assert summary is not None
+    counts = dict(summary.freshness_counts or {})
+    payload["knowledge_health"] = {
+        "schema_version": DOCTOR_SCHEMA_VERSION,
+        "status": "healthy",
+        "exit_code": 0,
+        "strict": False,
+        "wiki_dir": "wiki",
+        "src_dir": ".",
+        "availability": {
+            "state": summary.availability,
+            "reason": summary.reason,
+            "usable": True,
+        },
+        "freshness": {
+            "evaluated": True,
+            "disclosure": summary.freshness,
+            "concepts": summary.concepts_evaluated,
+            "counts_by_state": dict(counts),
+        },
+        "snapshot_parity": {"state": "valid", "issue_count": 0, "reasons": []},
+        "governance": {
+            "state": "not-present",
+            "ledger": "not-present",
+            "projection": "not-present",
+            "expired_reviews": 0,
+            "issue_count": 0,
+            "reasons": [],
+        },
+        "drift": {
+            "state": "current",
+            "confirmed_stale": 0,
+            "indeterminate": 0,
+            "nonsemantic_changes": 0,
+            "counts_by_state": dict(counts),
+            "diagnostic_count": 0,
+            "reasons": [],
+        },
+        "verification_receipt": {
+            "state": "absent",
+            "reason": "verification-receipt-not-present",
+            "recorded_result": None,
+            "passed": None,
+        },
+        "degraded_reasons": [],
+        "unhealthy_reasons": [],
+    }
+    ci_report.validate_ci_check_payload(payload, cli_exit=0)
+    return payload
+
+
+def test_ci_validator_binds_summary_and_health_to_one_evaluation() -> None:
+    payload = _ready_ci_payload()
+    payload["knowledge_health"]["freshness"]["disclosure"] = (
+        "evaluated (999 concepts)"
+    )
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="knowledge_summary.freshness does not match",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_validator_binds_freshness_and_drift_counts() -> None:
+    payload = _ready_ci_payload()
+    payload["knowledge_health"]["drift"]["counts_by_state"].update(
+        {"current": 2, "unknown": 4}
+    )
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="counts_by_state does not match freshness",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_validator_binds_health_diagnostics_to_top_level_findings() -> None:
+    payload = _ready_ci_payload()
+    payload["knowledge_health"]["drift"].update(
+        {"diagnostic_count": 1, "reasons": ["freshness-result-missing"]}
+    )
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="diagnostic_count does not match report.diagnostics",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_validator_rejects_absent_health_with_evaluated_sections() -> None:
+    payload = ci_report.build_ci_check_payload(
+        LintReport(wiki_dir="missing-wiki", src_dir=".", strict=True)
+    )
+    forged = deepcopy(payload)
+    forged["knowledge_health"]["snapshot_parity"]["state"] = "mixed"
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="snapshot_parity.state does not match availability",
+    ):
+        ci_report.validate_ci_check_payload(forged, cli_exit=0)
 
 
 def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
@@ -108,6 +313,7 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
 
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
+    _assert_versioned_ci_payload(payload)
     assert payload["ok"] is True
     assert seen["cache_options"].enabled is True
     assert seen["cache_options"].stats_enabled is False
@@ -347,6 +553,7 @@ def test_ci_check_report_allows_absolute_output_path(tmp_path, monkeypatch, caps
     assert report_path.exists()
     assert "# LLM Wiki Validation Report" in report_path.read_text(encoding="utf-8")
     payload = json.loads(capsys.readouterr().out)
+    _assert_versioned_ci_payload(payload)
     assert payload["ok"] is True
 
 
@@ -414,6 +621,7 @@ def test_ci_check_allow_external_src_reaches_report_build(
     )
 
     payload = json.loads(capsys.readouterr().out)
+    _assert_versioned_ci_payload(payload)
     assert payload["ok"] is True
     assert Path(seen["src_dir"]) == external.resolve()
     assert seen["wiki_dir"] == "wiki"
@@ -533,7 +741,11 @@ def test_ci_check_json_output_adds_execution_and_exits_nonzero(
 
     assert exc.value.code == 1
     payload = json.loads(capsys.readouterr().out)
+    health = _assert_versioned_ci_payload(payload)
+    assert health["status"] == "absent"
     assert payload.pop("execution") == _empty_execution_payload()
+    payload.pop("schema_version")
+    payload.pop("knowledge_health")
     assert payload == {
         "diagnostics": [],
         "issue_count": 1,
@@ -619,7 +831,11 @@ def test_ci_check_diagnostic_only_report_exits_zero_with_additive_execution(
     )
 
     payload = json.loads(capsys.readouterr().out)
+    health = _assert_versioned_ci_payload(payload)
+    assert health["status"] == "absent"
     assert payload.pop("execution") == _empty_execution_payload()
+    payload.pop("schema_version")
+    payload.pop("knowledge_health")
     assert payload == {
         "diagnostics": [
             {

@@ -1,5 +1,5 @@
-name: LLM Wiki context health gate
-description: Check wiki freshness, snapshot parity, governance, drift, and verification state.
+name: LLM Wiki context health dashboard
+description: Publish a strict, diagnostic knowledge-health dashboard without replacing full integrity validation.
 
 inputs:
   wiki-dir:
@@ -22,6 +22,10 @@ inputs:
     description: Lowest health level that fails the action (unhealthy or degraded).
     required: false
     default: unhealthy
+  evidence-id:
+    description: Safe unique suffix when the action is invoked more than once in one job.
+    required: false
+    default: default
 
 outputs:
   status:
@@ -34,70 +38,328 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Set up Python
+    - name: Set up Python 3.13
+      id: setup-python
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: "3.13"
 
-    - name: Install LLM Wiki CLI
+    - name: Install the dashboard package
       shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
       run: >-
-        python -m pip install
-        --disable-pip-version-check
-        --no-input
+        "${{ steps.setup-python.outputs.python-path }}"
+        -I -m pip install --no-cache-dir
         "${GITHUB_ACTION_PATH}/../.."
+
+    - name: Reserve dashboard paths
+      id: reserve
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        INPUT_EVIDENCE_ID: ${{ inputs.evidence-id }}
+      run: |
+        set -euo pipefail
+        if [[ ! "${INPUT_EVIDENCE_ID}" =~ ^[a-z0-9][a-z0-9._-]{0,39}$ ]]; then
+          printf 'evidence-id must match ^[a-z0-9][a-z0-9._-]{0,39}$\n' >&2
+          exit 2
+        fi
+        cache_dir="${RUNNER_TEMP}/llm-wiki-doctor-${INPUT_EVIDENCE_ID}-cache"
+        toolchain_dir="${RUNNER_TEMP}/llm-wiki-doctor-${INPUT_EVIDENCE_ID}-toolchains"
+        evidence_dir="${RUNNER_TEMP}/llm-wiki-doctor-${INPUT_EVIDENCE_ID}-evidence"
+        occupied=false
+        for reserved_dir in \
+          "${cache_dir}" "${toolchain_dir}" "${evidence_dir}"; do
+          if [[ -e "${reserved_dir}" || -L "${reserved_dir}" ]]; then
+            occupied=true
+            printf 'Dashboard runner path is already occupied: %s\n' \
+              "${reserved_dir}" >&2
+          fi
+        done
+        if ${occupied}; then
+          quarantine_dir="$(
+            /usr/bin/mktemp -d "${RUNNER_TEMP}/llm-wiki-doctor-collisions.XXXXXX"
+          )"
+          for reserved_dir in \
+            "${cache_dir}" "${toolchain_dir}" "${evidence_dir}"; do
+            if [[ -e "${reserved_dir}" || -L "${reserved_dir}" ]]; then
+              leaf="${reserved_dir##*/}"
+              if ! /bin/mv -- \
+                "${reserved_dir}" "${quarantine_dir}/${leaf}"; then
+                /bin/rm -rf -- "${reserved_dir}"
+              fi
+              [[ ! -e "${reserved_dir}" && ! -L "${reserved_dir}" ]]
+            fi
+          done
+          exit 1
+        fi
+        for reserved_dir in \
+          "${cache_dir}" "${toolchain_dir}" "${evidence_dir}"; do
+          mkdir -- "${reserved_dir}"
+          [[ -d "${reserved_dir}" && ! -L "${reserved_dir}" ]]
+        done
+        {
+          printf 'LLM_WIKI_DOCTOR_CACHE_DIR=%s\n' "${cache_dir}"
+          printf 'LLM_WIKI_DOCTOR_TOOLCHAIN_DIR=%s\n' "${toolchain_dir}"
+          printf 'LLM_WIKI_DOCTOR_EVIDENCE_DIR=%s\n' "${evidence_dir}"
+        } >> "${GITHUB_ENV}"
+        printf 'ready=true\n' >> "${GITHUB_OUTPUT}"
+
+    - name: Plan dashboard extractor helpers
+      id: extractor-plan
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_SOURCE_SELECTION: ${{ inputs.source-selection }}
+      run: |
+        set -euo pipefail
+        plan_path="${LLM_WIKI_DOCTOR_EVIDENCE_DIR}/extractor-plan.json"
+        plan_args=(
+          --src-dir "${INPUT_SRC_DIR}"
+          --plan
+          --format json
+        )
+        if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
+          plan_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")
+        fi
+        "${{ steps.setup-python.outputs.python-path }}" \
+          -I -m llm_wiki_cli.cli prepare-extractors \
+          "${plan_args[@]}" > "${plan_path}"
+
+        "${{ steps.setup-python.outputs.python-path }}" \
+          -I - "${plan_path}" "${GITHUB_OUTPUT}" <<'PY'
+        import json
+        import pathlib
+        import sys
+
+        expected_schema = "llm-wiki-prepare-extractors-plan/v1"
+        supported = ("typescript", "go", "rust", "haskell")
+        plan_path = pathlib.Path(sys.argv[1])
+        output_path = pathlib.Path(sys.argv[2])
+
+        def fail(message):
+            raise SystemExit(f"invalid extractor-helper plan: {message}")
+
+        if plan_path.is_symlink() or not plan_path.is_file():
+            fail("output is not a regular file")
+        raw = plan_path.read_bytes()
+        if not raw or len(raw) > 4096:
+            fail("output size is outside the accepted bounds")
+
+        def object_pairs(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    fail(f"duplicate object key {key!r}")
+                result[key] = value
+            return result
+
+        try:
+            payload = json.loads(
+                raw.decode("utf-8"),
+                object_pairs_hook=object_pairs,
+                parse_constant=lambda value: fail(
+                    f"non-standard JSON constant {value!r}"
+                ),
+            )
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            fail(f"output is not strict UTF-8 JSON: {exc}")
+        if not isinstance(payload, dict) or list(payload) != ["schema", "languages"]:
+            fail("object keys or key order do not match the v1 contract")
+        if payload["schema"] != expected_schema:
+            fail("schema is unsupported")
+        languages = payload["languages"]
+        if not isinstance(languages, list) or any(
+            type(language) is not str for language in languages
+        ):
+            fail("languages must be an array of strings")
+        canonical = [language for language in supported if language in languages]
+        if languages != canonical:
+            fail("languages are unknown, duplicated, or out of canonical order")
+        with output_path.open("a", encoding="utf-8", newline="\n") as output:
+            for language in supported:
+                selected = "true" if language in languages else "false"
+                output.write(f"{language}={selected}\n")
+        PY
+
+    - name: Install the locked TypeScript and JavaScript extractor toolchain
+      if: steps.extractor-plan.outputs.typescript == 'true'
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+      run: >-
+        "${GITHUB_ACTION_PATH}/../../.github/scripts/setup-llm-wiki-ci-toolchains.sh"
+        --mode routine
+        --install-root "${LLM_WIKI_DOCTOR_TOOLCHAIN_DIR}"
+        --lock "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json"
+        --python "${{ steps.setup-python.outputs.python-path }}"
+
+    - name: Install the locked Go extractor toolchain
+      if: steps.extractor-plan.outputs.go == 'true'
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+      run: >-
+        "${GITHUB_ACTION_PATH}/../../.github/scripts/setup-llm-wiki-ci-toolchains.sh"
+        --mode extractor-go
+        --install-root "${LLM_WIKI_DOCTOR_TOOLCHAIN_DIR}"
+        --lock "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json"
+        --python "${{ steps.setup-python.outputs.python-path }}"
+
+    - name: Install the locked Rust extractor toolchain
+      if: steps.extractor-plan.outputs.rust == 'true'
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+      run: >-
+        "${GITHUB_ACTION_PATH}/../../.github/scripts/setup-llm-wiki-ci-toolchains.sh"
+        --mode extractor-rust
+        --install-root "${LLM_WIKI_DOCTOR_TOOLCHAIN_DIR}"
+        --lock "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json"
+        --python "${{ steps.setup-python.outputs.python-path }}"
+
+    - name: Install the locked Haskell extractor toolchain
+      if: steps.extractor-plan.outputs.haskell == 'true'
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+      run: >-
+        "${GITHUB_ACTION_PATH}/../../.github/scripts/setup-llm-wiki-ci-toolchains.sh"
+        --mode extractor-haskell
+        --install-root "${LLM_WIKI_DOCTOR_TOOLCHAIN_DIR}"
+        --lock "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json"
+        --python "${{ steps.setup-python.outputs.python-path }}"
+
+    - name: Prepare dashboard extractor helpers
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_SOURCE_SELECTION: ${{ inputs.source-selection }}
+      run: |
+        set -euo pipefail
+        prepare_args=(
+          --src-dir "${INPUT_SRC_DIR}"
+          --cache-dir "${LLM_WIKI_DOCTOR_CACHE_DIR}"
+        )
+        if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
+          prepare_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")
+        fi
+        "${{ steps.setup-python.outputs.python-path }}" \
+          -I -m llm_wiki_cli.cli prepare-extractors \
+          "${prepare_args[@]}" 2>&1 | \
+          tee "${LLM_WIKI_DOCTOR_EVIDENCE_DIR}/prepare-extractors.log"
 
     - name: Build knowledge health report
       id: doctor
       shell: bash
       env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
         INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
         INPUT_SRC_DIR: ${{ inputs.src-dir }}
         INPUT_SOURCE_SELECTION: ${{ inputs.source-selection }}
         INPUT_STRICT: ${{ inputs.strict }}
-        DOCTOR_JSON: ${{ runner.temp }}/llm-wiki-doctor.json
       run: |
         set -euo pipefail
-        strict_value="${INPUT_STRICT}"
-        case "${strict_value}" in
+        case "${INPUT_STRICT}" in
           true|false) ;;
-          *)
-            echo "strict must be true or false" >&2
-            exit 2
-            ;;
+          *) printf 'strict must be true or false\n' >&2; exit 2 ;;
         esac
-
+        report_path="${LLM_WIKI_DOCTOR_EVIDENCE_DIR}/doctor.json"
         doctor_args=(
           --wiki-dir "${INPUT_WIKI_DIR}"
           --src-dir "${INPUT_SRC_DIR}"
+          --helper-cache-dir "${LLM_WIKI_DOCTOR_CACHE_DIR}"
+          --jobs 1
           --format json
         )
         if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
           doctor_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")
         fi
-        if [[ "${strict_value}" == "true" ]]; then
+        if [[ "${INPUT_STRICT}" == "true" ]]; then
           doctor_args+=(--strict)
         fi
-
         set +e
-        llm-wiki doctor "${doctor_args[@]}" > "${DOCTOR_JSON}"
+        "${{ steps.setup-python.outputs.python-path }}" \
+          -I -m llm_wiki_cli.cli doctor \
+          "${doctor_args[@]}" > "${report_path}"
         doctor_exit=$?
         set -e
         if (( doctor_exit < 0 || doctor_exit > 3 )); then
-          echo "llm-wiki doctor failed outside its documented exit contract" >&2
+          printf 'llm-wiki doctor failed outside its documented exit contract\n' >&2
           exit "${doctor_exit}"
         fi
-        echo "exit-code=${doctor_exit}" >> "${GITHUB_OUTPUT}"
+        [[ -f "${report_path}" && ! -L "${report_path}" && -s "${report_path}" ]]
+        printf 'exit-code=%s\n' "${doctor_exit}" >> "${GITHUB_OUTPUT}"
 
-    - name: Publish health summary and apply threshold
+    - name: Publish strict diagnostic dashboard and apply threshold
       id: summary
       shell: bash
       env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
-        DOCTOR_JSON: ${{ runner.temp }}/llm-wiki-doctor.json
+        INPUT_STRICT: ${{ inputs.strict }}
         DOCTOR_EXIT_CODE: ${{ steps.doctor.outputs.exit-code }}
       run: >-
-        python "${GITHUB_ACTION_PATH}/render_summary.py"
-        --report "${DOCTOR_JSON}"
+        "${{ steps.setup-python.outputs.python-path }}"
+        -I "${GITHUB_ACTION_PATH}/render_summary.py"
+        --report "${LLM_WIKI_DOCTOR_EVIDENCE_DIR}/doctor.json"
         --fail-on "${INPUT_FAIL_ON}"
         --doctor-exit-code "${DOCTOR_EXIT_CODE}"
+        --expected-strict "${INPUT_STRICT}"
+        --receipt "${LLM_WIKI_DOCTOR_EVIDENCE_DIR}/dashboard-receipt.json"
+
+    - name: Upload fixed doctor dashboard evidence
+      if: always() && steps.reserve.outputs.ready == 'true'
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: llm-wiki-doctor-${{ inputs.evidence-id }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/llm-wiki-doctor-${{ inputs.evidence-id }}-evidence/doctor.json
+          ${{ runner.temp }}/llm-wiki-doctor-${{ inputs.evidence-id }}-evidence/dashboard-receipt.json
+          ${{ runner.temp }}/llm-wiki-doctor-${{ inputs.evidence-id }}-evidence/extractor-plan.json
+          ${{ runner.temp }}/llm-wiki-doctor-${{ inputs.evidence-id }}-evidence/prepare-extractors.log
+        retention-days: 14
+        if-no-files-found: error

@@ -467,10 +467,18 @@ discovers helper languages through default source-selection discovery (using
 `.llm-wiki/source-selection.json` when present), installs their
 checksum-verified toolchains in runner-temporary storage, and prepares detected
 TypeScript/JavaScript, Go, Rust, and Haskell helpers. Python extraction is built
-in and needs no external helper. The action then runs the strict `ci-check` gate
-with advisory native-drift diagnostics, verifies that the project worktree
-stayed clean, and uploads a fixed, allowlisted set of validation and toolchain
-evidence even when validation fails.
+in and needs no external helper. A pinned GitHub cache action restores only an
+exact helper-cache key covering the runner platform, release toolchain lock,
+selected helper sources and dependency locks, helper-cache contract, CLI
+version, and immutable action ref. Helper preparation still runs after every
+restore, so a miss or unusable entry rebuilds instead of reducing language
+coverage. Pull requests may restore the cache but only a successful push to the
+default branch may save a new entry.
+
+The action then runs the strict `ci-check` gate with advisory native-drift
+diagnostics, verifies that the project worktree stayed clean, and uploads a
+fixed, allowlisted set of validation, cache-measurement, and toolchain evidence
+even when validation fails.
 
 The portable gate disables project-local Python plugins so pull-request content
 is never imported or executed. A project that intentionally depends on trusted
@@ -480,6 +488,21 @@ workflow instead of this pull-request gate.
 Installation does not bootstrap or synchronize the wiki, change branch
 protection, install hooks, push commits, or add repository secrets. Those
 remain explicit maintainer actions.
+
+### Scheduled convergence observation
+
+`.github/workflows/llm-wiki-convergence.yml` provides a separately named
+scheduled and manual convergence check for this repository. From an exact,
+credential-free checkout of the default branch, it prepares the selected locked
+helpers and runs one real `llm-wiki sync` with project-local plugins disabled.
+The run starts only from a clean worktree, never uses `--dry-run` or `--force`,
+and fails when the sync changes the committed wiki or leaves any unrelated
+worktree state.
+
+The workflow uploads the complete pre/post wiki status, full post-sync
+worktree status, tracked wiki diff, sync log, and a versioned hash receipt. Its
+job summary contains only a bounded preview. This observation complements but
+never replaces the blocking `ci-check` integrity gate.
 
 `llm-wiki install-hook` installs a `post-commit` hook that generates
 `.git/llm-wiki-prompt.txt` with `llm-wiki generate-prompt` and prints a reminder
@@ -534,43 +557,63 @@ Use `--force` when you intentionally want to replace an existing unrelated hook:
 llm-wiki install-hook --force
 ```
 
-### CI gate
+### Strict doctor dashboard
 
-The lighter context-health composite action runs the knowledge health check on
-a pull request, writes its structured results as a job-summary table, and
-applies a configurable failure threshold:
+The context-health composite action publishes a diagnostic knowledge-health
+dashboard and applies a configurable failure threshold. It is intentionally
+separate from the blocking full-integrity gate: it does not replace general
+wiki checks, trusted plugin validation, or team-owned review policy.
 
 ```yaml
 - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-- uses: Denissvgn/python-wiki-llm/integrations/github-action@main
+- uses: Denissvgn/python-wiki-llm/integrations/github-action@<FULL_RELEASE_COMMIT_SHA>
   with:
     wiki-dir: docs/llm_wiki
     src-dir: .
     source-selection: .llm-wiki/source-selection.json
     strict: "true"
     fail-on: unhealthy
+    evidence-id: default
 ```
 
 Use `fail-on: unhealthy` to allow degraded-but-usable knowledge while blocking
 mixed snapshots, invalid governance, confirmed stale concepts, and invalid
 verification receipts. Use `fail-on: degraded` when any degraded result must
 block the job. `strict: "true"` also classifies indeterminate or nonsemantic
-source drift as unhealthy. For a protected production workflow, replace the
-branch reference with an immutable released commit.
+source drift as unhealthy. Replace `<FULL_RELEASE_COMMIT_SHA>` with the full
+40-character SHA of the immutable released commit; never use a branch or tag
+for a protected workflow.
 
 The action installs `agent-wiki-cli` from the same action checkout, so pinning
-the action reference also binds the CLI implementation. It invokes
-`llm-wiki doctor --format json` and reads only the complete, versioned
-`llm-wiki-doctor/v1` object. It rejects a report when its declared exit code
-does not match the doctor process exit captured by the runner, and it does not
-scrape human output. Within that schema major, required fields and documented
-state values remain strict while additive object fields are ignored. A wiki
-that has not been initialized is reported as `absent` and fails either
-threshold.
+the action reference also binds the CLI implementation. Through the same
+default source-selection discovery used by the CLI, it plans and prepares any
+detected TypeScript/JavaScript, Go, Rust, or Haskell extractor helper with the
+release's checksum-verified toolchains; Python extraction needs no helper. It
+then invokes `llm-wiki doctor --format json` and reads only the complete,
+versioned `llm-wiki-doctor/v1` object. The renderer rejects a report when its
+strictness or declared exit code does not match the captured request and
+process status, and it never scrapes human output. Within that schema major,
+required fields and documented state values remain strict while additive
+object fields are ignored. A wiki that has not been initialized is reported as
+`absent` and fails either threshold.
+
+The action reserves isolated runner-temporary cache, toolchain, and evidence
+paths and uploads only the JSON
+report, a hash-bound dashboard receipt, the extractor plan, and the preparation
+log. Human disclosure text is escaped and the job summary has fixed size and
+line bounds. This repository also provides a separately named scheduled and
+manual dashboard workflow; it has read-only permissions and no pull-request or
+push trigger. Branch protection should continue to require the exact
+`LLM Wiki integrity` context produced by the full gate, not this diagnostic
+dashboard.
 
 Omit `source-selection` to use default discovery. Set it to the same
 source-root-relative non-default profile used by local maintenance commands
 when a repository does not use `.llm-wiki/source-selection.json`.
+The default `evidence-id` is sufficient for one invocation in a job. Give each
+invocation a unique lowercase identifier when the same action is used more
+than once; unsafe identifiers and occupied runner paths fail closed before any
+artifact upload.
 
 ## Command Reference
 
@@ -691,6 +734,7 @@ llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --jobs 1 --cache-stats --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki sync --include-tests go --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --no-plugins --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --dry-run
 llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run
 llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run
@@ -703,8 +747,11 @@ existing wiki is present, run `bootstrap` first. Sync uses the same safe
 persistent inventory cache as lint when a git directory is available. Use
 `--no-cache`, `--rebuild-cache`, `--cache-dir PATH`, and `--cache-stats` to
 control or inspect inventory cache behavior. Use `--helper-cache-dir PATH` to
-point Go/Rust/Haskell extraction at prepared helpers in a separate cache. Use
-The interactive default is `--jobs 1`. Use `--jobs N` or `--jobs auto` to opt
+point TypeScript/JavaScript, Go, Rust, and Haskell extraction at prepared
+helpers in a separate cache.
+`--no-plugins` disables project-local extractor and generation plugins for
+trusted automation that must not import repository Python extensions. The
+interactive default is `--jobs 1`. Use `--jobs N` or `--jobs auto` to opt
 into parallel extraction for built-in languages and plugin extractors whose
 manifests set `"parallel_safe": true`; reserve `auto` for an isolated terminal
 or controlled CI runner with known capacity.
@@ -1048,7 +1095,12 @@ exits nonzero on validation failure. Native freshness/drift is disabled unless
 `--knowledge-drift-report` is supplied, and enabled findings remain
 nonblocking. Structured output discloses the report mode through
 `knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
-is always `false`.
+is always `false`. JSON output uses the closed `llm-wiki-ci-check/v1`
+envelope. Its `knowledge_health` member is a `llm-wiki-doctor/v1` projection
+composed from the same lint report, not a second source scan. The top-level
+`ok`, issue count, and process exit remain the authoritative blocking integrity
+result; the nested health status presents availability, freshness, snapshot,
+governance, drift, and verification state without changing that policy.
 `--no-plugins` disables project-local extractor, generation, and lint plugins;
 the portable integrity workflow always uses this fail-closed mode.
 For trusted source trees outside the runner workspace, pass

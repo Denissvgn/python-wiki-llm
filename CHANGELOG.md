@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Exact, fork-safe extractor-helper cache reuse in the reusable full-integrity
+  action. The cache identity binds the selected helper plan, runner platform,
+  locked toolchains, helper sources and dependency locks, helper-cache contract,
+  CLI version, and immutable action revision; helper preparation always
+  revalidates restored state before integrity checks run.
+- A read-only scheduled/manual convergence workflow that performs one real,
+  plugin-disabled sync from a clean default-branch checkout and publishes
+  complete wiki status, tracked diff, full-worktree status, sync output, and a
+  versioned hash receipt.
+- A separately named strict doctor dashboard with locked helper preparation,
+  explicit healthy/degraded/unhealthy presentation, bounded summary output,
+  and a fixed diagnostic evidence artifact.
+- `sync --no-plugins` for trusted automation that must never import or execute
+  project-local extractor or generation plugins.
+
+### Changed
+
+- `ci-check --format json` now emits the versioned
+  `llm-wiki-ci-check/v1` envelope. Its nested `llm-wiki-doctor/v1` health
+  projection is composed from the same lint evaluation, so the full-integrity
+  action can render broad blocking policy and polished health status without a
+  second source scan.
+- The repository's full-integrity workflow now delegates to the reusable action
+  and uses a measured 15-minute timeout while retaining single-worker source
+  evaluation.
+
 ## [1.6.0] - 2026-08-09
 
 ### Added

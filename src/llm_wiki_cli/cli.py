@@ -1788,6 +1788,11 @@ def _add_sync_command(subparsers):
         ),
     )
     sync_parser.add_argument(
+        "--no-plugins",
+        action="store_true",
+        help="Disable all project-local plugins during sync",
+    )
+    sync_parser.add_argument(
         "--no-preserve-semantic",
         action="store_true",
         help="Disable preservation of existing semantic wiki descriptions",

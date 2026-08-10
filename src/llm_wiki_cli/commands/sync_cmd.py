@@ -638,6 +638,7 @@ class _ApplyDiffContext:
     current_entity_pages: set[str]
     current_module_pages: set[str]
     preserve_semantic: bool
+    include_plugins: bool = True
     source_selection_policy: SourceSelectionPolicy | None = None
 
 
@@ -934,6 +935,7 @@ def _apply_entity_page(
             include_plugins=runtime_project_plugins_enabled(
                 ctx.src_dir,
                 source_selection_configured=(ctx.source_selection_policy is not None),
+                include_plugins=ctx.include_plugins,
             ),
             entity=relationship_summary.get("name"),
             file=relationship_summary.get("file"),
@@ -996,6 +998,7 @@ def _apply_module_page(
             include_plugins=runtime_project_plugins_enabled(
                 ctx.src_dir,
                 source_selection_configured=(ctx.source_selection_policy is not None),
+                include_plugins=ctx.include_plugins,
             ),
             file=filepath,
         )
@@ -1334,6 +1337,7 @@ def _refresh_entity_relationship_sections(
                         source_selection_configured=(
                             ctx.source_selection_policy is not None
                         ),
+                        include_plugins=ctx.include_plugins,
                     ),
                     entity=relationship_summary.get("name"),
                     file=relationship_summary.get("file"),
@@ -1396,6 +1400,7 @@ def _refresh_module_dependency_sections(
                     source_selection_configured=(
                         ctx.source_selection_policy is not None
                     ),
+                    include_plugins=ctx.include_plugins,
                 ),
                 file=filepath,
             ),
@@ -1460,6 +1465,7 @@ def _build_apply_diff_context(
     generated_sections: _GeneratedSectionContext | None,
     diff: SyncDiff,
     preserve_semantic: bool,
+    include_plugins: bool,
     source_selection_policy: SourceSelectionPolicy | None,
 ) -> _ApplyDiffContext:
     return _ApplyDiffContext(
@@ -1476,6 +1482,7 @@ def _build_apply_diff_context(
         current_entity_pages=set(entity_occurrence_page_cache.values()),
         current_module_pages=set(module_page_map.values()),
         preserve_semantic=preserve_semantic,
+        include_plugins=include_plugins,
         source_selection_policy=source_selection_policy,
     )
 
@@ -1492,6 +1499,7 @@ def _apply_diff(
     module_page_map: dict[str, str] | None = None,
     generated_sections: _GeneratedSectionContext | None = None,
     preserve_semantic: bool = True,
+    include_plugins: bool = True,
     source_selection_policy: SourceSelectionPolicy | None = None,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
@@ -1523,6 +1531,7 @@ def _apply_diff(
         generated_sections=generated_sections,
         diff=diff,
         preserve_semantic=preserve_semantic,
+        include_plugins=include_plugins,
         source_selection_policy=source_selection_policy,
     )
 
@@ -1586,6 +1595,7 @@ class _SyncRunOptions:
     flow_categories: frozenset[str] | None
     exclude_tests: bool
     dry_run: bool
+    include_plugins: bool
     openapi_file: str | None
     clear_openapi_file: bool
     source_selection: str | Path | None
@@ -2262,6 +2272,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     src_dir: str = getattr(args, "src_dir", ".")
     wiki_dir = Path(getattr(args, "wiki_dir", "docs/llm_wiki"))
     dry_run = bool(getattr(args, "dry_run", False))
+    include_plugins = not bool(getattr(args, "no_plugins", False))
     cache_options = _cache_options_from_args(args)
     if dry_run:
         cache_options = InventoryCacheOptions(enabled=False)
@@ -2321,6 +2332,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         flow_categories=flow_categories,
         exclude_tests=exclude_tests,
         dry_run=dry_run,
+        include_plugins=include_plugins,
         openapi_file=str(openapi_file) if openapi_file else None,
         clear_openapi_file=clear_openapi_file,
         source_selection=source_selection,
@@ -2385,6 +2397,7 @@ def _extract_current_inventory(
         plan_reporter=options.plan_reporter,
         helper_cache_dir=options.helper_cache_dir,
         include_tests=options.include_tests,
+        include_plugins=options.include_plugins,
         capture_data_effect_observations=True,
         capture_import_observations=True,
     )
@@ -2563,6 +2576,7 @@ def _apply_sync_changes(
         module_page_map=page_maps.module_page_map,
         generated_sections=generated_sections,
         preserve_semantic=options.preserve_semantic,
+        include_plugins=options.include_plugins,
         source_selection_policy=source_snapshot.source_selection_policy,
     )
     _apply_source_selection_prune(
@@ -3010,6 +3024,7 @@ def _detect_sync_entry_points(
     src_dir: str,
     *,
     source_snapshot: SourceSnapshot | None = None,
+    include_plugins: bool = True,
 ) -> _SyncEntryPointAnalysis:
     console_scripts = read_console_scripts(
         src_dir,
@@ -3032,6 +3047,7 @@ def _detect_sync_entry_points(
                 source_snapshot is not None
                 and source_snapshot.source_selection_policy is not None
             ),
+            include_plugins=include_plugins,
         ),
         include_warnings=True,
     )
@@ -3430,6 +3446,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         inventory,
         options.src_dir,
         source_snapshot=source_snapshot,
+        include_plugins=options.include_plugins,
     )
     entries = attach_routes_to_entry_points(entrypoint_analysis.entries, contracts)
     contracts = _linked_api_contracts(contracts, entries)
@@ -5029,6 +5046,7 @@ def _regenerate_flow_pages(
             inventory,
             options.src_dir,
             source_snapshot=source_snapshot,
+            include_plugins=options.include_plugins,
         ).entries
     edges = (
         call_edges
@@ -5099,6 +5117,7 @@ def _regenerate_flow_pages(
                             source_snapshot is not None
                             and source_snapshot.source_selection_policy is not None
                         ),
+                        include_plugins=options.include_plugins,
                     ),
                     flow_id=entry_point.get("id"),
                     category=entry_point.get("category"),
@@ -5221,6 +5240,7 @@ def _regenerate_dependency_pages(
                             source_snapshot is not None
                             and source_snapshot.source_selection_policy is not None
                         ),
+                        include_plugins=options.include_plugins,
                     ),
                     detail=detail,
                 ),

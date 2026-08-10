@@ -1,0 +1,35 @@
+name: LLM Wiki strict doctor dashboard
+
+on:
+  schedule:
+    - cron: "23 5 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: llm-wiki-doctor-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dashboard:
+    name: LLM Wiki strict doctor dashboard (diagnostic)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the repository without credentials
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Publish the diagnostic knowledge-health dashboard
+        uses: ./integrations/github-action
+        with:
+          wiki-dir: docs/llm_wiki
+          src-dir: .
+          strict: "true"
+          fail-on: degraded

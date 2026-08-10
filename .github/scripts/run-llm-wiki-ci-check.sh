@@ -18,9 +18,9 @@ Usage:
     --jobs 1 \
     --knowledge-drift-report
 
-The selected Python is used both to invoke `llm_wiki_cli.cli` and to parse its
-JSON output. Project-local plugins are disabled, and the bounded result summary
-is written to GITHUB_STEP_SUMMARY.
+The selected Python is used both to invoke `llm_wiki_cli.cli` and to validate
+its versioned JSON output. Project-local plugins are disabled, and the bounded
+integrity plus knowledge-health summary is written to GITHUB_STEP_SUMMARY.
 EOF
 }
 
@@ -240,32 +240,32 @@ if ${evidence_collision}; then
   json_state="unavailable (unexpected evidence-path collision)"
 elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; then
   set +e
-  "${python_executable}" -I -c \
-    'import json, pathlib, sys; json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))' \
-    "${raw_output}"
-  json_parse_exit=$?
+  "${python_executable}" -I -m llm_wiki_cli.services.ci_report validate \
+    --report "${raw_output}" \
+    --cli-exit "${cli_exit}"
+  json_validation_exit=$?
   set -e
-  if [[ ${json_parse_exit} -eq 0 ]]; then
+  if [[ ${json_validation_exit} -eq 0 ]]; then
     if [[ ! -e "${JSON_REPORT}" && ! -L "${JSON_REPORT}" ]] &&
       mv -- "${raw_output}" "${JSON_REPORT}" &&
       [[ -f "${JSON_REPORT}" && ! -L "${JSON_REPORT}" ]]; then
       json_valid=true
-      json_state="available (parseable JSON)"
+      json_state="available (validated llm-wiki-ci-check/v1)"
     else
-      json_state="unavailable (could not preserve parseable output)"
+      json_state="unavailable (could not preserve validated output)"
       if [[ -e "${JSON_REPORT}" || -L "${JSON_REPORT}" ]]; then
         quarantine_evidence_path "${JSON_REPORT}" ||
           printf 'Could not quarantine rejected JSON evidence path: %s\n' \
             "${JSON_REPORT}" >&2
       fi
-      printf 'Could not preserve parseable JSON evidence.\n' >&2
+      printf 'Could not preserve validated JSON evidence.\n' >&2
     fi
   else
-    json_state="unavailable (invalid output; diagnostic raw available)"
+    json_state="unavailable (invalid v1 output; diagnostic raw available)"
     if [[ ! -e "${INVALID_REPORT}" && ! -L "${INVALID_REPORT}" ]] &&
       mv -- "${raw_output}" "${INVALID_REPORT}" &&
       [[ -f "${INVALID_REPORT}" && ! -L "${INVALID_REPORT}" ]]; then
-      printf 'CI output is not parseable JSON; preserved as %s.\n' \
+      printf 'CI output does not satisfy llm-wiki-ci-check/v1; preserved as %s.\n' \
         "${INVALID_REPORT}" >&2
     else
       json_state="unavailable (invalid output could not be preserved)"
@@ -274,7 +274,7 @@ elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; the
           printf 'Could not quarantine rejected diagnostic evidence path: %s\n' \
             "${INVALID_REPORT}" >&2
       fi
-      printf 'CI output is not parseable JSON and could not be preserved.\n' >&2
+      printf 'Invalid CI v1 output could not be preserved.\n' >&2
     fi
   fi
 elif [[ -e "${raw_output}" || -L "${raw_output}" ]]; then
@@ -355,82 +355,26 @@ fi
 result_label="FAIL"
 [[ ${final_exit} -eq 0 ]] && result_label="PASS"
 
-summary_program=$(cat <<'PY'
-import pathlib
-import sys
-
-MAX_LINES = int(sys.argv[9])
-MAX_BYTES = int(sys.argv[10])
-STATUS_LIMIT = int(sys.argv[11])
-
-
-def clip_utf8(value: str, limit: int = 240) -> str:
-    encoded = value.encode("utf-8")
-    if len(encoded) <= limit:
-        return value
-    prefix = encoded[: limit - 3]
-    while True:
-        try:
-            return prefix.decode("utf-8") + "..."
-        except UnicodeDecodeError as exc:
-            prefix = prefix[: exc.start]
-
-
-summary_path = pathlib.Path(sys.argv[1])
-result = sys.argv[2]
-cli_exit = int(sys.argv[3])
-json_state = sys.argv[4]
-markdown_state = sys.argv[5]
-tree_state = sys.argv[6]
-status_path = pathlib.Path(sys.argv[7])
-status_count = int(sys.argv[8])
-
-lines = [
-    "## LLM Wiki integrity",
-    f"- Result: **{result}**",
-]
-if cli_exit != 0:
-    lines.append(f"- Original `ci-check` exit: `{cli_exit}`")
-lines.extend(
-    [
-        f"- JSON evidence: {json_state}",
-        f"- Markdown report: {markdown_state}",
-        f"- Worktree: {tree_state}",
-        "- Native drift diagnostics are advisory; integrity validation remains blocking.",
-    ]
+summary_args=(
+  -I -m llm_wiki_cli.services.ci_report render-summary
+  --cli-exit "${cli_exit}"
+  --result "${result_label}"
+  --json-state "${json_state}"
+  --markdown-state "${markdown_state}"
+  --tree-state "${tree_state}"
+  --status-path "${sorted_status}"
+  --status-count "${status_count}"
+  --status-limit "${STATUS_RECORD_LIMIT}"
+  --max-lines "${SUMMARY_MAX_LINES}"
+  --max-bytes "${SUMMARY_MAX_BYTES}"
+  --output "${GITHUB_STEP_SUMMARY}"
 )
-if status_count:
-    lines.append("- Dirty-path diagnostics (sorted and bounded):")
-    records = status_path.read_bytes().splitlines()
-    for raw_record in records[:STATUS_LIMIT]:
-        record = raw_record.decode("utf-8", "backslashreplace")
-        record = record.replace(chr(96), "\\x60")
-        lines.append(f"  - `{clip_utf8(record)}`")
-    if status_count > STATUS_LIMIT:
-        lines.append(
-            f"  - ... {status_count - STATUS_LIMIT} additional status records omitted"
-        )
-
-payload = ("\n".join(lines) + "\n").encode("utf-8")
-if len(lines) > MAX_LINES or len(payload) > MAX_BYTES:
-    raise SystemExit("bounded summary invariant failed")
-summary_path.write_bytes(payload)
-PY
-)
+if ${json_valid}; then
+  summary_args+=(--report "${JSON_REPORT}")
+fi
 
 set +e
-"${python_executable}" -I -c "${summary_program}" \
-  "${GITHUB_STEP_SUMMARY}" \
-  "${result_label}" \
-  "${cli_exit}" \
-  "${json_state}" \
-  "${markdown_state}" \
-  "${tree_state}" \
-  "${sorted_status}" \
-  "${status_count}" \
-  "${SUMMARY_MAX_LINES}" \
-  "${SUMMARY_MAX_BYTES}" \
-  "${STATUS_RECORD_LIMIT}"
+"${python_executable}" "${summary_args[@]}"
 summary_exit=$?
 set -e
 
@@ -445,6 +389,7 @@ if [[ ${summary_exit} -ne 0 ]]; then
     fi
     printf '%s\n' "- JSON evidence: ${json_state}"
     printf '%s\n' "- Markdown report: ${markdown_state}"
+    printf '%s\n' '- Knowledge health: `unavailable` (summary rendering failed)'
     printf '%s\n' '- Summary rendering failed.'
     printf '%s\n' '- Native drift diagnostics are advisory; integrity validation remains blocking.'
   } > "${GITHUB_STEP_SUMMARY}" || true
