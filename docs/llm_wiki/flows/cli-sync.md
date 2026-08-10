@@ -72,6 +72,8 @@ sequenceDiagram
     p1-->>p2: getattr
     p1-->>p4: bool
     p1-->>p2: getattr
+    p1-->>p4: bool
+    p1-->>p2: getattr
     p1->>p5: _cache_options_from_args
     p5-->>p4: bool
     p5-->>p2: getattr
@@ -94,11 +96,9 @@ sequenceDiagram
     p7->>p10: ExtractionJobRequest
     p1-->>p2: getattr
     p1-->>p2: getattr
-    p1-->>p4: bool
-    p1-->>p2: getattr
 ```
 
-> Call sequence diagram shows 30 of 5496 interactions; 5466 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 5498 interactions; 5468 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -114,22 +114,22 @@ flowchart LR
     s5["5. getattr"]
     s6["6. bool"]
     s7["7. getattr"]
-    s8["8. _cache_options_from_args"]
-    s9["9. bool"]
-    s10["10. getattr"]
-    s11["11. InventoryCacheOptions"]
-    s12["12. bool"]
+    s8["8. bool"]
+    s9["9. getattr"]
+    s10["10. _cache_options_from_args"]
+    s11["11. bool"]
+    s12["12. getattr"]
     s1 -->|"_sync_run_options_from_args(args)"| s2
     s2 -. "getattr(args, 'src_dir', '.')" .-> s3
     s2 -. "Path(getattr(...))" .-> s4
     s2 -. "getattr(args, 'wiki_dir', 'docs/llm_wiki')" .-> s5
     s2 -. "bool(getattr(...))" .-> s6
     s2 -. "getattr(args, 'dry_run', False)" .-> s7
-    s2 -->|"_cache_options_from_args(args)"| s8
-    s8 -. "bool(getattr(...))" .-> s9
-    s8 -. "getattr(args, 'cache_stats', False)" .-> s10
-    s8 -->|"InventoryCacheOptions(enabled=..., rebuild=bool(...), cache_dir=getattr(...), stats_enabled=cache_stats)"| s11
-    s8 -. "bool(getattr(...))" .-> s12
+    s2 -. "bool(getattr(...))" .-> s8
+    s2 -. "getattr(args, 'no_plugins', False)" .-> s9
+    s2 -->|"_cache_options_from_args(args)"| s10
+    s10 -. "bool(getattr(...))" .-> s11
+    s10 -. "getattr(args, 'cache_stats', False)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -140,8 +140,7 @@ flowchart LR
     s2 -. "output print" .-> b3
     click s1 "../modules/sync_cmd.md"
     click s2 "../modules/sync_cmd.md"
-    click s8 "../modules/sync_cmd.md"
-    click s11 "../modules/inventory_cache.md"
+    click s10 "../modules/sync_cmd.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -160,44 +159,45 @@ flowchart LR
 | `getattr` | - | - | - | - |
 | `bool` | - | - | - | - |
 | `getattr` | - | - | - | - |
+| `bool` | - | - | - | - |
+| `getattr` | - | - | - | - |
 | `_cache_options_from_args` | `args` | - | - | `InventoryCacheOptions(...)` |
 | `bool` | - | - | - | - |
 | `getattr` | - | - | - | - |
-| `InventoryCacheOptions` | - | - | - | - |
-| `bool` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 4447 | `_sync_run_options_from_args(args)` |
-| _sync_run_options_from_args | getattr | 2262 | `getattr(args, 'src_dir', '.')` |
-| _sync_run_options_from_args | Path | 2263 | `Path(getattr(...))` |
-| _sync_run_options_from_args | getattr | 2263 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
-| _sync_run_options_from_args | bool | 2264 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr | 2264 | `getattr(args, 'dry_run', False)` |
-| _sync_run_options_from_args | _cache_options_from_args | 2265 | `_cache_options_from_args(args)` |
+| run | _sync_run_options_from_args | 4464 | `_sync_run_options_from_args(args)` |
+| _sync_run_options_from_args | getattr | 2272 | `getattr(args, 'src_dir', '.')` |
+| _sync_run_options_from_args | Path | 2273 | `Path(getattr(...))` |
+| _sync_run_options_from_args | getattr | 2273 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
+| _sync_run_options_from_args | bool | 2274 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr | 2274 | `getattr(args, 'dry_run', False)` |
+| _sync_run_options_from_args | bool | 2275 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr | 2275 | `getattr(args, 'no_plugins', False)` |
+| _sync_run_options_from_args | _cache_options_from_args | 2276 | `_cache_options_from_args(args)` |
 | _cache_options_from_args | bool | 264 | `bool(getattr(...))` |
 | _cache_options_from_args | getattr | 264 | `getattr(args, 'cache_stats', False)` |
-| _cache_options_from_args | InventoryCacheOptions | 265 | `InventoryCacheOptions(enabled=..., rebuild=bool(...), cache_dir=getattr(...), stats_enabled=cache_stats)` |
-| _cache_options_from_args | bool | 266 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 4457 |
-| output | `print` | `_sync_run_options_from_args` | 2282 |
-| output | `print` | `_sync_run_options_from_args` | 2288 |
-| output | `print` | `_sync_run_options_from_args` | 2294 |
+| output | `print` | `run` | 4474 |
+| output | `print` | `_sync_run_options_from_args` | 2293 |
+| output | `print` | `_sync_run_options_from_args` | 2299 |
+| output | `print` | `_sync_run_options_from_args` | 2305 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2262 |
-| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2263 |
-| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2264 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2272 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2273 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2274 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2275 |
 | unresolved_call | `_cache_options_from_args` | `getattr` | 264 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |

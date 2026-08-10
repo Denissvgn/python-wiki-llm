@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:2a4360dbe6fe9408680df2a1e232fd2de008dcf5e33eab2e4ca2e2a884e5329a",
-    "knowledge_index_hash": "sha256:a5fab5ecb55a90b4bc76711e6075e7394255d676b2aef1811cd85f07294feb47",
-    "surface_index_hash": "sha256:59e76d7ac3c6a0ce7c53eb8f56a650a9615e3b167d63e3eed22d8d7b5afe2c2d"
+    "evaluated_envelope_hash": "sha256:76c65568dba248f1d9dca38867f801db2885a9ef14956c0df62b2063124fe174",
+    "knowledge_index_hash": "sha256:4e6aeef86bb310021c8774a5d0c48f32755077f8e868561ab4b7a6d52867176a",
+    "surface_index_hash": "sha256:39de633d2cdc31277d64d92acad8789dc3ec5fbf1d90ac7a6f27fe94fa0be669"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -57,10 +57,10 @@
     },
     "entities/ApplyDiffContext.md": {
       "basis": {
-        "concept_observation_hash": "sha256:acb94db29b75d75122faa01800128d5ffd2aa6a5472473ce3f67df6a28067bc9",
+        "concept_observation_hash": "sha256:2a7bac57ac5893d74258d649c22080541fb33d89238c01f75fa99f84c89a04c7",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -332,6 +332,16 @@
         "scope": "entity",
         "source_content_hash": "sha256:6db4c8440861ec50f52848ac664aa3ec26d4be4835f7b23f08b553f6a80d8f89",
         "source_path": "src/llm_wiki_cli/services/verification_contracts.py"
+      },
+      "state": "known"
+    },
+    "entities/CiCheckReportError.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:a1955fb765084736d90693685c828270296bff2b75f030ff361694f28fb922fb",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "entity",
+        "source_content_hash": "sha256:16fc04b0c3785160b654d9d1277eb51ab22d73f79d148510f51aec6478cf2c46",
+        "source_path": "src/llm_wiki_cli/services/ci_report.py"
       },
       "state": "known"
     },
@@ -1380,7 +1390,7 @@
         "concept_observation_hash": "sha256:e1384d4a0fac7c3e256527d22455aa6f4da2f8ff3eeeb1f47d18c55be89d152f",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -1520,7 +1530,7 @@
         "concept_observation_hash": "sha256:f6b99039638164a0483292f8287fb91b099d56f579462cd97cf9eecc81e64e15",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -1530,7 +1540,7 @@
         "concept_observation_hash": "sha256:671a557ae391a91c5038a8d485996c6b691bc7cf9072983510e7731b368abbec",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -1540,7 +1550,7 @@
         "concept_observation_hash": "sha256:4d181c83cf871ce73c86af9a6d2946964e67d73d9507d3e4c333913af670a835",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -3290,7 +3300,7 @@
         "concept_observation_hash": "sha256:146cc421e7aa3ec7ec7baba1fdb297b9ef60a8a6ca8ed2919ac11ead77edd84b",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -3640,7 +3650,7 @@
         "concept_observation_hash": "sha256:9e5610ae68a48fadcc55c6dcd234edc6f8e928bad4d3c853ad77f7eb49118314",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -4000,7 +4010,7 @@
         "concept_observation_hash": "sha256:1d327cc806849410f29d0e6da02c7924228263206c708516752bbf2263b49a91",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -4040,7 +4050,7 @@
         "concept_observation_hash": "sha256:fca8deeb545ba970537ed7b2210b38fdb9f6e82fdcaa1b9d5444d1d306727073",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -4070,7 +4080,7 @@
         "concept_observation_hash": "sha256:6131f35e6be38e232d8c4914b77c29bfbb0395cbe34e4ba5586bbc586e72bd6f",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -4080,17 +4090,17 @@
         "concept_observation_hash": "sha256:dafa708cdfc50c281fff4c68e0694776e02b59898a4f421c6e1e2fecb58c9455",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
     },
     "entities/SyncRunOptions.md": {
       "basis": {
-        "concept_observation_hash": "sha256:4c5a674b61c3f4b9f1f530e57031e5e6d6a1b6348dfbcdc915fea6833832ab30",
+        "concept_observation_hash": "sha256:81a3703967c3513e90da0ab5628fbb4771cb3b214b88b65a757b27de00504532",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -4100,7 +4110,7 @@
         "concept_observation_hash": "sha256:da9967aa3501c3b9dce5caa9e64eca7a3556f041e418eebdf0861577f4a535ee",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -4687,10 +4697,10 @@
     },
     "modules/ci_check_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:4dcfa5f70da49557f78bb94c982fae2ab81b33475f0ddd224ded9964f71b7b03",
+        "concept_observation_hash": "sha256:08c591e242091448c74317a584040cab3a05627abf00a1f61e37f4846790e123",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:e5e18444931fb9c1af48ba4f2888d844836ff3c61956d3c21e5f9f8cadb156de",
+        "source_content_hash": "sha256:673ec65de5f36c4ece189030197801f8d0220cad8b134067169948e3d16be0a1",
         "source_path": "src/llm_wiki_cli/commands/ci_check_cmd.py"
       },
       "state": "known"
@@ -4702,6 +4712,16 @@
         "scope": "module",
         "source_content_hash": "sha256:759160cbee770c839299ad0086ee85f5ef410ac0ce28a048502c0fafaa47b20e",
         "source_path": "src/llm_wiki_cli/services/ci_installer.py"
+      },
+      "state": "known"
+    },
+    "modules/ci_report.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:d63a44c8d86d3a8b05c2fe4d81d7480feac186794699083ee6aa8ad8e5bc2177",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "module",
+        "source_content_hash": "sha256:16fc04b0c3785160b654d9d1277eb51ab22d73f79d148510f51aec6478cf2c46",
+        "source_path": "src/llm_wiki_cli/services/ci_report.py"
       },
       "state": "known"
     },
@@ -4720,7 +4740,7 @@
         "concept_observation_hash": "sha256:ce1f45546c4fb63f0e90c736bfb07427b8b506bec9b1fd2742b6ce632d10a753",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:8dcae6e900830e604c45cb84fdd9c31be5ecdb391093bf7c341beb5ed3024324",
+        "source_content_hash": "sha256:8a81077d3648eb634ee63ecf4e7d55b5e46c3bd3489a354dc41ce2ba629b0343",
         "source_path": "src/llm_wiki_cli/cli.py"
       },
       "state": "known"
@@ -5677,10 +5697,10 @@
     },
     "modules/render_summary.md": {
       "basis": {
-        "concept_observation_hash": "sha256:e9e9dae801793ad61745e4d5bda7f42ca66908ca6a7d5b56990b13316591add3",
+        "concept_observation_hash": "sha256:2fcf80fc31186992229d2b20d8424730646abd4c556efaa55fbdba0ee5943b8b",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:bf78a6c7d07c31694143ab1744fd3ed01d322bd55ed4fe294af31554879c2d8a",
+        "source_content_hash": "sha256:1503d26c564f43389c8f6a35557a11b49823726ec99da3cc2a4ce7243790d156",
         "source_path": "integrations/github-action/render_summary.py"
       },
       "state": "known"
@@ -5740,7 +5760,7 @@
         "concept_observation_hash": "sha256:d2e8fa62a6e93db79a74b8c9ebb6b61171306abca82b939bea797ea35acd7d1b",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:004a18bcdfc6158d2a1263431c3d05addd71a5d3a24e52cc6919c144fdb8a736",
+        "source_content_hash": "sha256:6ec1527a75a843f56d8ef42c8a9eec28fdc53945ca52e54713c213d89710e1c0",
         "source_path": "src/llm_wiki_cli/services/contracts.py"
       },
       "state": "known"
@@ -5877,10 +5897,10 @@
     },
     "modules/sync_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:95d5f272b7687a39ce9716a771fb475c07d162c02964e67f70b4cf9048fa31c6",
+        "concept_observation_hash": "sha256:fbc51292c75d153e856291a6ad22de50cd7e43f2a7014b808b29a53c384f43c5",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+        "source_content_hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
         "source_path": "src/llm_wiki_cli/commands/sync_cmd.py"
       },
       "state": "known"
@@ -6080,12 +6100,12 @@
           {
             "path": "integrations/github-action/action.yml",
             "reason": "unrecognized-yaml",
-            "source_content_hash": "sha256:235e0d2ecc34ddd4e3de9814872de8317681b86e3ea86a81780b37ea5c56c72e"
+            "source_content_hash": "sha256:b61d2888d870ddfdac2c07c19a8506c112fd924e2789b71802ad51c4e34e5f47"
           },
           {
             "path": "integrations/wiki-integrity/action.yml",
             "reason": "unrecognized-yaml",
-            "source_content_hash": "sha256:5efec7d7397a580a1baa28cf8399ebaaee8983a73a2414cab0f2cc63b88d2566"
+            "source_content_hash": "sha256:87b96f8f3ae75e6be159006e495418596ac94bce38f61c5afeddcb562cf3427f"
           }
         ],
         "unsupported_yaml_count": 2
@@ -6329,6 +6349,12 @@
       "occurrence": 1,
       "scope": "entity",
       "source_path": "src/llm_wiki_cli/services/verification_contracts.py"
+    },
+    "entities/CiCheckReportError.md": {
+      "entity_name": "CiCheckReportError",
+      "occurrence": 1,
+      "scope": "entity",
+      "source_path": "src/llm_wiki_cli/services/ci_report.py"
     },
     "entities/CommitStage.md": {
       "entity_name": "CommitStage",
@@ -8930,6 +8956,10 @@
       "scope": "module",
       "source_path": "src/llm_wiki_cli/services/ci_installer.py"
     },
+    "modules/ci_report.md": {
+      "scope": "module",
+      "source_path": "src/llm_wiki_cli/services/ci_report.py"
+    },
     "modules/circuit_breaker.md": {
       "scope": "module",
       "source_path": "src/llm_wiki_cli/services/circuit_breaker.py"
@@ -9490,6 +9520,7 @@
             "_arguments": "—",
             "_boolean": "—",
             "_cell": "—",
+            "_clip_utf8": "—",
             "_enum": "—",
             "_exact_object": "—",
             "_freshness_counts": "—",
@@ -9507,16 +9538,17 @@
             "_validate_governance": "—",
             "_validate_snapshot": "—",
             "_validate_verification": "—",
+            "_write_receipt": "—",
             "load_report": "Load and strictly validate the complete doctor v1 contract.",
             "main": "—",
             "render_summary": "Return a compact Markdown table without interpreting human text."
           }
         }
       },
-      "hash": "sha256:bf78a6c7d07c31694143ab1744fd3ed01d322bd55ed4fe294af31554879c2d8a",
+      "hash": "sha256:1503d26c564f43389c8f6a35557a11b49823726ec99da3cc2a4ce7243790d156",
       "language": "python",
       "module_page": "render_summary",
-      "semantic_hash": "sha256:83d8ec675781edca0fb4c820d985057030b15ccbfc7dde563c22e929f4dc3191"
+      "semantic_hash": "sha256:edb99853d26fd49a492c7a081fae81b55cccb49a9027ee38d03bbc350cf20b34"
     },
     "integrations/obsidian/llm-wiki/main.js": {
       "entities": [],
@@ -10403,10 +10435,10 @@
           }
         }
       },
-      "hash": "sha256:8dcae6e900830e604c45cb84fdd9c31be5ecdb391093bf7c341beb5ed3024324",
+      "hash": "sha256:8a81077d3648eb634ee63ecf4e7d55b5e46c3bd3489a354dc41ce2ba629b0343",
       "language": "python",
       "module_page": "cli",
-      "semantic_hash": "sha256:b1f7d071c6e131295912bc97390e8eeeae3c43bc9a7d586e88772bf21b0734c0"
+      "semantic_hash": "sha256:4f29a3a38655981e6a3b2c5aa0ae3a39ab6372228c62ef6045e877793d9e0cd2"
     },
     "src/llm_wiki_cli/commands/bump_cmd.py": {
       "entities": [],
@@ -10442,10 +10474,10 @@
           }
         }
       },
-      "hash": "sha256:e5e18444931fb9c1af48ba4f2888d844836ff3c61956d3c21e5f9f8cadb156de",
+      "hash": "sha256:673ec65de5f36c4ece189030197801f8d0220cad8b134067169948e3d16be0a1",
       "language": "python",
       "module_page": "ci_check_cmd",
-      "semantic_hash": "sha256:e499cb7febf13d41ad2c1c2b3deb6d570d1543660840bbedeac6e593491efab6"
+      "semantic_hash": "sha256:d763fdf4bd9398352bb67de1f692a1cde2703c51ca6e500399dd4ed527863b43"
     },
     "src/llm_wiki_cli/commands/docs_cmd.py": {
       "entities": [],
@@ -11287,6 +11319,7 @@
               "entity_occurrence_page_cache": "—",
               "entity_page_cache": "—",
               "generated_sections": "—",
+              "include_plugins": "—",
               "inventory": "—",
               "manifest": "—",
               "metadata_only_files": "—",
@@ -11430,6 +11463,7 @@
               "flow_categories": "—",
               "force": "—",
               "helper_cache_dir": "—",
+              "include_plugins": "—",
               "include_tests": "—",
               "initialize_surfaces": "—",
               "job_request": "—",
@@ -11615,10 +11649,10 @@
           }
         }
       },
-      "hash": "sha256:9ddef7fcf14d0af4009d67b398a49741cbe370d2135c963929fab6a9ea3e434c",
+      "hash": "sha256:c23b261cec959bb066bc5e1c34309bec87fdc8972682147075832dfa24220a00",
       "language": "python",
       "module_page": "sync_cmd",
-      "semantic_hash": "sha256:f7c3ecaa3bea0eab12152dad4ab688d26367e36bbd6c43bf26ceed95547c9fa3"
+      "semantic_hash": "sha256:3bf480bbdfba2fde35e41ecd0f56714d8428cbbdc35086ed911a14a6ca5e30a8"
     },
     "src/llm_wiki_cli/commands/team_cmd.py": {
       "entities": [],
@@ -14524,6 +14558,75 @@
       "module_page": "ci_installer",
       "semantic_hash": "sha256:b820413744cefa222784f263a4be8ee8f80c529999f0013ec8f1d7f84b9e7bc4"
     },
+    "src/llm_wiki_cli/services/ci_report.py": {
+      "entities": [
+        "CiCheckReportError"
+      ],
+      "entity_page_occurrences": [
+        {
+          "name": "CiCheckReportError",
+          "occurrence": 1,
+          "page": "CiCheckReportError"
+        }
+      ],
+      "entity_pages": {
+        "CiCheckReportError": "CiCheckReportError"
+      },
+      "generated_semantics": {
+        "entities": {
+          "CiCheckReportError": {
+            "attributes": {},
+            "description": "A field-specific failure in the versioned CI report contract.",
+            "methods": {}
+          }
+        },
+        "module": {
+          "classes": {
+            "CiCheckReportError": "A field-specific failure in the versioned CI report contract."
+          },
+          "description": "Versioned full-integrity CI report composition and validation.\n\nThe producer composes the knowledge-health projection from the exact\n``LintReport`` already built by ``ci-check``.  It never invokes ``doctor`` or\nperforms another source extraction.  The strict loader and bounded renderer\nare used by the portable GitHub integrity wrapper; broad ``ci-check`` policy\nand its process exit remain authoritative over the nested health dashboard.",
+          "functions": {
+            "_arguments": "—",
+            "_array": "—",
+            "_boolean": "—",
+            "_canonical_plan_ids": "—",
+            "_canonical_string_array": "—",
+            "_clip_utf8": "—",
+            "_contract_object": "—",
+            "_count_mapping": "—",
+            "_enum": "—",
+            "_exact_object": "—",
+            "_expected_health_classification": "—",
+            "_finding_reasons": "—",
+            "_freshness_counts": "—",
+            "_nonnegative_integer": "—",
+            "_nullable_boolean": "—",
+            "_nullable_nonnegative_integer": "—",
+            "_nullable_string": "—",
+            "_object": "—",
+            "_positive_integer": "—",
+            "_reject_nonfinite": "—",
+            "_strict_json_object": "—",
+            "_string": "—",
+            "_string_array": "—",
+            "_validate_doctor": "—",
+            "_validate_execution": "—",
+            "_validate_knowledge_summary": "—",
+            "_validate_lint_findings": "—",
+            "build_ci_check_payload": "Compose CI v1 and doctor v1 from one already evaluated lint report.",
+            "load_ci_check_payload": "Read strict UTF-8 JSON and validate the complete CI v1 contract.",
+            "main": "Internal CLI used by the isolated GitHub integrity wrapper.",
+            "render_ci_summary": "Render fixed-state integrity and health evidence within strict bounds.",
+            "validate_ci_check_payload": "Validate the complete CI v1 contract and its captured process exit.",
+            "validate_doctor_payload": "Validate doctor v1 structure, semantics, and overall classification."
+          }
+        }
+      },
+      "hash": "sha256:16fc04b0c3785160b654d9d1277eb51ab22d73f79d148510f51aec6478cf2c46",
+      "language": "python",
+      "module_page": "ci_report",
+      "semantic_hash": "sha256:8c2a54eb0f0e95db44894c36d2c44001c32a60ef998d7108316251339a730167"
+    },
     "src/llm_wiki_cli/services/circuit_breaker.py": {
       "entities": [],
       "entity_page_occurrences": [],
@@ -15130,10 +15233,10 @@
           "functions": {}
         }
       },
-      "hash": "sha256:004a18bcdfc6158d2a1263431c3d05addd71a5d3a24e52cc6919c144fdb8a736",
+      "hash": "sha256:6ec1527a75a843f56d8ef42c8a9eec28fdc53945ca52e54713c213d89710e1c0",
       "language": "python",
       "module_page": "services_contracts",
-      "semantic_hash": "sha256:df25617bfdc9ae5ef09f05c7fa961eb9263137f1cf68a3e0c2a4a3728fafbd8c"
+      "semantic_hash": "sha256:5420e4349bc95236a481935ce50ba97eede439b7005a7b6fc325053339ecb5b5"
     },
     "src/llm_wiki_cli/services/data_flow.py": {
       "entities": [

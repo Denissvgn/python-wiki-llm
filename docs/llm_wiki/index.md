@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 459 | [Open section](#entities) |
-| Modules | 147 | [Open section](#modules) |
+| Entities | 460 | [Open section](#entities) |
+| Modules | 148 | [Open section](#modules) |
 | Workflows | 12 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 421 | [Open section](#entry-point-flows) |
+| Entry-point flows | 422 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -51,6 +51,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [CapturedContextRead](entities/CapturedContextRead.md)
 - [CapturedStream](entities/CapturedStream.md)
 - [CheckerContract](entities/CheckerContract.md)
+- [CiCheckReportError](entities/CiCheckReportError.md)
 - [CommitStage](entities/CommitStage.md)
 - [CommittedRuntimeProvenance](entities/CommittedRuntimeProvenance.md)
 - [CompatibilityModule](entities/CompatibilityModule.md)
@@ -491,6 +492,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [calibration_contracts](modules/calibration_contracts.md) - Deterministic evidence contracts for standalone documentation calibration.
 - [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
 - [ci_installer](modules/ci_installer.md) - Portable installation of the managed LLM Wiki integrity workflow.
+- [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
 - [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
 - [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
@@ -1086,6 +1088,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 **process**
 
+- [process-ci_report](flows/process-ci_report.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
 

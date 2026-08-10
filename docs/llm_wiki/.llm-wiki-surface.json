@@ -18,18 +18,18 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 459,
-      "flows": 421,
+      "entities": 460,
+      "flows": 422,
       "guides": 6,
       "index": 1,
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 147,
+      "modules": 148,
       "workflows": 12
     },
     "dependency_architecture": 2,
-    "total": 1049
+    "total": 1052
   },
   "dependency_pages": {
     "count": 2,
@@ -27574,7 +27574,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 78,
+              "line": 80,
               "step": "run",
               "step_index": 1,
               "target": "report_path.write_text"
@@ -27582,7 +27582,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 80,
+              "line": 82,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -27590,25 +27590,13 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 81,
+              "line": 83,
               "step": "run",
               "step_index": 1,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "unresolved_call",
-              "line": 41,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 42,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "unresolved_call",
               "line": 43,
@@ -27642,6 +27630,18 @@
             {
               "kind": "unresolved_call",
               "line": 48,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 49,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 50,
               "step": "run",
               "target": "getattr"
             },
@@ -27704,9 +27704,11 @@
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/team.py",
+            "src/llm_wiki_cli/services/ci_report.py",
+            "src/llm_wiki_cli/services/doctor_service.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 2583,
+          "step_count": 2672,
           "truncated": true
         }
       },
@@ -30711,7 +30713,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 4457,
+              "line": 4474,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30719,7 +30721,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2282,
+              "line": 2293,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -30727,7 +30729,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2288,
+              "line": 2299,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -30735,7 +30737,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2294,
+              "line": 2305,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -30744,19 +30746,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2262,
+              "line": 2272,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2263,
+              "line": 2273,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2264,
+              "line": 2274,
+              "step": "_sync_run_options_from_args",
+              "target": "getattr"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 2275,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -30830,7 +30838,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 5497,
+          "step_count": 5499,
           "truncated": true
         }
       },
@@ -31917,6 +31925,111 @@
       "category": "process",
       "detector": "builtin",
       "entry_point": {
+        "label": "ci_report",
+        "source_path": "src/llm_wiki_cli/services/ci_report.py",
+        "symbol": "main"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [
+            {
+              "confidence": "unknown",
+              "kind": "filesystem_write",
+              "line": 1357,
+              "step": "main",
+              "step_index": 1,
+              "target": "output.write_bytes"
+            }
+          ],
+          "gaps": [
+            {
+              "kind": "external_call",
+              "line": 1301,
+              "step": "_arguments",
+              "target": "argparse.ArgumentParser"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1302,
+              "step": "_arguments",
+              "target": "parser.add_subparsers"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1303,
+              "step": "_arguments",
+              "target": "commands.add_parser"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1304,
+              "step": "_arguments",
+              "target": "validate.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1305,
+              "step": "_arguments",
+              "target": "validate.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1307,
+              "step": "_arguments",
+              "target": "commands.add_parser"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1308,
+              "step": "_arguments",
+              "target": "summary.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1309,
+              "step": "_arguments",
+              "target": "summary.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1310,
+              "step": "_arguments",
+              "target": "summary.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1311,
+              "step": "_arguments",
+              "target": "summary.add_argument"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "main",
+              "target": "first 12 steps"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/ci_report.py",
+            "src/llm_wiki_cli/services/knowledge_observability.py"
+          ],
+          "step_count": 344,
+          "truncated": false
+        }
+      },
+      "id": "process-ci_report",
+      "language": "python"
+    },
+    {
+      "category": "process",
+      "detector": "builtin",
+      "entry_point": {
         "label": "llm-wiki",
         "source_path": "src/llm_wiki_cli/cli.py",
         "symbol": "main"
@@ -31927,26 +32040,10 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2301,
+              "line": 2306,
               "step": "main",
               "step_index": 1,
               "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2304,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "environment_read",
-              "line": 2307,
-              "step": "main",
-              "step_index": 1,
-              "target": "os.environ.get"
             },
             {
               "confidence": "unknown",
@@ -31958,8 +32055,24 @@
             },
             {
               "confidence": "unknown",
-              "kind": "output",
+              "kind": "environment_read",
               "line": 2312,
+              "step": "main",
+              "step_index": 1,
+              "target": "os.environ.get"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2314,
+              "step": "main",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2317,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -32031,7 +32144,7 @@
             "src/llm_wiki_cli/cli.py",
             "src/llm_wiki_cli/services/resource_diagnostics.py"
           ],
-          "step_count": 531,
+          "step_count": 532,
           "truncated": false
         }
       },
@@ -32052,7 +32165,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 447,
+              "line": 519,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -32060,7 +32173,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 449,
+              "line": 521,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -32069,27 +32182,15 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 107,
+              "line": 108,
               "step": "_arguments",
               "target": "argparse.ArgumentParser"
             },
             {
               "kind": "unresolved_call",
-              "line": 108,
-              "step": "_arguments",
-              "target": "parser.add_argument"
-            },
-            {
-              "kind": "unresolved_call",
               "line": 109,
               "step": "_arguments",
               "target": "parser.add_argument"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 109,
-              "step": "_arguments",
-              "target": "sorted"
             },
             {
               "kind": "unresolved_call",
@@ -32099,46 +32200,65 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 112,
+              "line": 110,
+              "step": "_arguments",
+              "target": "sorted"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 111,
+              "step": "_arguments",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 113,
               "step": "_arguments",
               "target": "range"
             },
             {
               "kind": "unresolved_call",
-              "line": 116,
+              "line": 117,
               "step": "_arguments",
-              "target": "parser.parse_args"
-            },
-            {
-              "kind": "external_call",
-              "line": 344,
-              "step": "load_report",
-              "target": "json.loads"
+              "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 345,
-              "step": "load_report",
-              "target": "Path(path).read_text"
+              "line": 122,
+              "step": "_arguments",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 123,
+              "step": "_arguments",
+              "target": "parser.parse_args"
             },
             {
               "kind": "step_limit",
               "line": 0,
               "step": "main",
               "target": "first 12 steps"
+            },
+            {
+              "kind": "truncated_flow",
+              "line": 0,
+              "step": "main",
+              "target": "depth limit"
             }
           ],
           "generated": true,
           "step_count": 12,
           "transfer_count": 11,
-          "truncated": false
+          "truncated": true
         },
         "flow": {
           "modules_touched": [
-            "integrations/github-action/render_summary.py"
+            "integrations/github-action/render_summary.py",
+            "src/llm_wiki_cli/services/ci_report.py"
           ],
-          "step_count": 135,
-          "truncated": false
+          "step_count": 305,
+          "truncated": true
         }
       },
       "id": "process-render_summary",
@@ -32187,6 +32307,7 @@
         "entities/CapturedContextRead.md",
         "entities/CapturedStream.md",
         "entities/CheckerContract.md",
+        "entities/CiCheckReportError.md",
         "entities/CommitStage.md",
         "entities/CommittedRuntimeProvenance.md",
         "entities/CompatibilityModule.md",
@@ -33031,6 +33152,7 @@
         "flows/mcp-related_concepts.md",
         "flows/mcp-search_wiki.md",
         "flows/mcp-traverse_typed_graph.md",
+        "flows/process-ci_report.md",
         "flows/process-llm-wiki.md",
         "flows/process-render_summary.md",
         "guides/cli-and-python-api.md",
@@ -33052,6 +33174,7 @@
         "modules/calibration_contracts.md",
         "modules/ci_check_cmd.md",
         "modules/ci_installer.md",
+        "modules/ci_report.md",
         "modules/circuit_breaker.md",
         "modules/cli.md",
         "modules/common.md",
@@ -33650,6 +33773,18 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/verification_contracts.py",
       "title": "CheckerContract"
+    },
+    {
+      "canonical_path": "entities/CiCheckReportError.md",
+      "id": "CiCheckReportError",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/CiCheckReportError",
+      "outgoing_internal_links": [
+        "modules/ci_report.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/ci_report.py",
+      "title": "CiCheckReportError"
     },
     {
       "canonical_path": "entities/CommitStage.md",
@@ -35913,6 +36048,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/KnowledgeAggregateSummary",
       "outgoing_internal_links": [
+        "modules/ci_report.md",
         "modules/knowledge_observability.md",
         "modules/lint_service.md",
         "modules/metrics.md"
@@ -36485,6 +36621,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/LintReport",
       "outgoing_internal_links": [
+        "modules/ci_report.md",
         "modules/doctor_service.md",
         "modules/lint_service.md"
       ],
@@ -39429,6 +39566,7 @@
       "mcp_uri": "llm-wiki://modules/ci_check_cmd",
       "outgoing_internal_links": [
         "modules/ci_check_cmd.md",
+        "modules/ci_report.md",
         "modules/cli.md",
         "modules/config.md",
         "modules/extraction_jobs.md",
@@ -39460,6 +39598,25 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/ci_installer.py",
       "title": "ci_installer Module"
+    },
+    {
+      "canonical_path": "modules/ci_report.md",
+      "id": "ci_report",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/ci_report",
+      "outgoing_internal_links": [
+        "entities/CiCheckReportError.md",
+        "modules/ci_check_cmd.md",
+        "modules/ci_report.md",
+        "modules/doctor_service.md",
+        "modules/knowledge_observability.md",
+        "modules/lint_service.md",
+        "modules/render_summary.md",
+        "modules/services_contracts.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/ci_report.py",
+      "title": "ci_report Module"
     },
     {
       "canonical_path": "modules/circuit_breaker.md",
@@ -41223,7 +41380,10 @@
       "id": "render_summary",
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/render_summary",
-      "outgoing_internal_links": [],
+      "outgoing_internal_links": [
+        "modules/ci_report.md",
+        "modules/render_summary.md"
+      ],
       "role": "semantic",
       "source_path": "integrations/github-action/render_summary.py",
       "title": "render_summary Module"
@@ -47991,10 +48151,12 @@
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
         "modules/ci_check_cmd.md",
+        "modules/ci_report.md",
         "modules/common.md",
         "modules/config.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/doctor_service.md",
         "modules/entrypoints.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -48972,6 +49134,22 @@
       "title": "traverse_typed_graph"
     },
     {
+      "canonical_path": "flows/process-ci_report.md",
+      "id": "process-ci_report",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/process-ci_report",
+      "outgoing_internal_links": [
+        "modules/ci_report.md",
+        "modules/doctor_service.md",
+        "modules/knowledge_observability.md",
+        "modules/lint_service.md",
+        "modules/services_contracts.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/ci_report.py",
+      "title": "ci_report"
+    },
+    {
       "canonical_path": "flows/process-llm-wiki.md",
       "id": "process-llm-wiki",
       "kind": "flows",
@@ -48993,6 +49171,7 @@
       "kind": "flows",
       "mcp_uri": "llm-wiki://flows/process-render_summary",
       "outgoing_internal_links": [
+        "modules/ci_report.md",
         "modules/render_summary.md"
       ],
       "role": "mixed",
@@ -49017,6 +49196,7 @@
         "modules/calibration_contracts.md",
         "modules/ci_check_cmd.md",
         "modules/ci_installer.md",
+        "modules/ci_report.md",
         "modules/circuit_breaker.md",
         "modules/cli.md",
         "modules/common.md",
@@ -49176,6 +49356,7 @@
         "modules/calibration_contracts.md",
         "modules/ci_check_cmd.md",
         "modules/ci_installer.md",
+        "modules/ci_report.md",
         "modules/circuit_breaker.md",
         "modules/cli.md",
         "modules/common.md",
@@ -49319,5 +49500,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:663233418d930375ace022da1b33a979769af3ac37ebbc587eaba2e3a1eb8452"
+  "source_hash": "sha256:0b8813365456883bc84c45af63c56eb5fcc371b1ffc4d7e208a6f6b7771852ac"
 }

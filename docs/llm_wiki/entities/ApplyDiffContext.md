@@ -28,6 +28,7 @@ _Auto-generated from `_ApplyDiffContext` in `src/llm_wiki_cli/commands/sync_cmd.
 | `current_entity_pages` | `set[str]` | *required* | — |
 | `current_module_pages` | `set[str]` | *required* | — |
 | `preserve_semantic` | `bool` | *required* | — |
+| `include_plugins` | `bool` | `True` | — |
 | `source_selection_policy` | `SourceSelectionPolicy \| None` | `None` | — |
 
 ## Methods
@@ -80,7 +81,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `current_entity_pages`, `current_module_pages`, `entity_occurrence_page_cache`, `entity_page_cache`, `generated_sections`, `inventory`, `manifest`, `metadata_only_files`, `module_page_map`, `preserve_semantic`, `relationships`, `source_selection_policy` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `current_entity_pages`, `current_module_pages`, `entity_occurrence_page_cache`, `entity_page_cache`, `generated_sections`, `include_plugins`, `inventory`, `manifest`, `metadata_only_files`, `module_page_map`, `preserve_semantic`, `relationships` |
 
 ### References
 

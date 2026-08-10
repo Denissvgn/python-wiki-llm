@@ -9,6 +9,7 @@ Internal module dependency graph and external package reconciliation.
 flowchart TD
     n0["integrations"]
     n1["src"]
+    n0 --> n1
 ```
 
 ## Cycles
@@ -29,8 +30,8 @@ flowchart TD
 | [config](modules/config.md) | 46 | 2 |
 | [source_snapshot](modules/source_snapshot.md) | 33 | 5 |
 | [wiki_surface](modules/wiki_surface.md) | 30 | 1 |
+| [services_contracts](modules/services_contracts.md) | 29 | 0 |
 | [source_selection](modules/source_selection.md) | 29 | 2 |
-| [services_contracts](modules/services_contracts.md) | 28 | 0 |
 | [io](modules/io.md) | 26 | 1 |
 | [sync_manifest](modules/sync_manifest.md) | 24 | 6 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 23 | 1 |
@@ -41,9 +42,9 @@ flowchart TD
 | [knowledge_governance](modules/knowledge_governance.md) | 16 | 9 |
 | [plugins](modules/plugins.md) | 16 | 2 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 15 | 14 |
+| [knowledge_observability](modules/knowledge_observability.md) | 14 | 9 |
 | [bootstrap_runtime](modules/bootstrap_runtime.md) | 13 | 28 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 13 | 4 |
-| [knowledge_observability](modules/knowledge_observability.md) | 13 | 9 |
 | [common](modules/common.md) | 11 | 1 |
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 23 |
 | [wiki_media](modules/wiki_media.md) | 11 | 0 |
@@ -61,6 +62,7 @@ flowchart TD
 | [integrity](modules/integrity.md) | 7 | 7 |
 | [imports](modules/imports.md) | 7 | 3 |
 | [inventory_cache](modules/inventory_cache.md) | 7 | 4 |
+| [lint_service](modules/lint_service.md) | 7 | 34 |
 | [skills](modules/skills.md) | 7 | 2 |
 | [context_service](modules/context_service.md) | 6 | 25 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 6 | 1 |
@@ -68,7 +70,6 @@ flowchart TD
 | [knowledge_loader](modules/knowledge_loader.md) | 6 | 8 |
 | [knowledge_orchestration](modules/knowledge_orchestration.md) | 6 | 15 |
 | [knowledge_verification](modules/knowledge_verification.md) | 6 | 4 |
-| [lint_service](modules/lint_service.md) | 6 | 34 |
 | [markdown_sections](modules/markdown_sections.md) | 6 | 1 |
 | [services_schema](modules/services_schema.md) | 6 | 4 |
 | [data_flow](modules/data_flow.md) | 5 | 1 |
@@ -92,6 +93,7 @@ flowchart TD
 | [host_broker](modules/host_broker.md) | 3 | 2 |
 | [circuit_breaker](modules/circuit_breaker.md) | 3 | 0 |
 | [context_packet](modules/context_packet.md) | 3 | 18 |
+| [doctor_service](modules/doctor_service.md) | 3 | 12 |
 | [documentation_policy](modules/documentation_policy.md) | 3 | 3 |
 | [documentation_run___init__](modules/documentation_run___init__.md) | 3 | 11 |
 | [record](modules/record.md) | 3 | 7 |
@@ -101,8 +103,8 @@ flowchart TD
 | [hook_cmd](modules/hook_cmd.md) | 2 | 3 |
 | [broker](modules/broker.md) | 2 | 5 |
 | [ci_installer](modules/ci_installer.md) | 2 | 5 |
+| [ci_report](modules/ci_report.md) | 2 | 4 |
 | [diagrams](modules/diagrams.md) | 2 | 2 |
-| [doctor_service](modules/doctor_service.md) | 2 | 12 |
 | [documentation_native](modules/documentation_native.md) | 2 | 23 |
 | [packet](modules/packet.md) | 2 | 5 |
 | [verify](modules/verify.md) | 2 | 9 |
@@ -119,7 +121,7 @@ flowchart TD
 | [api](modules/api.md) | 1 | 22 |
 | [api_types](modules/api_types.md) | 1 | 0 |
 | [bump_cmd](modules/bump_cmd.md) | 1 | 1 |
-| [ci_check_cmd](modules/ci_check_cmd.md) | 1 | 5 |
+| [ci_check_cmd](modules/ci_check_cmd.md) | 1 | 6 |
 | [docs_cmd](modules/docs_cmd.md) | 1 | 5 |
 | [doctor_cmd](modules/doctor_cmd.md) | 1 | 3 |
 | [init_cmd](modules/init_cmd.md) | 1 | 7 |
@@ -163,7 +165,7 @@ flowchart TD
 | [plugin_samples](modules/plugin_samples.md) | 1 | 1 |
 | [protected_artifacts](modules/protected_artifacts.md) | 1 | 2 |
 | [wiki_git_policy](modules/wiki_git_policy.md) | 1 | 0 |
-| [render_summary](modules/render_summary.md) | 0 | 0 |
+| [render_summary](modules/render_summary.md) | 0 | 1 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
 | [cli](modules/cli.md) | 0 | 34 |

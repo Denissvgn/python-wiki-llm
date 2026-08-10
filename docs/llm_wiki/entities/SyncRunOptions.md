@@ -1,6 +1,6 @@
 # _SyncRunOptions
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1572`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1581`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -31,6 +31,7 @@ _Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py
 | `flow_categories` | `frozenset[str] \| None` | *required* | — |
 | `exclude_tests` | `bool` | *required* | — |
 | `dry_run` | `bool` | *required* | — |
+| `include_plugins` | `bool` | *required* | — |
 | `openapi_file` | `str \| None` | *required* | — |
 | `clear_openapi_file` | `bool` | *required* | — |
 | `source_selection` | `str \| Path \| None` | *required* | — |
@@ -88,7 +89,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `allow_external_src`, `cache_options`, `cache_stats_enabled`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `flow_categories`, `force`, `helper_cache_dir`, `include_tests`, `initialize_surfaces`, `job_request` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `allow_external_src`, `cache_options`, `cache_stats_enabled`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `flow_categories`, `force`, `helper_cache_dir`, `include_plugins`, `include_tests`, `initialize_surfaces` |
 
 ### References
 
