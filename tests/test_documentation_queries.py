@@ -9,6 +9,7 @@ import pytest
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
+    QUERY_FILTER_VALUE_LIMIT,
 )
 
 
@@ -203,6 +204,66 @@ def _service(**kwargs) -> DocumentationGraphQueryService:
     )
 
 
+class _CountingValues:
+    def __init__(self, value: str, *, fail: bool = False):
+        self.value = value
+        self.fail = fail
+        self.pulled = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.pulled += 1
+        if self.fail:
+            raise RuntimeError("iterator failed")
+        return self.value
+
+
+@pytest.mark.parametrize(
+    ("field", "invoke"),
+    [
+        (
+            "kinds",
+            lambda service, values: service.related_concepts(
+                "llm-wiki://entities/User",
+                kinds=values,
+            ),
+        ),
+        (
+            "kinds",
+            lambda service, values: service.traverse_typed_graph(
+                "llm-wiki://entities/User",
+                kinds=values,
+            ),
+        ),
+        (
+            "origins",
+            lambda service, values: service.traverse_typed_graph(
+                "llm-wiki://entities/User",
+                origins=values,
+            ),
+        ),
+    ],
+)
+def test_query_filter_iterables_are_bounded_and_fail_closed(field, invoke):
+    service = DocumentationGraphQueryService({})
+    value = "links_to" if field == "kinds" else "extracted"
+    oversized = _CountingValues(value)
+
+    with pytest.raises(
+        DocumentationQueryError,
+        match=f"{field} must contain at most {QUERY_FILTER_VALUE_LIMIT}",
+    ):
+        invoke(service, oversized)
+    assert oversized.pulled == QUERY_FILTER_VALUE_LIMIT + 1
+
+    broken = _CountingValues(value, fail=True)
+    with pytest.raises(DocumentationQueryError, match=f"{field} must be an iterable"):
+        invoke(service, broken)
+    assert broken.pulled == 1
+
+
 def _assert_bounds(result, expected):
     assert set(result["bounds"]) == set(expected)
     for path, collection in expected.items():
@@ -331,6 +392,25 @@ def test_unknown_symbol_returns_structured_empty_result():
     assert service.flow_for_entrypoint("missing")["flow"] is None
     assert service.data_flow_for_entrypoint("missing")["data_flow"] is None
     assert service.pages_for_symbol("missing")["pages"] == []
+
+
+def test_missing_graph_identifiers_are_never_indexed_as_none_strings():
+    service = DocumentationGraphQueryService(
+        {
+            "broken.py": {
+                "imports": [],
+                "classes": [{"name": None}],
+                "functions": [{"name": None}],
+            }
+        },
+        flows=[{"entry": {}, "steps": []}],
+        data_flows=[{"entry": {}, "steps": [], "transfers": []}],
+    )
+
+    assert service.callers("None")["found"] is False
+    assert service.callees("None")["found"] is False
+    assert service.flow_for_entrypoint("None")["found"] is False
+    assert service.data_flow_for_entrypoint("None")["found"] is False
 
 
 def test_ambiguous_symbol_returns_matches_without_selected_payload():

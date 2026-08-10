@@ -257,9 +257,7 @@ def test_list_concept_sections_is_document_order_bounded_and_filter_first(
     result = service.list_concept_sections(USER_LOCATOR, ownership="unknown")
 
     expected_unknown = [
-        section
-        for section in observed.sections
-        if section.ownership.value == "unknown"
+        section for section in observed.sections if section.ownership.value == "unknown"
     ]
     assert result["section_ownership"] == {
         "availability": "ready",
@@ -284,7 +282,9 @@ def test_list_concept_sections_is_document_order_bounded_and_filter_first(
         "unknown",
         "unknown",
     ]
-    assert all(section["review"]["state"] == "unknown" for section in result["sections"])
+    assert all(
+        section["review"]["state"] == "unknown" for section in result["sections"]
+    )
     _assert_compact(result)
 
     for ownership in ("generated", "semantic", "mixed"):
@@ -303,14 +303,10 @@ def test_list_concept_sections_preserves_duplicate_heading_occurrences(tmp_path)
 
     result = _knowledge_service(view).list_concept_sections(USER_LOCATOR)
     descriptions = [
-        section
-        for section in result["sections"]
-        if section["title"] == "Description"
+        section for section in result["sections"] if section["title"] == "Description"
     ]
     expected = [
-        section
-        for section in observed.sections
-        if section.title == "Description"
+        section for section in observed.sections if section.title == "Description"
     ]
 
     assert len(descriptions) == 2
@@ -455,9 +451,7 @@ def test_governed_concept_lookup_accepts_uid_alias_and_current_locator(tmp_path)
 
     by_uid = service.get_concept(user_uid)
     by_alias = service.get_concept("llm-wiki://entities/LegacyUser")
-    by_natural_alias = service.get_concept(
-        "code-entity:entities/LegacyUser.md"
-    )
+    by_natural_alias = service.get_concept("code-entity:entities/LegacyUser.md")
     by_locator = service.get_concept(USER_LOCATOR)
 
     assert (
@@ -547,10 +541,7 @@ def test_governed_concept_lookup_accepts_uid_alias_and_current_locator(tmp_path)
         "kind": "concept",
         "uid": successor_uid,
     }
-    assert (
-        traversal["edges"][0]["related_concept"]["uid"]
-        == successor_uid
-    )
+    assert traversal["edges"][0]["related_concept"]["uid"] == successor_uid
 
 
 @pytest.mark.parametrize(
@@ -733,6 +724,25 @@ def test_query_compact_and_full_freshness_render_every_incompatible_hint(
     assert compact["state"] == full["state"] == "basis-incompatible"
 
 
+def test_explain_evidence_has_a_truthful_serialized_byte_cap(tmp_path):
+    service = _knowledge_service(_ready_view(tmp_path))
+    concept = service.concept_by_locator[USER_LOCATOR]
+    concept["facets"]["structure"]["oversized_diagnostic"] = "x" * (2 << 20)
+
+    explained = service.explain_evidence(USER_LOCATOR)
+    byte_bound = explained["bounds"]["raw_evidence_bytes"]
+
+    assert byte_bound["total"] > 2 << 20
+    assert byte_bound["returned"] <= 64 * 1024
+    assert byte_bound["limit"] == 64 * 1024
+    assert byte_bound["truncated"] is True
+    assert explained["truncated"] is True
+    assert explained["returned"] == 0
+    assert explained["bounds"]["evidence.relationships"]["returned"] == 0
+    assert explained["evidence"]["omitted"] is True
+    assert explained["evidence"]["reason"] == "raw-evidence-byte-limit"
+
+
 @pytest.mark.parametrize(
     ("state", "availability", "reason"),
     [
@@ -768,9 +778,7 @@ def test_loader_selected_non_ready_view_never_exposes_a_trustworthy_empty_graph(
         knowledge_path.write_bytes(b"{not-json\n")
     else:
         knowledge_path.write_bytes(
-            formatted_json_bytes(
-                {"schema_version": "llm-wiki-knowledge/v999"}
-            )
+            formatted_json_bytes({"schema_version": "llm-wiki-knowledge/v999"})
         )
     loaded = load_knowledge_state(
         tmp_path,
@@ -821,6 +829,12 @@ def test_loader_selected_non_ready_view_never_exposes_a_trustworthy_empty_graph(
             "returned": 0,
             "truncated": False,
         },
+        "raw_evidence_bytes": {
+            "total": 0,
+            "returned": 0,
+            "limit": 64 * 1024,
+            "truncated": False,
+        },
     }
 
 
@@ -864,16 +878,13 @@ def test_related_concepts_preserves_phase_one_target_states(tmp_path):
         "matches": {"total": 1, "returned": 1, "truncated": False},
         "relationships": {"total": 8, "returned": 8, "truncated": False},
     }
-    assert [item["kind"] for item in result["relationships"]].count(
-        "derived_from"
-    ) == 1
+    assert [item["kind"] for item in result["relationships"]].count("derived_from") == 1
     assert [item["kind"] for item in result["relationships"]].count("links_to") == 7
-    assert [item["locator"] for item in result["related_concepts"]] == [
-        USER_LOCATOR
-    ]
-    assert {
-        item["target"]["target_class"] for item in result["external_targets"]
-    } == {"external", "mail"}
+    assert [item["locator"] for item in result["related_concepts"]] == [USER_LOCATOR]
+    assert {item["target"]["target_class"] for item in result["external_targets"]} == {
+        "external",
+        "mail",
+    }
     assert {
         item["target"]["target_class"] for item in result["unresolved_targets"]
     } == {"concept", "malformed"}
@@ -928,10 +939,10 @@ def test_related_concepts_preserves_phase_one_target_states(tmp_path):
     )
     assert anchor["target"]["normalized_target"] == "#usage"
     assert asset["target"]["normalized_target"] == "../assets/account-flow.svg"
-    assert malformed["target"]["raw_target"] == ""
-    assert malformed["target"]["normalized_target"] == ""
-    assert unresolved["target"]["raw_target"] == r"..\entities\Missing.md"
-    assert unresolved["target"]["normalized_target"] == r"..\entities\Missing.md"
+    assert malformed["target"]["coordinate_state"] == "unavailable"
+    assert "raw_target" not in malformed["target"]
+    assert unresolved["target"]["normalized_target"] == "../entities/Missing.md"
+    assert "raw_target" not in unresolved["target"]
     assert all("label" not in item["target"] for item in result["relationships"])
     _assert_compact(result)
     json.dumps(result, sort_keys=True)
@@ -1004,6 +1015,26 @@ def test_related_filters_before_bounding_and_discloses_counts(tmp_path):
             "total": 8,
             "returned": 2,
             "truncated": True,
+        },
+        "raw_evidence_bytes": {
+            "total": len(
+                json.dumps(
+                    explained["evidence"],
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                ).encode("utf-8")
+            ),
+            "returned": len(
+                json.dumps(
+                    explained["evidence"],
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                ).encode("utf-8")
+            ),
+            "limit": 64 * 1024,
+            "truncated": False,
         },
     }
 
@@ -1285,8 +1316,9 @@ def test_ambiguous_markdown_target_remains_an_observation_not_a_concept_edge(
             "resolution": "ambiguous",
             "target": {
                 "target_class": "concept",
-                "raw_target": unresolved.target.raw_target,
-                "normalized_target": unresolved.target.normalized_target,
+                "normalized_target": unresolved.target.normalized_target.replace(
+                    "\\", "/"
+                ),
             },
         }
     ]
@@ -1355,13 +1387,9 @@ def test_knowledge_is_normalized_and_indexed_only_during_construction(
     service.concept_by_canonical_path = NoIterationDict(
         service.concept_by_canonical_path
     )
-    service.outbound_relationships = NoIterationDict(
-        service.outbound_relationships
-    )
+    service.outbound_relationships = NoIterationDict(service.outbound_relationships)
     service.inbound_relationships = NoIterationDict(service.inbound_relationships)
-    service.sections_by_page_locator = NoIterationDict(
-        service.sections_by_page_locator
-    )
+    service.sections_by_page_locator = NoIterationDict(service.sections_by_page_locator)
 
     for _ in range(2):
         assert service.get_concept(USER_LOCATOR)["found"] is True
@@ -1404,3 +1432,81 @@ def test_constructor_rejects_unvalidated_knowledge_input():
             {},
             knowledge_view={"knowledge": "raw"},  # type: ignore[arg-type]
         )
+
+
+def test_public_query_result_caps_one_oversized_valid_concept_record(tmp_path):
+    view = _ready_view(tmp_path)
+    assert view.knowledge is not None
+    concepts = tuple(
+        replace(concept, title="x" * (2 * 1024 * 1024))
+        if concept.locator == USER_LOCATOR
+        else concept
+        for concept in view.knowledge.concepts
+    )
+    service = _knowledge_service(
+        replace(view, knowledge=replace(view.knowledge, concepts=concepts))
+    )
+
+    result = service.get_concept(USER_LOCATOR)
+    encoded = json.dumps(
+        result,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+    assert len(encoded) <= documentation_queries.QUERY_RESULT_SERIALIZED_BYTE_LIMIT
+    assert result["truncated"] is True
+    assert result["concept"]["title"].endswith("…")
+    assert result["concept"]["locator"] == USER_LOCATOR
+    assert result["matches"][0]["locator"] == USER_LOCATOR
+    assert result["bounds"]["result_bytes"] == {
+        "total": result["bounds"]["result_bytes"]["total"],
+        "returned": len(encoded),
+        "limit": documentation_queries.QUERY_RESULT_SERIALIZED_BYTE_LIMIT,
+        "truncated": True,
+    }
+    assert result["bounds"]["result_bytes"]["total"] > len(encoded)
+
+
+def test_oversized_exact_query_identity_is_rejected_without_mutation():
+    oversized = "llm-wiki://entities/" + "x" * 5000
+
+    with pytest.raises(DocumentationQueryError, match="UTF-8 bytes"):
+        DocumentationGraphQueryService({}).get_concept(oversized)
+
+
+def test_large_unresolved_raw_target_is_only_available_through_bounded_evidence(
+    tmp_path,
+):
+    view = _ready_view(tmp_path)
+    assert view.knowledge is not None
+    unresolved = next(
+        relationship
+        for relationship in view.knowledge.relationships
+        if relationship.resolution is Resolution.UNRESOLVED
+    )
+    oversized = "x" * (2 * 1024 * 1024)
+    replaced = replace(
+        unresolved,
+        target=replace(
+            unresolved.target,
+            raw_target=oversized,
+            normalized_target=oversized,
+        ),
+    )
+    service = _knowledge_service(
+        replace(
+            view,
+            knowledge=replace(view.knowledge, relationships=(replaced,)),
+        )
+    )
+
+    related = service.related_concepts(replaced.source_locator, direction="outbound")
+    target = related["relationships"][0]["target"]
+    assert "raw_target" not in target
+    assert target["coordinate_state"] == "unavailable"
+    explained = service.explain_evidence(replaced.source_locator)
+    assert explained["evidence"]["reason"] == "raw-evidence-byte-limit"
+    assert explained["bounds"]["raw_evidence_bytes"]["limit"] == 64 * 1024
+    assert explained["bounds"]["raw_evidence_bytes"]["truncated"] is True

@@ -9,10 +9,12 @@ import os
 import sys
 import types
 from pathlib import Path
+from typing import get_type_hints
 
 import pytest
 
 from llm_wiki_cli import cli
+from llm_wiki_cli.api_types import KnowledgeMode
 from llm_wiki_cli.commands import context_cmd, mcp_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import write_config
@@ -303,12 +305,8 @@ class TestMcpWikiService:
         source = tmp_path / "source"
         (source / "selected-a").mkdir(parents=True)
         (source / "selected-b").mkdir()
-        (source / "selected-a" / "app.py").write_text(
-            "VALUE = 1\n", encoding="utf-8"
-        )
-        (source / "selected-b" / "app.py").write_text(
-            "VALUE = 2\n", encoding="utf-8"
-        )
+        (source / "selected-a" / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+        (source / "selected-b" / "app.py").write_text("VALUE = 2\n", encoding="utf-8")
         profile_a = source / "config" / "a.json"
         profile_b = source / "config" / "b.json"
         _write_selection_profile(profile_a, "selected-a")
@@ -340,9 +338,7 @@ class TestMcpWikiService:
     ):
         source = tmp_path / "source"
         (source / "selected").mkdir(parents=True)
-        (source / "selected" / "app.py").write_text(
-            "VALUE = 1\n", encoding="utf-8"
-        )
+        (source / "selected" / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
         profile = source / ".llm-wiki" / "source-selection.json"
         _write_selection_profile(profile, "selected")
         policy = resolve_source_selection(source)
@@ -858,9 +854,11 @@ class TestMcpWikiService:
             *,
             emit_warnings,
             wiki_dir,
+            include_plugins,
         ):
             seen["args"] = (src_dir, budget, fmt, focus, filters, emit_warnings)
             seen["wiki_dir"] = wiki_dir
+            seen["include_plugins"] = include_plugins
             return (
                 {
                     "budget": budget,
@@ -890,6 +888,7 @@ class TestMcpWikiService:
             False,
         )
         assert seen["wiki_dir"] == "agent_wiki"
+        assert seen["include_plugins"] is False
         assert result["graphs"]["symbol"]["callers"]["query"] == "run"
 
     def test_get_context_passes_knowledge_refinements_and_preserves_results(
@@ -1111,6 +1110,31 @@ class TestMcpWikiService:
             match=rf"filters\.{field} requires filters\.surface or filters\.symbol",
         ):
             service.get_context(filters=filters)
+
+    @pytest.mark.parametrize("operation", ["context", "packet"])
+    @pytest.mark.parametrize(
+        ("options", "field"),
+        [
+            ({"focus": []}, "focus"),
+            ({"filters": []}, "filters"),
+        ],
+    )
+    def test_context_routes_reject_explicit_invalid_empty_collections(
+        self,
+        operation,
+        options,
+        field,
+    ):
+        service = mcp_server.McpWikiService()
+
+        with pytest.raises(mcp_server.McpWikiError) as exc_info:
+            if operation == "context":
+                service.get_context(**options)
+            else:
+                service.get_context_packet(**options)
+
+        assert exc_info.value.code == "invalid-request"
+        assert exc_info.value.data == {"field": field}
 
     def test_get_context_markdown_preserves_knowledge_status_and_warnings(
         self,
@@ -2423,6 +2447,7 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "get_flow",
         "get_architecture_page",
         "query_graph",
+        "query_documentation",
         "get_concept",
         "related_concepts",
         "list_concept_sections",
@@ -2434,6 +2459,31 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "check_wiki",
         "get_status",
     ]
+
+
+def test_context_tool_annotations_expose_the_public_knowledge_mode(tmp_project):
+    server = RecordingMcpServer()
+    service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+
+    mcp_server._register_mcp_tools(server, service)
+
+    expected = KnowledgeMode | None
+    assert (
+        get_type_hints(mcp_server.McpWikiService.get_context)["knowledge_mode"]
+        == expected
+    )
+    assert (
+        get_type_hints(mcp_server.McpWikiService.get_context_packet)["knowledge_mode"]
+        == expected
+    )
+    assert (
+        get_type_hints(server.tool_functions["get_context"])["knowledge_mode"]
+        == expected
+    )
+    assert (
+        get_type_hints(server.tool_functions["get_context_packet"])["knowledge_mode"]
+        == expected
+    )
 
 
 def test_registered_section_tool_forwards_filter_and_limit():
@@ -2690,6 +2740,57 @@ class TestOriginSafety:
                 field="states",
                 allowed=("alpha",),
             )
+
+    @pytest.mark.parametrize(
+        "normalizer",
+        [
+            mcp_server._knowledge_kinds,
+            mcp_server._typed_graph_kinds,
+            lambda values: mcp_server._typed_graph_enum_values(
+                values,
+                field="origins",
+                allowed=("derived",),
+            ),
+        ],
+    )
+    def test_graph_filter_iterable_consumption_is_bounded(self, normalizer):
+        class InfiniteValues:
+            def __init__(self):
+                self.pulls = 0
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                self.pulls += 1
+                return "derived_from"
+
+        values = InfiniteValues()
+
+        with pytest.raises(mcp_server.McpWikiError) as exc_info:
+            normalizer(values)
+
+        assert values.pulls == mcp_server._MAX_QUERY_FILTER_VALUES + 1
+        assert exc_info.value.code == "invalid-request"
+        assert exc_info.value.data is not None
+        assert f"at most {mcp_server._MAX_QUERY_FILTER_VALUES} values" in str(
+            exc_info.value
+        )
+
+    def test_graph_filter_iteration_failure_is_a_stable_mcp_error(self):
+        class BrokenValues:
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                raise RuntimeError("iterator implementation leaked")
+
+        with pytest.raises(mcp_server.McpWikiError) as exc_info:
+            mcp_server._knowledge_kinds(BrokenValues())
+
+        assert exc_info.value.code == "invalid-request"
+        assert exc_info.value.data == {"field": "kinds"}
+        assert "could not be read as an iterable" in str(exc_info.value)
 
     def test_page_and_markdown_helpers_enforce_bounds(self, tmp_path):
         for value in (True, 0):
@@ -2975,6 +3076,15 @@ class TestMcpCli:
             schema = tools_by_name[name].inputSchema
             assert set(schema["properties"]) == expected_fields
             assert schema["required"] == ["locator_or_exact_route"]
+
+        for name in ("get_context", "get_context_packet"):
+            mode_schema = tools_by_name[name].inputSchema["properties"][
+                "knowledge_mode"
+            ]
+            assert mode_schema["default"] is None
+            assert {"enum": ["off", "auto", "required"], "type": "string"} in (
+                mode_schema["anyOf"]
+            )
 
         assert {
             "llm-wiki://index",

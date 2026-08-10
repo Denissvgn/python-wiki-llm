@@ -14,8 +14,10 @@ from collections import defaultdict
 from collections.abc import Iterable as IterableABC
 from dataclasses import dataclass
 from enum import Enum
+from functools import wraps
+from itertools import islice
 from pathlib import PurePosixPath
-from typing import Any, Iterable, Mapping, Optional, Sequence, cast
+from typing import Any, Callable, Iterable, Mapping, Optional, ParamSpec, Sequence, cast
 
 from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 from .dependencies import (
@@ -49,9 +51,7 @@ from .validation import (
 )
 
 _DEFAULT_LIMIT = 20
-_QUALIFIED_NAME_RE = re.compile(
-    r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
-)
+_QUALIFIED_NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$")
 _KNOWLEDGE_RELATIONSHIP_KINDS = ("derived_from", "links_to")
 _KNOWLEDGE_DIRECTIONS = ("inbound", "outbound", "both")
 _TYPED_GRAPH_DIRECTIONS = ("incoming", "outgoing", "both")
@@ -61,10 +61,281 @@ _SECTION_OWNERSHIP_READY_REASON = "section-ownership-extension-ready"
 _SECTION_OWNERSHIP_ABSENT_REASON = "section-ownership-extension-not-present"
 _SECTION_OWNERSHIP_VALUES = ("generated", "semantic", "mixed", "unknown")
 _NOT_EVALUATED_REASON = "not-evaluated"
+_WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
+_MAX_NORMALIZED_CONTEXT_TARGET_LENGTH = 2048
+CONTEXT_COVERAGE_LIMITATION_LIMIT = 16
+CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH = 128
+RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT = 64 * 1024
+QUERY_RESULT_SERIALIZED_BYTE_LIMIT = 64 * 1024
+QUERY_RESULT_TEXT_BYTE_LIMIT = 4 * 1024
+QUERY_IDENTITY_BYTE_LIMIT = 4 * 1024
+QUERY_FILTER_VALUE_LIMIT = 100
+_CONTEXT_COVERAGE_LIMITATION_RE = re.compile(r"^[a-z][a-z0-9]*(?:[/-][a-z0-9]+)*$")
+_QUERY_PRESENTATION_TEXT_FIELDS = frozenset(
+    {
+        "description",
+        "docstring",
+        "label",
+        "message",
+        "summary",
+        "title",
+    }
+)
+_KNOWLEDGE_SELECTION_REJECTING_FINDINGS = frozenset(
+    {
+        "governance-missing",
+        "source-selection-mismatch",
+        "surface-invalid",
+        "surface-read-failed",
+        "surface-schema-version-unsupported",
+    }
+)
+
+
+def knowledge_view_selection_eligible(
+    knowledge_view: KnowledgeReadView | None,
+    *,
+    basis_incompatible: bool = False,
+) -> bool:
+    """Return whether a captured projection is safe for native selection."""
+
+    if basis_incompatible or knowledge_view is None:
+        return False
+    issue_codes = {issue.code for issue in knowledge_view.projection_findings}
+    return (
+        knowledge_view.availability is KnowledgeAvailability.READY
+        and not issue_codes & _KNOWLEDGE_SELECTION_REJECTING_FINDINGS
+    )
+
+
+def _ineligible_knowledge_status(
+    knowledge_view: KnowledgeReadView,
+) -> tuple[str, str]:
+    issue_codes = {issue.code for issue in knowledge_view.projection_findings}
+    if "governance-missing" in issue_codes:
+        return "degraded", "governance-missing"
+    if "source-selection-mismatch" in issue_codes:
+        return "degraded", "knowledge-basis-incompatible"
+    if issue_codes & {
+        "surface-invalid",
+        "surface-read-failed",
+        "surface-schema-version-unsupported",
+    }:
+        return "degraded", "surface-validation-failed"
+    return knowledge_view.availability.value, knowledge_view.reason_code
 
 
 class DocumentationQueryError(ValueError):
     """Raised when a documentation graph query request is invalid."""
+
+
+_QueryParameters = ParamSpec("_QueryParameters")
+
+
+def _truncate_utf8(value: str, limit: int) -> str:
+    """Return a deterministic UTF-8 prefix that never exceeds ``limit`` bytes."""
+
+    encoded = value.encode("utf-8")
+    if len(encoded) <= limit:
+        return value
+    marker = "…"
+    prefix = encoded[: max(0, limit - len(marker.encode("utf-8")))]
+    while prefix:
+        try:
+            return prefix.decode("utf-8") + marker
+        except UnicodeDecodeError:
+            prefix = prefix[:-1]
+    return marker if limit >= len(marker.encode("utf-8")) else ""
+
+
+def _cap_query_result_strings(
+    value: object,
+    limit: int,
+    *,
+    field: str | None = None,
+) -> object:
+    if isinstance(value, str):
+        return (
+            _truncate_utf8(value, limit)
+            if field in _QUERY_PRESENTATION_TEXT_FIELDS
+            else value
+        )
+    if isinstance(value, Mapping):
+        return {
+            str(key): _cap_query_result_strings(item, limit, field=str(key))
+            for key, item in value.items()
+        }
+    if isinstance(value, tuple):
+        return [_cap_query_result_strings(item, limit, field=field) for item in value]
+    if isinstance(value, list):
+        return [_cap_query_result_strings(item, limit, field=field) for item in value]
+    return value
+
+
+def _query_result_byte_bound(total: int, returned: int) -> dict[str, int | bool]:
+    return {
+        "total": total,
+        "returned": returned,
+        "limit": QUERY_RESULT_SERIALIZED_BYTE_LIMIT,
+        "truncated": total > returned,
+    }
+
+
+def _attach_query_result_byte_bound(
+    result: dict[str, Any],
+    *,
+    total: int,
+) -> tuple[dict[str, Any], int]:
+    bounds = result.get("bounds")
+    result["bounds"] = dict(bounds) if isinstance(bounds, Mapping) else {}
+    returned = 0
+    for _ in range(32):
+        result["bounds"]["result_bytes"] = _query_result_byte_bound(total, returned)
+        next_returned = len(_canonical_json(result).encode("utf-8"))
+        if next_returned == returned:
+            return result, returned
+        returned = next_returned
+    raise DocumentationQueryError("query result byte accounting did not converge.")
+
+
+def _minimal_oversized_query_result(
+    result: Mapping[str, Any],
+    *,
+    total_bytes: int,
+) -> dict[str, Any]:
+    """Preserve query status while omitting every oversized returned record."""
+
+    original_bounds = result.get("bounds")
+    bounds: dict[str, Any] = {}
+    if isinstance(original_bounds, Mapping):
+        for name, raw_bound in original_bounds.items():
+            if not isinstance(name, str) or not isinstance(raw_bound, Mapping):
+                continue
+            total = raw_bound.get("total")
+            if isinstance(total, bool) or not isinstance(total, int) or total < 0:
+                continue
+            bound: dict[str, Any] = {
+                "total": total,
+                "returned": 0,
+                "truncated": total > 0,
+            }
+            limit = raw_bound.get("limit")
+            if isinstance(limit, int) and not isinstance(limit, bool) and limit >= 0:
+                bound["limit"] = limit
+            bounds[name] = bound
+
+    raw_query = result.get("query")
+    query_fits = len(_canonical_json(raw_query).encode("utf-8")) <= 4096
+    fallback: dict[str, Any] = {
+        "query": raw_query if query_fits else None,
+        "found": bool(result.get("found", False)) if query_fits else False,
+        "ambiguous": bool(result.get("ambiguous", False)),
+        "matches": [],
+        "bounds": bounds,
+        "truncated": True,
+        "result_omitted": {
+            "reason": "serialized-result-byte-limit",
+            "records_returned": 0,
+        },
+    }
+    for name in (
+        "cost",
+        "direction",
+        "include_evidence",
+        "knowledge",
+        "operation",
+        "origins",
+        "resolutions",
+        "schema_version",
+        "typed_graph",
+    ):
+        if name in result:
+            fallback[name] = _cap_query_result_strings(
+                result[name],
+                1024,
+                field=name,
+            )
+    for name in (
+        "callers",
+        "callees",
+        "cycle_groups",
+        "edges",
+        "external_targets",
+        "inbound",
+        "kinds",
+        "outbound",
+        "pages",
+        "related_concepts",
+        "relationships",
+        "sections",
+        "unresolved_targets",
+    ):
+        if name in result:
+            fallback[name] = []
+    for name in (
+        "callable",
+        "concept",
+        "data_flow",
+        "evidence",
+        "flow",
+        "path",
+        "symbol",
+    ):
+        if name in result:
+            fallback[name] = None
+    total = result.get("total")
+    if isinstance(total, int) and not isinstance(total, bool) and total >= 0:
+        fallback["total"] = total
+        fallback["returned"] = 0
+    fitted, _ = _attach_query_result_byte_bound(fallback, total=total_bytes)
+    return fitted
+
+
+def _fit_query_result(result: dict[str, Any]) -> dict[str, Any]:
+    """Enforce a shared serialized-byte ceiling for every public query result."""
+
+    total_bytes = len(_canonical_json(result).encode("utf-8"))
+    if total_bytes <= QUERY_RESULT_SERIALIZED_BYTE_LIMIT:
+        return result
+    for text_limit in (QUERY_RESULT_TEXT_BYTE_LIMIT, 2048, 1024, 512, 256):
+        candidate = cast(
+            dict[str, Any],
+            _cap_query_result_strings(result, text_limit),
+        )
+        candidate["truncated"] = True
+        candidate, returned = _attach_query_result_byte_bound(
+            candidate,
+            total=total_bytes,
+        )
+        if returned <= QUERY_RESULT_SERIALIZED_BYTE_LIMIT:
+            return candidate
+    fallback = _minimal_oversized_query_result(result, total_bytes=total_bytes)
+    if (
+        len(_canonical_json(fallback).encode("utf-8"))
+        > QUERY_RESULT_SERIALIZED_BYTE_LIMIT
+    ):
+        raise DocumentationQueryError("query result cannot fit its serialized limit.")
+    return fallback
+
+
+def fit_documentation_query_result(
+    result: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Return a detached public query payload within the shared byte limit."""
+
+    return _fit_query_result(_jsonable_mapping(result))
+
+
+def _bounded_query_result(
+    method: Callable[_QueryParameters, dict[str, Any]],
+) -> Callable[_QueryParameters, dict[str, Any]]:
+    @wraps(method)
+    def wrapped(
+        *args: _QueryParameters.args, **kwargs: _QueryParameters.kwargs
+    ) -> dict[str, Any]:
+        return _fit_query_result(method(*args, **kwargs))
+
+    return wrapped
 
 
 @dataclass(frozen=True)
@@ -145,12 +416,23 @@ def _jsonable_mapping_list(values: Iterable[Mapping[str, Any]]) -> list[dict[str
 def _require_query(value: object, field: str) -> str:
     """Retain query-request whitespace normalization for API compatibility."""
 
-    return require_nonempty_text(
+    query = require_nonempty_text(
         value,
         error=DocumentationQueryError(f"{field} must be a non-empty string."),
         normalize=True,
         reject_control_characters=False,
     )
+    return _query_identity_within_limit(query, field)
+
+
+def _query_identity_within_limit(query: str, field: str) -> str:
+    """Enforce the public query-identity byte ceiling."""
+
+    if len(query.encode("utf-8")) > QUERY_IDENTITY_BYTE_LIMIT:
+        raise DocumentationQueryError(
+            f"{field} must not exceed {QUERY_IDENTITY_BYTE_LIMIT} UTF-8 bytes."
+        )
+    return query
 
 
 def _normalise_source_path(
@@ -292,6 +574,16 @@ def _canonical_json(value: object) -> str:
     )
 
 
+def _raw_evidence_byte_bound(value: object) -> dict[str, int | bool]:
+    total = len(_canonical_json(value).encode("utf-8"))
+    return {
+        "total": total,
+        "returned": min(total, RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT),
+        "limit": RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT,
+        "truncated": total > RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT,
+    }
+
+
 def _knowledge_target_ref(
     target: Mapping[str, Any],
     resolution: object,
@@ -306,14 +598,215 @@ def _knowledge_target_ref(
         "external_uri",
     ]
     if resolution in {"ambiguous", "unresolved"}:
-        fields.extend(("raw_target", "normalized_target"))
+        fields.append("normalized_target")
     elif target.get("target_class") in {"anchor", "asset"}:
         fields.append("normalized_target")
-    return {
+    result = {
         field: _jsonable(target[field])
         for field in fields
         if field in target and target[field] is not None
     }
+    if "normalized_target" in result:
+        safe_target = _safe_normalized_context_target(result["normalized_target"])
+        if safe_target is None:
+            result.pop("normalized_target")
+            result["coordinate_state"] = "unavailable"
+        else:
+            result["normalized_target"] = safe_target
+    elif resolution in {"ambiguous", "unresolved"}:
+        result["coordinate_state"] = "unavailable"
+    return result
+
+
+def _compact_context_endpoint(
+    value: object,
+    *,
+    include_normalized_target: bool = False,
+    source_canonical_path: str | None = None,
+) -> dict[str, Any]:
+    """Project graph coordinates without raw target text or stored diagnostics."""
+
+    if not isinstance(value, Mapping):
+        return {}
+    allowed = (
+        "kind",
+        "target_class",
+        "locator",
+        "uid",
+        "canonical_path",
+        "source_path",
+        "external_uri",
+    )
+    result = {
+        field: _jsonable(value[field])
+        for field in allowed
+        if field in value and value[field] is not None
+    }
+    endpoint_kind = value.get("kind")
+    if endpoint_kind == "source-symbol":
+        symbol = _safe_context_coordinate_text(value.get("symbol"), limit=512)
+        if symbol is not None:
+            result["symbol"] = symbol
+    elif endpoint_kind == "external-resource":
+        resource = _safe_context_coordinate_text(value.get("resource"), limit=2048)
+        if resource is not None:
+            result["resource"] = resource
+        uri = value.get("uri")
+        if isinstance(uri, str) and uri:
+            result["external_uri"] = uri
+    if value.get("target_class") == "asset" and source_canonical_path is not None:
+        asset_path = _safe_context_asset_path(
+            source_canonical_path,
+            value.get("normalized_target"),
+        )
+        if asset_path is not None:
+            result["canonical_path"] = asset_path
+    elif include_normalized_target:
+        normalized_target = _safe_normalized_context_target(
+            value.get("normalized_target") or value.get("raw_target")
+        )
+        if normalized_target is not None:
+            result["normalized_target"] = normalized_target
+    if (
+        value.get("target_class") == "malformed" or endpoint_kind == "unresolved"
+    ) and not any(
+        name in result
+        for name in (
+            "locator",
+            "uid",
+            "canonical_path",
+            "source_path",
+            "external_uri",
+            "resource",
+            "normalized_target",
+        )
+    ):
+        result["coordinate_state"] = "unavailable"
+    return result
+
+
+def _safe_context_coordinate_text(value: object, *, limit: int) -> str | None:
+    if (
+        not isinstance(value, str)
+        or not value
+        or len(value) > limit
+        or any(ord(character) < 32 or ord(character) == 127 for character in value)
+    ):
+        return None
+    return value
+
+
+def _safe_context_asset_path(
+    source_canonical_path: str,
+    value: object,
+) -> str | None:
+    normalized = _safe_normalized_context_target(value)
+    if normalized is None or ":" in normalized.partition("/")[0]:
+        return None
+    parts: list[str] = []
+    combined = PurePosixPath(source_canonical_path).parent / normalized
+    for part in combined.parts:
+        if part in {"", "."}:
+            continue
+        if part == "..":
+            if not parts:
+                return None
+            parts.pop()
+            continue
+        parts.append(part)
+    return "/".join(parts) or None
+
+
+def _safe_normalized_context_target(value: object) -> str | None:
+    if not isinstance(value, str) or not value:
+        return None
+    normalized = value.replace("\\", "/")
+    if (
+        len(normalized) > _MAX_NORMALIZED_CONTEXT_TARGET_LENGTH
+        or any(ord(character) < 32 for character in normalized)
+        or normalized.startswith(("/", "~"))
+        or _WINDOWS_ABSOLUTE_RE.match(normalized)
+        or normalized.casefold().startswith("file:")
+    ):
+        return None
+    return normalized
+
+
+def _compact_context_coverage(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Retain bounded graph coverage while omitting operational samples."""
+
+    result = {
+        field: _jsonable(value[field])
+        for field in (
+            "observed",
+            "emitted",
+            "omitted",
+            "limit",
+            "truncated",
+        )
+        if field in value
+    }
+    limitations = value.get("limitations")
+    all_limitations = (
+        sorted({item for item in limitations if isinstance(item, str) and item})
+        if isinstance(limitations, list)
+        else []
+    )
+    portable_limitations = [
+        item
+        for item in all_limitations
+        if len(item) <= CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH
+        and _CONTEXT_COVERAGE_LIMITATION_RE.fullmatch(item) is not None
+    ][:CONTEXT_COVERAGE_LIMITATION_LIMIT]
+    result["limitations"] = portable_limitations
+    result["limitation_bounds"] = {
+        "total": len(all_limitations),
+        "returned": len(portable_limitations),
+        "truncated": len(portable_limitations) < len(all_limitations),
+    }
+    return result
+
+
+def _compact_context_graph_status(value: Mapping[str, Any]) -> dict[str, Any]:
+    coverage = value.get("coverage")
+    compact_coverage = (
+        [
+            {
+                **({"analyzer": item["analyzer"]} if "analyzer" in item else {}),
+                **_compact_context_coverage(item),
+            }
+            for item in coverage
+            if isinstance(item, Mapping)
+        ]
+        if isinstance(coverage, list)
+        else []
+    )
+    compact_coverage.sort(
+        key=lambda item: (_text_key(item.get("analyzer")), _canonical_json(item))
+    )
+    return {
+        "availability": value.get("availability"),
+        "reason": value.get("reason"),
+        "schema_version": value.get("schema_version"),
+        "coverage": compact_coverage,
+    }
+
+
+def _compact_context_page(value: Mapping[str, Any]) -> dict[str, str] | None:
+    """Return the exact bounded page coordinates permitted on the v2 wire."""
+
+    fields = (
+        "kind",
+        "id",
+        "title",
+        "canonical_path",
+        "source_path",
+        "role",
+        "mcp_uri",
+    )
+    if any(not isinstance(value.get(name), str) or not value[name] for name in fields):
+        return None
+    return {name: cast(str, value[name]) for name in fields}
 
 
 def _freshness_basis_payload(value: object) -> Optional[dict[str, Any]]:
@@ -406,6 +899,7 @@ class DocumentationGraphQueryService:
         self._build_graph_query_indexes()
         self._build_knowledge_indexes(knowledge_view)
 
+    @_bounded_query_result
     def flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
         """Return a bounded user-flow payload for an entry-point id or symbol."""
         query = _require_query(id_or_symbol, "id_or_symbol")
@@ -422,6 +916,7 @@ class DocumentationGraphQueryService:
             self._record_bound(result, f"flow.{path}", bounded)
         return result
 
+    @_bounded_query_result
     def callers(self, symbol: object) -> dict[str, Any]:
         """Return bounded callers for exactly one callable symbol."""
         query = _require_query(symbol, "symbol")
@@ -445,6 +940,7 @@ class DocumentationGraphQueryService:
         self._record_bound(result, "callers", callers)
         return result
 
+    @_bounded_query_result
     def callees(self, symbol: object) -> dict[str, Any]:
         """Return bounded callees for exactly one callable symbol."""
         query = _require_query(symbol, "symbol")
@@ -468,6 +964,7 @@ class DocumentationGraphQueryService:
         self._record_bound(result, "callees", callees)
         return result
 
+    @_bounded_query_result
     def dependency_neighborhood(self, path: object) -> dict[str, Any]:
         """Return bounded inbound/outbound dependency neighbors for a source path."""
         query = cast(
@@ -538,6 +1035,7 @@ class DocumentationGraphQueryService:
             "pages": pages.items,
         }
 
+    @_bounded_query_result
     def data_flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
         """Return a bounded data-flow payload for an entry-point id or symbol."""
         query = _require_query(id_or_symbol, "id_or_symbol")
@@ -562,6 +1060,7 @@ class DocumentationGraphQueryService:
             self._record_bound(result, f"data_flow.{path}", bounded)
         return result
 
+    @_bounded_query_result
     def pages_for_symbol(self, symbol: object) -> dict[str, Any]:
         """Return bounded wiki surface pages related to exactly one symbol."""
         query = _require_query(symbol, "symbol")
@@ -580,6 +1079,336 @@ class DocumentationGraphQueryService:
         self._record_bound(result, "pages", pages)
         return result
 
+    def broad_context_selection(
+        self,
+        source_priorities: Mapping[str, str],
+        *,
+        concept_limit: int = 20,
+        page_limit: int = 20,
+        relationship_limit: int = 40,
+    ) -> dict[str, Any]:
+        """Select bounded native context for a relevance-classified source set.
+
+        The operation is deliberately independent from source token budgeting and
+        freshness-preferred ranking. Inputs are treated as an unordered mapping;
+        every collection is ordered from the declared relevance tier and stable
+        projection coordinates before its own limit is applied.
+        """
+
+        if not isinstance(source_priorities, Mapping):
+            raise DocumentationQueryError("source_priorities must be a mapping.")
+        limits = {
+            "concept_limit": concept_limit,
+            "page_limit": page_limit,
+            "relationship_limit": relationship_limit,
+        }
+        for name, value in limits.items():
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise DocumentationQueryError(f"{name} must be a positive integer.")
+        tier_order = {"high": 0, "medium": 1, "low": 2}
+        normalized_priorities: dict[str, str] = {}
+        for raw_path, priority in source_priorities.items():
+            path = _normalise_source_path(
+                raw_path,
+                field="source_priorities path",
+                required=True,
+            )
+            if priority not in tier_order:
+                raise DocumentationQueryError(
+                    "source_priorities values must be 'high', 'medium', or 'low'."
+                )
+            assert path is not None
+            if (
+                path in normalized_priorities
+                and normalized_priorities[path] != priority
+            ):
+                raise DocumentationQueryError(
+                    "source_priorities contains conflicting priorities for one "
+                    "normalized source path."
+                )
+            normalized_priorities[path] = priority
+
+        empty_bounds = {
+            name: {"total": 0, "returned": 0, "truncated": False}
+            for name in ("concepts", "pages", "relationships")
+        }
+        if (
+            self.knowledge_status.get("availability")
+            != KnowledgeAvailability.READY.value
+        ):
+            return {
+                "concepts": [],
+                "pages": [],
+                "relationships": [],
+                "relationship_coverage": _compact_context_graph_status(
+                    self.typed_graph_status
+                ),
+                "bounds": empty_bounds,
+                "truncated": False,
+            }
+
+        ordered_sources = sorted(
+            normalized_priorities,
+            key=lambda path: (
+                tier_order[normalized_priorities[path]],
+                path.casefold(),
+                path,
+            ),
+        )
+        concept_rank: dict[str, tuple[int, str, str]] = {}
+        for source_path in ordered_sources:
+            for concept in self.concepts_by_source_path.get(source_path, ()):
+                locator = concept.get("locator")
+                if not isinstance(locator, str):
+                    continue
+                concept_rank.setdefault(
+                    locator,
+                    (
+                        tier_order[normalized_priorities[source_path]],
+                        source_path,
+                        locator,
+                    ),
+                )
+        ordered_locators = sorted(concept_rank, key=concept_rank.__getitem__)
+        compact_concepts = [
+            self._compact_context_concept(locator) for locator in ordered_locators
+        ]
+        returned_concepts = compact_concepts[:concept_limit]
+
+        page_by_path = {
+            page["canonical_path"]: page
+            for page in self.pages
+            if isinstance(page.get("canonical_path"), str)
+        }
+        page_rank: dict[str, tuple[int, str, str]] = {}
+        for locator in ordered_locators:
+            concept = self.concept_by_locator[locator]
+            document = concept.get("document")
+            canonical_path = (
+                document.get("canonical_path")
+                if isinstance(document, Mapping)
+                else None
+            )
+            if (
+                not isinstance(canonical_path, str)
+                or canonical_path not in page_by_path
+            ):
+                continue
+            source_rank = concept_rank[locator]
+            page_rank.setdefault(
+                canonical_path,
+                (source_rank[0], source_rank[1], canonical_path),
+            )
+        ordered_page_paths = sorted(page_rank, key=page_rank.__getitem__)
+        compact_pages = [
+            compact
+            for path in ordered_page_paths
+            if (compact := _compact_context_page(page_by_path[path])) is not None
+        ]
+        returned_pages = compact_pages[:page_limit]
+
+        selected_locators = set(ordered_locators)
+
+        def incident_rank(*locators: object) -> tuple[int, str, str]:
+            ranks = [
+                concept_rank[locator]
+                for locator in locators
+                if isinstance(locator, str) and locator in concept_rank
+            ]
+            if not ranks:
+                raise DocumentationQueryError(
+                    "relationship selection has no incident selected concept"
+                )
+            return min(ranks)
+
+        relationship_candidates: list[tuple[tuple[Any, ...], dict[str, Any]]] = []
+        for index, relationship in enumerate(self._knowledge_relationships):
+            source_locator = relationship.get("from")
+            target_locator = self._knowledge_target_locators[index]
+            if (
+                source_locator not in selected_locators
+                and target_locator not in selected_locators
+            ):
+                continue
+            if (
+                source_locator in selected_locators
+                and target_locator in selected_locators
+            ):
+                direction = "both"
+            elif source_locator in selected_locators:
+                direction = "outbound"
+            else:
+                direction = "inbound"
+            target = relationship.get("target")
+            evidence = relationship.get("evidence")
+            source_concept = (
+                self.concept_by_locator.get(source_locator)
+                if isinstance(source_locator, str)
+                else None
+            )
+            source_document = (
+                source_concept.get("document")
+                if isinstance(source_concept, Mapping)
+                else None
+            )
+            source_canonical_path = (
+                source_document.get("canonical_path")
+                if isinstance(source_document, Mapping)
+                and isinstance(source_document.get("canonical_path"), str)
+                else None
+            )
+            compact = {
+                "graph": "knowledge",
+                "kind": relationship.get("kind"),
+                "direction": direction,
+                "from": source_locator,
+                "origin": relationship.get("origin"),
+                "resolution": relationship.get("resolution"),
+                "evidence": {
+                    "state": (
+                        evidence.get("state") if isinstance(evidence, Mapping) else None
+                    )
+                },
+                "target": (
+                    _compact_context_endpoint(
+                        target,
+                        include_normalized_target=(
+                            relationship.get("resolution")
+                            in {"ambiguous", "unresolved"}
+                            or target.get("target_class") == "anchor"
+                        ),
+                        source_canonical_path=source_canonical_path,
+                    )
+                    if isinstance(target, Mapping)
+                    else {}
+                ),
+            }
+            relationship_candidates.append(
+                (
+                    (
+                        *incident_rank(source_locator, target_locator),
+                        0,
+                        _canonical_json(compact),
+                        self._knowledge_relationship_order[index],
+                        index,
+                    ),
+                    compact,
+                )
+            )
+
+        if (
+            self.typed_graph_status.get("availability")
+            == KnowledgeAvailability.READY.value
+        ):
+            for index, edge in enumerate(self._typed_graph_edges):
+                source_locator = self._typed_graph_concept_locator(edge.get("from"))
+                target_locator = self._typed_graph_target_locators[index]
+                if (
+                    source_locator not in selected_locators
+                    and target_locator not in selected_locators
+                ):
+                    continue
+                if (
+                    source_locator in selected_locators
+                    and target_locator in selected_locators
+                ):
+                    direction = "both"
+                elif source_locator in selected_locators:
+                    direction = "outgoing"
+                else:
+                    direction = "incoming"
+                evidence = edge.get("evidence")
+                coverage = edge.get("coverage")
+                compact = {
+                    "graph": "typed",
+                    "key": edge.get("key"),
+                    "kind": edge.get("kind"),
+                    "direction": direction,
+                    "from": _compact_context_endpoint(edge.get("from")),
+                    "target": _compact_context_endpoint(
+                        edge.get("target"),
+                        include_normalized_target=(
+                            edge.get("resolution") in {"ambiguous", "unresolved"}
+                            or (
+                                isinstance(edge.get("target"), Mapping)
+                                and edge["target"].get("target_class") == "anchor"
+                            )
+                        ),
+                        source_canonical_path=(
+                            edge["from"].get("canonical_path")
+                            if isinstance(edge.get("from"), Mapping)
+                            and isinstance(edge["from"].get("canonical_path"), str)
+                            else None
+                        ),
+                    ),
+                    "origin": edge.get("origin"),
+                    "resolution": edge.get("resolution"),
+                    "evidence": {
+                        name: _jsonable(evidence[name])
+                        for name in (
+                            "state",
+                            "observed",
+                            "unique",
+                            "emitted",
+                            "omitted",
+                        )
+                        if isinstance(evidence, Mapping) and name in evidence
+                    },
+                    "coverage": (
+                        _compact_context_coverage(coverage)
+                        if isinstance(coverage, Mapping)
+                        else {}
+                    ),
+                }
+                relationship_candidates.append(
+                    (
+                        (
+                            *incident_rank(source_locator, target_locator),
+                            1,
+                            _canonical_json(compact),
+                            self._typed_graph_edge_order[index],
+                            index,
+                        ),
+                        compact,
+                    )
+                )
+
+        relationship_candidates.sort(key=lambda item: item[0])
+        compact_relationships: list[dict[str, Any]] = []
+        seen_relationships: set[str] = set()
+        for _rank, relationship in relationship_candidates:
+            identity = _canonical_json(relationship)
+            if identity in seen_relationships:
+                continue
+            seen_relationships.add(identity)
+            compact_relationships.append(relationship)
+        returned_relationships = compact_relationships[:relationship_limit]
+        bounds = {
+            "concepts": _BoundedResult(
+                items=returned_concepts,
+                total=len(compact_concepts),
+            ).metadata(),
+            "pages": _BoundedResult(
+                items=returned_pages,
+                total=len(compact_pages),
+            ).metadata(),
+            "relationships": _BoundedResult(
+                items=returned_relationships,
+                total=len(compact_relationships),
+            ).metadata(),
+        }
+        return {
+            "concepts": returned_concepts,
+            "pages": returned_pages,
+            "relationships": returned_relationships,
+            "relationship_coverage": _compact_context_graph_status(
+                self.typed_graph_status
+            ),
+            "bounds": bounds,
+            "truncated": any(bool(item["truncated"]) for item in bounds.values()),
+        }
+
+    @_bounded_query_result
     def get_concept(self, locator_or_exact_route: object) -> dict[str, Any]:
         """Return one concept selected by current coordinate, UID, or alias."""
 
@@ -591,6 +1420,7 @@ class DocumentationGraphQueryService:
         )
         return result
 
+    @_bounded_query_result
     def related_concepts(
         self,
         locator_or_exact_route: object,
@@ -680,6 +1510,7 @@ class DocumentationGraphQueryService:
         self._record_bound(result, "relationships", bounded_observations)
         return result
 
+    @_bounded_query_result
     def list_concept_sections(
         self,
         locator_or_exact_route: object,
@@ -698,9 +1529,7 @@ class DocumentationGraphQueryService:
         locator = result.pop("_selected_locator", None)
         result.update(
             {
-                "section_ownership": _jsonable_mapping(
-                    self.section_ownership_status
-                ),
+                "section_ownership": _jsonable_mapping(self.section_ownership_status),
                 "concept": (
                     None
                     if locator is None
@@ -745,6 +1574,7 @@ class DocumentationGraphQueryService:
         self._record_bound(result, "sections", section_bounds)
         return result
 
+    @_bounded_query_result
     def traverse_typed_graph(
         self,
         locator_or_exact_route: object,
@@ -815,8 +1645,7 @@ class DocumentationGraphQueryService:
             )
             if self._typed_graph_edge_kinds[item[0]] in selected_kinds
             and self._typed_graph_edge_origins[item[0]] in selected_origins
-            and self._typed_graph_edge_resolutions[item[0]]
-            in selected_resolutions
+            and self._typed_graph_edge_resolutions[item[0]] in selected_resolutions
         ]
         bounded_edges = self._bounded(incidents)
         compact_edges = [
@@ -827,6 +1656,28 @@ class DocumentationGraphQueryService:
             )
             for index, edge_direction in bounded_edges.items
         ]
+        raw_evidence_bound: dict[str, int | bool] | None = None
+        if include_evidence:
+            raw_evidence = [edge["evidence"] for edge in compact_edges]
+            raw_evidence_bound = _raw_evidence_byte_bound(raw_evidence)
+            if raw_evidence_bound["truncated"]:
+                for edge in compact_edges:
+                    evidence = edge["evidence"]
+                    edge["evidence"] = {
+                        **(
+                            {"state": evidence["state"]}
+                            if isinstance(evidence, Mapping)
+                            and isinstance(evidence.get("state"), str)
+                            else {}
+                        ),
+                        "omitted": True,
+                        "reason": "raw-evidence-byte-limit",
+                    }
+                raw_evidence_bound["returned"] = len(
+                    _canonical_json(
+                        [edge["evidence"] for edge in compact_edges]
+                    ).encode("utf-8")
+                )
         result.update(
             {
                 "edges": compact_edges,
@@ -839,8 +1690,12 @@ class DocumentationGraphQueryService:
             "edges",
             _BoundedResult(items=compact_edges, total=bounded_edges.total),
         )
+        if raw_evidence_bound is not None:
+            result["bounds"]["raw_evidence_bytes"] = raw_evidence_bound
+            self._sync_truncated(result)
         return result
 
+    @_bounded_query_result
     def explain_evidence(
         self,
         locator_or_exact_route: object,
@@ -857,6 +1712,12 @@ class DocumentationGraphQueryService:
         relationship_bounds = self._bounded(())
         self._record_bound(result, "evidence.relationships", relationship_bounds)
         if locator is None:
+            result["bounds"]["raw_evidence_bytes"] = {
+                "total": 0,
+                "returned": 0,
+                "limit": RAW_EVIDENCE_SERIALIZED_BYTE_LIMIT,
+                "truncated": False,
+            }
             result.update({"total": 0, "returned": 0, "truncated": False})
             self._sync_truncated(result)
             return result
@@ -896,6 +1757,25 @@ class DocumentationGraphQueryService:
             "evidence.relationships",
             bounded_observations,
         )
+        evidence_payload = result["evidence"]
+        raw_evidence_bound = _raw_evidence_byte_bound(evidence_payload)
+        if raw_evidence_bound["truncated"]:
+            result["evidence"] = {
+                "omitted": True,
+                "reason": "raw-evidence-byte-limit",
+                "total_bytes": raw_evidence_bound["total"],
+            }
+            result["returned"] = 0
+            result["bounds"]["evidence.relationships"] = {
+                "total": bounded_observations.total,
+                "returned": 0,
+                "truncated": bounded_observations.total > 0,
+            }
+            raw_evidence_bound["returned"] = len(
+                _canonical_json(result["evidence"]).encode("utf-8")
+            )
+        result["bounds"]["raw_evidence_bytes"] = raw_evidence_bound
+        self._sync_truncated(result)
         return result
 
     def _build_knowledge_indexes(
@@ -908,9 +1788,7 @@ class DocumentationGraphQueryService:
         self.concept_by_mcp_uri: dict[str, dict[str, Any]] = {}
         self.concept_by_uid: dict[str, dict[str, Any]] = {}
         self.concept_by_alias: dict[str, dict[str, Any]] = {}
-        self.concepts_by_source_path: dict[
-            str, tuple[dict[str, Any], ...]
-        ] = {}
+        self.concepts_by_source_path: dict[str, tuple[dict[str, Any], ...]] = {}
         self.relationships_by_source_path: dict[str, tuple[int, ...]] = {}
         self.outbound_relationships: dict[str, tuple[int, ...]] = {}
         self.inbound_relationships: dict[str, tuple[int, ...]] = {}
@@ -923,9 +1801,7 @@ class DocumentationGraphQueryService:
             "reason": KnowledgeReadReason.ABSENT.value,
             "schema_version": None,
         }
-        self.sections_by_page_locator: dict[
-            str, tuple[dict[str, Any], ...]
-        ] = {}
+        self.sections_by_page_locator: dict[str, tuple[dict[str, Any], ...]] = {}
         self.typed_graph_status: dict[str, Any] = {
             "availability": KnowledgeAvailability.ABSENT.value,
             "reason": KnowledgeReadReason.ABSENT.value,
@@ -975,6 +1851,23 @@ class DocumentationGraphQueryService:
                 raise DocumentationQueryError(
                     "a non-ready knowledge_view must not expose knowledge."
                 )
+            return
+        if not knowledge_view_selection_eligible(knowledge_view):
+            availability, reason = _ineligible_knowledge_status(knowledge_view)
+            self.knowledge_status.update(
+                {
+                    "availability": availability,
+                    "reason": reason,
+                    "freshness": "unevaluated (rejected knowledge basis)",
+                    "freshness_evaluated": False,
+                }
+            )
+            self.section_ownership_status.update(
+                {"availability": availability, "reason": reason}
+            )
+            self.typed_graph_status.update(
+                {"availability": availability, "reason": reason}
+            )
             return
         if knowledge_view.knowledge is None:
             raise DocumentationQueryError(
@@ -1111,9 +2004,7 @@ class DocumentationGraphQueryService:
             for source_path, indexes in sorted(relationships_by_source.items())
         }
         self.concepts_by_source_path = {
-            source_path: tuple(
-                by_locator[locator] for locator in sorted(by_locator)
-            )
+            source_path: tuple(by_locator[locator] for locator in sorted(by_locator))
             for source_path, by_locator in sorted(source_concepts.items())
         }
         self._build_section_ownership_indexes(payload)
@@ -1125,9 +2016,7 @@ class DocumentationGraphQueryService:
     ) -> None:
         extensions = payload.get("extensions", {})
         if not isinstance(extensions, Mapping):
-            raise DocumentationQueryError(
-                "knowledge extensions must be an object."
-            )
+            raise DocumentationQueryError("knowledge extensions must be an object.")
         extension = extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
         if extension is None:
             self.section_ownership_status = {
@@ -1154,9 +2043,7 @@ class DocumentationGraphQueryService:
                 )
             page_locator = page.get("page_locator")
             raw_sections = page.get("sections", ())
-            if not isinstance(page_locator, str) or not isinstance(
-                raw_sections, list
-            ):
+            if not isinstance(page_locator, str) or not isinstance(raw_sections, list):
                 raise DocumentationQueryError(
                     "section ownership extension page is invalid."
                 )
@@ -1189,9 +2076,7 @@ class DocumentationGraphQueryService:
     def _build_typed_graph_indexes(self, payload: Mapping[str, Any]) -> None:
         extensions = payload.get("extensions", {})
         if not isinstance(extensions, Mapping):
-            raise DocumentationQueryError(
-                "knowledge extensions must be an object."
-            )
+            raise DocumentationQueryError("knowledge extensions must be an object.")
         try:
             graph = typed_graph_from_knowledge_extensions(
                 extensions,
@@ -1214,8 +2099,7 @@ class DocumentationGraphQueryService:
             return
 
         edges = tuple(
-            _jsonable_mapping(cast(Mapping[str, Any], edge))
-            for edge in graph["edges"]
+            _jsonable_mapping(cast(Mapping[str, Any], edge)) for edge in graph["edges"]
         )
         outgoing: dict[str, list[int]] = defaultdict(list)
         incoming: dict[str, list[int]] = defaultdict(list)
@@ -1244,12 +2128,8 @@ class DocumentationGraphQueryService:
         # explicit rank lets every query use the constructor-built index only.
         edge_order = tuple(range(len(edges)))
         self._typed_graph_edges = edges
-        self._typed_graph_edge_kinds = tuple(
-            edge.get("kind") for edge in edges
-        )
-        self._typed_graph_edge_origins = tuple(
-            edge.get("origin") for edge in edges
-        )
+        self._typed_graph_edge_kinds = tuple(edge.get("kind") for edge in edges)
+        self._typed_graph_edge_origins = tuple(edge.get("origin") for edge in edges)
         self._typed_graph_edge_resolutions = tuple(
             edge.get("resolution") for edge in edges
         )
@@ -1302,8 +2182,7 @@ class DocumentationGraphQueryService:
                 if direct is not None:
                     matches_by_locator[cast(str, direct["locator"])] = direct
             candidates = tuple(
-                matches_by_locator[locator]
-                for locator in sorted(matches_by_locator)
+                matches_by_locator[locator] for locator in sorted(matches_by_locator)
             )
 
         total = len(candidates)
@@ -1336,9 +2215,7 @@ class DocumentationGraphQueryService:
         structure = cast(Mapping[str, Any], facets.get("structure", {}))
         semantics = cast(Mapping[str, Any], facets.get("semantics", {}))
         basis = structure.get("basis")
-        source_path = (
-            basis.get("source_path") if isinstance(basis, Mapping) else None
-        )
+        source_path = basis.get("source_path") if isinstance(basis, Mapping) else None
         result = {
             "locator": locator,
             "concept_kind": concept.get("concept_kind"),
@@ -1397,6 +2274,39 @@ class DocumentationGraphQueryService:
             )
         return result
 
+    def _compact_context_concept(self, locator: str) -> dict[str, Any]:
+        """Return a compact concept with the explicit context freshness contract."""
+
+        compact = self._compact_knowledge_concept(locator)
+        allowed = (
+            "locator",
+            "concept_kind",
+            "title",
+            "page_kind",
+            "page_id",
+            "canonical_path",
+            "mcp_uri",
+            "source_path",
+            "role",
+            "origin",
+            "evidence",
+            "verification",
+            "lifecycle",
+            "freshness",
+            "uid",
+        )
+        result = {name: compact[name] for name in allowed if name in compact}
+        freshness = result.get("freshness")
+        if isinstance(freshness, dict) and freshness.get("state") is None:
+            freshness.update(
+                {
+                    "state": "not-evaluated",
+                    "reason": "live-evaluation-not-performed",
+                    "live_comparison_performed": False,
+                }
+            )
+        return result
+
     def _compact_section(
         self,
         concept_locator: str,
@@ -1420,9 +2330,7 @@ class DocumentationGraphQueryService:
             ),
         }
         if "occurrence_path" in section:
-            result["occurrence_path"] = _jsonable(
-                section.get("occurrence_path")
-            )
+            result["occurrence_path"] = _jsonable(section.get("occurrence_path"))
         return result
 
     def _compact_section_review(
@@ -1465,17 +2373,9 @@ class DocumentationGraphQueryService:
                 state = latest.get("state")
                 raw_reasons = latest.get("reasons", ())
                 return {
-                    "state": (
-                        state
-                        if isinstance(state, str)
-                        else "unknown"
-                    ),
+                    "state": (state if isinstance(state, str) else "unknown"),
                     "reasons": (
-                        [
-                            reason
-                            for reason in raw_reasons
-                            if isinstance(reason, str)
-                        ]
+                        [reason for reason in raw_reasons if isinstance(reason, str)]
                         if isinstance(raw_reasons, list)
                         else []
                     ),
@@ -1533,9 +2433,7 @@ class DocumentationGraphQueryService:
             "reason": freshness.reason_code,
             "description": freshness.description,
             "live_comparison_performed": freshness.live_comparison_performed,
-            "recorded_basis": _freshness_basis_payload(
-                freshness.recorded_basis
-            ),
+            "recorded_basis": _freshness_basis_payload(freshness.recorded_basis),
             "live_basis": _freshness_basis_payload(freshness.live_basis),
         }
         hint = knowledge_freshness_hint(
@@ -1573,11 +2471,15 @@ class DocumentationGraphQueryService:
                 "kinds must be an iterable of relationship kind strings."
             )
         try:
-            requested = list(values)
-        except TypeError as exc:
+            requested = list(islice(iter(values), QUERY_FILTER_VALUE_LIMIT + 1))
+        except Exception as exc:
             raise DocumentationQueryError(
                 "kinds must be an iterable of relationship kind strings."
             ) from exc
+        if len(requested) > QUERY_FILTER_VALUE_LIMIT:
+            raise DocumentationQueryError(
+                f"kinds must contain at most {QUERY_FILTER_VALUE_LIMIT} values."
+            )
         if any(not isinstance(value, str) for value in requested):
             raise DocumentationQueryError(
                 "kinds must contain only relationship kind strings."
@@ -1588,9 +2490,7 @@ class DocumentationGraphQueryService:
                 f"unsupported relationship kind: {unsupported[0]!r}."
             )
         selected = set(requested)
-        return tuple(
-            kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected
-        )
+        return tuple(kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected)
 
     def _typed_graph_direction(self, value: object) -> str:
         if not isinstance(value, str) or value not in _TYPED_GRAPH_DIRECTIONS:
@@ -1607,8 +2507,7 @@ class DocumentationGraphQueryService:
                 {
                     str(value)
                     for value in self._typed_graph_edge_kinds
-                    if isinstance(value, str)
-                    and value not in CORE_RELATIONSHIP_KINDS
+                    if isinstance(value, str) and value not in CORE_RELATIONSHIP_KINDS
                 }
             )
             return (*CORE_RELATIONSHIP_KINDS, *present_extensions)
@@ -1618,7 +2517,16 @@ class DocumentationGraphQueryService:
             raise DocumentationQueryError(
                 "kinds must be an iterable of typed relationship kind strings."
             )
-        requested = list(values)
+        try:
+            requested = list(islice(iter(values), QUERY_FILTER_VALUE_LIMIT + 1))
+        except Exception as exc:
+            raise DocumentationQueryError(
+                "kinds must be an iterable of typed relationship kind strings."
+            ) from exc
+        if len(requested) > QUERY_FILTER_VALUE_LIMIT:
+            raise DocumentationQueryError(
+                f"kinds must contain at most {QUERY_FILTER_VALUE_LIMIT} values."
+            )
         if any(not isinstance(value, str) for value in requested):
             raise DocumentationQueryError(
                 "kinds must contain only typed relationship kind strings."
@@ -1636,9 +2544,7 @@ class DocumentationGraphQueryService:
                 f"unsupported typed relationship kind: {invalid[0]!r}."
             )
         selected = set(requested)
-        core = [
-            kind for kind in CORE_RELATIONSHIP_KINDS if kind in selected
-        ]
+        core = [kind for kind in CORE_RELATIONSHIP_KINDS if kind in selected]
         extensions = sorted(selected - set(CORE_RELATIONSHIP_KINDS))
         return tuple(core + extensions)
 
@@ -1654,14 +2560,19 @@ class DocumentationGraphQueryService:
         if isinstance(values, (str, bytes, Mapping)) or not isinstance(
             values, IterableABC
         ):
+            raise DocumentationQueryError(f"{field} must be an iterable of strings.")
+        try:
+            requested = list(islice(iter(values), QUERY_FILTER_VALUE_LIMIT + 1))
+        except Exception as exc:
             raise DocumentationQueryError(
                 f"{field} must be an iterable of strings."
-            )
-        requested = list(values)
-        if any(not isinstance(value, str) for value in requested):
+            ) from exc
+        if len(requested) > QUERY_FILTER_VALUE_LIMIT:
             raise DocumentationQueryError(
-                f"{field} must contain only strings."
+                f"{field} must contain at most {QUERY_FILTER_VALUE_LIMIT} values."
             )
+        if any(not isinstance(value, str) for value in requested):
+            raise DocumentationQueryError(f"{field} must contain only strings.")
         unsupported = sorted(set(requested) - set(allowed))
         if unsupported:
             raise DocumentationQueryError(
@@ -1705,9 +2616,7 @@ class DocumentationGraphQueryService:
         target = cast(Mapping[str, Any], edge["target"])
         source_locator = self._typed_graph_concept_locator(source)
         target_locator = self._typed_graph_target_locators[index]
-        related_locator = (
-            source_locator if direction == "incoming" else target_locator
-        )
+        related_locator = source_locator if direction == "incoming" else target_locator
         if direction == "both":
             related_locator = target_locator or source_locator
 
@@ -1796,9 +2705,7 @@ class DocumentationGraphQueryService:
         evidence = cast(Mapping[str, Any], relationship.get("evidence", {}))
         source_locator = cast(str, relationship["from"])
         target_locator = self._knowledge_target_locators[index]
-        related_locator = (
-            source_locator if direction == "inbound" else target_locator
-        )
+        related_locator = source_locator if direction == "inbound" else target_locator
         if direction == "both":
             related_locator = target_locator or source_locator
         return {
@@ -1876,7 +2783,11 @@ class DocumentationGraphQueryService:
             list
         )
         for ref in self.callables:
-            identifiers = {str(ref.get("symbol")), str(ref.get("name"))}
+            identifiers = {
+                value
+                for field in ("symbol", "name")
+                if isinstance((value := ref.get(field)), str) and value
+            }
             for identifier in identifiers:
                 callables_by_identifier[identifier].append(ref)
                 filepath = ref.get("file")
@@ -1893,7 +2804,9 @@ class DocumentationGraphQueryService:
 
         classes_by_name: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for ref in self.classes:
-            classes_by_name[str(ref.get("name"))].append(ref)
+            name = ref.get("name")
+            if isinstance(name, str) and name:
+                classes_by_name[name].append(ref)
         self._classes_by_name = {
             name: tuple(sorted(records, key=_record_sort_key))
             for name, records in classes_by_name.items()
@@ -1906,9 +2819,9 @@ class DocumentationGraphQueryService:
             for record in records:
                 ref = _flow_ref(record)
                 identifiers = {
-                    str(ref.get("id")),
-                    str(ref.get("symbol")),
-                    str(ref.get("label")),
+                    value
+                    for field in ("id", "symbol", "label")
+                    if isinstance((value := ref.get(field)), str) and value
                 }
                 for identifier in identifiers:
                     by_identifier[identifier].append(cast(dict[str, Any], record))

@@ -8,7 +8,83 @@ contract.
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
+
+
+KnowledgeMode = Literal["off", "auto", "required"]
+
+
+class ResultBounds(TypedDict):
+    """Exact size disclosure for one bounded result collection."""
+
+    total: int
+    returned: int
+    truncated: bool
+
+
+class ByteResultBounds(ResultBounds):
+    """Serialized-byte bound with its independent hard limit."""
+
+    limit: int
+
+
+class KnowledgeStatus(TypedDict):
+    """Compact availability and freshness status shared by query adapters."""
+
+    availability: str
+    reason: str
+    freshness: str
+    freshness_evaluated: bool
+
+
+class ContextKnowledgeSelection(TypedDict):
+    """Bounded inert content selected by explicit knowledge mode."""
+
+    concepts: list[dict[str, Any]]
+    pages: list[dict[str, Any]]
+    relationships: list[dict[str, Any]]
+    relationship_coverage: dict[str, Any]
+
+
+class _ContextKnowledgeRequired(TypedDict):
+    mode: KnowledgeMode
+    status: str
+    availability: str
+    reason: str
+    selected: bool
+    freshness_evaluated: bool
+    bounds: dict[str, ResultBounds]
+    fallback: dict[str, Any]
+
+
+class ContextKnowledgeResult(_ContextKnowledgeRequired, total=False):
+    """Canonical explicit-mode knowledge outcome."""
+
+    selection: ContextKnowledgeSelection
+
+
+class RankingPolicy(TypedDict):
+    """Disclosure for optional current-first budget ranking."""
+
+    requested: bool
+    policy: str
+    scope: str
+    budget_pressure: bool
+    applied: bool
+    reason: str
+
+
+class RequiredKnowledgeErrorDetails(TypedDict):
+    """Stable details attached to required-mode interface failures."""
+
+    code: str
+    field: str
+    mode: str
+    availability: str
+    reason: str
+    fallback_evidence: list[str]
+    recovery_command: str
+    mutation_permitted: bool
 
 
 class _ExtractSourceRequired(TypedDict):
@@ -43,10 +119,10 @@ class ContextPayload(_ContextRequired, total=False):
     """Top-level JSON context payload."""
 
     graphs: dict[str, Any]
-    knowledge: dict[str, Any]
+    knowledge: ContextKnowledgeResult | dict[str, Any]
     typed_graph: dict[str, Any]
     surface: dict[str, Any]
-    ranking_policy: dict[str, Any]
+    ranking_policy: RankingPolicy | dict[str, Any]
     warnings: list[str]
 
 
@@ -131,7 +207,7 @@ class PagesForSymbolResult(_BoundedQueryResult):
 
 
 class ConceptResult(_BoundedQueryResult):
-    knowledge: dict[str, Any]
+    knowledge: KnowledgeStatus | dict[str, Any]
     concept: dict[str, Any] | None
     total: int
     returned: int
@@ -164,6 +240,66 @@ class TypedGraphTraversalResult(ConceptResult):
 
 class EvidenceExplanationResult(ConceptResult):
     evidence: dict[str, Any] | None
+
+
+class QueryCostDisclosure(TypedDict):
+    """Deterministic disclosure of work selected for a query."""
+
+    scope: Literal[
+        "snapshot-index-only",
+        "targeted-extraction",
+        "full-inventory",
+    ]
+    full_inventory_performed: bool
+    supplied_paths: int
+
+
+class _DocumentationQueryRequired(TypedDict):
+    schema_version: str
+    operation: str
+    query: Any
+    found: bool
+    ambiguous: bool
+    matches: list[dict[str, Any]]
+    bounds: dict[str, ResultBounds | ByteResultBounds]
+    truncated: bool
+    cost: QueryCostDisclosure
+
+
+class DocumentationQueryResult(_DocumentationQueryRequired, total=False):
+    """Common envelope returned by the shared bounded query dispatcher."""
+
+    knowledge: KnowledgeStatus | dict[str, Any]
+    concept: dict[str, Any] | None
+    total: int
+    returned: int
+    direction: str
+    kinds: list[str]
+    relationships: list[dict[str, Any]]
+    related_concepts: list[dict[str, Any]]
+    unresolved_targets: list[dict[str, Any]]
+    external_targets: list[dict[str, Any]]
+    origins: list[str]
+    resolutions: list[str]
+    include_evidence: bool
+    typed_graph: dict[str, Any]
+    edges: list[dict[str, Any]]
+    symbol: dict[str, Any] | None
+    pages: list[dict[str, Any]]
+    callers: list[dict[str, Any]]
+    callees: list[dict[str, Any]]
+    flow: dict[str, Any] | None
+    data_flow: dict[str, Any] | None
+    path: str | None
+    inbound: list[str]
+    outbound: list[str]
+    metrics: dict[str, Any]
+    cycle_groups: list[dict[str, Any]]
+    load_order_index: int | None
+    impacted_paths: list[str]
+    concepts: list[dict[str, Any]]
+    limitations: list[str]
+    raw_evidence: list[dict[str, Any]]
 
 
 class DocumentationExportResult(TypedDict):
@@ -255,13 +391,17 @@ class DoctorResult(TypedDict):
 
 
 __all__ = [
+    "ByteResultBounds",
     "CalleesResult",
     "CallersResult",
     "ConceptResult",
     "ConceptSectionsResult",
+    "ContextKnowledgeResult",
+    "ContextKnowledgeSelection",
     "ContextPayload",
     "DataFlowForEntrypointResult",
     "DependencyNeighborhoodResult",
+    "DocumentationQueryResult",
     "DocumentationExportResult",
     "DoctorAvailability",
     "DoctorDrift",
@@ -274,8 +414,14 @@ __all__ = [
     "ExtractSourceResult",
     "FlowForEntrypointResult",
     "MarkdownContextResult",
+    "KnowledgeMode",
+    "KnowledgeStatus",
     "PagesForSymbolResult",
+    "QueryCostDisclosure",
+    "RankingPolicy",
     "RelatedConceptsResult",
+    "RequiredKnowledgeErrorDetails",
+    "ResultBounds",
     "TypedGraphTraversalResult",
     "WikiPage",
     "WikiPageCounts",

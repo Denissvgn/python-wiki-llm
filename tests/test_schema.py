@@ -66,7 +66,8 @@ def test_agent_schema_pins_configured_source_selection_in_maintenance_recipes():
     selection_arg = "--source-selection 'config/team selection.json'"
 
     for recipe in (
-        "llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only",
+        "llm-wiki context --budget 8000 --src-dir . --format markdown "
+        "--focus changed --knowledge-mode auto --read-only",
         "llm-wiki extract --src-dir .",
         "llm-wiki generate-prompt",
         "llm-wiki lint --strict --jobs 1",
@@ -80,11 +81,7 @@ def test_agent_schema_pins_configured_source_selection_in_maintenance_recipes():
 
 def test_bundled_sync_skill_preserves_profile_and_uses_selected_diffs_only():
     skill_root = (
-        Path(__file__).parents[1]
-        / "src"
-        / "llm_wiki_cli"
-        / "skills"
-        / "wiki-sync"
+        Path(__file__).parents[1] / "src" / "llm_wiki_cli" / "skills" / "wiki-sync"
     )
     skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
     reference = (skill_root / "reference.md").read_text(encoding="utf-8")
@@ -103,7 +100,7 @@ def test_agent_schema_is_scope_and_resource_aware():
     assert "For broad repository-wide work" in content
     assert (
         "llm-wiki context --budget 8000 --src-dir . --format markdown "
-        "--focus changed --read-only" in content
+        "--focus changed --knowledge-mode auto --read-only" in content
     )
     assert "For a narrow task with supplied files or a supplied diff" in content
     assert "skip the full context scan" in text

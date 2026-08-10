@@ -25,8 +25,10 @@ from llm_wiki_cli.services.context_knowledge_contract import (
     validate_context_knowledge_contract,
 )
 from llm_wiki_cli.services.contracts import (
+    CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     CONTEXT_PROTOCOL_VERSION,
     PROTOCOL_VERSIONS,
+    QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
 )
 from llm_wiki_cli.services.mcp_server import McpWikiService
@@ -73,16 +75,26 @@ def test_frozen_contract_matches_its_canonical_fixture() -> None:
     assert b"\r" not in CONTRACT_FIXTURE.read_bytes()
 
 
-def test_planned_surfaces_are_reserved_while_current_runtime_stays_v1() -> None:
+def test_knowledge_v2_is_active_while_render_and_lifecycle_stay_reserved() -> None:
     contract = context_knowledge_contract()
 
     assert contract["schema_version"] == CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION
     assert contract["runtime_state"] == {
-        "knowledge_mode": "reserved-not-active",
+        "knowledge_mode": "active",
         "render_profiles": "reserved-not-active",
         "lifecycle_behavior": "reserved-not-active",
-        "active_context_protocol": CONTEXT_PROTOCOL_VERSION,
-        "active_packet_schema": QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+        "active_context_protocols": [
+            CONTEXT_PROTOCOL_VERSION,
+            CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        ],
+        "active_packet_schemas": [
+            QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+            QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+        ],
+        "default_context_protocol": CONTEXT_PROTOCOL_VERSION,
+        "default_packet_schema": QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+        "explicit_context_protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        "explicit_packet_schema": (QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION),
     }
     assert contract["versioning"]["explicit"]["context_protocol"] == (
         RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
@@ -90,33 +102,28 @@ def test_planned_surfaces_are_reserved_while_current_runtime_stays_v1() -> None:
     assert contract["versioning"]["explicit"]["packet_schema"] == (
         RESERVED_QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION
     )
-    assert RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION not in PROTOCOL_VERSIONS
+    assert RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION in PROTOCOL_VERSIONS
     assert (
-        RESERVED_QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION
-        not in PROTOCOL_VERSIONS
+        RESERVED_QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION in PROTOCOL_VERSIONS
     )
     assert CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION not in PROTOCOL_VERSIONS
 
-    with pytest.raises(SystemExit):
-        cli._build_parser().parse_args(
-            ["context", "--budget", "32000", KNOWLEDGE_MODE_CLI_OPTION, "auto"]
+    args = cli._build_parser().parse_args(
+        ["context", "--budget", "32000", KNOWLEDGE_MODE_CLI_OPTION, "auto"]
+    )
+    assert args.knowledge_mode == "auto"
+    for entrypoint in (
+        api.build_context,
+        api.build_qualified_context,
+        McpWikiService.get_context,
+        McpWikiService.get_context_packet,
+    ):
+        assert (
+            inspect.signature(entrypoint)
+            .parameters[KNOWLEDGE_MODE_REQUEST_FIELD]
+            .default
+            is None
         )
-    assert (
-        KNOWLEDGE_MODE_REQUEST_FIELD
-        not in inspect.signature(api.build_context).parameters
-    )
-    assert (
-        KNOWLEDGE_MODE_REQUEST_FIELD
-        not in inspect.signature(api.build_qualified_context).parameters
-    )
-    assert (
-        KNOWLEDGE_MODE_REQUEST_FIELD
-        not in inspect.signature(McpWikiService.get_context).parameters
-    )
-    assert (
-        KNOWLEDGE_MODE_REQUEST_FIELD
-        not in inspect.signature(McpWikiService.get_context_packet).parameters
-    )
     assert "profile" not in inspect.signature(schema.build_schema_content).parameters
     assert (
         "render_profile"
@@ -170,6 +177,72 @@ def test_omission_preserves_v1_normalization_and_canonical_fixtures() -> None:
     with pytest.raises(context_service.ProtocolRequestError) as caught:
         context_service._validate_protocol_request(_raw_request(knowledge_mode="auto"))
     assert caught.value.field == KNOWLEDGE_MODE_REQUEST_FIELD
+
+
+@pytest.mark.parametrize("mode", KNOWLEDGE_MODE_VALUES)
+def test_explicit_v2_requires_and_preserves_canonical_mode(mode: str) -> None:
+    request = _raw_request(
+        protocol=CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        knowledge_mode=mode,
+    )
+
+    assert context_service._validate_protocol_request(request) == {
+        "protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        "budget_tokens": 32000,
+        "focus": ["all"],
+        "format": "json",
+        "filters": {},
+        "prefer_fresh": False,
+        "knowledge_mode": mode,
+    }
+
+
+def test_explicit_v2_rejects_omitted_or_noncanonical_mode() -> None:
+    with pytest.raises(context_service.ProtocolRequestError) as omitted:
+        context_service._validate_protocol_request(
+            _raw_request(protocol=CONTEXT_KNOWLEDGE_PROTOCOL_VERSION)
+        )
+    assert omitted.value.field == KNOWLEDGE_MODE_REQUEST_FIELD
+    assert omitted.value.protocol == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+
+    with pytest.raises(context_service.ProtocolRequestError) as aliased:
+        context_service._validate_protocol_request(
+            _raw_request(
+                protocol=CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+                knowledge_mode="AUTO",
+            )
+        )
+    assert aliased.value.field == KNOWLEDGE_MODE_REQUEST_FIELD
+    assert aliased.value.protocol == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+
+
+@pytest.mark.parametrize(
+    "override",
+    [
+        {"budget_tokens": 0},
+        {"format": "yaml"},
+        {"focus": []},
+        {"filters": {"unknown": "value"}},
+        {"prefer_fresh": "true"},
+        {"knowledge_mode": "AUTO"},
+    ],
+)
+def test_every_version_aware_v2_validation_error_echoes_v2(
+    override: dict[str, object],
+) -> None:
+    request = _raw_request(
+        protocol=CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        knowledge_mode="auto",
+    )
+    request.update(override)
+
+    with pytest.raises(context_service.ProtocolRequestError) as caught:
+        context_service._validate_protocol_request(request)
+
+    assert caught.value.protocol == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+    assert context_service._protocol_error_payload(caught.value)["protocol"] == (
+        CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+    )
 
 
 def test_existing_freshness_preference_defaults_remain_false() -> None:
@@ -355,6 +428,22 @@ def test_output_selection_freshness_and_error_contracts_are_exact() -> None:
     assert error["field"] == KNOWLEDGE_MODE_REQUEST_FIELD
     assert error["mutation_permitted"] is False
     assert error["packet_emitted"] is False
+
+
+def test_governance_missing_is_an_external_restore_only_action() -> None:
+    contract = context_knowledge_contract()
+    recovery = contract["recovery_templates"]["governance_missing"]
+    override = contract["evidence_composition"]["reason_overrides"][
+        "governance-missing"
+    ]
+
+    assert recovery["recovery_type"] == "owner-restore"
+    assert recovery["action_type"] == "external-owner-action"
+    assert recovery["regeneration_before_restore"] == "forbidden"
+    assert recovery["initialization_before_restore"] == "forbidden"
+    assert override["recovery_type"] == "owner-restore"
+    assert override["action_type"] == "external-owner-action"
+    assert " sync " not in f" {override['recovery_command']} "
 
 
 def test_reference_lifecycle_matrix_is_complete_and_reserved() -> None:
@@ -565,7 +654,7 @@ def test_recovery_templates_preserve_configured_paths_and_parse() -> None:
 
 
 CANONICAL_MUTATIONS = [
-    (("runtime_state", "active_context_protocol"), "bogus-context/v9"),
+    (("runtime_state", "default_context_protocol"), "bogus-context/v9"),
     (("versioning", "explicit", "packet_schema"), "bogus-packet/v9"),
     (("request", "explicit_behavior"), "legacy-v1"),
     (("interfaces", "cli", "entrypoint"), "llm-wiki bogus"),

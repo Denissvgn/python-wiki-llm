@@ -79,11 +79,13 @@ interfaces. The MCP server exposes read-only resources, search, and status
 counts for the same surface kinds. The supported Python API exposes source
 inventory, context payloads, registry-backed page metadata, and graph queries
 through `extract_source(...)`, `build_context(...)`, `list_wiki_pages(...)`, and
-the documentation query wrappers. `llm-wiki obsidian export` mirrors the canonical
-Markdown wiki for Obsidian, and `llm-wiki site export|check` mirrors and validates
-plain, MkDocs-compatible, or Docusaurus-compatible Markdown output without
-invoking external builders. Static-site output is a derived artifact; it must
-not become a second editable source of truth.
+`query_documentation(...)` plus the dedicated query wrappers. It also exposes
+canonical packets through `build_qualified_context(...)`.
+`llm-wiki obsidian export` mirrors the canonical Markdown wiki for Obsidian,
+and `llm-wiki site export|check` mirrors and validates plain, MkDocs-compatible,
+or Docusaurus-compatible Markdown output without invoking external builders.
+Static-site output is a derived artifact; it must not become a second editable
+source of truth.
 
 After normal Python signature binding succeeds, all functions exported by
 `llm_wiki_cli.api` report operational and validation failures through
@@ -1155,23 +1157,36 @@ llm-wiki context --budget 8000 --src-dir . --format json
 llm-wiki context --budget 8000 --src-dir . --format markdown
 llm-wiki context --budget 8000 --focus changed
 llm-wiki context --budget 8000 --focus all
+llm-wiki context --budget 8000 --focus changed --knowledge-mode auto --read-only
 llm-wiki context --budget 8000 --focus all --prefer-fresh
 llm-wiki context --budget 12000 --format json --focus all --output context.json --read-only
 ```
 
 `--focus changed` is the default. Changed files get full detail, one-hop import
 neighbors get slim detail, and remaining files get names only.
+`--knowledge-mode` enables the explicit knowledge-aware context contract:
+`auto` returns bounded native knowledge when it is ready and otherwise reports
+the qualified fallback, `off` disables native selection, and `required` fails
+with a structured recovery reason unless ready qualified knowledge can be
+produced. Omitting the option preserves the legacy context response.
 `--prefer-fresh` is opt-in: under budget pressure it prefers current knowledge
 within an existing relevance tier, without moving candidates across relevance
-tiers or dropping content solely because it is stale. JSON output discloses
-whether the ranking policy was evaluated and applied.
+tiers or dropping content solely because it is stale. It controls ranking, not
+whether knowledge is included. JSON output discloses whether the ranking policy
+was evaluated and applied.
 
 For broad repository-wide work, run one serialized
-`llm-wiki context --budget 8000 --focus changed --read-only`, then read only the
-source and wiki pages it selects. For a narrow task with supplied files or a
-supplied diff, skip the full context scan and use the wiki index only for
-navigation. The budget and focus bound emitted output after a full deep
-inventory; they do not make the scan computationally cheap.
+`llm-wiki context --budget 8000 --focus changed --knowledge-mode auto --read-only`,
+then read only the source and wiki pages it selects. For a narrow task with
+supplied files or a supplied diff, use the bounded
+`llm_wiki_cli.api.query_documentation(...)` function or the MCP
+`query_documentation` tool with the `impact` operation. Exact concept,
+related-concept, surface, and typed queries use the committed snapshot;
+supplied file or unified-diff impact queries use targeted extraction. Symbol,
+entrypoint, and dependency queries
+perform a full inventory only when `allow_full_inventory=true` is supplied.
+The context budget and focus bound emitted output after a full deep inventory;
+they do not make that scan computationally cheap.
 
 External tools can use the `llm-wiki-context/v1` JSON request protocol:
 
@@ -1197,6 +1212,27 @@ Example request:
   }
 }
 ```
+
+Version 1 remains the compatibility protocol and does not accept
+`knowledge_mode`. To request explicit knowledge behavior, use
+`llm-wiki-context/v2` and include exactly one of `"off"`, `"auto"`, or
+`"required"`:
+
+```json
+{
+  "protocol": "llm-wiki-context/v2",
+  "budget_tokens": 8000,
+  "focus": ["changed", "neighbors"],
+  "format": "json",
+  "filters": {},
+  "prefer_fresh": false,
+  "knowledge_mode": "auto"
+}
+```
+
+The Python `build_context(...)` function and MCP `get_context` tool expose the
+same optional `knowledge_mode`. Qualified packet versioning and validation are
+described in [Qualified context packets](docs/qualified-context-packets.md).
 
 `filters.language` and `filters.module` scope the budgeted `files` payload.
 `filters.symbol`, `filters.entrypoint`, and `filters.surface` add bounded

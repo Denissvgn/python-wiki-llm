@@ -1,9 +1,9 @@
 """Frozen compatibility and failure contracts for context knowledge selection.
 
-The active context and packet implementations remain on their v1 contracts.
-This module reserves the explicit v2 wire contract so the CLI, Python API,
-MCP, raw protocol, and packet implementation can be added without making
-independent naming or fallback decisions.
+The v1 context and packet contracts remain frozen for omitted knowledge mode,
+while explicit knowledge mode activates the v2 wire contract across the CLI,
+Python API, MCP, raw protocol, and qualified packets.  This module keeps those
+interfaces on one naming, fallback, recovery, and evidence contract.
 
 The lifecycle and evidence matrices are data rather than prose.  Consumers can
 validate a serialized copy before using it as implementation or release
@@ -18,13 +18,19 @@ from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
-from .contracts import CONTEXT_PROTOCOL_VERSION, QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION
+from .contracts import (
+    CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+    CONTEXT_PROTOCOL_VERSION,
+    QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+    QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+)
 
 
 CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION = "llm-wiki-context-knowledge-contract/v1"
-RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION = "llm-wiki-context/v2"
+# Compatibility aliases retained for consumers of the foundation contract.
+RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION = CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
 RESERVED_QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION = (
-    "llm-wiki-qualified-context-packet/v2"
+    QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION
 )
 KNOWLEDGE_MODE_VALUES = ("off", "auto", "required")
 KNOWLEDGE_MODE_REQUEST_FIELD = "knowledge_mode"
@@ -222,11 +228,21 @@ def _combined_recovery_routes(
 _CONTRACT: dict[str, Any] = {
     "schema_version": CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
     "runtime_state": {
-        "knowledge_mode": "reserved-not-active",
+        "knowledge_mode": "active",
         "render_profiles": "reserved-not-active",
         "lifecycle_behavior": "reserved-not-active",
-        "active_context_protocol": CONTEXT_PROTOCOL_VERSION,
-        "active_packet_schema": QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+        "active_context_protocols": [
+            CONTEXT_PROTOCOL_VERSION,
+            CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        ],
+        "active_packet_schemas": [
+            QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+            QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+        ],
+        "default_context_protocol": CONTEXT_PROTOCOL_VERSION,
+        "default_packet_schema": QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+        "explicit_context_protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        "explicit_packet_schema": QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     },
     "versioning": {
         "legacy": {
@@ -441,6 +457,19 @@ _CONTRACT: dict[str, Any] = {
         "required_currentness_condition": "not-required",
         "snapshot_only": "ready-with-explicit-freshness-limitation",
         "degraded_mixed": "diagnostic-only-no-native-conclusion",
+        "ready_without_relevant_selection": (
+            "qualified-fallback-success-for-auto-and-required"
+        ),
+        "serialized_size": {
+            "limit_bytes": 2 * 1024 * 1024,
+            "reduction_order": ["relationships", "pages", "concepts"],
+            "minimum_selected_concepts": 1,
+            "selected_reason": "knowledge-results-truncated",
+            "minimal_result_reason": "knowledge-result-exceeds-size-limit",
+            "auto_minimal_result": "degraded-fallback-with-original-totals",
+            "required_minimal_result": "knowledge-required-unavailable-error",
+            "fallback_bounds": "original-total-zero-returned-truncated-when-nonzero",
+        },
     },
     "output_fields": {
         "knowledge": {
@@ -456,6 +485,7 @@ _CONTRACT: dict[str, Any] = {
                 "bounds",
                 "fallback",
             ],
+            "bounds_collections": ["concepts", "pages", "relationships"],
             "bounds_required": ["total", "returned", "truncated"],
             "fallback_required": ["used", "evidence", "reason"],
             "status_values": ["disabled", "selected", "fallback"],
@@ -679,7 +709,7 @@ _CONTRACT: dict[str, Any] = {
         "current_runtime": "legacy-expanded-without-profile-marker",
     },
     "recovery_templates": {
-        "implementation_state": "reserved-not-active",
+        "implementation_state": "required-knowledge-active-lifecycle-reserved",
         "parameters": {
             "src_dir": {
                 "source": "resolved-request-or-project-configuration",
@@ -697,12 +727,42 @@ _CONTRACT: dict[str, Any] = {
                 "source": "derived-from-resolved-configured-agent",
                 "render": "shell-quoted",
             },
+            "source_selection": {
+                "source": "resolved-active-policy-path",
+                "render": "shell-quoted-when-present",
+            },
+            "allow_external_src": {
+                "source": "accepted-request-authorization",
+                "render": "flag-only-when-explicitly-authorized",
+            },
         },
         "rules": [
             "never-substitute-a-default-for-a-configured-path",
             "carry-resolved-wiki-dir-through-project-recovery",
             "carry-resolved-agent-through-schema-or-reference-recovery",
+            "carry-active-source-selection-through-sync-recovery",
+            "carry-external-source-authorization-without-inferring-it",
         ],
+        "result_size_exhausted": {
+            "reason": "knowledge-result-exceeds-size-limit",
+            "auto": "bounded-degraded-fallback",
+            "required": "knowledge-required-unavailable",
+            "recovery": "narrow-source-selection-or-context-focus",
+            "mutation": "none",
+        },
+        "governance_missing": {
+            "recovery_type": "owner-restore",
+            "action_type": "external-owner-action",
+            "command": (
+                "restore {wiki_dir}/.llm-wiki-governance.json from version "
+                "control or an owner-approved backup"
+            ),
+            "regeneration_before_restore": "forbidden",
+            "initialization_before_restore": "forbidden",
+            "next_step_after_restore": (
+                "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}"
+            ),
+        },
         "unsupported_projection": {
             "package_manager_step": "environment-specific-update-not-a-cli-command",
             "version_probe": "llm-wiki --version",
@@ -1185,12 +1245,39 @@ _CONTRACT: dict[str, Any] = {
             "absent",
             "degraded-mixed",
         ],
+        "degraded_variants": {
+            "mixed": _wire_mapping(
+                availability="degraded",
+                reason="policy-selected-surface-only-fallback-after-mixed-snapshot",
+                auto_status="fallback",
+                required_status="error-no-context-response",
+                basis_state="unavailable",
+                basis_availability="degraded",
+                basis_reason=(
+                    "policy-selected-surface-only-fallback-after-mixed-snapshot"
+                ),
+            ),
+            "invalid": _wire_mapping(
+                availability="degraded",
+                reason="policy-selected-surface-only-fallback-after-invalid",
+                auto_status="fallback",
+                required_status="error-no-context-response",
+                basis_state="unavailable",
+                basis_availability="degraded",
+                basis_reason="policy-selected-surface-only-fallback-after-invalid",
+            ),
+        },
         "qualifiers": [
             "snapshot-only",
             "source-changed",
             "bounded-truncated",
         ],
         "qualifiers_accumulate": True,
+        "qualifier_reason_precedence": [
+            "bounded-truncated",
+            "source-changed",
+            "snapshot-only",
+        ],
         "auto": "fallback-if-any-rejecting-base-state-applies",
         "required": "error-if-any-rejecting-base-state-applies",
         "profile_source": "lifecycle-row-only",
@@ -1203,6 +1290,26 @@ _CONTRACT: dict[str, Any] = {
         ),
         "invalid_surface_scope": "global-all-lifecycle-states",
         "found_false": "apply-the-most-conservative-row-meaning",
+        "ready_without_relevant_selection": {
+            "auto_status": "fallback",
+            "required_status": "fallback",
+            "reason": "no-relevant-native-selection",
+            "found_false_meaning": "qualified-inconclusive-with-declared-bounds",
+        },
+        "reason_overrides": {
+            "governance-missing": {
+                "availability": "degraded",
+                "reason": "governance-missing",
+                "recovery_type": "owner-restore",
+                "action_type": "external-owner-action",
+                "recovery_command": (
+                    "restore {wiki_dir}/.llm-wiki-governance.json from version "
+                    "control or an owner-approved backup"
+                ),
+                "regeneration_before_restore": "forbidden",
+                "initialization_before_restore": "forbidden",
+            }
+        },
     },
     "lifecycle_evidence_matrix": [],
     "safety_semantics": {
@@ -1299,12 +1406,25 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
     if contract.get("schema_version") != CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION:
         raise ContextKnowledgeContractError("schema_version is unsupported")
     runtime_state = contract.get("runtime_state")
-    if not isinstance(runtime_state, Mapping) or any(
-        runtime_state.get(name) != "reserved-not-active"
-        for name in ("knowledge_mode", "render_profiles", "lifecycle_behavior")
-    ):
+    if not isinstance(runtime_state, Mapping) or runtime_state != {
+        "knowledge_mode": "active",
+        "render_profiles": "reserved-not-active",
+        "lifecycle_behavior": "reserved-not-active",
+        "active_context_protocols": [
+            CONTEXT_PROTOCOL_VERSION,
+            CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        ],
+        "active_packet_schemas": [
+            QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+            QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+        ],
+        "default_context_protocol": CONTEXT_PROTOCOL_VERSION,
+        "default_packet_schema": QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+        "explicit_context_protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        "explicit_packet_schema": QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+    }:
         raise ContextKnowledgeContractError(
-            "planned context and lifecycle behavior must remain reserved"
+            "knowledge mode must be active while render and lifecycle remain reserved"
         )
 
     request = contract.get("request")
@@ -1393,6 +1513,18 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
     if output_fields["required_error"].get("mutation_permitted") is not False:
         raise ContextKnowledgeContractError(
             "required error must forbid mutation explicitly"
+        )
+    if output_fields["knowledge"].get("bounds_collections") != [
+        "concepts",
+        "pages",
+        "relationships",
+    ] or output_fields["knowledge"].get("bounds_required") != [
+        "total",
+        "returned",
+        "truncated",
+    ]:
+        raise ContextKnowledgeContractError(
+            "knowledge bounds must be independently collection-scoped"
         )
     ranking_presence = output_fields["ranking_policy"].get("presence")
     if ranking_presence != {
@@ -1531,6 +1663,38 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         evidence_composition.get("qualifiers", ())
     ) != {"snapshot-only", "source-changed", "bounded-truncated"}:
         raise ContextKnowledgeContractError("evidence_composition is incomplete")
+    if evidence_composition.get("qualifier_reason_precedence") != [
+        "bounded-truncated",
+        "source-changed",
+        "snapshot-only",
+    ]:
+        raise ContextKnowledgeContractError(
+            "evidence qualifier reason precedence is incomplete"
+        )
+    degraded_variants = evidence_composition.get("degraded_variants", {})
+    if (
+        degraded_variants.get("mixed") != evidence["degraded-mixed"]["wire_mapping"]
+        or degraded_variants.get("invalid", {}).get("reason")
+        != "policy-selected-surface-only-fallback-after-invalid"
+    ):
+        raise ContextKnowledgeContractError("degraded variants are incomplete")
+    governance_override = evidence_composition.get("reason_overrides", {}).get(
+        "governance-missing", {}
+    )
+    if (
+        governance_override.get("recovery_type") != "owner-restore"
+        or governance_override.get("action_type") != "external-owner-action"
+        or any(
+            governance_override.get(field) != "forbidden"
+            for field in (
+                "regeneration_before_restore",
+                "initialization_before_restore",
+            )
+        )
+    ):
+        raise ContextKnowledgeContractError(
+            "governance-missing must require owner restoration"
+        )
 
     combined = contract.get("lifecycle_evidence_matrix")
     if not isinstance(combined, Sequence) or isinstance(combined, (str, bytes)):

@@ -311,10 +311,19 @@ of related concepts.
 
 ### Delivery options
 
-- `llm-wiki context --request ...`;
-- Python `build_documentation_query_service(...)` plus query wrappers;
-- MCP `get_concept`, `related_concepts`, `traverse_typed_graph`, and
-  `explain_evidence`.
+- `llm-wiki context --knowledge-mode auto ...` or an explicit
+  `llm-wiki-context/v2` request;
+- Python `query_documentation(...)` for bounded exact or supplied-impact
+  queries, and `build_documentation_query_service(...)` when several live
+  full-inventory queries should share one service;
+- MCP `query_documentation`, `get_context`, `get_context_packet`, and the
+  dedicated exact concept and traversal tools.
+
+The shared documentation-query dispatcher discloses whether a request used
+only the committed snapshot, targeted supplied-path extraction, or a full
+inventory. Symbol, entrypoint, and dependency operations require an explicit
+full-inventory opt-in. Supplied paths and unified diffs never establish a
+global live-freshness claim.
 
 ### Real value
 

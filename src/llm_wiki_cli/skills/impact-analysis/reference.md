@@ -52,7 +52,7 @@ decisive_detail = explain_evidence(
 Do not call `build_documentation_query_service` again for the same impact
 report, and do not omit `service=` from a wrapper in that sequence. If native
 identity is not ready, skip native traversal and continue only with the labeled
-legacy supplement allowed by the table below.
+bounded source supplement allowed by the table below.
 
 MCP tool `get_concept`:
 
@@ -96,13 +96,13 @@ detail internal unless the output policy explicitly permits it.
 | Native state | Required impact-analysis behavior |
 |---|---|
 | `ready` + typed graph `ready` | Resolve exact identity; preserve freshness, lifecycle, successor, review, and verification qualification; traverse with explicit filters; report query, evidence-sample, and analyzer bounds separately. |
-| `ready` + `typed-graph-extension-not-present` | Use exact identity and its lifecycle/qualification, but make no typed-neighborhood conclusion. Run the labeled legacy live supplement and state that native graph coverage is absent. |
-| `absent` (`knowledge-projection-not-present`) | Run compatible legacy live context/graph queries and targeted source reads. Label native identity, lifecycle, typed evidence, and analyzer qualification unavailable; never report an empty native graph. |
-| `degraded`, `unsupported`, invalid, or mixed snapshot | Serve no rejected native payload. Use only independently validated legacy surface/source results, name the reason, and require the owning refresh for a native conclusion. |
+| `ready` + `typed-graph-extension-not-present` | Use exact identity and its lifecycle/qualification, but make no typed-neighborhood conclusion. Run the labeled bounded source supplement and state that native graph coverage is absent. |
+| `absent` (`knowledge-projection-not-present`) | Run bounded supplied-impact or explicitly authorized live source queries. Label native identity, lifecycle, typed evidence, and analyzer qualification unavailable; never report an empty native graph. |
+| `degraded`, `unsupported`, invalid, or mixed snapshot | Serve no rejected native payload. Use only independently validated surface/source results, name the reason, and require the owning refresh for a native conclusion. |
 | Ambiguous exact identity or persisted alias | Preserve `ambiguous` and every bounded `matches` item; obtain an owner choice or analyze each candidate separately. Do not fuzzy-resolve or merge candidates. |
 | `ready` with `freshness_evaluated: false` | Treat identity/graph data as snapshot-only. Do not describe it as live-current; the separately labeled legacy source query may be live without upgrading the native snapshot. |
 
-Legacy detail can increase the known blast radius, but it cannot erase native
+Supplemental detail can increase the known blast radius, but it cannot erase native
 absence, stale/snapshot-only qualification, an unresolved or external edge,
 alias ambiguity, or analyzer truncation.
 
@@ -126,16 +126,35 @@ set fit this response. It does not make an analyzer complete. Likewise, an
 evidence sample may be truncated while the query returned every materialized
 edge.
 
-## Legacy live query selection by target type
+## Bounded source-query selection by target type
 
 | Target | Query | Access path |
 |---|---|---|
-| Callable symbol name | `callers`, `callees` | `context --request` `filters.symbol`, or MCP `query_graph {"type": "callers", "value": "<symbol>", "limit": 20}` |
-| Source file path | `dependency_neighborhood` | MCP `query_graph {"type": "dependency_neighborhood", "value": "<file>", "limit": 20}` only — not exposed through `context`'s `filters` |
-| Entry-point id or symbol | `flow_for_entrypoint`, `data_flow_for_entrypoint` | `context --request` `filters.entrypoint`, or MCP `query_graph {"type": "flow_for_entrypoint", "value": "<entrypoint>", "limit": 20}` (replace `type` with `data_flow_for_entrypoint` for the data-flow query) |
-| Symbol → covering wiki pages | `pages_for_symbol` | `context --request` `filters.symbol` (bundled with callers/callees), or MCP `query_graph {"type": "pages_for_symbol", "value": "<symbol>", "limit": 20}` |
+| Supplied file or diff | attributed impact | Python/MCP `query_documentation {"operation":"impact","paths":["<file>"],"limit":20,"include_raw_evidence":false}`; use `diff` instead of `paths` for unified-diff text; no full-inventory opt-in |
+| Exact native identity | concept/related/typed | Python/MCP `query_documentation` with `operation` `concept`, `related`, or `typed`; committed snapshot only |
+| Exact canonical page | surface | Python/MCP `query_documentation {"operation":"surface","value":"<canonical-path>","limit":20}`; committed snapshot only |
+| Callable symbol name | pages/callers/callees | Python/MCP `query_documentation {"operation":"symbol","value":"<symbol>","limit":20,"allow_full_inventory":true}` |
+| Source file path | dependency neighborhood | Python/MCP `query_documentation {"operation":"dependency","value":"<file>","limit":20,"allow_full_inventory":true}` |
+| Entry-point id or symbol | flow/data flow | Python/MCP `query_documentation {"operation":"entrypoint","value":"<entrypoint>","limit":20,"allow_full_inventory":true}` |
 
-## `context --request` payload (`llm-wiki-context/v1` protocol)
+Every dispatcher result carries `schema_version`, `operation`, `bounds`,
+`truncated`, and a `cost` object. `snapshot-index-only` and
+`targeted-extraction` do not perform a full inventory. The three topology
+operations reject the request unless `allow_full_inventory` is exactly true.
+Supplied evidence never upgrades snapshot knowledge to a live-current claim.
+
+The older `context --request` and MCP `query_graph` routes remain supported for
+compatibility. Use them only when a consumer specifically needs their legacy
+response shape:
+
+| Target | Compatibility access path |
+|---|---|
+| Callable symbol name | `context --request` `filters.symbol`, or MCP `query_graph {"type": "callers", "value": "<symbol>", "limit": 20}` |
+| Source file path | MCP `query_graph {"type": "dependency_neighborhood", "value": "<file>", "limit": 20}` only — not exposed through `context`'s `filters` |
+| Entry-point id or symbol | `context --request` `filters.entrypoint`, or MCP `query_graph {"type": "flow_for_entrypoint", "value": "<entrypoint>", "limit": 20}` |
+| Symbol → covering wiki pages | `context --request` `filters.symbol`, or MCP `query_graph {"type": "pages_for_symbol", "value": "<symbol>", "limit": 20}` |
+
+## Compatibility `context --request` payload (`llm-wiki-context/v1`)
 
 ```json
 {

@@ -2,8 +2,23 @@
   "availability_semantics": {
     "degraded_mixed": "diagnostic-only-no-native-conclusion",
     "ready": "consumable-not-complete-or-current",
+    "ready_without_relevant_selection": "qualified-fallback-success-for-auto-and-required",
     "required_currentness_condition": "not-required",
     "required_success_condition": "availability-ready",
+    "serialized_size": {
+      "auto_minimal_result": "degraded-fallback-with-original-totals",
+      "fallback_bounds": "original-total-zero-returned-truncated-when-nonzero",
+      "limit_bytes": 2097152,
+      "minimal_result_reason": "knowledge-result-exceeds-size-limit",
+      "minimum_selected_concepts": 1,
+      "reduction_order": [
+        "relationships",
+        "pages",
+        "concepts"
+      ],
+      "required_minimal_result": "knowledge-required-unavailable-error",
+      "selected_reason": "knowledge-results-truncated"
+    },
     "snapshot_only": "ready-with-explicit-freshness-limitation"
   },
   "evidence_composition": {
@@ -16,11 +31,40 @@
       "degraded-mixed",
       "ready"
     ],
+    "degraded_variants": {
+      "invalid": {
+        "auto_status": "fallback",
+        "availability": "degraded",
+        "basis": {
+          "availability": "degraded",
+          "reason": "policy-selected-surface-only-fallback-after-invalid",
+          "state": "unavailable"
+        },
+        "reason": "policy-selected-surface-only-fallback-after-invalid",
+        "required_status": "error-no-context-response"
+      },
+      "mixed": {
+        "auto_status": "fallback",
+        "availability": "degraded",
+        "basis": {
+          "availability": "degraded",
+          "reason": "policy-selected-surface-only-fallback-after-mixed-snapshot",
+          "state": "unavailable"
+        },
+        "reason": "policy-selected-surface-only-fallback-after-mixed-snapshot",
+        "required_status": "error-no-context-response"
+      }
+    },
     "found_false": "apply-the-most-conservative-row-meaning",
     "invalid_surface": "remove-independently-validated-surface-after-all-composition",
     "invalid_surface_scope": "global-all-lifecycle-states",
     "knowledge_and_fallback_source": "resolved-evidence-row-only",
     "profile_source": "lifecycle-row-only",
+    "qualifier_reason_precedence": [
+      "bounded-truncated",
+      "source-changed",
+      "snapshot-only"
+    ],
     "qualifiers": [
       "snapshot-only",
       "source-changed",
@@ -28,6 +72,23 @@
     ],
     "qualifiers_accumulate": true,
     "read_mutation_permission": "none",
+    "ready_without_relevant_selection": {
+      "auto_status": "fallback",
+      "found_false_meaning": "qualified-inconclusive-with-declared-bounds",
+      "reason": "no-relevant-native-selection",
+      "required_status": "fallback"
+    },
+    "reason_overrides": {
+      "governance-missing": {
+        "action_type": "external-owner-action",
+        "availability": "degraded",
+        "initialization_before_restore": "forbidden",
+        "reason": "governance-missing",
+        "recovery_command": "restore {wiki_dir}/.llm-wiki-governance.json from version control or an owner-approved backup",
+        "recovery_type": "owner-restore",
+        "regeneration_before_restore": "forbidden"
+      }
+    },
     "recovery_order": "lifecycle-then-evidence-deduplicated",
     "rejecting_base_states": [
       "invalid-surface",
@@ -5344,6 +5405,11 @@
         "degraded",
         "unsupported"
       ],
+      "bounds_collections": [
+        "concepts",
+        "pages",
+        "relationships"
+      ],
       "bounds_required": [
         "total",
         "returned",
@@ -5618,15 +5684,31 @@
     }
   },
   "recovery_templates": {
-    "implementation_state": "reserved-not-active",
+    "governance_missing": {
+      "action_type": "external-owner-action",
+      "command": "restore {wiki_dir}/.llm-wiki-governance.json from version control or an owner-approved backup",
+      "initialization_before_restore": "forbidden",
+      "next_step_after_restore": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "recovery_type": "owner-restore",
+      "regeneration_before_restore": "forbidden"
+    },
+    "implementation_state": "required-knowledge-active-lifecycle-reserved",
     "parameters": {
       "agent": {
         "render": "exact-cli-choice",
         "source": "resolved-request-or-project-configuration"
       },
+      "allow_external_src": {
+        "render": "flag-only-when-explicitly-authorized",
+        "source": "accepted-request-authorization"
+      },
       "skills_dir": {
         "render": "shell-quoted",
         "source": "derived-from-resolved-configured-agent"
+      },
+      "source_selection": {
+        "render": "shell-quoted-when-present",
+        "source": "resolved-active-policy-path"
       },
       "src_dir": {
         "render": "shell-quoted",
@@ -5641,10 +5723,19 @@
       "force_refresh": "llm-wiki skills install --dest {skills_dir} --skill wiki-reference --force",
       "install": "llm-wiki skills install --dest {skills_dir} --skill wiki-reference"
     },
+    "result_size_exhausted": {
+      "auto": "bounded-degraded-fallback",
+      "mutation": "none",
+      "reason": "knowledge-result-exceeds-size-limit",
+      "recovery": "narrow-source-selection-or-context-focus",
+      "required": "knowledge-required-unavailable"
+    },
     "rules": [
       "never-substitute-a-default-for-a-configured-path",
       "carry-resolved-wiki-dir-through-project-recovery",
-      "carry-resolved-agent-through-schema-or-reference-recovery"
+      "carry-resolved-agent-through-schema-or-reference-recovery",
+      "carry-active-source-selection-through-sync-recovery",
+      "carry-external-source-authorization-without-inferring-it"
     ],
     "unsupported_projection": {
       "package_manager_step": "environment-specific-update-not-a-cli-command",
@@ -5683,9 +5774,19 @@
     "unknown_value": "invalid-request"
   },
   "runtime_state": {
-    "active_context_protocol": "llm-wiki-context/v1",
-    "active_packet_schema": "llm-wiki-qualified-context-packet/v1",
-    "knowledge_mode": "reserved-not-active",
+    "active_context_protocols": [
+      "llm-wiki-context/v1",
+      "llm-wiki-context/v2"
+    ],
+    "active_packet_schemas": [
+      "llm-wiki-qualified-context-packet/v1",
+      "llm-wiki-qualified-context-packet/v2"
+    ],
+    "default_context_protocol": "llm-wiki-context/v1",
+    "default_packet_schema": "llm-wiki-qualified-context-packet/v1",
+    "explicit_context_protocol": "llm-wiki-context/v2",
+    "explicit_packet_schema": "llm-wiki-qualified-context-packet/v2",
+    "knowledge_mode": "active",
     "lifecycle_behavior": "reserved-not-active",
     "render_profiles": "reserved-not-active"
   },

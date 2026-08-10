@@ -7,10 +7,12 @@ import json
 import textwrap
 import types
 from pathlib import Path
+from typing import get_type_hints
 
 import pytest
 
 import llm_wiki_cli.api as api
+from llm_wiki_cli.services import contracts as service_contracts
 from llm_wiki_cli.services import mcp_server, plugins
 from llm_wiki_cli.api import (
     EXTRACT_SCHEMA_VERSION,
@@ -84,6 +86,7 @@ from tests.test_knowledge_compatibility import (
 def test_supported_api_exports_are_additive_contract():
     expected_exports = {
         "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
+        "CONTEXT_KNOWLEDGE_PROTOCOL_VERSION",
         "DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION",
         "DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION",
         "DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION",
@@ -99,6 +102,7 @@ def test_supported_api_exports_are_additive_contract():
         "P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION",
         "P0_CALIBRATION_RUN_SCHEMA_VERSION",
         "P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION",
+        "QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION",
         "QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION",
         "ContextBasisComparison",
         "ContextPacketError",
@@ -114,6 +118,7 @@ def test_supported_api_exports_are_additive_contract():
         "DocumentationModelRoutingPolicy",
         "DocumentationModelRoutingRequest",
         "DocumentationModelSelection",
+        "DocumentationQueryResult",
         "DocumentationRun",
         "DocumentationRunStatus",
         "DocumentationVerificationReport",
@@ -124,6 +129,7 @@ def test_supported_api_exports_are_additive_contract():
         "HostBrokerAuthenticationProof",
         "HostBrokerAuthenticationUnavailable",
         "HostBrokerAuthenticator",
+        "KnowledgeMode",
         "LlmWikiApiError",
         "P0CalibrationAgentPacket",
         "P0CalibrationAgentResult",
@@ -170,6 +176,7 @@ def test_supported_api_exports_are_additive_contract():
         "prepare_calibration_run",
         "prepare_documentation_run",
         "prepare_p0_calibration_run",
+        "query_documentation",
         "record_calibration_agent_result",
         "record_documentation_agent_result",
         "record_p0_calibration_agent_result",
@@ -186,6 +193,22 @@ def test_supported_api_exports_are_additive_contract():
     }
 
     assert expected_exports <= set(api.__all__)
+    assert len(api.__all__) == len(set(api.__all__))
+    assert (
+        api.CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+        == service_contracts.CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+        == "llm-wiki-context/v2"
+    )
+    assert (
+        api.QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION
+        == service_contracts.QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION
+        == "llm-wiki-qualified-context-packet/v2"
+    )
+    assert api.CONTEXT_KNOWLEDGE_PROTOCOL_VERSION in service_contracts.PROTOCOL_VERSIONS
+    assert (
+        api.QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION
+        in service_contracts.PROTOCOL_VERSIONS
+    )
 
 
 def test_supported_api_signatures_preserve_existing_callers():
@@ -219,11 +242,17 @@ def test_supported_api_signatures_preserve_existing_callers():
         "allow_external_src",
         "read_only",
         "source_selection",
+        "knowledge_mode",
     ]
     assert context_params["src_dir"].default == "."
     assert context_params["budget"].default == 32000
     assert context_params["filters"].default is None
     assert context_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert get_type_hints(build_context)["knowledge_mode"] == api.KnowledgeMode | None
+    assert (
+        get_type_hints(api.build_qualified_context)["knowledge_mode"]
+        == api.KnowledgeMode | None
+    )
 
 
 def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
@@ -973,6 +1002,21 @@ def test_build_context_maps_knowledge_refinement_dependency_errors(filters, fiel
         build_context(".", filters=filters)
 
 
+@pytest.mark.parametrize(
+    ("options", "field"),
+    [
+        ({"focus": []}, "focus"),
+        ({"filters": []}, "filters"),
+    ],
+)
+def test_build_context_rejects_explicit_invalid_empty_collections(options, field):
+    with pytest.raises(api.InvalidRequestError) as exc_info:
+        build_context(".", **options)
+
+    assert exc_info.value.code == "invalid-request"
+    assert exc_info.value.details == {"field": field}
+
+
 def test_build_context_markdown_preserves_knowledge_status_and_warnings(
     monkeypatch,
 ):
@@ -1021,7 +1065,10 @@ def test_build_context_legacy_json_shape_remains_context_v1(monkeypatch):
         "files": {},
     }
 
-    def fake_build_context(*_args, **_kwargs):
+    seen = {}
+
+    def fake_build_context(*_args, **kwargs):
+        seen.update(kwargs)
         return dict(legacy_payload), []
 
     monkeypatch.setattr(api.context_cmd, "_build_context", fake_build_context)
@@ -1031,6 +1078,55 @@ def test_build_context_legacy_json_shape_remains_context_v1(monkeypatch):
     assert result == legacy_payload
     assert "knowledge" not in result
     assert api.context_cmd.PROTOCOL_VERSION == "llm-wiki-context/v1"
+    assert seen["include_plugins"] is True
+    assert seen["knowledge_mode"] is None
+
+
+def test_query_filter_iterable_consumption_is_bounded():
+    class InfiniteKinds:
+        def __init__(self):
+            self.pulls = 0
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            self.pulls += 1
+            return "derived_from"
+
+    kinds = InfiniteKinds()
+
+    with pytest.raises(api.InvalidRequestError) as exc_info:
+        api.related_concepts(
+            "llm-wiki://entities/User",
+            kinds=kinds,
+            service=object(),
+        )
+
+    assert kinds.pulls == api.MAX_QUERY_FILTER_VALUES + 1
+    assert exc_info.value.code == "invalid-request"
+    assert exc_info.value.details == {"field": "kinds"}
+    assert f"at most {api.MAX_QUERY_FILTER_VALUES} values" in str(exc_info.value)
+
+
+def test_query_filter_iteration_failure_is_a_stable_invalid_request():
+    class BrokenKinds:
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            raise RuntimeError("iterator implementation leaked")
+
+    with pytest.raises(api.InvalidRequestError) as exc_info:
+        api.related_concepts(
+            "llm-wiki://entities/User",
+            kinds=BrokenKinds(),
+            service=object(),
+        )
+
+    assert exc_info.value.code == "invalid-request"
+    assert exc_info.value.details == {"field": "kinds"}
+    assert "could not be read as an iterable" in str(exc_info.value)
 
 
 def test_build_context_forwards_opt_in_freshness_policy(monkeypatch):
@@ -1288,6 +1384,7 @@ def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
             "deep": True,
             "allow_external_src": True,
             "read_only": True,
+            "include_plugins": False,
         }
         return extract_result
 
@@ -2070,9 +2167,7 @@ def test_knowledge_wrappers_reuse_supplied_service_without_building_or_extractin
     ]
 
 
-def test_section_query_python_api_and_mcp_results_are_identical(
-    tmp_path, monkeypatch
-):
+def test_section_query_python_api_and_mcp_results_are_identical(tmp_path, monkeypatch):
     query_service = api.DocumentationGraphQueryService({})
     monkeypatch.setattr(
         mcp_server,

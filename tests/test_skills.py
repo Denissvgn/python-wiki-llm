@@ -44,28 +44,27 @@ def _write_custom_skill(root: Path, skill_id: str = "demo") -> Path:
 
 def test_canonical_wiki_mutators_require_repository_aware_handoff():
     for skill_id in _CANONICAL_WIKI_MUTATORS:
-        manifest = (
-            skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
-        ).read_text(encoding="utf-8")
+        manifest = (skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
         normalized = " ".join(manifest.split())
         normalized_lower = normalized.lower()
 
         assert "## Managed repository preflight" in manifest, skill_id
         assert (
-            "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md"
-            in manifest
+            "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in manifest
         ), skill_id
         assert "exit 0 is local-only" in normalized_lower, skill_id
         assert (
             "exit 1 is conditionally git-eligible but not authorization"
             in normalized_lower
         ), skill_id
-        assert (
-            "any other result fails closed to local-only" in normalized_lower
-        ), skill_id
-        assert (
-            "never force-add or change ignore/exclude rules" in normalized_lower
-        ), skill_id
+        assert "any other result fails closed to local-only" in normalized_lower, (
+            skill_id
+        )
+        assert "never force-add or change ignore/exclude rules" in normalized_lower, (
+            skill_id
+        )
         assert '"Repository-aware Git handoff"' in manifest, skill_id
 
 
@@ -93,10 +92,7 @@ def test_wiki_reference_defines_fail_closed_git_policy():
     normalized = " ".join(reference.split())
 
     assert "## Repository-aware Git handoff" in reference
-    assert (
-        "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md"
-        in reference
-    )
+    assert "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in reference
     assert "Exit 0 means **local-only**" in reference
     assert "Exit 1 means **conditionally Git-eligible**" in reference
     assert "Any other exit" in reference
@@ -299,9 +295,9 @@ class TestBundledWikiBootstrapSkill:
 
     def test_adjacent_skills_never_route_existing_wikis_to_bootstrap_repair(self):
         for skill_id in ("onboarding-guide", "usage-examples", "publish-docs"):
-            manifest = (
-                skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
-            ).read_text(encoding="utf-8")
+            manifest = (skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md").read_text(
+                encoding="utf-8"
+            )
             normalized = " ".join(manifest.split())
 
             assert "bootstrap is never an existing-wiki repair path" in normalized
@@ -341,18 +337,16 @@ class TestBundledWikiBootstrapSkill:
     def test_infrastructure_ownership_is_consistent_across_authoring_skills(self):
         bootstrap = "\n".join(
             (
-                (
-                    skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md"
-                ).read_text(encoding="utf-8"),
+                (skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md").read_text(
+                    encoding="utf-8"
+                ),
                 (
                     skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "reference.md"
                 ).read_text(encoding="utf-8"),
             )
         )
         semantic = (
-            skills.BUNDLED_SKILLS_ROOT
-            / "wiki-semantic-enhance"
-            / "reference.md"
+            skills.BUNDLED_SKILLS_ROOT / "wiki-semantic-enhance" / "reference.md"
         ).read_text(encoding="utf-8")
         user_docs = (
             skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "reference.md"
@@ -783,6 +777,10 @@ class TestBundledImpactAnalysisSkill:
         assert "dependency_neighborhood" in combined
         assert "flow_for_entrypoint" in combined
         assert "pages_for_symbol" in combined
+        assert "query_documentation" in combined
+        assert '"operation":"impact"' in combined
+        assert "allow_full_inventory" in combined
+        assert "targeted-extraction" in combined
         # dependency_neighborhood is MCP-only through this protocol.
         assert "not exposed through" in combined.lower()
         # Shares doc-review's vocabulary rather than inventing a new one.
@@ -832,8 +830,9 @@ class TestBundledImpactAnalysisSkill:
             skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
         ).read_text(encoding="utf-8")
         example = reference[
-            reference.index("```python") + len("```python") :
-            reference.index("```", reference.index("```python") + len("```python"))
+            reference.index("```python") + len("```python") : reference.index(
+                "```", reference.index("```python") + len("```python")
+            )
         ]
 
         assert example.count("build_documentation_query_service(") == 1
@@ -853,8 +852,14 @@ class TestBundledImpactAnalysisSkill:
                 "| `ready` + `typed-graph-extension-not-present` |",
                 "no typed-neighborhood conclusion",
             ),
-            ("| `absent` (`knowledge-projection-not-present`) |", "legacy live"),
-            ("| `degraded`, `unsupported`, invalid, or mixed snapshot |", "no rejected"),
+            (
+                "| `absent` (`knowledge-projection-not-present`) |",
+                "bounded supplied-impact",
+            ),
+            (
+                "| `degraded`, `unsupported`, invalid, or mixed snapshot |",
+                "no rejected",
+            ),
             ("| Ambiguous exact identity or persisted alias |", "owner choice"),
             ("| `ready` with `freshness_evaluated: false` |", "snapshot-only"),
         ],
@@ -867,14 +872,12 @@ class TestBundledImpactAnalysisSkill:
         reference = (
             skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
         ).read_text(encoding="utf-8")
-        selected = next(
-            line for line in reference.splitlines() if line.startswith(row)
-        )
+        selected = next(line for line in reference.splitlines() if line.startswith(row))
 
         assert required in selected
         assert (
-            "Legacy detail can increase the known blast radius, but it cannot "
-            "erase native"
+            "Supplemental detail can increase the known blast radius, but it "
+            "cannot erase native"
         ) in reference
 
 
@@ -955,8 +958,7 @@ class TestBundledPublishDocsSkill:
         assert ".llm-wiki-site-selection.json" in combined
         assert "llm-wiki-site-selection.json" in combined
         assert (
-            "cp site/llm-wiki-site-selection.json "
-            "build/llm-wiki-site-selection.json"
+            "cp site/llm-wiki-site-selection.json build/llm-wiki-site-selection.json"
         ) in combined
         assert "_site-http" in combined
         assert "_site-file" in combined
@@ -1075,9 +1077,7 @@ class TestBundledUsageExamplesSkill:
         assert "alt text" in combined
         assert "caption" in combined
         assert "capture blocker" in combined
-        assert (
-            "a row added to canonical wiki Markdown is a semantic edit" in combined
-        )
+        assert "a row added to canonical wiki Markdown is a semantic edit" in combined
         assert "restart at the step 5 owning sync/re-anchor" in combined
         assert "media_link_broken" in combined
         assert "media_missing_alt_text" in combined

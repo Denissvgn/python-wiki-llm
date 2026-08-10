@@ -117,19 +117,23 @@ def test_reference_documents_site_export_and_context():
     assert "--file-friendly" in content
     assert (
         "llm-wiki context --budget 8000 --src-dir . "
-        "--format markdown --focus changed --read-only" in content
+        "--format markdown --focus changed --knowledge-mode auto --read-only" in content
     )
+    assert '"protocol": "llm-wiki-context/v2"' in content
+    assert "`prefer_fresh` is independent" in content
+    assert "bounded `query_documentation` API or MCP" in content
     assert "budget and focus bound emitted output after a full" in content
     assert "do not bound scan work" in content
     assert "For a narrow task" in content
-    assert "skip context" in content
+    assert "skip broad context" in content
 
 
 def test_reference_covers_all_strict_native_categories_without_conflation():
     content = _reference_text()
     section = content[
-        content.index("## Strict knowledge lint") :
-        content.index("## Knowledge query, API, and MCP boundaries")
+        content.index("## Strict knowledge lint") : content.index(
+            "## Knowledge query, API, and MCP boundaries"
+        )
     ]
 
     for category in (
@@ -186,8 +190,9 @@ def test_reference_documents_exact_identity_and_governance_lifecycle():
     content = _reference_text()
     normalized = _squash_ws(content)
     governance = content[
-        content.index("## Durable governance, lifecycle, review, and verification") :
-        content.index("## JavaScript and TypeScript flows")
+        content.index(
+            "## Durable governance, lifecycle, review, and verification"
+        ) : content.index("## JavaScript and TypeScript flows")
     ]
 
     assert "current concept locator/MCP URI" in normalized
@@ -218,8 +223,9 @@ def test_reference_documents_exact_identity_and_governance_lifecycle():
 def test_reference_documents_safe_site_and_obsidian_projection_boundary():
     content = _reference_text()
     section = content[
-        content.index("### Opt-in native metadata for Site and Obsidian") :
-        content.index("## Resource-aware execution")
+        content.index(
+            "### Opt-in native metadata for Site and Obsidian"
+        ) : content.index("## Resource-aware execution")
     ]
     normalized = _squash_ws(section)
 
@@ -238,9 +244,9 @@ def test_reference_documents_safe_site_and_obsidian_projection_boundary():
 
 
 def test_reference_skill_routes_native_contracts_by_task():
-    manifest = (
-        BUNDLED_SKILLS_ROOT / REFERENCE_SKILL_ID / "SKILL.md"
-    ).read_text(encoding="utf-8")
+    manifest = (BUNDLED_SKILLS_ROOT / REFERENCE_SKILL_ID / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
 
     for route in (
         "Knowledge observations and freshness",
@@ -290,9 +296,7 @@ class TestReferenceSkillProvisioning:
 
     def test_local_edit_marks_modified_and_force_refresh_restores(self, tmp_path):
         install_reference_skill(tmp_path)
-        ref_path = (
-            tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID / "reference.md"
-        )
+        ref_path = tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID / "reference.md"
         ref_path.write_text("local notes\n", encoding="utf-8")
         assert reference_skill_state(tmp_path) == "modified"
 

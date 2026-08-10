@@ -75,9 +75,7 @@ def _write_snapshot_project(root: Path, *, opaque_text: bool = False) -> None:
         else ""
     )
     app_source = (
-        docstring
-        + "def greet(name: str) -> str:\n"
-        + '    return f"Hello {name}"\n'
+        docstring + "def greet(name: str) -> str:\n" + '    return f"Hello {name}"\n'
     )
     app_bytes = app_source.encode("utf-8")
     assert b"\r" not in app_bytes
@@ -146,9 +144,7 @@ def _build_snapshot_packet(
 
 
 def _canonical_repack(payload: dict[str, Any]) -> bytes:
-    semantic_body = {
-        key: value for key, value in payload.items() if key != "packet_id"
-    }
+    semantic_body = {key: value for key, value in payload.items() if key != "packet_id"}
     payload["packet_id"] = context_packet._packet_id(semantic_body)
     return context_packet._encode_packet_payload(payload)
 
@@ -212,20 +208,21 @@ def test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden(
         first._payload["packet_id"] = "changed"  # type: ignore[index]
 
     semantic_body = {
-        key: value
-        for key, value in first.to_payload().items()
-        if key != "packet_id"
+        key: value for key, value in first.to_payload().items() if key != "packet_id"
     }
-    expected_id = "sha256:" + hashlib.sha256(
-        b"llm-wiki-qualified-context-packet/v1\x00"
-        + json.dumps(
-            semantic_body,
-            ensure_ascii=False,
-            separators=(",", ":"),
-            sort_keys=True,
-            allow_nan=False,
-        ).encode("utf-8")
-    ).hexdigest()
+    expected_id = (
+        "sha256:"
+        + hashlib.sha256(
+            b"llm-wiki-qualified-context-packet/v1\x00"
+            + json.dumps(
+                semantic_body,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
+    )
     assert first.packet_id == expected_id
 
 
@@ -279,9 +276,7 @@ def test_packet_binds_snapshot_request_response_generator_and_limitations(
 
 
 def test_explicit_empty_request_is_rejected_instead_of_defaulted() -> None:
-    with pytest.raises(
-        context_packet.context_service.ProtocolRequestError
-    ) as caught:
+    with pytest.raises(context_packet.context_service.ProtocolRequestError) as caught:
         build_qualified_context(".", "docs/llm_wiki", {})
 
     assert caught.value.field == "budget_tokens"
@@ -421,8 +416,12 @@ def test_self_consistent_substitution_is_structurally_valid_but_live_stale(
 @pytest.mark.parametrize(
     ("field", "value", "match"),
     [
-        ("schema_version", "llm-wiki-qualified-context-packet/v2", "schema_version"),
-        ("assurance", {"level": "owner-resistant", "scope": "canonical-packet-content"}, "assurance.level"),
+        ("schema_version", "llm-wiki-qualified-context-packet/v3", "schema_version"),
+        (
+            "assurance",
+            {"level": "owner-resistant", "scope": "canonical-packet-content"},
+            "assurance.level",
+        ),
     ],
 )
 def test_unknown_schema_and_unsupported_assurance_fail_closed(
@@ -901,9 +900,7 @@ def test_managed_live_packet_binds_envelope_and_reconciles_current(
 ):
     fixture = one_module_two_entities_fixture()
     tree = materialize_fixture_tree(fixture, tmp_path / "checkout")
-    commit_knowledge_artifacts(
-        _knowledge_commit_plan(tree["wiki_root"], fixture)
-    )
+    commit_knowledge_artifacts(_knowledge_commit_plan(tree["wiki_root"], fixture))
     monkeypatch.chdir(tree["root"])
 
     packet = build_qualified_context(
@@ -964,9 +961,7 @@ def test_degraded_packet_exposes_no_failed_native_payload(
 ):
     fixture = one_module_two_entities_fixture()
     tree = materialize_fixture_tree(fixture, tmp_path / "checkout")
-    commit_knowledge_artifacts(
-        _knowledge_commit_plan(tree["wiki_root"], fixture)
-    )
+    commit_knowledge_artifacts(_knowledge_commit_plan(tree["wiki_root"], fixture))
     tree["knowledge_path"].write_bytes(b"{not valid JSON}\n")
     monkeypatch.chdir(tree["root"])
 
@@ -993,9 +988,10 @@ def test_degraded_packet_exposes_no_failed_native_payload(
     ]
     assert payload["response"]["knowledge"]["availability"] == "degraded"
     assert b"example.invalid/acme/knowledge-fixture" not in packet.to_bytes()
-    assert fixture.knowledge_payload["bundle"]["snapshot"][
-        "source_snapshot_hash"
-    ].encode() not in packet.to_bytes()
+    assert (
+        fixture.knowledge_payload["bundle"]["snapshot"]["source_snapshot_hash"].encode()
+        not in packet.to_bytes()
+    )
 
 
 def test_construction_makes_no_network_call_and_no_native_write(
@@ -1049,9 +1045,12 @@ def test_public_contract_contains_exact_non_claims_and_passes_vocabulary_guard()
         for path in REPO_ROOT.rglob("*")
         if path.is_file()
     )
-    assert scan_public_document(
-        text,
-        path="docs/qualified-context-packets.md",
-        tracked_files=tracked,
-        root=REPO_ROOT,
-    ) == []
+    assert (
+        scan_public_document(
+            text,
+            path="docs/qualified-context-packets.md",
+            tracked_files=tracked,
+            root=REPO_ROOT,
+        )
+        == []
+    )

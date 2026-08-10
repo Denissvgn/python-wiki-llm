@@ -7,12 +7,18 @@ envelope, generator version and policy, freshness evaluation state, bounds,
 warnings, limitations, path-policy receipt, and a domain-separated packet
 digest.
 
-The schema identifier is
-`llm-wiki-qualified-context-packet/v1`. Packet JSON uses sorted object keys,
-UTF-8, finite JSON numbers, compact separators, and exactly one final line
-feed. The `packet_id` is a domain-separated SHA-256 digest of the canonical
-semantic packet excluding only `packet_id`. Rebuilding from the same
-normalized request and captured semantic read produces the same bytes.
+Two schema versions are active. Omitting `knowledge_mode` retains
+`llm-wiki-qualified-context-packet/v1` and `llm-wiki-context/v1`. Supplying
+`knowledge_mode` as `off`, `auto`, or `required` selects
+`llm-wiki-qualified-context-packet/v2` and `llm-wiki-context/v2`. Version 2
+uses `qualified-context-policy-v2`, separate packet and policy digest domains,
+a canonical source-priority binding, and bounded native-knowledge selection.
+
+Packet JSON uses sorted object keys, UTF-8, finite JSON numbers, compact
+separators, and exactly one final line feed. The `packet_id` is a
+version-specific, domain-separated SHA-256 digest of the canonical semantic
+packet excluding only `packet_id`. Rebuilding from the same normalized request
+and captured semantic read produces the same bytes.
 Observation times, absolute input roots, inode values, and other
 machine-local capture details are not part of those bytes.
 
@@ -37,6 +43,7 @@ packet = build_qualified_context(
         "format": "json",
         "filters": {},
         "prefer_fresh": False,
+        "knowledge_mode": "auto",
     },
 )
 
@@ -47,8 +54,14 @@ The command-line form uses the existing context command:
 
 ```console
 llm-wiki context --src-dir . --wiki-dir docs/llm_wiki \
-  --budget 32000 --focus changed --format packet
+  --budget 32000 --focus changed --knowledge-mode auto --format packet
 ```
+
+`build_context` and MCP `get_context` return a context response.
+`build_qualified_context`, CLI `--format packet`, and MCP
+`get_context_packet` return the full qualified packet envelope. The Python and
+MCP `query_documentation` operations return a bounded query result, not a
+packet.
 
 Construction captures one source inventory and one wiki and knowledge read
 view. Both the response and evidence basis are derived from that view. It
@@ -57,6 +70,12 @@ concurrent mutation rejects construction instead of returning a detached
 packet. Construction does not refresh or persist native artifacts and does
 not call a model provider. Project-local extractor plugins are not loaded;
 packet construction uses the built-in source adapters only.
+
+Version 2 rejects symbolic links anywhere in the captured wiki tree. A link
+that already exists is a path-policy error; a link introduced after the first
+anchor is a concurrent-mutation error. Version 1 retains compatibility for
+unread, noncanonical links, while canonical wiki pages and managed artifacts
+are always read without following an escaping link.
 
 The path-policy receipt reports counts for classified structural paths,
 portable identities, public URIs, free text, and opaque values. Structural
@@ -105,9 +124,44 @@ native freshness cannot be evaluated, the packet records the exact disclosure
 `unevaluated (snapshot-only read)` and aggregate currentness remains
 unevaluated rather than being fabricated.
 
+## Explicit knowledge in version 2
+
+The normalized request always carries `knowledge_mode` in version 2. The
+response includes a `knowledge` outcome with mode, status, availability,
+reason, selection flag, freshness-evaluation flag, independent bounds for
+concepts, pages, and relationships, and a fallback disclosure. A selected
+result also carries compact concepts, canonical page coordinates, typed and
+native relationships, and bounded relationship-analyzer coverage. Raw
+projection diagnostics, hashes, samples, and unsafe link text are not placed
+in the selection.
+
+`basis.knowledge` records captured native-knowledge provenance separately from
+the requested mode. Consequently, `off` disables selection without pretending
+that the recorded basis was absent. `basis.freshness` records either the
+evaluated aggregate and digest or an explicit unevaluated reason. A
+snapshot-only basis never becomes live-current during validation or
+reconciliation.
+
+`auto` returns a read-only fallback when native knowledge is unavailable.
+`required` returns a structured `knowledge-required-unavailable` error instead
+of a packet. Recovery instructions preserve the resolved source root, wiki
+root, active source-selection policy, and explicit external-source
+authorization. An unsupported projection schema first requires updating the
+installed package and verifying version support; it is not repaired by a
+plain sync or a project-local upgrade command.
+
+Source and native results are bounded independently. Version 2 returns at most
+20 concepts, 20 pages, and 40 relationships, with truthful total, returned,
+and truncated values. Analyzer limitation codes are also bounded and include
+their own bounds. If a legal selected result approaches the serialized
+transport limit, the lowest-ranked relationships, then pages, then concepts
+are removed deterministically. If even one concept cannot fit, `auto` reports
+`knowledge-result-exceeds-size-limit` as a bounded fallback and `required`
+reports the corresponding structured error.
+
 ## Explicit non-claims
 
-Qualified context packet version 1 must not claim:
+Qualified context packets must not claim:
 
 - that the source or packet author is authenticated;
 - that repository transfer is authorized;
@@ -123,12 +177,13 @@ bindings.
 
 ## Limits and evolution
 
-The version 1 parser accepts at most 16 MiB, 64 nested JSON levels, 250,000
-JSON values, and two million characters in any one string. It rejects
-duplicate keys, unknown core fields, and unknown schema versions. These
+The version 1 parser accepts at most 16 MiB. Version 2 accepts at most 2 MiB.
+Both accept at most 64 nested JSON levels, 250,000 JSON values, and two million
+characters in any one string. They reject duplicate keys, unknown core fields,
+noncanonical request defaults or ordering, and unknown schema versions. These
 limits apply before any live source read.
 
-The version 1 core field set is exact. Adding a new required semantic field,
+Each version's core field set is exact. Adding a new required semantic field,
 renaming or removing a field, changing a field's meaning, or changing the
 canonical numeric or digest rules requires a new packet schema version.
 Machine-local operational receipts and optional persistence metadata remain

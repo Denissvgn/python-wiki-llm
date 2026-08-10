@@ -13,13 +13,20 @@ import re
 import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
+from itertools import islice
 from pathlib import Path
 from typing import Any, Protocol, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
-from ..api import LlmWikiApiError, build_documentation_query_service
+from ..api_types import KnowledgeMode
+from ..api import (
+    LlmWikiApiError,
+    build_documentation_query_service,
+    query_documentation as run_documentation_query,
+)
 from ..config import (
     IDE_AGENTS,
+    PathValidationError,
     get_agent_config_path,
     read_config,
     validate_path,
@@ -28,6 +35,11 @@ from ..config import (
 from . import circuit_breaker, context_service as context_cmd
 from . import lint_service as lint_cmd
 from . import wiki_surface
+from .context_knowledge_contract import (
+    KNOWLEDGE_MODE_REQUEST_FIELD,
+    KNOWLEDGE_MODE_VALUES,
+    RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+)
 from .bootstrap_runtime import build_module_page_map
 from .concept_identity import (
     ConceptIdentityError,
@@ -78,6 +90,7 @@ _ROOT_RESOURCES = {
 _SEARCH_KINDS = set(_PAGE_KINDS_BY_MCP_KIND)
 _ARCHITECTURE_PAGE_KINDS = {"api-contracts", "dependencies", "load-order"}
 _MAX_QUERY_LIMIT = 100
+_MAX_QUERY_FILTER_VALUES = 100
 _GRAPH_QUERY_METHODS = {
     "flow_for_entrypoint": "flow_for_entrypoint",
     "data_flow_for_entrypoint": "data_flow_for_entrypoint",
@@ -101,6 +114,105 @@ class MCPDependencyError(RuntimeError):
 
 class McpWikiError(ValueError):
     """Raised for invalid MCP wiki requests."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str | None = None,
+        data: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.data = None if data is None else dict(data)
+
+
+def _normalize_knowledge_mode(value: object) -> KnowledgeMode | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or value not in KNOWLEDGE_MODE_VALUES:
+        choices = ", ".join(repr(item) for item in KNOWLEDGE_MODE_VALUES)
+        raise McpWikiError(
+            f"knowledge_mode must be one of {choices}, or None.",
+            code="invalid-request",
+            data={"field": KNOWLEDGE_MODE_REQUEST_FIELD},
+        )
+    return cast(KnowledgeMode, value)
+
+
+def _required_knowledge_mcp_error(exc: BaseException) -> McpWikiError:
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    raw_details: object = None
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if getattr(current, "code", None) == "knowledge-required-unavailable":
+            raw_details = getattr(current, "details", None)
+            break
+        current = current.__cause__ or current.__context__
+    details = dict(raw_details) if isinstance(raw_details, Mapping) else {}
+    nested = details.get("error")
+    data = dict(nested) if isinstance(nested, Mapping) else details
+    return McpWikiError(
+        str(exc),
+        code="knowledge-required-unavailable",
+        data=data,
+    )
+
+
+def _is_required_knowledge_failure(exc: BaseException) -> bool:
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if getattr(current, "code", None) == "knowledge-required-unavailable":
+            return True
+        current = current.__cause__ or current.__context__
+    return False
+
+
+def _api_mcp_error(exc: LlmWikiApiError) -> McpWikiError:
+    return McpWikiError(
+        str(exc),
+        code=exc.code or "wiki-api-error",
+        data=exc.details,
+    )
+
+
+def _path_validation_mcp_error(exc: PathValidationError) -> McpWikiError:
+    message = str(exc)
+    if "--src-dir" in message:
+        field = "src_dir"
+    elif "--wiki-dir" in message:
+        field = "wiki_dir"
+    else:
+        field = "path"
+    return McpWikiError(
+        message,
+        code="path-policy-error",
+        data={"field": field},
+    )
+
+
+def _wiki_surface_path_mcp_error(
+    exc: wiki_surface.WikiSurfacePathError,
+) -> McpWikiError:
+    return McpWikiError(
+        str(exc),
+        code="path-policy-error",
+        data={"field": "wiki_dir", "path": exc.relative_path},
+    )
+
+
+def _wiki_surface_path_data(exc: BaseException) -> dict[str, Any] | None:
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, wiki_surface.WikiSurfacePathError):
+            return {"field": "wiki_dir", "path": current.relative_path}
+        current = current.__cause__ or current.__context__
+    return None
 
 
 class _SourceSelectionOptions(TypedDict, total=False):
@@ -311,9 +423,9 @@ class McpWikiService:
             initial_policy.identity if initial_policy is not None else None
         )
 
-    def _assert_source_selection_current(
+    def _assert_source_selection_pin_current(
         self,
-    ) -> SourceSnapshot:
+    ) -> SourceSelectionPolicy | None:
         try:
             current_policy = resolve_source_selection(
                 self.src_dir,
@@ -329,6 +441,12 @@ class McpWikiService:
                 "MCP source selection changed during the server lifetime; "
                 "restart the server with the intended profile."
             )
+        return current_policy
+
+    def _assert_source_selection_current(
+        self,
+    ) -> SourceSnapshot:
+        current_policy = self._assert_source_selection_pin_current()
         try:
             selection_inputs = capture_source_selection_inputs(
                 self.src_dir,
@@ -362,10 +480,10 @@ class McpWikiService:
         return snapshot
 
     def _source_selection_options(self) -> _SourceSelectionOptions:
-        snapshot = self._assert_source_selection_current()
-        if snapshot.source_selection_path is None:
+        policy = self._assert_source_selection_pin_current()
+        if policy is None:
             return {}
-        return {"source_selection": snapshot.source_selection_path}
+        return {"source_selection": policy.path}
 
     def _external_source_options(self) -> _ExternalSourceOptions:
         if not self.allow_external_src:
@@ -410,8 +528,26 @@ class McpWikiService:
             )
             method = getattr(query_service, _GRAPH_QUERY_METHODS[query_type])
             return method(value)
-        except (LlmWikiApiError, DocumentationQueryError) as exc:
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+        except DocumentationQueryError as exc:
             raise McpWikiError(str(exc)) from exc
+
+    def query_documentation(self, request: Mapping[str, Any]) -> dict:
+        """Dispatch an exact bounded query through the shared API contract."""
+
+        try:
+            return dict(
+                run_documentation_query(
+                    request,
+                    src_dir=self.src_dir,
+                    wiki_dir=_posix_string(self.wiki_dir),
+                    **self._external_source_options(),
+                    **self._source_selection_options(),
+                )
+            )
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
 
     def get_concept(
         self,
@@ -578,21 +714,32 @@ class McpWikiService:
         format: str = "markdown",
         filters: dict | None = None,
         prefer_fresh: bool = False,
+        knowledge_mode: KnowledgeMode | None = None,
     ) -> dict:
+        selected_mode = _normalize_knowledge_mode(knowledge_mode)
         request = {
-            "protocol": context_cmd.PROTOCOL_VERSION,
+            "protocol": (
+                context_cmd.PROTOCOL_VERSION
+                if selected_mode is None
+                else RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+            ),
             "budget_tokens": budget_tokens,
-            "focus": focus or ["changed", "neighbors"],
+            "focus": ["changed", "neighbors"] if focus is None else focus,
             "format": format,
-            "filters": filters or {},
+            "filters": {} if filters is None else filters,
             "prefer_fresh": prefer_fresh,
         }
+        if selected_mode is not None:
+            request[KNOWLEDGE_MODE_REQUEST_FIELD] = selected_mode
         try:
             validated = context_cmd._validate_protocol_request(request)
             build_options = {
                 "emit_warnings": False,
                 "wiki_dir": _posix_string(self.wiki_dir),
+                "include_plugins": False,
             }
+            if selected_mode is not None:
+                build_options["knowledge_mode"] = selected_mode
             if validated["prefer_fresh"]:
                 build_options["prefer_fresh"] = True
             payload, warnings = context_cmd._build_context(
@@ -605,8 +752,25 @@ class McpWikiService:
                 **self._external_source_options(),
                 **self._source_selection_options(),
             )
+        except PathValidationError as exc:
+            raise _path_validation_mcp_error(exc) from exc
+        except context_cmd.KnowledgeRequiredUnavailableError as exc:
+            raise _required_knowledge_mcp_error(exc) from exc
         except context_cmd.ProtocolRequestError as exc:
-            raise McpWikiError(str(exc)) from exc
+            if (
+                exc.field == "wiki_dir"
+                and (path_data := _wiki_surface_path_data(exc)) is not None
+            ):
+                raise McpWikiError(
+                    str(exc),
+                    code="path-policy-error",
+                    data=path_data,
+                ) from exc
+            raise McpWikiError(
+                str(exc),
+                code="invalid-request",
+                data={"field": exc.field},
+            ) from exc
         return context_cmd._protocol_success_payload(validated, payload, warnings)
 
     def get_context_packet(
@@ -617,10 +781,15 @@ class McpWikiService:
         filters: dict | None = None,
         prefer_fresh: bool = False,
         if_packet_id: str | None = None,
+        knowledge_mode: KnowledgeMode | None = None,
     ) -> dict:
         """Return a fresh qualified packet or an unchanged cache marker."""
 
-        from .context_packet import ContextPacketError, build_qualified_context
+        from .context_packet import (
+            ContextPacketError,
+            ContextPacketPathPolicyError,
+            build_qualified_context,
+        )
 
         if if_packet_id is not None and (
             not isinstance(if_packet_id, str)
@@ -629,14 +798,21 @@ class McpWikiService:
             raise McpWikiError(
                 "if_packet_id must be a sha256:<64 lowercase hex> value or None."
             )
+        selected_mode = _normalize_knowledge_mode(knowledge_mode)
         request = {
-            "protocol": context_cmd.PROTOCOL_VERSION,
+            "protocol": (
+                context_cmd.PROTOCOL_VERSION
+                if selected_mode is None
+                else RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+            ),
             "budget_tokens": budget_tokens,
-            "focus": focus or ["changed", "neighbors"],
+            "focus": ["changed", "neighbors"] if focus is None else focus,
             "format": format,
-            "filters": filters or {},
+            "filters": {} if filters is None else filters,
             "prefer_fresh": prefer_fresh,
         }
+        if selected_mode is not None:
+            request[KNOWLEDGE_MODE_REQUEST_FIELD] = selected_mode
         try:
             packet = build_qualified_context(
                 self.src_dir,
@@ -646,8 +822,28 @@ class McpWikiService:
                 **self._external_source_options(),
                 **self._source_selection_options(),
             )
-        except (ContextPacketError, context_cmd.ProtocolRequestError) as exc:
-            raise McpWikiError(str(exc)) from exc
+        except PathValidationError as exc:
+            raise _path_validation_mcp_error(exc) from exc
+        except ContextPacketPathPolicyError as exc:
+            raise McpWikiError(
+                str(exc),
+                code="path-policy-error",
+                data={"field": getattr(exc, "field", "path")},
+            ) from exc
+        except context_cmd.KnowledgeRequiredUnavailableError as exc:
+            raise _required_knowledge_mcp_error(exc) from exc
+        except context_cmd.ProtocolRequestError as exc:
+            if _is_required_knowledge_failure(exc):
+                raise _required_knowledge_mcp_error(exc) from exc
+            raise McpWikiError(
+                str(exc),
+                code="invalid-request",
+                data={"field": exc.field},
+            ) from exc
+        except ContextPacketError as exc:
+            if _is_required_knowledge_failure(exc):
+                raise _required_knowledge_mcp_error(exc) from exc
+            raise McpWikiError(str(exc), code="invalid-request") from exc
 
         if packet.packet_id == if_packet_id:
             return {
@@ -760,6 +956,8 @@ class McpWikiService:
             method = getattr(query_service, method_name)
             return method(value, **query_options)
         except (LlmWikiApiError, DocumentationQueryError) as exc:
+            if isinstance(exc, LlmWikiApiError):
+                raise _api_mcp_error(exc) from exc
             raise McpWikiError(str(exc)) from exc
 
     def read_resource(self, uri: str) -> dict:
@@ -814,6 +1012,7 @@ class McpWikiService:
                 src_dir=self.src_dir,
                 source_snapshot=source_snapshot,
                 source_selection=source_snapshot.source_selection_path,
+                include_plugins=False,
             )
         ).inventory
         page_map = build_module_page_map(inventory)
@@ -841,8 +1040,11 @@ class McpWikiService:
             raise McpWikiError(f"Unknown wiki resource kind: {kind}")
         page_id = _validate_page_id(page_id)
         path = self.wiki_dir / wiki_surface.canonical_path(entry.kind, page_id)
-        _ensure_inside(self.wiki_dir, path)
-        if not path.exists():
+        try:
+            path = wiki_surface.resolve_wiki_page_path(self.wiki_dir, path)
+        except wiki_surface.WikiSurfacePathError as exc:
+            raise _wiki_surface_path_mcp_error(exc) from exc
+        except FileNotFoundError:
             raise McpWikiError(
                 f"Wiki page not found: {wiki_surface.canonical_path(entry.kind, page_id)}"
             )
@@ -861,8 +1063,11 @@ class McpWikiService:
             entry = _ROOT_RESOURCES[parsed.netloc]
             page_id = entry.mcp_uri_kind
             path = self.wiki_dir / wiki_surface.canonical_path(entry.kind)
-            _ensure_inside(self.wiki_dir, path)
-            if not path.exists():
+            try:
+                path = wiki_surface.resolve_wiki_page_path(self.wiki_dir, path)
+            except wiki_surface.WikiSurfacePathError as exc:
+                raise _wiki_surface_path_mcp_error(exc) from exc
+            except FileNotFoundError:
                 raise McpWikiError(
                     f"Wiki page not found: {wiki_surface.canonical_path(entry.kind)}"
                 )
@@ -891,7 +1096,11 @@ class McpWikiService:
         }
 
     def _iter_pages(self, kinds: set[str]):
-        for page in wiki_surface.collect_wiki_pages(self.wiki_dir):
+        try:
+            pages = wiki_surface.collect_wiki_pages(self.wiki_dir)
+        except wiki_surface.WikiSurfacePathError as exc:
+            raise _wiki_surface_path_mcp_error(exc) from exc
+        for page in pages:
             kind = _MCP_KIND_BY_PAGE_KIND[page.kind]
             if kind in kinds:
                 yield WikiPage(kind, page.page_id, page.path, page.mcp_uri)
@@ -951,6 +1160,11 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def query_graph(query: dict) -> dict:
         """Run a bounded read-only documentation graph query."""
         return service.query_graph(query)
+
+    @server.tool()
+    def query_documentation(request: dict) -> dict:
+        """Run one exact bounded documentation or supplied-impact query."""
+        return service.query_documentation(request)
 
     @server.tool()
     def get_concept(
@@ -1031,14 +1245,20 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         format: str = "markdown",
         filters: dict | None = None,
         prefer_fresh: bool = False,
+        knowledge_mode: KnowledgeMode | None = None,
     ) -> dict:
         """Return priority-ranked codebase context from llm-wiki context."""
+        options = {
+            "budget_tokens": budget_tokens,
+            "focus": focus,
+            "format": format,
+            "filters": filters,
+            "prefer_fresh": prefer_fresh,
+        }
+        if knowledge_mode is not None:
+            options["knowledge_mode"] = knowledge_mode
         return service.get_context(
-            budget_tokens=budget_tokens,
-            focus=focus,
-            format=format,
-            filters=filters,
-            prefer_fresh=prefer_fresh,
+            **options,
         )
 
     @server.tool()
@@ -1049,16 +1269,20 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         filters: dict | None = None,
         prefer_fresh: bool = False,
         if_packet_id: str | None = None,
+        knowledge_mode: KnowledgeMode | None = None,
     ) -> dict:
         """Return a qualified packet with packet-id cache revalidation."""
-        return service.get_context_packet(
-            budget_tokens=budget_tokens,
-            focus=focus,
-            format=format,
-            filters=filters,
-            prefer_fresh=prefer_fresh,
-            if_packet_id=if_packet_id,
-        )
+        options = {
+            "budget_tokens": budget_tokens,
+            "focus": focus,
+            "format": format,
+            "filters": filters,
+            "prefer_fresh": prefer_fresh,
+            "if_packet_id": if_packet_id,
+        }
+        if knowledge_mode is not None:
+            options["knowledge_mode"] = knowledge_mode
+        return service.get_context_packet(**options)
 
     @server.tool()
     def check_wiki(
@@ -1181,9 +1405,7 @@ def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
 
 def _knowledge_locator(value: object) -> str:
     if not isinstance(value, str) or not value.strip():
-        raise McpWikiError(
-            "locator_or_exact_route must be a non-empty string."
-        )
+        raise McpWikiError("locator_or_exact_route must be a non-empty string.")
     selected = value.strip()
     try:
         return wiki_surface.validate_exact_page_coordinate(selected)
@@ -1216,33 +1438,54 @@ def _section_ownership(value: object) -> str | None:
     return value
 
 
+def _bounded_query_filter_values(
+    values: object,
+    *,
+    field: str,
+    item_description: str,
+) -> list[str]:
+    if isinstance(values, (str, bytes, Mapping)) or not isinstance(values, Iterable):
+        raise McpWikiError(
+            f"{field} must be an iterable of {item_description}.",
+            code="invalid-request",
+            data={"field": field},
+        )
+    try:
+        requested = list(islice(values, _MAX_QUERY_FILTER_VALUES + 1))
+    except Exception as exc:
+        raise McpWikiError(
+            f"{field} could not be read as an iterable of {item_description}.",
+            code="invalid-request",
+            data={"field": field},
+        ) from exc
+    if len(requested) > _MAX_QUERY_FILTER_VALUES:
+        raise McpWikiError(
+            f"{field} must contain at most {_MAX_QUERY_FILTER_VALUES} values.",
+            code="invalid-request",
+            data={"field": field},
+        )
+    if any(not isinstance(value, str) for value in requested):
+        raise McpWikiError(
+            f"{field} must contain only {item_description}.",
+            code="invalid-request",
+            data={"field": field},
+        )
+    return cast(list[str], requested)
+
+
 def _knowledge_kinds(values: object) -> list[str] | None:
     if values is None:
         return None
-    if isinstance(values, (str, bytes, Mapping)):
-        raise McpWikiError(
-            "kinds must be an iterable of relationship kind strings."
-        )
-    if not isinstance(values, Iterable):
-        raise McpWikiError(
-            "kinds must be an iterable of relationship kind strings."
-        )
-    requested = list(values)
-    if any(not isinstance(value, str) for value in requested):
-        raise McpWikiError(
-            "kinds must contain only relationship kind strings."
-        )
-    unsupported = sorted(
-        set(requested) - set(_KNOWLEDGE_RELATIONSHIP_KINDS)
+    requested = _bounded_query_filter_values(
+        values,
+        field="kinds",
+        item_description="relationship kind strings",
     )
+    unsupported = sorted(set(requested) - set(_KNOWLEDGE_RELATIONSHIP_KINDS))
     if unsupported:
-        raise McpWikiError(
-            f"unsupported relationship kind: {unsupported[0]!r}."
-        )
+        raise McpWikiError(f"unsupported relationship kind: {unsupported[0]!r}.")
     selected = set(requested)
-    return [
-        kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected
-    ]
+    return [kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected]
 
 
 def _typed_graph_direction(value: object) -> str:
@@ -1255,17 +1498,11 @@ def _typed_graph_direction(value: object) -> str:
 def _typed_graph_kinds(values: object) -> list[str] | None:
     if values is None:
         return None
-    if isinstance(values, (str, bytes, Mapping)) or not isinstance(
-        values, Iterable
-    ):
-        raise McpWikiError(
-            "kinds must be an iterable of typed relationship kind strings."
-        )
-    requested = list(values)
-    if any(not isinstance(value, str) for value in requested):
-        raise McpWikiError(
-            "kinds must contain only typed relationship kind strings."
-        )
+    requested = _bounded_query_filter_values(
+        values,
+        field="kinds",
+        item_description="typed relationship kind strings",
+    )
     invalid = sorted(
         {
             value
@@ -1275,9 +1512,7 @@ def _typed_graph_kinds(values: object) -> list[str] | None:
         }
     )
     if invalid:
-        raise McpWikiError(
-            f"unsupported typed relationship kind: {invalid[0]!r}."
-        )
+        raise McpWikiError(f"unsupported typed relationship kind: {invalid[0]!r}.")
     selected = set(requested)
     return [
         *[kind for kind in CORE_RELATIONSHIP_KINDS if kind in selected],
@@ -1293,18 +1528,14 @@ def _typed_graph_enum_values(
 ) -> list[str] | None:
     if values is None:
         return None
-    if isinstance(values, (str, bytes, Mapping)) or not isinstance(
-        values, Iterable
-    ):
-        raise McpWikiError(f"{field} must be an iterable of strings.")
-    requested = list(values)
-    if any(not isinstance(value, str) for value in requested):
-        raise McpWikiError(f"{field} must contain only strings.")
+    requested = _bounded_query_filter_values(
+        values,
+        field=field,
+        item_description="strings",
+    )
     unsupported = sorted(set(requested) - set(allowed))
     if unsupported:
-        raise McpWikiError(
-            f"unsupported {field[:-1]}: {unsupported[0]!r}."
-        )
+        raise McpWikiError(f"unsupported {field[:-1]}: {unsupported[0]!r}.")
     selected = set(requested)
     return [value for value in allowed if value in selected]
 
@@ -1346,6 +1577,8 @@ def _normalise_source_path(path: str) -> str:
 
 
 def _ensure_inside(root: Path, path: Path) -> None:
+    """Retain the legacy lexical helper for callers outside page reads."""
+
     try:
         path.resolve().relative_to(root.resolve())
     except ValueError as exc:

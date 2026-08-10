@@ -141,6 +141,10 @@ def test_generated_schema_targets_and_configuration_matrix_match_baseline() -> N
             assert ("## Report llm-wiki tool issues" in content) is settings[
                 "issue_reporting"
             ]
+            assert content.count("--knowledge-mode auto") == 1
+            assert "`query_documentation` API or MCP operation" in content
+            assert "`impact` with `paths` or `diff`" in content
+            assert "`allow_full_inventory=true` cost opt-in" in content
 
 
 def test_expanded_observation_and_compact_target_are_separate_profiles() -> None:
@@ -148,10 +152,10 @@ def test_expanded_observation_and_compact_target_are_separate_profiles() -> None
     observed = generated["agents"]["generic"]["variants"]["default"]
 
     assert observed == {
-        "words": 3022,
-        "characters": 22428,
-        "lines": 369,
-        "sha256": "1b896c6839cfb0ea77c1a23a2665669ad2e3b684a2952e33b454c4dc9798e4c2",
+        "words": 3084,
+        "characters": 22933,
+        "lines": 375,
+        "sha256": "5e176f03f97afc80b768074c787c99430ad6e502e2a79e0a425186036b762d4d",
     }
     assert generated["compact_target"] == {
         "words": {"minimum": 400, "maximum": 650},

@@ -280,8 +280,8 @@ affected artifact, concept locator, canonical path, event, or receipt scope.
 - A legacy wiki that does not declare a knowledge projection keeps its
   compatible absence behavior.
 
-The `llm-wiki-context/v1` request protocol accepts `freshness` and `evidence`
-plus typed-relationship filters as concept refinements only when
+The compatibility `llm-wiki-context/v1` request protocol accepts `freshness`
+and `evidence` plus typed-relationship filters as concept refinements only when
 `filters.surface` or `filters.symbol` is also present. For example:
 
 ```json
@@ -301,6 +301,33 @@ plus typed-relationship filters as concept refinements only when
   }
 }
 ```
+
+Version 1 does not accept `knowledge_mode`. Use `llm-wiki-context/v2` for an
+explicit native-selection decision and include exactly one of `off`, `auto`, or
+`required`:
+
+```json
+{
+  "protocol": "llm-wiki-context/v2",
+  "budget_tokens": 8000,
+  "focus": ["changed", "neighbors"],
+  "format": "json",
+  "filters": {},
+  "prefer_fresh": false,
+  "knowledge_mode": "auto"
+}
+```
+
+`off` returns a disabled selection disclosure, `auto` selects bounded native
+concepts, pages, and relationships when qualified knowledge is usable and
+otherwise returns an explicit fallback, and `required` fails with a stable
+structured recovery reason when that qualified result cannot be produced.
+Omitting the mode preserves the v1 response. `prefer_fresh` is independent: it
+only applies a current-first tie-break inside an existing relevance tier when
+the response is under budget pressure. It never enables knowledge, moves a
+candidate across tiers, or removes stale or unknown evidence. Explicit
+`off` plus `prefer_fresh: true` is accepted and reports that ranking was not
+applied because knowledge selection is disabled.
 
 `freshness` accepts `current`, `nonsemantic-source-change`, `unknown`,
 `source-changed`, `source-missing`, or `basis-incompatible`. `evidence`
@@ -823,7 +850,7 @@ not proof that `llm-wiki` leaked a watcher.
 large:
 
 ```
-llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only
+llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --knowledge-mode auto --read-only
 ```
 
 - **`--budget`** (required): maximum token count for the output.
@@ -831,12 +858,23 @@ llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --r
   Changed files get full detail, their 1-hop import neighbours get slim
   detail, everything else gets names only. Use `--focus all` to treat every
   file equally.
-- **`--format`**: `json` (default, structured) or `markdown` (human-readable
-  with tier-labelled sections).
+- **`--format`**: `json` (default, structured), `markdown` (human-readable with
+  tier-labelled sections), or `packet` (canonical qualified-context packet
+  JSON).
+- **`--knowledge-mode`**: `auto` selects qualified bounded native evidence,
+  `off` disables native selection, and `required` fails when ready qualified
+  knowledge cannot be produced. Omitting it preserves the v1 response.
+- **`--prefer-fresh`**: under budget pressure, prefer live-current sources only
+  within their existing relevance tier. This flag controls ranking, not
+  knowledge inclusion.
 - **Cost boundary:** the budget and focus bound emitted output after a full
   deep inventory. They do not bound scan work or make `context`
   computationally cheap.
 - **When to use:** for broad repository-wide work, run one serialized context
-  scan, then read only the source and wiki pages it selects. For a narrow task
-  with supplied files or a supplied diff, skip context and use the wiki index
-  only for navigation.
+  scan, then read only the source and wiki pages it selects. For a narrow task,
+  skip broad context and use the bounded `query_documentation` API or MCP
+  operation. Exact concept, related-concept, surface, and typed queries read the
+  committed snapshot; `impact` performs targeted extraction for supplied paths
+  or a unified diff. Symbol, entrypoint, and dependency queries perform a full
+  inventory only with `allow_full_inventory=true`. Every route discloses its
+  cost and bounds; targeted evidence does not establish global live freshness.

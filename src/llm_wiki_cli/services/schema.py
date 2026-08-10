@@ -39,6 +39,7 @@ ALL_SCHEMA_FILES: list[str] = [
     ".opencode/instructions.md",
 ]
 
+
 def _source_selection_args(source_selection: str | Path | None) -> str:
     if source_selection is None:
         return ""
@@ -108,15 +109,19 @@ llm-wiki sync --jobs 1{source_selection_args}
   unexplained placeholders.
 
 ## Large codebases
-For broad repository-wide work, run one serialized
-`llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only{source_selection_args}`
-scan, then read only the source and wiki pages it selects. For a narrow task
+For broad repository-wide work, use the one serialized context scan specified
+under "Before you start", then read only the source and wiki pages it selects.
+For a narrow task
 with supplied files or a supplied diff, skip the full context scan and use the
-wiki index only to navigate to relevant pages. The budget and focus options
-bound emitted output after a full deep inventory; they do not make the scan
-computationally cheap. Flag semantics are documented in the `wiki-reference`
-skill.
+bounded `query_documentation` API or MCP operation: choose `impact` with
+`paths` or `diff`, or use an exact `concept`, `related`, `surface`, or `typed`
+query. `symbol`, `entrypoint`, and `dependency` queries require the explicit
+`allow_full_inventory=true` cost opt-in. Use the wiki index only to navigate to
+relevant pages. The budget and focus options bound emitted output after a full
+deep inventory; they do not make the scan computationally cheap. Flag
+semantics are documented in the `wiki-reference` skill.
 """
+
 
 _QUALITY_HINTS = """\
 
@@ -163,11 +168,14 @@ def _wiki_instructions(
 
 ## Before you start
 - For broad repository-wide work, run one serialized
-  `llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --read-only{source_selection_args}`
+  `llm-wiki context --budget 8000 --src-dir . --format markdown --focus changed --knowledge-mode auto --read-only{source_selection_args}`
   scan, then read only the source and wiki pages it selects.
 - For a narrow task with supplied files or a supplied diff, skip the full
-  context scan. Use `{wiki_dir}/index.md` only to navigate to relevant entity,
-  module, flow, or guide pages.
+  context scan. Use the bounded `query_documentation` API or MCP operation:
+  choose `impact` with `paths` or `diff`, or an exact `concept`, `related`,
+  `surface`, or `typed` query. `symbol`, `entrypoint`, and `dependency` queries
+  require the explicit `allow_full_inventory=true` cost opt-in. Use
+  `{wiki_dir}/index.md` only to navigate to relevant pages.
 - `context` still performs a full deep inventory. Its budget and focus options
   bound emitted output, not scan cost.
 

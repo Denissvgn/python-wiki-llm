@@ -29,7 +29,7 @@ from .sync_manifest import (
     SyncManifest,
     SyncManifestError,
 )
-from .wiki_surface import collect_wiki_pages
+from .wiki_surface import WikiSurfacePathError, collect_wiki_pages
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
@@ -187,6 +187,8 @@ def _load_once(
 
     try:
         current_pages = _current_markdown(root, markdown_pages)
+    except WikiSurfacePathError:
+        raise
     except (
         KnowledgeEnvelopeError,
         OSError,
@@ -682,9 +684,7 @@ def _live_governance_issues(
             KnowledgeLoadIssue(
                 code="governance-live-hash-mismatch",
                 artifact_path=GOVERNANCE_FILENAME,
-                message=(
-                    "governance ledger changed after the generated projection"
-                ),
+                message=("governance ledger changed after the generated projection"),
             )
         )
     try:
