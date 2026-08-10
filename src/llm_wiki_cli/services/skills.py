@@ -13,8 +13,9 @@ import json
 import os
 import stat
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from .io import first_unsafe_path_component, read_md, write_md
 from .validation import require_safe_base_path
@@ -78,6 +79,28 @@ class SkillsError(ValueError):
     """Raised for invalid skill list/export/install requests."""
 
 
+class ReferenceSkillState(str, Enum):
+    """Stable live/provisioning states for the managed reference skill."""
+
+    ABSENT = "absent"
+    CURRENT = "current"
+    LOCALLY_MODIFIED = "locally_modified"
+    INCOMPLETE = "incomplete"
+    PACKAGE_MISSING = "package_missing"
+    INSTALL_ERROR = "install_error"
+
+
+class ReferenceSkillReason(str, Enum):
+    """Stable lifecycle reason codes paired with :class:`ReferenceSkillState`."""
+
+    ABSENT = "managed-reference-absent"
+    CURRENT = "managed-reference-current"
+    LOCALLY_MODIFIED = "managed-reference-modified"
+    INCOMPLETE = "managed-reference-incomplete"
+    PACKAGE_MISSING = "managed-reference-package-missing"
+    INSTALL_ERROR = "managed-reference-install-failed"
+
+
 @dataclass(frozen=True)
 class BundledSkill:
     skill_id: str
@@ -117,6 +140,79 @@ class SkillsReport:
             "skills": self.skills,
             "operations": [op.__dict__ for op in self.operations],
             "issues": self.issues,
+        }
+
+
+@dataclass(frozen=True)
+class ReferenceSkillVerification:
+    """One read-only classification of the live managed-reference tree.
+
+    ``path`` is always the requested installed ``wiki-reference`` directory.
+    ``details`` contains sorted, machine-stable diagnostics. Entry diagnostics
+    use paths relative to the installed or bundled skill root; install report
+    diagnostics retain the exact path supplied by the report.
+    """
+
+    state: ReferenceSkillState
+    reason: ReferenceSkillReason
+    path: Path
+    details: tuple[str, ...] = ()
+
+    @property
+    def current(self) -> bool:
+        """Return whether the exact normalized bundled tree is installed."""
+
+        return self.state is ReferenceSkillState.CURRENT
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable lifecycle payload."""
+
+        return {
+            "state": self.state.value,
+            "reason": self.reason.value,
+            "path": str(self.path),
+            "details": list(self.details),
+            "current": self.current,
+        }
+
+
+@dataclass(frozen=True)
+class ReferenceSkillProvisionResult:
+    """Safe installation attempt plus its authoritative live verification.
+
+    ``state``/``reason`` describe the provisioning outcome used for profile
+    selection. ``verification`` retains the post-attempt live-tree result when
+    an installation write or exception makes the outcome ``install_error``.
+    """
+
+    state: ReferenceSkillState
+    reason: ReferenceSkillReason
+    path: Path
+    details: tuple[str, ...]
+    verification: ReferenceSkillVerification
+    report: SkillsReport | None = None
+
+    @property
+    def ok(self) -> bool:
+        """Return whether installation completed and verified as current."""
+
+        return (
+            self.state is ReferenceSkillState.CURRENT
+            and self.report is not None
+            and self.report.ok
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable provisioning payload."""
+
+        return {
+            "ok": self.ok,
+            "state": self.state.value,
+            "reason": self.reason.value,
+            "path": str(self.path),
+            "details": list(self.details),
+            "verification": self.verification.to_dict(),
+            "report": self.report.to_dict() if self.report is not None else None,
         }
 
 
@@ -334,6 +430,225 @@ def install_reference_skill(
     )
 
 
+def verify_reference_skill(
+    project_dir: str | Path = ".",
+    *,
+    agent: str | None = None,
+    target: str | Path | None = None,
+    skills_root: Path | None = None,
+) -> ReferenceSkillVerification:
+    """Verify the live managed-reference tree without mutating the filesystem.
+
+    The bundled payload is validated first. Compact rendering is safe only when
+    this function returns :attr:`ReferenceSkillState.CURRENT`; every other state
+    carries a stable reason and deterministic diagnostics for lifecycle callers.
+    Text comparison uses :func:`read_md`, so supported encodings and line endings
+    are normalized identically for source-tree and installed-wheel payloads.
+    """
+
+    installed_dir = _reference_install_path(project_dir, agent=agent, target=target)
+    package_contents, package_details = _reference_package_contents(skills_root)
+    if package_contents is None:
+        return _reference_verification(
+            ReferenceSkillState.PACKAGE_MISSING,
+            installed_dir,
+            package_details,
+        )
+
+    unsafe_component = first_unsafe_path_component(
+        installed_dir,
+        trusted_symlink_uids=frozenset(),
+    )
+    if unsafe_component is not None:
+        return _reference_verification(
+            ReferenceSkillState.INCOMPLETE,
+            installed_dir,
+            (f"unsafe:{unsafe_component}",),
+        )
+    installed_kind = _path_kind(installed_dir)
+    if installed_kind == "missing":
+        return _reference_verification(ReferenceSkillState.ABSENT, installed_dir)
+    if installed_kind != "directory":
+        return _reference_verification(
+            ReferenceSkillState.INCOMPLETE,
+            installed_dir,
+            (f"{installed_kind}:.",),
+        )
+    if not _directory_ancestry_is_safe(installed_dir):
+        return _reference_verification(
+            ReferenceSkillState.INCOMPLETE,
+            installed_dir,
+            (f"unsafe:{installed_dir}",),
+        )
+
+    snapshot = _tree_snapshot(installed_dir)
+    expected_files = frozenset(REFERENCE_SKILL_FILES)
+    expected_directories = _reference_expected_directories()
+    incomplete_details = _snapshot_details(
+        snapshot,
+        expected_files=expected_files,
+        expected_directories=expected_directories,
+    )
+    if incomplete_details:
+        return _reference_verification(
+            ReferenceSkillState.INCOMPLETE,
+            installed_dir,
+            incomplete_details,
+        )
+
+    unreadable: list[str] = []
+    modified: list[str] = []
+    for relative in REFERENCE_SKILL_FILES:
+        try:
+            installed_text = read_md(installed_dir / relative)
+        except (OSError, UnicodeError):
+            unreadable.append(f"unreadable:{relative}")
+            continue
+        if installed_text != package_contents[relative]:
+            modified.append(f"content_mismatch:{relative}")
+    if unreadable:
+        return _reference_verification(
+            ReferenceSkillState.INCOMPLETE,
+            installed_dir,
+            unreadable,
+        )
+    if modified:
+        return _reference_verification(
+            ReferenceSkillState.LOCALLY_MODIFIED,
+            installed_dir,
+            modified,
+        )
+    return _reference_verification(ReferenceSkillState.CURRENT, installed_dir)
+
+
+def provision_reference_skill(
+    project_dir: str | Path = ".",
+    *,
+    agent: str | None = None,
+    force: bool = False,
+    target: str | Path | None = None,
+    skills_root: Path | None = None,
+) -> ReferenceSkillProvisionResult:
+    """Install and verify ``wiki-reference`` without leaking routine failures."""
+
+    return _provision_reference_skill_guarded(
+        project_dir,
+        agent=agent,
+        force=force,
+        target=target,
+        skills_root=skills_root,
+    )
+
+
+def _provision_reference_skill_guarded(
+    project_dir: str | Path = ".",
+    *,
+    agent: str | None = None,
+    force: bool = False,
+    target: str | Path | None = None,
+    skills_root: Path | None = None,
+    pre_mutation_check: Callable[[], None] | None = None,
+) -> ReferenceSkillProvisionResult:
+    """Provision after an optional caller-owned authority revalidation.
+
+    Exceptions deriving from ``Exception`` and failed reports become structured
+    results. Process-control exceptions such as ``KeyboardInterrupt`` and
+    ``SystemExit`` intentionally continue to propagate. Preserved local drift or
+    incomplete/unsafe trees retain their live state; actual write failures use
+    the distinct ``install_error`` state.
+    """
+
+    installed_dir = _reference_install_path(project_dir, agent=agent, target=target)
+    package_contents, package_details = _reference_package_contents(skills_root)
+    if package_contents is None:
+        verification = _reference_verification(
+            ReferenceSkillState.PACKAGE_MISSING,
+            installed_dir,
+            package_details,
+        )
+        return ReferenceSkillProvisionResult(
+            state=verification.state,
+            reason=verification.reason,
+            path=installed_dir,
+            details=verification.details,
+            verification=verification,
+        )
+    if pre_mutation_check is not None:
+        pre_mutation_check()
+    try:
+        report = install_reference_skill(
+            project_dir,
+            agent=agent,
+            force=force,
+            target=target,
+            skills_root=skills_root,
+        )
+    except Exception as exc:
+        verification = _safe_reference_verification(
+            project_dir,
+            agent=agent,
+            target=target,
+            skills_root=skills_root,
+        )
+        exception_detail = f"exception:{type(exc).__name__}:{exc}"
+        if verification.state is ReferenceSkillState.PACKAGE_MISSING:
+            details = _merge_details(verification.details, (exception_detail,))
+            return ReferenceSkillProvisionResult(
+                state=verification.state,
+                reason=verification.reason,
+                path=installed_dir,
+                details=details,
+                verification=verification,
+            )
+        return ReferenceSkillProvisionResult(
+            state=ReferenceSkillState.INSTALL_ERROR,
+            reason=ReferenceSkillReason.INSTALL_ERROR,
+            path=installed_dir,
+            details=_merge_details(verification.details, (exception_detail,)),
+            verification=verification,
+        )
+
+    verification = _safe_reference_verification(
+        project_dir,
+        agent=agent,
+        target=target,
+        skills_root=skills_root,
+    )
+    report_details = tuple(
+        f"report:{issue.get('category', 'unknown')}:{issue.get('path', '')}"
+        for issue in report.issues
+    )
+    details = _merge_details(verification.details, report_details)
+    issue_categories = {issue.get("category") for issue in report.issues}
+    inconsistent_success = report.ok and verification.state not in {
+        ReferenceSkillState.CURRENT,
+        ReferenceSkillState.PACKAGE_MISSING,
+    }
+    failed_without_live_explanation = not report.ok and (
+        "write_failed" in issue_categories
+        or not report.issues
+        or verification.state
+        in {ReferenceSkillState.ABSENT, ReferenceSkillState.CURRENT}
+    )
+    if inconsistent_success or failed_without_live_explanation:
+        return ReferenceSkillProvisionResult(
+            state=ReferenceSkillState.INSTALL_ERROR,
+            reason=ReferenceSkillReason.INSTALL_ERROR,
+            path=installed_dir,
+            details=details,
+            verification=verification,
+            report=report,
+        )
+    return ReferenceSkillProvisionResult(
+        state=verification.state,
+        reason=verification.reason,
+        path=installed_dir,
+        details=details,
+        verification=verification,
+        report=report,
+    )
+
+
 def reference_skill_state(
     project_dir: str | Path = ".",
     *,
@@ -341,10 +656,11 @@ def reference_skill_state(
     target: str | Path | None = None,
     skills_root: Path | None = None,
 ) -> str:
-    """Classify the installed `wiki-reference` copy: absent, unmodified, or modified.
+    """Compatibility classification: absent, unmodified, or modified.
 
     Extra files, missing files, or content drift against the bundled skill all
-    count as modified so callers never delete local edits.
+    count as modified so callers never delete local edits. New lifecycle callers
+    should use :func:`verify_reference_skill` for structured states and reasons.
     """
     resolved = target if target is not None else skills_install_dir(agent)
     installed_dir = Path(project_dir) / resolved / REFERENCE_SKILL_ID
@@ -355,13 +671,13 @@ def reference_skill_state(
         return "absent"
     if installed_kind != "directory":
         return "modified"
-
-    bundled = {skill.skill_id: skill for skill in list_bundled_skills(skills_root)}.get(
-        REFERENCE_SKILL_ID
+    verification = verify_reference_skill(
+        project_dir,
+        agent=agent,
+        target=target,
+        skills_root=skills_root,
     )
-    if bundled is None:
-        return "modified"
-    return "unmodified" if _skill_tree_matches(installed_dir, bundled) else "modified"
+    return "unmodified" if verification.current else "modified"
 
 
 def render_report_text(report: SkillsReport, *, action: str) -> str:
@@ -429,6 +745,148 @@ def _expected_skill_files(skill: BundledSkill) -> tuple[str, ...]:
     if skill.skill_id == REFERENCE_SKILL_ID:
         return REFERENCE_SKILL_FILES
     return skill.files
+
+
+_REFERENCE_REASONS: dict[ReferenceSkillState, ReferenceSkillReason] = {
+    ReferenceSkillState.ABSENT: ReferenceSkillReason.ABSENT,
+    ReferenceSkillState.CURRENT: ReferenceSkillReason.CURRENT,
+    ReferenceSkillState.LOCALLY_MODIFIED: ReferenceSkillReason.LOCALLY_MODIFIED,
+    ReferenceSkillState.INCOMPLETE: ReferenceSkillReason.INCOMPLETE,
+    ReferenceSkillState.PACKAGE_MISSING: ReferenceSkillReason.PACKAGE_MISSING,
+    ReferenceSkillState.INSTALL_ERROR: ReferenceSkillReason.INSTALL_ERROR,
+}
+
+
+@dataclass(frozen=True)
+class _TreeSnapshot:
+    files: frozenset[str]
+    directories: frozenset[str]
+    unsafe: tuple[str, ...] = ()
+    unreadable: tuple[str, ...] = ()
+
+
+def _reference_install_path(
+    project_dir: str | Path,
+    *,
+    agent: str | None,
+    target: str | Path | None,
+) -> Path:
+    resolved = target if target is not None else skills_install_dir(agent)
+    return Path(project_dir) / resolved / REFERENCE_SKILL_ID
+
+
+def _reference_verification(
+    state: ReferenceSkillState,
+    path: Path,
+    details: tuple[str, ...] | list[str] = (),
+) -> ReferenceSkillVerification:
+    return ReferenceSkillVerification(
+        state=state,
+        reason=_REFERENCE_REASONS[state],
+        path=path,
+        details=_merge_details(details),
+    )
+
+
+def _safe_reference_verification(
+    project_dir: str | Path,
+    *,
+    agent: str | None,
+    target: str | Path | None,
+    skills_root: Path | None,
+) -> ReferenceSkillVerification:
+    installed_dir = _reference_install_path(project_dir, agent=agent, target=target)
+    try:
+        return verify_reference_skill(
+            project_dir,
+            agent=agent,
+            target=target,
+            skills_root=skills_root,
+        )
+    except Exception as exc:
+        return _reference_verification(
+            ReferenceSkillState.INCOMPLETE,
+            installed_dir,
+            (f"verification_exception:{type(exc).__name__}:{exc}",),
+        )
+
+
+def _merge_details(*groups: tuple[str, ...] | list[str]) -> tuple[str, ...]:
+    return tuple(sorted({detail for group in groups for detail in group}))
+
+
+def _reference_expected_directories() -> frozenset[str]:
+    directories: set[str] = set()
+    for relative in REFERENCE_SKILL_FILES:
+        parent = Path(relative).parent
+        while parent != Path("."):
+            directories.add(parent.as_posix())
+            parent = parent.parent
+    return frozenset(directories)
+
+
+def _reference_package_contents(
+    skills_root: Path | None,
+) -> tuple[dict[str, str] | None, tuple[str, ...]]:
+    root = skills_root if skills_root is not None else BUNDLED_SKILLS_ROOT
+    package_dir = root / REFERENCE_SKILL_ID
+    unsafe_component = first_unsafe_path_component(
+        package_dir,
+        trusted_symlink_uids=frozenset(),
+    )
+    if unsafe_component is not None:
+        return None, (f"package_unsafe:{unsafe_component}",)
+    root_kind = _path_kind(root)
+    if root_kind != "directory":
+        return None, (f"package_root_{root_kind}:{root}",)
+    package_kind = _path_kind(package_dir)
+    if package_kind != "directory":
+        return None, (f"package_{package_kind}:.",)
+    if not _directory_ancestry_is_safe(package_dir):
+        return None, (f"package_unsafe:{package_dir}",)
+
+    snapshot = _tree_snapshot(package_dir)
+    details = _snapshot_details(
+        snapshot,
+        expected_files=frozenset(REFERENCE_SKILL_FILES),
+        expected_directories=_reference_expected_directories(),
+        prefix="package_",
+    )
+    if details:
+        return None, details
+
+    contents: dict[str, str] = {}
+    unreadable: list[str] = []
+    for relative in REFERENCE_SKILL_FILES:
+        try:
+            contents[relative] = read_md(package_dir / relative)
+        except (OSError, UnicodeError):
+            unreadable.append(f"package_unreadable:{relative}")
+    if unreadable:
+        return None, _merge_details(unreadable)
+    return contents, ()
+
+
+def _snapshot_details(
+    snapshot: _TreeSnapshot,
+    *,
+    expected_files: frozenset[str],
+    expected_directories: frozenset[str],
+    prefix: str = "",
+) -> tuple[str, ...]:
+    details = [f"{prefix}missing:{path}" for path in expected_files - snapshot.files]
+    details.extend(f"{prefix}extra:{path}" for path in snapshot.files - expected_files)
+    details.extend(
+        f"{prefix}missing_directory:{path}"
+        for path in expected_directories - snapshot.directories
+    )
+    details.extend(
+        f"{prefix}extra_directory:{path}"
+        for path in snapshot.directories - expected_directories
+    )
+    details.extend(f"{prefix}unsafe:{path}" for path in snapshot.unsafe)
+    details.extend(f"{prefix}unreadable:{path}" for path in snapshot.unreadable)
+    return _merge_details(details)
 
 
 def _path_kind(path: Path) -> str:
@@ -573,31 +1031,71 @@ def _ensure_regular_directory(
     return True
 
 
-def _tree_entries(root: Path) -> tuple[set[str], set[str]] | None:
-    """Return regular files/directories, rejecting every other tree entry."""
+def _tree_snapshot(root: Path) -> _TreeSnapshot:
+    """Inventory one tree without following aliases or hiding read failures."""
 
     files: set[str] = set()
     directories: set[str] = set()
+    unsafe: set[str] = set()
+    unreadable: set[str] = set()
+
+    def relative(path: Path) -> str:
+        try:
+            value = path.relative_to(root).as_posix()
+        except ValueError:
+            value = str(path)
+        return value or "."
+
+    def onerror(exc: OSError) -> None:
+        filename = getattr(exc, "filename", None)
+        unreadable.add(relative(Path(filename)) if filename else ".")
+
     try:
-        for directory, names, filenames in os.walk(
-            root, topdown=True, followlinks=False
-        ):
+        walker = os.walk(root, topdown=True, onerror=onerror, followlinks=False)
+        for directory, names, filenames in walker:
             names.sort()
             filenames.sort()
             parent = Path(directory)
+            retained_names: list[str] = []
             for name in names:
                 candidate = parent / name
-                if _path_kind(candidate) != "directory":
-                    return None
-                directories.add(candidate.relative_to(root).as_posix())
+                kind = _path_kind(candidate)
+                entry = relative(candidate)
+                if kind == "directory":
+                    directories.add(entry)
+                    retained_names.append(name)
+                elif kind == "unreadable":
+                    unreadable.add(entry)
+                else:
+                    unsafe.add(entry)
+            names[:] = retained_names
             for name in filenames:
                 candidate = parent / name
-                if _path_kind(candidate) != "file":
-                    return None
-                files.add(candidate.relative_to(root).as_posix())
-    except OSError:
+                kind = _path_kind(candidate)
+                entry = relative(candidate)
+                if kind == "file":
+                    files.add(entry)
+                elif kind == "unreadable":
+                    unreadable.add(entry)
+                else:
+                    unsafe.add(entry)
+    except OSError as exc:
+        onerror(exc)
+    return _TreeSnapshot(
+        files=frozenset(files),
+        directories=frozenset(directories),
+        unsafe=tuple(sorted(unsafe)),
+        unreadable=tuple(sorted(unreadable)),
+    )
+
+
+def _tree_entries(root: Path) -> tuple[set[str], set[str]] | None:
+    """Return regular files/directories, rejecting every other tree entry."""
+
+    snapshot = _tree_snapshot(root)
+    if snapshot.unsafe or snapshot.unreadable:
         return None
-    return files, directories
+    return set(snapshot.files), set(snapshot.directories)
 
 
 def _skill_tree_matches(installed_dir: Path, skill: BundledSkill) -> bool:

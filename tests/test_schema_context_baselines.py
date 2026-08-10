@@ -11,12 +11,16 @@ import pytest
 
 from llm_wiki_cli.services import context_packet, context_service
 from llm_wiki_cli.services.contracts import CONTEXT_PROTOCOL_VERSION
-from llm_wiki_cli.services.schema import SCHEMA_FILENAMES, build_schema_content
+from llm_wiki_cli.services.schema import (
+    SCHEMA_FILENAMES,
+    SchemaRenderProfile,
+    build_schema_content,
+)
 from tests.baseline_measurements import assert_text_baseline
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-BASELINE_PATH = REPO_ROOT / "tests" / "fixtures" / "schema-context-baselines-v1.json"
+BASELINE_PATH = REPO_ROOT / "tests" / "fixtures" / "schema-context-baselines-v2.json"
 PACKET_ID_DOMAIN = b"llm-wiki-qualified-context-packet/v1\x00"
 
 
@@ -105,7 +109,7 @@ def test_text_baseline_failure_reports_measured_words_and_characters() -> None:
 
 def test_generated_schema_targets_and_configuration_matrix_match_baseline() -> None:
     baseline = _baseline()
-    assert baseline["schema_version"] == "schema-context-executable-baselines/v1"
+    assert baseline["schema_version"] == "schema-context-executable-baselines/v2"
     generated = baseline["generated_schema"]
     assert generated["measurement"] == {
         "words": "unicode-whitespace-delimited",
@@ -123,39 +127,51 @@ def test_generated_schema_targets_and_configuration_matrix_match_baseline() -> N
         "without_quality_hints_with_issue_reporting",
     }
     assert set(generated["variants"]) == expected_variants
+    assert generated["profiles"] == [
+        SchemaRenderProfile.COMPACT.value,
+        SchemaRenderProfile.EXPANDED_INLINE.value,
+    ]
 
     for agent, agent_record in generated["agents"].items():
-        assert set(agent_record["variants"]) == expected_variants
-        for variant_name, expected in agent_record["variants"].items():
-            settings = generated["variants"][variant_name]
-            content = build_schema_content(
-                agent,
-                generated["wiki_dir"],
-                quality_hints=settings["quality_hints"],
-                issue_reporting=settings["issue_reporting"],
-            )
-            assert_text_baseline(f"{agent}/{variant_name}", content, expected)
-            assert ("## Agent quality guidelines" in content) is settings[
-                "quality_hints"
-            ]
-            assert ("## Report llm-wiki tool issues" in content) is settings[
-                "issue_reporting"
-            ]
-            assert content.count("--knowledge-mode auto") == 1
-            assert "`query_documentation` API or MCP operation" in content
-            assert "`impact` with `paths` or `diff`" in content
-            assert "`allow_full_inventory=true` cost opt-in" in content
+        assert set(agent_record["profiles"]) == set(generated["profiles"])
+        for profile_name, profile_record in agent_record["profiles"].items():
+            render_profile = SchemaRenderProfile(profile_name)
+            assert set(profile_record["variants"]) == expected_variants
+            for variant_name, expected in profile_record["variants"].items():
+                settings = generated["variants"][variant_name]
+                content = build_schema_content(
+                    agent,
+                    generated["wiki_dir"],
+                    render_profile=render_profile,
+                    quality_hints=settings["quality_hints"],
+                    issue_reporting=settings["issue_reporting"],
+                )
+                assert_text_baseline(
+                    f"{agent}/{profile_name}/{variant_name}", content, expected
+                )
+                assert ("## Agent quality guidelines" in content) is settings[
+                    "quality_hints"
+                ]
+                assert ("## Report llm-wiki tool issues" in content) is settings[
+                    "issue_reporting"
+                ]
+                assert content.count("--knowledge-mode auto") == 1
+                assert "`query_documentation` API or MCP operation" in content
+                assert "`impact` with `paths` or `diff`" in content
+                assert "`allow_full_inventory=true` cost opt-in" in content
 
 
 def test_expanded_observation_and_compact_target_are_separate_profiles() -> None:
     generated = _baseline()["generated_schema"]
-    observed = generated["agents"]["generic"]["variants"]["default"]
+    observed = generated["agents"]["generic"]["profiles"][
+        SchemaRenderProfile.EXPANDED_INLINE.value
+    ]["variants"]["default"]
 
     assert observed == {
-        "words": 3212,
-        "characters": 24859,
-        "lines": 415,
-        "sha256": "e31b42e54d5460589bf7e3a6872f1d72421dbde75a3a298126644b24ea505b91",
+        "words": 3217,
+        "characters": 24919,
+        "lines": 416,
+        "sha256": "b56793e9e722e1d79575c68e8671a1ce4d36b6f9d35ec70c31857265787f6fe4",
     }
     assert generated["compact_target"] == {
         "words": {"minimum": 400, "maximum": 650},

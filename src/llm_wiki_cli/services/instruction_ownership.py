@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path, PurePosixPath
 
-from .schema import SCHEMA_FILENAMES
+from .schema import SCHEMA_FILENAMES, SchemaRenderProfile
 from .skills import skills_install_dir
 
 try:  # Python 3.11+
@@ -35,13 +35,6 @@ class InstructionOwner(str, Enum):
     WORKFLOW_SKILL = "workflow_skill"
     DETERMINISTIC_CLI_LINT = "deterministic_cli_lint"
     REMOVED_DUPLICATE = "removed_duplicate"
-
-
-class InstructionProfile(str, Enum):
-    """Supported generated-instruction profiles."""
-
-    COMPACT = "compact"
-    EXPANDED = "expanded"
 
 
 class SectionCondition(str, Enum):
@@ -93,7 +86,7 @@ class InstructionRoute:
     source_heading: str
     kind: InstructionRouteKind
     literal: str | None = None
-    profiles: tuple[InstructionProfile, ...] = tuple(InstructionProfile)
+    profiles: tuple[SchemaRenderProfile, ...] = tuple(SchemaRenderProfile)
     agent_targets: tuple[str, ...] = tuple(SCHEMA_FILENAMES)
 
 
@@ -123,7 +116,7 @@ class CorrectnessClauseCoverage:
     origin: InstructionOrigin = InstructionOrigin.GENERATED_BODY
     destination_text: str | None = None
     always_inline: bool = False
-    profiles: tuple[InstructionProfile, ...] = tuple(InstructionProfile)
+    profiles: tuple[SchemaRenderProfile, ...] = tuple(SchemaRenderProfile)
     agent_targets: tuple[str, ...] = tuple(SCHEMA_FILENAMES)
 
 
@@ -135,7 +128,7 @@ class RepositoryHygieneCoverage:
     contract: str
     owner: InstructionOwner = InstructionOwner.KERNEL
     always_inline: bool = True
-    profiles: tuple[InstructionProfile, ...] = tuple(InstructionProfile)
+    profiles: tuple[SchemaRenderProfile, ...] = tuple(SchemaRenderProfile)
     agent_targets: tuple[str, ...] = tuple(SCHEMA_FILENAMES)
 
 
@@ -926,9 +919,9 @@ def _active_reference_sources(package_root: Path) -> tuple[Path, ...]:
         for path in source_paths
         if path.is_file()
         and not (
-            path.relative_to(package_root).as_posix().startswith(
-                f"{_REFERENCE_TOPICS}/"
-            )
+            path.relative_to(package_root)
+            .as_posix()
+            .startswith(f"{_REFERENCE_TOPICS}/")
             or path.relative_to(package_root).as_posix() == _REFERENCE_COMPATIBILITY
         )
     )
@@ -944,9 +937,9 @@ def discover_managed_reference_inbound_routes(
     installed paths collapse to one source/destination route.
     """
 
-    managed_destinations = {
-        _topic(topic).path for topic in _TOPIC_HEADINGS
-    } | {_REFERENCE_COMPATIBILITY}
+    managed_destinations = {_topic(topic).path for topic in _TOPIC_HEADINGS} | {
+        _REFERENCE_COMPATIBILITY
+    }
     discovered: set[DiscoveredInboundRoute] = set()
     for path in _active_reference_sources(package_root):
         relative = path.relative_to(package_root).as_posix()
@@ -1075,7 +1068,7 @@ def route_exists(
     route: InstructionRoute,
     *,
     agent: str,
-    profile: InstructionProfile,
+    profile: SchemaRenderProfile,
 ) -> bool:
     """Require the route in the relevant rendered target/profile section."""
 
@@ -1117,7 +1110,7 @@ def removal_prerequisites_ready(
     coverage: GeneratedSectionCoverage,
     *,
     agent: str,
-    profile: InstructionProfile,
+    profile: SchemaRenderProfile,
     rendered_content: str | None,
 ) -> bool:
     """Fail closed until every destination is packaged and rendered-routable."""
@@ -1157,7 +1150,7 @@ def correctness_destination_ready(
     clause: CorrectnessClauseCoverage,
     *,
     agent: str,
-    profile: InstructionProfile,
+    profile: SchemaRenderProfile,
     rendered_content: str | None,
 ) -> bool:
     """Require packaged detail and a rendered route; inline rules never retire."""

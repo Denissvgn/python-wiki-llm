@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Versioned `compact` and `expanded_inline` managed-schema profile markers,
+  structured managed-reference verification, and live lifecycle reporting for
+  current, disabled, unavailable, legacy, and broken combinations.
+- A bounded `upgrade --cleanup-source-agent` recovery option for explicitly
+  reconciling an interrupted agent switch without guessing which parallel
+  schema is authoritative.
 - A one-hop managed `wiki-reference` topic tree for maintenance, canonical
   surfaces, repository handoff, qualified knowledge use, context and query
   selection, governance, extraction, publishing, and resource-aware execution.
@@ -30,6 +36,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Initialization and upgrade now provision and verify the managed reference
+  before choosing a schema profile. Agent switches commit a usable destination
+  schema and config before cleaning an old exact managed path; failures keep an
+  expanded inline procedure and preserve prior or locally changed content.
+- Explicit source-agent cleanup removes only that agent's managed schema block.
+  When managed references are enabled and the target verifies current, it may
+  also remove an exact current source reference; opt-out, modified, and
+  incomplete reference trees remain preserved for review.
+- Agent configuration writes are atomic, preserve compatible extension keys,
+  and record user intent separately from the last rendered profile and reason.
+  Status derives health from live schema/reference state, while uninstall
+  removes only exact current managed-reference trees after schema cleanup.
 - Generated and bundled skill routes now open the exact managed reference topic
   they need. Reference installation and upgrade validate the complete nested
   tree, repair managed files deliberately, and fail safely around unexpected or

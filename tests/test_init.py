@@ -4,6 +4,8 @@ import json
 import types
 from pathlib import Path
 
+import pytest
+
 from llm_wiki_cli.commands import init_cmd
 from llm_wiki_cli.config import read_config, write_config
 from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES
@@ -129,13 +131,13 @@ class TestInitCustomWikiDir:
 
 
 class TestInitAgentInstallCheck:
-    def test_no_warning_for_schema_only_agents(self, tmp_project, capsys):
+    @pytest.mark.parametrize("agent", ["cursor", "copilot", "generic"])
+    def test_no_warning_for_schema_only_agents(self, tmp_project, capsys, agent):
         """cursor/copilot/generic have no CLI — no warning expected."""
-        for agent in ("cursor", "copilot", "generic"):
-            args = _make_args(agent=agent)
-            init_cmd.run(args)
-            out = capsys.readouterr().out
-            assert "not installed" not in out
+        args = _make_args(agent=agent)
+        init_cmd.run(args)
+        out = capsys.readouterr().out
+        assert "not installed" not in out
 
     def test_warning_when_cli_agent_missing(self, tmp_project, capsys, monkeypatch):
         """If 'claude' binary is absent, manual trigger-agent warning is clear."""
@@ -167,13 +169,13 @@ class TestInitPersistsAgentConfig:
         config = read_config("docs/llm_wiki")
         assert config["agent"] == "claude"
 
-    def test_agent_config_reflects_chosen_agent(self, tmp_project):
+    @pytest.mark.parametrize("agent", ["aider", "cursor", "copilot", "generic"])
+    def test_agent_config_reflects_chosen_agent(self, tmp_project, agent):
         """The config file stores whichever agent was passed."""
-        for agent in ("aider", "cursor", "copilot", "generic"):
-            args = _make_args(agent=agent)
-            init_cmd.run(args)
-            config = read_config("docs/llm_wiki")
-            assert config["agent"] == agent
+        args = _make_args(agent=agent)
+        init_cmd.run(args)
+        config = read_config("docs/llm_wiki")
+        assert config["agent"] == agent
 
     def test_agent_config_custom_wiki_dir(self, tmp_project):
         """Config is written to .git/ regardless of which wiki dir is used."""

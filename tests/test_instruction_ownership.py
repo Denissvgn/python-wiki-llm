@@ -15,7 +15,6 @@ from llm_wiki_cli.services.instruction_ownership import (
     InstructionDestination,
     InstructionOrigin,
     InstructionOwner,
-    InstructionProfile,
     MarkdownLink,
     SectionCondition,
     correctness_destination_ready,
@@ -33,6 +32,7 @@ from llm_wiki_cli.services.schema import (
     CONSTRAINT_END,
     CONSTRAINT_START,
     SCHEMA_FILENAMES,
+    SchemaRenderProfile,
     build_schema_content,
 )
 from llm_wiki_cli.services.skills import skills_install_dir
@@ -81,16 +81,15 @@ def _section_text(content: str, heading: str) -> str:
 
 def _rendered_content(
     agent: str,
-    profile: InstructionProfile,
+    profile: SchemaRenderProfile,
     *,
     quality_hints: bool = True,
     issue_reporting: bool = False,
-) -> str | None:
-    if profile is InstructionProfile.COMPACT:
-        return None
+) -> str:
     return build_schema_content(
         agent,
         "docs/llm_wiki",
+        render_profile=profile,
         quality_hints=quality_hints,
         issue_reporting=issue_reporting,
     )
@@ -132,10 +131,11 @@ def test_current_renderer_matches_section_inventory_for_every_target_and_option(
                 )
             )
         )
-        for agent in SCHEMA_FILENAMES:
+        for agent, render_profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
             content = build_schema_content(
                 agent,
                 "docs/llm_wiki",
+                render_profile=render_profile,
                 quality_hints=quality_hints,
                 issue_reporting=issue_reporting,
             )
@@ -194,7 +194,7 @@ def test_repository_hygiene_reservations_retain_required_semantics_everywhere():
         contract = normalize_instruction_text(item.contract).lower()
         assert item.owner is InstructionOwner.KERNEL
         assert item.always_inline
-        assert set(item.profiles) == set(InstructionProfile)
+        assert set(item.profiles) == set(SchemaRenderProfile)
         assert set(item.agent_targets) == set(SCHEMA_FILENAMES)
         for concept in required_concepts[item.name]:
             assert concept in contract, (item.name, concept)
@@ -226,12 +226,16 @@ def test_critical_inline_clauses_are_explicit_and_semantically_present():
     assert set(inline) == set(required)
     for item in inline.values():
         assert item.owner is InstructionOwner.KERNEL
-        assert set(item.profiles) == set(InstructionProfile)
+        assert set(item.profiles) == set(SchemaRenderProfile)
         assert set(item.agent_targets) == set(SCHEMA_FILENAMES)
         assert item.destination.path.startswith("skills/wiki-reference/references/")
 
-    for agent in SCHEMA_FILENAMES:
-        content = build_schema_content(agent, "docs/llm_wiki")
+    for agent, render_profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
+        content = build_schema_content(
+            agent,
+            "docs/llm_wiki",
+            render_profile=render_profile,
+        )
         normalized = normalize_instruction_text(content).lower()
         for name, concepts in required.items():
             clause = inline[name]
@@ -254,7 +258,11 @@ def test_sync_only_clause_inventory_is_not_self_declared():
     }
     assert actual == expected_names
 
-    content = build_schema_content("generic", "docs/llm_wiki")
+    content = build_schema_content(
+        "generic",
+        "docs/llm_wiki",
+        render_profile=SchemaRenderProfile.EXPANDED_INLINE,
+    )
     for name in expected_names:
         clause = next(item for item in CORRECTNESS_CLAUSE_COVERAGE if item.name == name)
         section = next(
@@ -302,7 +310,7 @@ def test_user_documentation_section_maps_every_selected_workflow_subroute():
     assert {item.destination_path for item in section.routes} == expected_paths
     for destination in section.destinations:
         assert destination_exists(PROJECT_ROOT, PACKAGE_ROOT, destination)
-    for agent, profile in product(SCHEMA_FILENAMES, InstructionProfile):
+    for agent, profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
         content = _rendered_content(agent, profile)
         for route in section.routes:
             assert route_exists(
@@ -310,7 +318,7 @@ def test_user_documentation_section_maps_every_selected_workflow_subroute():
                 route,
                 agent=agent,
                 profile=profile,
-            ) is (profile is InstructionProfile.EXPANDED)
+            )
         assert not removal_prerequisites_ready(
             PROJECT_ROOT,
             PACKAGE_ROOT,
@@ -378,12 +386,12 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
             raw_schema_source,
             route,
             agent="generic",
-            profile=InstructionProfile.EXPANDED,
+            profile=SchemaRenderProfile.EXPANDED_INLINE,
         )
         for route in deep_reference.routes
     )
 
-    removable_expanded = {
+    removable_current = {
         "Canonical wiki surfaces",
         "When you change code",
         "Wiki file naming rules",
@@ -392,7 +400,7 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
         "Large codebases",
     }
 
-    for agent, profile in product(SCHEMA_FILENAMES, InstructionProfile):
+    for agent, profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
         content = _rendered_content(agent, profile)
         deep_ready = removal_prerequisites_ready(
             PROJECT_ROOT,
@@ -410,7 +418,6 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
                 agent=agent,
                 profile=profile,
             )
-            is (profile is InstructionProfile.EXPANDED)
             for route in deep_reference.routes
         )
 
@@ -423,13 +430,9 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
                 profile=profile,
                 rendered_content=content,
             )
-            assert ready is (
-                profile is InstructionProfile.EXPANDED
-                and section.section in removable_expanded
-            )
+            assert ready is (section.section in removable_current)
             if (
-                profile is InstructionProfile.EXPANDED
-                and section.source_heading is not None
+                section.source_heading is not None
                 and section.condition is not SectionCondition.ISSUE_REPORTING
             ):
                 assert content is not None
@@ -437,7 +440,7 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
 
 
 def test_correctness_destinations_are_ready_without_retiring_inline_kernel_rules():
-    for agent, profile in product(SCHEMA_FILENAMES, InstructionProfile):
+    for agent, profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
         content = _rendered_content(agent, profile)
         for clause in CORRECTNESS_CLAUSE_COVERAGE:
             ready = correctness_destination_ready(
@@ -448,21 +451,18 @@ def test_correctness_destinations_are_ready_without_retiring_inline_kernel_rules
                 profile=profile,
                 rendered_content=content,
             )
-            assert ready is (
-                profile is InstructionProfile.EXPANDED and not clause.always_inline
-            ), clause.name
-            if profile is InstructionProfile.EXPANDED:
-                assert content is not None
-                section = next(
-                    item
-                    for item in GENERATED_SECTION_COVERAGE
-                    if item.section == clause.source_section
-                )
-                assert section.source_heading is not None
-                source = _section_text(content, section.source_heading)
-                assert normalize_instruction_text(
-                    clause.source_text
-                ) in normalize_instruction_text(source), clause.name
+            assert ready is (not clause.always_inline), clause.name
+            assert content is not None
+            section = next(
+                item
+                for item in GENERATED_SECTION_COVERAGE
+                if item.section == clause.source_section
+            )
+            assert section.source_heading is not None
+            source = _section_text(content, section.source_heading)
+            assert normalize_instruction_text(
+                clause.source_text
+            ) in normalize_instruction_text(source), clause.name
 
 
 def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
@@ -531,9 +531,7 @@ def test_reference_router_markdown_link_and_real_heading_anchors_resolve():
     assert len(router_routes) == 9
     for target, route in router_routes.items():
         assert target is not None
-        assert any(
-            link.target_path == target and link.anchor is None for link in links
-        )
+        assert any(link.target_path == target and link.anchor is None for link in links)
         destination = PACKAGE_ROOT / route.destination_path
         headings = markdown_headings(destination.read_text(encoding="utf-8"))
         assert headings[0].title == route.destination_heading
@@ -547,15 +545,19 @@ def test_active_routes_never_require_the_compatibility_index():
         for item in discovered
     )
 
-    router = (
-        PACKAGE_ROOT / "skills" / "wiki-reference" / "SKILL.md"
-    ).read_text(encoding="utf-8")
+    router = (PACKAGE_ROOT / "skills" / "wiki-reference" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
     assert MarkdownLink("reference.md", "reference.md", None) not in markdown_links(
         router
     )
 
-    for agent in SCHEMA_FILENAMES:
-        content = build_schema_content(agent, "docs/llm_wiki")
+    for agent, render_profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
+        content = build_schema_content(
+            agent,
+            "docs/llm_wiki",
+            render_profile=render_profile,
+        )
         reference_root = skills_install_dir(agent) / "wiki-reference" / "references"
         assert "wiki-reference/reference.md" not in content
         for topic in (

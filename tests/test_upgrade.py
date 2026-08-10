@@ -108,9 +108,16 @@ class TestUpgradeRefreshesSchema:
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
 
-        from llm_wiki_cli.services.schema import build_schema_content
+        from llm_wiki_cli.services.schema import (
+            SchemaRenderProfile,
+            build_schema_content,
+        )
 
-        expected_block = build_schema_content("copilot", "docs/llm_wiki")
+        expected_block = build_schema_content(
+            "copilot",
+            "docs/llm_wiki",
+            render_profile=SchemaRenderProfile.COMPACT,
+        )
 
         upgrade_cmd.run(_make_args())
 

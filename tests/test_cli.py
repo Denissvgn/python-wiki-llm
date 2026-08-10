@@ -82,6 +82,33 @@ def test_issue_reporting_flags_parse(command, module_name, flag, expected, monke
     assert seen["issue_reporting"] is expected
 
 
+def test_upgrade_cleanup_source_agent_is_explicit_and_bounded(monkeypatch) -> None:
+    seen: dict[str, object] = {}
+    monkeypatch.setattr(
+        cli.upgrade_cmd,
+        "run",
+        lambda args: seen.update(vars(args)),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "upgrade",
+            "--agent",
+            "claude",
+            "--cleanup-source-agent",
+            "generic",
+            "--skills",
+        ],
+    )
+
+    cli.main()
+
+    assert seen["agent"] == "claude"
+    assert seen["cleanup_source_agent"] == "generic"
+    assert seen["skills"] is True
+
+
 @pytest.mark.parametrize("command", ["init", "upgrade"])
 def test_issue_reporting_flags_are_mutually_exclusive(command, monkeypatch):
     monkeypatch.setattr(

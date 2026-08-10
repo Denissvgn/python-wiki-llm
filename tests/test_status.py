@@ -4,9 +4,22 @@ import json
 import types
 from pathlib import Path
 
+import pytest
+
 from llm_wiki_cli.commands import context_cmd, extract_cmd, status_cmd
+from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import knowledge_consumption
 from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_cli.services.rendering_lifecycle import (
+    LifecycleStatus,
+    ManagedLifecycleState,
+)
+from llm_wiki_cli.services.schema import CONSTRAINT_END, CONSTRAINT_START
+from llm_wiki_cli.services.skills import (
+    ReferenceSkillReason,
+    ReferenceSkillState,
+    ReferenceSkillVerification,
+)
 from tests.knowledge_fixtures import fail_if_extraction_runs
 from tests.test_knowledge_loader import _committed_state
 
@@ -25,6 +38,96 @@ def _status_counts(output: str) -> dict[str, int]:
         if value.isdigit():
             counts[label] = int(value)
     return counts
+
+
+def _write_agent_config(project: Path, **overrides: object) -> None:
+    config: dict[str, object] = {
+        "agent": "generic",
+        "quality_hints": True,
+        "reference_skill": True,
+        "issue_reporting": False,
+    }
+    config.update(overrides)
+    (project / ".git" / ".llm-wiki-agent").write_text(
+        json.dumps(config),
+        encoding="utf-8",
+    )
+
+
+def _write_profiled_schema(path: Path, profile: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f"{CONSTRAINT_START}\n"
+        f"<!-- llm-wiki-schema: version=1 profile={profile} -->\n"
+        "managed instructions\n"
+        f"{CONSTRAINT_END}\n",
+        encoding="utf-8",
+    )
+
+
+@pytest.mark.parametrize(
+    ("state", "reason", "details"),
+    [
+        (
+            ReferenceSkillState.PACKAGE_MISSING,
+            ReferenceSkillReason.PACKAGE_MISSING,
+            (),
+        ),
+        (
+            ReferenceSkillState.LOCALLY_MODIFIED,
+            ReferenceSkillReason.LOCALLY_MODIFIED,
+            ("content_mismatch:reference.md",),
+        ),
+        (
+            ReferenceSkillState.INCOMPLETE,
+            ReferenceSkillReason.INCOMPLETE,
+            ("extra:references/local.md",),
+        ),
+    ],
+)
+def test_disabled_compact_recovery_never_requires_reference_mutation(
+    state: ReferenceSkillState,
+    reason: ReferenceSkillReason,
+    details: tuple[str, ...],
+) -> None:
+    lifecycle = LifecycleStatus(
+        state=ManagedLifecycleState.COMPACT_BROKEN,
+        rendered_profile="compact",
+        reference_state=state.value,
+        reference_path=".llm-wiki/skills/wiki-reference",
+        reference_current=False,
+        read_only_knowledge="independent",
+        warning="compact-profile-with-managed-reference-disabled",
+        recovery_command=None,
+    )
+    reference = ReferenceSkillVerification(
+        state=state,
+        reason=reason,
+        path=Path(".llm-wiki/skills/wiki-reference"),
+        details=details,
+    )
+
+    guidance = status_cmd._recovery_guidance(
+        lifecycle=lifecycle,
+        reference=reference,
+        wiki_dir="docs/llm_wiki",
+        agent="generic",
+        reference_enabled=False,
+        interrupted_switch=False,
+    )
+
+    assert guidance.endswith("--agent generic --no-skills")
+    assert "repair or upgrade" not in guidance
+    assert "move them aside" not in guidance
+    assert "back up local managed-reference" not in guidance
+
+
+def _write_legacy_schema(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f"{CONSTRAINT_START}\nmanaged instructions\n{CONSTRAINT_END}\n",
+        encoding="utf-8",
+    )
 
 
 def _guard_live_knowledge_evaluation(monkeypatch) -> None:
@@ -260,9 +363,16 @@ class TestStatusAgent:
 
 class TestStatusHooks:
     def test_detects_installed_hooks(self, tmp_project, capsys):
+        from llm_wiki_cli.commands import hook_cmd
+
         hooks_dir = tmp_project / ".git" / "hooks"
         hooks_dir.mkdir(parents=True, exist_ok=True)
-        (hooks_dir / "post-commit").write_text("#!/bin/sh\n# LLM Wiki hook\n")
+        hook = hooks_dir / "post-commit"
+        hook.write_text(
+            hook_cmd._build_ide_post_commit("docs/llm_wiki"),
+            encoding="utf-8",
+        )
+        hook.chmod(0o755)
 
         wiki = tmp_project / "docs" / "llm_wiki"
         wiki.mkdir(parents=True)
@@ -270,6 +380,100 @@ class TestStatusHooks:
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
         out = capsys.readouterr().out
         assert "post-commit" in out
+
+    def test_exact_managed_hook_without_execute_bit_is_reported_broken(
+        self, tmp_project, capsys
+    ):
+        from llm_wiki_cli.commands import hook_cmd
+
+        hook = tmp_project / ".git" / "hooks" / "post-commit"
+        hook.parent.mkdir(parents=True, exist_ok=True)
+        hook.write_text(
+            hook_cmd._build_ide_post_commit("docs/llm_wiki"),
+            encoding="utf-8",
+        )
+        hook.chmod(0o644)
+        (tmp_project / "docs" / "llm_wiki").mkdir(parents=True)
+
+        status_cmd.run(_make_args())
+
+        output = capsys.readouterr().out
+        assert "non-executable: post-commit" in output
+        assert "install-hook --force" in output
+
+    def test_does_not_claim_signature_substring_hook_is_managed(
+        self, tmp_project, capsys
+    ):
+        hooks_dir = tmp_project / ".git" / "hooks"
+        hooks_dir.mkdir(parents=True, exist_ok=True)
+        (hooks_dir / "post-commit").write_text(
+            '#!/bin/sh\necho "check whether LLM Wiki is stale"\n',
+            encoding="utf-8",
+        )
+        wiki = tmp_project / "docs" / "llm_wiki"
+        wiki.mkdir(parents=True)
+
+        status_cmd.run(_make_args(wiki_dir=str(wiki)))
+
+        out = capsys.readouterr().out
+        assert "Hooks:           none installed" in out
+
+    def test_rejects_wiki_symlink_outside_project_before_reading(
+        self,
+        tmp_project,
+        tmp_path,
+    ):
+        outside = tmp_path / "outside-wiki"
+        (outside / "entities").mkdir(parents=True)
+        (outside / "entities/secret.md").write_text("secret\n", encoding="utf-8")
+        wiki_link = Path("wiki")
+        try:
+            wiki_link.symlink_to(outside, target_is_directory=True)
+        except OSError as exc:  # pragma: no cover - platform policy
+            pytest.skip(f"symlinks unavailable: {exc}")
+
+        with pytest.raises(PathValidationError):
+            status_cmd.run(_make_args(wiki_dir="wiki", src_dir="."))
+
+    @pytest.mark.parametrize("damage", ["root-file", "root-link", "child-link"])
+    def test_scaffold_path_damage_blocks_nonconvergent_lifecycle_recovery(
+        self,
+        tmp_project,
+        monkeypatch,
+        capsys,
+        damage: str,
+    ):
+        wiki = Path("wiki")
+        outside = Path("outside")
+        outside.mkdir()
+        if damage == "root-file":
+            wiki.write_text("not a directory\n", encoding="utf-8")
+        elif damage == "root-link":
+            target = Path("internal-wiki")
+            target.mkdir()
+            try:
+                wiki.symlink_to(target, target_is_directory=True)
+            except OSError as exc:  # pragma: no cover - platform policy
+                pytest.skip(f"symlinks unavailable: {exc}")
+        else:
+            wiki.mkdir()
+            try:
+                (wiki / "modules").symlink_to(outside, target_is_directory=True)
+            except OSError as exc:  # pragma: no cover - platform policy
+                pytest.skip(f"symlinks unavailable: {exc}")
+        monkeypatch.setattr(
+            status_cmd, "_print_knowledge_status", lambda *_a, **_k: None
+        )
+
+        status_cmd.run(_make_args(wiki_dir=wiki.as_posix(), src_dir="."))
+
+        output = capsys.readouterr().out
+        assert "wiki-scaffold-unavailable" in output
+        assert "move aside or repair the unavailable wiki scaffold path" in output
+        assert "then rerun `llm-wiki status" in output
+        assert "before init or upgrade" in output
+        assert "llm-wiki init --wiki-dir wiki" not in output
+        assert not (outside / ".gitkeep").exists()
 
     def test_shows_no_hooks(self, tmp_project, capsys):
         wiki = tmp_project / "docs" / "llm_wiki"
@@ -338,16 +542,18 @@ class TestStatusReferenceSkill:
         )
 
     def test_not_installed_claude_recovery_uses_native_target(
-        self, tmp_project, capsys, monkeypatch
+        self, tmp_project, capsys
     ):
-        monkeypatch.setattr(status_cmd, "read_config", lambda _wiki_dir: {"agent": "claude"})
+        (tmp_project / ".git" / ".llm-wiki-agent").write_text(
+            "claude",
+            encoding="utf-8",
+        )
 
         status_cmd.run(_make_args())
 
         out = capsys.readouterr().out
         assert (
-            "skills install --dest .claude/skills --skill wiki-reference --force"
-            in out
+            "skills install --dest .claude/skills --skill wiki-reference --force" in out
         )
 
     def test_current(self, tmp_project, capsys):
@@ -368,7 +574,8 @@ class TestStatusReferenceSkill:
         status_cmd.run(_make_args())
         out = capsys.readouterr().out
         assert "differs from bundled" in out
-        assert "llm-wiki upgrade" in out
+        assert "Reference repair: use the explicit state-aware Recovery command" in out
+        assert "llm-wiki init --wiki-dir docs/llm_wiki --agent generic" in out
         assert (
             "skills install --dest .llm-wiki/skills --skill wiki-reference --force"
             in out
@@ -395,3 +602,186 @@ class TestStatusReferenceSkill:
         status_cmd.run(_make_args())
 
         assert "differs from bundled" in capsys.readouterr().out
+
+
+class TestStatusManagedLifecycle:
+    def test_live_compact_current_overrides_stale_persisted_profile(
+        self, tmp_project, capsys
+    ):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        _write_agent_config(
+            tmp_project,
+            rendered_profile="expanded_inline",
+            render_profile_version=1,
+            render_reason="reference-absent",
+        )
+        _write_profiled_schema(tmp_project / "AGENTS.md", "compact")
+        install_reference_skill(agent="generic")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "Managed lifecycle: compact/current" in out
+        assert "Rendered profile: compact" in out
+        assert "Reference state: current" in out
+        assert "Reference path:  .llm-wiki/skills/wiki-reference" in out
+        assert "Reference current: yes" in out
+        assert "Read-only knowledge: independent" in out
+        assert "persisted-render-state-does-not-match-live-files" in out
+
+    def test_live_reference_drift_makes_configured_compact_broken(
+        self, tmp_project, capsys
+    ):
+        _write_agent_config(
+            tmp_project,
+            rendered_profile="compact",
+            render_profile_version=1,
+            render_reason="reference-current",
+        )
+        _write_profiled_schema(tmp_project / "AGENTS.md", "compact")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "Managed lifecycle: compact/broken" in out
+        assert "Reference state: absent" in out
+        assert "Reference current: no" in out
+        assert "compact-profile-with-managed-reference-absent" in out
+        assert (
+            "llm-wiki upgrade --wiki-dir docs/llm_wiki --agent generic --skills" in out
+        )
+
+    def test_expanded_opt_out_stays_disabled_even_with_current_reference(
+        self, tmp_project, capsys
+    ):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        _write_agent_config(
+            tmp_project,
+            reference_skill=False,
+            rendered_profile="expanded_inline",
+            render_profile_version=1,
+            render_reason="skills-disabled",
+        )
+        _write_profiled_schema(tmp_project / "AGENTS.md", "expanded_inline")
+        install_reference_skill(agent="generic")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "Managed lifecycle: expanded/skills-disabled" in out
+        assert "Reference current: yes" in out
+        assert "Warning:         managed-reference-disabled" in out
+        assert "Recovery command: none required; optional re-enable:" in out
+
+    def test_expanded_reports_unavailable_reference(self, tmp_project, capsys):
+        _write_agent_config(
+            tmp_project,
+            rendered_profile="expanded_inline",
+            render_profile_version=1,
+            render_reason="reference-absent",
+        )
+        _write_profiled_schema(tmp_project / "AGENTS.md", "expanded_inline")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "Managed lifecycle: expanded/reference-unavailable" in out
+        assert "Reference reason: managed-reference-absent" in out
+        assert "Read-only knowledge: independent" in out
+
+    def test_legacy_managed_block_is_reported_without_prose_inference(
+        self, tmp_project, capsys
+    ):
+        (tmp_project / ".git" / ".llm-wiki-agent").write_text(
+            "generic",
+            encoding="utf-8",
+        )
+        _write_legacy_schema(tmp_project / "AGENTS.md")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "Managed lifecycle: legacy-expanded" in out
+        assert "Rendered profile: expanded_inline" in out
+        assert "managed-schema-profile-marker-absent" in out
+
+    def test_legacy_recovery_preserves_persisted_opt_out(self, tmp_project, capsys):
+        _write_agent_config(tmp_project, reference_skill=False)
+        _write_legacy_schema(tmp_project / "AGENTS.md")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert (
+            "llm-wiki upgrade --wiki-dir docs/llm_wiki --agent generic --no-skills"
+            in out
+        )
+
+    def test_invalid_config_is_explicit_during_fallback_diagnostics(
+        self, tmp_project, capsys
+    ):
+        (tmp_project / ".git" / ".llm-wiki-agent").write_text(
+            "{not-json",
+            encoding="utf-8",
+        )
+        _write_profiled_schema(tmp_project / "AGENTS.md", "compact")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "Agent:           invalid configuration" in out
+        assert "invalid-config-json" in out
+        assert "Diagnostic fallback agent: generic" in out
+        assert "agent-config-invalid:invalid-config-json" in out
+        assert "skills install" not in out
+        assert " --skills" not in out
+
+    def test_multiple_config_homes_require_intent_reconciliation_before_repair(
+        self, tmp_project, capsys
+    ):
+        wiki = tmp_project / "docs/llm_wiki"
+        wiki.mkdir(parents=True, exist_ok=True)
+        (tmp_project / ".git/.llm-wiki-agent").write_text(
+            '{"agent":"generic","reference_skill":true}',
+            encoding="utf-8",
+        )
+        (wiki / ".llm-wiki-agent").write_text(
+            '{"agent":"claude","reference_skill":false}',
+            encoding="utf-8",
+        )
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "multiple-agent-config-homes" in out
+        assert ".git/.llm-wiki-agent" in out
+        assert "docs/llm_wiki/.llm-wiki-agent" in out
+        assert "inspect and preserve both local agent configs" in out
+        assert "skills install" not in out
+        assert " --skills" not in out
+
+    def test_missing_target_detects_managed_schema_from_interrupted_switch(
+        self, tmp_project, capsys
+    ):
+        _write_agent_config(
+            tmp_project,
+            agent="claude",
+            rendered_profile="compact",
+            render_profile_version=1,
+            render_reason="reference-current",
+        )
+        _write_profiled_schema(tmp_project / "AGENTS.md", "expanded_inline")
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert "Managed schema:  CLAUDE.md" in out
+        assert "Managed lifecycle: missing-schema" in out
+        assert "Switch state:    interrupted-agent-switch" in out
+        assert "managed schema remains at AGENTS.md" in out
+        assert "Reference path:  .claude/skills/wiki-reference" in out
+        assert (
+            "llm-wiki upgrade --wiki-dir docs/llm_wiki --agent claude --skills" in out
+        )

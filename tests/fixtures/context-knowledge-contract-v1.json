@@ -613,13 +613,13 @@
   "lifecycle_commands": {
     "init": {
       "governance": "never-initialize",
-      "implementation_state": "reserved-not-active",
+      "implementation_state": "active",
       "knowledge_plane": "unchanged",
       "reference_failure": "expanded-profile",
       "render_order": "verify-reference-before-compact-profile"
     },
     "status": {
-      "implementation_state": "reserved-not-active",
+      "implementation_state": "active",
       "knowledge_plane": "reported-independently",
       "live_reference_check": true,
       "mutation": "never",
@@ -635,7 +635,7 @@
     },
     "uninstall": {
       "governance": "never-initialize",
-      "implementation_state": "reserved-not-active",
+      "implementation_state": "active",
       "knowledge_artifacts": "keep-unless-remove-wiki-requested",
       "managed_block": "remove",
       "modified_reference": "preserve-and-warn",
@@ -644,8 +644,8 @@
     },
     "upgrade": {
       "governance": "never-initialize",
-      "implementation_state": "reserved-not-active",
-      "interruption": "expanded_inline-or-not-rendered-never-compact-broken",
+      "implementation_state": "active",
+      "interruption": "last-committed-safe-profile-never-compact-broken",
       "knowledge_plane": "unchanged",
       "modified_reference": "preserve-unless-explicit-force-refresh",
       "reference_failure": "expanded-profile",
@@ -3198,18 +3198,18 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           }
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           }
@@ -3254,11 +3254,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3270,7 +3270,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3320,11 +3320,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3336,7 +3336,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3386,11 +3386,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3402,7 +3402,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3452,11 +3452,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3468,7 +3468,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3506,11 +3506,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3522,7 +3522,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3571,11 +3571,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3587,7 +3587,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3623,11 +3623,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3639,7 +3639,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3688,11 +3688,11 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "signals": {
         "auto": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -3704,7 +3704,7 @@
         ],
         "required": [
           {
-            "code": "target-reference-unverified",
+            "code": "target-reference-unverified-or-source-cleanup-pending",
             "level": "warning",
             "source": "lifecycle"
           },
@@ -4618,7 +4618,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -4674,7 +4674,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -4740,7 +4740,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -4806,7 +4806,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -4872,7 +4872,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -4926,7 +4926,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -4991,7 +4991,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -5043,7 +5043,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -5108,7 +5108,7 @@
           ]
         }
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "signals": {
         "auto": [
           {
@@ -5287,10 +5287,10 @@
         "wiki_dir",
         "agent"
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "target-reference-state-dependent",
       "state": "agent-switch",
       "warning_or_error": {
-        "code": "target-reference-unverified",
+        "code": "target-reference-unverified-or-source-cleanup-pending",
         "level": "warning"
       }
     },
@@ -5323,7 +5323,8 @@
     {
       "allowed_actions": [
         "read-context",
-        "preserve-plugin-blocks"
+        "refresh-registered-plugin-blocks",
+        "preserve-unregistered-plugin-blocks"
       ],
       "fallback_evidence": [
         "qualified-knowledge-if-ready",
@@ -5331,7 +5332,7 @@
         "markdown",
         "targeted-source-or-runtime"
       ],
-      "mutation_permission": "plugin-blocks-preserved-exactly",
+      "mutation_permission": "registered-plugin-owned-blocks-may-refresh;unregistered-user-or-source-only-blocks-preserved-exactly",
       "read_only_knowledge": "independent",
       "recovery_command": "none-required",
       "recovery_condition": "not-applicable",
@@ -5362,7 +5363,7 @@
         "wiki_dir",
         "agent"
       ],
-      "rendered_profile": "expanded_inline",
+      "rendered_profile": "last-committed-safe-profile",
       "state": "interrupted-upgrade",
       "warning_or_error": {
         "code": "managed-upgrade-interrupted",
@@ -5692,7 +5693,7 @@
       "recovery_type": "owner-restore",
       "regeneration_before_restore": "forbidden"
     },
-    "implementation_state": "required-knowledge-active-lifecycle-reserved",
+    "implementation_state": "active",
     "parameters": {
       "agent": {
         "render": "exact-cli-choice",
@@ -5747,9 +5748,9 @@
   },
   "render_profiles": {
     "compact": "verified-current-managed-reference-only",
-    "current_runtime": "legacy-expanded-without-profile-marker",
+    "current_runtime": "explicit-profile-marker",
     "expanded_inline": "safe-inline-procedure-without-reference-dependency",
-    "implementation_state": "reserved-not-active",
+    "implementation_state": "active",
     "not_rendered": "schema-file-absent"
   },
   "request": {
@@ -5787,8 +5788,8 @@
     "explicit_context_protocol": "llm-wiki-context/v2",
     "explicit_packet_schema": "llm-wiki-qualified-context-packet/v2",
     "knowledge_mode": "active",
-    "lifecycle_behavior": "reserved-not-active",
-    "render_profiles": "reserved-not-active"
+    "lifecycle_behavior": "active",
+    "render_profiles": "active"
   },
   "safety_semantics": {
     "does_not_authorize": [

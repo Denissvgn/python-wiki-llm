@@ -229,8 +229,8 @@ _CONTRACT: dict[str, Any] = {
     "schema_version": CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
     "runtime_state": {
         "knowledge_mode": "active",
-        "render_profiles": "reserved-not-active",
-        "lifecycle_behavior": "reserved-not-active",
+        "render_profiles": "active",
+        "lifecycle_behavior": "active",
         "active_context_protocols": [
             CONTEXT_PROTOCOL_VERSION,
             CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
@@ -702,14 +702,14 @@ _CONTRACT: dict[str, Any] = {
         "legacy_v1_coupling_preserved": True,
     },
     "render_profiles": {
-        "implementation_state": "reserved-not-active",
+        "implementation_state": "active",
         "compact": "verified-current-managed-reference-only",
         "expanded_inline": "safe-inline-procedure-without-reference-dependency",
         "not_rendered": "schema-file-absent",
-        "current_runtime": "legacy-expanded-without-profile-marker",
+        "current_runtime": "explicit-profile-marker",
     },
     "recovery_templates": {
-        "implementation_state": "required-knowledge-active-lifecycle-reserved",
+        "implementation_state": "active",
         "parameters": {
             "src_dir": {
                 "source": "resolved-request-or-project-configuration",
@@ -786,23 +786,23 @@ _CONTRACT: dict[str, Any] = {
     },
     "lifecycle_commands": {
         "init": {
-            "implementation_state": "reserved-not-active",
+            "implementation_state": "active",
             "render_order": "verify-reference-before-compact-profile",
             "reference_failure": "expanded-profile",
             "knowledge_plane": "unchanged",
             "governance": "never-initialize",
         },
         "upgrade": {
-            "implementation_state": "reserved-not-active",
+            "implementation_state": "active",
             "render_order": "verify-reference-before-compact-profile",
             "reference_failure": "expanded-profile",
-            "interruption": "expanded_inline-or-not-rendered-never-compact-broken",
+            "interruption": "last-committed-safe-profile-never-compact-broken",
             "modified_reference": "preserve-unless-explicit-force-refresh",
             "knowledge_plane": "unchanged",
             "governance": "never-initialize",
         },
         "status": {
-            "implementation_state": "reserved-not-active",
+            "implementation_state": "active",
             "live_reference_check": True,
             "required_fields": [
                 "rendered_profile",
@@ -817,7 +817,7 @@ _CONTRACT: dict[str, Any] = {
             "mutation": "never",
         },
         "uninstall": {
-            "implementation_state": "reserved-not-active",
+            "implementation_state": "active",
             "managed_block": "remove",
             "unmodified_reference": "remove",
             "modified_reference": "preserve-and-warn",
@@ -916,7 +916,7 @@ _CONTRACT: dict[str, Any] = {
         },
         {
             "state": "agent-switch",
-            "rendered_profile": "expanded_inline",
+            "rendered_profile": "target-reference-state-dependent",
             "read_only_knowledge": "independent",
             "fallback_evidence": list(_LIFECYCLE_FALLBACK_CHAIN),
             "allowed_actions": [
@@ -925,7 +925,10 @@ _CONTRACT: dict[str, Any] = {
                 "verify-target-reference",
             ],
             "mutation_permission": "explicit-upgrade-only",
-            "warning_or_error": _signal("warning", "target-reference-unverified"),
+            "warning_or_error": _signal(
+                "warning",
+                "target-reference-unverified-or-source-cleanup-pending",
+            ),
             "recovery_command": (
                 "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills"
             ),
@@ -949,8 +952,15 @@ _CONTRACT: dict[str, Any] = {
             "rendered_profile": "reference-state-dependent",
             "read_only_knowledge": "independent",
             "fallback_evidence": list(_LIFECYCLE_FALLBACK_CHAIN),
-            "allowed_actions": ["read-context", "preserve-plugin-blocks"],
-            "mutation_permission": "plugin-blocks-preserved-exactly",
+            "allowed_actions": [
+                "read-context",
+                "refresh-registered-plugin-blocks",
+                "preserve-unregistered-plugin-blocks",
+            ],
+            "mutation_permission": (
+                "registered-plugin-owned-blocks-may-refresh;"
+                "unregistered-user-or-source-only-blocks-preserved-exactly"
+            ),
             "warning_or_error": _signal("none", None),
             "recovery_command": "none-required",
             "recovery_condition": "not-applicable",
@@ -958,7 +968,7 @@ _CONTRACT: dict[str, Any] = {
         },
         {
             "state": "interrupted-upgrade",
-            "rendered_profile": "expanded_inline",
+            "rendered_profile": "last-committed-safe-profile",
             "read_only_knowledge": "independent",
             "fallback_evidence": list(_LIFECYCLE_FALLBACK_CHAIN),
             "allowed_actions": ["read-context", "explicit-upgrade-resume"],
@@ -1408,8 +1418,8 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
     runtime_state = contract.get("runtime_state")
     if not isinstance(runtime_state, Mapping) or runtime_state != {
         "knowledge_mode": "active",
-        "render_profiles": "reserved-not-active",
-        "lifecycle_behavior": "reserved-not-active",
+        "render_profiles": "active",
+        "lifecycle_behavior": "active",
         "active_context_protocols": [
             CONTEXT_PROTOCOL_VERSION,
             CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
@@ -1424,7 +1434,7 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         "explicit_packet_schema": QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     }:
         raise ContextKnowledgeContractError(
-            "knowledge mode must be active while render and lifecycle remain reserved"
+            "knowledge mode, render profiles, and lifecycle behavior must be active"
         )
 
     request = contract.get("request")
@@ -1569,6 +1579,12 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         "uninstall",
     }:
         raise ContextKnowledgeContractError("lifecycle_commands are incomplete")
+    if any(
+        not isinstance(command, Mapping)
+        or command.get("implementation_state") != "active"
+        for command in lifecycle_commands.values()
+    ):
+        raise ContextKnowledgeContractError("lifecycle_commands must be active")
     status_fields = lifecycle_commands["status"].get("required_fields")
     if not isinstance(status_fields, Sequence) or set(status_fields) != {
         "rendered_profile",
@@ -1599,14 +1615,31 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         "modified-reference",
         "reference-install-failure",
         "skills-disabled",
-        "agent-switch",
         "missing-schema",
-        "interrupted-upgrade",
     ):
         if lifecycle[state]["rendered_profile"] == "compact":
             raise ContextKnowledgeContractError(
                 f"lifecycle_matrix.{state} must not render compact"
             )
+    if lifecycle["agent-switch"]["rendered_profile"] != (
+        "target-reference-state-dependent"
+    ):
+        raise ContextKnowledgeContractError(
+            "lifecycle_matrix.agent-switch must bind the verified target state"
+        )
+    if lifecycle["interrupted-upgrade"]["rendered_profile"] != (
+        "last-committed-safe-profile"
+    ):
+        raise ContextKnowledgeContractError(
+            "lifecycle_matrix.interrupted-upgrade must preserve the last safe commit"
+        )
+    if lifecycle["plugin-blocks"]["mutation_permission"] != (
+        "registered-plugin-owned-blocks-may-refresh;"
+        "unregistered-user-or-source-only-blocks-preserved-exactly"
+    ):
+        raise ContextKnowledgeContractError(
+            "lifecycle_matrix.plugin-blocks must distinguish refresh from preservation"
+        )
     if any(row["read_only_knowledge"] != "independent" for row in lifecycle.values()):
         raise ContextKnowledgeContractError(
             "managed-reference lifecycle must not control read-only knowledge"

@@ -13,12 +13,15 @@ import pytest
 from llm_wiki_cli import config as config_module
 from llm_wiki_cli.config import (
     AGENT_CHOICES,
+    AgentConfigState,
     CLI_AGENTS,
     DEFAULT_WIKI_DIR,
     IDE_AGENTS,
     _normalize_gitignore_trailing_spaces,
     _parse_gitignore_file,
     build_gitignore_matcher,
+    config_requires_manual_recovery,
+    inspect_config,
     read_config,
     PathValidationError,
     validate_path,
@@ -26,6 +29,8 @@ from llm_wiki_cli.config import (
     validate_source_root,
     write_config,
 )
+from llm_wiki_cli.services.rendering_lifecycle import RenderReason
+from llm_wiki_cli.services.schema import SCHEMA_BLOCK_VERSION, SchemaRenderProfile
 
 
 class TestConstants:
@@ -145,9 +150,7 @@ class TestValidatePath:
                 )
             return
 
-        message = (
-            f"external source root '{link}' resolves to '{target.resolve()}'."
-        )
+        message = f"external source root '{link}' resolves to '{target.resolve()}'."
         with pytest.warns(UserWarning, match=re.escape(message)) as emitted:
             result = validate_source_root(
                 str(link),
@@ -374,9 +377,7 @@ class TestValidatePath:
                 allow_external=True,
             )
 
-    def test_external_source_root_discloses_symlink_target_chain_once(
-        self, tmp_path
-    ):
+    def test_external_source_root_discloses_symlink_target_chain_once(self, tmp_path):
         project = tmp_path / "project"
         outside = tmp_path / "outside"
         target = outside / "target"
@@ -537,9 +538,7 @@ class TestValidatePath:
                 allow_external=True,
             )
 
-    def test_external_source_root_rejects_unexpandable_home_clearly(
-        self, monkeypatch
-    ):
+    def test_external_source_root_rejects_unexpandable_home_clearly(self, monkeypatch):
         def unavailable_home(_path):
             raise RuntimeError("Could not determine home directory")
 
@@ -617,12 +616,23 @@ class TestReadWriteConfig:
         assert result["quality_hints"] is False
         assert result["issue_reporting"] is True
 
+    def test_render_config_allowlists_match_lifecycle_contract(self):
+        assert config_module._RENDER_PROFILES == frozenset(
+            profile.value for profile in SchemaRenderProfile
+        )
+        assert config_module._RENDER_REASONS == frozenset(
+            reason.value for reason in RenderReason
+        )
+        assert config_module._RENDER_PROFILE_VERSION == SCHEMA_BLOCK_VERSION
+
     def test_defaults_when_no_file(self, tmp_path):
         os.chdir(tmp_path)
-        result = read_config(str(tmp_path / "nonexistent"))
+        wiki = tmp_path / "nonexistent"
+        result = read_config(str(wiki))
         assert result["agent"] == "generic"
         assert result["quality_hints"] is True
         assert result["issue_reporting"] is False
+        assert inspect_config(wiki).state is AgentConfigState.ABSENT
 
     def test_backward_compat_bare_string(self, tmp_path):
         os.chdir(tmp_path)
@@ -634,6 +644,21 @@ class TestReadWriteConfig:
         assert result["agent"] == "claude"
         assert result["quality_hints"] is True
         assert result["issue_reporting"] is False
+        assert inspect_config(wiki).state is AgentConfigState.LEGACY
+
+    def test_legacy_reader_preserves_unknown_future_agent_but_inspection_rejects(
+        self, tmp_path
+    ):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        config_path = wiki / ".llm-wiki-agent"
+        config_path.write_text("future-agent", encoding="utf-8")
+
+        assert read_config(wiki)["agent"] == "future-agent"
+        inspection = inspect_config(wiki)
+        assert inspection.state is AgentConfigState.INVALID
+        assert inspection.data["agent"] == "generic"
 
     def test_missing_key_gets_default(self, tmp_path):
         os.chdir(tmp_path)
@@ -656,6 +681,320 @@ class TestReadWriteConfig:
         assert result["agent"] == "generic"
         assert result["quality_hints"] is True
         assert result["issue_reporting"] is False
+
+    def test_inspection_preserves_unknown_fields_and_valid_render_state(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        config_path = wiki / ".llm-wiki-agent"
+        config_path.write_text(
+            json.dumps(
+                {
+                    "agent": "generic",
+                    "custom_extension": {"kept": True},
+                    "rendered_profile": "compact",
+                    "render_profile_version": 1,
+                    "render_reason": "reference-current",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        inspection = inspect_config(wiki)
+
+        assert inspection.state is AgentConfigState.VALID
+        assert inspection.data["custom_extension"] == {"kept": True}
+        assert inspection.data["rendered_profile"] == "compact"
+
+    @pytest.mark.parametrize(
+        "render_state",
+        [
+            {"rendered_profile": "compact"},
+            {
+                "rendered_profile": "future",
+                "render_profile_version": 1,
+                "render_reason": "reference-current",
+            },
+            {
+                "rendered_profile": "compact",
+                "render_profile_version": 2,
+                "render_reason": "reference-current",
+            },
+            {
+                "rendered_profile": "compact",
+                "render_profile_version": 1,
+                "render_reason": "future",
+            },
+        ],
+    )
+    def test_inspection_rejects_partial_or_unsupported_render_state(
+        self, tmp_path, render_state
+    ):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        config_path = wiki / ".llm-wiki-agent"
+        config_path.write_text(
+            json.dumps({"agent": "generic", **render_state}),
+            encoding="utf-8",
+        )
+
+        inspection = inspect_config(wiki)
+
+        assert inspection.state is AgentConfigState.INVALID
+        assert "rendered_profile" not in inspection.data
+        assert "render_profile_version" not in inspection.data
+        assert "render_reason" not in inspection.data
+
+    def test_inspection_classifies_invalid_utf8_without_raising(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        config_path = wiki / ".llm-wiki-agent"
+        config_path.write_bytes(b"{\xff}")
+
+        inspection = inspect_config(wiki)
+
+        assert inspection.state is AgentConfigState.INVALID
+        assert inspection.reason == "invalid-config-encoding"
+        assert inspection.data["agent"] == "generic"
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [],
+            {"agent": "generic", "quality_hints": 1},
+            {"agent": "generic", "reference_skill": 0},
+            {"agent": "generic", "issue_reporting": "false"},
+        ],
+    )
+    def test_inspection_rejects_nonobject_and_bool_like_known_values(
+        self, tmp_path, payload
+    ):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        (wiki / ".llm-wiki-agent").write_text(
+            json.dumps(payload),
+            encoding="utf-8",
+        )
+
+        assert inspect_config(wiki).state is AgentConfigState.INVALID
+
+    def test_atomic_config_failure_preserves_previous_bytes(
+        self, tmp_path, monkeypatch
+    ):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        write_config(wiki, {"agent": "generic", "custom": "before"})
+        config_path = wiki / ".llm-wiki-agent"
+        before = config_path.read_bytes()
+
+        def fail_write(_path, _payload):
+            raise OSError("injected config write failure")
+
+        monkeypatch.setattr(config_module, "atomic_write_private_bytes", fail_write)
+        with pytest.raises(OSError, match="injected"):
+            write_config(wiki, {"agent": "claude", "custom": "after"})
+
+        assert config_path.read_bytes() == before
+
+    def test_snapshot_bound_config_write_preserves_concurrent_update(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        write_config(wiki, {"agent": "generic", "extension": {"owner": "initial"}})
+        inspection = inspect_config(wiki)
+        assert inspection.raw_bytes is not None
+
+        concurrent = {
+            "agent": "generic",
+            "extension": {"owner": "concurrent"},
+            "pending_cleanup_agent": "claude",
+            "pending_cleanup_reference": True,
+        }
+        write_config(wiki, concurrent)
+        config_path = wiki / ".llm-wiki-agent"
+        concurrent_bytes = config_path.read_bytes()
+
+        with pytest.raises(OSError, match="changed after preflight"):
+            write_config(
+                wiki,
+                {"agent": "generic", "extension": {"owner": "stale"}},
+                expected_existing=inspection.raw_bytes,
+            )
+
+        assert config_path.read_bytes() == concurrent_bytes
+
+    def test_multiple_config_homes_fail_closed(self, tmp_path):
+        os.chdir(tmp_path)
+        Path(".git").mkdir()
+        wiki = Path("docs/wiki")
+        wiki.mkdir(parents=True)
+        (Path(".git") / ".llm-wiki-agent").write_text(
+            '{"agent":"generic"}',
+            encoding="utf-8",
+        )
+        (wiki / ".llm-wiki-agent").write_text(
+            '{"agent":"claude"}',
+            encoding="utf-8",
+        )
+
+        inspection = inspect_config(wiki)
+
+        assert inspection.state is AgentConfigState.INVALID
+        assert inspection.reason == "multiple-agent-config-homes"
+        assert config_requires_manual_recovery(inspection)
+
+    def test_config_rejects_symlinked_git_ancestor_without_outside_write(
+        self, tmp_path
+    ):
+        project = tmp_path / "project"
+        outside = tmp_path / "outside"
+        project.mkdir()
+        outside.mkdir()
+        try:
+            (project / ".git").symlink_to(outside, target_is_directory=True)
+        except OSError:
+            pytest.skip("Directory symlinks are unavailable to this test account.")
+        os.chdir(project)
+
+        inspection = inspect_config("docs/llm_wiki")
+        assert inspection.state is AgentConfigState.INVALID
+        assert inspection.reason == "config-path-unsafe"
+
+        with pytest.raises(PathValidationError, match="unsafe component"):
+            write_config(
+                "docs/llm_wiki",
+                {"agent": "generic", "quality_hints": True},
+            )
+        assert not (outside / ".llm-wiki-agent").exists()
+
+    def test_config_parent_rebind_at_guarded_write_does_not_escape(
+        self, tmp_path, monkeypatch
+    ):
+        project = tmp_path / "project"
+        outside = tmp_path / "outside"
+        project.mkdir()
+        (project / ".git").mkdir()
+        outside.mkdir()
+        os.chdir(project)
+        original_write = config_module.atomic_write_private_bytes
+
+        def redirect_then_write(path, payload):
+            (project / ".git").rename(project / ".git-held")
+            (project / ".git").symlink_to(outside, target_is_directory=True)
+            return original_write(path, payload)
+
+        monkeypatch.setattr(
+            config_module,
+            "atomic_write_private_bytes",
+            redirect_then_write,
+        )
+
+        with pytest.raises(OSError):
+            write_config("docs/llm_wiki", {"agent": "generic"})
+
+        assert not (outside / ".llm-wiki-agent").exists()
+
+    def test_config_rejects_parent_traversal_fallback_without_outside_write(
+        self, tmp_path
+    ):
+        project = tmp_path / "project"
+        project.mkdir()
+        os.chdir(project)
+
+        inspection = inspect_config("../outside-wiki")
+        assert inspection.state is AgentConfigState.INVALID
+        assert inspection.reason == "config-path-unsafe"
+
+        with pytest.raises(PathValidationError, match="unsafe component"):
+            write_config("../outside-wiki", {"agent": "generic"})
+        assert not (tmp_path / "outside-wiki" / ".llm-wiki-agent").exists()
+
+    @pytest.mark.parametrize(
+        "pending",
+        [
+            {"pending_cleanup_agent": "generic"},
+            {"pending_cleanup_reference": True},
+            {
+                "pending_cleanup_agent": "generic",
+                "pending_cleanup_reference": "yes",
+            },
+            {
+                "pending_cleanup_agent": "claude",
+                "pending_cleanup_reference": True,
+            },
+        ],
+    )
+    def test_inspection_rejects_partial_invalid_or_same_agent_pending_state(
+        self, tmp_path, pending
+    ):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        (wiki / ".llm-wiki-agent").write_text(
+            json.dumps({"agent": "claude", **pending}),
+            encoding="utf-8",
+        )
+
+        inspection = inspect_config(wiki)
+
+        assert inspection.state is AgentConfigState.INVALID
+        if pending.get("pending_cleanup_agent") == "generic":
+            assert inspection.data["pending_cleanup_agent"] == "generic"
+        else:
+            assert "pending_cleanup_agent" not in inspection.data
+        if pending == {"pending_cleanup_reference": True}:
+            assert inspection.data["pending_cleanup_reference"] is True
+        else:
+            assert "pending_cleanup_reference" not in inspection.data
+
+    def test_inspection_retains_complete_cross_agent_pending_state(self, tmp_path):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        (wiki / ".llm-wiki-agent").write_text(
+            json.dumps(
+                {
+                    "agent": "claude",
+                    "pending_cleanup_agent": "generic",
+                    "pending_cleanup_reference": True,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        inspection = inspect_config(wiki)
+
+        assert inspection.state is AgentConfigState.VALID
+        assert inspection.data["pending_cleanup_agent"] == "generic"
+        assert inspection.data["pending_cleanup_reference"] is True
+
+    def test_invalid_agent_retains_individually_valid_pending_as_untrusted_evidence(
+        self, tmp_path
+    ):
+        os.chdir(tmp_path)
+        wiki = tmp_path / "docs" / "wiki"
+        wiki.mkdir(parents=True)
+        (wiki / ".llm-wiki-agent").write_text(
+            json.dumps(
+                {
+                    "agent": "future-agent",
+                    "pending_cleanup_agent": "generic",
+                    "pending_cleanup_reference": True,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        inspection = inspect_config(wiki)
+
+        assert inspection.state is AgentConfigState.INVALID
+        assert inspection.data["agent"] == "generic"
+        assert inspection.data["pending_cleanup_agent"] == "generic"
+        assert inspection.data["pending_cleanup_reference"] is True
 
 
 class TestGitIgnoreMatcher:

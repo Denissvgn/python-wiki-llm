@@ -8,15 +8,19 @@ import sys
 import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
+from enum import Enum
 from fnmatch import fnmatch
 from pathlib import Path
 
 from .services.filesystem_guard import (
     WindowsSecurityGuardError,
+    atomic_write_private_bytes,
+    ensure_guarded_directory,
     windows_current_user_sid,
     windows_path_owner_sid,
 )
 from .services.io import first_unsafe_path_component
+from .services.knowledge_evidence import formatted_json_bytes
 
 DEFAULT_WIKI_DIR = "docs/llm_wiki"
 
@@ -125,9 +129,7 @@ def validate_path(path: str, label: str = "path") -> Path:
     repository root (cwd).
     """
     if "\0" in path:
-        raise PathValidationError(
-            f"Error: {label} contains an embedded NUL character."
-        )
+        raise PathValidationError(f"Error: {label} contains an embedded NUL character.")
     resolved = (Path.cwd() / path).resolve()
     cwd = Path.cwd().resolve()
     try:
@@ -190,10 +192,7 @@ def validate_source_root(
                     }
 
                     def is_trusted_windows_owner(component: Path) -> bool:
-                        return (
-                            windows_path_owner_sid(component)
-                            in trusted_windows_sids
-                        )
+                        return windows_path_owner_sid(component) in trusted_windows_sids
 
                     trusted_owner = is_trusted_windows_owner
         else:
@@ -241,8 +240,7 @@ def validate_source_root(
                 f"'{unsafe}' not owned by the current user or root."
             )
         warnings.warn(
-            f"external source root '{normalized_candidate}' resolves to "
-            f"'{resolved}'.",
+            f"external source root '{normalized_candidate}' resolves to '{resolved}'.",
             UserWarning,
             stacklevel=2,
         )
@@ -309,6 +307,66 @@ _DEFAULT_CONFIG: dict[str, object] = {
     "reference_skill": True,
     "issue_reporting": False,
 }
+_CONFIG_EXPECTATION_UNSET = object()
+
+
+class AgentConfigState(str, Enum):
+    """Compatibility classification for the local agent configuration."""
+
+    ABSENT = "absent"
+    VALID = "valid"
+    LEGACY = "legacy"
+    INVALID = "invalid"
+
+
+@dataclass(frozen=True)
+class AgentConfigInspection:
+    """One safe configuration read with provenance for status reporting."""
+
+    state: AgentConfigState
+    reason: str
+    path: Path
+    data: dict[str, object]
+    raw_bytes: bytes | None = None
+
+
+_OPTIONAL_CONFIG_STRING_FIELDS = (
+    "source_selection",
+    "rendered_profile",
+    "render_reason",
+    "pending_cleanup_agent",
+)
+_RENDER_STATE_FIELDS = frozenset(
+    {"rendered_profile", "render_profile_version", "render_reason"}
+)
+_PENDING_CLEANUP_FIELDS = frozenset(
+    {"pending_cleanup_agent", "pending_cleanup_reference"}
+)
+_RENDER_PROFILE_VERSION = 1
+_RENDER_PROFILES = frozenset({"compact", "expanded_inline"})
+_RENDER_REASONS = frozenset(
+    {
+        "reference-current",
+        "skills-disabled",
+        "reference-absent",
+        "reference-modified",
+        "reference-incomplete",
+        "package-missing",
+        "install-error",
+    }
+)
+_OPAQUE_CONFIG_REASONS = frozenset(
+    {
+        "config-path-unsafe",
+        "config-path-not-regular",
+        "config-unreadable",
+        "invalid-config-encoding",
+        "invalid-config-json",
+        "invalid-legacy-agent-name",
+        "config-must-be-an-object-with-string-keys",
+        "multiple-agent-config-homes",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -525,42 +583,318 @@ def is_ignored_by_gitignore(
     return matcher.is_ignored(rel_path)
 
 
-def read_config(wiki_dir: "str | Path") -> dict:
-    """Read the persisted llm-wiki config as a dict.
+def inspect_config_path(config_path: "str | Path") -> AgentConfigInspection:
+    """Inspect one exact local-agent config path without hiding its state.
 
-    Handles backward compatibility: if the file contains a bare agent name
-    string (pre-v0.3 format), it is treated as an agent selection with all
-    current defaults applied.
-
-    Returns *_DEFAULT_CONFIG* values for any missing keys.
+    Known invalid fields fall back independently, unknown fields are retained,
+    and callers receive a stable state/reason instead of having to infer
+    provenance from the returned values.
     """
-    config_path = get_agent_config_path(wiki_dir)
+    config_path = Path(config_path)
+    if first_unsafe_path_component(config_path) is not None:
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "config-path-unsafe",
+            config_path,
+            dict(_DEFAULT_CONFIG),
+        )
     if not config_path.exists():
-        return dict(_DEFAULT_CONFIG)
+        return AgentConfigInspection(
+            AgentConfigState.ABSENT,
+            "config-not-present",
+            config_path,
+            dict(_DEFAULT_CONFIG),
+        )
+    if not config_path.is_file():
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "config-path-not-regular",
+            config_path,
+            dict(_DEFAULT_CONFIG),
+        )
 
-    raw = config_path.read_text(encoding="utf-8").strip()
+    try:
+        raw_bytes = config_path.read_bytes()
+        raw = raw_bytes.decode("utf-8").strip()
+    except OSError:
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "config-unreadable",
+            config_path,
+            dict(_DEFAULT_CONFIG),
+        )
+    except UnicodeError:
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "invalid-config-encoding",
+            config_path,
+            dict(_DEFAULT_CONFIG),
+        )
 
     # Backward compat: bare string = old format (just the agent name)
     if not raw.startswith("{"):
         result = dict(_DEFAULT_CONFIG)
-        result["agent"] = raw
-        return result
+        if raw in AGENT_CHOICES:
+            result["agent"] = raw
+            return AgentConfigInspection(
+                AgentConfigState.LEGACY,
+                "legacy-agent-name",
+                config_path,
+                result,
+                raw_bytes,
+            )
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "invalid-legacy-agent-name",
+            config_path,
+            result,
+            raw_bytes,
+        )
 
     try:
         data = json.loads(raw)
-    except json.JSONDecodeError:
-        # Corrupted file — treat as defaults
-        result = dict(_DEFAULT_CONFIG)
-        return result
+    except (json.JSONDecodeError, UnicodeError):
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "invalid-config-json",
+            config_path,
+            dict(_DEFAULT_CONFIG),
+            raw_bytes,
+        )
+    if not isinstance(data, dict) or any(not isinstance(key, str) for key in data):
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "config-must-be-an-object-with-string-keys",
+            config_path,
+            dict(_DEFAULT_CONFIG),
+            raw_bytes,
+        )
+
+    normalized: dict[str, object] = dict(data)
+    invalid_fields: list[str] = []
+    raw_agent = normalized.get("agent")
+    raw_agent_is_valid = isinstance(raw_agent, str) and raw_agent in AGENT_CHOICES
 
     # Fill in any missing keys from defaults
+    for key, default in _DEFAULT_CONFIG.items():
+        value = normalized.setdefault(key, default)
+        if key == "agent":
+            valid = isinstance(value, str) and value in AGENT_CHOICES
+        else:
+            valid = type(value) is bool
+        if not valid:
+            normalized[key] = default
+            invalid_fields.append(key)
+
+    for key in _OPTIONAL_CONFIG_STRING_FIELDS:
+        if key not in normalized:
+            continue
+        value = normalized[key]
+        if not isinstance(value, str) or not value:
+            normalized.pop(key)
+            invalid_fields.append(key)
+
+    if (
+        "pending_cleanup_agent" in normalized
+        and normalized["pending_cleanup_agent"] not in AGENT_CHOICES
+    ):
+        normalized.pop("pending_cleanup_agent")
+        invalid_fields.append("pending_cleanup_agent")
+    if (
+        "pending_cleanup_reference" in normalized
+        and type(normalized["pending_cleanup_reference"]) is not bool
+    ):
+        normalized.pop("pending_cleanup_reference")
+        invalid_fields.append("pending_cleanup_reference")
+    present_cleanup_fields = _PENDING_CLEANUP_FIELDS.intersection(normalized)
+    if present_cleanup_fields and present_cleanup_fields != _PENDING_CLEANUP_FIELDS:
+        invalid_fields.extend(sorted(_PENDING_CLEANUP_FIELDS - present_cleanup_fields))
+    elif (
+        present_cleanup_fields
+        and raw_agent_is_valid
+        and normalized.get("pending_cleanup_agent") == raw_agent
+    ):
+        invalid_fields.append("pending_cleanup_agent")
+        for field in _PENDING_CLEANUP_FIELDS:
+            normalized.pop(field, None)
+
+    if "render_profile_version" in normalized:
+        version = normalized["render_profile_version"]
+        if type(version) is not int or version < 1:
+            normalized.pop("render_profile_version")
+            invalid_fields.append("render_profile_version")
+
+    present_render_fields = _RENDER_STATE_FIELDS.intersection(normalized)
+    if present_render_fields and present_render_fields != _RENDER_STATE_FIELDS:
+        invalid_fields.extend(sorted(_RENDER_STATE_FIELDS - present_render_fields))
+        for field in _RENDER_STATE_FIELDS:
+            normalized.pop(field, None)
+    elif present_render_fields:
+        invalid_render_fields: list[str] = []
+        if normalized["rendered_profile"] not in _RENDER_PROFILES:
+            invalid_render_fields.append("rendered_profile")
+        if normalized["render_profile_version"] != _RENDER_PROFILE_VERSION:
+            invalid_render_fields.append("render_profile_version")
+        if normalized["render_reason"] not in _RENDER_REASONS:
+            invalid_render_fields.append("render_reason")
+        if invalid_render_fields:
+            invalid_fields.extend(invalid_render_fields)
+            for field in _RENDER_STATE_FIELDS:
+                normalized.pop(field, None)
+
+    state = AgentConfigState.INVALID if invalid_fields else AgentConfigState.VALID
+    reason = (
+        f"invalid-config-field:{sorted(set(invalid_fields))[0]}"
+        if invalid_fields
+        else "config-valid"
+    )
+    return AgentConfigInspection(state, reason, config_path, normalized, raw_bytes)
+
+
+def inspect_config(wiki_dir: "str | Path") -> AgentConfigInspection:
+    """Inspect the canonical config, adopting one safe legacy home if needed."""
+
+    canonical = get_agent_config_path(wiki_dir)
+    candidates: list[Path] = []
+    seen: set[str] = set()
+    for path in (
+        canonical,
+        Path(".git/.llm-wiki-agent"),
+        Path(wiki_dir) / ".llm-wiki-agent",
+    ):
+        key = os.path.abspath(os.fspath(path))
+        if key in seen:
+            continue
+        seen.add(key)
+        if path.exists() or path.is_symlink():
+            candidates.append(path)
+    if len(candidates) > 1:
+        return AgentConfigInspection(
+            AgentConfigState.INVALID,
+            "multiple-agent-config-homes",
+            canonical,
+            dict(_DEFAULT_CONFIG),
+        )
+    if candidates:
+        return inspect_config_path(candidates[0])
+    return inspect_config_path(canonical)
+
+
+def config_requires_manual_recovery(inspection: AgentConfigInspection) -> bool:
+    """Return whether config bytes must be inspected before lifecycle mutation."""
+
+    if inspection.state is not AgentConfigState.INVALID:
+        return False
+    if inspection.reason in _OPAQUE_CONFIG_REASONS:
+        return True
+    return inspection.reason.startswith(
+        "invalid-config-field:pending_cleanup"
+    ) and not isinstance(inspection.data.get("pending_cleanup_agent"), str)
+
+
+def read_config(wiki_dir: "str | Path") -> dict:
+    """Return the backward-compatible config mapping used by older callers.
+
+    Lifecycle commands should prefer :func:`inspect_config`, whose values are
+    type-checked.  This adapter intentionally preserves unknown future agent
+    names and known-field values just as the historical reader did, while
+    retaining the new unsafe-path and malformed-file protections.
+    """
+
+    config_path = get_agent_config_path(wiki_dir)
+    if first_unsafe_path_component(config_path) is not None or not config_path.exists():
+        return dict(_DEFAULT_CONFIG)
+    try:
+        raw = config_path.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeError):
+        return dict(_DEFAULT_CONFIG)
+    if not raw.startswith("{"):
+        result = dict(_DEFAULT_CONFIG)
+        result["agent"] = raw
+        return result
+    try:
+        data = json.loads(raw)
+    except (json.JSONDecodeError, UnicodeError):
+        return dict(_DEFAULT_CONFIG)
+    if not isinstance(data, dict):
+        return dict(_DEFAULT_CONFIG)
     for key, default in _DEFAULT_CONFIG.items():
         data.setdefault(key, default)
     return data
 
 
-def write_config(wiki_dir: "str | Path", data: dict) -> None:
-    """Persist the llm-wiki config dict to the agent config file."""
+def require_safe_config_path(wiki_dir: "str | Path") -> Path:
+    """Return an absent or regular config path with no redirected component."""
+
     config_path = get_agent_config_path(wiki_dir)
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    unsafe = first_unsafe_path_component(config_path)
+    if unsafe is not None:
+        raise PathValidationError(
+            f"Error: agent config path contains unsafe component '{unsafe}'."
+        )
+    if config_path.exists() and not config_path.is_file():
+        raise PathValidationError(
+            "Error: agent config path must be absent or a regular file; "
+            f"move aside '{config_path}' before retrying."
+        )
+    return config_path
+
+
+def write_config(
+    wiki_dir: "str | Path",
+    data: dict,
+    *,
+    expected_existing: bytes | None | object = _CONFIG_EXPECTATION_UNSET,
+) -> None:
+    """Atomically persist config, optionally bound to an inspected snapshot."""
+
+    config_path = require_safe_config_path(wiki_dir)
+    absolute = (
+        config_path if config_path.is_absolute() else Path.cwd().resolve() / config_path
+    )
+    ensure_guarded_directory(absolute.parent)
+    payload = formatted_json_bytes(data)
+    if expected_existing is _CONFIG_EXPECTATION_UNSET:
+        atomic_write_private_bytes(absolute, payload)
+    else:
+        atomic_write_private_bytes(
+            absolute,
+            payload,
+            expected_existing=expected_existing,
+        )
+
+
+def require_committed_config(wiki_dir: "str | Path", data: dict) -> None:
+    """Require one canonical config home containing exactly the committed bytes."""
+
+    expected = formatted_json_bytes(data)
+    inspection = inspect_config(wiki_dir)
+    canonical = get_agent_config_path(wiki_dir)
+    if (
+        inspection.state is not AgentConfigState.VALID
+        or inspection.path != canonical
+        or inspection.raw_bytes != expected
+    ):
+        raise PathValidationError(
+            "Error: local agent config changed or another config home appeared "
+            "after commit; inspect both config homes before continuing."
+        )
+
+
+def require_config_inspection_unchanged(
+    wiki_dir: "str | Path",
+    expected: AgentConfigInspection,
+) -> None:
+    """Require the exact config/home snapshot inspected before mutation."""
+
+    current = inspect_config(wiki_dir)
+    if (
+        current.state is not expected.state
+        or current.reason != expected.reason
+        or current.path != expected.path
+        or current.raw_bytes != expected.raw_bytes
+    ):
+        raise PathValidationError(
+            "Error: local agent config changed after inspection; rerun the command "
+            "after reviewing current intent and pending cleanup state."
+        )

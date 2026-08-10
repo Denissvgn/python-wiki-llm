@@ -7,16 +7,80 @@ block that is injected into agent schema files (CLAUDE.md, .cursorrules, etc.).
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 
-from .io import read_md, write_md
+from .io import first_unsafe_path_component, read_md, write_md
 from .paths import shell_quote
 
 # Marker boundaries used to wrap the entire generated block
 CONSTRAINT_START = "# --- LLM Wiki Maintainer Constraints ---"
 CONSTRAINT_END = "# --- End LLM Wiki Constraints ---"
+SCHEMA_BLOCK_VERSION = 1
+SCHEMA_PROFILE_MARKER_PREFIX = "<!-- llm-wiki-schema:"
 SKILL_START_PREFIX = "# --- LLM Wiki Skill:"
 SKILL_END_PREFIX = "# --- End LLM Wiki Skill:"
+
+
+class SchemaRenderProfile(str, Enum):
+    """Supported managed-schema rendering profiles."""
+
+    COMPACT = "compact"
+    EXPANDED_INLINE = "expanded_inline"
+
+
+class ManagedSchemaBlockState(str, Enum):
+    """Machine-readable classification of one managed schema block."""
+
+    ABSENT = "absent"
+    LEGACY_EXPANDED_INLINE = "legacy-expanded-inline"
+    PROFILED = "profiled"
+    UNSUPPORTED_VERSION = "unsupported-version"
+    UNSUPPORTED_PROFILE = "unsupported-profile"
+    MALFORMED = "malformed"
+
+
+class ManagedSchemaPathError(ValueError):
+    """Raised when a managed schema path cannot be accessed safely."""
+
+
+class ManagedSchemaBlockError(ValueError):
+    """Raised when a malformed managed block cannot be replaced safely."""
+
+
+@dataclass(frozen=True)
+class ManagedSchemaBlock:
+    """Parsed metadata for a managed schema block without health inference."""
+
+    state: ManagedSchemaBlockState
+    profile: SchemaRenderProfile | None = None
+    version: int | None = None
+    raw_profile: str | None = None
+
+
+_SCHEMA_PROFILE_MARKER_SENTINEL = "<!-- llm-wiki-schema"
+_SCHEMA_PROFILE_MARKER_RE = re.compile(
+    r"^<!-- llm-wiki-schema: version=(?P<version>[1-9][0-9]*) "
+    r"profile=(?P<profile>[^\s>]+) -->$"
+)
+
+
+def require_safe_schema_path(path: str | Path) -> Path:
+    """Return a schema path only when no symlink/reparse/traversal can redirect it."""
+
+    candidate = Path(path)
+    unsafe = first_unsafe_path_component(candidate)
+    if unsafe is not None:
+        raise ManagedSchemaPathError(
+            f"managed schema path contains unsafe component: {unsafe}"
+        )
+    if candidate.exists() and not candidate.is_file():
+        raise ManagedSchemaPathError(
+            f"managed schema path must be absent or a regular file: {candidate}"
+        )
+    return candidate
 
 # Map from agent name to the schema file it uses
 SCHEMA_FILENAMES: dict[str, str] = {
@@ -499,17 +563,28 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
 """
 
 
+def _schema_profile_marker(render_profile: SchemaRenderProfile) -> str:
+    if not isinstance(render_profile, SchemaRenderProfile):
+        raise TypeError("render_profile must be a SchemaRenderProfile")
+    return (
+        f"{SCHEMA_PROFILE_MARKER_PREFIX} version={SCHEMA_BLOCK_VERSION} "
+        f"profile={render_profile.value} -->"
+    )
+
+
 def build_schema_content(
     agent: str,
     wiki_dir: str,
     *,
+    render_profile: SchemaRenderProfile,
     quality_hints: bool = True,
     issue_reporting: bool = False,
     source_selection: str | Path | None = None,
 ) -> str:
-    """Build the full constraint block for the given agent and wiki directory."""
+    """Build a deterministic constraint block for the selected profile."""
     from .skills import skills_install_dir
 
+    profile_marker = _schema_profile_marker(render_profile)
     instructions = _wiki_instructions(
         wiki_dir,
         skills_install_dir(agent).as_posix(),
@@ -528,7 +603,7 @@ def build_schema_content(
     hints = _QUALITY_HINTS if quality_hints else ""
     extra = _sync_instructions(source_selection, skills_install_dir(agent).as_posix())
     body = preamble + instructions + hints + extra
-    return f"{CONSTRAINT_START}\n{body.strip()}\n{CONSTRAINT_END}\n"
+    return f"{CONSTRAINT_START}\n{profile_marker}\n{body.strip()}\n{CONSTRAINT_END}\n"
 
 
 _SOURCE_READING_RECIPE_COMMANDS = frozenset(
@@ -583,6 +658,116 @@ def pin_source_selection_command_recipes(
     )
 
 
+def classify_managed_schema_block(content: str) -> ManagedSchemaBlock:
+    """Classify managed-block metadata without inspecting generated prose.
+
+    The unchanged outer markers remain the authority for block ownership. A
+    single well-formed block without an inner metadata marker is the legacy
+    expanded-inline form. Duplicate, unbalanced, or misplaced markers fail
+    closed as malformed.
+    """
+    normalized = content.replace("\r\n", "\n").replace("\r", "\n")
+    starts = [
+        match.start() for match in re.finditer(re.escape(CONSTRAINT_START), normalized)
+    ]
+    ends = [
+        match.start() for match in re.finditer(re.escape(CONSTRAINT_END), normalized)
+    ]
+    if not starts and not ends:
+        return ManagedSchemaBlock(ManagedSchemaBlockState.ABSENT)
+    if len(starts) != 1 or len(ends) != 1:
+        return ManagedSchemaBlock(ManagedSchemaBlockState.MALFORMED)
+
+    start = starts[0]
+    end = ends[0]
+    start_tail = start + len(CONSTRAINT_START)
+    end_tail = end + len(CONSTRAINT_END)
+    if (
+        end <= start_tail
+        or (start > 0 and normalized[start - 1] != "\n")
+        or normalized[start_tail : start_tail + 1] != "\n"
+        or normalized[end - 1 : end] != "\n"
+        or normalized[end_tail : end_tail + 1] not in {"", "\n"}
+    ):
+        return ManagedSchemaBlock(ManagedSchemaBlockState.MALFORMED)
+
+    body = normalized[start_tail + 1 : end - 1]
+    if _SCHEMA_PROFILE_MARKER_SENTINEL not in body:
+        return ManagedSchemaBlock(ManagedSchemaBlockState.LEGACY_EXPANDED_INLINE)
+
+    lines = body.splitlines()
+    if (
+        not lines
+        or not lines[0].startswith(_SCHEMA_PROFILE_MARKER_SENTINEL)
+        or sum(_SCHEMA_PROFILE_MARKER_SENTINEL in line for line in lines) != 1
+    ):
+        return ManagedSchemaBlock(ManagedSchemaBlockState.MALFORMED)
+
+    marker = _SCHEMA_PROFILE_MARKER_RE.fullmatch(lines[0])
+    if marker is None:
+        return ManagedSchemaBlock(ManagedSchemaBlockState.MALFORMED)
+
+    version = int(marker.group("version"))
+    raw_profile = marker.group("profile")
+    if version != SCHEMA_BLOCK_VERSION:
+        return ManagedSchemaBlock(
+            ManagedSchemaBlockState.UNSUPPORTED_VERSION,
+            version=version,
+            raw_profile=raw_profile,
+        )
+    try:
+        profile = SchemaRenderProfile(raw_profile)
+    except ValueError:
+        return ManagedSchemaBlock(
+            ManagedSchemaBlockState.UNSUPPORTED_PROFILE,
+            version=version,
+            raw_profile=raw_profile,
+        )
+    return ManagedSchemaBlock(
+        ManagedSchemaBlockState.PROFILED,
+        profile=profile,
+        version=version,
+        raw_profile=raw_profile,
+    )
+
+
+def require_managed_schema_profile(
+    content: str,
+    expected_profile: SchemaRenderProfile,
+) -> ManagedSchemaBlock:
+    """Require a staged document to contain exactly the requested managed block."""
+
+    if not isinstance(expected_profile, SchemaRenderProfile):
+        raise TypeError("expected_profile must be a SchemaRenderProfile")
+    block = classify_managed_schema_block(content)
+    if (
+        block.state is not ManagedSchemaBlockState.PROFILED
+        or block.profile is not expected_profile
+        or block.version != SCHEMA_BLOCK_VERSION
+    ):
+        raise ManagedSchemaBlockError(
+            "managed schema replacement did not produce one supported requested block"
+        )
+    return block
+
+
+def require_replaceable_managed_schema(content: str) -> ManagedSchemaBlock:
+    """Require existing managed markers to be absent or unambiguous.
+
+    Unsupported and legacy blocks remain replaceable because they still have one
+    complete outer marker pair. Duplicate, unbalanced, or misplaced markers are
+    never rewritten: doing so could consume user-owned text between ambiguous
+    boundaries.
+    """
+
+    block = classify_managed_schema_block(content)
+    if block.state is ManagedSchemaBlockState.MALFORMED:
+        raise ManagedSchemaBlockError(
+            "managed schema contains malformed, duplicate, or unbalanced markers"
+        )
+    return block
+
+
 def strip_wiki_block(content: str) -> str:
     """Remove the LLM Wiki constraint block from file content.
 
@@ -606,32 +791,27 @@ def replace_schema_block(schema_path: Path, new_content: str) -> None:
 
     If the file has no existing block, the new content is appended.
     """
-    if not schema_path.exists():
-        schema_path.parent.mkdir(parents=True, exist_ok=True)
-        write_md(schema_path, new_content)
-        return
+    safe_path = require_safe_schema_path(schema_path)
+    existing = read_md(safe_path) if safe_path.exists() else ""
+    write_md(safe_path, replace_schema_block_content(existing, new_content))
 
-    existing = read_md(schema_path)
-    # Normalize newlines for consistent matching
+
+def replace_schema_block_content(existing: str, new_content: str) -> str:
+    """Return content with its managed constraint block replaced or appended."""
     existing = existing.replace("\r\n", "\n").replace("\r", "\n")
     if CONSTRAINT_START not in existing:
-        # No existing block — append
         sep = (
             "\n\n"
             if existing and not existing.endswith("\n\n")
             else ("\n" if existing and not existing.endswith("\n") else "")
         )
-        write_md(schema_path, existing + sep + new_content)
-        return
+        return existing + sep + new_content
 
-    # Replace existing block (consume any trailing whitespace after CONSTRAINT_END
-    # so repeated runs don't accumulate blank lines)
     pattern = re.compile(
         re.escape(CONSTRAINT_START) + r".*?" + re.escape(CONSTRAINT_END) + r"\n*",
         re.DOTALL,
     )
-    updated = pattern.sub(lambda _m: new_content, existing)
-    write_md(schema_path, updated)
+    return pattern.sub(lambda _m: new_content, existing)
 
 
 def skill_start_marker(plugin_id: str, skill_id: str) -> str:
@@ -684,47 +864,100 @@ def strip_skill_blocks(
 def replace_skill_block(
     schema_path: Path, plugin_id: str, skill_id: str, skill_content: str
 ) -> None:
-    new_content = build_skill_block(plugin_id, skill_id, skill_content)
-    if not schema_path.exists():
-        schema_path.parent.mkdir(parents=True, exist_ok=True)
-        write_md(schema_path, new_content)
-        return
-
-    existing = read_md(schema_path).replace("\r\n", "\n").replace("\r", "\n")
-    existing = strip_skill_blocks(existing, plugin_id=plugin_id, skill_id=skill_id)
-    sep = (
-        "\n\n"
-        if existing and not existing.endswith("\n\n")
-        else ("\n" if existing and not existing.endswith("\n") else "")
+    safe_path = require_safe_schema_path(schema_path)
+    existing = read_md(safe_path) if safe_path.exists() else ""
+    write_md(
+        safe_path,
+        replace_skill_block_content(existing, plugin_id, skill_id, skill_content),
     )
-    write_md(schema_path, existing + sep + new_content)
+
+
+def replace_skill_block_content(
+    existing: str,
+    plugin_id: str,
+    skill_id: str,
+    skill_content: str,
+) -> str:
+    """Return content with one plugin skill block refreshed in memory."""
+    new_content = build_skill_block(plugin_id, skill_id, skill_content)
+    existing = existing.replace("\r\n", "\n").replace("\r", "\n")
+    existing = strip_skill_blocks(existing, plugin_id=plugin_id, skill_id=skill_id)
+    if not existing:
+        return new_content
+    return existing.rstrip("\n") + "\n\n" + new_content
+
+
+def refresh_skill_blocks_content(
+    existing: str,
+    skill_blocks: Iterable[tuple[str, str, str]],
+) -> tuple[str, list[str]]:
+    """Refresh plugin skill blocks in memory and return their identifiers."""
+    blocks = tuple(skill_blocks)
+    updated = existing.replace("\r\n", "\n").replace("\r", "\n")
+    for plugin_id, skill_id, _skill_content in blocks:
+        updated = strip_skill_blocks(
+            updated,
+            plugin_id=plugin_id,
+            skill_id=skill_id,
+        )
+
+    refreshed: list[str] = []
+    for plugin_id, skill_id, skill_content in blocks:
+        new_content = build_skill_block(plugin_id, skill_id, skill_content)
+        updated = (
+            updated.rstrip("\n") + "\n\n" + new_content if updated else new_content
+        )
+        refreshed.append(f"{plugin_id}/{skill_id}")
+    return updated, refreshed
+
+
+def build_upgraded_schema_content(
+    existing: str,
+    managed_content: str,
+    skill_blocks: Iterable[tuple[str, str, str]],
+) -> tuple[str, list[str]]:
+    """Compose a managed-block upgrade and plugin refresh without writing."""
+    updated = replace_schema_block_content(existing, managed_content)
+    return refresh_skill_blocks_content(updated, skill_blocks)
+
+
+def installed_skill_block_contents() -> tuple[tuple[str, str, str], ...]:
+    """Load configured plugin skill blocks for in-memory schema composition."""
+    from .plugins import iter_components, read_component_text
+
+    return tuple(
+        (
+            component["plugin_id"],
+            component["id"],
+            read_component_text(component),
+        )
+        for component in iter_components("skill")
+    )
 
 
 def refresh_skill_blocks(agent: str, wiki_dir: str) -> list[str]:
     """Refresh all installed skill blocks in the active agent schema file."""
-    from .plugins import iter_components, read_component_text
-
     filename = SCHEMA_FILENAMES.get(agent)
     if not filename:
         return []
 
-    schema_path = Path(filename)
-    refreshed: list[str] = []
-    for component in iter_components("skill"):
-        plugin_id = component["plugin_id"]
-        skill_id = component["id"]
-        replace_skill_block(
-            schema_path, plugin_id, skill_id, read_component_text(component)
-        )
-        refreshed.append(f"{plugin_id}/{skill_id}")
+    schema_path = require_safe_schema_path(filename)
+    blocks = installed_skill_block_contents()
+    if not blocks:
+        return []
+    existing = read_md(schema_path) if schema_path.exists() else ""
+    updated, refreshed = refresh_skill_blocks_content(existing, blocks)
+    write_md(schema_path, updated)
     return refreshed
 
 
 def strip_plugin_skill_blocks(plugin_id: str) -> list[str]:
     """Strip one plugin's skill blocks from every known schema file."""
     touched: list[str] = []
-    for filename in ALL_SCHEMA_FILES:
-        path = Path(filename)
+    safe_paths = [
+        (filename, require_safe_schema_path(filename)) for filename in ALL_SCHEMA_FILES
+    ]
+    for filename, path in safe_paths:
         if not path.exists():
             continue
         existing = read_md(path)

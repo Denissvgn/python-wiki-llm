@@ -38,9 +38,9 @@ def _reference(skill_id: str) -> str:
 
 
 def _managed_topic(topic_name: str) -> str:
-    return (
-        SKILLS_ROOT / "wiki-reference" / "references" / topic_name
-    ).read_text(encoding="utf-8")
+    return (SKILLS_ROOT / "wiki-reference" / "references" / topic_name).read_text(
+        encoding="utf-8"
+    )
 
 
 def _table_row(text: str, selector: str) -> str:
@@ -159,11 +159,14 @@ def test_normative_native_preflight_covers_response_fixture(
     assert required_text in row
 
 
-def test_normative_native_preflight_defines_all_freshness_states_and_authority() -> None:
+def test_normative_native_preflight_defines_all_freshness_states_and_authority() -> (
+    None
+):
     topic = _managed_topic("knowledge-consumption.md")
     section = topic[
-        topic.index("## Availability and fallback decision table") :
-        topic.index("## Strict validation interpretation")
+        topic.index("## Availability and fallback decision table") : topic.index(
+            "## Strict validation interpretation"
+        )
     ]
     normalized = " ".join(topic.split())
 
@@ -233,8 +236,7 @@ def test_native_consuming_skill_routes_to_managed_knowledge_topic(
     manifest = _manifest(skill_id)
 
     assert (
-        ".claude/skills/wiki-reference/references/knowledge-consumption.md"
-        in manifest
+        ".claude/skills/wiki-reference/references/knowledge-consumption.md" in manifest
     )
     assert (
         ".llm-wiki/skills/wiki-reference/references/knowledge-consumption.md"
@@ -340,8 +342,9 @@ def test_doc_review_splits_mutation_contract_before_any_sync_or_edit() -> None:
 
     assert mode_split < dry_run < applied_sync < final_sync
     external = manifest[
-        manifest.index("- **External `external_agent_docs`:**") :
-        manifest.index("2. **Collect review inputs.**")
+        manifest.index("- **External `external_agent_docs`:**") : manifest.index(
+            "2. **Collect review inputs.**"
+        )
     ]
     assert "llm-wiki sync" not in external
     assert "only the packet-named review result" in external
@@ -390,12 +393,15 @@ def test_doc_review_maps_native_fact_classes_without_conflating_authority() -> N
     )
 
 
-def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance() -> None:
+def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance() -> (
+    None
+):
     manifest = _manifest("wiki-bootstrap")
     reference = _reference("wiki-bootstrap")
     section = manifest[
-        manifest.index("## Optional governance adoption is a separate decision") :
-        manifest.index("## Steps")
+        manifest.index(
+            "## Optional governance adoption is a separate decision"
+        ) : manifest.index("## Steps")
     ]
     normalized = " ".join(section.split())
 
@@ -414,8 +420,9 @@ def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance
     assert "restore that exact ledger from version control or backup" in normalized
 
     ownership = reference[
-        reference.index("## Native artifact ownership and recovery") :
-        reference.index("## Validation expectations")
+        reference.index("## Native artifact ownership and recovery") : reference.index(
+            "## Validation expectations"
+        )
     ]
     for artifact in (
         ".llm-wiki-manifest.json",
@@ -434,8 +441,9 @@ def test_sync_documents_governed_move_preview_confirmation_mutation_order() -> N
     manifest = _manifest("wiki-sync")
     reference = _reference("wiki-sync")
     section = manifest[
-        manifest.index("## Governed rename preflight and owner handoff") :
-        manifest.index("## Steps")
+        manifest.index(
+            "## Governed rename preflight and owner handoff"
+        ) : manifest.index("## Steps")
     ]
 
     filesystem_rename = section.index("filesystem/source rename")
@@ -499,10 +507,15 @@ def test_doc_review_hands_changed_native_review_scope_to_a_human() -> None:
 def test_doc_review_limits_infrastructure_semantics_to_notes() -> None:
     manifest = " ".join(_manifest("doc-review").split())
     reference = " ".join(_reference("doc-review").split())
-    shared = schema.build_schema_content("generic", "docs/llm_wiki")
+    shared = schema.build_schema_content(
+        "generic",
+        "docs/llm_wiki",
+        render_profile=schema.SchemaRenderProfile.EXPANDED_INLINE,
+    )
     edit_targets = shared[
-        shared.index("- Keep semantic edits surgical:") :
-        shared.index("- After the last canonical Markdown edit")
+        shared.index("- Keep semantic edits surgical:") : shared.index(
+            "- After the last canonical Markdown edit"
+        )
     ]
 
     assert "incremental source observations" in manifest
@@ -511,16 +524,22 @@ def test_doc_review_limits_infrastructure_semantics_to_notes() -> None:
     assert "Infrastructure `## Notes` is the sole semantic section" in reference
     assert "unsupported custom headings are dropped" in reference
     assert "Infrastructure `## Notes` is the only supported semantic" in edit_targets
-    assert "separate redacted infrastructure-review report" in " ".join(
-        shared.split()
+    assert "separate redacted infrastructure-review report" in " ".join(shared.split())
+
+
+def test_shared_agent_instructions_include_native_preflight_and_final_reanchor() -> (
+    None
+):
+    content = schema.build_schema_content(
+        "generic",
+        "docs/llm_wiki",
+        render_profile=schema.SchemaRenderProfile.EXPANDED_INLINE,
     )
 
-
-def test_shared_agent_instructions_include_native_preflight_and_final_reanchor() -> None:
-    content = schema.build_schema_content("generic", "docs/llm_wiki")
-
     assert "## Native knowledge preflight" in content
-    assert "ready` with live `current` means only unchanged since observation" in content
+    assert (
+        "ready` with live `current` means only unchanged since observation" in content
+    )
     assert "ordinary exporter views" in content
     assert "knowledge init` is opt-in governance adoption" in content
     assert "trusted, unsandboxed project-local code" in content
@@ -564,9 +583,7 @@ def test_governed_semantic_edit_reanchors_and_preserves_valid_review(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     (tmp_path / "app.py").write_text(
-        "class User:\n"
-        '    """A documented user."""\n'
-        "    pass\n",
+        'class User:\n    """A documented user."""\n    pass\n',
         encoding="utf-8",
     )
     monkeypatch.chdir(tmp_path)
@@ -697,9 +714,7 @@ def test_governed_semantic_edit_reanchors_and_preserves_valid_review(
         encoding="utf-8",
     )
     pre_expiry = lint_cmd.build_report(wiki, ".", strict=True)
-    assert any(
-        issue.category == "knowledge_snapshot" for issue in pre_expiry.issues
-    )
+    assert any(issue.category == "knowledge_snapshot" for issue in pre_expiry.issues)
 
     sync_cmd.run(
         types.SimpleNamespace(
@@ -722,9 +737,7 @@ def test_governed_semantic_edit_reanchors_and_preserves_valid_review(
 
     expired_lint = lint_cmd.build_report(wiki, ".", strict=True)
     expired_reviews = [
-        issue
-        for issue in expired_lint.issues
-        if issue.category == "knowledge_review"
+        issue for issue in expired_lint.issues if issue.category == "knowledge_review"
     ]
     assert expired_reviews
     assert "[reason=scope-changed]" in expired_reviews[0].message

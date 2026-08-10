@@ -1640,6 +1640,18 @@ def _add_upgrade_command(subparsers):
         help="Switch to a different agent (default: keep current)",
     )
     upgrade_parser.add_argument(
+        "--cleanup-source-agent",
+        choices=AGENT_CHOICES,
+        default=None,
+        help=(
+            "Explicitly authorize cleanup of one source agent's managed schema "
+            "block after the target agent is committed; when managed references "
+            "are enabled and the target verifies current, also remove the source's "
+            "exact current reference (opt-out, modified, and incomplete trees are "
+            "preserved)"
+        ),
+    )
+    upgrade_parser.add_argument(
         "--force",
         action="store_true",
         help="Replace an existing unrelated post-commit hook",

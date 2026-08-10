@@ -75,14 +75,14 @@ def test_frozen_contract_matches_its_canonical_fixture() -> None:
     assert b"\r" not in CONTRACT_FIXTURE.read_bytes()
 
 
-def test_knowledge_v2_is_active_while_render_and_lifecycle_stay_reserved() -> None:
+def test_knowledge_render_profiles_and_lifecycle_are_active() -> None:
     contract = context_knowledge_contract()
 
     assert contract["schema_version"] == CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION
     assert contract["runtime_state"] == {
         "knowledge_mode": "active",
-        "render_profiles": "reserved-not-active",
-        "lifecycle_behavior": "reserved-not-active",
+        "render_profiles": "active",
+        "lifecycle_behavior": "active",
         "active_context_protocols": [
             CONTEXT_PROTOCOL_VERSION,
             CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
@@ -124,11 +124,10 @@ def test_knowledge_v2_is_active_while_render_and_lifecycle_stay_reserved() -> No
             .default
             is None
         )
-    assert "profile" not in inspect.signature(schema.build_schema_content).parameters
-    assert (
+    render_profile = inspect.signature(schema.build_schema_content).parameters[
         "render_profile"
-        not in inspect.signature(schema.build_schema_content).parameters
-    )
+    ]
+    assert render_profile.default is inspect.Parameter.empty
 
 
 def test_reserved_names_and_request_normalization_are_identical() -> None:
@@ -446,7 +445,7 @@ def test_governance_missing_is_an_external_restore_only_action() -> None:
     assert " sync " not in f" {override['recovery_command']} "
 
 
-def test_reference_lifecycle_matrix_is_complete_and_reserved() -> None:
+def test_reference_lifecycle_matrix_is_complete_and_active() -> None:
     contract = context_knowledge_contract()
     rows = _by_state(contract["lifecycle_matrix"])
 
@@ -462,18 +461,39 @@ def test_reference_lifecycle_matrix_is_complete_and_reserved() -> None:
         "interrupted-upgrade",
     }
     assert rows["current-reference"]["rendered_profile"] == "compact"
-    for state in set(rows) - {"current-reference"}:
+    for state in set(rows) - {
+        "current-reference",
+        "agent-switch",
+        "interrupted-upgrade",
+    }:
         assert rows[state]["rendered_profile"] != "compact"
+    assert rows["agent-switch"]["rendered_profile"] == (
+        "target-reference-state-dependent"
+    )
+    assert rows["interrupted-upgrade"]["rendered_profile"] == (
+        "last-committed-safe-profile"
+    )
+    assert contract["lifecycle_commands"]["upgrade"]["interruption"] == (
+        "last-committed-safe-profile-never-compact-broken"
+    )
+    assert rows["plugin-blocks"]["mutation_permission"] == (
+        "registered-plugin-owned-blocks-may-refresh;"
+        "unregistered-user-or-source-only-blocks-preserved-exactly"
+    )
     assert rows["missing-schema"]["rendered_profile"] == "not-rendered"
     assert {row["read_only_knowledge"] for row in rows.values()} == {"independent"}
     assert {row["fallback_evidence"][0] for row in rows.values()} == {
         "qualified-knowledge-if-ready"
     }
     for command in contract["lifecycle_commands"].values():
-        assert command["implementation_state"] == "reserved-not-active"
-    assert contract["render_profiles"]["implementation_state"] == (
-        "reserved-not-active"
-    )
+        assert command["implementation_state"] == "active"
+    assert contract["render_profiles"] == {
+        "implementation_state": "active",
+        "compact": "verified-current-managed-reference-only",
+        "expanded_inline": "safe-inline-procedure-without-reference-dependency",
+        "not_rendered": "schema-file-absent",
+        "current_runtime": "explicit-profile-marker",
+    }
 
 
 EXPECTED_EVIDENCE_WIRE = {

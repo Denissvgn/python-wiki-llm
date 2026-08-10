@@ -1911,6 +1911,27 @@ deleted. Existing installed workflow-skill copies remain untouched; review
 local changes before deliberately refreshing `wiki-sync`, `wiki-bootstrap`, or
 `onboarding-guide` with repeated `--skill` options and `--force`.
 
+`init` and `upgrade` verify that managed reference tree before choosing the
+schema profile. A verified current tree permits the `compact` profile;
+`--no-skills`, an unavailable package, an installation error, or a tree that
+is incomplete or preserved with local changes selects the safe
+`expanded_inline` profile. The versioned profile marker lives inside the
+existing managed-block boundaries, so older installations can still replace
+or remove the block. During an agent switch, the destination schema is made
+usable before an old managed schema is removed. When managed references are
+enabled, the destination reference must also verify current before an exact
+unmodified source reference is removed. Opt-out, modified, and incomplete
+reference trees remain preserved. User prose and unregistered or source-only
+plugin blocks are preserved; blocks owned by installed plugins refresh
+independently.
+If an interrupted switch leaves two managed agent schemas, `status` reports
+the ambiguity instead of choosing one. Its bounded recovery may use
+`upgrade --cleanup-source-agent <source>` only after you explicitly select the
+target; that option removes the named source's managed schema block and exact
+current managed-reference tree only when managed references are enabled and the
+target reference verifies current. Opt-out, modified, and incomplete trees are
+preserved.
+
 ### `metrics`
 
 Show local quality and automation metrics.
@@ -2005,12 +2026,23 @@ llm-wiki uninstall --remove-wiki
 
 `status` reports knowledge availability from the committed wiki snapshot. It
 does not run source extraction or live freshness evaluation; a ready snapshot
-therefore reports freshness as not evaluated rather than current.
+therefore reports freshness as not evaluated rather than current. It also
+classifies the live managed lifecycle, including `compact/current`,
+`expanded/skills-disabled`, `expanded/reference-unavailable`,
+`legacy-expanded`, and `compact/broken`. The schema marker and exact live
+reference tree determine health; persisted profile fields explain the last
+successful render but cannot make broken files healthy. Recovery guidance is
+scoped to the configured agent and keeps read-only knowledge available
+independently.
 
 `uninstall` removes project integration artifacts, including an unmodified
 workflow created by `install-ci`. A locally modified or unmanaged workflow is
-preserved. The command does not uninstall the CLI itself; remove the Python
-package separately with `pip uninstall agent-wiki-cli`.
+preserved. Exact current managed-reference trees are removable; locally
+modified, incomplete, extra-bearing, or unverifiable trees are retained.
+Managed schema cleanup completes before reference removal, and both legacy and
+profiled blocks use the same ownership boundaries. The command does not
+uninstall the CLI itself; remove the Python package separately with
+`pip uninstall agent-wiki-cli`.
 
 ## Security Model
 
