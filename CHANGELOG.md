@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A one-hop managed `wiki-reference` topic tree for maintenance, canonical
+  surfaces, repository handoff, qualified knowledge use, context and query
+  selection, governance, extraction, publishing, and resource-aware execution.
+  Legacy anchors remain available through a compact compatibility index.
 - Exact, fork-safe extractor-helper cache reuse in the reusable full-integrity
   action. The cache identity binds the selected helper plan, runner platform,
   locked toolchains, helper sources and dependency locks, helper-cache contract,
@@ -26,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Generated and bundled skill routes now open the exact managed reference topic
+  they need. Reference installation and upgrade validate the complete nested
+  tree, repair managed files deliberately, and fail safely around unexpected or
+  linked filesystem entries.
 - `ci-check --format json` now emits the versioned
   `llm-wiki-ci-check/v1` envelope. Its nested `llm-wiki-doctor/v1` health
   projection is composed from the same lint evaluation, so the full-integrity

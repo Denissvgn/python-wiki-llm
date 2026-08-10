@@ -332,7 +332,15 @@ def run(args):
         except SkillsError as exc:
             print(f"  Warning: could not refresh {REFERENCE_SKILL_ID} skill: {exc}")
         else:
-            print(f"  Refreshed {REFERENCE_SKILL_ID} skill in {report.dest_dir}/")
+            if report.ok:
+                print(f"  Refreshed {REFERENCE_SKILL_ID} skill in {report.dest_dir}/")
+            else:
+                print(
+                    f"  Kept existing {REFERENCE_SKILL_ID} skill tree in "
+                    f"{report.dest_dir}/ (not an exact bundled copy; expected "
+                    "files remain missing/modified or preserved extra/conflicting "
+                    "entries require inspection)"
+                )
     else:
         print(f"  Skipped {REFERENCE_SKILL_ID} skill refresh (opted out)")
 

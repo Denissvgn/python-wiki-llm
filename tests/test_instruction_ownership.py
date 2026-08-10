@@ -372,13 +372,25 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
         "Native knowledge preflight",
         "Deep reference",
     } <= retained_routes
-    assert len(deep_reference.routes) == 1
-    assert not route_exists(
-        raw_schema_source,
-        deep_reference.routes[0],
-        agent="generic",
-        profile=InstructionProfile.EXPANDED,
+    assert len(deep_reference.routes) == 3
+    assert all(
+        not route_exists(
+            raw_schema_source,
+            route,
+            agent="generic",
+            profile=InstructionProfile.EXPANDED,
+        )
+        for route in deep_reference.routes
     )
+
+    removable_expanded = {
+        "Canonical wiki surfaces",
+        "When you change code",
+        "Wiki file naming rules",
+        "Formatting rules",
+        "Incremental sync details",
+        "Large codebases",
+    }
 
     for agent, profile in product(SCHEMA_FILENAMES, InstructionProfile):
         content = _rendered_content(agent, profile)
@@ -391,12 +403,16 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
             rendered_content=content,
         )
         assert not deep_ready
-        assert route_exists(
-            content,
-            deep_reference.routes[0],
-            agent=agent,
-            profile=profile,
-        ) is (profile is InstructionProfile.EXPANDED)
+        assert all(
+            route_exists(
+                content,
+                route,
+                agent=agent,
+                profile=profile,
+            )
+            is (profile is InstructionProfile.EXPANDED)
+            for route in deep_reference.routes
+        )
 
         for section in GENERATED_SECTION_COVERAGE:
             ready = removal_prerequisites_ready(
@@ -407,21 +423,24 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
                 profile=profile,
                 rendered_content=content,
             )
-            if profile is InstructionProfile.COMPACT:
-                assert not ready
-            elif (
-                section.source_heading is not None
+            assert ready is (
+                profile is InstructionProfile.EXPANDED
+                and section.section in removable_expanded
+            )
+            if (
+                profile is InstructionProfile.EXPANDED
+                and section.source_heading is not None
                 and section.condition is not SectionCondition.ISSUE_REPORTING
             ):
                 assert content is not None
                 assert section.source_heading in content
 
 
-def test_correctness_text_cannot_retire_in_any_target_or_profile_yet():
+def test_correctness_destinations_are_ready_without_retiring_inline_kernel_rules():
     for agent, profile in product(SCHEMA_FILENAMES, InstructionProfile):
         content = _rendered_content(agent, profile)
         for clause in CORRECTNESS_CLAUSE_COVERAGE:
-            assert not correctness_destination_ready(
+            ready = correctness_destination_ready(
                 PROJECT_ROOT,
                 PACKAGE_ROOT,
                 clause,
@@ -429,6 +448,9 @@ def test_correctness_text_cannot_retire_in_any_target_or_profile_yet():
                 profile=profile,
                 rendered_content=content,
             )
+            assert ready is (
+                profile is InstructionProfile.EXPANDED and not clause.always_inline
+            ), clause.name
             if profile is InstructionProfile.EXPANDED:
                 assert content is not None
                 section = next(
@@ -444,72 +466,32 @@ def test_correctness_text_cannot_retire_in_any_target_or_profile_yet():
 
 
 def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
-    expected = {
-        (
-            "skills/wiki-reference/SKILL.md",
-            InboundRouteKind.MARKDOWN_LINK,
-            "wiki-reference reference",
-        ),
-        (
-            "services/schema.py",
-            InboundRouteKind.HEADING_REFERENCE,
-            "Extractor helpers and toolchains",
-        ),
-        (
-            "services/schema.py",
-            InboundRouteKind.REFERENCE_ROOT,
-            "wiki-reference reference",
-        ),
-        (
-            "services/schema.py",
-            InboundRouteKind.HEADING_REFERENCE,
-            "Repository-aware Git handoff",
-        ),
-        (
-            "services/schema.py",
-            InboundRouteKind.INSTALLED_FILE_ROUTE,
-            "wiki-reference reference",
-        ),
-        (
-            "services/schema.py",
-            InboundRouteKind.HEADING_REFERENCE,
-            "Static-site export",
-        ),
-        (
-            "services/schema.py",
-            InboundRouteKind.HEADING_REFERENCE,
-            "Dependency reconciliation",
-        ),
-        *(
-            (path, InboundRouteKind.HEADING_REFERENCE, "Repository-aware Git handoff")
-            for path in (
-                "skills/usage-examples/SKILL.md",
-                "skills/onboarding-guide/SKILL.md",
-                "skills/wiki-sync/SKILL.md",
-                "skills/infra-review/SKILL.md",
-                "skills/dep-audit/SKILL.md",
-                "skills/wiki-bootstrap/SKILL.md",
-                "skills/user-docs-author/SKILL.md",
-                "skills/doc-review/SKILL.md",
-            )
-        ),
+    expected_topics = {
+        "context-query",
+        "extractors-dependencies",
+        "governance",
+        "knowledge-consumption",
+        "maintenance",
+        "publishing",
+        "repository-handoff",
+        "resources-context",
+        "surfaces-naming",
     }
-    actual = {
-        (item.source_path, item.kind, item.destination_heading)
+    destination_paths = {
+        item.destination_path for item in MANAGED_REFERENCE_INBOUND_ROUTES
+    }
+    assert destination_paths == {
+        f"skills/wiki-reference/references/{topic}.md" for topic in expected_topics
+    }
+    assert len(MANAGED_REFERENCE_INBOUND_ROUTES) == 38
+    assert {item.kind for item in MANAGED_REFERENCE_INBOUND_ROUTES} == {
+        InboundRouteKind.MARKDOWN_LINK,
+        InboundRouteKind.INSTALLED_FILE_ROUTE,
+    }
+    assert all(
+        item.destination_path != "skills/wiki-reference/reference.md"
         for item in MANAGED_REFERENCE_INBOUND_ROUTES
-    }
-    assert actual == expected
-    assert len(actual) == 15
-    assert len(MANAGED_REFERENCE_INBOUND_ROUTES) == 16
-    assert {
-        item.source_text
-        for item in MANAGED_REFERENCE_INBOUND_ROUTES
-        if item.source_path == "services/schema.py"
-        and item.kind is InboundRouteKind.REFERENCE_ROOT
-    } == {
-        "Flag semantics are documented in the `wiki-reference` skill.",
-        "per-language extraction contracts (including the Haskell helper and inventory schema) are documented in the `wiki-reference` skill.",
-    }
+    )
     assert all(
         inbound_route_resolves(PROJECT_ROOT, PACKAGE_ROOT, item)
         for item in MANAGED_REFERENCE_INBOUND_ROUTES
@@ -519,6 +501,7 @@ def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
         (
             item.source_path,
             item.kind,
+            item.destination_path,
             item.destination_heading,
             item.destination_anchor,
         )
@@ -528,6 +511,7 @@ def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
         (
             item.source_path,
             item.kind,
+            item.destination_path,
             item.destination_heading,
             item.destination_anchor,
         )
@@ -538,29 +522,50 @@ def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
 
 def test_reference_router_markdown_link_and_real_heading_anchors_resolve():
     skill_path = PACKAGE_ROOT / "skills" / "wiki-reference" / "SKILL.md"
-    reference_path = PACKAGE_ROOT / "skills" / "wiki-reference" / "reference.md"
-    assert MarkdownLink("reference.md", "reference.md", None) in markdown_links(
-        skill_path.read_text(encoding="utf-8")
-    )
-
-    headings = {
-        (item.title, item.anchor)
-        for item in markdown_headings(reference_path.read_text(encoding="utf-8"))
+    links = markdown_links(skill_path.read_text(encoding="utf-8"))
+    router_routes = {
+        item.markdown_target: item
+        for item in MANAGED_REFERENCE_INBOUND_ROUTES
+        if item.source_path == "skills/wiki-reference/SKILL.md"
     }
-    for route in MANAGED_REFERENCE_INBOUND_ROUTES:
-        assert (route.destination_heading, route.destination_anchor) in headings
+    assert len(router_routes) == 9
+    for target, route in router_routes.items():
+        assert target is not None
+        assert any(
+            link.target_path == target and link.anchor is None for link in links
+        )
+        destination = PACKAGE_ROOT / route.destination_path
+        headings = markdown_headings(destination.read_text(encoding="utf-8"))
+        assert headings[0].title == route.destination_heading
+        assert headings[0].anchor == route.destination_anchor
 
 
-def test_generated_compatibility_reference_path_resolves_for_every_target():
-    destination = InstructionDestination(
-        "skills/wiki-reference/reference.md",
-        "wiki-reference reference",
-        "wiki-reference-reference",
+def test_active_routes_never_require_the_compatibility_index():
+    discovered = discover_managed_reference_inbound_routes(PACKAGE_ROOT)
+    assert all(
+        item.destination_path != "skills/wiki-reference/reference.md"
+        for item in discovered
     )
-    assert destination_exists(PROJECT_ROOT, PACKAGE_ROOT, destination)
+
+    router = (
+        PACKAGE_ROOT / "skills" / "wiki-reference" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert MarkdownLink("reference.md", "reference.md", None) not in markdown_links(
+        router
+    )
+
     for agent in SCHEMA_FILENAMES:
         content = build_schema_content(agent, "docs/llm_wiki")
-        reference_path = (
-            skills_install_dir(agent) / "wiki-reference" / "reference.md"
-        ).as_posix()
-        assert reference_path in content
+        reference_root = skills_install_dir(agent) / "wiki-reference" / "references"
+        assert "wiki-reference/reference.md" not in content
+        for topic in (
+            "context-query",
+            "extractors-dependencies",
+            "knowledge-consumption",
+            "maintenance",
+            "publishing",
+            "repository-handoff",
+            "resources-context",
+            "surfaces-naming",
+        ):
+            assert (reference_root / f"{topic}.md").as_posix() in content

@@ -2,6 +2,7 @@
 
 import json
 import types
+from pathlib import Path
 
 from llm_wiki_cli.commands import context_cmd, extract_cmd, status_cmd
 from llm_wiki_cli.services import knowledge_consumption
@@ -331,6 +332,23 @@ class TestStatusReferenceSkill:
         status_cmd.run(_make_args())
         out = capsys.readouterr().out
         assert "Reference skill: not installed" in out
+        assert (
+            "skills install --dest .llm-wiki/skills --skill wiki-reference --force"
+            in out
+        )
+
+    def test_not_installed_claude_recovery_uses_native_target(
+        self, tmp_project, capsys, monkeypatch
+    ):
+        monkeypatch.setattr(status_cmd, "read_config", lambda _wiki_dir: {"agent": "claude"})
+
+        status_cmd.run(_make_args())
+
+        out = capsys.readouterr().out
+        assert (
+            "skills install --dest .claude/skills --skill wiki-reference --force"
+            in out
+        )
 
     def test_current(self, tmp_project, capsys):
         from llm_wiki_cli.services.skills import install_reference_skill
@@ -341,15 +359,39 @@ class TestStatusReferenceSkill:
         assert "Reference skill: wiki-reference (current)" in out
 
     def test_differs_from_bundled(self, tmp_project, capsys):
-        from pathlib import Path
-
         from llm_wiki_cli.services.skills import install_reference_skill
 
         install_reference_skill(agent="generic")
-        Path(".llm-wiki/skills/wiki-reference/reference.md").write_text(
+        Path(".llm-wiki/skills/wiki-reference/references/maintenance.md").write_text(
             "old\n", encoding="utf-8"
         )
         status_cmd.run(_make_args())
         out = capsys.readouterr().out
         assert "differs from bundled" in out
         assert "llm-wiki upgrade" in out
+        assert (
+            "skills install --dest .llm-wiki/skills --skill wiki-reference --force"
+            in out
+        )
+
+    def test_missing_nested_topic_differs_from_bundled(self, tmp_project, capsys):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        install_reference_skill(agent="generic")
+        Path(".llm-wiki/skills/wiki-reference/references/governance.md").unlink()
+
+        status_cmd.run(_make_args())
+
+        assert "differs from bundled" in capsys.readouterr().out
+
+    def test_extra_nested_topic_differs_from_bundled(self, tmp_project, capsys):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        install_reference_skill(agent="generic")
+        Path(".llm-wiki/skills/wiki-reference/references/local-notes.md").write_text(
+            "notes\n", encoding="utf-8"
+        )
+
+        status_cmd.run(_make_args())
+
+        assert "differs from bundled" in capsys.readouterr().out

@@ -15,6 +15,7 @@ from llm_wiki_cli.services.schema import (
     CONSTRAINT_END,
     SCHEMA_FILENAMES,
 )
+from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES, reference_skill_state
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
@@ -628,16 +629,28 @@ class TestUpgradeIdempotent:
 
 
 class TestUpgradeReferenceSkill:
-    def test_force_refreshes_modified_copy(self, tmp_path):
+    def test_force_refreshes_modified_nested_file(self, tmp_path, capsys):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         ref.write_text("stale local copy\n", encoding="utf-8")
 
         upgrade_cmd.run(_make_args())
 
         assert ref.read_text(encoding="utf-8") != "stale local copy\n"
-        assert "GHC 9.6.x" in ref.read_text(encoding="utf-8")
+        assert reference_skill_state(agent="copilot") == "unmodified"
+        assert "Refreshed wiki-reference" in capsys.readouterr().out
+
+    def test_restores_missing_nested_file(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        topic = Path(".llm-wiki/skills/wiki-reference/references/governance.md")
+        topic.unlink()
+
+        upgrade_cmd.run(_make_args())
+
+        assert topic.is_file()
+        assert reference_skill_state(agent="copilot") == "unmodified"
 
     def test_installs_when_absent(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
@@ -648,12 +661,17 @@ class TestUpgradeReferenceSkill:
 
         upgrade_cmd.run(_make_args())
 
-        assert Path(".llm-wiki/skills/wiki-reference/reference.md").is_file()
+        skill_dir = Path(".llm-wiki/skills/wiki-reference")
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
 
     def test_no_skills_flag_skips_refresh(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         ref.write_text("local copy\n", encoding="utf-8")
 
         upgrade_cmd.run(_make_args(skills=False))
@@ -683,20 +701,35 @@ class TestUpgradeReferenceSkill:
     def test_switch_migrates_skill_to_new_agent_dir(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        assert Path(".llm-wiki/skills/wiki-reference/reference.md").is_file()
+        old_dir = Path(".llm-wiki/skills/wiki-reference")
+        assert {
+            path.relative_to(old_dir).as_posix()
+            for path in old_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
 
         upgrade_cmd.run(_make_args(agent="claude"))
 
         assert not Path(".llm-wiki/skills/wiki-reference").exists()
-        assert Path(".claude/skills/wiki-reference/reference.md").is_file()
+        new_dir = Path(".claude/skills/wiki-reference")
+        assert {
+            path.relative_to(new_dir).as_posix()
+            for path in new_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
 
     def test_switch_keeps_modified_copy_at_old_location(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        old_ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        old_ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         old_ref.write_text("local notes\n", encoding="utf-8")
 
         upgrade_cmd.run(_make_args(agent="claude"))
 
         assert old_ref.read_text(encoding="utf-8") == "local notes\n"
-        assert Path(".claude/skills/wiki-reference/reference.md").is_file()
+        new_dir = Path(".claude/skills/wiki-reference")
+        assert {
+            path.relative_to(new_dir).as_posix()
+            for path in new_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)

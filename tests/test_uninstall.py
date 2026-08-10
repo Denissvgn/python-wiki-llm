@@ -212,10 +212,19 @@ class TestUninstallDryRun:
 
 class TestUninstallReferenceSkill:
     def test_removes_unmodified_skill_copy(self, tmp_project, capsys, monkeypatch):
-        from llm_wiki_cli.services.skills import install_reference_skill
+        from llm_wiki_cli.services.skills import (
+            REFERENCE_SKILL_FILES,
+            install_reference_skill,
+        )
 
         _setup_wiki_project(tmp_project)
         install_reference_skill()
+        skill_dir = Path(".claude/skills/wiki-reference")
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
         monkeypatch.setattr("builtins.input", lambda _: "y")
 
         uninstall_cmd.run(_make_args())
@@ -227,13 +236,44 @@ class TestUninstallReferenceSkill:
 
         _setup_wiki_project(tmp_project)
         install_reference_skill()
-        ref = Path(".claude/skills/wiki-reference/reference.md")
+        ref = Path(".claude/skills/wiki-reference/references/maintenance.md")
         ref.write_text("local notes\n", encoding="utf-8")
         monkeypatch.setattr("builtins.input", lambda _: "y")
 
         uninstall_cmd.run(_make_args())
 
         assert ref.read_text(encoding="utf-8") == "local notes\n"
+        assert "locally modified" in capsys.readouterr().out
+
+    def test_keeps_incomplete_skill_tree(self, tmp_project, capsys, monkeypatch):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        _setup_wiki_project(tmp_project)
+        install_reference_skill()
+        skill_dir = Path(".claude/skills/wiki-reference")
+        missing = skill_dir / "references" / "governance.md"
+        missing.unlink()
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        uninstall_cmd.run(_make_args())
+
+        assert skill_dir.is_dir()
+        assert not missing.exists()
+        assert "locally modified" in capsys.readouterr().out
+
+    def test_keeps_tree_with_extra_topic(self, tmp_project, capsys, monkeypatch):
+        from llm_wiki_cli.services.skills import install_reference_skill
+
+        _setup_wiki_project(tmp_project)
+        install_reference_skill()
+        skill_dir = Path(".claude/skills/wiki-reference")
+        extra = skill_dir / "references" / "local-notes.md"
+        extra.write_text("notes\n", encoding="utf-8")
+        monkeypatch.setattr("builtins.input", lambda _: "y")
+
+        uninstall_cmd.run(_make_args())
+
+        assert extra.read_text(encoding="utf-8") == "notes\n"
         assert "locally modified" in capsys.readouterr().out
 
     def test_sweeps_all_known_skill_locations(self, tmp_project, capsys, monkeypatch):

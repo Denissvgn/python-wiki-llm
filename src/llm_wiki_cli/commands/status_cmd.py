@@ -15,7 +15,7 @@ from ..services.knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
 )
-from ..services.skills import reference_skill_state
+from ..services.skills import reference_skill_state, skills_install_dir
 from ..services.wiki_surface import PageKind, canonical_path, iter_page_kinds
 
 
@@ -135,19 +135,23 @@ def run(args) -> None:
 
     # Reference skill (the constraint block points at it); its home follows
     # the configured agent
-    skill_state = reference_skill_state(agent=config.get("agent"))
+    configured_agent = config.get("agent")
+    reference_target = skills_install_dir(configured_agent).as_posix()
+    skill_state = reference_skill_state(agent=configured_agent)
     if skill_state == "unmodified":
         print("Reference skill: wiki-reference (current)")
     elif skill_state == "modified":
         print(
             "Reference skill: wiki-reference differs from bundled\n"
-            "                 Run `llm-wiki upgrade` or "
-            "`llm-wiki skills install --force` to refresh"
+            "                 Run `llm-wiki upgrade` or `llm-wiki skills "
+            f"install --dest {reference_target} --skill wiki-reference --force`; "
+            "inspect preserved extra or conflicting entries"
         )
     else:
         print(
             "Reference skill: not installed "
-            "(run `llm-wiki init` or `llm-wiki skills install`)"
+            f"(run `llm-wiki init` or `llm-wiki skills install --dest "
+            f"{reference_target} --skill wiki-reference --force`)"
         )
 
     # Hooks

@@ -152,10 +152,10 @@ def test_expanded_observation_and_compact_target_are_separate_profiles() -> None
     observed = generated["agents"]["generic"]["variants"]["default"]
 
     assert observed == {
-        "words": 3084,
-        "characters": 22933,
-        "lines": 375,
-        "sha256": "5e176f03f97afc80b768074c787c99430ad6e502e2a79e0a425186036b762d4d",
+        "words": 3212,
+        "characters": 24859,
+        "lines": 415,
+        "sha256": "e31b42e54d5460589bf7e3a6872f1d72421dbde75a3a298126644b24ea505b91",
     }
     assert generated["compact_target"] == {
         "words": {"minimum": 400, "maximum": 650},

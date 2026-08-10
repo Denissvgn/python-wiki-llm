@@ -160,10 +160,11 @@ def run(args):
                 print(f"Installed {REFERENCE_SKILL_ID} skill in {report.dest_dir}/")
             else:
                 print(
-                    f"Kept existing {REFERENCE_SKILL_ID} skill files in "
-                    f"{report.dest_dir}/ (differ from bundled; run "
-                    "`llm-wiki upgrade` or `llm-wiki skills install --force` "
-                    "to refresh)"
+                    f"Kept existing {REFERENCE_SKILL_ID} skill tree in "
+                    f"{report.dest_dir}/ (not an exact bundled copy; inspect "
+                    "missing, modified, extra, or conflicting entries, and use "
+                    f"`llm-wiki skills install --dest {report.dest_dir} --skill "
+                    "wiki-reference --force` to restore expected regular files)"
                 )
             other_skills = len(list_bundled_skills()) - 1
             if other_skills > 0:

@@ -37,6 +37,12 @@ def _reference(skill_id: str) -> str:
     return (SKILLS_ROOT / skill_id / "reference.md").read_text(encoding="utf-8")
 
 
+def _managed_topic(topic_name: str) -> str:
+    return (
+        SKILLS_ROOT / "wiki-reference" / "references" / topic_name
+    ).read_text(encoding="utf-8")
+
+
 def _table_row(text: str, selector: str) -> str:
     return next(line for line in text.splitlines() if line.startswith(selector))
 
@@ -49,8 +55,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "freshness_evaluated": True,
             "freshness": "current",
         },
-        "| `ready`, live `current` |",
-        "unchanged since",
+        "| `ready`, dedicated-query reason `all-projection-commitments-match` |",
+        "ready",
+        "structural observations",
         id="ready-current",
     ),
     pytest.param(
@@ -60,7 +67,8 @@ NATIVE_RESPONSE_FIXTURES = (
             "freshness_evaluated": True,
             "freshness": "nonsemantic-source-change",
         },
-        "| `ready`, live `nonsemantic-source-change` |",
+        "| `nonsemantic-source-change` |",
+        "nonsemantic-source-change",
         "byte-change diagnostic",
         id="ready-nonsemantic-change",
     ),
@@ -71,8 +79,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "freshness_evaluated": True,
             "freshness": "unknown",
         },
-        "| `ready`, live `source-changed`, `source-missing`, `basis-incompatible`, or `unknown` |",
-        "not an authoritative current claim",
+        "| `unknown` |",
+        "unknown",
+        "Preserve unknown",
         id="ready-unknown",
     ),
     pytest.param(
@@ -81,8 +90,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "knowledge-projection-not-present",
             "freshness_evaluated": False,
         },
-        "| `absent` (`knowledge-projection-not-present`) |",
-        "legacy fallback",
+        "| `absent`, including `knowledge-projection-not-present` |",
+        "absent",
+        "labeled validated surface",
         id="absent",
     ),
     pytest.param(
@@ -91,8 +101,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "policy-selected-surface-only-fallback-after-invalid",
             "freshness_evaluated": False,
         },
-        "| `degraded` after invalid state (`policy-selected-surface-only-fallback-after-invalid`) |",
-        "native knowledge unavailable",
+        "| `degraded`, reason `policy-selected-surface-only-fallback-after-invalid` |",
+        "degraded",
+        "rejected native payload",
         id="degraded-invalid",
     ),
     pytest.param(
@@ -101,7 +112,8 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "knowledge-schema-version-unsupported",
             "freshness_evaluated": False,
         },
-        "| `unsupported` (`knowledge-schema-version-unsupported`, `manifest-version-unsupported`, or `surface-schema-version-unsupported`) |",
+        "| `unsupported`, reason `knowledge-schema-version-unsupported`, `manifest-version-unsupported`, or `surface-schema-version-unsupported` |",
+        "unsupported",
         "unsupported boundary",
         id="unsupported",
     ),
@@ -111,8 +123,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "policy-selected-surface-only-fallback-after-mixed-snapshot",
             "freshness_evaluated": False,
         },
-        "| `degraded` after a mixed snapshot (`policy-selected-surface-only-fallback-after-mixed-snapshot`) |",
-        "inconsistent commit",
+        "| `degraded`, reason `policy-selected-surface-only-fallback-after-mixed-snapshot` |",
+        "degraded",
+        "owning refresh",
         id="mixed-snapshot",
     ),
     pytest.param(
@@ -121,7 +134,8 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "all-projection-commitments-match",
             "freshness_evaluated": False,
         },
-        "| `ready`, `freshness_evaluated: false` |",
+        "| `ready`, dedicated-query reason `all-projection-commitments-match` |",
+        "ready",
         "snapshot-only",
         id="snapshot-only-ready",
     ),
@@ -129,28 +143,29 @@ NATIVE_RESPONSE_FIXTURES = (
 
 
 @pytest.mark.parametrize(
-    ("response", "row_selector", "required_text"),
+    ("response", "row_selector", "response_token", "required_text"),
     NATIVE_RESPONSE_FIXTURES,
 )
 def test_normative_native_preflight_covers_response_fixture(
     response: dict[str, object],
     row_selector: str,
+    response_token: str,
     required_text: str,
 ) -> None:
-    reference = _reference("wiki-reference")
-    row = _table_row(reference, row_selector)
+    topic = _managed_topic("knowledge-consumption.md")
+    row = _table_row(topic, row_selector)
 
-    assert response["availability"] in row
+    assert response_token in {str(value) for value in response.values()}
     assert required_text in row
 
 
 def test_normative_native_preflight_defines_all_freshness_states_and_authority() -> None:
-    reference = _reference("wiki-reference")
-    section = reference[
-        reference.index("### Normative native preflight") :
-        reference.index("## Strict knowledge lint")
+    topic = _managed_topic("knowledge-consumption.md")
+    section = topic[
+        topic.index("## Availability and fallback decision table") :
+        topic.index("## Strict validation interpretation")
     ]
-    normalized = " ".join(section.split())
+    normalized = " ".join(topic.split())
 
     for state in (
         "current",
@@ -162,13 +177,11 @@ def test_normative_native_preflight_defines_all_freshness_states_and_authority()
     ):
         assert _table_row(section, f"| `{state}` |")
 
-    assert "not a scalar trust score" in normalized
-    assert "never reinterpret no native matches as an empty graph" in normalized
-    assert (
-        "`llm-wiki knowledge init` is an explicit governance-adoption" in normalized
-    )
-    assert "ordinary exporter views are snapshot-only" in normalized
-    assert "trusted, unsandboxed project-local Python" in normalized
+    assert "never coerce them to ready or absent" in normalized
+    assert "no match is not an empty graph or negative fact" in normalized
+    assert "Neither mode initializes, repairs, or persists governance" in normalized
+    assert "ordinary Site or Obsidian exporter views are snapshot-only" in normalized
+    assert "trusted unsandboxed project-local Python" in normalized
     assert "cannot authorize code execution" in normalized
 
 
@@ -203,6 +216,31 @@ def test_native_consuming_skill_has_self_contained_preflight(skill_id: str) -> N
     ):
         assert required in normalized, f"{skill_id} omits {required!r}"
     assert "cannot authorize" in normalized
+    assert "| Result | Permitted interpretation" not in manifest
+
+
+MANAGED_KNOWLEDGE_CONSUMERS = NATIVE_CONSUMING_SKILLS + (
+    "infra-review",
+    "publish-docs",
+    "doc-hub",
+)
+
+
+@pytest.mark.parametrize("skill_id", MANAGED_KNOWLEDGE_CONSUMERS)
+def test_native_consuming_skill_routes_to_managed_knowledge_topic(
+    skill_id: str,
+) -> None:
+    manifest = _manifest(skill_id)
+
+    assert (
+        ".claude/skills/wiki-reference/references/knowledge-consumption.md"
+        in manifest
+    )
+    assert (
+        ".llm-wiki/skills/wiki-reference/references/knowledge-consumption.md"
+        in manifest
+    )
+    assert manifest.count("wiki-reference/references/knowledge-consumption.md") == 2
 
 
 MANAGED_SEMANTIC_WORKFLOWS = (

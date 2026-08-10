@@ -1872,9 +1872,11 @@ Sixteen skills are bundled:
   explicit `bootstrap-remainder.md` record for deferred pages, validate with
   `lint --strict`/`ci-check`, and use a repository-policy-aware local or Git
   handoff.
-- `wiki-reference`: progressive-disclosure reference for extractor contracts,
-  helper toolchains/caches, dependency reconciliation, static-site profiles,
-  repository-aware Git handoff, resource-aware execution, and context budgets.
+- `wiki-reference`: a one-hop managed reference router for maintenance,
+  canonical surfaces and naming, repository-aware handoff, qualified knowledge
+  consumption, context/query selection, durable governance, extractors and
+  dependencies, publishing projections, and resource-aware execution. The
+  legacy `reference.md` remains only as a compact anchor-compatible index.
 - `wiki-semantic-enhance`: resumable standalone semantic-enrichment pass —
   ground or reuse imported LLM prose, complete/defer stable worklist IDs within
   budget, edit only agent-owned semantic surfaces, and return readiness/result
@@ -1886,24 +1888,28 @@ Sixteen skills are bundled:
 
 ```bash
 llm-wiki skills list
-llm-wiki skills install                          # into ./.claude/skills/
+llm-wiki skills install                          # configured agent's project skill dir
 llm-wiki skills install --skill wiki-sync --force
 llm-wiki skills export --dest ~/.claude/skills   # personal skills directory
 llm-wiki skills export --dest exported --format json
 ```
 
-`install` writes into the current project (default `.claude/skills/`, must
-stay inside the project root); `export` accepts any destination directory.
+`install` writes into the current project's configured agent directory
+(`.claude/skills/` for Claude and `.llm-wiki/skills/` for other configured
+agents; an unconfigured project keeps the Claude default) and must stay inside
+the project root. `export` accepts any destination directory.
 Both are idempotent: identical existing files are kept, and files that were
 edited locally are never overwritten without `--force` — the run reports
 `existing_file_differs` and exits non-zero instead, so local skill
 customizations survive package upgrades by default.
 
 `llm-wiki upgrade` refreshes the generated agent constraints and the
-CLI-owned `wiki-reference` policy. Existing installed workflow-skill copies
-remain untouched; review local changes before deliberately refreshing
-`wiki-sync`, `wiki-bootstrap`, or `onboarding-guide` with repeated `--skill`
-options and `--force`.
+CLI-owned `wiki-reference` policy as one exact nested tree. Missing or drifted
+managed files can be repaired, while unexpected entries and unsafe filesystem
+links are preserved and reported instead of being followed or silently
+deleted. Existing installed workflow-skill copies remain untouched; review
+local changes before deliberately refreshing `wiki-sync`, `wiki-bootstrap`, or
+`onboarding-guide` with repeated `--skill` options and `--force`.
 
 ### `metrics`
 

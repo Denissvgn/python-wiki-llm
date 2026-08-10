@@ -6,6 +6,7 @@ from pathlib import Path
 
 from llm_wiki_cli.commands import init_cmd
 from llm_wiki_cli.config import read_config, write_config
+from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
@@ -182,9 +183,7 @@ class TestInitPersistsAgentConfig:
         assert config["agent"] == "opencode"
         assert not (Path("my_docs/wiki/.llm-wiki-agent")).exists()
 
-    def test_explicit_profile_is_pinned_in_schema_and_local_config(
-        self, tmp_project
-    ):
+    def test_explicit_profile_is_pinned_in_schema_and_local_config(self, tmp_project):
         profile = Path("config/team selection.json")
         profile.parent.mkdir()
         profile.write_text(
@@ -343,15 +342,22 @@ class TestInitReferenceSkill:
         init_cmd.run(_make_args())
 
         skill_dir = Path(".llm-wiki/skills/wiki-reference")
-        assert (skill_dir / "SKILL.md").is_file()
-        assert (skill_dir / "reference.md").is_file()
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
         assert not Path(".claude/skills").exists()
 
     def test_claude_agent_uses_native_skills_dir(self, tmp_project):
         init_cmd.run(_make_args(agent="claude"))
 
         skill_dir = Path(".claude/skills/wiki-reference")
-        assert (skill_dir / "SKILL.md").is_file()
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
         assert not Path(".llm-wiki/skills").exists()
 
     def test_no_skills_flag_skips_install(self, tmp_project):
@@ -361,13 +367,18 @@ class TestInitReferenceSkill:
 
     def test_rerun_preserves_locally_modified_copy(self, tmp_project, capsys):
         init_cmd.run(_make_args())
-        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         ref.write_text("local notes\n", encoding="utf-8")
 
         init_cmd.run(_make_args())
 
         assert ref.read_text(encoding="utf-8") == "local notes\n"
-        assert "differ from bundled" in capsys.readouterr().out
+        output = capsys.readouterr().out
+        assert "not an exact bundled copy" in output
+        assert (
+            "skills install --dest .llm-wiki/skills --skill wiki-reference --force"
+            in output
+        )
 
     def test_persists_reference_skill_preference(self, tmp_project):
         init_cmd.run(_make_args())

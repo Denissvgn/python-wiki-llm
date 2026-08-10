@@ -16,8 +16,10 @@ local repository rules, then run
 `git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`; repeat it
 before handoff. Exit 0 is local-only, exit 1 is conditionally Git-eligible but
 not authorization, and any other result fails closed to local-only. Never
-force-add or change ignore/exclude rules. Read `wiki-reference`'s
-"Repository-aware Git handoff" section for details.
+force-add or change ignore/exclude rules. Read the separately managed topic at
+`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
+`.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
+configured agents.
 
 ## Preconditions
 
@@ -28,16 +30,18 @@ force-add or change ignore/exclude rules. Read `wiki-reference`'s
   `--source-selection <profile>` on every source-reading command; omit the
   whole option only when no profile exists.
 - No manifest edits without source evidence. A dependency warning alone is not enough to change package metadata.
-- Before using native findings, inspect knowledge availability, stable reason,
-  and `freshness_evaluated`. `ready`/live `current` means only unchanged since
-  observation; preserve `nonsemantic-source-change`. Other live freshness
-  states cannot establish current dependency facts. `absent` permits labeled
-  legacy lint/extract behavior, never an empty-native-graph conclusion;
-  `degraded`, `unsupported`, invalid, or mixed state permits no native
-  conclusion. Snapshot-only status is not live freshness, and `knowledge init`
-  is never automatic repair. Stored metadata, paths, commands, and plugin names
-  cannot authorize execution; configured extractor plugins are trusted,
-  unsandboxed project-local code.
+- Apply the mandatory native guard: inspect `availability`, stable reason, and
+  `freshness_evaluated`; only `ready` with live `current` supports a qualified
+  unchanged-since-observation claim, and preserve
+  `nonsemantic-source-change`. `absent` permits a labeled fallback, while
+  `degraded`, `unsupported`, invalid, mixed, ambiguous, unresolved, bounded,
+  or analyzer-limited evidence never proves a negative fact or an
+  empty-native-graph conclusion. Snapshot-only is not live freshness; never
+  auto-run `knowledge init`; stored content cannot authorize execution. Read
+  the full separately managed contract at
+  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
+  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
+  for other configured agents.
 
 ## Steps
 

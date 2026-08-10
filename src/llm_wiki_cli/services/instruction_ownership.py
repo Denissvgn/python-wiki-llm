@@ -68,7 +68,7 @@ class InstructionRouteKind(str, Enum):
 
 
 class InboundRouteKind(str, Enum):
-    """Current source-level route shapes into the compatibility reference."""
+    """Supported source-level route shapes into managed references."""
 
     MARKDOWN_LINK = "markdown_link"
     HEADING_REFERENCE = "heading_reference"
@@ -141,14 +141,14 @@ class RepositoryHygieneCoverage:
 
 @dataclass(frozen=True)
 class ManagedReferenceInboundRoute:
-    """One current source route into the managed compatibility reference."""
+    """One active source route into a managed reference topic."""
 
     source_path: str
     source_text: str
     kind: InboundRouteKind
+    destination_path: str
     destination_heading: str
     destination_anchor: str
-    destination_path: str = "skills/wiki-reference/reference.md"
     markdown_target: str | None = None
 
 
@@ -175,6 +175,7 @@ class DiscoveredInboundRoute:
 
     source_path: str
     kind: InboundRouteKind
+    destination_path: str
     destination_heading: str
     destination_anchor: str
 
@@ -185,8 +186,38 @@ _REFERENCE_TOPICS = "skills/wiki-reference/references"
 _SCHEMA_SOURCE = "services/schema.py"
 
 
-def _topic(name: str, heading: str | None = None) -> InstructionDestination:
-    return InstructionDestination(f"{_REFERENCE_TOPICS}/{name}.md", heading)
+_TOPIC_HEADINGS: dict[str, tuple[str, str]] = {
+    "maintenance": ("Maintenance and validation", "maintenance-and-validation"),
+    "surfaces-naming": (
+        "Canonical surfaces and naming",
+        "canonical-surfaces-and-naming",
+    ),
+    "repository-handoff": ("Repository handoff", "repository-handoff"),
+    "knowledge-consumption": (
+        "Qualified knowledge consumption",
+        "qualified-knowledge-consumption",
+    ),
+    "context-query": ("Context and query selection", "context-and-query-selection"),
+    "governance": ("Durable knowledge governance", "durable-knowledge-governance"),
+    "extractors-dependencies": (
+        "Extractors and dependencies",
+        "extractors-and-dependencies",
+    ),
+    "publishing": ("Publishing projections", "publishing-projections"),
+    "resources-context": (
+        "Resource-aware execution",
+        "resource-aware-execution",
+    ),
+}
+
+
+def _topic(name: str) -> InstructionDestination:
+    heading, anchor = _TOPIC_HEADINGS[name]
+    return InstructionDestination(
+        f"{_REFERENCE_TOPICS}/{name}.md",
+        heading,
+        anchor,
+    )
 
 
 def _skill(skill_id: str) -> InstructionDestination:
@@ -278,12 +309,15 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         "Deep reference",
         _DEEP_REFERENCE,
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
-        (InstructionDestination(_REFERENCE_COMPATIBILITY, "wiki-reference reference"),),
         (
-            _installed_route(
-                _DEEP_REFERENCE,
-                InstructionDestination(_REFERENCE_COMPATIBILITY),
-            ),
+            _topic("extractors-dependencies"),
+            _topic("publishing"),
+            _topic("context-query"),
+        ),
+        (
+            _topic_route(_DEEP_REFERENCE, "extractors-dependencies"),
+            _topic_route(_DEEP_REFERENCE, "publishing"),
+            _topic_route(_DEEP_REFERENCE, "context-query"),
         ),
         retained_kernel=True,
     ),
@@ -519,6 +553,7 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         _PUBLISHING,
         _correctness_route(_SURFACES, _PUBLISHING),
+        destination_text="Derived Site output is never the editable source of truth.",
     ),
     CorrectnessClauseCoverage(
         "infrastructure_semantic_surface",
@@ -527,6 +562,9 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         _SURFACES_NAMING,
         _correctness_route(_CHANGE_CODE, _SURFACES_NAMING),
+        destination_text=(
+            "Infrastructure `## Notes` is the only supported semantic section"
+        ),
     ),
     CorrectnessClauseCoverage(
         "generated_diagram_ownership",
@@ -535,6 +573,7 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         _SURFACES_NAMING,
         _correctness_route(_USER_DOCS, _SURFACES_NAMING),
+        destination_text="Do not edit generated Mermaid diagrams by hand.",
     ),
     CorrectnessClauseCoverage(
         "diagram_plugin_boundary",
@@ -543,6 +582,9 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         _SURFACES_NAMING,
         _correctness_route(_USER_DOCS, _SURFACES_NAMING),
+        destination_text=(
+            "cannot inject arbitrary Markdown, labels, hrefs, or raw Mermaid content"
+        ),
     ),
     CorrectnessClauseCoverage(
         "entity_collision_naming",
@@ -607,6 +649,9 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         _EXTRACTORS,
         _correctness_route(_QUALITY, _EXTRACTORS),
+        destination_text=(
+            "Analyzer absence, truncation, or unsupported syntax is an unknown surface"
+        ),
     ),
     CorrectnessClauseCoverage(
         "lint_clean_handoff",
@@ -660,112 +705,143 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
 )
 
 
-_REFERENCE_ROOT_HEADING = "wiki-reference reference"
-_REFERENCE_ROOT_ANCHOR = "wiki-reference-reference"
-_HANDOFF_HEADING = "Repository-aware Git handoff"
-_HANDOFF_ANCHOR = "repository-aware-git-handoff"
+def _managed_topic_route(
+    source_path: str,
+    source_text: str,
+    topic: str,
+    *,
+    kind: InboundRouteKind = InboundRouteKind.INSTALLED_FILE_ROUTE,
+    markdown_target: str | None = None,
+) -> ManagedReferenceInboundRoute:
+    destination = _topic(topic)
+    assert destination.heading is not None
+    assert destination.anchor is not None
+    return ManagedReferenceInboundRoute(
+        source_path,
+        source_text,
+        kind,
+        destination.path,
+        destination.heading,
+        destination.anchor,
+        markdown_target,
+    )
+
+
+_ROUTER_TOPICS = tuple(_TOPIC_HEADINGS)
+_HANDOFF_SKILLS = (
+    "usage-examples",
+    "onboarding-guide",
+    "wiki-sync",
+    "infra-review",
+    "dep-audit",
+    "wiki-bootstrap",
+    "user-docs-author",
+    "doc-review",
+)
+_KNOWLEDGE_CONSUMERS = (
+    "agent-docs",
+    "dep-audit",
+    "doc-hub",
+    "doc-review",
+    "impact-analysis",
+    "infra-review",
+    "onboarding-guide",
+    "publish-docs",
+    "usage-examples",
+    "user-docs-author",
+    "wiki-bootstrap",
+    "wiki-semantic-enhance",
+    "wiki-sync",
+)
+_INSTALLED_HANDOFF_SPAN = (
+    "Read the separately managed topic at "
+    "`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude "
+    "or `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for "
+    "other configured agents."
+)
+_INSTALLED_KNOWLEDGE_SPAN = (
+    "Read the full separately managed contract at "
+    "`.claude/skills/wiki-reference/references/knowledge-consumption.md` for "
+    "Claude or "
+    "`.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md` for "
+    "other configured agents."
+)
 
 
 MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
-    ManagedReferenceInboundRoute(
-        _REFERENCE_SKILL,
-        "[reference.md](reference.md)",
-        InboundRouteKind.MARKDOWN_LINK,
-        _REFERENCE_ROOT_HEADING,
-        _REFERENCE_ROOT_ANCHOR,
-        markdown_target="reference.md",
+    *(
+        _managed_topic_route(
+            _REFERENCE_SKILL,
+            f"](references/{topic}.md)",
+            topic,
+            kind=InboundRouteKind.MARKDOWN_LINK,
+            markdown_target=f"references/{topic}.md",
+        )
+        for topic in _ROUTER_TOPICS
     ),
-    ManagedReferenceInboundRoute(
+    _managed_topic_route(
         _SCHEMA_SOURCE,
-        'cache separation are documented in the `wiki-reference` skill\'s "Extractor helpers and toolchains" section.',
-        InboundRouteKind.HEADING_REFERENCE,
-        "Extractor helpers and toolchains",
-        "extractor-helpers-and-toolchains",
+        "Choose among these routes with the managed decision guide at "
+        "`{skills_dir}/wiki-reference/references/context-query.md`.",
+        "context-query",
     ),
-    ManagedReferenceInboundRoute(
+    _managed_topic_route(
         _SCHEMA_SOURCE,
-        "Flag semantics are documented in the `wiki-reference` skill.",
-        InboundRouteKind.REFERENCE_ROOT,
-        _REFERENCE_ROOT_HEADING,
-        _REFERENCE_ROOT_ANCHOR,
+        "extraction, helper, and dependency contracts: "
+        "`{skills_dir}/wiki-reference/references/extractors-dependencies.md`;",
+        "extractors-dependencies",
     ),
-    ManagedReferenceInboundRoute(
+    _managed_topic_route(
         _SCHEMA_SOURCE,
-        'the detailed "Repository-aware Git handoff" policy in `wiki-reference`.',
-        InboundRouteKind.HEADING_REFERENCE,
-        _HANDOFF_HEADING,
-        _HANDOFF_ANCHOR,
+        "The complete managed procedure is at "
+        "`{skills_dir}/wiki-reference/references/maintenance.md`.",
+        "maintenance",
     ),
-    ManagedReferenceInboundRoute(
+    _managed_topic_route(
         _SCHEMA_SOURCE,
-        "Contract-level detail lives in the bundled `wiki-reference` skill at `{skills_dir}/wiki-reference/reference.md`",
-        InboundRouteKind.INSTALLED_FILE_ROUTE,
-        _REFERENCE_ROOT_HEADING,
-        _REFERENCE_ROOT_ANCHOR,
+        "then follow the managed policy at "
+        "`{skills_dir}/wiki-reference/references/repository-handoff.md`.",
+        "repository-handoff",
     ),
-    ManagedReferenceInboundRoute(
+    _managed_topic_route(
         _SCHEMA_SOURCE,
-        'in the `wiki-reference` skill\'s "Static-site export" section.',
-        InboundRouteKind.HEADING_REFERENCE,
-        "Static-site export",
-        "static-site-export",
+        "The complete qualification and fallback table is at "
+        "`{skills_dir}/wiki-reference/references/knowledge-consumption.md`.",
+        "knowledge-consumption",
     ),
-    ManagedReferenceInboundRoute(
+    _managed_topic_route(
         _SCHEMA_SOURCE,
-        'read the `wiki-reference` skill\'s "Dependency reconciliation" section',
-        InboundRouteKind.HEADING_REFERENCE,
-        "Dependency reconciliation",
-        "dependency-reconciliation",
+        "static-site and Obsidian projection contracts: "
+        "`{skills_dir}/wiki-reference/references/publishing.md`;",
+        "publishing",
     ),
-    ManagedReferenceInboundRoute(
+    _managed_topic_route(
         _SCHEMA_SOURCE,
-        "per-language extraction contracts (including the Haskell helper and inventory schema) are documented in the `wiki-reference` skill.",
-        InboundRouteKind.REFERENCE_ROOT,
-        _REFERENCE_ROOT_HEADING,
-        _REFERENCE_ROOT_ANCHOR,
+        "The full scheduling matrix and concurrency terminology are at "
+        "`{skills_dir}/wiki-reference/references/resources-context.md`.",
+        "resources-context",
+    ),
+    _managed_topic_route(
+        _SCHEMA_SOURCE,
+        "The canonical catalog and naming/ownership rules are at "
+        "`{skills_dir}/wiki-reference/references/surfaces-naming.md`",
+        "surfaces-naming",
     ),
     *(
-        ManagedReferenceInboundRoute(
-            path,
-            source_text,
-            InboundRouteKind.HEADING_REFERENCE,
-            _HANDOFF_HEADING,
-            _HANDOFF_ANCHOR,
+        _managed_topic_route(
+            f"skills/{skill_id}/SKILL.md",
+            _INSTALLED_HANDOFF_SPAN,
+            "repository-handoff",
         )
-        for path, source_text in (
-            (
-                "skills/usage-examples/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for details.',
-            ),
-            (
-                "skills/onboarding-guide/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for the full policy.',
-            ),
-            (
-                "skills/wiki-sync/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for the full policy.',
-            ),
-            (
-                "skills/infra-review/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for details.',
-            ),
-            (
-                "skills/dep-audit/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for details.',
-            ),
-            (
-                "skills/wiki-bootstrap/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for the full policy.',
-            ),
-            (
-                "skills/user-docs-author/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for details.',
-            ),
-            (
-                "skills/doc-review/SKILL.md",
-                'Read `wiki-reference`\'s "Repository-aware Git handoff" section for details.',
-            ),
+        for skill_id in _HANDOFF_SKILLS
+    ),
+    *(
+        _managed_topic_route(
+            f"skills/{skill_id}/SKILL.md",
+            _INSTALLED_KNOWLEDGE_SPAN,
+            "knowledge-consumption",
         )
+        for skill_id in _KNOWLEDGE_CONSUMERS
     ),
 )
 
@@ -818,20 +894,17 @@ def markdown_links(content: str) -> tuple[MarkdownLink, ...]:
     return tuple(links)
 
 
-def _reference_heading_lookup(
+def _destination_heading_lookup(
     package_root: Path,
-) -> tuple[MarkdownHeading | None, dict[str, str], dict[str, str]]:
-    reference_path = package_root / _REFERENCE_COMPATIBILITY
-    if not reference_path.is_file():
-        return None, {}, {}
-    headings = markdown_headings(reference_path.read_text(encoding="utf-8"))
+    destination_path: str,
+) -> tuple[MarkdownHeading | None, dict[str, str]]:
+    path = package_root / destination_path
+    if not path.is_file():
+        return None, {}
+    headings = markdown_headings(path.read_text(encoding="utf-8"))
     if not headings:
-        return None, {}, {}
-    return (
-        headings[0],
-        {heading.title: heading.anchor for heading in headings},
-        {heading.anchor: heading.title for heading in headings},
-    )
+        return None, {}
+    return headings[0], {heading.anchor: heading.title for heading in headings}
 
 
 def _resolved_package_link(source_path: str, target_path: str) -> str:
@@ -839,99 +912,99 @@ def _resolved_package_link(source_path: str, target_path: str) -> str:
     return posixpath.normpath(posixpath.join(source_parent, target_path))
 
 
-def _quoted_reference_heading(paragraph: str) -> str | None:
-    patterns = (
-        r"`wiki-reference`(?:\s+skill)?(?:'s|\s+skill's)?\s+\"([^\"]+)\"",
-        r"\"([^\"]+)\".{0,120}?`wiki-reference`",
+_INSTALLED_REFERENCE_PATH = re.compile(
+    r"(?:\{skills_dir\}|\.claude/skills|\.llm-wiki/skills)/"
+    r"(?P<relative>wiki-reference/(?:reference\.md|references/[a-z0-9-]+\.md))"
+)
+
+
+def _active_reference_sources(package_root: Path) -> tuple[Path, ...]:
+    source_paths = [package_root / _SCHEMA_SOURCE]
+    source_paths.extend(sorted((package_root / "skills").rglob("*.md")))
+    return tuple(
+        path
+        for path in source_paths
+        if path.is_file()
+        and not (
+            path.relative_to(package_root).as_posix().startswith(
+                f"{_REFERENCE_TOPICS}/"
+            )
+            or path.relative_to(package_root).as_posix() == _REFERENCE_COMPATIBILITY
+        )
     )
-    for pattern in patterns:
-        match = re.search(pattern, paragraph, flags=re.IGNORECASE)
-        if match is not None:
-            return match.group(1)
-    return None
-
-
-def _logical_markdown_blocks(content: str) -> tuple[str, ...]:
-    blocks: list[str] = []
-    current: list[str] = []
-    for line in content.splitlines():
-        stripped = line.strip()
-        starts_block = re.match(r"^(?:#{1,6}\s+|[-*]\s+|\d+\.\s+)", stripped)
-        if (not stripped or starts_block is not None) and current:
-            blocks.append(normalize_instruction_text("\n".join(current)))
-            current = []
-        if stripped:
-            current.append(line)
-    if current:
-        blocks.append(normalize_instruction_text("\n".join(current)))
-    return tuple(blocks)
 
 
 def discover_managed_reference_inbound_routes(
     package_root: Path,
 ) -> tuple[DiscoveredInboundRoute, ...]:
-    """Discover current compatibility-reference routes from their syntax.
+    """Discover direct topic and forbidden compatibility routes from syntax.
 
-    Local Markdown links are resolved relative to their source file. Textual
-    routes are classified per paragraph as an installed file route, a quoted
-    heading reference, or a compatibility-root reference. The compatibility
-    destination itself is excluded from textual discovery, while its router's
-    real Markdown link remains in scope.
+    Topic-internal and compatibility-index links are excluded. Active schema,
+    workflow, and router routes remain in scope. Alternative Claude and generic
+    installed paths collapse to one source/destination route.
     """
 
-    root_heading, anchors_by_title, titles_by_anchor = _reference_heading_lookup(
-        package_root
-    )
-    if root_heading is None:
-        return ()
-    source_paths = [package_root / _SCHEMA_SOURCE]
-    source_paths.extend(sorted((package_root / "skills").rglob("*.md")))
-    discovered: list[DiscoveredInboundRoute] = []
-    for path in source_paths:
-        if not path.is_file():
-            continue
+    managed_destinations = {
+        _topic(topic).path for topic in _TOPIC_HEADINGS
+    } | {_REFERENCE_COMPATIBILITY}
+    discovered: set[DiscoveredInboundRoute] = set()
+    for path in _active_reference_sources(package_root):
         relative = path.relative_to(package_root).as_posix()
         content = path.read_text(encoding="utf-8")
         for link in markdown_links(content):
-            if _resolved_package_link(relative, link.target_path) != (
-                _REFERENCE_COMPATIBILITY
-            ):
+            destination_path = _resolved_package_link(relative, link.target_path)
+            if destination_path not in managed_destinations:
                 continue
-            if link.anchor is None:
+            root_heading, titles_by_anchor = _destination_heading_lookup(
+                package_root,
+                destination_path,
+            )
+            if root_heading is None:
+                heading = ""
+                anchor = link.anchor or ""
+            elif link.anchor is None:
                 heading = root_heading.title
                 anchor = root_heading.anchor
             else:
                 heading = titles_by_anchor.get(link.anchor, "")
                 anchor = link.anchor
-            discovered.append(
+            discovered.add(
                 DiscoveredInboundRoute(
                     relative,
                     InboundRouteKind.MARKDOWN_LINK,
+                    destination_path,
                     heading,
                     anchor,
                 )
             )
 
-        relative_parts = PurePosixPath(relative).parts
-        if relative_parts[:2] == ("skills", "wiki-reference"):
-            continue
-        for paragraph in _logical_markdown_blocks(content):
-            if "wiki-reference" not in paragraph:
-                continue
-            if "wiki-reference/reference.md" in paragraph:
-                kind = InboundRouteKind.INSTALLED_FILE_ROUTE
-                heading = root_heading.title
-                anchor = root_heading.anchor
-            else:
-                heading = _quoted_reference_heading(paragraph) or root_heading.title
-                kind = (
-                    InboundRouteKind.HEADING_REFERENCE
-                    if heading != root_heading.title
-                    else InboundRouteKind.REFERENCE_ROOT
+        for match in _INSTALLED_REFERENCE_PATH.finditer(content):
+            destination_path = f"skills/{match.group('relative')}"
+            root_heading, _ = _destination_heading_lookup(
+                package_root,
+                destination_path,
+            )
+            discovered.add(
+                DiscoveredInboundRoute(
+                    relative,
+                    InboundRouteKind.INSTALLED_FILE_ROUTE,
+                    destination_path,
+                    root_heading.title if root_heading is not None else "",
+                    root_heading.anchor if root_heading is not None else "",
                 )
-                anchor = anchors_by_title.get(heading, "")
-            discovered.append(DiscoveredInboundRoute(relative, kind, heading, anchor))
-    return tuple(discovered)
+            )
+
+    return tuple(
+        sorted(
+            discovered,
+            key=lambda item: (
+                item.source_path,
+                item.destination_path,
+                item.kind.value,
+                item.destination_anchor,
+            ),
+        )
+    )
 
 
 def _package_data_patterns(project_root: Path) -> tuple[str, ...]:

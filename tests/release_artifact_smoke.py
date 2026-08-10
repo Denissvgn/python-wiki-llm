@@ -12,12 +12,14 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Mapping, Sequence
+from urllib.parse import unquote
 
 
 SCHEMA_VERSION = "agent-wiki-artifact-smoke/v1"
@@ -53,6 +55,21 @@ EXPECTED_SUBCOMMANDS = (
     "uninstall",
     "upgrade",
 )
+EXPECTED_WIKI_REFERENCE_FILES = (
+    "SKILL.md",
+    "reference.md",
+    "references/context-query.md",
+    "references/extractors-dependencies.md",
+    "references/governance.md",
+    "references/knowledge-consumption.md",
+    "references/maintenance.md",
+    "references/publishing.md",
+    "references/repository-handoff.md",
+    "references/resources-context.md",
+    "references/surfaces-naming.md",
+)
+_MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+_URI_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 
 class SmokeError(RuntimeError):
@@ -108,6 +125,63 @@ def _tree_hash(root: Path) -> str:
     return digest.hexdigest()
 
 
+def _validate_wiki_reference_tree(root: Path) -> int:
+    """Require the exact managed tree and resolve every local Markdown link."""
+
+    if root.is_symlink() or not root.is_dir():
+        raise SmokeError(f"wiki-reference is not a regular directory: {root}")
+    entries = tuple(sorted(root.rglob("*")))
+    if any(path.is_symlink() for path in entries):
+        raise SmokeError("wiki-reference export contains a symbolic link")
+    if any(not path.is_file() and not path.is_dir() for path in entries):
+        raise SmokeError("wiki-reference export contains a non-regular entry")
+    actual_files = {
+        path.relative_to(root).as_posix() for path in entries if path.is_file()
+    }
+    actual_directories = {
+        path.relative_to(root).as_posix() for path in entries if path.is_dir()
+    }
+    expected_files = set(EXPECTED_WIKI_REFERENCE_FILES)
+    if actual_files != expected_files:
+        missing = sorted(expected_files - actual_files)
+        extra = sorted(actual_files - expected_files)
+        raise SmokeError(
+            "wiki-reference exported file set mismatch: "
+            f"missing={missing}, extra={extra}"
+        )
+    if actual_directories != {"references"}:
+        raise SmokeError(
+            "wiki-reference exported directory set mismatch: "
+            f"actual={sorted(actual_directories)}"
+        )
+
+    resolved_root = root.resolve()
+    for markdown in sorted(path for path in entries if path.is_file()):
+        content = markdown.read_text(encoding="utf-8")
+        for match in _MARKDOWN_LINK.finditer(content):
+            raw_target = match.group(1).strip()
+            if raw_target.startswith("<") and raw_target.endswith(">"):
+                raw_target = raw_target[1:-1]
+            target = raw_target.split(maxsplit=1)[0]
+            if (
+                not target
+                or target.startswith("#")
+                or _URI_SCHEME.match(target) is not None
+            ):
+                continue
+            path_text = unquote(target.split("#", 1)[0])
+            if not path_text:
+                continue
+            target_path = markdown.parent / path_text
+            resolved = target_path.resolve()
+            if not resolved.is_relative_to(resolved_root) or not resolved.is_file():
+                relative = markdown.relative_to(root).as_posix()
+                raise SmokeError(
+                    f"unresolved local wiki-reference link in {relative}: {target}"
+                )
+    return len(actual_files)
+
+
 def _absolute_without_symlink_resolution(path: Path) -> Path:
     """Return an absolute command path without dereferencing venv symlinks."""
     return Path(os.path.abspath(path))
@@ -118,7 +192,7 @@ def _write_fixture(root: Path) -> tuple[Path, Path]:
     wiki = root / "wiki"
     source.mkdir(parents=True)
     (source / "pyproject.toml").write_text(
-        "[project]\nname = \"smoke-fixture\"\nversion = \"0.1.0\"\n",
+        '[project]\nname = "smoke-fixture"\nversion = "0.1.0"\n',
         encoding="utf-8",
     )
     package = source / "app"
@@ -430,6 +504,7 @@ def run_smoke(args: argparse.Namespace) -> int:
     skill_count = len(list(skills.glob("*/SKILL.md")))
     if skill_count != 16:
         raise SmokeError(f"expected 16 bundled skills, found {skill_count}")
+    reference_file_count = _validate_wiki_reference_tree(skills / "wiki-reference")
     plugin = work / "plugin"
     _run(
         [
@@ -466,6 +541,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "site_sha256": _tree_hash(site),
             "obsidian_sha256": _tree_hash(vault),
             "skills": skill_count,
+            "wiki_reference_files": reference_file_count,
             "plugin_sample": "documentation-hooks",
             "default_mcp_sdk": "absent",
             "mcp": mcp_status,

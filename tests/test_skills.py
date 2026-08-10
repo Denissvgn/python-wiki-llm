@@ -65,7 +65,13 @@ def test_canonical_wiki_mutators_require_repository_aware_handoff():
         assert "never force-add or change ignore/exclude rules" in normalized_lower, (
             skill_id
         )
-        assert '"Repository-aware Git handoff"' in manifest, skill_id
+        assert (
+            ".claude/skills/wiki-reference/references/repository-handoff.md" in manifest
+        ), skill_id
+        assert (
+            ".llm-wiki/skills/wiki-reference/references/repository-handoff.md"
+            in manifest
+        ), skill_id
 
 
 def test_bundled_skills_never_stage_a_wiki_unconditionally():
@@ -87,19 +93,23 @@ def test_bundled_skills_never_stage_a_wiki_unconditionally():
 
 def test_wiki_reference_defines_fail_closed_git_policy():
     reference = (
-        skills.BUNDLED_SKILLS_ROOT / "wiki-reference" / "reference.md"
+        skills.BUNDLED_SKILLS_ROOT
+        / "wiki-reference"
+        / "references"
+        / "repository-handoff.md"
     ).read_text(encoding="utf-8")
     normalized = " ".join(reference.split())
+    normalized_lower = normalized.lower()
 
-    assert "## Repository-aware Git handoff" in reference
+    assert "# Repository handoff" in reference
     assert "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in reference
-    assert "Exit 0 means **local-only**" in reference
-    assert "Exit 1 means **conditionally Git-eligible**" in reference
-    assert "Any other exit" in reference
-    assert "fails closed to the local-only handoff" in normalized
+    assert "| Exit 0 | Local-only |" in reference
+    assert "| Exit 1 | Conditionally Git-eligible |" in reference
+    assert "Any other exit, missing Git/worktree" in reference
+    assert "Fail closed to the local-only handoff" in normalized
     assert "nested `.gitignore`, `.git/info/exclude`" in normalized
-    assert "never stage a partial native snapshot" in normalized
-    assert "never stage or commit the source or adopted input wiki" in normalized
+    assert "never stage a partial native snapshot" in normalized_lower
+    assert "never stage or commit the source or adopted input wiki" in normalized_lower
 
 
 class TestBundledAgentDocsSkill:
@@ -1247,6 +1257,47 @@ class TestSkillExport:
         report = skills.export_skills(tmp_path / "out")
         assert report.ok
         assert {op.action for op in report.operations} == {"keep"}
+
+    def test_export_accepts_parent_relative_caller_destination(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        _write_custom_skill(root)
+        working = tmp_path / "working"
+        working.mkdir()
+        monkeypatch.chdir(working)
+
+        report = skills.export_skills("../shared", skills_root=root)
+
+        assert report.ok
+        assert (tmp_path / "shared" / "demo" / "SKILL.md").is_file()
+
+    def test_export_rejects_symlink_before_parent_component(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        _write_custom_skill(root)
+        working = tmp_path / "working"
+        working.mkdir()
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        try:
+            (working / "linked").symlink_to(outside, target_is_directory=True)
+        except OSError as exc:  # pragma: no cover - platform policy
+            pytest.skip(f"symlinks unavailable: {exc}")
+        monkeypatch.chdir(working)
+
+        report = skills.export_skills(
+            "linked/../escaped",
+            skills_root=root,
+        )
+
+        assert not report.ok
+        assert not (tmp_path / "escaped").exists()
+        assert any(
+            issue["category"] == "unsafe_or_conflicting_entry"
+            for issue in report.issues
+        )
 
     def test_export_preserves_local_edits_without_force(self, tmp_path):
         skills.export_skills(tmp_path / "out")

@@ -44,28 +44,28 @@
         "path": "CLAUDE.md",
         "variants": {
           "default": {
-            "words": 3090,
-            "characters": 22971,
-            "lines": 376,
-            "sha256": "e2f9c1ca94b2587b4647670d9545f25fd885d50ffb495e0b659df39b9b69085f"
+            "words": 3218,
+            "characters": 24857,
+            "lines": 416,
+            "sha256": "2f2dc64ff665fc9478800999844aeca0184ae728e7e85ea1f628e2ebef5ac9be"
           },
           "without_quality_hints": {
-            "words": 3037,
-            "characters": 22598,
-            "lines": 370,
-            "sha256": "27e5aec171cb27ae12ec8eeaddb366d62e80b60873277e8c56d1c2daa6564109"
+            "words": 3165,
+            "characters": 24484,
+            "lines": 410,
+            "sha256": "3304b9285f7241bef9313bd65d2b8b91dc88a5c5abda993b131b7796c88baa27"
           },
           "with_issue_reporting": {
-            "words": 3224,
-            "characters": 23870,
-            "lines": 392,
-            "sha256": "11838c8b8d834ecd9c3dcf97813edea57d3ff1ec48cf2dd86de5a8993f527eb5"
+            "words": 3352,
+            "characters": 25756,
+            "lines": 432,
+            "sha256": "1c6fd44e23b944594079cfada328e32b70f0cee2ae863fea3105631399009523"
           },
           "without_quality_hints_with_issue_reporting": {
-            "words": 3171,
-            "characters": 23497,
-            "lines": 386,
-            "sha256": "71953baff3b68a06754907feb5ff7f0283b58cf94dd788c60b10ded57d5f7294"
+            "words": 3299,
+            "characters": 25383,
+            "lines": 426,
+            "sha256": "50f29fbaa1a5e89ef45af47499b673fb3377fb0c78289e2a5501e73faa2480ea"
           }
         }
       },
@@ -73,28 +73,28 @@
         "path": ".cursorrules",
         "variants": {
           "default": {
-            "words": 3090,
-            "characters": 22963,
-            "lines": 376,
-            "sha256": "059d95789ff44c7b7abac1ec4f8de232be85fe51edb7e34b5acb8224a2d93b0d"
+            "words": 3218,
+            "characters": 24889,
+            "lines": 416,
+            "sha256": "f9a8752a74d856cbe875076b17ef4ec56e4000b5f57e63bc05911be8df7b4643"
           },
           "without_quality_hints": {
-            "words": 3037,
-            "characters": 22590,
-            "lines": 370,
-            "sha256": "4d243108a04c95aa7a557c7eb9e63cc80c75b4ec7d0e15288f2f4a1c2d18dbcf"
+            "words": 3165,
+            "characters": 24516,
+            "lines": 410,
+            "sha256": "45862d1ba1adf0b4ea936bf7788fe8bceb76d91144fcd2ff189b5c0152970256"
           },
           "with_issue_reporting": {
-            "words": 3224,
-            "characters": 23862,
-            "lines": 392,
-            "sha256": "2ae743197e135a56c804c4506f1eecd3c19ea475f05cdec2fd5d8232d51fb739"
+            "words": 3352,
+            "characters": 25788,
+            "lines": 432,
+            "sha256": "6c7c3501f5f946286958f9258b27acdcc841e3052bab9a6b5c913116e2002ca7"
           },
           "without_quality_hints_with_issue_reporting": {
-            "words": 3171,
-            "characters": 23489,
-            "lines": 386,
-            "sha256": "9ea1bfedbc88046f5f667e2e2c41f0f31cedb8241bd9d646205351dd93f92821"
+            "words": 3299,
+            "characters": 25415,
+            "lines": 426,
+            "sha256": "79e4257dd888ab4c8f94cb6f89c22c578b1522d7d19e08e1168a66049fe9eae6"
           }
         }
       },
@@ -102,28 +102,28 @@
         "path": ".github/copilot-instructions.md",
         "variants": {
           "default": {
-            "words": 3089,
-            "characters": 22977,
-            "lines": 376,
-            "sha256": "1883ab3e785c391ddb69041961f7205bb13b772fc27f15da36ad1ae8ce5aa7ae"
+            "words": 3217,
+            "characters": 24903,
+            "lines": 416,
+            "sha256": "a2d80df36cd67e2b70ba27d60c15260a68c2144f4d61567b35851da10d78fd37"
           },
           "without_quality_hints": {
-            "words": 3036,
-            "characters": 22604,
-            "lines": 370,
-            "sha256": "c679116a5df79703f1d2da7a36fb429f9260d5f8f4fd693ddcfb57a8552db4a0"
+            "words": 3164,
+            "characters": 24530,
+            "lines": 410,
+            "sha256": "b9fcc3a7abe3d6d01616056a6426dc052f1fc05d8fdaf092af6aac0725ee3c3f"
           },
           "with_issue_reporting": {
-            "words": 3223,
-            "characters": 23876,
-            "lines": 392,
-            "sha256": "bf01ea5479bc0ea999e8e0057dd814baec9922980a86103ac6827e8d186a8461"
+            "words": 3351,
+            "characters": 25802,
+            "lines": 432,
+            "sha256": "895581d2bd5cad3156f0f4808090b689eb844a5ea9e93c80fc4e45505e92d437"
           },
           "without_quality_hints_with_issue_reporting": {
-            "words": 3170,
-            "characters": 23503,
-            "lines": 386,
-            "sha256": "02e1e7d3f2202500b8ebe5fd337d1bf241c8dfdbf67d8fe71552e0720be7842a"
+            "words": 3298,
+            "characters": 25429,
+            "lines": 426,
+            "sha256": "e3c76ae8717c6fd74a7591a5c0ddd4ec04851d8506f1170abd53c2cced513bc4"
           }
         }
       },
@@ -131,28 +131,28 @@
         "path": ".aider.conf.yml",
         "variants": {
           "default": {
-            "words": 3084,
-            "characters": 22933,
-            "lines": 375,
-            "sha256": "5e176f03f97afc80b768074c787c99430ad6e502e2a79e0a425186036b762d4d"
+            "words": 3212,
+            "characters": 24859,
+            "lines": 415,
+            "sha256": "e31b42e54d5460589bf7e3a6872f1d72421dbde75a3a298126644b24ea505b91"
           },
           "without_quality_hints": {
-            "words": 3031,
-            "characters": 22560,
-            "lines": 369,
-            "sha256": "925624ec3687a442fac86c72d062e937bc27e5a080570552d896d46381c4dbd5"
+            "words": 3159,
+            "characters": 24486,
+            "lines": 409,
+            "sha256": "2c0a508633a28dd7f537db8a298d6e720701e4d10671830f44d0bffb17639a6f"
           },
           "with_issue_reporting": {
-            "words": 3218,
-            "characters": 23832,
-            "lines": 391,
-            "sha256": "053780e1698324b4b6517ca2f478825a817dc41336b8b4579e48cb4f98f31cf7"
+            "words": 3346,
+            "characters": 25758,
+            "lines": 431,
+            "sha256": "26e7ef9a803c7928ccd6065253b153dd8d32afffd1eacb90932434d8f543b471"
           },
           "without_quality_hints_with_issue_reporting": {
-            "words": 3165,
-            "characters": 23459,
-            "lines": 385,
-            "sha256": "e65d52d4eeb760725774930ee28d4a8e9f50717256f2188a5103efb0f029ff88"
+            "words": 3293,
+            "characters": 25385,
+            "lines": 425,
+            "sha256": "ac4b65689e27bedc00174098a7c53c3348ca2e039e4fb45512b70975a810a046"
           }
         }
       },
@@ -160,28 +160,28 @@
         "path": ".opencode/instructions.md",
         "variants": {
           "default": {
-            "words": 3084,
-            "characters": 22933,
-            "lines": 375,
-            "sha256": "5e176f03f97afc80b768074c787c99430ad6e502e2a79e0a425186036b762d4d"
+            "words": 3212,
+            "characters": 24859,
+            "lines": 415,
+            "sha256": "e31b42e54d5460589bf7e3a6872f1d72421dbde75a3a298126644b24ea505b91"
           },
           "without_quality_hints": {
-            "words": 3031,
-            "characters": 22560,
-            "lines": 369,
-            "sha256": "925624ec3687a442fac86c72d062e937bc27e5a080570552d896d46381c4dbd5"
+            "words": 3159,
+            "characters": 24486,
+            "lines": 409,
+            "sha256": "2c0a508633a28dd7f537db8a298d6e720701e4d10671830f44d0bffb17639a6f"
           },
           "with_issue_reporting": {
-            "words": 3218,
-            "characters": 23832,
-            "lines": 391,
-            "sha256": "053780e1698324b4b6517ca2f478825a817dc41336b8b4579e48cb4f98f31cf7"
+            "words": 3346,
+            "characters": 25758,
+            "lines": 431,
+            "sha256": "26e7ef9a803c7928ccd6065253b153dd8d32afffd1eacb90932434d8f543b471"
           },
           "without_quality_hints_with_issue_reporting": {
-            "words": 3165,
-            "characters": 23459,
-            "lines": 385,
-            "sha256": "e65d52d4eeb760725774930ee28d4a8e9f50717256f2188a5103efb0f029ff88"
+            "words": 3293,
+            "characters": 25385,
+            "lines": 425,
+            "sha256": "ac4b65689e27bedc00174098a7c53c3348ca2e039e4fb45512b70975a810a046"
           }
         }
       },
@@ -189,28 +189,28 @@
         "path": "AGENTS.md",
         "variants": {
           "default": {
-            "words": 3084,
-            "characters": 22933,
-            "lines": 375,
-            "sha256": "5e176f03f97afc80b768074c787c99430ad6e502e2a79e0a425186036b762d4d"
+            "words": 3212,
+            "characters": 24859,
+            "lines": 415,
+            "sha256": "e31b42e54d5460589bf7e3a6872f1d72421dbde75a3a298126644b24ea505b91"
           },
           "without_quality_hints": {
-            "words": 3031,
-            "characters": 22560,
-            "lines": 369,
-            "sha256": "925624ec3687a442fac86c72d062e937bc27e5a080570552d896d46381c4dbd5"
+            "words": 3159,
+            "characters": 24486,
+            "lines": 409,
+            "sha256": "2c0a508633a28dd7f537db8a298d6e720701e4d10671830f44d0bffb17639a6f"
           },
           "with_issue_reporting": {
-            "words": 3218,
-            "characters": 23832,
-            "lines": 391,
-            "sha256": "053780e1698324b4b6517ca2f478825a817dc41336b8b4579e48cb4f98f31cf7"
+            "words": 3346,
+            "characters": 25758,
+            "lines": 431,
+            "sha256": "26e7ef9a803c7928ccd6065253b153dd8d32afffd1eacb90932434d8f543b471"
           },
           "without_quality_hints_with_issue_reporting": {
-            "words": 3165,
-            "characters": 23459,
-            "lines": 385,
-            "sha256": "e65d52d4eeb760725774930ee28d4a8e9f50717256f2188a5103efb0f029ff88"
+            "words": 3293,
+            "characters": 25385,
+            "lines": 425,
+            "sha256": "ac4b65689e27bedc00174098a7c53c3348ca2e039e4fb45512b70975a810a046"
           }
         }
       }

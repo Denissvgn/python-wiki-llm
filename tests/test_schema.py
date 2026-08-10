@@ -140,23 +140,42 @@ def test_agent_schema_mentions_dependency_architecture_responsibilities():
     assert "warning diagnostics" in content
 
 
-def test_agent_schema_points_to_wiki_reference_skill():
+def test_agent_schema_points_to_direct_managed_reference_topics():
     content = build_schema_content("generic", "docs/llm_wiki")
     text = _squash_ws(content)
 
     assert "## Deep reference (read on demand)" in content
-    # generic agents get the platform-neutral skills home
-    assert ".llm-wiki/skills/wiki-reference/reference.md" in content
-    # claude gets its native, auto-indexed skills directory
     claude_content = build_schema_content("claude", "docs/llm_wiki")
-    assert ".claude/skills/wiki-reference/reference.md" in claude_content
-    assert "llm-wiki skills install" in content
+    for topic in (
+        "context-query",
+        "extractors-dependencies",
+        "knowledge-consumption",
+        "maintenance",
+        "publishing",
+        "repository-handoff",
+        "resources-context",
+        "surfaces-naming",
+    ):
+        suffix = f"wiki-reference/references/{topic}.md"
+        assert f".llm-wiki/skills/{suffix}" in content
+        assert f".claude/skills/{suffix}" in claude_content
+    assert "wiki-reference/reference.md" not in content
+    assert "wiki-reference/reference.md" not in claude_content
+    assert (
+        "llm-wiki skills install --dest .llm-wiki/skills "
+        "--skill wiki-reference --force"
+    ) in content
+    assert (
+        "llm-wiki skills install --dest .claude/skills "
+        "--skill wiki-reference --force"
+    ) in claude_content
     assert "llm-wiki skills export --dest exported-skills" in content
-    assert "Do not read it upfront" in text
+    assert "Do not read every topic upfront" in text
     # Inline pointers keep trigger conditions next to the rules that need them.
-    assert "Dependency reconciliation" in content
-    assert "Extractor" in content
-    assert "Static-site export" in content
+    assert "extractor and dependency" in text
+    assert "static-site and Obsidian" in content
+    assert "context, packet, exact-query" in content
+    assert "not required to recover this core loop" in text
 
 
 def test_agent_schema_mentions_data_flow_review_responsibilities():
@@ -229,7 +248,7 @@ def test_agent_schema_requires_repository_aware_git_handoff():
     assert "Exit 1 is only conditionally Git-eligible" in text
     assert "Any other result is indeterminate and fails closed" in text
     assert "do not stage, commit, force-add, or change ignore/exclude rules" in text
-    assert '"Repository-aware Git handoff" policy in `wiki-reference`' in text
+    assert "wiki-reference/references/repository-handoff.md" in text
     assert "`external_agent_docs` keeps its stricter packet boundary" in text
 
 

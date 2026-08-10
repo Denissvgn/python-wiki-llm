@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from tests import release_artifact_smoke
+
 try:
     import tomllib  # type: ignore[reportMissingImports]
 except ModuleNotFoundError:  # pragma: no cover - Python 3.9/3.10
@@ -120,6 +122,23 @@ def test_package_data_includes_bundled_skills():
     assert "skills/wiki-sync/reference.md" in package_data
     assert "skills/wiki-bootstrap/SKILL.md" in package_data
     assert "skills/wiki-bootstrap/reference.md" in package_data
+    assert "skills/wiki-reference/SKILL.md" in package_data
+    assert "skills/wiki-reference/reference.md" in package_data
+    assert {
+        item
+        for item in package_data
+        if item.startswith("skills/wiki-reference/references/")
+    } == {
+        "skills/wiki-reference/references/context-query.md",
+        "skills/wiki-reference/references/extractors-dependencies.md",
+        "skills/wiki-reference/references/governance.md",
+        "skills/wiki-reference/references/knowledge-consumption.md",
+        "skills/wiki-reference/references/maintenance.md",
+        "skills/wiki-reference/references/publishing.md",
+        "skills/wiki-reference/references/repository-handoff.md",
+        "skills/wiki-reference/references/resources-context.md",
+        "skills/wiki-reference/references/surfaces-naming.md",
+    }
     assert "skills/attack-surface/SKILL.md" in package_data
     assert "skills/attack-surface/reference.md" in package_data
     assert "skills/dep-audit/SKILL.md" in package_data
@@ -146,6 +165,12 @@ def test_package_data_includes_bundled_skills():
     assert "skills/wiki-semantic-enhance/reference.md" in package_data
 
 
+def test_managed_reference_tree_matches_artifact_smoke_contract():
+    root = PROJECT_ROOT / "src" / "llm_wiki_cli" / "skills" / "wiki-reference"
+
+    assert release_artifact_smoke._validate_wiki_reference_tree(root) == 11
+
+
 def test_core_dependencies_do_not_install_model_provider_sdks():
     data = _pyproject()
     dependency_names = {
@@ -168,9 +193,7 @@ def test_core_dependencies_do_not_install_model_provider_sdks():
 def test_package_data_includes_bundled_documentation_hooks_plugin_sample():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
-    assert (
-        "examples/plugins/documentation-hooks/llm-wiki-plugin.json" in package_data
-    )
+    assert "examples/plugins/documentation-hooks/llm-wiki-plugin.json" in package_data
     assert "examples/plugins/documentation-hooks/detectors.py" in package_data
     assert "examples/plugins/documentation-hooks/styles.py" in package_data
 
@@ -178,8 +201,7 @@ def test_package_data_includes_bundled_documentation_hooks_plugin_sample():
 def test_sdist_manifest_includes_source_documentation_hooks_plugin_sample():
     manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     assert (
-        "recursive-include examples/plugins/documentation-hooks *.py *.json"
-        in manifest
+        "recursive-include examples/plugins/documentation-hooks *.py *.json" in manifest
     )
 
 

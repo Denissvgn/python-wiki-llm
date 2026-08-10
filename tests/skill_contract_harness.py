@@ -11,6 +11,7 @@ import re
 import shlex
 from typing import Iterable, Mapping, Sequence
 
+from llm_wiki_cli import api as wiki_api
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.services import mcp_server, skills
@@ -100,6 +101,14 @@ class WorkflowMarker:
     text: str
 
 
+def _owning_skill_id(path: Path) -> str:
+    """Resolve a nested Markdown file to the closest skill manifest owner."""
+    for directory in path.parents:
+        if (directory / "SKILL.md").is_file():
+            return directory.name
+    return path.parent.name
+
+
 def _is_explicit_command_fragment(command: str) -> bool:
     return _EXPLICIT_FRAGMENT_RE.search(command) is not None
 
@@ -154,7 +163,7 @@ def extract_fenced_cli_examples(skills_root: Path) -> tuple[CliExample, ...]:
             if not _is_explicit_command_fragment(command):
                 examples.append(
                     CliExample(
-                        ExampleLocation(path.parent.name, path, start_line),
+                        ExampleLocation(_owning_skill_id(path), path, start_line),
                         command,
                     )
                 )
@@ -183,7 +192,7 @@ def extract_inline_cli_examples(skills_root: Path) -> tuple[CliExample, ...]:
                 if not _is_explicit_command_fragment(command):
                     examples.append(
                         CliExample(
-                            ExampleLocation(path.parent.name, path, index + 1),
+                            ExampleLocation(_owning_skill_id(path), path, index + 1),
                             command,
                         )
                     )
@@ -221,7 +230,7 @@ def extract_inline_cli_examples(skills_root: Path) -> tuple[CliExample, ...]:
                     if not _is_explicit_command_fragment(command):
                         examples.append(
                             CliExample(
-                                ExampleLocation(path.parent.name, path, index + 1),
+                                ExampleLocation(_owning_skill_id(path), path, index + 1),
                                 command,
                             )
                         )
@@ -298,7 +307,7 @@ def extract_query_graph_examples(path: Path) -> tuple[JsonExample, ...]:
                     continue
                 seen.add(key)
                 location = ExampleLocation(
-                    path.parent.name, path, json_line_number
+                    _owning_skill_id(path), path, json_line_number
                 )
                 raw = _safe_substitute(match.group(0), location)
                 try:
@@ -338,7 +347,7 @@ def extract_mcp_tool_examples(path: Path) -> tuple[McpToolExample, ...]:
             index += 1
         if index >= len(lines) or lines[index].strip() != "```json":
             raise SkillContractError(
-                f"{path.parent.name} ({path.as_posix()}:{marker_line}): "
+                f"{_owning_skill_id(path)} ({path.as_posix()}:{marker_line}): "
                 "MCP tool marker must be followed by a fenced JSON object"
             )
         start_line = index + 2
@@ -349,11 +358,11 @@ def extract_mcp_tool_examples(path: Path) -> tuple[McpToolExample, ...]:
             index += 1
         if index >= len(lines):
             raise SkillContractError(
-                f"{path.parent.name} ({path.as_posix()}:{start_line}): "
+                f"{_owning_skill_id(path)} ({path.as_posix()}:{start_line}): "
                 "unterminated MCP tool JSON fence"
             )
 
-        location = ExampleLocation(path.parent.name, path, start_line)
+        location = ExampleLocation(_owning_skill_id(path), path, start_line)
         raw = _safe_substitute("\n".join(block), location)
         try:
             payload = json.loads(raw)
@@ -388,6 +397,14 @@ class _ValidationOnlyMcpWikiService(mcp_server.McpWikiService):
             "options": query_options,
         }
 
+    def query_documentation(self, request: Mapping[str, object]) -> dict:
+        operation, limit = wiki_api._validate_documentation_query_request(request)
+        return {
+            "method": "query_documentation",
+            "operation": operation,
+            "limit": limit,
+        }
+
 
 def validate_mcp_tool_example(example: McpToolExample) -> dict:
     """Validate one named MCP example through its production public method."""
@@ -397,6 +414,7 @@ def validate_mcp_tool_example(example: McpToolExample) -> dict:
         "related_concepts",
         "traverse_typed_graph",
         "explain_evidence",
+        "query_documentation",
     }
     if example.tool_name not in supported:
         raise SkillContractError(
@@ -431,7 +449,7 @@ def extract_context_request_examples(skills_root: Path) -> tuple[JsonExample, ..
                     and context_cmd.PROTOCOL_VERSION in inline.group(1)
                 ):
                     location = ExampleLocation(
-                        path.parent.name, path, index + 1
+                        _owning_skill_id(path), path, index + 1
                     )
                     raw = _safe_substitute(inline.group(1), location)
                     try:
@@ -459,7 +477,7 @@ def extract_context_request_examples(skills_root: Path) -> tuple[JsonExample, ..
             if context_cmd.PROTOCOL_VERSION not in raw:
                 index += 1
                 continue
-            location = ExampleLocation(path.parent.name, path, start_line)
+            location = ExampleLocation(_owning_skill_id(path), path, start_line)
             try:
                 payload = json.loads(raw)
             except json.JSONDecodeError as exc:
@@ -559,7 +577,9 @@ def extract_workflow_markers(path: Path) -> tuple[WorkflowMarker, ...]:
     markers: list[WorkflowMarker] = []
     for index, line in enumerate(lines):
         command = line.strip()
-        location = ExampleLocation(path.parent.name, path, offset + index + 1)
+        location = ExampleLocation(
+            _owning_skill_id(path), path, offset + index + 1
+        )
         if _REANCHOR_COMMAND_RE.match(command):
             if "--dry-run" in command:
                 continue
