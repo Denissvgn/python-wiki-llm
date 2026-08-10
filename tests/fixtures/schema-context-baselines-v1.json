@@ -1,0 +1,249 @@
+{
+  "schema_version": "schema-context-executable-baselines/v1",
+  "generated_schema": {
+    "wiki_dir": "docs/llm_wiki",
+    "measurement": {
+      "words": "unicode-whitespace-delimited",
+      "characters": "unicode-code-points",
+      "lines": "splitlines",
+      "sha256": "utf-8-bytes"
+    },
+    "compact_target": {
+      "words": {
+        "minimum": 400,
+        "maximum": 650
+      },
+      "characters": {
+        "preferred_maximum": 5000
+      },
+      "reduction_percent": {
+        "minimum": 75,
+        "maximum": 85
+      }
+    },
+    "variants": {
+      "default": {
+        "quality_hints": true,
+        "issue_reporting": false
+      },
+      "without_quality_hints": {
+        "quality_hints": false,
+        "issue_reporting": false
+      },
+      "with_issue_reporting": {
+        "quality_hints": true,
+        "issue_reporting": true
+      },
+      "without_quality_hints_with_issue_reporting": {
+        "quality_hints": false,
+        "issue_reporting": true
+      }
+    },
+    "agents": {
+      "claude": {
+        "path": "CLAUDE.md",
+        "variants": {
+          "default": {
+            "words": 3028,
+            "characters": 22466,
+            "lines": 370,
+            "sha256": "78dbcf0d4a0a3087dd6098d506aa9a60dcbb88de4c02024c92a46ce0ad2fa4b5"
+          },
+          "without_quality_hints": {
+            "words": 2975,
+            "characters": 22093,
+            "lines": 364,
+            "sha256": "b60d25e7cf6e86d42b3da31a50bfbca644d7b72bc2b6ff44f78cafde9d390d5c"
+          },
+          "with_issue_reporting": {
+            "words": 3162,
+            "characters": 23365,
+            "lines": 386,
+            "sha256": "7818ddf2cfb6e137997c902728f5f9613f327889d42b78a92e866f67fd958573"
+          },
+          "without_quality_hints_with_issue_reporting": {
+            "words": 3109,
+            "characters": 22992,
+            "lines": 380,
+            "sha256": "24efcadb59dec5fd2b3ac3d3b19fd4e918548487dba4f87beaccde7131018693"
+          }
+        }
+      },
+      "cursor": {
+        "path": ".cursorrules",
+        "variants": {
+          "default": {
+            "words": 3028,
+            "characters": 22458,
+            "lines": 370,
+            "sha256": "33fc09f4b4c3cb6830a868ad99d2594af37fffefe0cc3797aba686b72382b22e"
+          },
+          "without_quality_hints": {
+            "words": 2975,
+            "characters": 22085,
+            "lines": 364,
+            "sha256": "55fd37d3cb44fa700cd1485322d0d60a941324e5b1de0da6d5b7df3edcb3a3ad"
+          },
+          "with_issue_reporting": {
+            "words": 3162,
+            "characters": 23357,
+            "lines": 386,
+            "sha256": "ed4412f0268aace4c9797e4b098652f3c752a57bd59cb4bb5c3b05c277f47c0e"
+          },
+          "without_quality_hints_with_issue_reporting": {
+            "words": 3109,
+            "characters": 22984,
+            "lines": 380,
+            "sha256": "6332c3915a041916111d37f861f2ab6a079d1e07e6ffc362ab3ee8fd45ac06c2"
+          }
+        }
+      },
+      "copilot": {
+        "path": ".github/copilot-instructions.md",
+        "variants": {
+          "default": {
+            "words": 3027,
+            "characters": 22472,
+            "lines": 370,
+            "sha256": "482cd6f9ed955cd92c6b16abdb6ef7c1c2740f212eca1821245e3ec96e51c510"
+          },
+          "without_quality_hints": {
+            "words": 2974,
+            "characters": 22099,
+            "lines": 364,
+            "sha256": "01f7bb816393436b79a7a8afcbabccae1a7dbb631414776245c3eede2165babd"
+          },
+          "with_issue_reporting": {
+            "words": 3161,
+            "characters": 23371,
+            "lines": 386,
+            "sha256": "40e46980d97ca9c5056779690a16a1dbf0563b05c6a075d268b4bb3b4ef5af74"
+          },
+          "without_quality_hints_with_issue_reporting": {
+            "words": 3108,
+            "characters": 22998,
+            "lines": 380,
+            "sha256": "a37848c8130e22fd6b488fda64925a4629a1ae65119e51d7dc0564064fc3d252"
+          }
+        }
+      },
+      "aider": {
+        "path": ".aider.conf.yml",
+        "variants": {
+          "default": {
+            "words": 3022,
+            "characters": 22428,
+            "lines": 369,
+            "sha256": "1b896c6839cfb0ea77c1a23a2665669ad2e3b684a2952e33b454c4dc9798e4c2"
+          },
+          "without_quality_hints": {
+            "words": 2969,
+            "characters": 22055,
+            "lines": 363,
+            "sha256": "6dd85b03b27883932b21e9a969968275a6a8c524fb4c3cb22d9b5c521af94dee"
+          },
+          "with_issue_reporting": {
+            "words": 3156,
+            "characters": 23327,
+            "lines": 385,
+            "sha256": "55d7e2dda68ace4e793982e5d84438677b3d96842e643c1852a1dbe69a22c2c4"
+          },
+          "without_quality_hints_with_issue_reporting": {
+            "words": 3103,
+            "characters": 22954,
+            "lines": 379,
+            "sha256": "58aba18fb65eb06c2f2f38c7919b004682548c07220bb47cd88c1ae721b22c43"
+          }
+        }
+      },
+      "opencode": {
+        "path": ".opencode/instructions.md",
+        "variants": {
+          "default": {
+            "words": 3022,
+            "characters": 22428,
+            "lines": 369,
+            "sha256": "1b896c6839cfb0ea77c1a23a2665669ad2e3b684a2952e33b454c4dc9798e4c2"
+          },
+          "without_quality_hints": {
+            "words": 2969,
+            "characters": 22055,
+            "lines": 363,
+            "sha256": "6dd85b03b27883932b21e9a969968275a6a8c524fb4c3cb22d9b5c521af94dee"
+          },
+          "with_issue_reporting": {
+            "words": 3156,
+            "characters": 23327,
+            "lines": 385,
+            "sha256": "55d7e2dda68ace4e793982e5d84438677b3d96842e643c1852a1dbe69a22c2c4"
+          },
+          "without_quality_hints_with_issue_reporting": {
+            "words": 3103,
+            "characters": 22954,
+            "lines": 379,
+            "sha256": "58aba18fb65eb06c2f2f38c7919b004682548c07220bb47cd88c1ae721b22c43"
+          }
+        }
+      },
+      "generic": {
+        "path": "AGENTS.md",
+        "variants": {
+          "default": {
+            "words": 3022,
+            "characters": 22428,
+            "lines": 369,
+            "sha256": "1b896c6839cfb0ea77c1a23a2665669ad2e3b684a2952e33b454c4dc9798e4c2"
+          },
+          "without_quality_hints": {
+            "words": 2969,
+            "characters": 22055,
+            "lines": 363,
+            "sha256": "6dd85b03b27883932b21e9a969968275a6a8c524fb4c3cb22d9b5c521af94dee"
+          },
+          "with_issue_reporting": {
+            "words": 3156,
+            "characters": 23327,
+            "lines": 385,
+            "sha256": "55d7e2dda68ace4e793982e5d84438677b3d96842e643c1852a1dbe69a22c2c4"
+          },
+          "without_quality_hints_with_issue_reporting": {
+            "words": 3103,
+            "characters": 22954,
+            "lines": 379,
+            "sha256": "58aba18fb65eb06c2f2f38c7919b004682548c07220bb47cd88c1ae721b22c43"
+          }
+        }
+      }
+    }
+  },
+  "plain_context": {
+    "protocol_version": "llm-wiki-context/v1",
+    "default_prefer_fresh": false,
+    "default_golden": {
+      "path": "tests/fixtures/context-prefer-fresh-off-v1.json",
+      "bytes": 565,
+      "sha256": "494420b90b2b1573002386d1d7933ee3a8f627866016b406a6d663223565c82b"
+    },
+    "preferred_golden": {
+      "path": "tests/fixtures/context-prefer-fresh-on-v1.json",
+      "bytes": 847,
+      "sha256": "387cad7d91c2d37553bd47dffe3c377b0ddd54bc47817ef152b4db4fdfb14169"
+    }
+  },
+  "qualified_context_packet": {
+    "schema_version": "llm-wiki-qualified-context-packet/v1",
+    "context_protocol_version": "llm-wiki-context/v1",
+    "policy_version": "qualified-context-policy-v1",
+    "path_policy_version": "qualified-context-path-policy-v1",
+    "reconciliation_policy": "qualified-context-complete-policy-v1",
+    "assurance_level": "content-integrity",
+    "generator_policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+    "path_policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+    "golden": {
+      "path": "tests/fixtures/context-packet-v1.json",
+      "bytes": 2377,
+      "sha256": "ca0893a182839a045faed26850f97a37227f4263177efa4c60a41c25d5f0d2fe",
+      "packet_id": "sha256:d91789077c5875da666cc2e8ce0abb9f9b7e1f7560fdc6c78fbb6ff91a4b506c"
+    }
+  }
+}

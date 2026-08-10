@@ -1,0 +1,5729 @@
+{
+  "availability_semantics": {
+    "degraded_mixed": "diagnostic-only-no-native-conclusion",
+    "ready": "consumable-not-complete-or-current",
+    "required_currentness_condition": "not-required",
+    "required_success_condition": "availability-ready",
+    "snapshot_only": "ready-with-explicit-freshness-limitation"
+  },
+  "evidence_composition": {
+    "auto": "fallback-if-any-rejecting-base-state-applies",
+    "base_state_precedence": [
+      "invalid-surface",
+      "incompatible",
+      "unsupported",
+      "absent",
+      "degraded-mixed",
+      "ready"
+    ],
+    "found_false": "apply-the-most-conservative-row-meaning",
+    "invalid_surface": "remove-independently-validated-surface-after-all-composition",
+    "invalid_surface_scope": "global-all-lifecycle-states",
+    "knowledge_and_fallback_source": "resolved-evidence-row-only",
+    "profile_source": "lifecycle-row-only",
+    "qualifiers": [
+      "snapshot-only",
+      "source-changed",
+      "bounded-truncated"
+    ],
+    "qualifiers_accumulate": true,
+    "read_mutation_permission": "none",
+    "recovery_order": "lifecycle-then-evidence-deduplicated",
+    "rejecting_base_states": [
+      "invalid-surface",
+      "incompatible",
+      "unsupported",
+      "absent",
+      "degraded-mixed"
+    ],
+    "required": "error-if-any-rejecting-base-state-applies",
+    "signal_order": "lifecycle-then-evidence-omitting-none"
+  },
+  "evidence_matrix": [
+    {
+      "auto_outcome": "success-selected",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "qualified-only-with-declared-coverage-and-bounds",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_command": "none-required",
+      "recovery_parameters": [],
+      "recovery_precondition": "none-required",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "success-selected",
+      "state": "ready",
+      "warning_or_error": {
+        "auto": {
+          "code": null,
+          "level": "none"
+        },
+        "required": {
+          "code": null,
+          "level": "none"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "selected",
+        "availability": "ready",
+        "basis": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "state": "recorded"
+        },
+        "reason": "knowledge-ready",
+        "required_status": "selected"
+      }
+    },
+    {
+      "auto_outcome": "success-fallback",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "recovery_parameters": [
+        "src_dir",
+        "wiki_dir"
+      ],
+      "recovery_precondition": "explicit-projection-regeneration-request",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "error",
+      "state": "absent",
+      "warning_or_error": {
+        "auto": {
+          "code": "knowledge-projection-not-present",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-required-unavailable",
+          "level": "error"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "fallback",
+        "availability": "absent",
+        "basis": {
+          "availability": "absent",
+          "reason": "knowledge-projection-not-present",
+          "state": "unavailable"
+        },
+        "reason": "knowledge-projection-not-present",
+        "required_status": "error-no-context-response"
+      }
+    },
+    {
+      "auto_outcome": "success-fallback-with-degraded-disclosure",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "recovery_parameters": [
+        "src_dir",
+        "wiki_dir"
+      ],
+      "recovery_precondition": "explicit-projection-regeneration-request",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "error",
+      "state": "degraded-mixed",
+      "warning_or_error": {
+        "auto": {
+          "code": "knowledge-projection-degraded",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-required-unavailable",
+          "level": "error"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "fallback",
+        "availability": "degraded",
+        "basis": {
+          "availability": "degraded",
+          "reason": "policy-selected-surface-only-fallback-after-mixed-snapshot",
+          "state": "unavailable"
+        },
+        "reason": "policy-selected-surface-only-fallback-after-mixed-snapshot",
+        "required_status": "error-no-context-response"
+      }
+    },
+    {
+      "auto_outcome": "success-fallback",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "recovery_parameters": [
+        "src_dir",
+        "wiki_dir"
+      ],
+      "recovery_precondition": "installed-cli-version-supports-required-projection-schema",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "error",
+      "state": "unsupported",
+      "warning_or_error": {
+        "auto": {
+          "code": "knowledge-schema-unsupported",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-required-unavailable",
+          "level": "error"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "fallback",
+        "availability": "unsupported",
+        "basis": {
+          "availability": "unsupported",
+          "reason": "knowledge-schema-version-unsupported",
+          "state": "unavailable"
+        },
+        "reason": "knowledge-schema-version-unsupported",
+        "required_status": "error-no-context-response"
+      }
+    },
+    {
+      "auto_outcome": "success-fallback",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "recovery_parameters": [
+        "src_dir",
+        "wiki_dir"
+      ],
+      "recovery_precondition": "incompatible-basis-inputs-reconciled",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "error",
+      "state": "incompatible",
+      "warning_or_error": {
+        "auto": {
+          "code": "knowledge-basis-incompatible",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-required-unavailable",
+          "level": "error"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "fallback",
+        "availability": "degraded",
+        "basis": {
+          "availability": "degraded",
+          "reason": "knowledge-basis-incompatible",
+          "state": "unavailable"
+        },
+        "reason": "knowledge-basis-incompatible",
+        "required_status": "error-no-context-response"
+      }
+    },
+    {
+      "auto_outcome": "success-selected-with-snapshot-disclosure",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_command": "none-required",
+      "recovery_parameters": [],
+      "recovery_precondition": "none-required",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "success-selected-with-snapshot-disclosure",
+      "state": "snapshot-only",
+      "warning_or_error": {
+        "auto": {
+          "code": "knowledge-snapshot-only",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-snapshot-only",
+          "level": "warning"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "selected",
+        "availability": "ready",
+        "basis": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "state": "recorded"
+        },
+        "reason": "knowledge-snapshot-only",
+        "required_status": "selected"
+      }
+    },
+    {
+      "auto_outcome": "success-selected-with-source-change-disclosure",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive-for-current-source",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "recovery_parameters": [
+        "src_dir",
+        "wiki_dir"
+      ],
+      "recovery_precondition": "explicit-projection-regeneration-request",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "success-selected-with-source-change-disclosure",
+      "state": "source-changed",
+      "warning_or_error": {
+        "auto": {
+          "code": "knowledge-source-changed",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-source-changed",
+          "level": "warning"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "selected",
+        "availability": "ready",
+        "basis": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "state": "recorded"
+        },
+        "reason": "knowledge-source-changed",
+        "required_status": "selected"
+      }
+    },
+    {
+      "auto_outcome": "success-selected-with-bounds",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive-outside-returned-bounds",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_command": "none-required",
+      "recovery_parameters": [],
+      "recovery_precondition": "none-required",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "success-selected-with-bounds",
+      "state": "bounded-truncated",
+      "warning_or_error": {
+        "auto": {
+          "code": "knowledge-results-truncated",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-results-truncated",
+          "level": "warning"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "selected",
+        "availability": "ready",
+        "basis": {
+          "availability": "ready",
+          "reason": "all-projection-commitments-match",
+          "state": "recorded"
+        },
+        "reason": "knowledge-results-truncated",
+        "required_status": "selected"
+      }
+    },
+    {
+      "auto_outcome": "success-fallback-without-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "found_false_meaning": "inconclusive",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "recovery_parameters": [
+        "src_dir",
+        "wiki_dir"
+      ],
+      "recovery_precondition": "surface-binding-inputs-corrected",
+      "rendered_profile": "reference-dependent",
+      "required_outcome": "error",
+      "state": "invalid-surface",
+      "warning_or_error": {
+        "auto": {
+          "code": "surface-validation-failed",
+          "level": "warning"
+        },
+        "required": {
+          "code": "knowledge-required-unavailable",
+          "level": "error"
+        }
+      },
+      "wire_mapping": {
+        "auto_status": "fallback",
+        "availability": "degraded",
+        "basis": {
+          "availability": "degraded",
+          "reason": "policy-selected-surface-only-fallback-after-invalid",
+          "state": "unavailable"
+        },
+        "reason": "surface-validation-failed",
+        "required_status": "error-no-context-response"
+      }
+    }
+  ],
+  "interface_mappings": {
+    "direct-cli": {
+      "context_json": {
+        "knowledge_path": "knowledge",
+        "ranking_policy_path": "ranking_policy"
+      },
+      "context_markdown": {
+        "knowledge_render": "required-knowledge-disclosure-section",
+        "ranking_render": "conditional-ranking-disclosure-section"
+      },
+      "entrypoint": "llm-wiki context",
+      "packet": {
+        "knowledge_path": "response.knowledge",
+        "ranking_policy_path": "response.ranking_policy"
+      },
+      "required_failure": {
+        "exit_code": 1,
+        "output_file": "not-written",
+        "packet_emitted": false,
+        "render": "human-readable-error-with-stable-code-and-reason",
+        "stdout": "empty",
+        "stream": "stderr",
+        "transport": "process-exit"
+      }
+    },
+    "mcp-get-context": {
+      "context": {
+        "knowledge_path": "knowledge",
+        "ranking_policy_path": "ranking_policy"
+      },
+      "entrypoint": "get_context",
+      "required_failure": {
+        "code": "knowledge-required-unavailable",
+        "data": "canonical-required-error",
+        "exception": "McpWikiError",
+        "normal_result_returned": false,
+        "transport": "mcp-tool-error"
+      }
+    },
+    "mcp-get-context-packet": {
+      "entrypoint": "get_context_packet",
+      "packet": {
+        "knowledge_path": "packet.response.knowledge",
+        "ranking_policy_path": "packet.response.ranking_policy"
+      },
+      "required_failure": {
+        "code": "knowledge-required-unavailable",
+        "data": "canonical-required-error",
+        "exception": "McpWikiError",
+        "normal_result_returned": false,
+        "packet_emitted": false,
+        "transport": "mcp-tool-error"
+      },
+      "unchanged": {
+        "knowledge_path": "absent",
+        "ranking_policy_path": "absent"
+      }
+    },
+    "python-api-context": {
+      "entrypoint": "build_context",
+      "json": {
+        "knowledge_path": "knowledge",
+        "ranking_policy_path": "ranking_policy"
+      },
+      "markdown": {
+        "content": "renders-equivalent-disclosures",
+        "knowledge_path": "payload.knowledge",
+        "ranking_policy_path": "payload.ranking_policy"
+      },
+      "required_failure": {
+        "attributes": {
+          "code": "knowledge-required-unavailable",
+          "details": "canonical-required-error"
+        },
+        "exception": "WorkspaceStateError",
+        "response_returned": false,
+        "transport": "exception"
+      }
+    },
+    "python-api-packet": {
+      "entrypoint": "build_qualified_context",
+      "packet": {
+        "knowledge_path": "response.knowledge",
+        "ranking_policy_path": "response.ranking_policy"
+      },
+      "required_failure": {
+        "attributes": {
+          "code": "knowledge-required-unavailable",
+          "details": "canonical-required-error"
+        },
+        "exception": "WorkspaceStateError",
+        "packet_emitted": false,
+        "response_returned": false,
+        "transport": "exception"
+      }
+    },
+    "raw-protocol": {
+      "context": {
+        "knowledge_path": "knowledge",
+        "ranking_policy_path": "ranking_policy"
+      },
+      "entrypoint": "llm-wiki context --request",
+      "required_failure": {
+        "exit_code": 1,
+        "output_file": "not-written",
+        "packet_emitted": false,
+        "render": "canonical-required-error-json",
+        "stderr": "empty",
+        "stream": "stdout",
+        "transport": "process-exit"
+      }
+    }
+  },
+  "interfaces": {
+    "cli": {
+      "default": null,
+      "entrypoint": "llm-wiki context",
+      "name": "--knowledge-mode",
+      "omission": "do-not-emit-mode"
+    },
+    "mcp": {
+      "default": null,
+      "name": "knowledge_mode",
+      "omission": "do-not-emit-mode",
+      "tools": [
+        "get_context",
+        "get_context_packet"
+      ]
+    },
+    "packet": {
+      "default": null,
+      "omission": "use-v1-packet",
+      "path": "request.knowledge_mode"
+    },
+    "python-api": {
+      "default": null,
+      "entrypoints": [
+        "build_context",
+        "build_qualified_context"
+      ],
+      "name": "knowledge_mode",
+      "omission": "do-not-emit-mode"
+    },
+    "raw-protocol": {
+      "default": null,
+      "omission": "field-absent",
+      "path": "knowledge_mode"
+    }
+  },
+  "lifecycle_commands": {
+    "init": {
+      "governance": "never-initialize",
+      "implementation_state": "reserved-not-active",
+      "knowledge_plane": "unchanged",
+      "reference_failure": "expanded-profile",
+      "render_order": "verify-reference-before-compact-profile"
+    },
+    "status": {
+      "implementation_state": "reserved-not-active",
+      "knowledge_plane": "reported-independently",
+      "live_reference_check": true,
+      "mutation": "never",
+      "required_fields": [
+        "rendered_profile",
+        "reference_state",
+        "reference_path",
+        "reference_current",
+        "read_only_knowledge",
+        "warning",
+        "recovery_command"
+      ]
+    },
+    "uninstall": {
+      "governance": "never-initialize",
+      "implementation_state": "reserved-not-active",
+      "knowledge_artifacts": "keep-unless-remove-wiki-requested",
+      "managed_block": "remove",
+      "modified_reference": "preserve-and-warn",
+      "unmodified_reference": "remove",
+      "user_and_plugin_content": "preserve"
+    },
+    "upgrade": {
+      "governance": "never-initialize",
+      "implementation_state": "reserved-not-active",
+      "interruption": "expanded_inline-or-not-rendered-never-compact-broken",
+      "knowledge_plane": "unchanged",
+      "modified_reference": "preserve-unless-explicit-force-refresh",
+      "reference_failure": "expanded-profile",
+      "render_order": "verify-reference-before-compact-profile"
+    }
+  },
+  "lifecycle_composition": {
+    "plugin_blocks": "preserve-regardless-of-profile",
+    "profile_precedence": [
+      "not-rendered",
+      "expanded_inline",
+      "reference-state-dependent",
+      "compact"
+    ],
+    "read_only_knowledge": "independent-regardless-of-combination",
+    "rule": "most-conservative-profile-wins"
+  },
+  "lifecycle_evidence_matrix": [
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [],
+        "required": []
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "current-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "compact",
+      "signals": {
+        "auto": [
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "absent-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "managed-install-target-is-writable"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-absent",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "modified-reference",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "local-changes-preserved-or-discarded-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-modified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "reference-install-failure",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "install-failure-corrected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-install-failed",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "skills-disabled",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "user-enables-managed-reference"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-reference-disabled",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "agent-switch",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "target-reference-unverified",
+            "level": "warning",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "missing-schema",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "target-agent-selected-explicitly"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "not-rendered",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-schema-absent",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [],
+        "required": []
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "plugin-blocks",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "reference-state-dependent",
+      "signals": {
+        "auto": [
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "ready",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "qualified-and-selectable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "absent",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "unavailable",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-not-present",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "degraded-mixed",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "diagnostic-only-no-native-conclusion",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-projection-degraded",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "unsupported",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "installed-cli-version-supports-required-projection-schema"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-schema-unsupported",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "incompatible",
+      "fallback_evidence": [
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-without-query",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "incompatible-basis-inputs-reconciled"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-basis-incompatible",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "snapshot-only",
+      "fallback_evidence": [
+        "attributed-knowledge-snapshot",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-attributed-snapshot-not-current",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-snapshot-only",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "source-changed",
+      "fallback_evidence": [
+        "qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-per-concept-qualification",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "explicit-projection-regeneration-request"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-source-changed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "bounded-truncated",
+      "fallback_evidence": [
+        "bounded-qualified-knowledge",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "selectable-with-explicit-bounds",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-results-truncated",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ]
+      }
+    },
+    {
+      "evidence_state": "invalid-surface",
+      "fallback_evidence": [
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "lifecycle_state": "interrupted-upgrade",
+      "mutation_permission": "none",
+      "read_only_knowledge": "rejected-when-surface-binding-is-invalid",
+      "recovery_routes": [
+        {
+          "command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+          "parameters": [
+            "wiki_dir",
+            "agent"
+          ],
+          "preconditions": [
+            "partial-write-state-inspected"
+          ],
+          "sources": [
+            "lifecycle"
+          ]
+        },
+        {
+          "command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+          "parameters": [
+            "src_dir",
+            "wiki_dir"
+          ],
+          "preconditions": [
+            "surface-binding-inputs-corrected"
+          ],
+          "sources": [
+            "evidence"
+          ]
+        }
+      ],
+      "rendered_profile": "expanded_inline",
+      "signals": {
+        "auto": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "surface-validation-failed",
+            "level": "warning",
+            "source": "evidence"
+          }
+        ],
+        "required": [
+          {
+            "code": "managed-upgrade-interrupted",
+            "level": "error",
+            "source": "lifecycle"
+          },
+          {
+            "code": "knowledge-required-unavailable",
+            "level": "error",
+            "source": "evidence"
+          }
+        ]
+      }
+    }
+  ],
+  "lifecycle_matrix": [
+    {
+      "allowed_actions": [
+        "read-context",
+        "run-explicitly-authorized-workflow",
+        "explicit-uninstall"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "explicit-command-only",
+      "read_only_knowledge": "independent",
+      "recovery_command": "none-required",
+      "recovery_condition": "not-applicable",
+      "recovery_parameters": [],
+      "rendered_profile": "compact",
+      "state": "current-reference",
+      "warning_or_error": {
+        "code": null,
+        "level": "none"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "explicit-reference-install"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "explicit-command-only",
+      "read_only_knowledge": "independent",
+      "recovery_command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+      "recovery_condition": "managed-install-target-is-writable",
+      "recovery_parameters": [
+        "wiki_dir",
+        "agent"
+      ],
+      "rendered_profile": "expanded_inline",
+      "state": "absent-reference",
+      "warning_or_error": {
+        "code": "managed-reference-absent",
+        "level": "warning"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "preserve-local-reference",
+        "explicit-force-refresh"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "preserve-unless-explicitly-replaced",
+      "read_only_knowledge": "independent",
+      "recovery_command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+      "recovery_condition": "local-changes-preserved-or-discarded-explicitly",
+      "recovery_parameters": [
+        "wiki_dir",
+        "agent"
+      ],
+      "rendered_profile": "expanded_inline",
+      "state": "modified-reference",
+      "warning_or_error": {
+        "code": "managed-reference-modified",
+        "level": "warning"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "explicit-install-retry"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "no-automatic-retry",
+      "read_only_knowledge": "independent",
+      "recovery_command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+      "recovery_condition": "install-failure-corrected",
+      "recovery_parameters": [
+        "wiki_dir",
+        "agent"
+      ],
+      "rendered_profile": "expanded_inline",
+      "state": "reference-install-failure",
+      "warning_or_error": {
+        "code": "managed-reference-install-failed",
+        "level": "error"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "explicit-skill-opt-in"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "reference-install-disabled",
+      "read_only_knowledge": "independent",
+      "recovery_command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+      "recovery_condition": "user-enables-managed-reference",
+      "recovery_parameters": [
+        "wiki_dir",
+        "agent"
+      ],
+      "rendered_profile": "expanded_inline",
+      "state": "skills-disabled",
+      "warning_or_error": {
+        "code": "managed-reference-disabled",
+        "level": "warning"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "preserve-modified-old-reference",
+        "verify-target-reference"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "explicit-upgrade-only",
+      "read_only_knowledge": "independent",
+      "recovery_command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+      "recovery_condition": "target-agent-selected-explicitly",
+      "recovery_parameters": [
+        "wiki_dir",
+        "agent"
+      ],
+      "rendered_profile": "expanded_inline",
+      "state": "agent-switch",
+      "warning_or_error": {
+        "code": "target-reference-unverified",
+        "level": "warning"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "explicit-schema-init"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "explicit-init-only",
+      "read_only_knowledge": "independent",
+      "recovery_command": "llm-wiki init --wiki-dir {wiki_dir} --agent {agent}",
+      "recovery_condition": "target-agent-selected-explicitly",
+      "recovery_parameters": [
+        "wiki_dir",
+        "agent"
+      ],
+      "rendered_profile": "not-rendered",
+      "state": "missing-schema",
+      "warning_or_error": {
+        "code": "managed-schema-absent",
+        "level": "error"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "preserve-plugin-blocks"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "plugin-blocks-preserved-exactly",
+      "read_only_knowledge": "independent",
+      "recovery_command": "none-required",
+      "recovery_condition": "not-applicable",
+      "recovery_parameters": [],
+      "rendered_profile": "reference-state-dependent",
+      "state": "plugin-blocks",
+      "warning_or_error": {
+        "code": null,
+        "level": "none"
+      }
+    },
+    {
+      "allowed_actions": [
+        "read-context",
+        "explicit-upgrade-resume"
+      ],
+      "fallback_evidence": [
+        "qualified-knowledge-if-ready",
+        "independently-validated-surface",
+        "markdown",
+        "targeted-source-or-runtime"
+      ],
+      "mutation_permission": "explicit-resume-only",
+      "read_only_knowledge": "independent",
+      "recovery_command": "llm-wiki upgrade --wiki-dir {wiki_dir} --agent {agent} --skills",
+      "recovery_condition": "partial-write-state-inspected",
+      "recovery_parameters": [
+        "wiki_dir",
+        "agent"
+      ],
+      "rendered_profile": "expanded_inline",
+      "state": "interrupted-upgrade",
+      "warning_or_error": {
+        "code": "managed-upgrade-interrupted",
+        "level": "error"
+      }
+    }
+  ],
+  "modes": {
+    "auto": {
+      "context_selection_read": "constructed-once",
+      "mutation": "never",
+      "packet_basis_capture": "captured-once-and-shared-with-selection",
+      "ready_outcome": "success-selected",
+      "response_status": "selected-or-fallback",
+      "unavailable_outcome": "success-fallback"
+    },
+    "off": {
+      "context_selection_read": "not-constructed",
+      "mutation": "never",
+      "packet_basis_capture": "captured-once-without-selection",
+      "ready_outcome": "success-disabled",
+      "response_status": "disabled",
+      "unavailable_outcome": "success-disabled"
+    },
+    "required": {
+      "context_selection_read": "constructed-once",
+      "mutation": "never",
+      "packet_basis_capture": "captured-once-and-shared-with-selection",
+      "ready_outcome": "success-selected",
+      "response_status": "selected-or-error",
+      "unavailable_outcome": "error-knowledge-required-unavailable"
+    }
+  },
+  "output_fields": {
+    "knowledge": {
+      "availability_values": [
+        "not-evaluated",
+        "ready",
+        "absent",
+        "degraded",
+        "unsupported"
+      ],
+      "bounds_required": [
+        "total",
+        "returned",
+        "truncated"
+      ],
+      "context_path": "knowledge",
+      "fallback_required": [
+        "used",
+        "evidence",
+        "reason"
+      ],
+      "packet_path": "response.knowledge",
+      "purpose": "request-outcome-and-selection-status",
+      "raw_projection_content": "forbidden",
+      "required": [
+        "mode",
+        "status",
+        "availability",
+        "reason",
+        "selected",
+        "freshness_evaluated",
+        "bounds",
+        "fallback"
+      ],
+      "status_values": [
+        "disabled",
+        "selected",
+        "fallback"
+      ]
+    },
+    "packet_basis_freshness": {
+      "evaluated_required": [
+        "concept_count",
+        "counts",
+        "evaluation_digest"
+      ],
+      "path": "basis.freshness",
+      "per_concept_values": "not-duplicated-basis-is-aggregate-provenance",
+      "purpose": "captured-aggregate-qualification-basis",
+      "required": [
+        "state",
+        "evaluated",
+        "disclosure"
+      ],
+      "unevaluated_required": [
+        "reason"
+      ]
+    },
+    "packet_basis_knowledge": {
+      "forbidden": [
+        "mode",
+        "selected",
+        "ranking_policy"
+      ],
+      "mode_independent": true,
+      "not_requested_value": "forbidden-in-packet-basis",
+      "off_behavior": "capture-actual-basis-once-without-selection",
+      "optional_hashes": [
+        "governance_hash"
+      ],
+      "path": "basis.knowledge",
+      "purpose": "captured-provenance-only",
+      "ready_hashes": [
+        "envelope_hash",
+        "knowledge_index_hash",
+        "surface_index_hash"
+      ],
+      "required": [
+        "state",
+        "availability",
+        "reason"
+      ]
+    },
+    "ranking_policy": {
+      "context_path": "ranking_policy",
+      "packet_path": "response.ranking_policy",
+      "policy_value": "current-first",
+      "presence": {
+        "prefer_fresh_false": "absent",
+        "prefer_fresh_true": "present-even-when-applied-false"
+      },
+      "purpose": "budget-ranking-disclosure-only",
+      "requested_value_when_present": true,
+      "required": [
+        "requested",
+        "policy",
+        "scope",
+        "budget_pressure",
+        "applied",
+        "reason"
+      ],
+      "scope_value": "within-existing-relevance-tier-under-budget-pressure"
+    },
+    "required_error": {
+      "code": "knowledge-required-unavailable",
+      "envelope_required": [
+        "protocol",
+        "ok",
+        "error"
+      ],
+      "field": "knowledge_mode",
+      "mutation_permitted": false,
+      "ok": false,
+      "packet_emitted": false,
+      "path": "error",
+      "required": [
+        "code",
+        "field",
+        "mode",
+        "availability",
+        "reason",
+        "fallback_evidence",
+        "recovery_command",
+        "mutation_permitted"
+      ]
+    },
+    "selected_content": {
+      "aggregate_evaluated_meaning": "one-result-per-concept-not-one-live-comparison-per-concept",
+      "authorizes": [],
+      "classification": "inert-evidence",
+      "concept_freshness_path": "concepts[].freshness",
+      "concept_freshness_required": [
+        "state",
+        "reason",
+        "live_comparison_performed"
+      ],
+      "concept_freshness_states": [
+        "not-evaluated",
+        "unknown",
+        "current",
+        "nonsemantic-source-change",
+        "source-changed",
+        "basis-incompatible",
+        "source-missing"
+      ],
+      "context_path": "knowledge.selection",
+      "live_comparison_performed": "boolean",
+      "non_authorizing_for": [
+        "execution",
+        "network-access",
+        "filesystem-mutation",
+        "source-edits",
+        "git-actions",
+        "plugin-selection",
+        "skill-selection",
+        "governance-changes"
+      ],
+      "packet_path": "response.knowledge.selection",
+      "reason": "non-empty-stable-code",
+      "required_collections": [
+        "concepts",
+        "pages",
+        "relationships"
+      ],
+      "selected_flag_path": "knowledge.selected",
+      "selected_type": "boolean",
+      "selection_presence": {
+        "selected_false": "forbidden",
+        "selected_true": "required"
+      },
+      "snapshot_only_freshness": {
+        "live_comparison_performed": false,
+        "reason": "live-evaluation-not-performed",
+        "state": "not-evaluated"
+      }
+    }
+  },
+  "prefer_fresh": {
+    "applies_only_when": [
+      "explicit-mode-auto-or-required",
+      "qualified-freshness-ranks-available",
+      "budget-pressure"
+    ],
+    "controls": "current-first-ranking-within-an-existing-relevance-tier",
+    "controls_knowledge_inclusion": false,
+    "default": false,
+    "disclosure_matrix": [
+      {
+        "applied": "not-applicable",
+        "field": "absent",
+        "modes": [
+          "off",
+          "auto",
+          "required"
+        ],
+        "reason": "not-applicable",
+        "requested": false,
+        "successful_response": true
+      },
+      {
+        "applied": false,
+        "field": "present",
+        "modes": [
+          "off"
+        ],
+        "reason": "knowledge-selection-disabled",
+        "requested": true,
+        "successful_response": true
+      },
+      {
+        "applied": true,
+        "condition": "selected-with-budget-pressure-and-qualified-ranks",
+        "field": "present",
+        "modes": [
+          "auto",
+          "required"
+        ],
+        "reason": "same-tier-budget-pressure",
+        "requested": true,
+        "successful_response": true
+      },
+      {
+        "applied": false,
+        "condition": "selected-without-budget-pressure",
+        "field": "present",
+        "modes": [
+          "auto",
+          "required"
+        ],
+        "reason": "no-budget-pressure",
+        "requested": true,
+        "successful_response": true
+      },
+      {
+        "applied": false,
+        "condition": "selected-without-qualified-freshness-ranks",
+        "field": "present",
+        "modes": [
+          "auto",
+          "required"
+        ],
+        "reason": "qualified-freshness-ranks-unavailable",
+        "requested": true,
+        "successful_response": true
+      },
+      {
+        "applied": false,
+        "condition": "knowledge-fallback",
+        "field": "present",
+        "modes": [
+          "auto"
+        ],
+        "reason": "knowledge-unavailable",
+        "requested": true,
+        "successful_response": true
+      },
+      {
+        "applied": "not-applicable",
+        "condition": "knowledge-required-unavailable",
+        "field": "absent-with-success-response",
+        "modes": [
+          "required"
+        ],
+        "reason": "not-applicable",
+        "requested": true,
+        "successful_response": false
+      }
+    ],
+    "field": "prefer_fresh",
+    "legacy_v1_coupling_preserved": true,
+    "never_filters_stale_or_unknown": true,
+    "never_reorders_relevance_tiers": true,
+    "off_with_true": {
+      "applied": false,
+      "outcome": "success-disabled",
+      "reason": "knowledge-selection-disabled",
+      "requested": true
+    },
+    "ranking_presence": {
+      "not_requested": "absent",
+      "requested": "present-even-when-applied-false"
+    }
+  },
+  "recovery_templates": {
+    "implementation_state": "reserved-not-active",
+    "parameters": {
+      "agent": {
+        "render": "exact-cli-choice",
+        "source": "resolved-request-or-project-configuration"
+      },
+      "skills_dir": {
+        "render": "shell-quoted",
+        "source": "derived-from-resolved-configured-agent"
+      },
+      "src_dir": {
+        "render": "shell-quoted",
+        "source": "resolved-request-or-project-configuration"
+      },
+      "wiki_dir": {
+        "render": "shell-quoted",
+        "source": "resolved-request-or-project-configuration"
+      }
+    },
+    "reference_commands": {
+      "force_refresh": "llm-wiki skills install --dest {skills_dir} --skill wiki-reference --force",
+      "install": "llm-wiki skills install --dest {skills_dir} --skill wiki-reference"
+    },
+    "rules": [
+      "never-substitute-a-default-for-a-configured-path",
+      "carry-resolved-wiki-dir-through-project-recovery",
+      "carry-resolved-agent-through-schema-or-reference-recovery"
+    ],
+    "unsupported_projection": {
+      "package_manager_step": "environment-specific-update-not-a-cli-command",
+      "precondition": "installed-cli-version-supports-required-projection-schema",
+      "project_upgrade_updates_cli": false,
+      "regeneration_command": "llm-wiki sync --src-dir {src_dir} --wiki-dir {wiki_dir}",
+      "version_probe": "llm-wiki --version"
+    }
+  },
+  "render_profiles": {
+    "compact": "verified-current-managed-reference-only",
+    "current_runtime": "legacy-expanded-without-profile-marker",
+    "expanded_inline": "safe-inline-procedure-without-reference-dependency",
+    "implementation_state": "reserved-not-active",
+    "not_rendered": "schema-file-absent"
+  },
+  "request": {
+    "accepted_values": [
+      "off",
+      "auto",
+      "required"
+    ],
+    "aliases": [],
+    "explicit_behavior": "v2",
+    "field": "knowledge_mode",
+    "normalization": {
+      "api-parameter-with-request-field": "invalid-request",
+      "cli-option-with-request-file": "invalid-request",
+      "duplicate": "invalid-request",
+      "explicit": "exact-lowercase-value",
+      "omitted": "do-not-add-field"
+    },
+    "null_on_wire": "rejected",
+    "omitted_behavior": "legacy-v1",
+    "omitted_value": null,
+    "unknown_value": "invalid-request"
+  },
+  "runtime_state": {
+    "active_context_protocol": "llm-wiki-context/v1",
+    "active_packet_schema": "llm-wiki-qualified-context-packet/v1",
+    "knowledge_mode": "reserved-not-active",
+    "lifecycle_behavior": "reserved-not-active",
+    "render_profiles": "reserved-not-active"
+  },
+  "safety_semantics": {
+    "does_not_authorize": [
+      "execution",
+      "network-access",
+      "filesystem-mutation",
+      "source-edits",
+      "git-actions",
+      "plugin-selection",
+      "skill-selection",
+      "governance-changes"
+    ],
+    "governance_initialization": "never",
+    "grants_authority": [],
+    "raw_projection_json": "not-a-supported-read-interface",
+    "selected_content": "inert-evidence",
+    "stored_operations_and_instructions": "never-executed-as-authority"
+  },
+  "schema_version": "llm-wiki-context-knowledge-contract/v1",
+  "versioning": {
+    "explicit": {
+      "compatibility_evidence": "mode-and-state-matrix",
+      "context_protocol": "llm-wiki-context/v2",
+      "mode_field": "required",
+      "normalization": "emit-canonical-mode",
+      "packet_policy": "qualified-context-policy-v2",
+      "packet_schema": "llm-wiki-qualified-context-packet/v2",
+      "version_reason": "evidence-selection-and-response-semantics-change"
+    },
+    "legacy": {
+      "compatibility_evidence": "canonical-byte-baseline",
+      "context_protocol": "llm-wiki-context/v1",
+      "mode_field": "omitted",
+      "normalization": "omit-mode-field",
+      "packet_policy": "qualified-context-policy-v1",
+      "packet_schema": "llm-wiki-qualified-context-packet/v1"
+    }
+  }
+}
