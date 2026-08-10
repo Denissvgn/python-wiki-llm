@@ -622,7 +622,7 @@ artifact upload.
 ### Resource-aware execution
 
 In an interactive IDE or whenever host capacity is unknown, run one heavy gate
-at a time. Heavy gates include `context`, full tests, coverage, builds, browser
+at a time. Heavy gates include `context`, full validation, coverage, builds, browser
 suites, `sync`, `lint`, and `ci-check`. The supervising agent owns that
 schedule; subagents may inspect bounded files and diffs, but should not launch
 heavy gates unless explicitly assigned.
@@ -2102,40 +2102,27 @@ The repository includes community health files:
 
 ## Development
 
-Run tests from the repository root:
+Install an editable development checkout from the repository root:
 
 ```bash
 .venv/bin/pip install -e ".[dev]"
-.venv/bin/pytest tests/ -v
 ```
 
-Run the MCP tests with the optional dependency installed:
+Include the optional MCP dependency when working on that integration:
 
 ```bash
 .venv/bin/pip install -e ".[dev,mcp]"
-.venv/bin/pytest tests/test_mcp.py
 ```
 
-Before release, check metadata and docs:
+Build distribution artifacts locally with:
 
 ```bash
-.venv/bin/pytest tests/test_package_metadata.py tests/test_release.py -q
 .venv/bin/python -m build
-git diff --check
 ```
 
 Release notes and package metadata record the surface, distribution,
-compatibility, and local verification gates for documentation-surface work. Use
+compatibility, and release behavior for documentation-surface work. Use
 `llm-wiki release` separately when stamping a real version.
-
-The self-hosted documentation smoke exercises this repository's own
-documentation surface by copying the checkout to a temp project, bootstrapping
-a full wiki, running `sync`, exporting a MkDocs mirror, and checking the mirror:
-
-```bash
-.venv/bin/pytest tests/test_bootstrap.py::TestGenerateFlowMd tests/test_m4_dogfood.py -q
-.venv/bin/pytest -q
-```
 
 ## Contribution Policy
 

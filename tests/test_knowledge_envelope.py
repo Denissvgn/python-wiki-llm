@@ -1,4 +1,4 @@
-"""Focused contract tests for the KNOW-104 evaluated-envelope builder."""
+"""Focused contract coverage for the evaluated-envelope builder."""
 
 from __future__ import annotations
 

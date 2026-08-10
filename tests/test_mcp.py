@@ -2591,7 +2591,7 @@ def test_registered_context_packet_tool_forwards_revalidation_and_policy():
     ]
 
 
-def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project):
+def test_tool_registration_preserves_legacy_tools_and_adds_knowledge_tools(tmp_project):
     server = RecordingMcpServer()
     service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
@@ -2618,7 +2618,7 @@ def test_tool_registration_preserves_legacy_tools_and_adds_m4_tools(tmp_project)
     } <= set(server.tool_names)
 
 
-def test_resource_registration_preserves_legacy_resources_and_adds_m4_resources(
+def test_resource_registration_preserves_legacy_resources_and_adds_knowledge_resources(
     tmp_project,
 ):
     server = RecordingMcpServer()

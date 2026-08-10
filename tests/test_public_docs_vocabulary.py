@@ -102,7 +102,11 @@ FORBIDDEN_INTERNAL_PROSE: Mapping[str, ForbiddenProse] = {
 # cannot be removed. Keys must be exact literals and values must explain the
 # public compatibility obligation; path, line, and whole-file exceptions are
 # deliberately unsupported.
-PUBLIC_LEGACY_IDENTIFIERS: Mapping[str, str] = {}
+PUBLIC_LEGACY_IDENTIFIERS: Mapping[str, str] = {
+    "m4-documentation-hooks": (
+        "Deprecated public plugin-sample identifier retained for CLI compatibility."
+    ),
+}
 _SOURCE_IDENTITY_RULES = frozenset(
     {"delivery-stage-label", "internal-task-id"}
 )
@@ -1615,5 +1619,54 @@ def test_selected_python_docstrings_have_no_test_runner_prose():
                     "\n", 0, match.start()
                 )
                 findings.append(f"{path}:{line}: {match.group(0)!r}")
+
+    assert not findings, "\n" + "\n".join(findings)
+
+
+def test_source_and_test_artifacts_have_no_implementation_plan_provenance():
+    """Keep implementation planning labels out of source and verification assets."""
+
+    content_patterns = {
+        "delivery-stage-label": re.compile(r"(?<!\w)M[0-9]+(?!\w)"),
+        "numbered-milestone": re.compile(
+            r"\bmilestone\s*#?\s*(?:[0-9]+|[IVX]+)\b",
+            re.IGNORECASE,
+        ),
+        "numbered-epic": re.compile(
+            r"\bepic\s*#?\s*[0-9]+(?:\.[0-9]+)*\b",
+            re.IGNORECASE,
+        ),
+        "backlog-task-id": re.compile(
+            r"(?<![\w-])"
+            r"(?:KNOW|NKC|PUB|SKL|SEC|ARC|KUX|VEC|HYG|DEC|QCP|CLX|M2MAIN|"
+            r"FND|KNW|REF|PRV|SCH|POL|VER|REL|DL)-[0-9]+(?![\w-])"
+        ),
+    }
+    path_pattern = re.compile(
+        r"(?:^|[_-])(?:m|p)[0-9]+(?=[_-]|$)",
+        re.IGNORECASE,
+    )
+    suffixes = frozenset(
+        {".json", ".md", ".py", ".toml", ".txt", ".yaml", ".yml"}
+    )
+    excluded = {Path(__file__).resolve()}
+    findings: list[str] = []
+
+    for root in (REPO_ROOT / "src" / "llm_wiki_cli", REPO_ROOT / "tests"):
+        for path in sorted(root.rglob("*")):
+            if not path.is_file() or path.suffix.casefold() not in suffixes:
+                continue
+            if path.resolve() in excluded:
+                continue
+            relative = path.relative_to(REPO_ROOT).as_posix()
+            if path_pattern.search(relative):
+                findings.append(f"{relative}: implementation-shaped path")
+            text = path.read_text(encoding="utf-8")
+            for rule, pattern in content_patterns.items():
+                for match in pattern.finditer(text):
+                    line = text.count("\n", 0, match.start()) + 1
+                    findings.append(
+                        f"{relative}:{line}: {rule}: {match.group(0)!r}"
+                    )
 
     assert not findings, "\n" + "\n".join(findings)

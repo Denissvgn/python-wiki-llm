@@ -1,4 +1,4 @@
-"""Deterministic M3 graph scale-gate measurement and record rendering."""
+"""Deterministic knowledge graph scale-gate measurement and record rendering."""
 
 from __future__ import annotations
 
@@ -37,9 +37,9 @@ from tests.test_knowledge_queries import (
     _ready_view,
 )
 
-M3_SCALE_GATE_SCHEMA_VERSION = "llm-wiki-m3-scale-gate/v1"
-M3_SCALE_GATE_RECORD_PATH = (
-    Path(__file__).parent / "records" / "knowledge" / "m3-scale-gate.json"
+KNOWLEDGE_SCALE_GATE_SCHEMA_VERSION = "llm-wiki-knowledge-scale-gate/v1"
+KNOWLEDGE_SCALE_GATE_RECORD_PATH = (
+    Path(__file__).parent / "records" / "knowledge" / "scale-gate.json"
 )
 
 CALL_OBSERVATION_COUNT = 200
@@ -238,7 +238,7 @@ def _budget(*, observed: int, maximum: int) -> dict[str, int | bool]:
     }
 
 
-def build_m3_scale_gate_record(
+def build_knowledge_scale_gate_record(
     fixture_root: Path,
     *,
     reverse: bool = False,
@@ -307,10 +307,10 @@ def build_m3_scale_gate_record(
         ),
     }
     return {
-        "schema_version": M3_SCALE_GATE_SCHEMA_VERSION,
+        "schema_version": KNOWLEDGE_SCALE_GATE_SCHEMA_VERSION,
         "record_kind": "internal-scale-gate",
         "fixture": {
-            "name": "m3-high-fanout-v1",
+            "name": "knowledge-high-fanout-v1",
             "source_path": SOURCE_PATH,
             "call_observations": {
                 "count": CALL_OBSERVATION_COUNT,
@@ -364,13 +364,13 @@ def build_m3_scale_gate_record(
             if all(check["passed"] for check in budgets.values())
             else "fail"
         ),
-        "reproduce": ".venv/bin/python -m tests.knowledge_m3_scale_gate",
+        "reproduce": ".venv/bin/python -m tests.knowledge_scale_gate",
     }
 
 
 def _main() -> None:
-    with tempfile.TemporaryDirectory(prefix="llm-wiki-m3-scale-gate-") as temp:
-        record = build_m3_scale_gate_record(Path(temp))
+    with tempfile.TemporaryDirectory(prefix="llm-wiki-knowledge-scale-gate-") as temp:
+        record = build_knowledge_scale_gate_record(Path(temp))
     print(json.dumps(record, indent=2, sort_keys=True))
 
 
@@ -379,9 +379,9 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "M3_SCALE_GATE_RECORD_PATH",
-    "M3_SCALE_GATE_SCHEMA_VERSION",
-    "build_m3_scale_gate_record",
+    "KNOWLEDGE_SCALE_GATE_RECORD_PATH",
+    "KNOWLEDGE_SCALE_GATE_SCHEMA_VERSION",
+    "build_knowledge_scale_gate_record",
     "build_stress_graph",
     "build_stress_service",
 ]

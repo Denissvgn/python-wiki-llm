@@ -31,11 +31,11 @@ from llm_wiki_cli.services.verification_contracts import (
     write_verification_receipt,
 )
 from tests.knowledge_fixtures import fixture_hash
-from tests.test_knowledge_loader import _committed_m3_state
+from tests.test_knowledge_loader import _committed_knowledge_state
 
 
 def _ready_view(tmp_path) -> KnowledgeReadView:
-    _committed_m3_state(tmp_path)
+    _committed_knowledge_state(tmp_path)
     return load_knowledge_read_view(tmp_path, snapshot_only=True)
 
 

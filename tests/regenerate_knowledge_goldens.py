@@ -1,4 +1,4 @@
-"""Check or explicitly regenerate KNOW-003 golden contract files."""
+"""Check or explicitly regenerate golden knowledge contract files."""
 
 from __future__ import annotations
 

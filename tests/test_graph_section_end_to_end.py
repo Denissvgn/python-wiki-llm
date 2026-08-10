@@ -1,4 +1,4 @@
-"""End-to-end compatibility gate for the M3 graph and section extensions."""
+"""End-to-end compatibility gate for the graph and section extensions."""
 
 from __future__ import annotations
 
@@ -118,11 +118,11 @@ def test_bootstrap_sync_query_context_and_mcp_share_graph_and_section_state(
         textwrap.dedent(
             """\
             [project]
-            name = "m3-e2e"
+            name = "graph-section-e2e"
             version = "0.1.0"
 
             [project.scripts]
-            m3-e2e = "main:main"
+            graph-section-e2e = "main:main"
             """
         ),
         encoding="utf-8",

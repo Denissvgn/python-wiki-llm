@@ -265,7 +265,7 @@ def test_changelog_1_2_0_documents_python_support_floor():
 
     release_notes = _changelog_section("## [1.2.0]")
     assert "Minimum supported Python is now 3.10" in release_notes
-    assert "CI now tests Python 3.10 and 3.13" in release_notes
+    assert "release automation covers Python 3.10 and 3.13" in release_notes
 
 
 def test_readme_documents_bundled_skills():
@@ -385,20 +385,19 @@ def test_release_metadata_documents_surfaces_and_platforms():
         assert required in release_metadata
 
 
-def test_readme_release_verification_uses_project_virtualenv():
+def test_readme_development_commands_use_project_virtualenv():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     readme_lines = {line.strip() for line in readme.splitlines()}
 
     for required in [
         '.venv/bin/pip install -e ".[dev]"',
-        ".venv/bin/pytest tests/ -v",
+        '.venv/bin/pip install -e ".[dev,mcp]"',
         ".venv/bin/python -m build",
-        ".venv/bin/pytest -q",
     ]:
         assert required in readme
 
     assert 'pip install -e ".[dev]"' not in readme_lines
-    assert not any(line.startswith("python -m pytest") for line in readme_lines)
+    assert not any("/pytest" in line for line in readme_lines)
 
 
 def test_changelog_1_0_0_documents_public_surfaces():

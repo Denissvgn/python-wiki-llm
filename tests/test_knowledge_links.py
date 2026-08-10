@@ -1,4 +1,4 @@
-"""Focused contract tests for KNOW-105 lossless Markdown link collection."""
+"""Focused contract coverage for lossless Markdown link collection."""
 
 from __future__ import annotations
 

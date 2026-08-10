@@ -391,7 +391,7 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 ## [1.2.0] - 2026-07-08
 
 ### Changed
-- Minimum supported Python is now 3.10; CI now tests Python 3.10 and 3.13
+- Minimum supported Python is now 3.10; release automation covers Python 3.10 and 3.13
   across Ubuntu, macOS, and Windows.
 
 ### Fixed
@@ -485,8 +485,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - Haskell helper preparation now documents GHC 9.6.x as the supported release
   line, treats newer GHC 9.x releases as best-effort, and fails clearly for
   malformed or too-old GHC version output.
-- The default CI does not require GHC; Haskell helper tests that
-  need a real compiler remain opt-in through environments where GHC is present.
+- The default CI does not require GHC; real-compiler Haskell validation remains
+  opt-in through environments where GHC is present.
 
 ## [1.0.0] - 2026-06-23
 
@@ -662,13 +662,11 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - Compose parser flush-list bug — nested key:value blocks (environment, build, depends_on, healthcheck, deploy) were overwritten with `[]` on the next sibling key
 - Dockerfile discovery no longer matches `.md` documentation files as Dockerfiles
 - **Docker inventory in prompts** — `generate-prompt` and `extract` now include Docker/Compose file inventory for agent context
-- **44 new tests** — `test_docker_extract.py` (24), `test_docker_bootstrap.py` (11), `test_docker_lint.py` (9)
 - **`status` command** — displays wiki directory, configured agent, installed hooks, circuit breaker state, and page counts
 - **`config.py` module** — centralized `DEFAULT_WIKI_DIR`, `AGENT_CHOICES`, `CLI_AGENTS`, `IDE_AGENTS` constants and `validate_path()` utility
 - **Path validation** — `--wiki-dir` and `--src-dir` arguments are validated to prevent path traversal; rejects paths outside the project root
 - **`.gitignore` auto-entries** — `init` appends llm-wiki temp file patterns (`.git/llm-wiki-*.txt`, `.lock`, `.json`, `.log`) to `.gitignore`
 - **Global error handler** — `cli.py` catches unhandled exceptions and prints a friendly message instead of a raw traceback
-- **22 new tests** — `test_config.py` (7), `test_status.py` (10), `test_trigger.py` (5) covering path validation, status output, and trigger edge cases (mock-based)
 - **`generate-prompt` command** — builds a diff + AST sync prompt and writes it to `.git/llm-wiki-prompt.txt` for pasting into IDE agent chats; supports `--print`, `--no-diff`, `--output`, `--wiki-dir`, `--src-dir`
 - **IDE agent hook** — `install-hook` now installs a prompt-generation post-commit hook for `copilot`, `cursor`, and `generic` agents (instead of skipping); prints a reminder box after every commit
 - **Agent config persistence** — `init` writes `{wiki_dir}/.llm-wiki-agent` so `install-hook` and `generate-prompt` automatically pick up the chosen agent without requiring `--agent` every time
@@ -701,7 +699,6 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 ### Added
 - New agent targets: `aider` (`.aider.conf.yml`) and `opencode` (`.opencode/instructions.md`)
 - Improved agent constraint templates with structured sections and agent-specific preambles
-- Full test suite — 89 unit, integration, and E2E tests (pytest + pytest-cov)
 - GitHub Actions CI matrix: Python 3.9 / 3.12 / 3.13 on Ubuntu, macOS, Windows
 - PyPI publish workflow via OIDC trusted publisher on `v*` tags
 
@@ -729,7 +726,6 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Workflow detection** — call-graph analysis identifies cross-module functions touching 3+ internal modules as workflow candidates
 - **Clean uninstall** — safely removes hooks, strips constraint blocks from agent schema files, preserves user content
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
-- **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
 [Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...HEAD

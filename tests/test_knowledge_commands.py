@@ -1,4 +1,4 @@
-"""Phase-level command integration tests for M1 knowledge artifacts."""
+"""Command integration coverage for managed knowledge artifacts."""
 
 from __future__ import annotations
 
@@ -31,6 +31,7 @@ from llm_wiki_cli.services.knowledge_loader import (
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
+from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
 from llm_wiki_cli.services.knowledge_model import (
     KnowledgeLoadState,
     RelationshipRecord,
@@ -49,12 +50,12 @@ from llm_wiki_cli.services.sync_manifest import (
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
-# Golden bytes were captured from v1.4.0 before native knowledge work:
+# Golden bytes were captured from the v1.4.0 release:
 # 76bfc0b35cbca12317f9a5c0182488d9cddbf72b.
-_PRE_FEATURE_BOOTSTRAP_FIXTURE = (
-    Path(__file__).parent / "fixtures" / "knowledge-m1" / "pre-feature-bootstrap"
+_LEGACY_BOOTSTRAP_FIXTURE = (
+    Path(__file__).parent / "fixtures" / "knowledge-bootstrap" / "legacy-bootstrap"
 )
-_PRE_FEATURE_BOOTSTRAP_DATE = date(2025, 1, 2)
+_LEGACY_BOOTSTRAP_DATE = date(2025, 1, 2)
 _PROJECT_ROOT_TOKEN = b"<PROJECT_ROOT>"
 
 
@@ -84,7 +85,7 @@ def _sync_args(project, wiki_dir, **kwargs):
 
 
 @pytest.fixture
-def m1_command_project(tmp_path):
+def knowledge_command_project(tmp_path):
     project = tmp_path / "project"
     project.mkdir()
     subprocess.run(
@@ -222,10 +223,10 @@ def _remove_manifest_source_hashes(wiki_dir):
 
 
 def test_bootstrap_commits_a_loader_valid_knowledge_state(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    _project, wiki_dir = m1_command_project
+    _project, wiki_dir = knowledge_command_project
     capsys.readouterr()
 
     loaded = load_knowledge_state(wiki_dir)
@@ -238,21 +239,21 @@ def test_bootstrap_commits_a_loader_valid_knowledge_state(
     assert loaded.issues == ()
 
 
-def test_bootstrap_matches_pre_native_markdown_and_surface_v1_goldens(
+def test_bootstrap_matches_v1_4_0_markdown_and_surface_v1_goldens(
     tmp_path,
     monkeypatch,
 ):
-    """Lock bootstrap bytes from the pre-native v1.4.0 revision 76bfc0b."""
+    """Lock bootstrap bytes from the v1.4.0 revision 76bfc0b."""
 
     project = tmp_path / "project"
-    shutil.copytree(_PRE_FEATURE_BOOTSTRAP_FIXTURE / "source", project)
+    shutil.copytree(_LEGACY_BOOTSTRAP_FIXTURE / "source", project)
     wiki_dir = project / "wiki"
-    expected_wiki = _PRE_FEATURE_BOOTSTRAP_FIXTURE / "wiki"
+    expected_wiki = _LEGACY_BOOTSTRAP_FIXTURE / "wiki"
 
     class FrozenDate(date):
         @classmethod
         def today(cls):
-            return _PRE_FEATURE_BOOTSTRAP_DATE
+            return _LEGACY_BOOTSTRAP_DATE
 
     monkeypatch.chdir(project)
     monkeypatch.setattr(bootstrap_cmd, "date", FrozenDate)
@@ -353,11 +354,27 @@ def test_bootstrap_matches_pre_native_markdown_and_surface_v1_goldens(
     assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
 
 
-def test_immediate_noop_sync_preserves_all_committed_artifact_bytes(
-    m1_command_project,
+def test_bootstrap_and_changed_source_sync_keep_governance_opt_in(
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
+    capsys.readouterr()
+    governance = wiki_dir / GOVERNANCE_FILENAME
+    assert not governance.exists()
+
+    _write_changed_source(project)
+    sync_cmd.run(_sync_args(project, wiki_dir))
+
+    assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
+    assert not governance.exists()
+
+
+def test_immediate_noop_sync_preserves_all_committed_artifact_bytes(
+    knowledge_command_project,
+    capsys,
+):
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     before = _artifact_bytes(wiki_dir)
     before_manifest = SyncManifest.load(wiki_dir)
@@ -378,10 +395,10 @@ def test_immediate_noop_sync_preserves_all_committed_artifact_bytes(
 
 
 def test_bootstrap_rejection_preserves_evidence_and_sync_regenerates(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     module_path = wiki_dir / "modules" / "models.md"
     entity_path = wiki_dir / "entities" / "User.md"
@@ -414,11 +431,11 @@ def test_bootstrap_rejection_preserves_evidence_and_sync_regenerates(
 
 
 def test_bootstrap_and_sync_each_reuse_one_snapshot_and_inventory_extraction(
-    m1_command_project,
+    knowledge_command_project,
     monkeypatch,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     fresh_wiki_dir = project / "docs" / "fresh_wiki"
     counts = Counter()
@@ -473,10 +490,10 @@ def test_bootstrap_and_sync_each_reuse_one_snapshot_and_inventory_extraction(
 
 
 def test_noop_sync_is_stable_after_generated_artifacts_are_committed(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     subprocess.run(["git", "-C", str(project), "add", "."], check=True)
     subprocess.run(
@@ -498,10 +515,10 @@ def test_noop_sync_is_stable_after_generated_artifacts_are_committed(
 
 
 def test_changed_source_sync_commits_only_expected_modeled_changes(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     before = load_knowledge_state(wiki_dir)
     assert before.knowledge is not None
@@ -578,10 +595,10 @@ def test_changed_source_sync_commits_only_expected_modeled_changes(
 
 
 def test_removed_source_sync_commits_valid_tombstones(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     previous = SyncManifest.load(wiki_dir)
     expected_basis = {
@@ -615,10 +632,10 @@ def test_removed_source_sync_commits_valid_tombstones(
 
 
 def test_manifest_repair_then_sync_regenerates_pages_and_known_evidence(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     entity_path = wiki_dir / "entities" / "User.md"
     before_entity = entity_path.read_bytes()
@@ -650,10 +667,10 @@ def test_manifest_repair_then_sync_regenerates_pages_and_known_evidence(
 
 
 def test_manifest_reseed_unknown_survives_following_noop_sync(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     before_pages = {
         path.relative_to(wiki_dir).as_posix(): path.read_bytes()
@@ -692,10 +709,10 @@ def test_manifest_reseed_unknown_survives_following_noop_sync(
 
 
 def test_bootstrap_overwrite_rejection_preserves_reseeded_unknown_evidence(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     (wiki_dir / MANIFEST_FILENAME).unlink()
 
@@ -723,10 +740,10 @@ def test_bootstrap_overwrite_rejection_preserves_reseeded_unknown_evidence(
 
 
 def test_repair_with_new_concept_keeps_partial_wiki_valid_until_next_sync(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     (project / "models.py").write_text(
         "class User:\n    name: str = ''\n\nclass Admin:\n    role: str = 'admin'\n",
@@ -747,10 +764,10 @@ def test_repair_with_new_concept_keeps_partial_wiki_valid_until_next_sync(
 
 
 def test_repair_with_new_source_keeps_it_pending_until_next_sync(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     (project / "admin.py").write_text(
         "class Admin:\n    role: str = 'admin'\n",
@@ -779,10 +796,10 @@ def test_repair_with_new_source_keeps_it_pending_until_next_sync(
 
 
 def test_normal_sync_dry_run_writes_nothing_and_reports_three_artifacts(
-    m1_command_project,
+    knowledge_command_project,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     before = _artifact_bytes(wiki_dir)
     _write_changed_source(project)
@@ -798,11 +815,11 @@ def test_normal_sync_dry_run_writes_nothing_and_reports_three_artifacts(
 
 
 def test_clean_git_sync_dry_run_matches_apply_artifact_bytes(
-    m1_command_project,
+    knowledge_command_project,
     monkeypatch,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     subprocess.run(["git", "-C", str(project), "add", "."], check=True)
     subprocess.run(
@@ -874,11 +891,11 @@ def test_clean_git_sync_dry_run_matches_apply_artifact_bytes(
 
 
 def test_command_commit_interruption_never_serves_mixed_knowledge(
-    m1_command_project,
+    knowledge_command_project,
     monkeypatch,
     capsys,
 ):
-    project, wiki_dir = m1_command_project
+    project, wiki_dir = knowledge_command_project
     capsys.readouterr()
     previous_manifest_bytes = (wiki_dir / MANIFEST_FILENAME).read_bytes()
     _write_changed_source(project)
@@ -923,11 +940,11 @@ def test_command_commit_interruption_never_serves_mixed_knowledge(
 
 
 def test_bootstrap_commit_interruption_never_serves_mixed_knowledge(
-    m1_command_project,
+    knowledge_command_project,
     monkeypatch,
     capsys,
 ):
-    project, _existing_wiki_dir = m1_command_project
+    project, _existing_wiki_dir = knowledge_command_project
     wiki_dir = project / "docs" / "interrupted_first_bootstrap"
     capsys.readouterr()
     real_finalize = bootstrap_cmd.finalize_runtime_knowledge

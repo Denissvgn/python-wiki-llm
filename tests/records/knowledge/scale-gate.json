@@ -45,7 +45,7 @@
       "ascending",
       "reversed"
     ],
-    "name": "m3-high-fanout-v1",
+    "name": "knowledge-high-fanout-v1",
     "section_ownership": {
       "headings": [
         "User",
@@ -209,7 +209,7 @@
     }
   },
   "record_kind": "internal-scale-gate",
-  "reproduce": ".venv/bin/python -m tests.knowledge_m3_scale_gate",
+  "reproduce": ".venv/bin/python -m tests.knowledge_scale_gate",
   "result": "pass",
-  "schema_version": "llm-wiki-m3-scale-gate/v1"
+  "schema_version": "llm-wiki-knowledge-scale-gate/v1"
 }

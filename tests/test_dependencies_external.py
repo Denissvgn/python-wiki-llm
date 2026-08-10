@@ -1,4 +1,4 @@
-"""Tests for services/dependencies.py — external reconciliation (Epic 2.2)."""
+"""Tests for services/dependencies.py — external reconciliation."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ def _write_selection(root, include, exclude=None):
     )
 
 
-# ── DL-201: classification framework + Python ─────────────────────────
+# ── Classification framework and Python ───────────────────────────────
 
 
 class TestClassifyImportsDispatcher:
@@ -215,7 +215,7 @@ class TestPythonClassification:
         assert report["used"] == {"my-dist": ["a.py"]}
 
 
-# ── DL-202: TypeScript / JavaScript ───────────────────────────────────
+# ── TypeScript and JavaScript ─────────────────────────────────────────
 
 
 class TestTypeScriptClassification:
@@ -316,7 +316,7 @@ class TestTypeScriptClassification:
         assert report["unused"] == []  # react (required) is imported
 
 
-# ── DL-203: Go ────────────────────────────────────────────────────────
+# ── Go ────────────────────────────────────────────────────────────────
 
 
 class TestGoClassification:
@@ -415,7 +415,7 @@ class TestGoClassification:
         assert classify_imports(inventory) == {"go": {"github.com/foo/bar": ["a.go"]}}
 
 
-# ── DL-204: Rust ──────────────────────────────────────────────────────
+# ── Rust ──────────────────────────────────────────────────────────────
 
 
 class TestRustClassification:
@@ -533,7 +533,7 @@ class TestRustClassification:
         assert report["version_details"]["records"] == []
 
 
-# ── DL-205: reconcile_dependencies ────────────────────────────────────
+# ── Dependency reconciliation ─────────────────────────────────────────
 
 
 class TestReconcileDependencies:

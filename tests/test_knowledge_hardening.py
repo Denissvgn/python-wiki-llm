@@ -1,4 +1,4 @@
-"""KNOW-111 privacy and performance gates for generated knowledge."""
+"""Privacy and performance gates for generated knowledge."""
 
 from __future__ import annotations
 
@@ -22,10 +22,10 @@ from llm_wiki_cli.services.knowledge_generation import (
     build_knowledge_generation_plan,
 )
 from llm_wiki_cli.services.wiki_media import contains_uri_authority_userinfo
-from tests.knowledge_m1_benchmark import (
-    M1_BENCHMARK_SCALES,
-    build_m1_benchmark_inputs,
-    run_m1_benchmark,
+from tests.knowledge_generation_benchmark import (
+    KNOWLEDGE_BENCHMARK_SCALES,
+    build_knowledge_benchmark_inputs,
+    run_knowledge_benchmark,
 )
 
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
@@ -61,16 +61,16 @@ def test_generated_knowledge_omits_private_runtime_and_credential_canaries(
     tmp_path,
     monkeypatch,
 ):
-    scale = M1_BENCHMARK_SCALES[0]
-    base = build_m1_benchmark_inputs(tmp_path, scale)
-    source_canary = "m1-source-private-4fdd8bf3"
-    markdown_canary = "m1-markdown-private-20a913ae"
-    environment_canary = "m1-environment-private-945ac40b"
-    option_canary = "m1-option-private-e02dd9fd"
-    producer_canary = "m1-producer-private-a66a380e"
+    scale = KNOWLEDGE_BENCHMARK_SCALES[0]
+    base = build_knowledge_benchmark_inputs(tmp_path, scale)
+    source_canary = "knowledge-source-private-4fdd8bf3"
+    markdown_canary = "knowledge-markdown-private-20a913ae"
+    environment_canary = "knowledge-environment-private-945ac40b"
+    option_canary = "knowledge-option-private-e02dd9fd"
+    producer_canary = "knowledge-producer-private-a66a380e"
     credential = "https://alice:p4ssw0rd@private.example.invalid/repository"
     private_checkout = Path("/Users/alice/private-checkout")
-    monkeypatch.setenv("LLM_WIKI_M1_PRIVACY_CANARY", environment_canary)
+    monkeypatch.setenv("LLM_WIKI_KNOWLEDGE_PRIVACY_CANARY", environment_canary)
 
     source_hashes = {
         path: sha256_bytes(f"{source_canary}:{path}".encode())
@@ -160,15 +160,15 @@ def test_generated_knowledge_omits_private_runtime_and_credential_canaries(
 
 
 @pytest.mark.slow
-def test_representative_m1_generation_stays_deterministic_and_within_budget(
+def test_representative_knowledge_generation_stays_deterministic_and_within_budget(
     tmp_path,
 ):
     results = [
-        run_m1_benchmark(tmp_path / scale.name, scale, repeats=2)
-        for scale in M1_BENCHMARK_SCALES
+        run_knowledge_benchmark(tmp_path / scale.name, scale, repeats=2)
+        for scale in KNOWLEDGE_BENCHMARK_SCALES
     ]
 
-    for scale, result in zip(M1_BENCHMARK_SCALES, results, strict=True):
+    for scale, result in zip(KNOWLEDGE_BENCHMARK_SCALES, results, strict=True):
         assert result.source_count == scale.source_count
         assert result.page_count == scale.page_count
         assert result.knowledge_bytes <= scale.max_knowledge_bytes

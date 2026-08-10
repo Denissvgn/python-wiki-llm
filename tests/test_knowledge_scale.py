@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import re
 
-from tests.knowledge_m3_scale_gate import (
-    M3_SCALE_GATE_RECORD_PATH,
-    build_m3_scale_gate_record,
+from tests.knowledge_scale_gate import (
+    KNOWLEDGE_SCALE_GATE_RECORD_PATH,
+    build_knowledge_scale_gate_record,
     build_stress_graph,
     build_stress_service,
 )
@@ -68,12 +68,12 @@ def test_high_fanout_graph_keeps_evidence_and_query_output_bounded(tmp_path):
 
 
 def test_recorded_scale_gate_is_reproducible_current_and_sanitized(tmp_path):
-    ordered = build_m3_scale_gate_record(tmp_path / "ordered")
-    reversed_inputs = build_m3_scale_gate_record(
+    ordered = build_knowledge_scale_gate_record(tmp_path / "ordered")
+    reversed_inputs = build_knowledge_scale_gate_record(
         tmp_path / "reversed",
         reverse=True,
     )
-    recorded = json.loads(M3_SCALE_GATE_RECORD_PATH.read_text(encoding="utf-8"))
+    recorded = json.loads(KNOWLEDGE_SCALE_GATE_RECORD_PATH.read_text(encoding="utf-8"))
 
     assert ordered == reversed_inputs == recorded
     assert recorded["result"] == "pass"

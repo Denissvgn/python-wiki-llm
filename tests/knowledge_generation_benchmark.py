@@ -1,4 +1,4 @@
-"""Deterministic in-memory benchmark harness for M1 knowledge generation."""
+"""Deterministic in-memory benchmark harness for knowledge generation."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ from llm_wiki_cli.services.wiki_surface import (
 
 
 @dataclass(frozen=True)
-class M1BenchmarkScale:
+class KnowledgeBenchmarkScale:
     """One accepted representative fixture and its CI-safe budget."""
 
     name: str
@@ -45,22 +45,22 @@ class M1BenchmarkScale:
         return 1 + self.source_count * (1 + self.entities_per_source)
 
 
-M1_BENCHMARK_SCALES = (
-    M1BenchmarkScale(
+KNOWLEDGE_BENCHMARK_SCALES = (
+    KnowledgeBenchmarkScale(
         name="small",
         source_count=2,
         entities_per_source=2,
         max_knowledge_bytes=128 * 1024,
         max_build_seconds=2.0,
     ),
-    M1BenchmarkScale(
+    KnowledgeBenchmarkScale(
         name="medium",
         source_count=20,
         entities_per_source=4,
         max_knowledge_bytes=2 * 1024 * 1024,
         max_build_seconds=8.0,
     ),
-    M1BenchmarkScale(
+    KnowledgeBenchmarkScale(
         name="large",
         source_count=75,
         entities_per_source=6,
@@ -71,7 +71,7 @@ M1_BENCHMARK_SCALES = (
 
 
 @dataclass(frozen=True)
-class M1BenchmarkResult:
+class KnowledgeBenchmarkResult:
     """Measured planner result with deterministic artifact sizes."""
 
     scale: str
@@ -85,9 +85,9 @@ class M1BenchmarkResult:
     repeats: int
 
 
-def build_m1_benchmark_inputs(
+def build_knowledge_benchmark_inputs(
     wiki_dir: Path,
-    scale: M1BenchmarkScale,
+    scale: KnowledgeBenchmarkScale,
 ) -> KnowledgeGenerationInputs:
     """Build a deterministic, extraction-free planner input at *scale*."""
 
@@ -143,8 +143,8 @@ def build_m1_benchmark_inputs(
     add_page(
         kind=PageKind.INDEX,
         page_id=PageKind.INDEX.value,
-        title="M1 benchmark",
-        content="# M1 benchmark\n\nDeterministic generated-observation fixture.\n",
+        title="Knowledge benchmark",
+        content="# Knowledge benchmark\n\nDeterministic generated-observation fixture.\n",
         source_path=None,
     )
 
@@ -269,14 +269,14 @@ def build_m1_benchmark_inputs(
         extractor_ref_by_source={path: "python-ast" for path in inventory},
         inventory_complete_by_source={path: True for path in inventory},
         repository_evidence=RepositoryEvidence(),
-        configured_public_identity="example.invalid/llm-wiki/m1-benchmark",
+        configured_public_identity="example.invalid/llm-wiki/knowledge-benchmark",
         generation_options={"benchmark_scale": scale.name},
         generation_option_defaults={"benchmark_scale": scale.name},
         generation_option_allowlist=("benchmark_scale",),
         tool=ProducerComponentInput(
             component_id="agent-wiki-cli",
             version="1.4.0",
-            configuration={"profile": "m1-benchmark"},
+            configuration={"profile": "knowledge-benchmark"},
         ),
         extractors=(
             ProducerComponentInput(
@@ -290,17 +290,17 @@ def build_m1_benchmark_inputs(
     )
 
 
-def run_m1_benchmark(
+def run_knowledge_benchmark(
     wiki_dir: Path,
-    scale: M1BenchmarkScale,
+    scale: KnowledgeBenchmarkScale,
     *,
     repeats: int = 2,
-) -> M1BenchmarkResult:
+) -> KnowledgeBenchmarkResult:
     """Measure planner construction while proving deterministic output bytes."""
 
     if isinstance(repeats, bool) or not isinstance(repeats, int) or repeats < 1:
         raise ValueError("repeats must be a positive integer")
-    inputs = build_m1_benchmark_inputs(wiki_dir, scale)
+    inputs = build_knowledge_benchmark_inputs(wiki_dir, scale)
     durations: list[float] = []
     expected_artifacts: tuple[bytes, bytes, bytes] | None = None
     last_artifacts: tuple[bytes, bytes, bytes] | None = None
@@ -316,9 +316,9 @@ def run_m1_benchmark(
         if expected_artifacts is None:
             expected_artifacts = last_artifacts
         elif last_artifacts != expected_artifacts:
-            raise AssertionError("M1 planner emitted non-deterministic bytes")
+            raise AssertionError("Knowledge planner emitted non-deterministic bytes")
     assert last_artifacts is not None
-    return M1BenchmarkResult(
+    return KnowledgeBenchmarkResult(
         scale=scale.name,
         source_count=scale.source_count,
         page_count=scale.page_count,
@@ -332,11 +332,11 @@ def run_m1_benchmark(
 
 
 def _main() -> None:
-    with tempfile.TemporaryDirectory(prefix="llm-wiki-m1-benchmark-") as temp:
+    with tempfile.TemporaryDirectory(prefix="llm-wiki-knowledge-benchmark-") as temp:
         root = Path(temp)
         results = [
-            asdict(run_m1_benchmark(root / scale.name, scale))
-            for scale in M1_BENCHMARK_SCALES
+            asdict(run_knowledge_benchmark(root / scale.name, scale))
+            for scale in KNOWLEDGE_BENCHMARK_SCALES
         ]
     print(json.dumps(results, indent=2, sort_keys=True))
 
@@ -346,9 +346,9 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "M1_BENCHMARK_SCALES",
-    "M1BenchmarkResult",
-    "M1BenchmarkScale",
-    "build_m1_benchmark_inputs",
-    "run_m1_benchmark",
+    "KNOWLEDGE_BENCHMARK_SCALES",
+    "KnowledgeBenchmarkResult",
+    "KnowledgeBenchmarkScale",
+    "build_knowledge_benchmark_inputs",
+    "run_knowledge_benchmark",
 ]

@@ -1,4 +1,4 @@
-"""Tests for services/dependencies.py — internal dependency graph (Epic 2.1)."""
+"""Tests for services/dependencies.py — internal dependency graph."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ def _mod(*imports):
     return {"imports": list(imports)}
 
 
-# ── DL-101: build_dependency_graph ────────────────────────────────────
+# ── Dependency graph construction ─────────────────────────────────────
 
 
 class TestBuildDependencyGraph:
@@ -448,7 +448,7 @@ class TestBuildDependencyObservations:
         }
 
 
-# ── DL-102: detect_cycles ─────────────────────────────────────────────
+# ── Cycle detection ───────────────────────────────────────────────────
 
 
 class TestDetectCycles:
@@ -511,7 +511,7 @@ class TestDetectCycles:
         assert detect_cycles({"nodes": [], "edges": []}) == []
 
 
-# ── DL-103: dependency_metrics ────────────────────────────────────────
+# ── Dependency metrics ────────────────────────────────────────────────
 
 
 class TestDependencyMetrics:
@@ -550,7 +550,7 @@ class TestDependencyMetrics:
         assert result["most_depended_on"] == ["solo.py"]
 
 
-# ── DL-302: topological_order ─────────────────────────────────────────
+# ── Topological ordering ──────────────────────────────────────────────
 
 
 class TestTopologicalOrder:
@@ -645,7 +645,7 @@ class TestTopologicalOrder:
         }
 
 
-# ── DL-303: detect_side_effects ───────────────────────────────────────
+# ── Import side-effect detection ──────────────────────────────────────
 
 
 def _calls(*records):
@@ -719,7 +719,7 @@ class TestDetectSideEffects:
         assert result["factories"] == []
 
 
-# ── Epic 2.4: aggregation + scale guard ───────────────────────────────
+# ── Aggregation and scale guard ───────────────────────────────────────
 
 
 def _pymod(*imports):

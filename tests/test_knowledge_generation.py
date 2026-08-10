@@ -1,4 +1,4 @@
-"""Focused tests for the shared KNOW-109/110 generation planner."""
+"""Focused coverage for the shared knowledge-generation planner."""
 
 from __future__ import annotations
 

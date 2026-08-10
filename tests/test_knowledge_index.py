@@ -1,4 +1,4 @@
-"""Focused tests for the pure KNOW-106 knowledge-index builder."""
+"""Focused coverage for the pure knowledge-index builder."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Dogfood smoke coverage for this repository's M4 documentation surface."""
+"""Dogfood smoke coverage for this repository's documentation surface."""
 
 from __future__ import annotations
 
@@ -162,7 +162,7 @@ def _mermaid_body_measurements(
     return measurements, legacy_raw_dotted_labels
 
 
-def test_m4_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys):
+def test_documentation_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys):
     repo_root = Path(__file__).resolve().parents[1]
     helper_root = resolve_helper_cache_root(repo_root)
     if helper_root is None:

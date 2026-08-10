@@ -1,4 +1,4 @@
-"""Pure documentation knowledge-query tests (KNOW-204)."""
+"""Pure documentation knowledge-query coverage."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""P2 resilience coverage for enriched Site and Obsidian projections."""
+"""Resilience coverage for enriched Site and Obsidian projections."""
 
 from __future__ import annotations
 
