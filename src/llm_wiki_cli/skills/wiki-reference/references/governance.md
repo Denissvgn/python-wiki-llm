@@ -1,5 +1,13 @@
 # Durable knowledge governance
 
+## Contents
+
+- [Generated projection versus authoritative ledger](#generated-projection-versus-authoritative-ledger)
+- [Explicit adoption](#explicit-adoption)
+- [Moves, aliases, and allocation conflicts](#moves-aliases-and-allocation-conflicts)
+- [Lifecycle, review, and verification](#lifecycle-review-and-verification)
+- [Loss and recovery](#loss-and-recovery)
+
 Read this topic only when a repository owner explicitly asks to adopt or
 change durable knowledge identity, aliases, lifecycle, human review, or machine
 verification, or when an existing ledger must be recovered. It owns durable

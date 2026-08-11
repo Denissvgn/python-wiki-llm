@@ -1,5 +1,12 @@
 # Canonical surfaces and naming
 
+## Contents
+
+- [Canonical surface catalog](#canonical-surface-catalog)
+- [Generated and semantic ownership](#generated-and-semantic-ownership)
+- [Deterministic page naming](#deterministic-page-naming)
+- [Required structures and links](#required-structures-and-links)
+
 Read this topic before editing, naming, linking, or recovering a canonical wiki
 page. It owns the surface catalog, generated-versus-semantic boundary, and
 deterministic naming contract. It does not authorize source edits, arbitrary

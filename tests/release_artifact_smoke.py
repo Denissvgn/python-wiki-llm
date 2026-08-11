@@ -75,6 +75,11 @@ EXPECTED_WIKI_REFERENCE_FILES = (
 EXPECTED_SKILL_COUNT = 16
 _MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 _URI_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+_INTERNAL_REPORT_BASENAME = re.compile(
+    r"(?:^|[-_.])(?:backlog|"
+    r"closure[-_.]+(?:report|review))(?:[-_.]|$)",
+    re.IGNORECASE,
+)
 
 
 class SmokeError(RuntimeError):
@@ -165,8 +170,7 @@ def _validate_artifact_members(artifact: Path) -> int:
         if "reports" in {
             part.casefold() for part in PurePosixPath(name).parts
         }
-        or PurePosixPath(name).name.casefold()
-        == "agents-md-knowledge-first-implementation-backlog.md"
+        or _INTERNAL_REPORT_BASENAME.search(PurePosixPath(name).name)
     ]
     if internal:
         raise SmokeError(

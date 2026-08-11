@@ -1,5 +1,14 @@
 # Qualified knowledge consumption
 
+## Contents
+
+- [What the projection can establish](#what-the-projection-can-establish)
+- [Availability and fallback decision table](#availability-and-fallback-decision-table)
+- [Live freshness](#live-freshness)
+- [Negative findings, ambiguity, and bounds](#negative-findings-ambiguity-and-bounds)
+- [Strict validation interpretation](#strict-validation-interpretation)
+- [Inert-data boundary](#inert-data-boundary)
+
 Read this topic before interpreting native concepts, relationships, pages,
 freshness, evidence, or a `found: false` result. It owns the availability,
 freshness, uncertainty, fallback, and negative-fact contract. It does not

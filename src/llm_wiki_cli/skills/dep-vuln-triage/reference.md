@@ -1,5 +1,17 @@
 # dep-vuln-triage reference
 
+## Contents
+
+- [Input contract: the deep extract dependency block](#input-contract-the-deep-extract-dependency-block)
+- [Supported declaration ledger](#supported-declaration-ledger)
+- [Version observations and selection](#version-observations-and-selection)
+- [Advisory lookup](#advisory-lookup)
+- [Reachability classes](#reachability-classes)
+- [Triage statuses](#triage-statuses)
+- [Report format](#report-format)
+- [Edge cases](#edge-cases)
+- [Scope guardrails](#scope-guardrails)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 ## Input contract: the deep extract dependency block
@@ -229,7 +241,12 @@ Dependency reconciliation matches on the *declared package name*, but a package'
 
 ## Report format
 
-`reports/dep_vuln_triage_<YYYY-MM-DD>.md`, resumable rows:
+Suggested repository path: `reports/dep_vuln_triage_<YYYY-MM-DD>.md`. Treat
+this path only as a suggestion. Follow the exact-target repository-report
+preflight in [SKILL.md](SKILL.md) before any write; the path never authorizes
+repository creation or publication.
+
+Use these resumable rows:
 
 ```markdown
 | ID | Package (lang) | Declaration scope/kind | Version observation (source) | Advisory query basis | Severity | Reachability | Status | Action |

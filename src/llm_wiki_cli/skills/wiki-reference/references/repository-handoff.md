@@ -5,6 +5,18 @@ before delivery. It owns the Git-delivery decision; it does not authorize a
 write, stage, commit, ignore-policy change, network operation, or any other
 action. The user and every applicable repository rule remain authoritative.
 
+## Internal report targets
+
+Before creating an internal repository report, resolve the exact target and run
+`git check-ignore -q -- <exact-report-path>` in its Git worktree. Only exit 0
+permits that repository write. If Git/worktree is missing, the target is
+unignored, or the result is indeterminate, do not create the report inside the
+repository; request an already ignored target or a user-approved non-repository
+scratch path. Never edit ignore/exclude policy or stage, force-add, commit, or
+publish an internal report; a request to run or publish the workflow does not
+waive this rule. Return any sensitive ignored or non-repository path only in the
+local handoff/result, never in public documentation.
+
 ## Determine delivery state
 
 Check the configured wiki root and its canonical index, not a hard-coded

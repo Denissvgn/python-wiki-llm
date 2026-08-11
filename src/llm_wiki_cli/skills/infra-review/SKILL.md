@@ -24,6 +24,12 @@ staging, force-add, or ignore/exclude changes. Apply the managed contract at
 `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
 configured agents.
 
+## Repository report preflight
+
+Before creating an internal report, apply the exact-target fail-closed policy
+through the Claude/generic repository-handoff route immediately above. A
+suggested `reports/` path never authorizes repository creation or publication.
+
 ## Preconditions
 
 - This is a defensive review of a repository the user owns, maintains, or is authorized to assess.
@@ -41,7 +47,10 @@ configured agents.
   wiki observation is available, perform a labeled page screen, report its
   recorded basis/limitations, and leave current findings inconclusive. Do not
   run `knowledge init` or bootstrap automatically as a repair.
-- For external-source repositories, keep `--allow-external-src` on any source-reading command and report/output paths under the current project.
+- For external-source repositories, keep `--allow-external-src` on any
+  source-reading command. Keep any transient extraction output in a
+  user-approved non-repository scratch path and select the report target
+  through the preflight above.
 - Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
   bounds. Only `ready` with live `current` qualifies a claim as unchanged since
   observation; preserve `nonsemantic-source-change`, and never turn an
@@ -105,8 +114,9 @@ configured agents.
    omitted controls. Confirm page-screened action refs against current raw
    workflow YAML before an assurance conclusion.
 
-6. **Write the review report separately.** Create
-   `reports/infra_review_<YYYY-MM-DD>.md` with one `IR-NNN` row per finding and
+6. **Write the review report separately.** Write to the exact target selected by
+   the preflight; `reports/infra_review_<YYYY-MM-DD>.md` is only the repository
+   suggestion after exact ignore proof. Use one `IR-NNN` row per finding and
    a coverage row for every discovered or unsupported artifact.
    Infrastructure `## Notes` is the one supported semantic section and survives
    regeneration; every other page section is generated or unsupported and is

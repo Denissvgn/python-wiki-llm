@@ -1,5 +1,16 @@
 # onboarding-guide reference
 
+## Contents
+
+- [The guides surface contract](#the-guides-surface-contract)
+- [Default personas](#default-personas)
+- [Guide page template](#guide-page-template)
+- [Flow-ranking recipe](#flow-ranking-recipe)
+- [Remainder format](#remainder-format)
+- [Failure modes](#failure-modes)
+- [Usage examples handoff](#usage-examples-handoff)
+- [External documentation workspace](#external-documentation-workspace)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 ## The guides surface contract

@@ -1,5 +1,14 @@
 # Context and query selection
 
+## Contents
+
+- [Choose the least costly truthful route](#choose-the-least-costly-truthful-route)
+- [Broad context and qualified packets](#broad-context-and-qualified-packets)
+- [Knowledge mode is not freshness preference](#knowledge-mode-is-not-freshness-preference)
+- [Exact dispatcher and supplied impact](#exact-dispatcher-and-supplied-impact)
+- [Exact identity and graph interpretation](#exact-identity-and-graph-interpretation)
+- [Reuse one Python service for related queries](#reuse-one-python-service-for-related-queries)
+
 Read this topic when choosing broad context, a qualified packet, an exact
 knowledge query, or a supplied-path/diff impact route. It owns interface shape,
 identity, cost, and result bounds. It does not authorize source writes,

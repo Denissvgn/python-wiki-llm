@@ -1,5 +1,19 @@
 # publish-docs reference
 
+## Contents
+
+- [Ownership and migration](#ownership-and-migration)
+- [Format/builder pairing](#formatbuilder-pairing)
+- [Immutable publication selection](#immutable-publication-selection)
+- [Optional native-metadata preflight](#optional-native-metadata-preflight)
+- [Commands](#commands)
+- [Distribution modes](#distribution-modes)
+- [Builder detection (fail closed)](#builder-detection-fail-closed)
+- [CI wiring pattern](#ci-wiring-pattern)
+- [Failure modes](#failure-modes)
+- [Usage examples handoff](#usage-examples-handoff)
+- [External documentation workspace](#external-documentation-workspace)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 ## Ownership and migration

@@ -9,6 +9,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REFERENCE_ROOT = PROJECT_ROOT / "src" / "llm_wiki_cli" / "skills" / "wiki-reference"
 TOPICS_ROOT = REFERENCE_ROOT / "references"
+LEADING_CONTENTS_BLOCK = re.compile(
+    r"\A(?P<title>#[^\n]+\n\n)## Contents\n\n(?:- [^\n]+\n)+\n"
+)
 
 TOPIC_HEADINGS = {
     "maintenance.md": "Maintenance and validation",
@@ -54,12 +57,17 @@ def _normalized(content: str) -> str:
     return " ".join(content.split())
 
 
+def _bounded_intro(content: str) -> str:
+    without_navigation = LEADING_CONTENTS_BLOCK.sub(r"\g<title>", content)
+    return _normalized(without_navigation[:700])
+
+
 def test_topic_tree_has_explicit_triggers_and_bounded_scopes() -> None:
     assert {path.name for path in TOPICS_ROOT.glob("*.md")} == set(TOPIC_HEADINGS)
 
     for name, heading in TOPIC_HEADINGS.items():
         content = (TOPICS_ROOT / name).read_text(encoding="utf-8")
-        intro = _normalized(content[:700])
+        intro = _bounded_intro(content)
         assert content.startswith(f"# {heading}\n")
         assert "Read this topic" in intro
         assert re.search(

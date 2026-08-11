@@ -1,5 +1,14 @@
 # wiki-bootstrap reference
 
+## Contents
+
+- [Centrality-ranked semantic pass](#centrality-ranked-semantic-pass)
+- [Remainder-backlog artifact format](#remainder-backlog-artifact-format)
+- [Native artifact ownership and recovery](#native-artifact-ownership-and-recovery)
+- [Validation expectations](#validation-expectations)
+- [Failure modes and edge cases](#failure-modes-and-edge-cases)
+- [Related workflows](#related-workflows)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 Every source-reading recipe below inherits the active profile rule from the
@@ -43,7 +52,16 @@ Leaf modules, tiny value objects, generated adapters, and pages with no safe sem
 
 ## Remainder-backlog artifact format
 
-Default path: `<wiki-dir>/bootstrap-remainder.md`, linked from a custom trailing `## Bootstrap Remainder` section in `index.md`. Fallback path: `reports/llm_wiki_bootstrap_remainder_<YYYY-MM-DD>.md` when the target project does not allow custom wiki pages — record that fallback in `log.md`. The artifact is agent-owned Markdown; keep it stable and easy to update by hand, with no custom parser required for routine use.
+Default path: `<wiki-dir>/bootstrap-remainder.md`, linked from a custom trailing
+`## Bootstrap Remainder` section in `index.md`. Suggested repository fallback:
+`reports/llm_wiki_bootstrap_remainder_<YYYY-MM-DD>.md` when the target project
+does not allow custom wiki pages. Treat this path only as a suggestion. Follow
+the exact-target repository-report preflight in [SKILL.md](SKILL.md) before any
+write; the path never authorizes repository creation or publication. In public
+`log.md`, record only that remainder coverage is external or unavailable; never
+record an ignored or non-repository target path. Return the sensitive path only
+in the local handoff/result. The artifact is agent-owned Markdown; keep it stable
+and easy to update by hand, with no custom parser required for routine use.
 
 ```markdown
 # Bootstrap Remainder Backlog
@@ -148,7 +166,9 @@ A successful run has:
 - `bootstrap-remainder.md` exists when placeholders remain, and `index.md` links it when the default wiki artifact path is used.
 - `lint --strict` exits 0.
 - `ci-check` exits 0, or any non-zero result is explained as an existing warning-only dependency/coverage condition with a follow-up backlog item.
-- The final diff contains generated wiki pages, semantic edits, the remainder backlog, and optional report/log artifacts only.
+- The final reviewed changes contain generated wiki pages, semantic edits, and
+  the remainder backlog. Keep any internal report outside Git under the
+  repository-report preflight above.
 
 ## Failure modes and edge cases
 
@@ -162,7 +182,11 @@ A successful run has:
 - **Skipped generated pages.** Page skips can hide missing documentation due to collisions or unsafe output paths. Triage before semantic polishing.
 - **Source-adapter wikis.** Keep `--allow-external-src` and the active profile consistent across `prepare-extractors`, `bootstrap`, `lint`, `sync`, `ci-check`, and `team check` after the initial run. Examples: `llm-wiki prepare-extractors --src-dir <repo> --allow-external-src --source-selection <profile>` and `llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>`. The `--wiki-dir` remains project-root guarded.
 - **Placeholder pressure.** Removing every placeholder is not the goal. The goal is to make central pages meaningful and make deferred work explicit.
-- **Custom backlog page lint.** If `bootstrap-remainder.md` is reported as an orphan, link it from `index.md`. If the target project forbids custom wiki pages, move it to `reports/` and record that fallback in `log.md`.
+- **Custom backlog page lint.** If `bootstrap-remainder.md` is reported as an
+  orphan, link it from `index.md`. If the target project forbids custom wiki
+  pages, use only the preflight-approved report fallback (or the approved
+  non-repository path). Record only external/unavailable remainder coverage in
+  public `log.md`; return the sensitive target path in the local handoff/result.
 
 ## Related workflows
 

@@ -1,5 +1,15 @@
 # wiki-semantic-enhance reference
 
+## Contents
+
+- [Readiness ledger](#readiness-ledger)
+- [Work-item transitions](#work-item-transitions)
+- [Ranking and editable surfaces](#ranking-and-editable-surfaces)
+- [Imported enrichment decisions](#imported-enrichment-decisions)
+- [Native-qualified claim evidence](#native-qualified-claim-evidence)
+- [Exit gate](#exit-gate)
+- [Resume and failure matrix](#resume-and-failure-matrix)
+
 Use this reference while executing the explicit `wiki-enrichment` packet. The
 workspace wiki is canonical for the run; static-site output remains derived.
 

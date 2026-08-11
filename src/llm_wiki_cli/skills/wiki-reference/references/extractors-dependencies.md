@@ -1,5 +1,15 @@
 # Extractors and dependencies
 
+## Contents
+
+- [Prepared helpers and cache ownership](#prepared-helpers-and-cache-ownership)
+- [Haskell extraction contract](#haskell-extraction-contract)
+- [Python and FastAPI static contracts](#python-and-fastapi-static-contracts)
+- [Optional-surface initialization](#optional-surface-initialization)
+- [Incremental infrastructure observations](#incremental-infrastructure-observations)
+- [Dependency reconciliation](#dependency-reconciliation)
+- [JavaScript and TypeScript flows](#javascript-and-typescript-flows)
+
 Read this topic when a prepared helper is missing, an extractor reports a
 coverage limitation, or dependency/API diagnostics need interpretation. It
 owns extractor, toolchain, inventory, and dependency-reconciliation contracts.

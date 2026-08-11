@@ -1,5 +1,12 @@
 # Maintenance and validation
 
+## Contents
+
+- [Establish the starting state](#establish-the-starting-state)
+- [Complete owning loop](#complete-owning-loop)
+- [Mutation and identity boundaries](#mutation-and-identity-boundaries)
+- [Failure and recovery](#failure-and-recovery)
+
 Read this topic after a relevant code change, source revision update, rebase,
 or suspected wiki drift. It owns the minimum complete maintenance loop and its
 failure ordering. It does not authorize source edits, governance, Git actions,

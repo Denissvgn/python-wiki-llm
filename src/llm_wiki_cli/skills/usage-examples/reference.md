@@ -1,5 +1,16 @@
 # usage-examples reference
 
+## Contents
+
+- [Capture Tooling Matrix](#capture-tooling-matrix)
+- [Media Policy](#media-policy)
+- [Redaction Rules](#redaction-rules)
+- [Deferred Docs Row](#deferred-docs-row)
+- [Runtime capture result contract](#runtime-capture-result-contract)
+- [Command Matrix](#command-matrix)
+- [Failure Modes](#failure-modes)
+- [External documentation workspace](#external-documentation-workspace)
+
 ## Capture Tooling Matrix
 
 | Flow type | Preferred evidence | Optional media | Availability check |

@@ -23,6 +23,13 @@ staging, force-add, or ignore/exclude changes. Apply the managed contract at
 `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
 configured agents.
 
+## Repository report fallback preflight
+
+Before using the reference's internal-report fallback, apply the exact-target
+fail-closed policy through the Claude/generic repository-handoff route
+immediately above. A suggested `reports/` path never authorizes repository
+creation or publication.
+
 ## Preconditions
 
 - This is the first bootstrap into a nonexistent or empty target, or into the

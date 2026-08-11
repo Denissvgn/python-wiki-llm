@@ -1,5 +1,17 @@
 # impact-analysis reference
 
+## Contents
+
+- [Native-first access path and service reuse](#native-first-access-path-and-service-reuse)
+- [Typed-graph decision supplement](#typed-graph-decision-supplement)
+- [Typed graph filters and completeness](#typed-graph-filters-and-completeness)
+- [Bounded source-query selection by target type](#bounded-source-query-selection-by-target-type)
+- [Compatibility `context --request` payload (`llm-wiki-context/v1`)](#compatibility-context---request-payload-llm-wiki-contextv1)
+- [`dependency_neighborhood` result shape (MCP-only)](#dependency_neighborhood-result-shape-mcp-only)
+- [Checklist vocabulary (shared with `doc-review`)](#checklist-vocabulary-shared-with-doc-review)
+- [Report format](#report-format)
+- [Failure modes](#failure-modes)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 ## Native-first access path and service reuse

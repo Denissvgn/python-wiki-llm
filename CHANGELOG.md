@@ -78,6 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   they need. Reference installation and upgrade validate the complete nested
   tree, repair managed files deliberately, and fail safely around unexpected or
   linked filesystem entries.
+- Generated entity References tables now aggregate exact repeated call
+  observations into one logical row with a call-site count, keep call and type
+  references distinct, apply the 12-row presentation bound after grouping, and
+  disclose exact logical coverage when truncated. Raw and versioned
+  relationship interfaces retain their line-specific records.
 - Selected skill installs and exports now expand a central, portable dependency
   map transitively in deterministic dependency-first order. Knowledge-consuming
   workflows automatically include and verify `wiki-reference`; reports separate
@@ -261,8 +266,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Generated Mermaid diagrams now contextually escape bounded Unicode labels,
   validate plugin class names, percent-encode validated relative links,
-  deduplicate graph edges, and omit excess visual detail without truncating
-  authoritative tables.
+  deduplicate graph edges, and omit excess visual detail independently of
+  separately generated table projections.
 - Generated agent prompts, repository instructions, and bundled wiki-mutating
   skills now respect effective Git ignore rules: ignored or indeterminate wiki
   paths remain local-only, while commits require a nonignored path plus

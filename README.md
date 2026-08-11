@@ -63,8 +63,11 @@ The renderer normalizes and bounds labels while preserving printable Unicode,
 grammar-escapes source-derived text, and emits only validated relative diagram
 links with URL characters percent-encoded. When a visualization cannot show
 every analyzed item within its node, line, and character budgets, its omission
-note identifies the bounded projection; the generated tables remain the complete
-authoritative view.
+note identifies the bounded projection. Generated tables must also be read
+according to their stated limits: entity relationship reference tables show at
+most 12 logical rows and report exact coverage and omission counts when
+truncated. That table is a presentation summary, not an exhaustive line-level
+call-site record.
 Full bootstrap renders entity `## Relationships` sections with bounded Mermaid
 diagrams and compact reference tables when relationship metadata exists. When
 dependency analysis is enabled, module pages also get a generated

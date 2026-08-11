@@ -1,5 +1,11 @@
 # Publishing projections
 
+## Contents
+
+- [Generated Site output](#generated-site-output)
+- [Optional native metadata](#optional-native-metadata)
+- [Privacy profiles and content review](#privacy-profiles-and-content-review)
+
 Read this topic when exporting or checking Site or Obsidian output, choosing a
 publication profile, or interpreting a projection receipt. It owns derived
 publication contracts and privacy boundaries. It does not authorize a build,

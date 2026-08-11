@@ -47,6 +47,12 @@ from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
 
 RECORD = Path(__file__).parent / "records" / "knowledge" / "release-dogfood.json"
 WIKI_DIR = "docs/llm_wiki"
+_INTERNAL_ARTIFACT_MEMBERS = (
+    "reports/internal-notes.md",
+    "internal-backlog.md",
+    "internal-closure-report.md",
+    "internal-closure-review.md",
+)
 
 
 def _request() -> dict[str, object]:
@@ -108,7 +114,7 @@ def _write_artifact(
     *,
     missing: str | None = None,
     extra: str | None = None,
-    internal: bool = False,
+    internal_member: str | None = None,
 ) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     if kind == "wheel":
@@ -116,8 +122,8 @@ def _write_artifact(
         names = _artifact_paths("")
         if extra is not None:
             names.append(f"llm_wiki_cli/skills/wiki-reference/{extra}")
-        if internal:
-            names.append("reports/agents-md-knowledge-first-implementation-backlog.md")
+        if internal_member is not None:
+            names.append(internal_member)
         with zipfile.ZipFile(path, mode="w") as archive:
             for name in names:
                 if not name.endswith(f"/{missing}"):
@@ -131,11 +137,8 @@ def _write_artifact(
             "agent_wiki_cli-1.6.0/src/llm_wiki_cli/skills/"
             f"wiki-reference/{extra}"
         )
-    if internal:
-        names.append(
-            "agent_wiki_cli-1.6.0/reports/"
-            "agents-md-knowledge-first-implementation-backlog.md"
-        )
+    if internal_member is not None:
+        names.append(f"agent_wiki_cli-1.6.0/{internal_member}")
     with tarfile.open(path, mode="w:gz") as archive:
         for name in names:
             if name.endswith(f"/{missing}"):
@@ -173,9 +176,17 @@ def test_release_archive_requires_exact_topics_and_rejects_internal_reports(
     with pytest.raises(release_artifact_smoke.SmokeError, match="unexpected.md"):
         release_artifact_smoke._validate_artifact_members(extra)
 
-    internal = _write_artifact(tmp_path / "internal", kind, internal=True)
-    with pytest.raises(release_artifact_smoke.SmokeError, match="internal report"):
-        release_artifact_smoke._validate_artifact_members(internal)
+    for index, internal_member in enumerate(_INTERNAL_ARTIFACT_MEMBERS):
+        internal = _write_artifact(
+            tmp_path / f"internal-{index}",
+            kind,
+            internal_member=internal_member,
+        )
+        with pytest.raises(
+            release_artifact_smoke.SmokeError,
+            match="internal report",
+        ):
+            release_artifact_smoke._validate_artifact_members(internal)
 
 
 def test_build_metadata_includes_every_current_topic_and_prunes_reports() -> None:

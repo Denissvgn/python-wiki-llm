@@ -36,11 +36,22 @@ report a package, scope, or repository as “not affected”, patched, or cleare
   Configured extractor plugins execute as trusted, unsandboxed code. Record
   helper and plugin identity/status, and do not treat a failed, skipped, or
   unsupported extractor as empty dependency surface.
-- If `--src-dir` points outside the current working directory, pass `--allow-external-src` consistently to every source-reading command, including `prepare-extractors --src-dir <repo> --allow-external-src` and `team check --src-dir <repo> --allow-external-src` when team policy is checked. Keep report and output paths under the current project.
+- If `--src-dir` points outside the current working directory, pass `--allow-external-src` consistently to every source-reading command, including `prepare-extractors --src-dir <repo> --allow-external-src` and `team check --src-dir <repo> --allow-external-src` when team policy is checked. Keep extraction output in a user-approved non-repository scratch path; select the report target through the preflight below.
 - Resolve the active source-selection profile once. When configured, replace
   `<profile>` below with its exact repository-relative path and keep
   `--source-selection <profile>` on every source-reading command; omit the
   whole option only when no profile exists.
+
+## Repository report preflight
+
+Before creating any repository report, resolve the exact target and run
+`git check-ignore -q -- <exact-report-path>` in its Git worktree. Only exit 0
+permits that repository write. If Git/worktree is missing, the target is
+unignored, or the result is indeterminate, do not create the report inside the
+repository; request an already ignored target or a user-approved non-repository
+scratch path. Never edit ignore/exclude policy or stage, force-add, commit, or
+publish an internal report; a request to run or publish the workflow does not
+waive this rule.
 
 ## Steps
 
@@ -191,8 +202,9 @@ report a package, scope, or repository as “not affected”, patched, or cleare
    changed scope. Record commands and results; refresh the revision/dirty-state
    basis and extract hash.
 
-9. **Report and hand off.** Write
-   `reports/dep_vuln_triage_<YYYY-MM-DD>.md` with:
+9. **Report and hand off.** Write to the exact target selected by the preflight;
+   `reports/dep_vuln_triage_<YYYY-MM-DD>.md` is only the repository suggestion
+   after exact ignore proof. Include:
 
    - revision/dirty state, source root, exact extraction command/options,
      extract SHA-256, helper/plugin status, and run time;

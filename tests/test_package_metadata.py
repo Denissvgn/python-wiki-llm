@@ -259,6 +259,31 @@ def test_readme_current_support_table_mentions_python_3_10_plus():
     assert "| Python | stdlib `ast` | Python 3.9+ |" not in readme
 
 
+def test_readme_describes_entity_reference_tables_as_bounded_presentations():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    normalized = " ".join(readme.split())
+
+    assert "at most 12 logical rows" in normalized
+    assert "report exact coverage and omission counts when truncated" in normalized
+    assert "not an exhaustive line-level call-site record" in normalized
+    assert "generated tables remain the complete authoritative view" not in normalized
+
+
+def test_changelog_describes_diagrams_and_tables_as_independently_bounded():
+    changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    normalized = " ".join(changelog.split())
+
+    assert (
+        "omit excess visual detail independently of separately generated table projections"
+        in normalized
+    )
+    assert "aggregate exact repeated call observations into one logical row" in normalized
+    assert "apply the 12-row presentation bound after grouping" in normalized
+    assert "disclose exact logical coverage when truncated" in normalized
+    assert "retain their line-specific records" in normalized
+    assert "without truncating authoritative tables" not in normalized
+
+
 def test_changelog_1_2_0_documents_python_support_floor():
     changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     assert changelog.count("## [1.2.0] - 2026-07-08") == 1
