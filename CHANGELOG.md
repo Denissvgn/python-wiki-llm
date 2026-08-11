@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-08-12
+
 ### Added
 
 - Explicit `knowledge_mode=off|auto|required` context requests use
@@ -14,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   native evidence. Omitting the mode retains the v1 CLI, Python, MCP, and raw
   protocol behavior and is not deprecated in this release; any future default
   change will be announced first with a migration window.
+- A shared bounded `llm-wiki-documentation-query/v1` dispatcher through Python
+  `query_documentation(...)` and MCP `query_documentation`, with exact
+  snapshot-backed concept, surface, and relationship queries plus opt-in
+  full-inventory symbol, entrypoint, dependency, and supplied-impact queries.
 - Versioned `compact` and `expanded_inline` managed-schema profile markers,
   structured managed-reference verification, and live lifecycle reporting for
   current, disabled, unavailable, legacy, and broken combinations.
@@ -767,7 +773,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.4.0...v1.5.0

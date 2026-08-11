@@ -118,7 +118,7 @@ def _write_artifact(
 ) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     if kind == "wheel":
-        path = root / "agent_wiki_cli-1.6.0-py3-none-any.whl"
+        path = root / "agent_wiki_cli-1.7.0-py3-none-any.whl"
         names = _artifact_paths("")
         if extra is not None:
             names.append(f"llm_wiki_cli/skills/wiki-reference/{extra}")
@@ -130,15 +130,15 @@ def _write_artifact(
                     archive.writestr(name, b"release fixture\n")
         return path
 
-    path = root / "agent_wiki_cli-1.6.0.tar.gz"
-    names = _artifact_paths("agent_wiki_cli-1.6.0/src/")
+    path = root / "agent_wiki_cli-1.7.0.tar.gz"
+    names = _artifact_paths("agent_wiki_cli-1.7.0/src/")
     if extra is not None:
         names.append(
-            "agent_wiki_cli-1.6.0/src/llm_wiki_cli/skills/"
+            "agent_wiki_cli-1.7.0/src/llm_wiki_cli/skills/"
             f"wiki-reference/{extra}"
         )
     if internal_member is not None:
-        names.append(f"agent_wiki_cli-1.6.0/{internal_member}")
+        names.append(f"agent_wiki_cli-1.7.0/{internal_member}")
     with tarfile.open(path, mode="w:gz") as archive:
         for name in names:
             if name.endswith(f"/{missing}"):
