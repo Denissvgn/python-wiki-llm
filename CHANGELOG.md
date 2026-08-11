@@ -41,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Multi-wiki ownership is now explicit without changing the public Site CLI:
+  `doc-hub` owns source aggregation, hub export, and the first mirror check;
+  `publish-docs` consumes that checked mirror and owns builder detection,
+  built-site validation, and deploy handoff. Existing combined workflows move
+  only their hub aggregation stage to `doc-hub`.
 - Older unversioned managed instruction blocks in the configured agent's
   current schema path now migrate in place to a versioned profile without
   changing surrounding user prose or separately owned plugin blocks. The
@@ -73,10 +78,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   they need. Reference installation and upgrade validate the complete nested
   tree, repair managed files deliberately, and fail safely around unexpected or
   linked filesystem entries.
-- Explicitly selected workflows that route into managed policy now require and
-  verify an exact `wiki-reference` tree at the same destination. The selection
-  fails before writing when the prerequisite is unavailable or drifted, while
-  callers retain explicit control over which skill directories are included.
+- Selected skill installs and exports now expand a central, portable dependency
+  map transitively in deterministic dependency-first order. Knowledge-consuming
+  workflows automatically include and verify `wiki-reference`; reports separate
+  requested roots from dependency-included skills, cycles or missing bundled
+  dependencies fail before writing, and local reference drift stops its
+  consumers. `--force` can refresh differing expected regular files, while
+  unexpected or conflicting entries remain preserved and keep consumers
+  blocked until reviewed and moved aside.
 - `ci-check --format json` now emits the versioned
   `llm-wiki-ci-check/v1` envelope. Its nested `llm-wiki-doctor/v1` health
   projection is composed from the same lint evaluation, so the full-integrity

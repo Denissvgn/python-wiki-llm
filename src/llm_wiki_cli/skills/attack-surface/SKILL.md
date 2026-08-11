@@ -1,6 +1,6 @@
 ---
 name: attack-surface
-description: Map a repository's attack surface with LLM Wiki — prepare extractor helpers, run `llm-wiki extract --deep --read-only`, discover the repository security model, treat data-flow gaps as unknown surface, supplement with a ranked source-level sink scan, and write a prioritized exposure report that hands suspicious paths to deeper security review. Use to prepare or scope a defensive security review of a repository you maintain; it is reconnaissance, not a SAST replacement.
+description: Map a maintained repository's attack surface from deep LLM Wiki extraction and a bounded source sink scan. Use to scope defensive security review and prioritize suspicious paths; this is reconnaissance, not a SAST replacement.
 ---
 
 # attack-surface

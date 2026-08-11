@@ -1824,11 +1824,10 @@ Sixteen skills are bundled:
   reachability, and write a severity × reachability `DVT-NNN` report with
   proposed bumps or mitigations; packages without resolved versions are
   reported as unknowns, never safe paths.
-- `doc-hub`: multi-repo documentation hub aggregation — keep each source
-  wiki current, export/check a multi-wiki static-site hub with
-  `site export --wiki-root`/`site check`, and write one LLM-owned hub
-  overview page only when the source repositories are genuinely related
-  (never fabricate a cross-repo relationship that isn't real).
+- `doc-hub`: the owner of multi-repository hub aggregation — keep every source
+  wiki current, freeze the source selection, and export/check the mechanical
+  namespaced hub. No durable authored hub-overview surface exists, so it never
+  invents cross-repository synthesis or runs a builder/deploy step.
 - `doc-review`: documentation review follow-through — start from review JSON,
   branch diffs, patch findings, lint, or sync diagnostics; validate each
   finding against source truth; update semantic wiki/source-doc surfaces; run
@@ -1852,10 +1851,12 @@ Sixteen skills are bundled:
   remainder, and validate with `lint --strict` and a sync re-link pass. This
   authors navigation; it does not establish human completion time, reuse, or
   static/runtime comprehension.
-- `publish-docs`: wire static-site export into an actually publishable
-  site — export (single-wiki or hub), validate with `site check`, run the
-  real mkdocs/docusaurus builder when installed, and hand off (never
-  perform) the deploy step.
+- `publish-docs`: the owner of publication/build handoff — export one wiki or
+  consume the checked mirror returned by `doc-hub`, validate the frozen
+  selection, run the real mkdocs/docusaurus builder when installed, check the
+  build, and hand off (never perform) deployment. Existing multi-wiki callers
+  move only their aggregation/export/first-check stage to `doc-hub`; public
+  `site` CLI behavior is unchanged.
 - `usage-examples`: capture evidence-linked examples for user docs — run
   documented flows in a disposable environment, attach screenshots or
   recordings under `assets/<surface>/<page-stem>/`, validate media links and
@@ -1889,7 +1890,7 @@ Sixteen skills are bundled:
 ```bash
 llm-wiki skills list
 llm-wiki skills install                          # configured agent's project skill dir
-llm-wiki skills install --skill wiki-sync --skill wiki-reference --force
+llm-wiki skills install --skill wiki-sync        # includes wiki-reference automatically
 llm-wiki skills export --dest ~/.claude/skills   # personal skills directory
 llm-wiki skills export --dest exported --format json
 ```
@@ -1911,13 +1912,17 @@ later `init` or `upgrade` preserves the stored preference. The opt-out neither
 deletes an existing reference tree nor disables read-only knowledge and context
 interfaces.
 
-An explicitly selected workflow that routes into managed policy requires an
-exact `wiki-reference` tree at the same destination. Add
-`--skill wiki-reference` to the selection, or provision the managed reference
-first. The CLI verifies the existing or selected tree and rejects the workflow
-before writing when that prerequisite is absent, incomplete, or modified;
-dependency skills are not added implicitly. An all-skills install or export
-already contains the prerequisite.
+Each repeated `--skill` value is a requested root. The CLI expands those roots
+to their complete bundled dependency closure in deterministic dependency-first
+order, so selecting a workflow that consumes managed policy automatically
+includes and verifies `wiki-reference` at the same destination. JSON reports
+use `requested_skills` and `dependency_skills`, text reports label the same two
+sets, and `skills` records the effective install/export order. If an included
+reference tree has local drift, an ordinary run preserves it, reports the
+conflict, and stops before writing its consumers; use `--force` only after
+reviewing changes to expected regular files. Unexpected or conflicting entries
+remain preserved and keep consumers blocked until they are moved aside.
+Explicit `--skill wiki-reference` and all-skills operations remain supported.
 
 When managed references remain enabled, `llm-wiki upgrade` refreshes the
 generated agent constraints and the CLI-owned `wiki-reference` policy as one

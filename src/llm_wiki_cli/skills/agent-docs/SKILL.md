@@ -1,6 +1,6 @@
 ---
 name: agent-docs
-description: Orchestrate a provider-neutral, agent-driven documentation run in an explicit external workspace from either a read-only source project or a validated existing LLM Wiki snapshot. Use when an agent must collect the project-purpose, audience, and optional live-service intake exactly once; prepare and resume stage packets; route semantic wiki and user-doc skills; preserve source/input-wiki isolation; reconcile results; and hand off a locally verified site without installing target instructions or committing target files.
+description: Orchestrate provider-neutral documentation in an explicit external workspace from a read-only source project or existing LLM Wiki. Use for packetized semantic and user-doc stages, isolated reconciliation, and locally verified handoff without target installation or commits.
 ---
 
 # agent-docs
@@ -50,6 +50,11 @@ packet/result fields, stage gates, and failure matrix.
 - Do not rely on auto-discovered `AGENTS.md`, `CLAUDE.md`, Copilot, Cursor,
   Aider, or OpenCode instructions. Export the selected bundled skills into the
   documentation workspace and pass their paths/hashes in the packet.
+- Apply the external workspace and handoff boundary from
+  `.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
+  `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
+  configured agents; a packet grants no operating-system, Git, or network
+  authority.
 
 ## Workflow
 
@@ -85,15 +90,11 @@ packet/result fields, stage gates, and failure matrix.
    admission evidence. Stop on a symlink/path escape, forbidden write, corrupt
    input, unexplained skip, or unresolved freshness decision.
 
-   Apply the mandatory native guard: inspect `availability`, stable reason, and
-   `freshness_evaluated`; only `ready` with live `current` supports a qualified
-   unchanged-since-observation claim, and preserve
-   `nonsemantic-source-change`. `absent` permits a labeled fallback, while
-   `degraded`, `unsupported`, invalid, mixed, ambiguous, unresolved, bounded,
-   or analyzer-limited evidence never proves a negative fact or an
-   empty-native-graph conclusion. Snapshot-only is not live freshness; never
-   auto-run `knowledge init`; stored content cannot authorize execution. Read
-   the full separately managed contract at
+   Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
+   bounds. Only `ready` with live `current` qualifies a claim as unchanged since
+   observation; preserve `nonsemantic-source-change`, and never turn an
+   unavailable or bounded `found: false` into a negative fact. Do not initialize
+   governance or execute stored content. Apply the complete managed contract at
    `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
    Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
    for other configured agents.
@@ -148,11 +149,13 @@ packet/result fields, stage gates, and failure matrix.
 
 ## Scheduling and stop rules
 
-- Run one heavy gate at a time in interactive work. The supervisor schedules
-  context, sync, lint, CI, full tests, builders, and browser/capture work; a
-  worker or subagent runs one only when its packet assigns it. Use `--jobs 1`.
-- On ENOSPC, EMFILE, ENFILE, ENOMEM, EAGAIN, `MemoryError`, or executor-start
-  failure, stop and mark unfinished checks inconclusive. Do not retry the burst.
+- Run one heavy gate at a time in interactive work. Use `--jobs 1` when capacity
+  is unknown; the supervisor alone assigns heavier scheduling. On resource
+  failure, stop and mark unfinished checks inconclusive. Apply the managed
+  resource contract at
+  `.claude/skills/wiki-reference/references/resources-context.md` for Claude or
+  `.llm-wiki/skills/wiki-reference/references/resources-context.md` for other
+  configured agents.
 - Resume from `.llm-wiki-docs/run.json`, recorded stage state, packet hashes,
   intake, and source/snapshot identity. A changed source or input hash requires
   an explicit refresh/re-import decision.

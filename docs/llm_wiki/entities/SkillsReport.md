@@ -1,6 +1,6 @@
 # SkillsReport
 
-**Location:** `src/llm_wiki_cli/services/skills.py:152`
+**Location:** `src/llm_wiki_cli/services/skills.py:161`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)
@@ -9,7 +9,12 @@
 
 ## Description
 
-_Auto-generated from `SkillsReport` in `src/llm_wiki_cli/services/skills.py`._
+One export/install result with requested and effective skill identities.
+
+``skills`` is the dependency-first effective order. ``requested_skills``
+preserves the de-duplicated roots supplied by the caller (or every bundled
+skill for the all-skills default), while ``dependency_skills`` contains
+only closure members that were not themselves requested.
 
 ## Attributes
 
@@ -20,6 +25,8 @@ _Auto-generated from `SkillsReport` in `src/llm_wiki_cli/services/skills.py`._
 | `skills` | `list[str]` | `field(default_factory=list)` | — |
 | `operations` | `list[SkillOperation]` | `field(default_factory=list)` | — |
 | `issues` | `list[dict[str, str]]` | `field(default_factory=list)` | — |
+| `requested_skills` | `list[str]` | `field(default_factory=list)` | — |
+| `dependency_skills` | `list[str]` | `field(default_factory=list)` | — |
 
 ## Methods
 
@@ -61,7 +68,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [skills](../modules/skills.md) | 1 | `dest_dir`, `issues`, `ok`, `operations`, `skills` |
+| [skills](../modules/skills.md) | 1 | `dependency_skills`, `dest_dir`, `issues`, `ok`, `operations`, `requested_skills`, `skills` |
 
 ### References
 

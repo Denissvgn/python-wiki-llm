@@ -911,44 +911,59 @@ def _managed_topic_route(
 
 
 _ROUTER_TOPICS = tuple(_TOPIC_HEADINGS)
-_HANDOFF_SKILLS = (
-    "usage-examples",
-    "onboarding-guide",
-    "wiki-sync",
-    "infra-review",
-    "dep-audit",
-    "wiki-bootstrap",
-    "user-docs-author",
-    "doc-review",
-)
-_KNOWLEDGE_CONSUMERS = (
-    "agent-docs",
-    "dep-audit",
-    "doc-hub",
-    "doc-review",
-    "impact-analysis",
-    "infra-review",
-    "onboarding-guide",
-    "publish-docs",
-    "usage-examples",
-    "user-docs-author",
-    "wiki-bootstrap",
-    "wiki-semantic-enhance",
-    "wiki-sync",
-)
-_INSTALLED_HANDOFF_SPAN = (
-    "Read the separately managed topic at "
-    "`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude "
-    "or `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for "
-    "other configured agents."
-)
-_INSTALLED_KNOWLEDGE_SPAN = (
-    "Read the full separately managed contract at "
-    "`.claude/skills/wiki-reference/references/knowledge-consumption.md` for "
-    "Claude or "
-    "`.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md` for "
-    "other configured agents."
-)
+WORKFLOW_MANAGED_REFERENCE_TOPICS: dict[str, tuple[str, ...]] = {
+    "agent-docs": (
+        "knowledge-consumption",
+        "repository-handoff",
+        "resources-context",
+    ),
+    "dep-audit": ("knowledge-consumption", "repository-handoff"),
+    "doc-hub": ("knowledge-consumption", "publishing", "resources-context"),
+    "doc-review": ("knowledge-consumption", "repository-handoff"),
+    "impact-analysis": ("context-query", "knowledge-consumption"),
+    "infra-review": ("knowledge-consumption", "repository-handoff"),
+    "onboarding-guide": (
+        "knowledge-consumption",
+        "repository-handoff",
+        "resources-context",
+    ),
+    "publish-docs": ("knowledge-consumption", "publishing", "resources-context"),
+    "usage-examples": (
+        "knowledge-consumption",
+        "publishing",
+        "repository-handoff",
+    ),
+    "user-docs-author": (
+        "knowledge-consumption",
+        "publishing",
+        "repository-handoff",
+        "resources-context",
+    ),
+    "wiki-bootstrap": (
+        "governance",
+        "knowledge-consumption",
+        "repository-handoff",
+    ),
+    "wiki-semantic-enhance": (
+        "knowledge-consumption",
+        "repository-handoff",
+        "resources-context",
+    ),
+    "wiki-sync": (
+        "context-query",
+        "extractors-dependencies",
+        "governance",
+        "knowledge-consumption",
+        "maintenance",
+        "repository-handoff",
+        "resources-context",
+        "surfaces-naming",
+    ),
+}
+
+
+def _installed_topic_span(topic: str) -> str:
+    return f".claude/skills/wiki-reference/references/{topic}.md"
 
 
 MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
@@ -1010,18 +1025,11 @@ MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
     *(
         _managed_topic_route(
             f"skills/{skill_id}/SKILL.md",
-            _INSTALLED_HANDOFF_SPAN,
-            "repository-handoff",
+            _installed_topic_span(topic),
+            topic,
         )
-        for skill_id in _HANDOFF_SKILLS
-    ),
-    *(
-        _managed_topic_route(
-            f"skills/{skill_id}/SKILL.md",
-            _INSTALLED_KNOWLEDGE_SPAN,
-            "knowledge-consumption",
-        )
-        for skill_id in _KNOWLEDGE_CONSUMERS
+        for skill_id, topics in WORKFLOW_MANAGED_REFERENCE_TOPICS.items()
+        for topic in topics
     ),
 )
 

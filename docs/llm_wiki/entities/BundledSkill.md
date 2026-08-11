@@ -1,6 +1,6 @@
 # BundledSkill
 
-**Location:** `src/llm_wiki_cli/services/skills.py:128`
+**Location:** `src/llm_wiki_cli/services/skills.py:137`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)
@@ -35,18 +35,16 @@ flowchart LR
     n0["BundledSkill (src/llm_wiki_cli/services/skills.py)"]
     n1["_expected_skill_files (src/llm_wiki_cli/services/skills.py)"]
     n2["_preflight_reference_requirement (src/llm_wiki_cli/services/skills.py)"]
-    n3["_select_skills (src/llm_wiki_cli/services/skills.py)"]
-    n4["_skill_tree_matches (src/llm_wiki_cli/services/skills.py)"]
-    n5["list_bundled_skills (src/llm_wiki_cli/services/skills.py)"]
-    n6["render_skill_list_json (src/llm_wiki_cli/services/skills.py)"]
-    n7["render_skill_list_text (src/llm_wiki_cli/services/skills.py)"]
+    n3["_skill_tree_matches (src/llm_wiki_cli/services/skills.py)"]
+    n4["list_bundled_skills (src/llm_wiki_cli/services/skills.py)"]
+    n5["render_skill_list_json (src/llm_wiki_cli/services/skills.py)"]
+    n6["render_skill_list_text (src/llm_wiki_cli/services/skills.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
-    n7 --> n0
     click n0 "../modules/skills.md"
     click n1 "../modules/skills.md"
     click n2 "../modules/skills.md"
@@ -54,7 +52,6 @@ flowchart LR
     click n4 "../modules/skills.md"
     click n5 "../modules/skills.md"
     click n6 "../modules/skills.md"
-    click n7 "../modules/skills.md"
 ```
 
 ### Summary
@@ -69,7 +66,6 @@ flowchart LR
 |---|---|---|
 | `_expected_skill_files` | type_reference | [skills](../modules/skills.md) |
 | `_preflight_reference_requirement` | type_reference | [skills](../modules/skills.md) |
-| `_select_skills` | type_reference | [skills](../modules/skills.md) |
 | `_skill_tree_matches` | type_reference | [skills](../modules/skills.md) |
 | `list_bundled_skills` | call | [skills](../modules/skills.md) |
 | `list_bundled_skills` | type_reference | [skills](../modules/skills.md) |

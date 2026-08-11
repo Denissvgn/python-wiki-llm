@@ -79,7 +79,7 @@ sequenceDiagram
     p11-->>p19: bool
 ```
 
-> Call sequence diagram shows 30 of 1754 interactions; 1724 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1758 interactions; 1728 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

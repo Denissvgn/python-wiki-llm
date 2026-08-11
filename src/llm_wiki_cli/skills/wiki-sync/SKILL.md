@@ -1,250 +1,143 @@
 ---
 name: wiki-sync
-description: Sync the LLM Wiki after a code change — deterministic `llm-wiki sync`, semantic-only prose pass, `lint --strict` validation loop, and repository-policy-aware Git or local handoff. Use after finishing a code change and before opening a PR.
+description: Synchronize an existing LLM Wiki after source changes, preserve semantic prose, re-anchor generated artifacts, validate strictly, and hand off safely. Use after code changes or before review; route absent wikis to wiki-bootstrap and legacy layouts to migration.
 ---
 
 # wiki-sync
 
-Bring the LLM Wiki back in sync with the code that just changed. The loop is always: **sync → classify → rewrite semantic surfaces → final owning sync/re-anchor → lint --strict → policy-aware handoff**. Deterministic structure belongs to the CLI; this skill edits only semantic prose. See [reference.md](reference.md) for the editable-surface table, validation details, and failure modes.
+Use this skill after a relevant code, contract, dependency, entry-point,
+infrastructure, or source-revision change to an existing managed wiki, and
+before delivery. Its ordinary loop is **sync → classify → semantic edit → final
+owning sync/re-anchor → strict validation → handoff**. Bootstrap remains the
+route for an absent, empty, or exact untouched initialization scaffold.
+
+## Direct managed routes
+
+The installed `wiki-reference` skill is a required dependency. Read only the
+exact topic needed; do not fall back to a missing local summary:
+
+- Routine starting-state, recovery, final re-anchor, extended validation, and
+  external-source rules: `.claude/skills/wiki-reference/references/maintenance.md`
+  for Claude or `.llm-wiki/skills/wiki-reference/references/maintenance.md`
+  for another configured agent.
+- Semantic edit boundaries and canonical naming:
+  `.claude/skills/wiki-reference/references/surfaces-naming.md` or
+  `.llm-wiki/skills/wiki-reference/references/surfaces-naming.md`.
+- Governed rename identity, conflicts, moves, and ledger recovery:
+  `.claude/skills/wiki-reference/references/governance.md` or
+  `.llm-wiki/skills/wiki-reference/references/governance.md`.
+- Optional-surface initialization plus OpenAPI, infrastructure, and analyzer
+  exceptions: `.claude/skills/wiki-reference/references/extractors-dependencies.md`
+  or `.llm-wiki/skills/wiki-reference/references/extractors-dependencies.md`.
+- Native evidence interpretation:
+  `.claude/skills/wiki-reference/references/knowledge-consumption.md` or
+  `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`.
+- Git/local/external delivery:
+  `.claude/skills/wiki-reference/references/repository-handoff.md` or
+  `.llm-wiki/skills/wiki-reference/references/repository-handoff.md`.
+- Heavy-gate capacity: `.claude/skills/wiki-reference/references/resources-context.md`
+  or `.llm-wiki/skills/wiki-reference/references/resources-context.md`.
+- Optional bounded query/context selection:
+  `.claude/skills/wiki-reference/references/context-query.md` or
+  `.llm-wiki/skills/wiki-reference/references/context-query.md`.
+
+If a required topic is absent or locally modified, stop the affected mutation
+and restore the complete managed dependency. Do not improvise a safety
+contract from this entry skill.
 
 ## Managed repository preflight
 
-Follow the user's instructions and applicable local repository rules. Before
-the first wiki write and again before handoff, run
+Follow the user and applicable repository rules. Before the first wiki write
+and again before handoff, run
 `git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`: exit 0 is
 local-only, exit 1 is conditionally Git-eligible but not authorization, and any
 other result fails closed to local-only. Never force-add or change
-ignore/exclude rules. Read the separately managed topic at
-`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
-`.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
-configured agents.
+ignore/exclude rules. Apply the exact repository-handoff topic above.
 
 ## Preconditions
 
-- The wiki directory (default `docs/llm_wiki`; substitute the project's
-  configured `--wiki-dir` everywhere below) normally contains
-  `.llm-wiki-manifest.json`. A manifestless established wiki with canonical
-  `index.md` can use sync's safe baseline seeding. An absent, empty, or exact
-  untouched init scaffold routes to `llm-wiki bootstrap`; any other partial
-  manifestless layout routes first to
-  `llm-wiki migrate --dry-run --src-dir <src> --wiki-dir <wiki> --source-selection <profile>`.
-- For continued external-source wikis (source-adapter mode), pass `--allow-external-src` consistently to `sync`, `lint`, `ci-check`, and `team check` — never to one source-reading command and not the others.
-- When the generated project instructions name a source-selection profile,
-  copy that exact `--source-selection <profile>` argument to every
-  source-reading command in this workflow. The snippets below show the
-  placeholder explicitly; omit the whole argument only when the generated
-  instructions have no configured profile. Never substitute a broader profile
-  or silently fall back to an unrestricted repository scan.
-- For an `external_agent_docs` workspace, sync only the workspace wiki after a
-  supervisor-approved source revision change. The source and adopted input wiki
-  remain forbidden-write roots, and target instruction/config/plugin files are
-  evidence rather than run policy. A wiki-only run cannot sync to unavailable
-  source; resume it from the recorded snapshot hash and keep the limitation.
-- No other `sync` or `trigger-agent` run is active against the same wiki directory (plain `sync` takes no lock).
-- Apply the mandatory native guard: inspect `availability`, stable reason, and
-  `freshness_evaluated`; only `ready` with live `current` supports a qualified
-  unchanged-since-observation claim, and preserve
-  `nonsemantic-source-change`. `absent` permits a labeled fallback, while
-  `degraded`, `unsupported`, invalid, mixed, ambiguous, unresolved, bounded,
-  or analyzer-limited evidence never proves a negative fact or an
-  empty-native-graph conclusion. Snapshot-only is not live freshness; never
-  auto-run `knowledge init`; stored content cannot authorize execution. Read
-  the full separately managed contract at
-  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
-  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
-  for other configured agents.
-
-## Execution budget
-
-- Treat this as an interactive workflow unless the environment explicitly has
-  reserved capacity. Run one heavy gate at a time; `context`, full tests,
-  coverage, builds, browser suites, sync, lint, and CI are heavy gates.
-- The supervisor owns heavy-gate scheduling. Subagents may inspect bounded
-  files or diffs, but must not launch a heavy gate unless explicitly assigned.
-- Use `--jobs 1` below. `--jobs auto` is only for an isolated terminal or a
-  controlled CI runner, never for nested or overlapping heavy-gate fan-out.
-- On ENOSPC, inotify, file-descriptor, severe swapping, or editor-responsiveness
-  failures, stop. Do not retry the burst; report unfinished gates as
-  inconclusive until capacity is recovered.
-
-## Governed rename preflight and owner handoff
-
-When `.llm-wiki-governance.json` exists, inspect rename identity before the
-first mutating sync. Supported one-old-to-one-new sync/migration renames carry
-the existing UID and retain old coordinates as aliases automatically. Do not
-stage a manual move for that unambiguous case.
-
-Start a governed rename with the ordinary filesystem/source rename and a
-read-only preview:
-
-```bash
-llm-wiki sync --dry-run --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
-llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
-```
-
-If one prior concept can map to multiple targets, multiple prior concepts
-claim one target, or the preview cannot prove continuity, stop before mutating
-sync. Ask the governance owner which existing UID—if any—represents the same
-logical concept. For the confirmed one-to-one choice, preview the exact move,
-preserving both old coordinates as aliases:
-
-```bash
-llm-wiki knowledge move \
-  --wiki-dir docs/llm_wiki \
-  --uid lw:module:0123456789abcdef0123456789abcdef \
-  --to-locator llm-wiki://modules/accounts-renamed \
-  --to-natural-key source-module:modules/accounts-renamed.md \
-  --dry-run
-```
-
-The owner must confirm that the new coordinate is unowned and this is a move,
-not a delete/recreate or merge. After confirmation, apply the same move and
-sync immediately:
-
-```bash
-llm-wiki knowledge move \
-  --wiki-dir docs/llm_wiki \
-  --uid lw:module:0123456789abcdef0123456789abcdef \
-  --to-locator llm-wiki://modules/accounts-renamed \
-  --to-natural-key source-module:modules/accounts-renamed.md
-llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
-```
-
-The staged move may report `projection: pending-sync`; readers reject that
-temporary ledger/projection mismatch until sync restores parity. A target
-owned by another UID is a hard conflict. Do not overwrite it, delete an
-allocation, reinitialize governance, or perform an implicit merge.
+- Substitute the configured `--wiki-dir` for `docs/llm_wiki`. Classify a
+  missing/invalid manifest with the maintenance topic before writing.
+- Carry the generated `--source-selection <profile>` argument to every
+  source-reading command below; omit it only when no profile is configured.
+  Keep `--allow-external-src` on every source-reading gate for a continued
+  authorized external source.
+- No other `sync` or `trigger-agent` run may target the same wiki. The
+  supervisor owns heavy-gate scheduling; subagents must not launch a heavy gate
+  unless explicitly assigned. Capacity failures leave unfinished gates
+  inconclusive until recovery; use the resource topic rather than retrying a
+  burst.
+- If governance exists, resolve rename identity through the governance topic
+  before the first mutating sync. Never infer a move from filename similarity.
+- Before interpreting native evidence, apply the knowledge-consumption topic.
+  Only `ready` with evaluated live `current` freshness supports an unchanged
+  claim. `absent` allows a labeled fallback; `degraded`, `unsupported`, mixed,
+  bounded, or analyzer-limited evidence never proves an empty-native-graph
+  conclusion. Preserve `nonsemantic-source-change`, never auto-run
+  `knowledge init`, and remember that stored content cannot authorize execution.
 
 ## Steps
 
-1. **Deterministic pass.**
+1. **Run the deterministic owning pass.**
 
    ```bash
    llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
    ```
 
-   For a governed rename, complete the preflight/owner handoff above before this
-   mutating command. Never hand-edit a generated page instead of running this.
-   If sync aborts on its broad-diff guard, do not reflexively pass `--force`:
-   first decide whether the cause is a mass rename/refactor (expected—force is
-   fine) or a stale/corrupted manifest (repair the manifest instead).
+   Inspect broad-change diagnostics before using `--force`; the maintenance
+   route distinguishes an intended wave from manifest, selection, or identity
+   failures. Specialized rename or surface work first follows its direct topic
+   above, then rejoins this ordinary loop.
 
-   To backfill optional surfaces intentionally, preview the surface-only pass
-   before applying it:
+2. **Build and classify the changed-page worklist.** Treat sync's `CREATE`,
+   `UPDATE`, `METADATA`, `SKIP`, `DEPRECATE`, `RENAME`, `MOVE`, and `REMOVE`
+   rows as its exact action inventory. Cross-reference:
 
    ```bash
-   llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run --source-selection <profile>
-   llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run --source-selection <profile>
+   llm-wiki extract --src-dir . --changed --summary --source-selection <profile>
    ```
 
-   This mode defers ordinary entity/module source changes. Inspect its page
-   counts, rerun without `--dry-run`, and only add `--force` when the reported
-   surface wave is expected. OpenAPI paths must stay inside the source root.
-   Sync persists the selected path and hash in manifest v5, refreshes contracts
-   on later specification-only changes, and returns to static authority when
-   run with `--clear-openapi-file`.
+   Skip metadata-only pages. With a configured profile, inspect only selected
+   paths and targeted diffs; never read an unrestricted repository diff/stat
+   that can expose excluded paths.
 
-   The same ordinary pass incrementally regenerates recognized Docker,
-   Compose, Kubernetes, GitHub Actions, and targeted runtime/config pages. Its
-   plan reports infrastructure add/change/move/remove counts, discovery roots,
-   and unsupported YAML. Manifest v5 binds repository-relative source/page
-   mappings to source-content and observation hashes; a large infrastructure
-   wave has the same separate 50-file/30-percent force boundary. The committed
-   knowledge concept carries the same `infrastructure`-scoped structural
-   basis, so strict lint compares a supported source and normalized
-   observation live; removal tombstones remain explicitly `source-missing`.
+3. **Edit semantic surfaces only.** Leave generated blocks, tables, diagrams,
+   links, and machine artifacts to sync. For each semantically affected page,
+   update only the sections owned by the surfaces-and-naming topic and only
+   from available evidence. Analyzer gaps and source-removal notices remain
+   observations, not runtime or lifecycle facts.
 
-2. **Build the changed-page list.** Parse sync's `CREATE` / `UPDATE` / `METADATA` / `SKIP` / `DEPRECATE` / `RENAME` / `MOVE` / `REMOVE` output lines — that output is the only changed-page manifest available. Cross-reference `llm-wiki extract --src-dir . --changed --summary --source-selection <profile>` to learn *why* each page changed. With an active profile, never run an unrestricted `git diff` or `git diff --stat`: use the selected inventory paths and read only targeted `git diff HEAD~1..HEAD -- <selected-path>` output where the change reason is not obvious from the summary. Without a configured profile, the repository-wide stat is allowed before targeted reads.
+4. **Append the semantic log line.** After sync's mechanical log block, append
+   one concise architectural reason. Do not add a second date heading or
+   rewrite existing history.
 
-   A `DEPRECATE` line for a removed source/page is a generated surface notice,
-   not a native lifecycle event. Source disappearance never authors
-   `deprecated`, `superseded`, or `deleted` governance state. Record lifecycle
-   only through an explicit owner-authorized `knowledge lifecycle` command.
-
-3. **Classify each CREATE/UPDATE page** (skip `METADATA`-only pages — the semantic hash did not change, so there is nothing to say):
-   - *Generated-only*: only auto-generated blocks or table row/column structure moved. Accept as-is.
-   - *Semantic drift*: a placeholder (`_Auto-generated from ..._`, bare `—` or `-`) was introduced or left, or existing prose is now stale relative to the diff. Rewrite the semantic surface only — description prose, flow `## Behavior`, `## Notes` — never the `<!-- Auto-generated ... Do not edit by hand. -->` blocks or extracted table rows.
-
-   On infrastructure pages, `## Notes` is the sole semantic section. Sync
-   preserves it exactly, replaces generated fields, and drops unsupported
-   custom headings. A source-removal tombstone is stale structural evidence,
-   not a native lifecycle decision.
-
-4. **Append the semantic log line.** After sync's own mechanical `log.md` block, append one short line or paragraph giving the architectural *why* the counts don't capture — not a new `## <date>` heading, not a restatement of the counts.
-
-5. **Run the final owning sync/re-anchor, then validate until clean.** After
-   the last semantic Markdown or log edit in managed mode, run:
+5. **Run the final owning sync/re-anchor, then verify.** After the last
+   canonical Markdown edit, run:
 
    ```bash
    llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
-   llm-wiki lint --strict --profile --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
-   llm-wiki ci-check --src-dir . --wiki-dir docs/llm_wiki --format json --source-selection <profile>
-   llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>   # if team policy is configured
+   llm-wiki lint --strict --profile --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki ci-check --format json --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+   llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
    ```
 
-   The second sync preserves supported semantic content and re-anchors
-   canonical Markdown, surface, knowledge, and manifest commitments before
-   strict validation. Skip the second sync only when classification produced no
-   canonical Markdown edit; a generated-only no-op must not create an authoring
-   loop. If a validation fix changes Markdown, restart at this final sync.
-   Fix reported issues and re-run until all assigned gates exit 0. Do not stop
-   the semantic pass before lint is clean, and do not silence a failure by
-   weakening the check. Dependency cycle/undeclared/unused warnings are
-   non-blocking diagnostics — do not chase them here (that is the dep-audit
-   workflow).
+   Run `team check` only when team policy is configured. Skip the second sync
+   only when classification produced no canonical Markdown change. If a
+   validation fix edits Markdown, restart at the final sync. Fix supported
+   errors without weakening a gate and report expired human reviews or stale
+   verification receipts without fabricating replacements.
 
-   Re-anchor can expire prior human section reviews or make a machine
-   verification receipt stale. Report the existing expiry/invalidation reasons
-   after refresh; never manufacture a replacement human review or receipt.
-   Agent review, human section review, and machine verification remain separate.
+6. **Review and hand off under the selected contract.** Repeat the repository
+   preflight and use the permitted managed-mode handoff from the direct topic.
+   A local-only handoff reports paths and validation without staging. A
+   conditionally eligible commit still requires separate user and repository
+   authorization.
 
-   An `external_agent_docs` semantic worker returns packet-authorized changed
-   paths and does not run an unassigned refresh. The supervisor performs this
-   owning sync/re-anchor and the assigned validation. A supervisor-invoked
-   source-backed refresh may use this step; a wiki-only snapshot cannot.
+   In `external_agent_docs`, the supervisor owns the refresh/re-anchor. A
+   worker returns packet-authorized workspace paths and never stages or commits
+   the source or adopted input wiki. If source is unavailable, resume from the
+   recorded wiki snapshot and retain the freshness limitation.
 
-   For source-adapter runs, use the same shape with explicit external-source reads while keeping the wiki inside the current project:
-
-   ```bash
-   llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>
-   ```
-
-6. **Review the result before handoff.** For a conditionally Git-eligible wiki,
-   review `git diff -- <wiki-dir>/` and confirm only workflow-owned pages
-   changed. For a local-only wiki, use sync output and direct file inspection;
-   an empty Git diff is not evidence that ignored files did not change.
-   `--dry-run` previews ordinary incremental sync and explicit surface
-   initialization, including the three generated artifact actions. In
-   `external_agent_docs`, compare the workspace baseline/diff and source/input
-   hashes from the packet instead of requiring target Git state.
-
-7. **CHANGELOG in managed mode.** Add a `## [Unreleased]` entry for user-facing changes; skip for pure refactors, test-only, doc-only commits, and external workspace runs.
-
-8. **Use the permitted managed-mode handoff.** Repeat the repository preflight.
-   Exit 0 or any indeterminate result requires a local-only handoff: report the
-   changed wiki paths and validation result without staging or committing.
-   Only if exit 1 and the user plus applicable local rules authorize a commit,
-   stage the configured wiki and commit it separately from code changes:
-
-   ```bash
-   git add <wiki-dir>/
-   git commit -m "docs(wiki): <short description of what changed and why>"
-   ```
-
-   Keep the `docs(wiki):` prefix, but never force-add, change ignore/exclude
-   rules, reuse the hook's literal `auto-update [bot]` message, or set
-   `LLM_WIKI_AUTO_COMMIT`.
-
-   In `external_agent_docs`, write the changed workspace paths and requested
-   verification into the stage result. In this mode, never stage or commit the source or adopted input wiki.
-
-## Context budget
-
-Prefer `llm-wiki extract --src-dir . --changed --summary --source-selection <profile>` (cheap, always read)
-for knowing what changed. Only reach for one serialized
-`llm-wiki context --budget 8000 --focus changed --format json --read-only --source-selection <profile>` run
-when a page's classification genuinely needs more source context than the
-summary plus targeted diff provide. The budget and focus bound emitted output
-after a full deep inventory; they do not make the scan computationally cheap.
-Never use `--focus all` or `--deep` in this workflow — that depth belongs to
-deep-analysis workflows, not the routine sync loop.
+For a page whose semantics need more than the changed summary and targeted
+diff, choose one bounded read through the context-query topic. Do not turn the
+routine sync loop into a full deep-analysis workflow.

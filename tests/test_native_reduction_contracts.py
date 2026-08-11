@@ -8,7 +8,7 @@ import pytest
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd
-from llm_wiki_cli.services import mcp_server
+from llm_wiki_cli.services import mcp_server, skills
 from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
 
 
@@ -122,7 +122,17 @@ def test_onboarding_skill_disclaims_human_outcomes_and_runtime_assurance():
     assert "guides/<persona>-navigation.md" in combined
     assert "# <Persona> navigation guide" in combined
     assert "docs(wiki): add navigation guides" in combined
-    assert "Only when exit 1" in combined
-    assert "applicable local rules authorize a commit" in combined
+    assert skills.SKILL_DEPENDENCIES["onboarding-guide"] == (
+        skills.REFERENCE_SKILL_ID,
+    )
+    for root in (".claude/skills", ".llm-wiki/skills"):
+        assert f"{root}/wiki-reference/references/repository-handoff.md" in skill
+    handoff = (
+        skills.BUNDLED_SKILLS_ROOT
+        / skills.REFERENCE_SKILL_ID
+        / "references/repository-handoff.md"
+    ).read_text(encoding="utf-8")
+    assert "conditionally eligible (exit 1)" in handoff
+    assert "applicable local rules authorize a separate wiki commit" in handoff
     assert "guides/<persona>-onboarding.md" not in combined
     assert "docs(wiki): add onboarding guides" not in combined

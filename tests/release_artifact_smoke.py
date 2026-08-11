@@ -386,6 +386,50 @@ def _validate_profile_lifecycle(
     }
 
 
+def _validate_selected_skill_dependencies(
+    cli: Sequence[str],
+    work: Path,
+) -> Mapping[str, Sequence[str]]:
+    """Prove an installed CLI expands one selected workflow prerequisite."""
+
+    destination = work / "selected-skills"
+    report = _json_output(
+        _run(
+            [
+                *cli,
+                "skills",
+                "export",
+                "--dest",
+                str(destination),
+                "--skill",
+                "wiki-sync",
+                "--format",
+                "json",
+            ],
+            cwd=work,
+        ),
+        "selected skill export",
+    )
+    expected = {
+        "requested_skills": ["wiki-sync"],
+        "dependency_skills": ["wiki-reference"],
+        "skills": ["wiki-reference", "wiki-sync"],
+    }
+    for field, value in expected.items():
+        if report.get(field) != value:
+            raise SmokeError(
+                f"installed selected skill report mismatch for {field}: "
+                f"{report.get(field)!r}"
+            )
+    installed = sorted(path.name for path in destination.iterdir() if path.is_dir())
+    if installed != ["wiki-reference", "wiki-sync"]:
+        raise SmokeError(
+            "installed selected skill closure mismatch: " + ", ".join(installed)
+        )
+    _validate_wiki_reference_tree(destination / "wiki-reference")
+    return expected
+
+
 def _absolute_without_symlink_resolution(path: Path) -> Path:
     """Return an absolute command path without dereferencing venv symlinks."""
     return Path(os.path.abspath(path))
@@ -736,6 +780,7 @@ def run_smoke(args: argparse.Namespace) -> int:
         raise SmokeError(
             "installed managed reference tree differs from archive qualification"
         )
+    selected_skill_dependencies = _validate_selected_skill_dependencies(cli, work)
     lifecycle = _validate_profile_lifecycle(cli, work)
     plugin = work / "plugin"
     _run(
@@ -775,6 +820,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "skills": skill_count,
             "wiki_reference_files": reference_file_count,
             "artifact_reference_files": artifact_reference_file_count,
+            "selected_skill_dependencies": selected_skill_dependencies,
             "managed_lifecycle": lifecycle,
             "plugin_sample": "documentation-hooks",
             "default_mcp_sdk": "absent",

@@ -225,6 +225,22 @@ def test_installed_lifecycle_harness_covers_both_profiles_and_locations(
     assert not tuple(tmp_path.rglob(".gitignore"))
 
 
+def test_installed_skill_harness_covers_transitive_reference_dependency(
+    tmp_path: Path,
+) -> None:
+    result = release_artifact_smoke._validate_selected_skill_dependencies(
+        [sys.executable, "-I", "-m", "llm_wiki_cli.cli"],
+        tmp_path,
+    )
+
+    assert result == {
+        "requested_skills": ["wiki-sync"],
+        "dependency_skills": ["wiki-reference"],
+        "skills": ["wiki-reference", "wiki-sync"],
+    }
+    assert not tuple(tmp_path.rglob(".gitignore"))
+
+
 def test_ready_without_governance_selects_useful_native_evidence_read_only(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

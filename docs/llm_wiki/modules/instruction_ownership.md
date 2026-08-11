@@ -87,6 +87,7 @@ flowchart LR
 | `_profiled_workflow_routes` | `(expanded_heading: str, compact_heading: str, skill_id: str) -> tuple[InstructionRoute, ...]` | — | — |
 | `_correctness_route` | `(_source_heading: str, destination: InstructionDestination) -> InstructionRoute` | — | — |
 | `_managed_topic_route` | `(source_path: str, source_text: str, topic: str, *, kind: InboundRouteKind = InboundRouteKind.INSTALLED_FILE_ROUTE, markdown_target: str \| None = None) -> ManagedReferenceInboundRoute` | — | — |
+| `_installed_topic_span` | `(topic: str) -> str` | — | — |
 | `normalize_instruction_text` | `(value: str) -> str` | — | Collapse formatting whitespace for stable sentence-level checks. |
 | `markdown_anchor` | `(heading: str) -> str` | — | Return the GitHub-style base anchor for a Markdown heading. |
 | `markdown_headings` | `(content: str) -> tuple[MarkdownHeading, ...]` | — | Parse headings and their duplicate-aware local anchors. |

@@ -1591,7 +1591,10 @@ def _add_skills_selection_arguments(parser):
         action="append",
         default=None,
         metavar="NAME",
-        help="Skill to include; may be repeated (default: all bundled skills)",
+        help=(
+            "Skill to request; may be repeated and bundled dependencies are "
+            "included automatically (default: all bundled skills)"
+        ),
     )
     parser.add_argument(
         "--force",

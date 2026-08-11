@@ -1043,11 +1043,27 @@ def test_external_source_adapter_sync_uses_repository_relative_infra_basis(
 
 def test_wiki_sync_skill_exposes_incremental_infrastructure_contract() -> None:
     skill_root = skills.BUNDLED_SKILLS_ROOT / "wiki-sync"
-    text = "\n".join(
-        (skill_root / name).read_text(encoding="utf-8")
-        for name in ("SKILL.md", "reference.md")
+    manifest = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    topic = (
+        skills.BUNDLED_SKILLS_ROOT
+        / skills.REFERENCE_SKILL_ID
+        / "references/extractors-dependencies.md"
+    ).read_text(encoding="utf-8")
+    surfaces = (
+        skills.BUNDLED_SKILLS_ROOT
+        / skills.REFERENCE_SKILL_ID
+        / "references/surfaces-naming.md"
+    ).read_text(encoding="utf-8")
+    normalized = " ".join(f"{topic}\n{surfaces}".split())
+
+    assert skills.SKILL_DEPENDENCIES["wiki-sync"] == (
+        skills.REFERENCE_SKILL_ID,
     )
-    normalized = " ".join(text.split())
+    for root in (".claude/skills", ".llm-wiki/skills"):
+        assert (
+            f"{root}/wiki-reference/references/extractors-dependencies.md"
+            in manifest
+        )
     for expected in (
         "Docker, Compose, Kubernetes, GitHub Actions",
         "infrastructure add/change/move/remove counts",
@@ -1056,7 +1072,7 @@ def test_wiki_sync_skill_exposes_incremental_infrastructure_contract() -> None:
         "generation_inputs.infrastructure",
         "source-content hash",
         "observation hash",
-        "`## Notes` is the sole semantic section",
+        "`## Notes` is the only supported semantic section",
         "unsupported custom headings",
         "Page writes are atomic",
     ):

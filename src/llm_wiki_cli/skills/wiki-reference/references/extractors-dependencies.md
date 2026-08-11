@@ -111,17 +111,63 @@ Later owning syncs refresh on specification-only changes;
 ownership belongs to
 [Canonical surfaces and naming](surfaces-naming.md).
 
-Initialize the optional API-contract surface deliberately. A first bootstrap
-can use `llm-wiki bootstrap --api-contracts`. For an existing wiki, preview
-`llm-wiki sync --initialize-surfaces api-contracts --dry-run`, review the
-planned surface-only change, then repeat the same command without `--dry-run`
-to apply it. A surface-only sync may combine `flows`, `dependencies`, and
-`api-contracts`, filter flows with repeatable `--flow-category`, and omit test
-sources with `--exclude-tests`; ordinary entity/module changes are deferred
-during that pass. The OpenAPI file remains subject to the source-root,
-version, safe-loader, and no-external-fetch boundaries above. After applying,
-return to [Maintenance and validation](maintenance.md) for the final owning
-sync/re-anchor and strict validation.
+## Optional-surface initialization
+
+Initialize optional surfaces deliberately. A first bootstrap can enable the
+API-contract surface with `llm-wiki bootstrap --api-contracts`; use other
+supported bootstrap surface flags only when they were explicitly selected.
+For an existing wiki, preview the exact surface-only policy before applying it:
+
+```bash
+llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+```
+
+Inspect the planned page counts and selected categories/test policy, then
+repeat the same command without `--dry-run`. A surface-only pass may combine
+`flows`, `dependencies`, and `api-contracts`; repeat `--flow-category` when
+needed. It deliberately defers ordinary entity/module source changes. The
+chosen surface, category, test, and OpenAPI policy persists so later owning
+syncs do not silently broaden it.
+
+The broad-surface guard stops a policy update affecting more than 50 pages
+(creates plus policy-pruned removals) or more than 30 percent of an established
+canonical wiki with at least 10 pages. Add `--force` only after the preview
+proves that exact wave is intended. It never bypasses invalid input, a
+source-root boundary, a governance conflict, or an unexpected source
+selection.
+
+The OpenAPI file remains subject to the source-root, 3.0/3.1, safe-loader, and
+no-external-fetch boundaries above. Manifest v5 stores its repository-relative
+path, SHA-256, and format, then reparses it during ordinary sync so a
+specification-only change refreshes `api-contracts.md`. A missing, malformed,
+outside-root, or invalid persisted input fails before wiki writes. Replace it
+with `--openapi-file PATH` or deliberately return to static authority with
+`--clear-openapi-file`; those flags are mutually exclusive.
+
+After applying an initialization, return to
+[Maintenance and validation](maintenance.md) for the final owning sync,
+semantic classification, re-anchor, and strict validation.
+
+## Incremental infrastructure observations
+
+Ordinary sync incrementally regenerates recognized Docker, Compose,
+Kubernetes, GitHub Actions, and targeted runtime/config pages. Inspect its
+infrastructure add/change/move/remove counts, discovery roots, and unsupported
+YAML rather than assuming every candidate was analyzed. Infrastructure has a
+separate 50-file/30-percent broad-change guard; use force only for a reviewed,
+intended wave.
+
+Manifest v5 stores this state under `generation_inputs.infrastructure` and
+binds each repository-relative source/page mapping to a source-content hash and
+normalized observation hash. Page writes are atomic: if final artifact
+commitment is interrupted, the unchanged old manifest causes the next
+identical owning sync to finish the deterministic plan. The knowledge
+projection uses the same `infrastructure`-scoped structural basis, and strict
+freshness recomputes supported observations. Unsupported YAML is never current
+evidence, and a removed source remains an explicit `source-missing` tombstone,
+not a lifecycle decision. Only infrastructure `## Notes` is semantic; follow
+[Canonical surfaces and naming](surfaces-naming.md) for that boundary.
 
 ## Dependency reconciliation
 

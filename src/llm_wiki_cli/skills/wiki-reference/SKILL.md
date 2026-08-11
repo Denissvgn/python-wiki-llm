@@ -1,6 +1,6 @@
 ---
 name: wiki-reference
-description: Route an LLM Wiki task to one bounded managed contract for maintenance, canonical surfaces, handoff, knowledge, queries, governance, extraction, publishing, or resource-aware execution.
+description: Route an LLM Wiki task to one bounded managed contract. Use for maintenance, canonical surfaces, repository handoff, qualified knowledge, context queries, governance, extraction, publishing, or resource-aware execution without loading unrelated policy.
 ---
 
 # wiki-reference

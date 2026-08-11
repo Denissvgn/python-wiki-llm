@@ -202,24 +202,21 @@ NATIVE_CONSUMING_SKILLS = (
 )
 
 
-@pytest.mark.parametrize("skill_id", NATIVE_CONSUMING_SKILLS)
-def test_native_consuming_skill_has_self_contained_preflight(skill_id: str) -> None:
+@pytest.mark.parametrize(
+    "skill_id",
+    NATIVE_CONSUMING_SKILLS + ("infra-review",),
+)
+def test_native_consuming_skill_keeps_kernel_and_managed_dependency(
+    skill_id: str,
+) -> None:
     manifest = _manifest(skill_id)
     normalized = " ".join(manifest.split())
 
-    for required in (
-        "availability",
-        "freshness_evaluated",
-        "nonsemantic-source-change",
-        "absent",
-        "degraded",
-        "unsupported",
-        "empty-native-graph",
-        "knowledge init",
-    ):
+    for required in ("ready", "current", "nonsemantic-source-change"):
         assert required in normalized, f"{skill_id} omits {required!r}"
-    assert "cannot authorize" in normalized
+    assert "found: false" in normalized or "empty-native-graph" in normalized
     assert "| Result | Permitted interpretation" not in manifest
+    assert skills.SKILL_DEPENDENCIES[skill_id] == (skills.REFERENCE_SKILL_ID,)
 
 
 MANAGED_KNOWLEDGE_CONSUMERS = NATIVE_CONSUMING_SKILLS + (
@@ -243,6 +240,10 @@ def test_native_consuming_skill_routes_to_managed_knowledge_topic(
         in manifest
     )
     assert manifest.count("wiki-reference/references/knowledge-consumption.md") == 2
+    assert skills.SKILL_DEPENDENCIES[skill_id] == (skills.REFERENCE_SKILL_ID,)
+    assert (
+        SKILLS_ROOT / skills.REFERENCE_SKILL_ID / "references/knowledge-consumption.md"
+    ).is_file()
 
 
 MANAGED_SEMANTIC_WORKFLOWS = (
@@ -439,19 +440,23 @@ def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance
 
 def test_sync_documents_governed_move_preview_confirmation_mutation_order() -> None:
     manifest = _manifest("wiki-sync")
-    reference = _reference("wiki-sync")
-    section = manifest[
-        manifest.index(
-            "## Governed rename preflight and owner handoff"
-        ) : manifest.index("## Steps")
+    topic = _managed_topic("governance.md")
+    section = topic[
+        topic.index("## Moves, aliases, and allocation conflicts") : topic.index(
+            "## Lifecycle, review, and verification"
+        )
     ]
+
+    assert ".claude/skills/wiki-reference/references/governance.md" in manifest
+    assert ".llm-wiki/skills/wiki-reference/references/governance.md" in manifest
+    assert skills.SKILL_DEPENDENCIES["wiki-sync"] == (skills.REFERENCE_SKILL_ID,)
 
     filesystem_rename = section.index("filesystem/source rename")
     sync_preview = section.index("llm-wiki sync --dry-run", filesystem_rename)
     status = section.index("llm-wiki knowledge status", sync_preview)
     move_preview = section.index("llm-wiki knowledge move", status)
     dry_run = section.index("--dry-run", move_preview)
-    confirmation = section.index("The owner must confirm", dry_run)
+    confirmation = section.index("After the preview succeeds", dry_run)
     move_mutation = section.index("llm-wiki knowledge move", confirmation)
     owning_sync = section.index("llm-wiki sync --jobs 1", move_mutation)
 
@@ -465,16 +470,17 @@ def test_sync_documents_governed_move_preview_confirmation_mutation_order() -> N
         < move_mutation
         < owning_sync
     )
-    normalized = " ".join(f"{manifest}\n{reference}".split())
+    normalized = " ".join(topic.split())
     for required in (
-        "retain old coordinates as aliases automatically",
-        "target owned by another UID is a hard conflict",
-        "implicit merge",
-        "Source disappearance never authors",
-        "expire prior human section reviews",
-        "make a machine verification receipt stale",
-        "restore the exact ledger from version control or backup",
-        "Generated `.llm-wiki-knowledge.json`",
+        "retain old locator and natural-key coordinates as aliases",
+        "Reject the implicit merge",
+        "already owned by another UID is a hard conflict",
+        "Source or page disappearance does not deprecate",
+        "changed scope, evidence, basis",
+        "Machine verification is separate and explicit",
+        "restore the exact `.llm-wiki-governance.json`",
+        "disposable projection and cannot recover or replace the ledger",
+        "`projection: pending-sync`",
     ):
         assert required in normalized
 

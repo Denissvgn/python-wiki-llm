@@ -91,23 +91,49 @@ infrastructure-observation, or source-revision change.
    restart at this step.
 
 6. Strict validation follows the final owning sync after any semantic Markdown
-   edit. Run one heavy gate at a time:
+   edit. Run one heavy gate at a time and keep the same source root, external
+   source permission, helper/test options, and source-selection profile on
+   every source-reading gate:
 
    ```bash
-   llm-wiki lint --strict --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
-   llm-wiki ci-check --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+   llm-wiki lint --strict --profile --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+   llm-wiki ci-check --format json --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
    llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki
    ```
 
-   Run `team check` only when team policy is configured. Fix supported errors
-   without weakening the gate, and repeat the final owning sync first whenever
-   a fix changes canonical Markdown. Review warning diagnostics even when lint
-   exits zero. Never leave the wiki in a state where lint reports errors.
+   Run `team check` only when team policy is configured. `--profile` exposes
+   machine-readable lint `issues[]`, diagnostics, and timings; `ci-check`
+   independently verifies the current source/wiki/artifact commitments. Fix
+   supported errors without weakening a gate, and repeat the final owning sync
+   first whenever a fix changes canonical Markdown. Review warning diagnostics
+   even when lint exits zero. Normal lint runs the structural content checks;
+   `--strict` additionally requires `index.md`, `log.md`, `entities/`,
+   `modules/`, `workflows/`, `infrastructure/`, and a present, valid, fresh
+   sync manifest. Dependency cycle, undeclared-dependency, and unused-dependency
+   warnings remain diagnostics for the dependency-audit workflow; do not
+   silence them or confuse them with strict structural failures. `team
+   resolve-conflicts` only auto-resolves generated-page conflicts;
+   workflow-page or other semantic conflicts remain a manual, evidence-backed
+   decision. Never leave the wiki in a state where lint reports errors.
 
 7. Report expired human-section reviews and stale machine-verification
    receipts with their existing reasons. Do not fabricate replacement human
    reviews or receipts. Then repeat the repository-policy check and follow
    [Repository handoff](repository-handoff.md).
+
+For a trusted external source root, the configured team gate uses the same
+explicit boundary:
+
+```bash
+llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>
+```
+
+`--wiki-dir` always remains inside the current project root. In an
+`external_agent_docs` workspace, a semantic worker returns only the
+packet-authorized changed paths and does not run an unassigned refresh. The
+supervisor performs the owning sync/re-anchor and assigned validation against
+the recorded source revision. A wiki-only snapshot cannot establish live
+source freshness.
 
 ## Mutation and identity boundaries
 
@@ -132,10 +158,12 @@ missing ledger is restored, not regenerated or reinitialized.
 - Stop on any sync, write, strict-lint, CI, or configured team-policy failure.
   Preserve the prior canonical state and report an unfinished gate as
   inconclusive; do not claim maintenance completed.
-- If the broad-diff guard stops sync, inspect the reported paths and cause.
-  Rerun with `--force` only when the broad change is intentional. Do not use
-  force to conceal a stale or corrupt manifest, a governed identity conflict,
-  or an unexpectedly broad source selection.
+- Ordinary sync's broad-diff guard stops a plan affecting more than 50 files or
+  more than 30 percent of tracked sources once the manifest contains at least
+  10 sources. Inspect the reported paths and cause. Rerun with `--force` only
+  when that exact broad change is intentional. Do not use force to conceal a
+  stale or corrupt manifest, a governed identity conflict, or an unexpectedly
+  broad source selection.
 - Page writes and generated commitments are owned as one workflow. When an
   interrupted write leaves the old manifest authoritative, repeat the same
   owning command after capacity is safe rather than patching machine files.
@@ -146,6 +174,12 @@ missing ledger is restored, not regenerated or reinitialized.
 - Unsupported or unavailable analyzer coverage stays explicit. Do not claim
   affected files, relationships, contracts, or behavior were documented when
   the configured extractor could not observe them.
+- Plain `sync` has no lock. An authorized unattended application uses
+  `llm-wiki trigger-agent` with its timeout, diff/prompt bounds, lock, and
+  circuit breaker instead of recreating that control loop. `--force` does not
+  bypass the lock or breaker. Repository delivery policy still applies, and
+  only a separately authorized, conditionally Git-eligible automation path may
+  set `LLM_WIKI_AUTO_COMMIT=1` to avoid a post-commit retrigger.
 - `wiki-sync` may provide a richer changed-page worklist, optional-surface
   initialization, and automation diagnostics when it is separately installed.
   The complete correctness-critical loop is the procedure above and does not

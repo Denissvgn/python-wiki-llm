@@ -67,12 +67,30 @@ maintenance operation.
 
 Supported unambiguous sync or migration renames carry the UID automatically
 and retain old locator and natural-key coordinates as aliases. Do not duplicate
-that move manually.
+that move manually. Before the first mutating sync in a governed wiki, preview
+the filesystem/source rename with the same source root and source-selection
+profile used by the owning maintenance loop, then inspect the joined state:
 
-For an ambiguous manual rename, first rename the filesystem page or source,
-preview the owning sync, and inspect `knowledge status`. Obtain the governance
-owner's confirmation that one existing UID represents the same logical concept
-and that the target is unowned. Then preview the exact move:
+```bash
+llm-wiki sync --dry-run --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
+llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
+```
+
+Use the preview evidence rather than filename similarity:
+
+| Preview evidence | Identity action before mutating sync |
+| --- | --- |
+| One prior route maps unambiguously to one new route and the target is unowned | Let sync or migration carry the UID and retain both old coordinates as aliases. Do not stage a duplicate manual move. |
+| One prior route fans out to multiple targets | Stop and obtain an owner decision. Preview one exact move only after the owner identifies which target, if any, is the same logical concept. |
+| Multiple prior concepts claim one target | Reject the implicit merge. Preserve every allocation and require distinct targets or a separately authorized redesign. |
+| The target locator or natural key is already owned by another UID | Treat it as `governance-allocation-conflict`; do not overwrite, reallocate, reinitialize, or use force. |
+| A source/page disappeared without continuity evidence | Retain its allocation and lifecycle. A generated surface notice never authors native deprecation, supersession, or deletion. |
+| The ledger is missing while the manifest or projection commits governance | Stop before page mutation and restore the exact ledger from version control or its approved backup. Never initialize or reconstruct it from the projection. |
+
+For an ambiguous manual rename, the order is filesystem/source rename, sync
+dry-run, `knowledge status`, dry-run move, governance-owner confirmation, real
+move, and immediate owning sync. Use the read-only evidence to identify the
+candidate existing UID and target, then preview that exact move:
 
 ```bash
 llm-wiki knowledge move \
@@ -83,7 +101,10 @@ llm-wiki knowledge move \
   --dry-run
 ```
 
-After confirmation, apply the same move and run the owning sync immediately:
+After the preview succeeds, obtain the governance owner's confirmation that
+the existing UID represents the same logical concept, the target is unowned,
+and this is a move rather than a delete/recreate or merge. After confirmation,
+apply the same move and run the owning sync immediately:
 
 ```bash
 llm-wiki knowledge move \
@@ -91,12 +112,13 @@ llm-wiki knowledge move \
   --uid lw:module:0123456789abcdef0123456789abcdef \
   --to-locator llm-wiki://modules/accounts-renamed \
   --to-natural-key source-module:modules/accounts-renamed.md
-llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki --source-selection <profile>
 ```
 
-Between those commands, readers reject the expected ledger/projection mismatch
-until sync restores parity. A coordinate already owned by another UID is a
-hard conflict. Preserve every allocation; never merge, overwrite, delete,
+The applied move may report `projection: pending-sync`. Between that move and
+the owning sync, readers reject the expected ledger/projection mismatch until
+sync restores parity. A coordinate already owned by another UID is a hard
+conflict. Preserve every allocation; never merge, overwrite, delete,
 reallocate, reinitialize, or use `--force` to choose a winner.
 
 Add a historical coordinate without moving the current allocation:

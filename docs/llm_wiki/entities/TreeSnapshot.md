@@ -1,6 +1,6 @@
 # _TreeSnapshot
 
-**Location:** `src/llm_wiki_cli/services/skills.py:901`
+**Location:** `src/llm_wiki_cli/services/skills.py:975`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)

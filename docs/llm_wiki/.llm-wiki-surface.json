@@ -18,7 +18,7 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 520,
+      "entities": 521,
       "flows": 436,
       "guides": 6,
       "index": 1,
@@ -29,7 +29,7 @@
       "workflows": 12
     },
     "dependency_architecture": 2,
-    "total": 1129
+    "total": 1130
   },
   "dependency_pages": {
     "count": 2,
@@ -17226,7 +17226,7 @@
             "src/llm_wiki_cli/services/team.py",
             "src/llm_wiki_cli/services/inventory_cache.py"
           ],
-          "step_count": 4375,
+          "step_count": 4386,
           "truncated": true
         }
       },
@@ -29808,7 +29808,7 @@
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 1320,
+          "step_count": 1324,
           "truncated": true
         }
       },
@@ -31692,7 +31692,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 254,
+              "line": 275,
               "step": "list_bundled_skills",
               "step_index": 4,
               "target": "skills.append"
@@ -31713,43 +31713,43 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 245,
+              "line": 266,
               "step": "list_bundled_skills",
               "target": "root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 249,
+              "line": 270,
               "step": "list_bundled_skills",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 249,
+              "line": 270,
               "step": "list_bundled_skills",
               "target": "root.iterdir"
             },
             {
               "kind": "unresolved_call",
-              "line": 251,
+              "line": 272,
               "step": "list_bundled_skills",
               "target": "skill_dir.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 251,
+              "line": 272,
               "step": "list_bundled_skills",
               "target": "manifest.is_file"
             },
             {
               "kind": "unresolved_call",
-              "line": 1269,
+              "line": 1343,
               "step": "_parse_skill_frontmatter",
               "target": "content.replace('\\r\\n', '\\n').replace('\\r', '\\n').split"
             },
             {
               "kind": "unresolved_call",
-              "line": 1269,
+              "line": 1343,
               "step": "_parse_skill_frontmatter",
               "target": "content.replace('\\r\\n', '\\n').replace"
             },
@@ -31779,7 +31779,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/config.py"
           ],
-          "step_count": 275,
+          "step_count": 290,
           "truncated": true
         }
       },
@@ -32659,7 +32659,7 @@
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 1755,
+          "step_count": 1759,
           "truncated": true
         }
       },
@@ -33345,14 +33345,6 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2317,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
               "line": 2320,
               "step": "main",
               "step_index": 1,
@@ -33360,8 +33352,16 @@
             },
             {
               "confidence": "unknown",
-              "kind": "environment_read",
+              "kind": "output",
               "line": 2323,
+              "step": "main",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "environment_read",
+              "line": 2326,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -33369,7 +33369,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2325,
+              "line": 2328,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -33377,7 +33377,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2328,
+              "line": 2331,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -34015,6 +34015,7 @@
         "entities/SitePublicationReceipt.md",
         "entities/SitePublicationSelection.md",
         "entities/SkillOperation.md",
+        "entities/SkillSelection.md",
         "entities/SkillsError.md",
         "entities/SkillsReport.md",
         "entities/SnapshotBuckets.md",
@@ -40387,6 +40388,18 @@
       "title": "SkillOperation"
     },
     {
+      "canonical_path": "entities/SkillSelection.md",
+      "id": "SkillSelection",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SkillSelection",
+      "outgoing_internal_links": [
+        "modules/skills.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/skills.py",
+      "title": "_SkillSelection"
+    },
+    {
       "canonical_path": "entities/SkillsError.md",
       "id": "SkillsError",
       "kind": "entities",
@@ -43833,6 +43846,7 @@
         "entities/ReferenceSkillState.md",
         "entities/ReferenceSkillVerification.md",
         "entities/SkillOperation.md",
+        "entities/SkillSelection.md",
         "entities/SkillsError.md",
         "entities/SkillsReport.md",
         "entities/TreeSnapshot.md",
@@ -51946,5 +51960,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:ce91c490f1f25f19913a6b7dd24ea674acdb8c0f66eae15c38976bc1dc8aadb1"
+  "source_hash": "sha256:22f4e98697eaf50f7e56dc896cb421e90d9c111d7dd4410e044d2b65cf76888a"
 }

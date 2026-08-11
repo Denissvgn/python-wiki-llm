@@ -11,6 +11,7 @@ from llm_wiki_cli.services.instruction_ownership import (
     GENERATED_SECTION_COVERAGE,
     MANAGED_REFERENCE_INBOUND_ROUTES,
     REPOSITORY_HYGIENE_COVERAGE,
+    WORKFLOW_MANAGED_REFERENCE_TOPICS,
     InboundRouteKind,
     InstructionDestination,
     InstructionOrigin,
@@ -659,7 +660,11 @@ def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
     assert destination_paths == {
         f"skills/wiki-reference/references/{topic}.md" for topic in expected_topics
     }
-    assert len(MANAGED_REFERENCE_INBOUND_ROUTES) == 39
+    expected_route_count = (
+        2 * len(expected_topics)
+        + sum(len(topics) for topics in WORKFLOW_MANAGED_REFERENCE_TOPICS.values())
+    )
+    assert len(MANAGED_REFERENCE_INBOUND_ROUTES) == expected_route_count
     assert {item.kind for item in MANAGED_REFERENCE_INBOUND_ROUTES} == {
         InboundRouteKind.MARKDOWN_LINK,
         InboundRouteKind.INSTALLED_FILE_ROUTE,

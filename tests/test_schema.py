@@ -419,16 +419,19 @@ def test_agent_schema_pins_configured_source_selection_in_maintenance_recipes():
 
 
 def test_bundled_sync_skill_preserves_profile_and_uses_selected_diffs_only():
-    skill_root = (
-        Path(__file__).parents[1] / "src" / "llm_wiki_cli" / "skills" / "wiki-sync"
-    )
+    skills_root = Path(__file__).parents[1] / "src" / "llm_wiki_cli" / "skills"
+    skill_root = skills_root / "wiki-sync"
     skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
-    reference = (skill_root / "reference.md").read_text(encoding="utf-8")
+    maintenance = (
+        skills_root / "wiki-reference" / "references" / "maintenance.md"
+    ).read_text(encoding="utf-8")
+    normalized_maintenance = _squash_ws(maintenance)
 
     assert "--source-selection <profile>" in skill
-    assert "--source-selection <profile>" in reference
-    assert "never run an unrestricted `git diff` or `git diff --stat`" in skill
-    assert "never read an unrestricted diff or stat" in reference
+    assert "--source-selection <profile>" in maintenance
+    assert "never read an unrestricted repository diff/stat" in skill
+    assert "Never replace it with discovery or a broader scan" in normalized_maintenance
+    assert "wiki-reference/references/maintenance.md" in skill
 
 
 def test_agent_schema_is_scope_and_resource_aware():

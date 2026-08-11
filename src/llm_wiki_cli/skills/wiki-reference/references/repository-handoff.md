@@ -39,6 +39,29 @@ default, and do not include unrelated changes. Never force-add, edit ignore or
 exclude rules to expose the wiki, reuse an automation-only commit path, or set
 an environment switch merely to bypass a hook.
 
+Review and delivery evidence depends on the classified state:
+
+| Delivery state | Review evidence before handoff | Result |
+| --- | --- | --- |
+| Local-only or mixed | Sync's exact action inventory plus direct inspection of the configured wiki files | Report changed local paths and completed/inconclusive gates. An empty Git diff proves nothing about ignored files. |
+| Conditionally Git-eligible | Targeted `git diff -- <wiki-dir>/` plus the exact validation results | Report the diff unless the user and local rules separately authorize a wiki commit. |
+| Indeterminate | Direct inspection and command output, labeled with the unresolved repository state | Use the local-only result; never guess that staging is safe. |
+| `external_agent_docs` workspace | Packet-authorized workspace baseline/diff and recorded source/input hashes | Return workspace outputs to the supervisor; never require or mutate target Git state. |
+
+Only if the state is conditionally eligible (exit 1) **and** the user plus
+applicable local rules authorize a separate wiki commit may the workflow run:
+
+```bash
+git add <wiki-dir>/
+git commit -m "docs(wiki): <short description of what changed and why>"
+```
+
+Keep the `docs(wiki):` prefix. Never reuse the hook's literal
+`auto-update [bot]` message or set `LLM_WIKI_AUTO_COMMIT` for an interactive
+commit. User-facing changes may require an `## [Unreleased]` changelog entry;
+pure refactors, test-only or documentation-only changes, and external workspace
+runs do not.
+
 ## Governance and external-workspace boundaries
 
 An ignored `.llm-wiki-governance.json` is not protected by version control.

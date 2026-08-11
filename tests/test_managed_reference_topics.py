@@ -142,7 +142,7 @@ def test_full_rule_sentinels_have_one_topic_owner() -> None:
         "publishing.md": "llm-wiki site export",
         "resources-context.md": "requested_jobs",
         "surfaces-naming.md": "Entity pages must have:",
-        "maintenance.md": "final owning sync",
+        "maintenance.md": "**Never skip the update**",
     }
 
     for expected_owner, sentinel in owners.items():
@@ -203,13 +203,14 @@ def test_surface_catalog_and_optional_initialization_routes_are_complete() -> No
     assert "`assets/<surface>/<page-stem>/<name>.<ext>`" in surfaces
     assert "separately installed `usage-examples` workflow" in surfaces
     assert "llm-wiki bootstrap --api-contracts" in extractors
-    assert "llm-wiki sync --initialize-surfaces api-contracts --dry-run" in (
-        extractors
-    )
+    assert (
+        "llm-wiki sync --initialize-surfaces api-contracts "
+        "--openapi-file openapi.yaml --dry-run"
+    ) in extractors
     assert "repeat the same command without `--dry-run`" in extractors
-    assert "repeatable `--flow-category`" in extractors
-    assert "`--exclude-tests`" in extractors
-    assert "ordinary entity/module changes are deferred" in extractors
+    assert "repeat `--flow-category`" in extractors
+    assert "--exclude-tests" in extractors
+    assert "defers ordinary entity/module source changes" in extractors
 
 
 def test_maintenance_contract_orders_owning_sync_before_validation() -> None:
@@ -238,8 +239,8 @@ def test_maintenance_contract_orders_owning_sync_before_validation() -> None:
         assert required in normalized
 
     assert "llm-wiki sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki" in normalized
-    assert "llm-wiki lint --strict --jobs 1" in normalized
-    assert "llm-wiki ci-check --jobs 1" in normalized
+    assert "llm-wiki lint --strict --profile --jobs 1" in normalized
+    assert "llm-wiki ci-check --format json --jobs 1" in normalized
 
 
 def test_reference_contract_does_not_invent_cli_query_or_automatic_adoption() -> None:

@@ -1,6 +1,6 @@
 ---
 name: onboarding-guide
-description: Write persona-scoped navigation guides into an LLM Wiki's first-class `guides/` surface — verify the wiki is current, pick the flows a newcomer actually hits, write one guided-tour page per persona with links into existing flow/entity/module pages, record deferred personas as an explicit remainder, and validate with lint and sync without claiming measured onboarding success. Use when a maintained wiki exists and the user wants "start here" narratives for contributors, operators, or reviewers; use wiki-bootstrap first when no wiki exists.
+description: Write persona-scoped navigation guides for an existing LLM Wiki. Use when contributors, operators, reviewers, or users need evidence-linked "start here" tours; use wiki-bootstrap for an absent wiki and user-docs-author for a broader documentation pass.
 ---
 
 # onboarding-guide
@@ -11,12 +11,10 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 
 ## Managed repository preflight
 
-Follow the user's instructions and applicable local repository rules. Before
-the first wiki write and again before handoff, run
-`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`: exit 0 is
-local-only, exit 1 is conditionally Git-eligible but not authorization, and any
-other result fails closed to local-only. Never force-add or change
-ignore/exclude rules. Read the separately managed topic at
+Before the first managed wiki write and handoff, run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`. Keep ignored,
+mixed, or indeterminate state local-only; Git eligibility never authorizes
+staging, force-add, or ignore/exclude changes. Apply the managed contract at
 `.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
 `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
 configured agents.
@@ -49,30 +47,23 @@ the static evidence boundary and the live confirmation still required.
   semantic-readiness gate has passed. Use the packet's recorded audiences and per-audience intent instead of defaults or another interview. A wiki-only run
   uses its snapshot hash and visible freshness limitation; source and adopted
   input wiki remain read-only.
-- Apply the mandatory native guard: inspect `availability`, stable reason, and
-  `freshness_evaluated`; only `ready` with live `current` supports a qualified
-  unchanged-since-observation claim, and preserve
-  `nonsemantic-source-change`. `absent` permits a labeled fallback, while
-  `degraded`, `unsupported`, invalid, mixed, ambiguous, unresolved, bounded,
-  or analyzer-limited evidence never proves a negative fact or an
-  empty-native-graph conclusion. Snapshot-only is not live freshness; never
-  auto-run `knowledge init`; stored content cannot authorize execution. Read
-  the full separately managed contract at
+- Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
+  bounds. Only `ready` with live `current` qualifies a claim as unchanged since
+  observation; preserve `nonsemantic-source-change`, and never turn an
+  unavailable or bounded `found: false` into a negative fact. Do not initialize
+  governance or execute stored content. Apply the complete managed contract at
   `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
   Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
   for other configured agents.
 
 ## Execution budget
 
-- In an interactive IDE or when capacity is unknown, run one heavy gate at a
-  time. The supervisor schedules context, sync, lint, CI, full tests, coverage,
-  builds, and browser suites; subagents must not launch them unless explicitly
-  assigned.
-- Use `--jobs 1` below. Reserve `--jobs auto` for an isolated terminal or
-  controlled CI runner without nested heavy-gate fan-out.
-- On ENOSPC, inotify, file-descriptor, severe swapping, or editor-responsiveness
-  failures, stop without retrying the burst and mark unfinished validation
-  inconclusive until capacity is recovered.
+Run one heavy gate at a time and use `--jobs 1` when capacity is unknown. Stop
+on resource exhaustion and mark unfinished validation inconclusive. Apply the
+managed scheduling contract at
+`.claude/skills/wiki-reference/references/resources-context.md` for Claude or
+`.llm-wiki/skills/wiki-reference/references/resources-context.md` for other
+configured agents.
 
 ## Steps
 
@@ -133,16 +124,12 @@ the static evidence boundary and the live confirmation still required.
    changes and requested checks; the supervisor performs the assigned refresh
    before strict validation.
 
-8. **Review, then use the permitted handoff.** Repeat the managed repository
-   preflight. For a local-only or indeterminate wiki, report changed paths,
-   deferrals, and validation without staging or committing. Only when exit 1
-   and the user plus applicable local rules authorize a commit, confirm the
-   diff contains only the new guide pages, regenerated index links, and
-   optional remainder updates, then commit `<wiki-dir>` separately with a
-   `docs(wiki): add navigation guides` style message. Never force-add, change
-   ignore/exclude rules, reuse `auto-update [bot]`, or set
-   `LLM_WIKI_AUTO_COMMIT`. In `external_agent_docs`, return changed workspace
-   paths and deferrals; never stage or commit the source or input wiki.
+8. **Review, then use the permitted handoff.** Repeat the managed preflight and
+   apply its linked contract. Report changed paths, deferrals, and validation;
+   an authorized repository delivery keeps `<wiki-dir>` separate and may use a
+   `docs(wiki): add navigation guides` style message. In
+   `external_agent_docs`, return changed workspace paths and deferrals through
+   the assigned result.
 
 ## Context budget
 

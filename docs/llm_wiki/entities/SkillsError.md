@@ -1,6 +1,6 @@
 # SkillsError
 
-**Location:** `src/llm_wiki_cli/services/skills.py:101`
+**Location:** `src/llm_wiki_cli/services/skills.py:110`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [skills](../modules/skills.md)

@@ -6,7 +6,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 520 | [Open section](#entities) |
+| Entities | 521 | [Open section](#entities) |
 | Modules | 151 | [Open section](#modules) |
 | Workflows | 12 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
@@ -452,6 +452,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SitePublicationReceipt](entities/SitePublicationReceipt.md)
 - [SitePublicationSelection](entities/SitePublicationSelection.md)
 - [SkillOperation](entities/SkillOperation.md)
+- [SkillSelection](entities/SkillSelection.md)
 - [SkillsError](entities/SkillsError.md)
 - [SkillsReport](entities/SkillsReport.md)
 - [SnapshotBuckets](entities/SnapshotBuckets.md)

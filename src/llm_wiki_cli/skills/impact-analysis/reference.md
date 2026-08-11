@@ -52,7 +52,8 @@ decisive_detail = explain_evidence(
 Do not call `build_documentation_query_service` again for the same impact
 report, and do not omit `service=` from a wrapper in that sequence. If native
 identity is not ready, skip native traversal and continue only with the labeled
-bounded source supplement allowed by the table below.
+bounded source supplement allowed by the managed knowledge contract and the
+query-selection table below.
 
 MCP tool `get_concept`:
 
@@ -91,20 +92,21 @@ a narrowly filtered typed traversal with `include_evidence: true` or inspect
 the exact concept with `explain_evidence`; keep that repository-sensitive
 detail internal unless the output policy explicitly permits it.
 
-## Native decision and fallback table
+## Typed-graph decision supplement
 
-| Native state | Required impact-analysis behavior |
+First apply [Qualified knowledge
+consumption](../wiki-reference/references/knowledge-consumption.md). That
+managed topic owns generic availability, freshness, fallback, boundedness, and
+negative-fact decisions. Impact analysis adds only these graph-specific rules:
+
+| Admitted graph condition | Impact-analysis behavior |
 |---|---|
-| `ready` + typed graph `ready` | Resolve exact identity; preserve freshness, lifecycle, successor, review, and verification qualification; traverse with explicit filters; report query, evidence-sample, and analyzer bounds separately. |
-| `ready` + `typed-graph-extension-not-present` | Use exact identity and its lifecycle/qualification, but make no typed-neighborhood conclusion. Run the labeled bounded source supplement and state that native graph coverage is absent. |
-| `absent` (`knowledge-projection-not-present`) | Run bounded supplied-impact or explicitly authorized live source queries. Label native identity, lifecycle, typed evidence, and analyzer qualification unavailable; never report an empty native graph. |
-| `degraded`, `unsupported`, invalid, or mixed snapshot | Serve no rejected native payload. Use only independently validated surface/source results, name the reason, and require the owning refresh for a native conclusion. |
-| Ambiguous exact identity or persisted alias | Preserve `ambiguous` and every bounded `matches` item; obtain an owner choice or analyze each candidate separately. Do not fuzzy-resolve or merge candidates. |
-| `ready` with `freshness_evaluated: false` | Treat identity/graph data as snapshot-only. Do not describe it as live-current; the separately labeled legacy source query may be live without upgrading the native snapshot. |
+| Exact identity and typed graph admitted | Traverse with explicit filters; report query, evidence-sample, and analyzer bounds separately. |
+| Exact identity admitted but typed-graph extension unavailable | Preserve the identity qualification, make no typed-neighborhood conclusion, and use only the labeled bounded source supplement admitted by the common contract. |
+| Exact identity or persisted alias is ambiguous | Preserve `ambiguous` and every bounded `matches` item; obtain an owner choice or analyze each candidate separately. Never fuzzy-resolve or merge candidates. |
 
-Supplemental detail can increase the known blast radius, but it cannot erase native
-absence, stale/snapshot-only qualification, an unresolved or external edge,
-alias ambiguity, or analyzer truncation.
+Supplemental detail can increase the known blast radius, but it cannot erase
+an unresolved or external edge, alias ambiguity, or analyzer truncation.
 
 ## Typed graph filters and completeness
 

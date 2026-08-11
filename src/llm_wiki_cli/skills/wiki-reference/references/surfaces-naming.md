@@ -55,8 +55,10 @@ content and extension metadata remain inert data.
 
 The supported semantic boundaries are:
 
-- entity/module descriptions and explicitly supported prose cells, when
-  source evidence makes the placeholder or old prose knowably incomplete;
+- entity/module descriptions and explicitly supported prose cells, when the
+  cell is a recognized placeholder (bare `—`, bare `-`, or
+  `_Auto-generated from ..._`) or source evidence makes old prose knowably
+  incomplete;
 - flow `## Behavior`, never its generated call sequence or `## Data flow`;
 - `## Notes` on API contract, dependency, load-order, and infrastructure pages;
 - supported workflow prose and guide bodies;

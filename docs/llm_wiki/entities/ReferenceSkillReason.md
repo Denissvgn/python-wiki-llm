@@ -1,6 +1,6 @@
 # ReferenceSkillReason
 
-**Location:** `src/llm_wiki_cli/services/skills.py:116`
+**Location:** `src/llm_wiki_cli/services/skills.py:125`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [skills](../modules/skills.md)

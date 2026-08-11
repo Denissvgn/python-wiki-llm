@@ -1,6 +1,6 @@
 ---
 name: dep-vuln-triage
-description: Triage vulnerable-dependency exposure with LLM Wiki while failing closed on missing declarations, scopes, versions, lockfiles, helper/plugin state, advisory data, and network access. Union supported manifest declarations with the public deep extract, keep every scoped version observation, query only agent/user-selected trusted advisory data, and distinguish “not found in queried data” from safe. Every row is a triage suggestion bounded by declared-dependency evidence: report an unresolved version scope as unresolved, never as “not affected”.
+description: Triage vulnerable dependency exposure from supported manifests, lockfiles, deep extraction, and explicitly selected advisory data. Use for bounded repository dependency-risk review; preserve unresolved versions, scopes, coverage, and advisory limits instead of claiming safety.
 ---
 
 # dep-vuln-triage

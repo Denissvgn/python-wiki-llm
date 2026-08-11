@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:60d9144b53083ce88ad28cf257b270d2dca758bf3bb35a39149a5497f3d6dc2e",
-    "knowledge_index_hash": "sha256:0045e71873ab68a9af935500b358f64d2cfdd2e445d6d9ea059b5d52d11cf4ca",
-    "surface_index_hash": "sha256:7cf8b8556f72d5fbfed8ba21c74d4b3cf290f9a945d02d4cdbb32ea84f9a363c"
+    "evaluated_envelope_hash": "sha256:b4934c0da556eec3bb856717f8eed37595cb32a26ab944f7e9de9a2f3c280c5e",
+    "knowledge_index_hash": "sha256:2471e0aaee83c9363a1d076773c95b172dc8b33351a94d1da28365abda737c23",
+    "surface_index_hash": "sha256:9e668827bbf11a8572dc8432360139a82a20cacdd4d15c1c3a5675f8ac0f3957"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -290,7 +290,7 @@
         "concept_observation_hash": "sha256:4384a30fb15dd00a32bbd2386485cb65d1410edd5d598d1ff834d9ada08247d1",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -740,7 +740,7 @@
         "concept_observation_hash": "sha256:992b8d2a42505ed660085725f7531c6dbfe8c9c8fa3bd163d458ba0c34f108b2",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -810,7 +810,7 @@
         "concept_observation_hash": "sha256:37b83862432c9aaed79814c8bb8fa7fce6daf77ce529abe0bdf276d392843e65",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -1660,7 +1660,7 @@
         "concept_observation_hash": "sha256:33c71af3c121b3dc14c0c6bfd46e5d65f50dca5eb4e8ddeb7f344988d12732c1",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2030,7 +2030,7 @@
         "concept_observation_hash": "sha256:675b6fc3412174519664d7eaa7dba2dc6e13bfa2dfcfb24d3d467bc29c6e9de9",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2130,7 +2130,7 @@
         "concept_observation_hash": "sha256:8b58e88743cc3076a09efb74cdb6cc922b950416875042659d9047f7afbecd66",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2140,7 +2140,7 @@
         "concept_observation_hash": "sha256:cdc9b087382eadace916657af4ad04a4cb05a3f4fd0e66b5dde2c4d2aa086215",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2150,7 +2150,7 @@
         "concept_observation_hash": "sha256:cffcac05fd8f44a887704e10d3160eaa6dfecd3a30d7f34ced6cbde9bb9ab000",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2160,7 +2160,7 @@
         "concept_observation_hash": "sha256:986f6c2df5399ea463ec88d4c7b5123f838d0358e97a010aad138c08d2d28a8e",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2170,7 +2170,7 @@
         "concept_observation_hash": "sha256:901f2c4cc6106e10222c51b469f3a1ebc61efff6d0b1dc725e05e5bfb3936ccf",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2870,7 +2870,7 @@
         "concept_observation_hash": "sha256:2412652739604d5026fb2f51d313a56c0e8fa5b79e218938d87f95f9bf43a4af",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -2990,7 +2990,7 @@
         "concept_observation_hash": "sha256:47eba6ac8568994d030bbb3a3ae9b34f69ca65783ac9c64ae0f9fca28bdf3b44",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -3010,7 +3010,7 @@
         "concept_observation_hash": "sha256:19aa68fd1c0e9c506bad0925cd4200ef4a34d076ecd36f4c16d03f6f5df86fff",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -3810,7 +3810,7 @@
         "concept_observation_hash": "sha256:71d51dc55d903783296d3ad8f5fd4dcc06b959f90eebbc918a7b78d5cb375a16",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -3820,7 +3820,7 @@
         "concept_observation_hash": "sha256:fc5a04f097d87b4c7da21f0075ec4eee0ac7166c388c52267fdca08f306946f4",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -3830,7 +3830,7 @@
         "concept_observation_hash": "sha256:897e32c83ff29c4d85d3919202d2d02719c8d07e6ba874c97d82c3926d9db1db",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -3840,7 +3840,7 @@
         "concept_observation_hash": "sha256:bc176acf518f5cd1c917afdbae4cd471ae7dbe1cb4793be4dfb00d082f4b0520",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -3970,7 +3970,7 @@
         "concept_observation_hash": "sha256:2bdb1f21e3b939648696d8606f6ffc8d489e5b03f4089adf7b3f4e96412c0285",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -4220,7 +4220,7 @@
         "concept_observation_hash": "sha256:27af296c952a0d1f9b9fa639138ffc37e91e8ffa65ca3348e9e6290ff9965738",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -4340,7 +4340,17 @@
         "concept_observation_hash": "sha256:ea14ae3092f5ef7b79260d10243e516a0eb8ab703b24098a432b636dae4d8365",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
+        "source_path": "src/llm_wiki_cli/services/skills.py"
+      },
+      "state": "known"
+    },
+    "entities/SkillSelection.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:63faf81d0723ff7cf7907f67eb1ca4f97723fa7cea3dda110abf36a8a838d35a",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "entity",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -4350,17 +4360,17 @@
         "concept_observation_hash": "sha256:604bf3de393fbf1337ff3c3e874228fc0b2a3a61cbc887326df1d84420135085",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
     },
     "entities/SkillsReport.md": {
       "basis": {
-        "concept_observation_hash": "sha256:0f1c8cd2b9c1919e8d4c822125731037746ef7c2afb274dd1971bf038db5f39b",
+        "concept_observation_hash": "sha256:c5bfdcd79c8766a1055faa2cc6fdb488101cfe96e59a438f0b8c911b2c779e92",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -4730,7 +4740,7 @@
         "concept_observation_hash": "sha256:71523fec50d0c524722d070bd04f78a34656d50bd023d0671e269b2229a13dd5",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -5340,7 +5350,7 @@
         "concept_observation_hash": "sha256:ce1f45546c4fb63f0e90c736bfb07427b8b506bec9b1fd2742b6ce632d10a753",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:72d23fd3a684b01f54f0116a5038a0b796458aca552d2559d2cad2ab4e388f96",
+        "source_content_hash": "sha256:1cee6ea650d96f1a82df010e62f7ff02474117e6f8f6f8251d9ef4683e955d9b",
         "source_path": "src/llm_wiki_cli/cli.py"
       },
       "state": "known"
@@ -5817,10 +5827,10 @@
     },
     "modules/instruction_ownership.md": {
       "basis": {
-        "concept_observation_hash": "sha256:7c79bbb8a19ac2f81ccb853287ea7d1c69e34520bd7972630bffbee033461a9d",
+        "concept_observation_hash": "sha256:f8ae093f47c1b2c3d7b023a952e509664c6da14b642952d3e4495c51e95c20ca",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+        "source_content_hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
         "source_path": "src/llm_wiki_cli/services/instruction_ownership.py"
       },
       "state": "known"
@@ -6447,10 +6457,10 @@
     },
     "modules/skills.md": {
       "basis": {
-        "concept_observation_hash": "sha256:0fc8f50527b4aec2ccc0a1e001a907790ac3d84d515b438a5f8d709adc172c78",
+        "concept_observation_hash": "sha256:3cfdee9fa030fe7b918f1bdbd91703be80120f3943e507c0d0989a574f94697d",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+        "source_content_hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
         "source_path": "src/llm_wiki_cli/services/skills.py"
       },
       "state": "known"
@@ -9386,6 +9396,12 @@
       "scope": "entity",
       "source_path": "src/llm_wiki_cli/services/skills.py"
     },
+    "entities/SkillSelection.md": {
+      "entity_name": "_SkillSelection",
+      "occurrence": 1,
+      "scope": "entity",
+      "source_path": "src/llm_wiki_cli/services/skills.py"
+    },
     "entities/SkillsError.md": {
       "entity_name": "SkillsError",
       "occurrence": 1,
@@ -11708,10 +11724,10 @@
           }
         }
       },
-      "hash": "sha256:72d23fd3a684b01f54f0116a5038a0b796458aca552d2559d2cad2ab4e388f96",
+      "hash": "sha256:1cee6ea650d96f1a82df010e62f7ff02474117e6f8f6f8251d9ef4683e955d9b",
       "language": "python",
       "module_page": "cli",
-      "semantic_hash": "sha256:cbba9e0520e626def628adb1ae0d728e57041950c5f658cfa14b695129c13d12"
+      "semantic_hash": "sha256:99281a8d30edeb1e79878507275ab6fcb3ec3bc9991aecbcf543c1704c35f800"
     },
     "src/llm_wiki_cli/commands/bump_cmd.py": {
       "entities": [],
@@ -20942,6 +20958,7 @@
             "_correctness_route": "—",
             "_destination_heading_lookup": "—",
             "_installed_route": "—",
+            "_installed_topic_span": "—",
             "_managed_topic_route": "—",
             "_package_data_patterns": "—",
             "_profiled_topic_routes": "—",
@@ -20966,10 +20983,10 @@
           }
         }
       },
-      "hash": "sha256:b7374f8afd70ff1558a3c2ddcab95ae840f5a4567893c910525500c1bc82b912",
+      "hash": "sha256:5b33387971e0e3a35da9a8ccd4e0bbc1316e7def8317698ee0bcd7c617555b3f",
       "language": "python",
       "module_page": "instruction_ownership",
-      "semantic_hash": "sha256:7cf6811e46ec8ae7092dfe2c62fa98eec74ab61829b345086e9b724c519e1555"
+      "semantic_hash": "sha256:910b6766c8b345adbae006b6180511a250d779e03364758cbd01ba1bfb61cfd6"
     },
     "src/llm_wiki_cli/services/inventory_cache.py": {
       "entities": [
@@ -26506,6 +26523,7 @@
         "SkillsReport",
         "ReferenceSkillVerification",
         "ReferenceSkillProvisionResult",
+        "_SkillSelection",
         "_TreeSnapshot"
       ],
       "entity_page_occurrences": [
@@ -26550,6 +26568,11 @@
           "page": "ReferenceSkillProvisionResult"
         },
         {
+          "name": "_SkillSelection",
+          "occurrence": 1,
+          "page": "SkillSelection"
+        },
+        {
           "name": "_TreeSnapshot",
           "occurrence": 1,
           "page": "TreeSnapshot"
@@ -26564,6 +26587,7 @@
         "SkillOperation": "SkillOperation",
         "SkillsError": "SkillsError",
         "SkillsReport": "SkillsReport",
+        "_SkillSelection": "SkillSelection",
         "_TreeSnapshot": "TreeSnapshot"
       },
       "generated_semantics": {
@@ -26649,16 +26673,27 @@
           },
           "SkillsReport": {
             "attributes": {
+              "dependency_skills": "—",
               "dest_dir": "—",
               "issues": "—",
               "ok": "—",
               "operations": "—",
+              "requested_skills": "—",
               "skills": "—"
             },
-            "description": "_Auto-generated from `SkillsReport` in `src/llm_wiki_cli/services/skills.py`._",
+            "description": "One export/install result with requested and effective skill identities.\n\n``skills`` is the dependency-first effective order. ``requested_skills``\npreserves the de-duplicated roots supplied by the caller (or every bundled\nskill for the all-skills default), while ``dependency_skills`` contains\nonly closure members that were not themselves requested.",
             "methods": {
               "to_dict": "—"
             }
+          },
+          "_SkillSelection": {
+            "attributes": {
+              "dependency_ids": "—",
+              "requested_ids": "—",
+              "skills": "—"
+            },
+            "description": "One validated, dependency-closed skill selection.",
+            "methods": {}
           },
           "_TreeSnapshot": {
             "attributes": {
@@ -26680,12 +26715,14 @@
             "ReferenceSkillVerification": "One read-only classification of the live managed-reference tree.",
             "SkillOperation": "—",
             "SkillsError": "Raised for invalid skill list/export/install requests.",
-            "SkillsReport": "—",
+            "SkillsReport": "One export/install result with requested and effective skill identities.",
+            "_SkillSelection": "One validated, dependency-closed skill selection.",
             "_TreeSnapshot": "—"
           },
           "description": "Bundled agent skill management for LLM Wiki.\n\nThe package ships agent skills (Claude Code-compatible ``SKILL.md``\nworkflow directories) under ``llm_wiki_cli/skills/``.  This module lists\nthem, exports them to an arbitrary destination (for example, a personal\n``~/.claude/skills`` directory), and installs them into the configured\nagent's project directory: ``.claude/skills`` for Claude and the neutral\n``.llm-wiki/skills`` directory for other configured agents.",
           "functions": {
             "_append_issue": "—",
+            "_declares_transitive_dependency": "Return whether the active central map links one skill to another.",
             "_directory_ancestry_is_safe": "Reject unsafe aliases or non-directories in the existing path prefix.",
             "_ensure_regular_directory": "Create a missing directory without traversing an unsafe existing entry.",
             "_ensure_safe_base": "—",
@@ -26702,7 +26739,7 @@
             "_reference_package_contents": "—",
             "_reference_verification": "—",
             "_safe_reference_verification": "—",
-            "_select_skills": "—",
+            "_select_skills": "Resolve requested skills and their deterministic transitive closure.",
             "_skill_files": "—",
             "_skill_tree_matches": "—",
             "_snapshot_details": "—",
@@ -26723,10 +26760,10 @@
           }
         }
       },
-      "hash": "sha256:c39a4e590d02d554d5a4544a0600e462127684a640345c2801ccd1fd1f52cd93",
+      "hash": "sha256:8667c1e46274c441a3cca35aba843f93019ac146c2d77db9937fac5d8bb1fc9a",
       "language": "python",
       "module_page": "skills",
-      "semantic_hash": "sha256:35fc5bb1779f1560fa6c7a7826fd50c55677862c392d3525b2822fa17653c724"
+      "semantic_hash": "sha256:5813b2086bb81f622cbe317b85ed105e2a910689d93e125c682b12e9c5bbe92a"
     },
     "src/llm_wiki_cli/services/source_selection.py": {
       "entities": [

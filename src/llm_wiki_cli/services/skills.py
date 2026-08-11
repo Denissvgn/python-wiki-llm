@@ -47,12 +47,13 @@ REFERENCE_SKILL_FILES: tuple[str, ...] = (
     "references/surfaces-naming.md",
 )
 
-# Optional workflows in this set route correctness or qualification decisions
-# into the separately managed reference tree.  Dependency expansion remains an
-# explicit caller choice: a selected workflow is accepted only when the exact
-# reference is selected in the same request or already exists at the target.
-REFERENCE_DEPENDENT_SKILLS: frozenset[str] = frozenset(
-    {
+# Bundled workflow prerequisites live in package-owned Python rather than
+# frontmatter so every supported skills runtime sees the same portable
+# manifests.  Values are ordered tuples: their order is part of deterministic
+# transitive expansion, and every dependency is installed before its consumer.
+SKILL_DEPENDENCIES: dict[str, tuple[str, ...]] = {
+    skill_id: (REFERENCE_SKILL_ID,)
+    for skill_id in (
         "agent-docs",
         "dep-audit",
         "doc-hub",
@@ -66,7 +67,15 @@ REFERENCE_DEPENDENT_SKILLS: frozenset[str] = frozenset(
         "wiki-bootstrap",
         "wiki-semantic-enhance",
         "wiki-sync",
-    }
+    )
+}
+
+# Compatibility view used by the documentation-run integrity contract.  New
+# selection code must consume SKILL_DEPENDENCIES through the resolver below.
+REFERENCE_DEPENDENT_SKILLS: frozenset[str] = frozenset(
+    skill_id
+    for skill_id, dependencies in SKILL_DEPENDENCIES.items()
+    if REFERENCE_SKILL_ID in dependencies
 )
 
 # Platform-neutral skills home for agents without a native skills runtime.
@@ -150,11 +159,21 @@ class SkillOperation:
 
 @dataclass
 class SkillsReport:
+    """One export/install result with requested and effective skill identities.
+
+    ``skills`` is the dependency-first effective order. ``requested_skills``
+    preserves the de-duplicated roots supplied by the caller (or every bundled
+    skill for the all-skills default), while ``dependency_skills`` contains
+    only closure members that were not themselves requested.
+    """
+
     ok: bool = True
     dest_dir: str = ""
     skills: list[str] = field(default_factory=list)
     operations: list[SkillOperation] = field(default_factory=list)
     issues: list[dict[str, str]] = field(default_factory=list)
+    requested_skills: list[str] = field(default_factory=list)
+    dependency_skills: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -163,6 +182,8 @@ class SkillsReport:
             "skills": self.skills,
             "operations": [op.__dict__ for op in self.operations],
             "issues": self.issues,
+            "requested_skills": self.requested_skills,
+            "dependency_skills": self.dependency_skills,
         }
 
 
@@ -274,48 +295,33 @@ def export_skills(
 
     Existing identical files are kept, missing files are written, and
     differing files are only overwritten with ``force`` — otherwise they are
-    reported as issues and the report is marked not ok.  An explicitly
-    selected reference-dependent workflow requires an exact ``wiki-reference``
-    tree at the destination or in the same selection.
+    reported as issues and the report is marked not ok. Explicit selections
+    are expanded to their complete bundled dependency closure before any
+    destination write. An exact ``wiki-reference`` tree is still required
+    before a reference-dependent workflow is written.
     """
     dest = Path(dest_dir).expanduser()
     _ensure_safe_base(dest)
-    selected = _select_skills(skills, skills_root=skills_root)
+    selection = _select_skills(skills, skills_root=skills_root)
+    selected = list(selection.skills)
     reference_requirement = _preflight_reference_requirement(
-        dest,
         selected,
-        explicitly_selected=bool(skills),
         skills_root=skills_root,
     )
 
-    report = SkillsReport(dest_dir=str(dest), skills=[s.skill_id for s in selected])
+    report = SkillsReport(
+        dest_dir=str(dest),
+        requested_skills=list(selection.requested_ids),
+        dependency_skills=list(selection.dependency_ids),
+        skills=[skill.skill_id for skill in selected],
+    )
     if not _ensure_regular_directory(dest, report=report):
         report.ok = False
         return report
-    selected_ids = {skill.skill_id for skill in selected}
     reference_verified = False
-    if reference_requirement is not None:
-        reference_skill, consumers = reference_requirement
-        reference_target = dest / REFERENCE_SKILL_ID
-        if REFERENCE_SKILL_ID not in selected_ids:
-            report.operations.append(
-                SkillOperation(
-                    "verify",
-                    str(reference_target),
-                    "Required by: " + ", ".join(consumers),
-                )
-            )
-            reference_verified = True
-            ordered = selected
-        else:
-            ordered = [reference_skill]
-            ordered.extend(
-                skill for skill in selected if skill.skill_id != REFERENCE_SKILL_ID
-            )
-    else:
-        ordered = selected
+    consumers = reference_requirement or ()
 
-    for skill in ordered:
+    for skill in selected:
         expected_files = _expected_skill_files(skill)
         skill_target = dest / skill.skill_id
         if not _ensure_regular_directory(skill_target, root=dest, report=report):
@@ -764,6 +770,13 @@ def reference_skill_state(
 
 def render_report_text(report: SkillsReport, *, action: str) -> str:
     lines = [f"Skills {action}: {', '.join(report.skills) or 'none'}"]
+    lines.append(
+        "Requested skills: " + (", ".join(report.requested_skills) or "none")
+    )
+    lines.append(
+        "Dependency-included skills: "
+        + (", ".join(report.dependency_skills) or "none")
+    )
     lines.append(f"Destination: {report.dest_dir}")
     for op in report.operations:
         lines.append(f"  {op.action.upper()} {op.path}")
@@ -791,53 +804,108 @@ def render_skill_list_json(skills: list[BundledSkill]) -> str:
     return json.dumps({"skills": [s.to_dict() for s in skills]}, indent=2) + "\n"
 
 
+@dataclass(frozen=True)
+class _SkillSelection:
+    """One validated, dependency-closed skill selection."""
+
+    requested_ids: tuple[str, ...]
+    dependency_ids: tuple[str, ...]
+    skills: tuple[BundledSkill, ...]
+
+
 def _select_skills(
     requested: list[str] | None, *, skills_root: Path | None = None
-) -> list[BundledSkill]:
+) -> _SkillSelection:
+    """Resolve requested skills and their deterministic transitive closure."""
+
     available = list_bundled_skills(skills_root)
     if not available:
         raise SkillsError("No bundled skills are available in this installation.")
-    if not requested:
-        return available
 
     by_id = {skill.skill_id: skill for skill in available}
-    selected: list[BundledSkill] = []
-    for skill_id in requested:
+    requested_ids: list[str] = []
+    for skill_id in requested or list(by_id):
         if skill_id not in by_id:
             raise SkillsError(
                 f"Unknown skill '{skill_id}'. Available: {', '.join(sorted(by_id))}"
             )
-        if by_id[skill_id] not in selected:
-            selected.append(by_id[skill_id])
-    return selected
+        if skill_id not in requested_ids:
+            requested_ids.append(skill_id)
+
+    ordered_ids: list[str] = []
+    visit_state: dict[str, str] = {}
+    stack: list[str] = []
+
+    def visit(skill_id: str, *, required_by: str | None = None) -> None:
+        if skill_id not in by_id:
+            assert required_by is not None
+            raise SkillsError(
+                f"Skill dependency unavailable: '{required_by}' requires "
+                f"bundled '{skill_id}'."
+            )
+        state = visit_state.get(skill_id)
+        if state == "done":
+            return
+        if state == "visiting":
+            cycle_start = stack.index(skill_id)
+            cycle = (*stack[cycle_start:], skill_id)
+            raise SkillsError(
+                "Skill dependency cycle detected: " + " -> ".join(cycle) + "."
+            )
+
+        visit_state[skill_id] = "visiting"
+        stack.append(skill_id)
+        for dependency_id in SKILL_DEPENDENCIES.get(skill_id, ()):
+            visit(dependency_id, required_by=skill_id)
+        stack.pop()
+        visit_state[skill_id] = "done"
+        ordered_ids.append(skill_id)
+
+    for skill_id in requested_ids:
+        visit(skill_id)
+
+    requested_set = set(requested_ids)
+    dependency_ids = tuple(
+        skill_id for skill_id in ordered_ids if skill_id not in requested_set
+    )
+    return _SkillSelection(
+        requested_ids=tuple(requested_ids),
+        dependency_ids=dependency_ids,
+        skills=tuple(by_id[skill_id] for skill_id in ordered_ids),
+    )
 
 
 def _preflight_reference_requirement(
-    destination: Path,
     selected: list[BundledSkill],
     *,
-    explicitly_selected: bool,
     skills_root: Path | None,
-) -> tuple[BundledSkill, tuple[str, ...]] | None:
+) -> tuple[str, ...] | None:
     """Require a current managed reference for selected dependent workflows.
 
-    Selecting all bundled skills already includes the managed reference and
-    keeps the historical all-skills operation unchanged.  Explicit selections
-    remain non-transitive, but they cannot create a workflow tree with a
-    missing, incomplete, modified, or unavailable prerequisite.
+    Every selection is dependency-closed. This preflight additionally proves
+    the special managed reference package tree is exact before destination
+    mutation, including the default all-skills operation.
     """
-
-    if not explicitly_selected:
-        return None
     consumers = tuple(
         sorted(
             skill.skill_id
             for skill in selected
-            if skill.skill_id in REFERENCE_DEPENDENT_SKILLS
+            if skill.skill_id != REFERENCE_SKILL_ID
+            and _declares_transitive_dependency(
+                skill.skill_id,
+                REFERENCE_SKILL_ID,
+            )
         )
     )
     if not consumers:
         return None
+
+    selected_ids = {skill.skill_id for skill in selected}
+    if REFERENCE_SKILL_ID not in selected_ids:
+        raise SkillsError(
+            "Resolved skill selection omitted required bundled "
+            f"'{REFERENCE_SKILL_ID}': {', '.join(consumers)}."
+        )
 
     available = list_bundled_skills(skills_root)
     reference_skill = next(
@@ -857,17 +925,23 @@ def _preflight_reference_requirement(
             f"{', '.join(consumers)}."
         )
 
-    selected_ids = {skill.skill_id for skill in selected}
-    if REFERENCE_SKILL_ID not in selected_ids and not _skill_tree_matches(
-        destination / REFERENCE_SKILL_ID,
-        reference_skill,
-    ):
-        raise SkillsError(
-            f"Selected skill(s) require an exact '{REFERENCE_SKILL_ID}' tree: "
-            f"{', '.join(consumers)}. Include '--skill {REFERENCE_SKILL_ID}' "
-            "in this request or provision the managed reference first."
-        )
-    return reference_skill, consumers
+    return consumers
+
+
+def _declares_transitive_dependency(skill_id: str, dependency_id: str) -> bool:
+    """Return whether the active central map links one skill to another."""
+
+    pending = list(SKILL_DEPENDENCIES.get(skill_id, ()))
+    visited: set[str] = set()
+    while pending:
+        candidate = pending.pop()
+        if candidate == dependency_id:
+            return True
+        if candidate in visited:
+            continue
+        visited.add(candidate)
+        pending.extend(SKILL_DEPENDENCIES.get(candidate, ()))
+    return False
 
 
 def _skill_files(skill_dir: Path) -> tuple[str, ...]:

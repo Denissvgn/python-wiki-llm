@@ -104,15 +104,16 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [SkillsError](../entities/SkillsError.md) | Class | 101 | `ValueError` | Raised for invalid skill list/export/install requests. |
-| [ReferenceSkillState](../entities/ReferenceSkillState.md) | Enum | 105 | `str`, `Enum` | Stable live/provisioning states for the managed reference skill. |
-| [ReferenceSkillReason](../entities/ReferenceSkillReason.md) | Enum | 116 | `str`, `Enum` | Stable lifecycle reason codes paired with :class:`ReferenceSkillState`. |
-| [BundledSkill](../entities/BundledSkill.md) | Class | 128 | — | — |
-| [SkillOperation](../entities/SkillOperation.md) | Class | 145 | — | — |
-| [SkillsReport](../entities/SkillsReport.md) | Class | 152 | — | — |
-| [ReferenceSkillVerification](../entities/ReferenceSkillVerification.md) | Class | 170 | — | One read-only classification of the live managed-reference tree. |
-| [ReferenceSkillProvisionResult](../entities/ReferenceSkillProvisionResult.md) | Class | 203 | — | Safe installation attempt plus its authoritative live verification. |
-| [_TreeSnapshot](../entities/TreeSnapshot.md) | Class | 901 | — | — |
+| [SkillsError](../entities/SkillsError.md) | Class | 110 | `ValueError` | Raised for invalid skill list/export/install requests. |
+| [ReferenceSkillState](../entities/ReferenceSkillState.md) | Enum | 114 | `str`, `Enum` | Stable live/provisioning states for the managed reference skill. |
+| [ReferenceSkillReason](../entities/ReferenceSkillReason.md) | Enum | 125 | `str`, `Enum` | Stable lifecycle reason codes paired with :class:`ReferenceSkillState`. |
+| [BundledSkill](../entities/BundledSkill.md) | Class | 137 | — | — |
+| [SkillOperation](../entities/SkillOperation.md) | Class | 154 | — | — |
+| [SkillsReport](../entities/SkillsReport.md) | Class | 161 | — | One export/install result with requested and effective skill identities. |
+| [ReferenceSkillVerification](../entities/ReferenceSkillVerification.md) | Class | 191 | — | One read-only classification of the live managed-reference tree. |
+| [ReferenceSkillProvisionResult](../entities/ReferenceSkillProvisionResult.md) | Class | 224 | — | Safe installation attempt plus its authoritative live verification. |
+| [_SkillSelection](../entities/SkillSelection.md) | Class | 808 | — | One validated, dependency-closed skill selection. |
+| [_TreeSnapshot](../entities/TreeSnapshot.md) | Class | 975 | — | — |
 
 ## Functions
 
@@ -131,8 +132,9 @@ flowchart LR
 | `render_report_json` | `(report: SkillsReport) -> str` | — | — |
 | `render_skill_list_text` | `(skills: list[BundledSkill]) -> str` | — | — |
 | `render_skill_list_json` | `(skills: list[BundledSkill]) -> str` | — | — |
-| `_select_skills` | `(requested: list[str] \| None, *, skills_root: Path \| None = None) -> list[BundledSkill]` | — | — |
-| `_preflight_reference_requirement` | `(destination: Path, selected: list[BundledSkill], *, explicitly_selected: bool, skills_root: Path \| None) -> tuple[BundledSkill, tuple[str, ...]] \| None` | — | Require a current managed reference for selected dependent workflows. |
+| `_select_skills` | `(requested: list[str] \| None, *, skills_root: Path \| None = None) -> _SkillSelection` | — | Resolve requested skills and their deterministic transitive closure. |
+| `_preflight_reference_requirement` | `(selected: list[BundledSkill], *, skills_root: Path \| None) -> tuple[str, ...] \| None` | — | Require a current managed reference for selected dependent workflows. |
+| `_declares_transitive_dependency` | `(skill_id: str, dependency_id: str) -> bool` | — | Return whether the active central map links one skill to another. |
 | `_skill_files` | `(skill_dir: Path) -> tuple[str, ...]` | — | — |
 | `_expected_skill_files` | `(skill: BundledSkill) -> tuple[str, ...]` | — | — |
 | `_reference_install_path` | `(project_dir: str \| Path, *, agent: str \| None, target: str \| Path \| None) -> Path` | — | — |
