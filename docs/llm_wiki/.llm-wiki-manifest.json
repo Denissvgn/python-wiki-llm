@@ -1,7 +1,7 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:da01c951dbe6d32336ba8ff06e3cdd93b3156ba272bb8433c748643ccd80f389",
-    "knowledge_index_hash": "sha256:d88986044a3c4ad2c427590458dc22bc9f01a5da75dfb6b0042af4cb83fba19d",
+    "evaluated_envelope_hash": "sha256:9c16ae3de28156cc3fe0f2e4e6a2c96e3b7f53d9a6f01714dac30c6c06022445",
+    "knowledge_index_hash": "sha256:4a12037a1d7f8fea1da34e7f6f061ab089a5753a426ceed995ec90c9fcd2764c",
     "surface_index_hash": "sha256:6865b0bcc20e2a01d3febdc9175cc91a78b4132e11fcf697d88f7284c0056399"
   },
   "evidence_baselines": {
