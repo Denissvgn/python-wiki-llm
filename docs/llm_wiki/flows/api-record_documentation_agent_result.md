@@ -116,7 +116,7 @@ sequenceDiagram
     p15->>p8: DocumentationIntegrityError
 ```
 
-> Call sequence diagram shows 30 of 5435 interactions; 5405 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 5483 interactions; 5453 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

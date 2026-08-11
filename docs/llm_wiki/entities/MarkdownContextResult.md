@@ -1,6 +1,6 @@
 # MarkdownContextResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:53`
+**Location:** `src/llm_wiki_cli/api_types.py:129`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

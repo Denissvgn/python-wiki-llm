@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`api`)
 **Source:** [install_ci_cmd](../modules/install_ci_cmd.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [install_ci_cmd](../modules/install_ci_cmd.md), [io](../modules/io.md), and 4 more
+**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [install_ci_cmd](../modules/install_ci_cmd.md), [io](../modules/io.md), and 5 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [config](../modules/config.md)
 - [install_ci_cmd](../modules/install_ci_cmd.md)
 - [io](../modules/io.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [source_selection](../modules/source_selection.md)
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
@@ -75,7 +76,7 @@ sequenceDiagram
     p19-->>p22: encode
 ```
 
-> Call sequence diagram shows 30 of 383 interactions; 353 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 392 interactions; 362 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

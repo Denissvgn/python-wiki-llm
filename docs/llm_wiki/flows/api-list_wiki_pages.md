@@ -20,13 +20,15 @@ sequenceDiagram
     participant p8 as collect_wiki_pages
     participant p9 as PathPolicyError
     participant p10 as str
-    participant p11 as InvalidRequestError
-    participant p12 as WorkspaceStateError
-    participant p13 as _display_path
-    participant p14 as as_posix
-    participant p15 as _wiki_page_counts
-    participant p16 as iter_page_kinds
-    participant p17 as len
+    participant p11 as _wiki_path_policy_details
+    participant p12 as set
+    participant p13 as id
+    participant p14 as add
+    participant p15 as isinstance
+    participant p16 as InvalidRequestError
+    participant p17 as WorkspaceStateError
+    participant p18 as _display_path
+    participant p19 as as_posix
     p0->>p1: _validate_wiki_dir
     p1->>p2: validate_path
     p2->>p3: PathValidationError
@@ -40,21 +42,26 @@ sequenceDiagram
     p0-->>p8: collect_wiki_pages
     p0-->>p9: PathPolicyError
     p0-->>p10: str
-    p0->>p11: InvalidRequestError
+    p0-->>p9: PathPolicyError
     p0-->>p10: str
-    p0->>p12: WorkspaceStateError
+    p0->>p11: _wiki_path_policy_details
+    p11-->>p12: set
+    p11-->>p13: id
+    p11-->>p14: add
+    p11-->>p13: id
+    p11-->>p15: isinstance
+    p0->>p16: InvalidRequestError
     p0-->>p10: str
-    p0->>p13: _display_path
-    p13-->>p14: as_posix
-    p13-->>p6: relative_to
-    p13-->>p4: resolve
-    p13-->>p5: cwd
-    p13-->>p14: as_posix
-    p0->>p15: _wiki_page_counts
-    p15-->>p16: iter_page_kinds
-    p15-->>p10: str
-    p15-->>p17: len
+    p0->>p17: WorkspaceStateError
+    p0-->>p10: str
+    p0->>p18: _display_path
+    p18-->>p19: as_posix
+    p18-->>p6: relative_to
+    p18-->>p4: resolve
+    p18-->>p5: cwd
 ```
+
+> Call sequence diagram shows 30 of 35 interactions; 5 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -96,7 +103,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `list_wiki_pages` | `wiki_dir: str` | `PathValidationError`, `wiki_surface` | - | `{...}` |
+| `list_wiki_pages` | `wiki_dir: str` | `PathValidationError`, `wiki_surface`, `wiki_surface` | - | `{...}` |
 | `_validate_wiki_dir` | `wiki_dir: str` | - | - | `validate_path(...)` |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -113,17 +120,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_wiki_pages | _validate_wiki_dir | 806 | `_validate_wiki_dir(wiki_dir)` |
-| _validate_wiki_dir | validate_path | 1248 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 128 | `PathValidationError(...)` |
-| validate_path | resolve | 131 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 131 | `Path.cwd(data not statically known)` |
-| validate_path | resolve | 132 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | cwd | 132 | `Path.cwd(data not statically known)` |
-| validate_path | relative_to | 134 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 136 | `PathValidationError(...)` |
-| list_wiki_pages | _wiki_page_payload | 808 | `_wiki_page_payload(page)` |
-| list_wiki_pages | collect_wiki_pages | 809 | `wiki_surface.collect_wiki_pages(wiki_root)` |
+| list_wiki_pages | _validate_wiki_dir | 1018 | `_validate_wiki_dir(wiki_dir)` |
+| _validate_wiki_dir | validate_path | 2326 | `validate_path(wiki_dir, '--wiki-dir')` |
+| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
+| validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
+| validate_path | resolve | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
+| validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
+| list_wiki_pages | _wiki_page_payload | 1020 | `_wiki_page_payload(page)` |
+| list_wiki_pages | collect_wiki_pages | 1021 | `wiki_surface.collect_wiki_pages(wiki_root)` |
 
 ### Boundary effects
 
@@ -133,12 +140,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 131 |
-| external_call | `validate_path` | `Path.cwd` | 131 |
-| external_call | `validate_path` | `Path.cwd().resolve` | 132 |
-| external_call | `validate_path` | `Path.cwd` | 132 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 134 |
-| external_call | `list_wiki_pages` | `wiki_surface.collect_wiki_pages` | 809 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
+| external_call | `validate_path` | `Path.cwd` | 133 |
+| external_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| external_call | `validate_path` | `Path.cwd` | 134 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
+| external_call | `list_wiki_pages` | `wiki_surface.collect_wiki_pages` | 1021 |
 | step_limit | `list_wiki_pages` | `first 12 steps` | 0 |
 
 ## Behavior

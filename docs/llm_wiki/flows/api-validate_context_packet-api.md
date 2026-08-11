@@ -55,11 +55,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet | validate_context_packet | 732 | `context_packet_service.validate_context_packet(packet_bytes)` |
-| validate_context_packet | PathPolicyError | 734 | `PathPolicyError(str(...))` |
-| validate_context_packet | str | 734 | `str(exc)` |
-| validate_context_packet | InvalidRequestError | 736 | `InvalidRequestError(str(...))` |
-| validate_context_packet | str | 736 | `str(exc)` |
+| validate_context_packet | validate_context_packet | 944 | `context_packet_service.validate_context_packet(packet_bytes)` |
+| validate_context_packet | PathPolicyError | 946 | `PathPolicyError(str(...))` |
+| validate_context_packet | str | 946 | `str(exc)` |
+| validate_context_packet | InvalidRequestError | 948 | `InvalidRequestError(str(...))` |
+| validate_context_packet | str | 948 | `str(exc)` |
 
 ### Boundary effects
 
@@ -69,8 +69,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_context_packet` | `context_packet_service.validate_context_packet` | 732 |
-| unresolved_call | `validate_context_packet` | `PathPolicyError` | 734 |
+| external_call | `validate_context_packet` | `context_packet_service.validate_context_packet` | 944 |
+| unresolved_call | `validate_context_packet` | `PathPolicyError` | 946 |
 
 ## Behavior
 

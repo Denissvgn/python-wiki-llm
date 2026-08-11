@@ -18,11 +18,11 @@ different tree.
 | `..config` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text`, `is_agent_worktree_path` |
 | `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `LANGUAGE_EXTENSIONS`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
 | `.knowledge_envelope` | `ConsumedInput` |
-| `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
+| `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
-| `dataclasses` | `dataclass` |
+| `dataclasses` | `dataclass`, `field` |
 | `fnmatch` | `fnmatch` |
 | `hashlib` | `hashlib` |
 | `os` | `os` |
@@ -57,16 +57,17 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 91 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
-| [SourceFile](../entities/SourceFile.md) | 101 | — | A source-tree file discovered relative to a snapshot root. |
-| [SourceSnapshot](../entities/SourceSnapshot.md) | 113 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 396 | — | — |
+| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 92 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
+| [SourceFile](../entities/SourceFile.md) | 102 | — | A source-tree file discovered relative to a snapshot root. |
+| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 114 | — | Filesystem identity used for cheap between-stage mutation checks. |
+| [SourceSnapshot](../entities/SourceSnapshot.md) | 126 | — | Filtered source-tree discovery results shared by lint/extract paths. |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 427 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None) -> _SnapshotBuckets` | — | — |
+| `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None, *, expected_gitignore_paths: frozenset[str] \| None = None) -> _SnapshotBuckets` | — | — |
 | `_validate_repository_path` | `(value: object, field: str) -> str` | — | — |
 | `_normalize_only_files` | `(root: Path, only_files: Iterable[str] \| None) -> set[str] \| None` | — | — |
 | `_language_for_path` | `(path: Path, include_tests: frozenset[str]) -> str \| None` | — | — |
@@ -78,6 +79,8 @@ flowchart LR
 | `_append_sorted` | `(target: list[SourceFile], source_file: SourceFile \| None) -> None` | — | — |
 | `_sha256_bytes` | `(content: bytes) -> str` | — | — |
 | `_sha256_file` | `(path: Path) -> str \| None` | — | — |
+| `_source_file_integrity` | `(path: Path) -> SourceFileIntegrity \| None` | — | — |
+| `_captured_file_integrity` | `(root: Path, content_hashes: Mapping[str, str]) -> dict[str, SourceFileIntegrity]` | — | — |
 | `_sha256_labeled_contents` | `(contents: Mapping[str, bytes \| None]) -> str` | — | — |
 | `_directory_ignored` | `(matcher: GitIgnoreMatcher, rel_path: str) -> bool` | — | Return whether a directory path is ignored by the current matcher. |
 | `_contains_src_lib_segment` | `(path: Path) -> bool` | — | — |
@@ -85,7 +88,7 @@ flowchart LR
 | `_last_directory_ignore_rule` | `(matcher: GitIgnoreMatcher, rel_path: str) -> _GitignoreRule \| None` | — | — |
 | `_is_rescuable_typescript_src_lib_directory` | `(matcher: GitIgnoreMatcher, rel_dir: Path) -> bool` | — | — |
 | `_is_rescuable_typescript_src_lib_file` | `(matcher: GitIgnoreMatcher, rel: Path, language: str \| None) -> bool` | — | — |
-| `_empty_source_snapshot` | `(root: Path, source_selection_policy: SourceSelectionPolicy \| None = None) -> SourceSnapshot` | — | — |
+| `_empty_source_snapshot` | `(root: Path, source_selection_policy: SourceSelectionPolicy \| None = None, *, include_tests: frozenset[str] = frozenset(), only_files: frozenset[str] \| None = None) -> SourceSnapshot` | — | — |
 | `_relative_to_root` | `(path: Path, root: Path) -> Path \| None` | — | — |
 | `_is_excluded_walk_directory` | `(rel_dir: Path, only_set: set[str] \| None) -> bool` | — | — |
 | `_record_gitignore_rules` | `(root: Path, current_dir: Path, rel_dir: Path, buckets: _SnapshotBuckets) -> None` | — | — |
@@ -101,8 +104,9 @@ flowchart LR
 | `capture_source_selection_inputs` | `(src_dir: str \| Path, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None) -> dict[str, object] \| None` | — | Capture exact selection-control commitments before any selected-file read. |
 | `_selection_inputs_from_buckets` | `(buckets: _SnapshotBuckets) -> dict[str, object] \| None` | — | — |
 | `_add_captured_input_candidates` | `(candidates: dict[str, set[str]], source_files: Iterable[SourceFile], kind: str) -> None` | — | — |
+| `_captured_snapshot_candidates` | `(*, sorted_languages: Mapping[str, tuple[SourceFile, ...]], dockerfiles: tuple[SourceFile, ...], compose_files: tuple[SourceFile, ...], yaml_files: tuple[SourceFile, ...], package_markers: tuple[SourceFile, ...], gitignore_contents: Mapping[str, bytes \| None], source_selection_policy: SourceSelectionPolicy \| None) -> tuple[dict[str, set[str]], dict[str, SourceFile]]` | — | — |
 | `_captured_snapshot_inputs` | `(*, sorted_languages: Mapping[str, tuple[SourceFile, ...]], dockerfiles: tuple[SourceFile, ...], compose_files: tuple[SourceFile, ...], yaml_files: tuple[SourceFile, ...], package_markers: tuple[SourceFile, ...], gitignore_contents: Mapping[str, bytes \| None], source_selection_policy: SourceSelectionPolicy \| None) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]` | — | — |
-| `_build_source_snapshot` | `(root: Path, buckets: _SnapshotBuckets) -> SourceSnapshot` | — | — |
+| `_build_source_snapshot` | `(root: Path, buckets: _SnapshotBuckets, *, only_files: frozenset[str] \| None) -> SourceSnapshot` | — | — |
 | `unsupported_source_summary` | `(snapshot: SourceSnapshot, *, supported_languages: Iterable[str] = ()) -> dict[str, dict[str, object]]` | — | Return nonempty unsupported source counts and paths. |
 | `format_unsupported_source_summary` | `(summary: dict[str, dict[str, object]]) -> str` | — | Return a concise human-readable unsupported-source summary. |
 | `unsupported_source_label` | `(language: str) -> str` | — | Return the human-readable label for an unsupported source bucket. |
@@ -110,3 +114,6 @@ flowchart LR
 | `_policies_match` | `(left: SourceSelectionPolicy, right: SourceSelectionPolicy) -> bool` | — | — |
 | `_resolve_snapshot_selection` | `(root: Path, *, source_selection: str \| Path \| None, selection_policy: SourceSelectionPolicy \| None) -> SourceSelectionPolicy \| None` | — | — |
 | `build_source_snapshot` | `(src_dir: str \| Path, only_files: Iterable[str] \| None = None, include_tests: Iterable[str] \| None = None, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, expected_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_EXPECTED_SELECTION_INPUTS) -> SourceSnapshot` | — | Build a deterministic source-tree snapshot rooted at *src_dir*. |
+| `_hash_extra_inventory_path` | `(root: Path, path: str, *, policy: SourceSelectionPolicy \| None, selected_regular_paths: set[str]) -> str \| None` | — | Hash one extractor-owned path without admitting a newly selected path. |
+| `source_snapshot_inputs_match_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Cheaply verify that every already captured input retains its identity. |
+| `source_snapshot_matches_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Return whether *snapshot* still matches the selected source tree. |

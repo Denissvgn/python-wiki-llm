@@ -91,7 +91,7 @@ sequenceDiagram
     p14->>p15: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 3189 interactions; 3159 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3204 interactions; 3174 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -184,7 +184,7 @@ flowchart LR
 | run | bool | 1637 | `bool(getattr(...))` |
 | run | getattr | 1637 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 1638 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 156 | `validate_path(path, label)` |
+| validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 
 ### Boundary effects
 

@@ -14,23 +14,25 @@ callers to depend on typed results rather than CLI namespaces or console text.
 
 | Source | Symbols |
 |--------|---------|
-| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationExportResult`, `DoctorResult`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult` |
+| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `KnowledgeMode`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult` |
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
 | `.services.calibration` | `controller`, `host_broker`, `controller`, `host_broker`, `controller` |
 | `.services.calibration.controller` | `P0CalibrationAgentPacket`, `P0CalibrationAgentResult`, `P0CalibrationDispatchReceipt`, `P0CalibrationError`, `P0CalibrationIntegrityError`, `P0CalibrationRecoveryError`, `P0CalibrationRun`, `P0CalibrationSchemaError`, `P0CalibrationStatus`, `P0CalibrationTransitionError`, `P0CalibrationVerificationReport` |
 | `.services.calibration.host_broker` | `HostBrokerAuthenticationError`, `HostBrokerAuthenticationProof`, `HostBrokerAuthenticationUnavailable`, `HostBrokerAuthenticator`, `use_calibration_host_broker_authenticator` |
-| `.services.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION` |
+| `.services.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
+| `.services.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION` |
 | `.services.dependencies` | `analyze_dependencies` |
 | `.services.doctor_service` | `build_doctor_report` |
 | `.services.documentation_model_policy` | `DocumentationModelEscalationRule`, `DocumentationModelOverride`, `DocumentationModelPolicyError`, `DocumentationModelRoute`, `DocumentationModelRoutingPolicy`, `DocumentationModelRoutingRequest`, `DocumentationModelSelection`, `select_documentation_model`, `validate_documentation_model_selection` |
 | `.services.documentation_policy` | `DocumentationPolicyError` |
-| `.services.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError` |
-| `.services.documentation_query_builder` | `build_live_documentation_query_service` |
+| `.services.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `fit_documentation_query_result` |
+| `.services.documentation_query_builder` | `build_live_documentation_query_service`, `build_snapshot_documentation_query_service`, `normalize_concept_coordinate`, `normalize_documentation_query_limit`, `normalize_documentation_query_text`, `normalize_supplied_paths`, `supplied_paths_from_unified_diff` |
 | `.services.documentation_run` | `DocumentationAgentPacket`, `DocumentationAgentResult`, `DocumentationIntegrityError`, `DocumentationIntakeBrief`, `DocumentationRun`, `DocumentationRunError`, `DocumentationRunStatus`, `DocumentationSchemaError`, `DocumentationTransitionError`, `DocumentationVerificationReport`, `build_documentation_agent_packet`, `export_documentation_run`, `get_documentation_run_status`, `prepare_documentation_run`, `record_documentation_agent_result`, `verify_documentation_run` |
 | `.services.documentation_wiki_input` | `DocumentationWikiInputError`, `DocumentationWikiSnapshot`, `adopt_documentation_wiki_snapshot`, `fingerprint_documentation_wiki_input` |
 | `.services.entrypoints` | `build_flow` |
+| `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.services.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `.services.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
@@ -38,7 +40,10 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `contextlib` | `contextmanager` |
 | `functools` | `wraps` |
 | `inspect` | `inspect` |
+| `itertools` | `islice` |
+| `json` | `json` |
 | `pathlib` | `Path` |
+| `re` | `re` |
 | `typing` | `TYPE_CHECKING`, `Any`, `NoReturn`, `ParamSpec`, `TypeVar`, `cast` |
 | `warnings` | `warnings` |
 
@@ -61,19 +66,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (22) |
+| Outbound | `src` (24) |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 223 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 307 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 311 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 315 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 319 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 236 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 317 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 332 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 336 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 340 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
 
 ## Functions
 
@@ -83,6 +88,11 @@ flowchart LR
 | `_defer_calibration_annotations` | `(function: Callable[..., Any]) -> None` | — | Keep type hints lazy and resolvable across a public wrapper chain. |
 | `__getattr__` | `(name: str) -> Any` | — | Resolve supported calibration types only when callers request them. |
 | `__dir__` | `() -> list[str]` | — | Include lazy public types in module introspection. |
+| `_normalize_optional_knowledge_mode` | `(value: object) -> KnowledgeMode \| None` | — | — |
+| `_required_knowledge_failure` | `(exc: BaseException) -> dict[str, Any] \| None` | — | — |
+| `_raise_required_knowledge_api_error` | `(exc: BaseException) -> None` | — | — |
+| `_path_error_field` | `(message: str) -> str` | — | — |
+| `_wiki_path_policy_details` | `(exc: BaseException) -> dict[str, Any]` | — | — |
 | `_caused_by` | `(exc: BaseException, expected: type[BaseException]) -> bool` | — | Return whether an explicitly chained cause has the requested type. |
 | `_has_exception_origin` | `(exc: BaseException, module_names: frozenset[str]) -> bool` | — | Return whether one exception inherits from a named service module. |
 | `_calibration_error_category` | `(exc: Exception) -> str \| None` | — | Classify calibration failures without importing calibration on core paths. |
@@ -90,14 +100,20 @@ flowchart LR
 | `_api_boundary` | `(function: Callable[_P, _R]) -> Callable[_P, _R]` | — | Wrap a synchronous public callable in the stable exception taxonomy. |
 | `bootstrap_wiki` | `(source_root: str, wiki_root: str, *, depth: str = 'full', skip_workflows: bool = False, skip_flows: bool = False, skip_data_flow: bool = False, skip_dependencies: bool = False, api_contracts: bool = False, openapi_file: str \| None = None, dependency_graph_detail: str = 'auto', overwrite: bool = False, helper_cache_dir: str \| None = None, include_tests: list[str] \| None = None, trust_source_plugins: bool = False, source_selection: str \| Path \| None = None) -> BootstrapResult` | `@_api_boundary` | Build a first-use deterministic wiki through the typed service boundary. |
 | `extract_source` | `(src_dir: str = '.', *, changed: bool = False, summary: bool = False, deep: bool = False, paths: list[str] \| None = None, package: str \| None = None, include_empty: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> ExtractSourceResult` | `@_api_boundary` | Return the stable ``llm-wiki extract`` JSON payload as a dict. |
-| `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str = 'json', focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> ContextPayload \| MarkdownContextResult` | `@_api_boundary` | Return a supported context payload without depending on CLI internals. |
-| `build_qualified_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> QualifiedContextPacket` | `@_api_boundary` | Build a canonical in-memory qualified-context packet. |
+| `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str = 'json', focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> ContextPayload \| MarkdownContextResult` | `@_api_boundary` | Return a supported context payload without depending on CLI internals. |
+| `build_qualified_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> QualifiedContextPacket` | `@_api_boundary` | Build a canonical in-memory qualified-context packet. |
 | `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | `@_api_boundary` | Validate canonical packet bytes without claiming live currentness. |
 | `compare_context_packet_basis` | `(packet_bytes: bytes \| bytearray \| memoryview, expected_basis: Mapping[str, Any]) -> ContextBasisComparison` | `@_api_boundary` | Compare caller basis without upgrading it to a currentness claim. |
 | `reconcile_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview, src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> ContextPacketReconciliation` | `@_api_boundary` | Reconcile packet facets against one fresh official read. |
 | `list_wiki_pages` | `(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult` | `@_api_boundary` | Return registry-backed wiki page metadata without source extraction. |
 | `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None) -> DoctorResult` | `@_api_boundary` | Return the stable read-only knowledge health report. |
 | `build_documentation_query_service` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> DocumentationGraphQueryService` | `@_api_boundary` | Build a supported graph query service over derived documentation data. |
+| `_normalize_query_input` | `(callback: Callable[[], _R], *, field: str = 'request') -> _R` | — | — |
+| `_normalize_query_choice` | `(value: object, *, field: str, allowed: tuple[str, ...]) -> str` | — | — |
+| `_normalize_query_values` | `(values: object, *, field: str, allowed: tuple[str, ...], allow_qualified: bool = False) -> list[str] \| None` | — | — |
+| `_normalize_optional_ownership` | `(value: object) -> str \| None` | — | — |
+| `_normalize_query_limit` | `(value: object) -> int` | — | — |
+| `_effective_query_limit` | `(service: DocumentationGraphQueryService \| None, value: int) -> int` | — | — |
 | `flow_for_entrypoint` | `(id_or_symbol: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> FlowForEntrypointResult` | `@_api_boundary` | Return a bounded user-flow query result for an entry point. |
 | `data_flow_for_entrypoint` | `(id_or_symbol: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> DataFlowForEntrypointResult` | `@_api_boundary` | Return a bounded data-flow query result for an entry point. |
 | `callers` | `(symbol: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> CallersResult` | `@_api_boundary` | Return bounded callers for one callable symbol. |
@@ -109,6 +125,19 @@ flowchart LR
 | `related_concepts` | `(locator_or_exact_route: object, *, direction: str = 'both', kinds: Iterable[str] \| None = None, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> RelatedConceptsResult` | `@_api_boundary` | Return bounded knowledge relationships for one exact concept identity. |
 | `traverse_typed_graph` | `(locator_or_exact_route: object, *, direction: str = 'both', kinds: Iterable[str] \| None = None, origins: Iterable[str] \| None = None, resolutions: Iterable[str] \| None = None, include_evidence: bool = False, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> TypedGraphTraversalResult` | `@_api_boundary` | Traverse persisted typed relationships for one exact concept. |
 | `explain_evidence` | `(locator_or_exact_route: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> EvidenceExplanationResult` | `@_api_boundary` | Return stored and computed evidence for one exact concept identity. |
+| `_query_cost` | `(scope: str, *, supplied_paths: int = 0) -> dict[str, Any]` | — | — |
+| `_with_query_envelope` | `(operation: str, payload: Mapping[str, Any], *, scope: str, supplied_paths: int = 0) -> DocumentationQueryResult` | — | — |
+| `_bounded_query_records` | `(records: Iterable[Mapping[str, Any]], *, limit: int) -> tuple[list[dict[str, Any]], dict[str, Any]]` | — | — |
+| `_bounded_raw_query_evidence` | `(records: Iterable[Mapping[str, Any]], *, limit: int) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]` | — | — |
+| `_validate_documentation_query_request` | `(request: Mapping[str, Any]) -> tuple[str, int]` | — | — |
+| `_require_full_inventory_opt_in` | `(request: Mapping[str, Any]) -> None` | — | — |
+| `_snapshot_query_service` | `(wiki_dir: str, *, limit: int) -> DocumentationGraphQueryService` | — | — |
+| `_combined_query_payload` | `(query: str, payloads: Iterable[Mapping[str, Any]], *, limit: int) -> dict[str, Any]` | — | — |
+| `_surface_query` | `(service: DocumentationGraphQueryService, coordinate: str) -> dict[str, Any]` | — | — |
+| `_source_inventory_summary` | `(path: str, record: Mapping[str, Any] \| None) -> dict[str, Any]` | — | — |
+| `_existing_supplied_source_paths` | `(source_root: Path, paths: Iterable[str]) -> tuple[str, ...]` | — | — |
+| `_impact_query` | `(request: Mapping[str, Any], *, src_dir: str, wiki_dir: str, limit: int, allow_external_src: bool, source_selection: str \| Path \| None) -> DocumentationQueryResult` | — | — |
+| `query_documentation` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, allow_external_src: bool = False, source_selection: str \| Path \| None = None) -> DocumentationQueryResult` | `@_api_boundary` | Dispatch one exact bounded read-only documentation query. |
 | `_normalise_focus` | `(focus: str \| list[str]) -> list[str]` | — | — |
 | `_validate_wiki_dir` | `(wiki_dir: str) -> Path` | — | — |
 | `_display_path` | `(path: Path) -> str` | — | — |

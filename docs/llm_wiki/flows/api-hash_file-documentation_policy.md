@@ -61,7 +61,7 @@ sequenceDiagram
     p8-->>p14: get_last_error
 ```
 
-> Call sequence diagram shows 30 of 354 interactions; 324 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 356 interactions; 326 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -139,21 +139,21 @@ flowchart LR
 | _hash_file | abspath | 626 | `os.path.abspath(os.fspath(...))` |
 | _hash_file | fspath | 626 | `os.fspath(path)` |
 | _hash_file | guard_windows_directory_chain | 628 | `guard_windows_directory_chain(absolute_path.parent, (...))` |
-| guard_windows_directory_chain | WindowsDirectoryGuardError | 165 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
-| guard_windows_directory_chain | Path | 169 | `Path(os.path.abspath(...))` |
-| guard_windows_directory_chain | abspath | 169 | `os.path.abspath(os.fspath(...))` |
-| guard_windows_directory_chain | fspath | 169 | `os.fspath(root)` |
-| guard_windows_directory_chain | WindowsDirectoryGuardError | 171 | `WindowsDirectoryGuardError(...)` |
-| guard_windows_directory_chain | Path | 174 | `Path(root_path.anchor)` |
+| guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
+| guard_windows_directory_chain | Path | 174 | `Path(os.path.abspath(...))` |
+| guard_windows_directory_chain | abspath | 174 | `os.path.abspath(os.fspath(...))` |
+| guard_windows_directory_chain | fspath | 174 | `os.fspath(root)` |
+| guard_windows_directory_chain | WindowsDirectoryGuardError | 176 | `WindowsDirectoryGuardError(...)` |
+| guard_windows_directory_chain | Path | 179 | `Path(root_path.anchor)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `digest.update` | `_hash_file` | 677 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 177 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 184 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 211 |
+| mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
+| mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
+| mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
 
 ### Static analysis gaps
 
@@ -161,8 +161,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `_hash_file` | `os.path.abspath` | 626 |
 | external_call | `_hash_file` | `os.fspath` | 626 |
-| external_call | `guard_windows_directory_chain` | `os.path.abspath` | 169 |
-| external_call | `guard_windows_directory_chain` | `os.fspath` | 169 |
+| external_call | `guard_windows_directory_chain` | `os.path.abspath` | 174 |
+| external_call | `guard_windows_directory_chain` | `os.fspath` | 174 |
 | step_limit | `hash_file` | `first 12 steps` | 0 |
 | truncated_flow | `hash_file` | `depth limit` | 0 |
 

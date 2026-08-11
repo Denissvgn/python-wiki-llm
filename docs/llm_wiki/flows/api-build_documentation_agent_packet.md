@@ -72,7 +72,7 @@ sequenceDiagram
     p16-->>p12: S_ISLNK
 ```
 
-> Call sequence diagram shows 30 of 1413 interactions; 1383 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1419 interactions; 1389 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -141,8 +141,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_documentation_agent_packet | DocumentationSchemaError | 86 | `DocumentationSchemaError(...)` |
-| build_documentation_agent_packet | _resolve_workspace_root_argument | 87 | `_resolve_workspace_root_argument(workspace)` |
+| build_documentation_agent_packet | DocumentationSchemaError | 95 | `DocumentationSchemaError(...)` |
+| build_documentation_agent_packet | _resolve_workspace_root_argument | 96 | `_resolve_workspace_root_argument(workspace)` |
 | _resolve_workspace_root_argument | Path | 102 | `Path(os.path.abspath(...))` |
 | _resolve_workspace_root_argument | abspath | 102 | `os.path.abspath(os.fspath(...))` |
 | _resolve_workspace_root_argument | fspath | 102 | `os.fspath(...)` |
@@ -157,9 +157,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `before_path.read_bytes` | `build_documentation_agent_packet` | 129 |
-| filesystem_read | `attempt_packet_path.read_bytes` | `build_documentation_agent_packet` | 270 |
-| filesystem_read | `run_path.read_bytes` | `build_documentation_agent_packet` | 274 |
+| filesystem_read | `before_path.read_bytes` | `build_documentation_agent_packet` | 166 |
+| filesystem_read | `attempt_packet_path.read_bytes` | `build_documentation_agent_packet` | 295 |
+| filesystem_read | `run_path.read_bytes` | `build_documentation_agent_packet` | 299 |
 
 ### Static analysis gaps
 

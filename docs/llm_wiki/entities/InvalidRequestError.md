@@ -1,6 +1,6 @@
 # InvalidRequestError
 
-**Location:** `src/llm_wiki_cli/api.py:311`
+**Location:** `src/llm_wiki_cli/api.py:332`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -24,15 +24,13 @@ Raised when arguments or a submitted request contract are invalid.
 flowchart LR
     n0["InvalidRequestError (src/llm_wiki_cli/api.py)"]
     n1["LlmWikiApiError (src/llm_wiki_cli/api.py)"]
-    n2["_query_service (src/llm_wiki_cli/api.py)"]
-    n3["_raise_api_error (src/llm_wiki_cli/api.py)"]
-    n4["_run_query (src/llm_wiki_cli/api.py)"]
-    n5["bootstrap_wiki (src/llm_wiki_cli/api.py)"]
-    n6["build_context (src/llm_wiki_cli/api.py)"]
-    n7["build_documentation_query_service (src/llm_wiki_cli/api.py)"]
-    n8["build_qualified_context (src/llm_wiki_cli/api.py)"]
-    n9["compare_context_packet_basis (src/llm_wiki_cli/api.py)"]
-    n10["extract_source (src/llm_wiki_cli/api.py)"]
+    n2["_impact_query (src/llm_wiki_cli/api.py)"]
+    n3["_normalize_optional_knowledge_mode (src/llm_wiki_cli/api.py)"]
+    n4["_normalize_query_choice (src/llm_wiki_cli/api.py)"]
+    n5["_normalize_query_input (src/llm_wiki_cli/api.py)"]
+    n6["_normalize_query_values (src/llm_wiki_cli/api.py)"]
+    n7["_query_service (src/llm_wiki_cli/api.py)"]
+    n8["_raise_api_error (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -41,8 +39,6 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
-    n9 --> n0
-    n10 --> n0
     click n0 "../modules/api.md"
     click n1 "../modules/api.md"
     click n2 "../modules/api.md"
@@ -52,8 +48,6 @@ flowchart LR
     click n6 "../modules/api.md"
     click n7 "../modules/api.md"
     click n8 "../modules/api.md"
-    click n9 "../modules/api.md"
-    click n10 "../modules/api.md"
 ```
 
 ### Summary
@@ -72,15 +66,15 @@ flowchart LR
 
 | Reference | Kind | Source |
 |---|---|---|
+| `_impact_query` | call | [api](../modules/api.md) |
+| `_impact_query` | call | [api](../modules/api.md) |
+| `_normalize_optional_knowledge_mode` | call | [api](../modules/api.md) |
+| `_normalize_query_choice` | call | [api](../modules/api.md) |
+| `_normalize_query_input` | call | [api](../modules/api.md) |
+| `_normalize_query_values` | call | [api](../modules/api.md) |
+| `_normalize_query_values` | call | [api](../modules/api.md) |
+| `_normalize_query_values` | call | [api](../modules/api.md) |
+| `_normalize_query_values` | call | [api](../modules/api.md) |
+| `_normalize_query_values` | call | [api](../modules/api.md) |
 | `_query_service` | call | [api](../modules/api.md) |
 | `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_run_query` | call | [api](../modules/api.md) |
-| `bootstrap_wiki` | call | [api](../modules/api.md) |
-| `build_context` | call | [api](../modules/api.md) |
-| `build_documentation_query_service` | call | [api](../modules/api.md) |
-| `build_documentation_query_service` | call | [api](../modules/api.md) |
-| `build_qualified_context` | call | [api](../modules/api.md) |
-| `compare_context_packet_basis` | call | [api](../modules/api.md) |
-| `extract_source` | call | [api](../modules/api.md) |

@@ -121,7 +121,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_p0_calibration_shadow | build_p0_calibration_shadow | 160 | `implementation(worklist, census, candidate_records=candidate_records, policy_version=policy_version)` |
+| build_p0_calibration_shadow | build_p0_calibration_shadow | 165 | `implementation(worklist, census, candidate_records=candidate_records, policy_version=policy_version)` |
 | build_p0_calibration_shadow | validate_flow_evidence_census | 381 | `validate_flow_evidence_census(census)` |
 | validate_flow_evidence_census | get | 237 | `payload.get('schema_version')` |
 | validate_flow_evidence_census | DocumentationCalibrationError | 238 | `DocumentationCalibrationError('Unsupported flow-census schema_version.')` |

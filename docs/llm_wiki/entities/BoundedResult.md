@@ -1,6 +1,6 @@
 # _BoundedResult
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:71`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:342`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -38,8 +38,8 @@ flowchart LR
     n4["DocumentationGraphQueryService._knowledge_selection_result (src/llm_wiki_cli/services/documentation_queries.py)"]
     n5["DocumentationGraphQueryService._pages_for_source (src/llm_wiki_cli/services/documentation_queries.py)"]
     n6["DocumentationGraphQueryService._record_bound (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n7["DocumentationGraphQueryService.list_concept_sections (src/llm_wiki_cli/services/documentation_queries.py)"]
-    n8["DocumentationGraphQueryService.traverse_typed_graph (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n7["DocumentationGraphQueryService.broad_context_selection (src/llm_wiki_cli/services/documentation_queries.py)"]
+    n8["DocumentationGraphQueryService.list_concept_sections (src/llm_wiki_cli/services/documentation_queries.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -77,6 +77,7 @@ flowchart LR
 | `DocumentationGraphQueryService._knowledge_selection_result` | call | [documentation_queries](../modules/documentation_queries.md) |
 | `DocumentationGraphQueryService._pages_for_source` | type_reference | [documentation_queries](../modules/documentation_queries.md) |
 | `DocumentationGraphQueryService._record_bound` | type_reference | [documentation_queries](../modules/documentation_queries.md) |
+| `DocumentationGraphQueryService.broad_context_selection` | call | [documentation_queries](../modules/documentation_queries.md) |
+| `DocumentationGraphQueryService.broad_context_selection` | call | [documentation_queries](../modules/documentation_queries.md) |
+| `DocumentationGraphQueryService.broad_context_selection` | call | [documentation_queries](../modules/documentation_queries.md) |
 | `DocumentationGraphQueryService.list_concept_sections` | call | [documentation_queries](../modules/documentation_queries.md) |
-| `DocumentationGraphQueryService.list_concept_sections` | call | [documentation_queries](../modules/documentation_queries.md) |
-| `DocumentationGraphQueryService.traverse_typed_graph` | call | [documentation_queries](../modules/documentation_queries.md) |

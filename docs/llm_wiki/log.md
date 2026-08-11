@@ -248,3 +248,23 @@ Append-only chronological log.
 - Infrastructure moved: 0
 - Infrastructure removed: 0
 - Unsupported infrastructure YAML: 2
+
+## 2026-08-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `1.6.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:7c4e3b7af1c505f42b2624c570ef9840467aadf68d43ce6a973db0f2ed808fa4`
+- Pages created: 77
+- Pages updated: 270
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 775
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+- Flow pages initialized: 14 (api=13, mcp=1)
+- Workflow pages created: 0
+- Dependency pages initialized: 0
+- Surface policy updated: no

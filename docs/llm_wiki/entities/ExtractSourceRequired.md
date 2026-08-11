@@ -1,6 +1,6 @@
 # _ExtractSourceRequired
 
-**Location:** `src/llm_wiki_cli/api_types.py:14`
+**Location:** `src/llm_wiki_cli/api_types.py:90`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

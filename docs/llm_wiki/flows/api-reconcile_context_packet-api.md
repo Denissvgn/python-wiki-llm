@@ -102,32 +102,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| reconcile_context_packet | reconcile_context_packet | 772 | `context_packet_service.reconcile_context_packet(packet_bytes, src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| reconcile_context_packet | _caused_by | 781 | `_caused_by(exc, OSError)` |
-| _caused_by | set | 382 | `set(data not statically known)` |
-| _caused_by | id | 383 | `id(current)` |
-| _caused_by | isinstance | 384 | `isinstance(current, expected)` |
-| _caused_by | add | 386 | `seen.add(id(...))` |
-| _caused_by | id | 386 | `id(current)` |
-| reconcile_context_packet | WorkspaceStateError | 782 | `WorkspaceStateError(str(...))` |
-| reconcile_context_packet | str | 782 | `str(exc)` |
-| reconcile_context_packet | PathPolicyError | 783 | `PathPolicyError(str(...))` |
-| reconcile_context_packet | str | 783 | `str(exc)` |
+| reconcile_context_packet | reconcile_context_packet | 984 | `context_packet_service.reconcile_context_packet(packet_bytes, src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
+| reconcile_context_packet | _caused_by | 993 | `_caused_by(exc, OSError)` |
+| _caused_by | set | 481 | `set(data not statically known)` |
+| _caused_by | id | 482 | `id(current)` |
+| _caused_by | isinstance | 483 | `isinstance(current, expected)` |
+| _caused_by | add | 485 | `seen.add(id(...))` |
+| _caused_by | id | 485 | `id(current)` |
+| reconcile_context_packet | WorkspaceStateError | 994 | `WorkspaceStateError(str(...))` |
+| reconcile_context_packet | str | 994 | `str(exc)` |
+| reconcile_context_packet | PathPolicyError | 995 | `PathPolicyError(str(...))` |
+| reconcile_context_packet | str | 995 | `str(exc)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `_caused_by` | 386 |
+| mutation | `seen.add` | `_caused_by` | 485 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `reconcile_context_packet` | `context_packet_service.reconcile_context_packet` | 772 |
-| unresolved_call | `_caused_by` | `id` | 383 |
-| unresolved_call | `_caused_by` | `isinstance` | 384 |
-| unresolved_call | `reconcile_context_packet` | `PathPolicyError` | 783 |
+| external_call | `reconcile_context_packet` | `context_packet_service.reconcile_context_packet` | 984 |
+| unresolved_call | `_caused_by` | `id` | 482 |
+| unresolved_call | `_caused_by` | `isinstance` | 483 |
+| unresolved_call | `reconcile_context_packet` | `PathPolicyError` | 995 |
 | step_limit | `reconcile_context_packet` | `first 12 steps` | 0 |
 
 ## Behavior

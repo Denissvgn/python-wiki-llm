@@ -1,6 +1,6 @@
 # McpWikiError
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:102`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:115`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -15,7 +15,9 @@ Raised for invalid MCP wiki requests.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+| Method | Signature | Decorators | Description |
+|--------|-----------|------------|-------------|
+| `__init__` | `(message: str, *, code: str \| None = None, data: Mapping[str, Any] \| None = None) -> None` | — | — |
 
 ## Relationships
 
@@ -24,11 +26,11 @@ Raised for invalid MCP wiki requests.
 flowchart LR
     n0["McpWikiError (src/llm_wiki_cli/services/mcp_server.py)"]
     n1["ValueError"]
-    n2["_bounded_query_limit (src/llm_wiki_cli/services/mcp_server.py)"]
-    n3["_ensure_inside (src/llm_wiki_cli/services/mcp_server.py)"]
-    n4["_graph_query_args (src/llm_wiki_cli/services/mcp_server.py)"]
-    n5["_knowledge_direction (src/llm_wiki_cli/services/mcp_server.py)"]
-    n6["_knowledge_kinds (src/llm_wiki_cli/services/mcp_server.py)"]
+    n2["_api_mcp_error (src/llm_wiki_cli/services/mcp_server.py)"]
+    n3["_bounded_query_filter_values (src/llm_wiki_cli/services/mcp_server.py)"]
+    n4["_bounded_query_limit (src/llm_wiki_cli/services/mcp_server.py)"]
+    n5["_ensure_inside (src/llm_wiki_cli/services/mcp_server.py)"]
+    n6["_graph_query_args (src/llm_wiki_cli/services/mcp_server.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -47,7 +49,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 0 | — |
+| [mcp_server](../modules/mcp_server.md) | 1 | — |
 
 ### Structure
 
@@ -59,15 +61,15 @@ flowchart LR
 
 | Reference | Kind | Source |
 |---|---|---|
+| `_api_mcp_error` | call | [mcp_server](../modules/mcp_server.md) |
+| `_api_mcp_error` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| `_bounded_query_filter_values` | call | [mcp_server](../modules/mcp_server.md) |
+| `_bounded_query_filter_values` | call | [mcp_server](../modules/mcp_server.md) |
+| `_bounded_query_filter_values` | call | [mcp_server](../modules/mcp_server.md) |
+| `_bounded_query_filter_values` | call | [mcp_server](../modules/mcp_server.md) |
 | `_bounded_query_limit` | call | [mcp_server](../modules/mcp_server.md) |
 | `_ensure_inside` | call | [mcp_server](../modules/mcp_server.md) |
 | `_graph_query_args` | call | [mcp_server](../modules/mcp_server.md) |
 | `_graph_query_args` | call | [mcp_server](../modules/mcp_server.md) |
 | `_graph_query_args` | call | [mcp_server](../modules/mcp_server.md) |
 | `_graph_query_args` | call | [mcp_server](../modules/mcp_server.md) |
-| `_graph_query_args` | call | [mcp_server](../modules/mcp_server.md) |
-| `_knowledge_direction` | call | [mcp_server](../modules/mcp_server.md) |
-| `_knowledge_kinds` | call | [mcp_server](../modules/mcp_server.md) |
-| `_knowledge_kinds` | call | [mcp_server](../modules/mcp_server.md) |
-| `_knowledge_kinds` | call | [mcp_server](../modules/mcp_server.md) |
-| `_knowledge_kinds` | call | [mcp_server](../modules/mcp_server.md) |

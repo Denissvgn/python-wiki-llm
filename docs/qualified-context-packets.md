@@ -14,6 +14,27 @@ Two schema versions are active. Omitting `knowledge_mode` retains
 uses `qualified-context-policy-v2`, separate packet and policy digest domains,
 a canonical source-priority binding, and bounded native-knowledge selection.
 
+### Compatibility and migration
+
+Omission has the same v1 meaning across the CLI, Python API, MCP, and raw
+protocol. Explicit `knowledge_mode` is the opt-in migration boundary for v2;
+there is no alias, implicit conversion, or nullable wire value. A raw v1
+request must omit the field, while a raw v2 request must include one of the
+three exact lowercase values. Supplying both a packet request field and a
+separate Python mode argument is invalid.
+
+Omitted/default behavior is not deprecated in this release, and no default
+switch is scheduled. Before omission can select a different protocol, a
+release must first announce the deprecation and its migration window. Until
+then, clients that require canonical v1 bytes should continue to omit the
+field, while clients that require bounded native evidence should send an
+explicit mode and accept the v2 schema.
+
+The packet schema changed because v2 adds evidence-selection and response
+semantics. A v1 parser must not reinterpret v2 bytes, and a v2 producer must
+not add mode fields to a v1 packet. Structural validation continues to reject
+unknown schema versions rather than guessing a compatible shape.
+
 Packet JSON uses sorted object keys, UTF-8, finite JSON numbers, compact
 separators, and exactly one final line feed. The `packet_id` is a
 version-specific, domain-separated SHA-256 digest of the canonical semantic
@@ -135,6 +156,14 @@ native relationships, and bounded relationship-analyzer coverage. Raw
 projection diagnostics, hashes, samples, and unsafe link text are not placed
 in the selection.
 
+The three modes are transport-independent:
+
+| Mode | Packet response behavior |
+|---|---|
+| `off` | `response.knowledge` is disabled and not evaluated. No native selection is constructed, but `basis.knowledge` still records the captured projection state independently. |
+| `auto` | Ready knowledge is selected. Unavailable knowledge returns a successful fallback with the exact availability, reason, bounds, and ordered fallback evidence. |
+| `required` | Ready knowledge is selected. Unavailable knowledge raises `knowledge-required-unavailable`; no packet is emitted. Ready snapshot-only knowledge is allowed and remains explicitly unevaluated for live freshness. |
+
 `basis.knowledge` records captured native-knowledge provenance separately from
 the requested mode. Consequently, `off` disables selection without pretending
 that the recorded basis was absent. `basis.freshness` records either the
@@ -143,12 +172,32 @@ snapshot-only basis never becomes live-current during validation or
 reconciliation.
 
 `auto` returns a read-only fallback when native knowledge is unavailable.
-`required` returns a structured `knowledge-required-unavailable` error instead
-of a packet. Recovery instructions preserve the resolved source root, wiki
-root, active source-selection policy, and explicit external-source
-authorization. An unsupported projection schema first requires updating the
-installed package and verifying version support; it is not repaired by a
-plain sync or a project-local upgrade command.
+Depending on the captured state, its stable reason is
+`knowledge-projection-not-present`,
+`policy-selected-surface-only-fallback-after-invalid`,
+`policy-selected-surface-only-fallback-after-mixed-snapshot`,
+`surface-validation-failed`, `knowledge-basis-incompatible`,
+`governance-missing`, or `knowledge-schema-version-unsupported`. A ready view
+with no relevant concepts instead returns a successful fallback for both
+`auto` and `required`, with availability `ready` and reason
+`no-relevant-native-selection`.
+
+For unavailable knowledge, `required` returns a structured
+`knowledge-required-unavailable` error instead of a packet. Recovery
+instructions preserve the resolved source root, wiki root, active
+source-selection policy, and explicit external-source authorization. An
+unsupported projection schema first requires updating the installed package
+and verifying version support; it is not repaired by a plain sync or a
+project-local upgrade command. A missing declared governance ledger must be
+restored from version control or an owner-approved backup before regeneration;
+fallback never initializes governance.
+
+`prefer_fresh` remains false by default and does not control knowledge
+selection. When requested, `response.ranking_policy` discloses whether a
+current-first ordering was applied within an existing relevance tier under
+budget pressure. It never filters stale content or upgrades currentness into
+truth, review, or runtime evidence. The field is absent when the preference
+was not requested.
 
 Source and native results are bounded independently. Version 2 returns at most
 20 concepts, 20 pages, and 40 relationships, with truthful total, returned,

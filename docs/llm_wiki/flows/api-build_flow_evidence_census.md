@@ -122,7 +122,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_flow_evidence_census | build_p0_calibration_shadow | 138 | `implementation(wiki_dir, source_root=source_root, source_revision=source_revision, source_fingerprint=source_fingerprint, dependency_evidence=dependency_evidence, tool_revision=tool_revision, allow_surface_fallback=allow_surface_fallback)` |
+| build_flow_evidence_census | build_p0_calibration_shadow | 143 | `implementation(wiki_dir, source_root=source_root, source_revision=source_revision, source_fingerprint=source_fingerprint, dependency_evidence=dependency_evidence, tool_revision=tool_revision, allow_surface_fallback=allow_surface_fallback)` |
 | build_p0_calibration_shadow | validate_flow_evidence_census | 381 | `validate_flow_evidence_census(census)` |
 | validate_flow_evidence_census | get | 237 | `payload.get('schema_version')` |
 | validate_flow_evidence_census | DocumentationCalibrationError | 238 | `DocumentationCalibrationError('Unsupported flow-census schema_version.')` |

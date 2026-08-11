@@ -1,6 +1,6 @@
 # ContextPacketMalformedError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:137`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:233`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -29,24 +29,18 @@ flowchart LR
     n2["_coerce_packet_bytes (src/llm_wiki_cli/services/context_packet.py)"]
     n3["_encode_packet_payload (src/llm_wiki_cli/services/context_packet.py)"]
     n4["_exact_fields (src/llm_wiki_cli/services/context_packet.py)"]
-    n5["_mapping (src/llm_wiki_cli/services/context_packet.py)"]
-    n6["_nonnegative_integer (src/llm_wiki_cli/services/context_packet.py)"]
-    n7["_strict_json_payload (src/llm_wiki_cli/services/context_packet.py)"]
+    n5["_explicit_response_source_priorities (src/llm_wiki_cli/services/context_packet.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
-    n6 --> n0
-    n7 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/context_packet.md"
     click n2 "../modules/context_packet.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/context_packet.md"
     click n5 "../modules/context_packet.md"
-    click n6 "../modules/context_packet.md"
-    click n7 "../modules/context_packet.md"
 ```
 
 ### Summary
@@ -72,8 +66,8 @@ flowchart LR
 | `_encode_packet_payload` | call | [context_packet](../modules/context_packet.md) |
 | `_exact_fields` | call | [context_packet](../modules/context_packet.md) |
 | `_exact_fields` | call | [context_packet](../modules/context_packet.md) |
-| `_mapping` | call | [context_packet](../modules/context_packet.md) |
-| `_nonnegative_integer` | call | [context_packet](../modules/context_packet.md) |
-| `_strict_json_payload` | call | [context_packet](../modules/context_packet.md) |
-| `_strict_json_payload` | call | [context_packet](../modules/context_packet.md) |
-| `_strict_json_payload` | call | [context_packet](../modules/context_packet.md) |
+| `_explicit_response_source_priorities` | call | [context_packet](../modules/context_packet.md) |
+| `_explicit_response_source_priorities` | call | [context_packet](../modules/context_packet.md) |
+| `_explicit_response_source_priorities` | call | [context_packet](../modules/context_packet.md) |
+| `_explicit_response_source_priorities` | call | [context_packet](../modules/context_packet.md) |
+| `_explicit_response_source_priorities` | call | [context_packet](../modules/context_packet.md) |

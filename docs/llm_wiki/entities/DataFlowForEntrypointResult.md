@@ -1,6 +1,6 @@
 # DataFlowForEntrypointResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:104`
+**Location:** `src/llm_wiki_cli/api_types.py:180`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`
 **Module:** [api_types](../modules/api_types.md)

@@ -1,6 +1,6 @@
 # ConceptResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:133`
+**Location:** `src/llm_wiki_cli/api_types.py:209`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`
 **Module:** [api_types](../modules/api_types.md)
@@ -13,7 +13,7 @@ _Auto-generated from `ConceptResult` in `src/llm_wiki_cli/api_types.py`._
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `knowledge` | `dict[str, Any]` | *required* | — |
+| `knowledge` | `KnowledgeStatus \| dict[str, Any]` | *required* | — |
 | `concept` | `dict[str, Any] \| None` | *required* | — |
 | `total` | `int` | *required* | — |
 | `returned` | `int` | *required* | — |

@@ -1,6 +1,6 @@
 # WindowsIdentityUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:59`
+**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:64`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)

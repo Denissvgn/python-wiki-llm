@@ -84,7 +84,7 @@ sequenceDiagram
     p21->>p18: KnowledgeArtifactError
 ```
 
-> Call sequence diagram shows 30 of 1117 interactions; 1087 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1123 interactions; 1093 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -137,7 +137,7 @@ flowchart LR
 | `callable` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `Path` | - | - | - | - |
-| `_load_once` | `root: Path`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `KnowledgeArtifactError`, `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `KnowledgeEnvelopeError`, `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState` | - | `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)` |
+| `_load_once` | `root: Path`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `KnowledgeArtifactError`, `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `WikiSurfacePathError`, `KnowledgeEnvelopeError`, `SURFACE_INDEX_FILENAME` | - | `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)` |
 
 ### Call data
 

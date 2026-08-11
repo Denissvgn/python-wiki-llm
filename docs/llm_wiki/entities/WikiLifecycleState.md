@@ -1,6 +1,6 @@
 # WikiLifecycleState
 
-**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:22`
+**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:130`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [wiki_lifecycle](../modules/wiki_lifecycle.md)

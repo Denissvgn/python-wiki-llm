@@ -1,6 +1,6 @@
 # SourceFile
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:101`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:102`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -39,9 +39,10 @@ flowchart LR
     n5["make_cache_entry (src/llm_wiki_cli/services/inventory_cache.py)"]
     n6["_add_captured_input_candidates (src/llm_wiki_cli/services/source_snapshot.py)"]
     n7["_append_sorted (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n8["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n9["_make_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n10["_record_infrastructure_candidates (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n8["_captured_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n9["_captured_snapshot_candidates (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n10["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n11["_make_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -52,6 +53,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/source_snapshot.md"
     click n1 "../modules/extraction_service.md"
     click n2 "../modules/extraction_service.md"
@@ -63,6 +65,7 @@ flowchart LR
     click n8 "../modules/source_snapshot.md"
     click n9 "../modules/source_snapshot.md"
     click n10 "../modules/source_snapshot.md"
+    click n11 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -82,7 +85,8 @@ flowchart LR
 | `make_cache_entry` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
 | `_add_captured_input_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
 | `_append_sorted` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
+| `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
+| `_captured_snapshot_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
 | `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
 | `_make_source_file` | call | [source_snapshot](../modules/source_snapshot.md) |
 | `_make_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_infrastructure_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) |

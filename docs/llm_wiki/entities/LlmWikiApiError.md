@@ -1,6 +1,6 @@
 # LlmWikiApiError
 
-**Location:** `src/llm_wiki_cli/api.py:307`
+**Location:** `src/llm_wiki_cli/api.py:317`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [api](../modules/api.md)
@@ -15,7 +15,9 @@ Base exception raised by the supported Python API.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+| Method | Signature | Decorators | Description |
+|--------|-----------|------------|-------------|
+| `__init__` | `(message: str, *, code: str \| None = None, details: Mapping[str, Any] \| None = None) -> None` | — | — |
 
 ## Relationships
 
@@ -27,7 +29,7 @@ flowchart LR
     n2["ArtifactIntegrityError (src/llm_wiki_cli/api.py)"]
     n3["InvalidRequestError (src/llm_wiki_cli/api.py)"]
     n4["WorkspaceStateError (src/llm_wiki_cli/api.py)"]
-    n5["src/llm_wiki_cli/services/mcp_server.py"]
+    n5["_api_mcp_error (src/llm_wiki_cli/services/mcp_server.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -44,7 +46,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [api](../modules/api.md) | 0 | — |
+| [api](../modules/api.md) | 1 | — |
 
 ### Structure
 
@@ -59,4 +61,4 @@ flowchart LR
 
 | Reference | Kind | Source |
 |---|---|---|
-| `mcp_server` | import | [mcp_server](../modules/mcp_server.md) |
+| `_api_mcp_error` | type_reference | [mcp_server](../modules/mcp_server.md) |

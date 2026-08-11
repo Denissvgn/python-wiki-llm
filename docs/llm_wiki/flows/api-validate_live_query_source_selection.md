@@ -128,17 +128,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_live_query_source_selection | load | 69 | `SyncManifest.load(wiki_root)` |
-| validate_live_query_source_selection | _wiki_has_persisted_read_state | 72 | `_wiki_has_persisted_read_state(wiki_root)` |
-| _wiki_has_persisted_read_state | is_dir | 37 | `wiki_root.is_dir(data not statically known)` |
-| _wiki_has_persisted_read_state | walk | 39 | `os.walk(wiki_root, followlinks=False)` |
-| _wiki_has_persisted_read_state | is_symlink | 43 | `(Path(root) / name).is_symlink(data not statically known)` |
-| _wiki_has_persisted_read_state | Path | 43 | `Path(root)` |
-| _wiki_has_persisted_read_state | any | 45 | `any(...)` |
-| validate_live_query_source_selection | DocumentationQueryError | 75 | `DocumentationQueryError(...)` |
-| validate_live_query_source_selection | DocumentationQueryError | 81 | `DocumentationQueryError(...)` |
-| validate_live_query_source_selection | DocumentationQueryError | 87 | `DocumentationQueryError(...)` |
-| validate_live_query_source_selection | validate_persisted_source_selection_identity | 95 | `validate_persisted_source_selection_identity(manifest.generation_inputs, live_identity, operation=operation)` |
+| validate_live_query_source_selection | load | 298 | `SyncManifest.load(wiki_root)` |
+| validate_live_query_source_selection | _wiki_has_persisted_read_state | 301 | `_wiki_has_persisted_read_state(wiki_root)` |
+| _wiki_has_persisted_read_state | is_dir | 271 | `wiki_root.is_dir(data not statically known)` |
+| _wiki_has_persisted_read_state | walk | 273 | `os.walk(wiki_root, followlinks=False)` |
+| _wiki_has_persisted_read_state | is_symlink | 275 | `(Path(root) / name).is_symlink(data not statically known)` |
+| _wiki_has_persisted_read_state | Path | 275 | `Path(root)` |
+| _wiki_has_persisted_read_state | any | 277 | `any(...)` |
+| validate_live_query_source_selection | DocumentationQueryError | 304 | `DocumentationQueryError(...)` |
+| validate_live_query_source_selection | DocumentationQueryError | 310 | `DocumentationQueryError(...)` |
+| validate_live_query_source_selection | DocumentationQueryError | 316 | `DocumentationQueryError(...)` |
+| validate_live_query_source_selection | validate_persisted_source_selection_identity | 324 | `validate_persisted_source_selection_identity(manifest.generation_inputs, live_identity, operation=operation)` |
 
 ### Boundary effects
 
@@ -148,11 +148,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_live_query_source_selection` | `SyncManifest.load` | 69 |
-| unresolved_call | `_wiki_has_persisted_read_state` | `wiki_root.is_dir` | 37 |
-| external_call | `_wiki_has_persisted_read_state` | `os.walk` | 39 |
-| unresolved_call | `_wiki_has_persisted_read_state` | `(Path(root) / name).is_symlink` | 43 |
-| unresolved_call | `_wiki_has_persisted_read_state` | `any` | 45 |
+| external_call | `validate_live_query_source_selection` | `SyncManifest.load` | 298 |
+| unresolved_call | `_wiki_has_persisted_read_state` | `wiki_root.is_dir` | 271 |
+| external_call | `_wiki_has_persisted_read_state` | `os.walk` | 273 |
+| unresolved_call | `_wiki_has_persisted_read_state` | `(Path(root) / name).is_symlink` | 275 |
+| unresolved_call | `_wiki_has_persisted_read_state` | `any` | 277 |
 | step_limit | `validate_live_query_source_selection` | `first 12 steps` | 0 |
 | truncated_flow | `validate_live_query_source_selection` | `depth limit` | 0 |
 

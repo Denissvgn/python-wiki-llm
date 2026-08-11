@@ -16,7 +16,7 @@ Authoritative validation and fallback boundary for generated knowledge state.
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `validate_governance_projection` |
 | `.knowledge_model` | `KnowledgeIndex`, `KnowledgeLoadState` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
-| `.wiki_surface` | `collect_wiki_pages` |
+| `.wiki_surface` | `WikiSurfacePathError`, `collect_wiki_pages` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |

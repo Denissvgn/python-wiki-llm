@@ -71,14 +71,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| windows_object_identity | windows_object_identity_from_values | 103 | `windows_object_identity_from_values(device=int(...), file_id=int(...), context=context)` |
-| windows_object_identity_from_values | WindowsIdentityUnavailableError | 119 | `WindowsIdentityUnavailableError(...)` |
-| windows_object_identity_from_values | WindowsObjectIdentity | 122 | `WindowsObjectIdentity(device=int(...), file_id=file_id)` |
-| windows_object_identity_from_values | int | 123 | `int(device)` |
-| windows_object_identity | int | 104 | `int(getattr(...))` |
-| windows_object_identity | getattr | 104 | `getattr(result, 'st_dev', 0)` |
-| windows_object_identity | int | 105 | `int(getattr(...))` |
-| windows_object_identity | getattr | 105 | `getattr(result, 'st_ino', 0)` |
+| windows_object_identity | windows_object_identity_from_values | 108 | `windows_object_identity_from_values(device=int(...), file_id=int(...), context=context)` |
+| windows_object_identity_from_values | WindowsIdentityUnavailableError | 124 | `WindowsIdentityUnavailableError(...)` |
+| windows_object_identity_from_values | WindowsObjectIdentity | 127 | `WindowsObjectIdentity(device=int(...), file_id=file_id)` |
+| windows_object_identity_from_values | int | 128 | `int(device)` |
+| windows_object_identity | int | 109 | `int(getattr(...))` |
+| windows_object_identity | getattr | 109 | `getattr(result, 'st_dev', 0)` |
+| windows_object_identity | int | 110 | `int(getattr(...))` |
+| windows_object_identity | getattr | 110 | `getattr(result, 'st_ino', 0)` |
 
 ### Boundary effects
 
@@ -88,8 +88,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `windows_object_identity` | `getattr` | 104 |
-| unresolved_call | `windows_object_identity` | `getattr` | 105 |
+| unresolved_call | `windows_object_identity` | `getattr` | 109 |
+| unresolved_call | `windows_object_identity` | `getattr` | 110 |
 
 ## Behavior
 

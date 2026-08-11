@@ -36,7 +36,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| fresh_no_follow_stat | stat | 88 | `os.stat(path, follow_symlinks=False)` |
+| fresh_no_follow_stat | stat | 93 | `os.stat(path, follow_symlinks=False)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `fresh_no_follow_stat` | `os.stat` | 88 |
+| external_call | `fresh_no_follow_stat` | `os.stat` | 93 |
 
 ## Behavior
 

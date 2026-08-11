@@ -31,69 +31,80 @@ the resulting freshness state.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/contracts.py"]
-    n1["src/llm_wiki_cli/services/documentation_native.py"]
-    n2["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n3["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n4["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n5["src/llm_wiki_cli/services/knowledge_model.py"]
-    n6["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n7["src/llm_wiki_cli/services/knowledge_orchestration.py"]
-    n8["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n9["src/llm_wiki_cli/services/validation.py"]
-    n10["src/llm_wiki_cli/services/wiki_surface.py"]
-    n1 --> n2
-    n1 --> n3
-    n1 --> n4
-    n1 --> n5
-    n1 --> n7
-    n1 --> n9
-    n1 --> n10
+    n0["src/llm_wiki_cli/services/context_packet.py"]
+    n1["src/llm_wiki_cli/services/contracts.py"]
+    n2["src/llm_wiki_cli/services/documentation_native.py"]
+    n3["src/llm_wiki_cli/services/knowledge_consumption.py"]
+    n4["src/llm_wiki_cli/services/knowledge_evidence.py"]
+    n5["src/llm_wiki_cli/services/knowledge_freshness.py"]
+    n6["src/llm_wiki_cli/services/knowledge_model.py"]
+    n7["src/llm_wiki_cli/services/knowledge_observability.py"]
+    n8["src/llm_wiki_cli/services/knowledge_orchestration.py"]
+    n9["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n10["src/llm_wiki_cli/services/validation.py"]
+    n11["src/llm_wiki_cli/services/wiki_surface.py"]
+    n0 --> n1
+    n0 --> n3
+    n0 --> n4
+    n0 --> n5
+    n0 --> n6
+    n0 --> n7
+    n0 --> n10
+    n0 --> n11
+    n2 --> n3
     n2 --> n4
     n2 --> n5
-    n3 --> n9
-    n4 --> n0
-    n4 --> n3
-    n4 --> n5
-    n4 --> n9
+    n2 --> n6
+    n2 --> n8
+    n2 --> n10
+    n2 --> n11
+    n3 --> n5
+    n3 --> n6
     n4 --> n10
-    n5 --> n0
-    n5 --> n3
-    n5 --> n9
+    n5 --> n1
+    n5 --> n4
+    n5 --> n6
     n5 --> n10
-    n6 --> n2
+    n5 --> n11
+    n6 --> n1
     n6 --> n4
-    n6 --> n5
-    n7 --> n0
+    n6 --> n10
+    n6 --> n11
     n7 --> n3
-    n7 --> n4
     n7 --> n5
-    n8 --> n0
-    n8 --> n2
-    n8 --> n3
+    n7 --> n6
+    n8 --> n1
     n8 --> n4
     n8 --> n5
     n8 --> n6
-    n8 --> n9
-    n8 --> n10
-    n10 --> n9
-    click n0 "../modules/services_contracts.md"
-    click n1 "../modules/documentation_native.md"
-    click n2 "../modules/knowledge_consumption.md"
-    click n3 "../modules/knowledge_evidence.md"
-    click n4 "../modules/knowledge_freshness.md"
-    click n5 "../modules/knowledge_model.md"
-    click n6 "../modules/knowledge_observability.md"
-    click n7 "../modules/knowledge_orchestration.md"
-    click n8 "../modules/knowledge_projection.md"
-    click n9 "../modules/validation.md"
-    click n10 "../modules/wiki_surface.md"
+    n9 --> n1
+    n9 --> n3
+    n9 --> n4
+    n9 --> n5
+    n9 --> n6
+    n9 --> n7
+    n9 --> n10
+    n9 --> n11
+    n11 --> n10
+    click n0 "../modules/context_packet.md"
+    click n1 "../modules/services_contracts.md"
+    click n2 "../modules/documentation_native.md"
+    click n3 "../modules/knowledge_consumption.md"
+    click n4 "../modules/knowledge_evidence.md"
+    click n5 "../modules/knowledge_freshness.md"
+    click n6 "../modules/knowledge_model.md"
+    click n7 "../modules/knowledge_observability.md"
+    click n8 "../modules/knowledge_orchestration.md"
+    click n9 "../modules/knowledge_projection.md"
+    click n10 "../modules/validation.md"
+    click n11 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [context_packet](../modules/context_packet.md) |
 | Inbound | [documentation_native](../modules/documentation_native.md) |
 | Inbound | [knowledge_consumption](../modules/knowledge_consumption.md) |
 | Inbound | [knowledge_observability](../modules/knowledge_observability.md) |

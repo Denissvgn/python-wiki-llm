@@ -24,16 +24,17 @@ Raised for invalid wiki surface lookups.
 flowchart LR
     n0["WikiSurfaceError (src/llm_wiki_cli/services/wiki_surface.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/commands/migrate_cmd.py"]
-    n3["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n4["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n5["src/llm_wiki_cli/services/concept_identity.py"]
-    n6["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n7["src/llm_wiki_cli/services/knowledge_graph.py"]
-    n8["src/llm_wiki_cli/services/knowledge_index.py"]
-    n9["src/llm_wiki_cli/services/knowledge_links.py"]
-    n10["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n11["_validate_page_id (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n2["WikiSurfacePathError (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n3["src/llm_wiki_cli/commands/migrate_cmd.py"]
+    n4["src/llm_wiki_cli/commands/sync_cmd.py"]
+    n5["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n6["src/llm_wiki_cli/services/concept_identity.py"]
+    n7["src/llm_wiki_cli/services/knowledge_artifacts.py"]
+    n8["src/llm_wiki_cli/services/knowledge_graph.py"]
+    n9["src/llm_wiki_cli/services/knowledge_index.py"]
+    n10["src/llm_wiki_cli/services/knowledge_links.py"]
+    n11["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n12["_validate_page_id (src/llm_wiki_cli/services/wiki_surface.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,17 +46,19 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/wiki_surface.md"
-    click n2 "../modules/migrate_cmd.md"
-    click n3 "../modules/sync_cmd.md"
-    click n4 "../modules/bootstrap_runtime.md"
-    click n5 "../modules/concept_identity.md"
-    click n6 "../modules/knowledge_artifacts.md"
-    click n7 "../modules/knowledge_graph.md"
-    click n8 "../modules/knowledge_index.md"
-    click n9 "../modules/knowledge_links.md"
-    click n10 "../modules/wiki_surface.md"
+    click n2 "../modules/wiki_surface.md"
+    click n3 "../modules/migrate_cmd.md"
+    click n4 "../modules/sync_cmd.md"
+    click n5 "../modules/bootstrap_runtime.md"
+    click n6 "../modules/concept_identity.md"
+    click n7 "../modules/knowledge_artifacts.md"
+    click n8 "../modules/knowledge_graph.md"
+    click n9 "../modules/knowledge_index.md"
+    click n10 "../modules/knowledge_links.md"
     click n11 "../modules/wiki_surface.md"
+    click n12 "../modules/wiki_surface.md"
 ```
 
 ### Summary
@@ -69,6 +72,7 @@ flowchart LR
 | Kind | Entity | Module |
 |---|---|---|
 | Base | `ValueError` | — |
+| Subclass | `WikiSurfacePathError` | [wiki_surface](../modules/wiki_surface.md) |
 
 ### References
 

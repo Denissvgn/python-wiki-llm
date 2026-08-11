@@ -85,7 +85,7 @@ sequenceDiagram
     p18->>p22: _unique_json_object
 ```
 
-> Call sequence diagram shows 30 of 704 interactions; 674 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 706 interactions; 676 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -144,7 +144,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_snapshot_documentation_query_service | load_knowledge_read_view | 196 | `load_knowledge_read_view(wiki_root, snapshot_only=True, include_machine_verification=True)` |
+| build_snapshot_documentation_query_service | load_knowledge_read_view | 423 | `load_knowledge_read_view(wiki_root, snapshot_only=True, include_machine_verification=True)` |
 | load_knowledge_read_view | isinstance | 677 | `isinstance(include_machine_verification, bool)` |
 | load_knowledge_read_view | TypeError | 678 | `TypeError('include_machine_verification must be a boolean')` |
 | load_knowledge_read_view | load_knowledge_state | 680 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |

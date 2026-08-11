@@ -60,7 +60,7 @@ sequenceDiagram
     p4->>p18: _assert_same_file_identity
 ```
 
-> Call sequence diagram shows 30 of 410 interactions; 380 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 412 interactions; 382 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -61,7 +61,9 @@ sequenceDiagram
     p17-->>p19: relative_to
 ```
 
-> Call sequence diagram shows 30 of 161 interactions; 131 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 274 interactions; 244 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -136,14 +138,14 @@ flowchart LR
 | run | getattr | 46 | `getattr(args, 'skills_action', None)` |
 | run | getattr | 47 | `getattr(args, 'format', 'text')` |
 | run | list_bundled_skills | 51 | `list_bundled_skills(data not statically known)` |
-| list_bundled_skills | is_dir | 107 | `root.is_dir(data not statically known)` |
-| list_bundled_skills | sorted | 111 | `sorted(root.iterdir(...), key=...)` |
-| list_bundled_skills | iterdir | 111 | `root.iterdir(data not statically known)` |
-| list_bundled_skills | is_dir | 113 | `skill_dir.is_dir(data not statically known)` |
-| list_bundled_skills | is_file | 113 | `manifest.is_file(data not statically known)` |
-| list_bundled_skills | _parse_skill_frontmatter | 115 | `_parse_skill_frontmatter(read_md(...))` |
-| _parse_skill_frontmatter | split | 313 | `content.replace('\r\n', '\n').replace('\r', '\n').split('\n')` |
-| _parse_skill_frontmatter | replace | 313 | `content.replace('\r\n', '\n').replace('\r', '\n')` |
+| list_bundled_skills | is_dir | 245 | `root.is_dir(data not statically known)` |
+| list_bundled_skills | sorted | 249 | `sorted(root.iterdir(...), key=...)` |
+| list_bundled_skills | iterdir | 249 | `root.iterdir(data not statically known)` |
+| list_bundled_skills | is_dir | 251 | `skill_dir.is_dir(data not statically known)` |
+| list_bundled_skills | is_file | 251 | `manifest.is_file(data not statically known)` |
+| list_bundled_skills | _parse_skill_frontmatter | 253 | `_parse_skill_frontmatter(read_md(...))` |
+| _parse_skill_frontmatter | split | 1269 | `content.replace('\r\n', '\n').replace('\r', '\n').split('\n')` |
+| _parse_skill_frontmatter | replace | 1269 | `content.replace('\r\n', '\n').replace('\r', '\n')` |
 
 ### Boundary effects
 
@@ -153,7 +155,7 @@ flowchart LR
 | output | `print` | `run` | 55 |
 | output | `print` | `run` | 83 |
 | output | `print` | `run` | 86 |
-| mutation | `skills.append` | `list_bundled_skills` | 116 |
+| mutation | `skills.append` | `list_bundled_skills` | 254 |
 
 ### Static analysis gaps
 
@@ -161,14 +163,15 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `run` | `getattr` | 46 |
 | unresolved_call | `run` | `getattr` | 47 |
-| unresolved_call | `list_bundled_skills` | `root.is_dir` | 107 |
-| unresolved_call | `list_bundled_skills` | `sorted` | 111 |
-| unresolved_call | `list_bundled_skills` | `root.iterdir` | 111 |
-| unresolved_call | `list_bundled_skills` | `skill_dir.is_dir` | 113 |
-| unresolved_call | `list_bundled_skills` | `manifest.is_file` | 113 |
-| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace('\r', '\n').split` | 313 |
-| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace` | 313 |
+| unresolved_call | `list_bundled_skills` | `root.is_dir` | 245 |
+| unresolved_call | `list_bundled_skills` | `sorted` | 249 |
+| unresolved_call | `list_bundled_skills` | `root.iterdir` | 249 |
+| unresolved_call | `list_bundled_skills` | `skill_dir.is_dir` | 251 |
+| unresolved_call | `list_bundled_skills` | `manifest.is_file` | 251 |
+| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace('\r', '\n').split` | 1269 |
+| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace` | 1269 |
 | step_limit | `run` | `first 12 steps` | 0 |
+| truncated_flow | `run` | `depth limit` | 0 |
 
 ## Behavior
 

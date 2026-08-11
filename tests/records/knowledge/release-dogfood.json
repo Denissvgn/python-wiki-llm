@@ -1,0 +1,52 @@
+{
+  "record_kind": "controlled-release-dogfood",
+  "repository_policy": {
+    "git_push": "not-invoked",
+    "ignore_policy": "unchanged",
+    "network": "not-used"
+  },
+  "reproduce": ".venv/bin/pytest -q tests/test_release_dogfood.py",
+  "scenarios": [
+    {
+      "expected": "all 11 managed reference files; no internal report members",
+      "fixture": "synthetic wheel and source-distribution member trees",
+      "id": "artifact-members-wheel-sdist"
+    },
+    {
+      "expected": "nonempty bounded native concept selection without governance mutation",
+      "fixture": "committed configured-public native projection",
+      "id": "ready-no-governance"
+    },
+    {
+      "expected": "qualified surface, Markdown, and targeted-evidence fallback",
+      "fixture": "canonical surface index and Markdown without a knowledge projection",
+      "id": "legacy-surface-only"
+    },
+    {
+      "expected": "degraded disclosure with no rejected native selection",
+      "fixture": "manifest knowledge-hash mismatch",
+      "id": "degraded-mixed"
+    },
+    {
+      "expected": "self-contained expanded instructions execute the knowledge-capable route",
+      "fixture": "generic init with managed skills disabled",
+      "id": "expanded-skills-disabled"
+    },
+    {
+      "expected": "generic managed home reports drift and preserves the modified topic",
+      "fixture": ".llm-wiki/skills/wiki-reference with a local topic edit",
+      "id": "generic-current-modified"
+    },
+    {
+      "expected": "Claude managed home reaches compact/current and uninstalls exactly",
+      "fixture": ".claude/skills/wiki-reference",
+      "id": "claude-current"
+    },
+    {
+      "expected": "installed init, upgrade, status, and uninstall traverse both profiles",
+      "fixture": "isolated generic and Claude project roots",
+      "id": "installed-profile-lifecycle"
+    }
+  ],
+  "schema_version": "llm-wiki-release-dogfood/v1"
+}

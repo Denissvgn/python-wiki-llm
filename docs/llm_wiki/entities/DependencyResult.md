@@ -1,6 +1,6 @@
 # _DependencyResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4138`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4142`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

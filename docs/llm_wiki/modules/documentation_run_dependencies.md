@@ -27,7 +27,7 @@ Imports shared by the mechanically split lifecycle modules.
 | `..knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `..knowledge_consumption` | `KnowledgeReadView` |
 | `..knowledge_governance` | `GOVERNANCE_FILENAME` |
-| `..skills` | `export_skills`, `list_bundled_skills` |
+| `..skills` | `REFERENCE_DEPENDENT_SKILLS`, `REFERENCE_SKILL_ID`, `export_skills`, `list_bundled_skills` |
 | `..source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs` |
 | `..source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `..validation` | `parse_utc_timestamp`, `portable_path_key`, `require_exact_fields`, `require_nonempty_text`, `require_portable_relative_path`, `require_sha256`, `require_trimmed_text_list`, `resolve_workspace_path` |

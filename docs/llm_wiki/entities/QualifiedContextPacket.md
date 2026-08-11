@@ -1,6 +1,6 @@
 # QualifiedContextPacket
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:217`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:349`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)

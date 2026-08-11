@@ -1,6 +1,6 @@
 # SurfaceRole
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:43`
+**Location:** `src/llm_wiki_cli/services/wiki_surface.py:55`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [wiki_surface](../modules/wiki_surface.md)

@@ -50,11 +50,12 @@ flowchart LR
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
 | [WikiSurfaceError](../entities/WikiSurfaceError.md) | Class | 25 | `ValueError` | Raised for invalid wiki surface lookups. |
-| [PageKind](../entities/PageKind.md) | Enum | 29 | `str`, `Enum` | — |
-| [SurfaceRole](../entities/SurfaceRole.md) | Enum | 43 | `str`, `Enum` | — |
-| [WikiSurfaceKind](../entities/WikiSurfaceKind.md) | Class | 50 | — | — |
-| [WikiSurfacePage](../entities/WikiSurfacePage.md) | Class | 70 | — | — |
-| [WikiAssetSurface](../entities/WikiAssetSurface.md) | Class | 82 | — | — |
+| [WikiSurfacePathError](../entities/WikiSurfacePathError.md) | Class | 32 | `WikiSurfaceError` | Raised when a canonical page path cannot be read inside its wiki root. |
+| [PageKind](../entities/PageKind.md) | Enum | 41 | `str`, `Enum` | — |
+| [SurfaceRole](../entities/SurfaceRole.md) | Enum | 55 | `str`, `Enum` | — |
+| [WikiSurfaceKind](../entities/WikiSurfaceKind.md) | Class | 62 | — | — |
+| [WikiSurfacePage](../entities/WikiSurfacePage.md) | Class | 82 | — | — |
+| [WikiAssetSurface](../entities/WikiAssetSurface.md) | Class | 94 | — | — |
 
 ## Functions
 
@@ -71,6 +72,7 @@ flowchart LR
 | `collect_wiki_pages` | `(wiki_dir: Union[str, Path]) -> list[WikiSurfacePage]` | — | Collect active canonical wiki pages in deterministic registry order. |
 | `_collect_directory_pages` | `(wiki: Path, entry: WikiSurfaceKind) -> list[WikiSurfacePage]` | — | — |
 | `_surface_page` | `(wiki: Path, path: Path, entry: WikiSurfaceKind, page_id: str) -> WikiSurfacePage` | — | — |
+| `resolve_wiki_page_path` | `(wiki_dir: Union[str, Path], path: Union[str, Path]) -> Path` | — | Resolve one canonical page while rejecting nested symlinks and escapes. |
 | `_entry_for` | `(kind: Union[PageKind, str]) -> WikiSurfaceKind` | — | — |
 | `_validate_page_id` | `(page_id: Optional[str], *, required: bool) -> str` | — | — |
 | `_matches_directory_path` | `(coordinate: str, entry: WikiSurfaceKind) -> bool` | — | — |

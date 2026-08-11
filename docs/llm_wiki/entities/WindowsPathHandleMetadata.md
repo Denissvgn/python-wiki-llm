@@ -1,6 +1,6 @@
 # _WindowsPathHandleMetadata
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:78`
+**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:83`
 **Kind:** Class
 **Bases:** —
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)

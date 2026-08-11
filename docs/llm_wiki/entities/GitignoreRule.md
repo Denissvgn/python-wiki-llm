@@ -1,6 +1,6 @@
 # _GitignoreRule
 
-**Location:** `src/llm_wiki_cli/config.py:315`
+**Location:** `src/llm_wiki_cli/config.py:373`
 **Kind:** Class
 **Bases:** —
 **Module:** [config](../modules/config.md)

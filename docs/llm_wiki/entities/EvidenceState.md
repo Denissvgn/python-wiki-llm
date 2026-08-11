@@ -31,15 +31,16 @@ flowchart LR
     n0["EvidenceState (src/llm_wiki_cli/services/knowledge_model.py)"]
     n1["Enum"]
     n2["str"]
-    n3["src/llm_wiki_cli/services/context_service.py"]
-    n4["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n5["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n6["src/llm_wiki_cli/services/knowledge_freshness.py"]
-    n7["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n8["_require_structure_state (src/llm_wiki_cli/services/knowledge_index.py)"]
-    n9["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n10["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n11["src/llm_wiki_cli/services/lint_service.py"]
+    n3["src/llm_wiki_cli/services/context_packet.py"]
+    n4["src/llm_wiki_cli/services/context_service.py"]
+    n5["src/llm_wiki_cli/services/knowledge_artifacts.py"]
+    n6["src/llm_wiki_cli/services/knowledge_consumption.py"]
+    n7["src/llm_wiki_cli/services/knowledge_freshness.py"]
+    n8["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n9["_require_structure_state (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n10["src/llm_wiki_cli/services/knowledge_observability.py"]
+    n11["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n12["src/llm_wiki_cli/services/lint_service.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -51,16 +52,18 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n3 "../modules/context_service.md"
-    click n4 "../modules/knowledge_artifacts.md"
-    click n5 "../modules/knowledge_consumption.md"
-    click n6 "../modules/knowledge_freshness.md"
-    click n7 "../modules/knowledge_governance.md"
-    click n8 "../modules/knowledge_index.md"
-    click n9 "../modules/knowledge_observability.md"
-    click n10 "../modules/knowledge_projection.md"
-    click n11 "../modules/lint_service.md"
+    click n3 "../modules/context_packet.md"
+    click n4 "../modules/context_service.md"
+    click n5 "../modules/knowledge_artifacts.md"
+    click n6 "../modules/knowledge_consumption.md"
+    click n7 "../modules/knowledge_freshness.md"
+    click n8 "../modules/knowledge_governance.md"
+    click n9 "../modules/knowledge_index.md"
+    click n10 "../modules/knowledge_observability.md"
+    click n11 "../modules/knowledge_projection.md"
+    click n12 "../modules/lint_service.md"
 ```
 
 ### Summary
@@ -80,6 +83,7 @@ flowchart LR
 
 | Reference | Kind | Source |
 |---|---|---|
+| `context_packet` | import | [context_packet](../modules/context_packet.md) |
 | `context_service` | import | [context_service](../modules/context_service.md) |
 | `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) |

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [context_service](../modules/context_service.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), and 27 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), and 22 more
 
 **Complete modules touched:**
 
@@ -11,7 +11,6 @@
 - [context_packet](../modules/context_packet.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
-- [dependency_versions](../modules/dependency_versions.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [entrypoints](../modules/entrypoints.md)
@@ -19,14 +18,10 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
-- [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
-- [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [plugins](../modules/plugins.md)
@@ -54,11 +49,11 @@ sequenceDiagram
     participant p8 as loads
     participant p9 as _validate_protocol_request
     participant p10 as isinstance
-    participant p11 as sorted
-    participant p12 as set
-    participant p13 as get
-    participant p14 as _normalise_protocol_focus
-    participant p15 as any
+    participant p11 as get
+    participant p12 as _validate_protocol_request_impl
+    participant p13 as any
+    participant p14 as sorted
+    participant p15 as set
     p0-->>p1: getattr
     p0->>p2: _run_protocol
     p2-->>p1: getattr
@@ -71,27 +66,27 @@ sequenceDiagram
     p3->>p7: ProtocolRequestError
     p3->>p9: _validate_protocol_request
     p9-->>p10: isinstance
-    p9->>p7: ProtocolRequestError
-    p9-->>p11: sorted
-    p9-->>p12: set
-    p9->>p7: ProtocolRequestError
-    p9-->>p13: get
-    p9->>p7: ProtocolRequestError
-    p9->>p7: ProtocolRequestError
-    p9-->>p10: isinstance
-    p9-->>p10: isinstance
-    p9->>p7: ProtocolRequestError
-    p9-->>p13: get
-    p9->>p7: ProtocolRequestError
-    p9->>p14: _normalise_protocol_focus
-    p14-->>p10: isinstance
-    p14->>p7: ProtocolRequestError
-    p14-->>p15: any
-    p14-->>p10: isinstance
-    p14->>p7: ProtocolRequestError
+    p9-->>p11: get
+    p9->>p12: _validate_protocol_request_impl
+    p12-->>p10: isinstance
+    p12->>p7: ProtocolRequestError
+    p12-->>p13: any
+    p12-->>p10: isinstance
+    p12->>p7: ProtocolRequestError
+    p12-->>p11: get
+    p12->>p7: ProtocolRequestError
+    p12-->>p14: sorted
+    p12-->>p15: set
+    p12->>p7: ProtocolRequestError
+    p12->>p7: ProtocolRequestError
+    p12-->>p10: isinstance
+    p12-->>p10: isinstance
+    p12->>p7: ProtocolRequestError
+    p12-->>p11: get
+    p12-->>p10: isinstance
 ```
 
-> Call sequence diagram shows 30 of 2117 interactions; 2087 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1666 interactions; 1636 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -138,7 +133,7 @@ flowchart LR
     b6["output print"]
     s1 -. "output print" .-> b6
     b7["output print"]
-    s3 -. "output print" .-> b7
+    s1 -. "output print" .-> b7
     click s1 "../modules/context_service.md"
     click s3 "../modules/context_service.md"
     click s5 "../modules/context_service.md"
@@ -160,9 +155,9 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `sys`, `sys`, `print_extraction_job_plan`, `ProtocolRequestError`, `sys`, `sys`, `sys` | - | `none`, `none`, `none` |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `sys`, `sys`, `print_extraction_job_plan`, `ProtocolRequestError`, `sys`, `KnowledgeRequiredUnavailableError`, `sys` | - | `none`, `none`, `none` |
 | `getattr` | - | - | - | - |
-| `_run_protocol` | `args` | `DEFAULT_WIKI_DIR`, `print_extraction_job_plan`, `ProtocolRequestError`, `sys` | - | `none` |
+| `_run_protocol` | `args` | `DEFAULT_WIKI_DIR`, `KNOWLEDGE_PROTOCOL_VERSION`, `print_extraction_job_plan`, `ProtocolRequestError`, `KnowledgeRequiredUnavailableError`, `sys` | `exc.protocol` | `none` |
 | `getattr` | - | - | - | - |
 | `_read_protocol_request` | `source: str` | `json` | - | `_validate_protocol_request(...)` |
 | `read` | - | - | - | - |
@@ -171,46 +166,46 @@ flowchart LR
 | `ProtocolRequestError` | - | - | - | - |
 | `loads` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
-| `_validate_protocol_request` | `data: object` | `_REQUEST_KEYS`, `PROTOCOL_VERSION`, `PROTOCOL_VERSION`, `_FORMATS`, `PROTOCOL_VERSION` | - | `{...}` |
+| `_validate_protocol_request` | `data: object` | `PROTOCOL_VERSION`, `ProtocolRequestError`, `PROTOCOL_VERSION`, `KNOWLEDGE_PROTOCOL_VERSION` | `exc.protocol` | `_validate_protocol_request_impl(...)` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 2516 | `getattr(args, 'request', None)` |
-| run | _run_protocol | 2517 | `_run_protocol(args)` |
-| _run_protocol | getattr | 2434 | `getattr(args, 'output', None)` |
-| _run_protocol | _read_protocol_request | 2436 | `_read_protocol_request(args.request)` |
-| _read_protocol_request | read | 786 | `sys.stdin.read(data not statically known)` |
-| _read_protocol_request | read_text | 788 | `Path(source).read_text(encoding='utf-8')` |
-| _read_protocol_request | Path | 788 | `Path(source)` |
-| _read_protocol_request | ProtocolRequestError | 791 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | loads | 794 | `json.loads(raw)` |
-| _read_protocol_request | ProtocolRequestError | 796 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | _validate_protocol_request | 798 | `_validate_protocol_request(data)` |
+| run | getattr | 3403 | `getattr(args, 'request', None)` |
+| run | _run_protocol | 3404 | `_run_protocol(args)` |
+| _run_protocol | getattr | 3292 | `getattr(args, 'output', None)` |
+| _run_protocol | _read_protocol_request | 3295 | `_read_protocol_request(args.request)` |
+| _read_protocol_request | read | 1011 | `sys.stdin.read(data not statically known)` |
+| _read_protocol_request | read_text | 1013 | `Path(source).read_text(encoding='utf-8')` |
+| _read_protocol_request | Path | 1013 | `Path(source)` |
+| _read_protocol_request | ProtocolRequestError | 1016 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | loads | 1019 | `json.loads(raw)` |
+| _read_protocol_request | ProtocolRequestError | 1021 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | _validate_protocol_request | 1023 | `_validate_protocol_request(data)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 2532 |
-| output | `print` | `run` | 2535 |
-| output | `print` | `run` | 2567 |
-| output | `print` | `run` | 2574 |
-| output | `print` | `run` | 2576 |
-| output | `print` | `run` | 2585 |
-| output | `print` | `run` | 2587 |
-| output | `print` | `_run_protocol` | 2461 |
+| output | `print` | `run` | 3420 |
+| output | `print` | `run` | 3423 |
+| output | `print` | `run` | 3457 |
+| output | `print` | `run` | 3460 |
+| output | `print` | `run` | 3467 |
+| output | `print` | `run` | 3469 |
+| output | `print` | `run` | 3478 |
+| output | `print` | `run` | 3480 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 2516 |
-| unresolved_call | `_run_protocol` | `getattr` | 2434 |
-| external_call | `_read_protocol_request` | `sys.stdin.read` | 786 |
-| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 788 |
-| external_call | `_read_protocol_request` | `json.loads` | 794 |
+| unresolved_call | `run` | `getattr` | 3403 |
+| unresolved_call | `_run_protocol` | `getattr` | 3292 |
+| external_call | `_read_protocol_request` | `sys.stdin.read` | 1011 |
+| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1013 |
+| external_call | `_read_protocol_request` | `json.loads` | 1019 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

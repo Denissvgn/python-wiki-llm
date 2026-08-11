@@ -55,11 +55,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_context_packet_basis | compare_context_packet_basis | 748 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
-| compare_context_packet_basis | PathPolicyError | 753 | `PathPolicyError(str(...))` |
-| compare_context_packet_basis | str | 753 | `str(exc)` |
-| compare_context_packet_basis | InvalidRequestError | 755 | `InvalidRequestError(str(...))` |
-| compare_context_packet_basis | str | 755 | `str(exc)` |
+| compare_context_packet_basis | compare_context_packet_basis | 960 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
+| compare_context_packet_basis | PathPolicyError | 965 | `PathPolicyError(str(...))` |
+| compare_context_packet_basis | str | 965 | `str(exc)` |
+| compare_context_packet_basis | InvalidRequestError | 967 | `InvalidRequestError(str(...))` |
+| compare_context_packet_basis | str | 967 | `str(exc)` |
 
 ### Boundary effects
 
@@ -69,8 +69,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `compare_context_packet_basis` | `context_packet_service.compare_context_packet_basis` | 748 |
-| unresolved_call | `compare_context_packet_basis` | `PathPolicyError` | 753 |
+| external_call | `compare_context_packet_basis` | `context_packet_service.compare_context_packet_basis` | 960 |
+| unresolved_call | `compare_context_packet_basis` | `PathPolicyError` | 965 |
 
 ## Behavior
 

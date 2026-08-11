@@ -25,76 +25,21 @@ Media reference parsing for wiki pages and agent-owned assets.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n1["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n2["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n3["src/llm_wiki_cli/services/knowledge_graph.py"]
-    n4["src/llm_wiki_cli/services/knowledge_index.py"]
-    n5["src/llm_wiki_cli/services/knowledge_links.py"]
-    n6["src/llm_wiki_cli/services/knowledge_model.py"]
-    n7["src/llm_wiki_cli/services/lint_service.py"]
-    n8["src/llm_wiki_cli/services/site_export.py"]
-    n9["src/llm_wiki_cli/services/site_html_check.py"]
-    n10["src/llm_wiki_cli/services/wiki_media.py"]
-    n11["src/llm_wiki_cli/services/wiki_surface_index.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/wiki_media.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n10
-    n0 --> n11
-    n1 --> n6
-    n1 --> n10
-    n1 --> n11
-    n2 --> n3
-    n2 --> n6
-    n2 --> n10
-    n3 --> n10
-    n4 --> n2
-    n4 --> n5
-    n4 --> n6
-    n4 --> n10
-    n4 --> n11
-    n5 --> n6
-    n5 --> n10
-    n6 --> n2
-    n6 --> n3
-    n6 --> n10
-    n7 --> n2
-    n7 --> n6
-    n7 --> n10
-    n7 --> n11
-    n8 --> n9
-    n8 --> n10
-    n9 --> n10
-    n11 --> n10
-    click n0 "../modules/documentation_run_dependencies.md"
-    click n1 "../modules/documentation_wiki_input.md"
-    click n2 "../modules/knowledge_governance.md"
-    click n3 "../modules/knowledge_graph.md"
-    click n4 "../modules/knowledge_index.md"
-    click n5 "../modules/knowledge_links.md"
-    click n6 "../modules/knowledge_model.md"
-    click n7 "../modules/lint_service.md"
-    click n8 "../modules/site_export.md"
-    click n9 "../modules/site_html_check.md"
-    click n10 "../modules/wiki_media.md"
-    click n11 "../modules/wiki_surface_index.md"
+    click n1 "../modules/wiki_media.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| Inbound | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| Inbound | [knowledge_governance](../modules/knowledge_governance.md) |
-| Inbound | [knowledge_graph](../modules/knowledge_graph.md) |
-| Inbound | [knowledge_index](../modules/knowledge_index.md) |
-| Inbound | [knowledge_links](../modules/knowledge_links.md) |
-| Inbound | [knowledge_model](../modules/knowledge_model.md) |
-| Inbound | [lint_service](../modules/lint_service.md) |
-| Inbound | [site_export](../modules/site_export.md) |
-| Inbound | [site_html_check](../modules/site_html_check.md) |
-| Inbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
+| Inbound | `src` (12) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

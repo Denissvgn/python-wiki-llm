@@ -18,9 +18,10 @@ sequenceDiagram
     participant p6 as add
     participant p7 as WorkspaceStateError
     participant p8 as str
-    participant p9 as PathPolicyError
-    participant p10 as InvalidRequestError
-    participant p11 as cast
+    participant p9 as _path_error_field
+    participant p10 as PathPolicyError
+    participant p11 as InvalidRequestError
+    participant p12 as cast
     p0-->>p1: build_extract_payload
     p0->>p2: _caused_by
     p2-->>p3: set
@@ -30,13 +31,17 @@ sequenceDiagram
     p2-->>p4: id
     p0->>p7: WorkspaceStateError
     p0-->>p8: str
-    p0-->>p9: PathPolicyError
+    p0->>p9: _path_error_field
+    p0-->>p8: str
+    p0-->>p10: PathPolicyError
+    p0-->>p8: str
+    p0->>p9: _path_error_field
     p0-->>p8: str
     p0->>p7: WorkspaceStateError
     p0-->>p8: str
-    p0->>p10: InvalidRequestError
+    p0->>p11: InvalidRequestError
     p0-->>p8: str
-    p0-->>p11: cast
+    p0-->>p12: cast
 ```
 
 ## Data flow
@@ -54,7 +59,7 @@ flowchart LR
     s8["8. id"]
     s9["9. WorkspaceStateError"]
     s10["10. str"]
-    s11["11. PathPolicyError"]
+    s11["11. _path_error_field"]
     s12["12. str"]
     s1 -. "extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow…" .-> s2
     s1 -->|"_caused_by(exc, OSError)"| s3
@@ -63,15 +68,16 @@ flowchart LR
     s3 -. "isinstance(current, expected)" .-> s6
     s3 -. "seen.add(id(...))" .-> s7
     s3 -. "id(current)" .-> s8
-    s1 -->|"WorkspaceStateError(str(...))"| s9
+    s1 -->|"WorkspaceStateError(str(...), code='workspace-state-error', details={...})"| s9
     s1 -. "str(exc)" .-> s10
-    s1 -. "PathPolicyError(str(...))" .-> s11
+    s1 -->|"_path_error_field(str(...))"| s11
     s1 -. "str(exc)" .-> s12
     b0["mutation seen.add"]
     s3 -. "mutation seen.add" .-> b0
     click s1 "../modules/api.md"
     click s3 "../modules/api.md"
     click s9 "../modules/api.md"
+    click s11 "../modules/api.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
 ```
@@ -90,39 +96,38 @@ flowchart LR
 | `id` | - | - | - | - |
 | `WorkspaceStateError` | - | - | - | - |
 | `str` | - | - | - | - |
-| `PathPolicyError` | - | - | - | - |
+| `_path_error_field` | `message: str` | - | - | `'src_dir'`, `'wiki_dir'`, `'path'` |
 | `str` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| extract_source | build_extract_payload | 595 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| extract_source | _caused_by | 608 | `_caused_by(exc, OSError)` |
-| _caused_by | set | 382 | `set(data not statically known)` |
-| _caused_by | id | 383 | `id(current)` |
-| _caused_by | isinstance | 384 | `isinstance(current, expected)` |
-| _caused_by | add | 386 | `seen.add(id(...))` |
-| _caused_by | id | 386 | `id(current)` |
-| extract_source | WorkspaceStateError | 609 | `WorkspaceStateError(str(...))` |
-| extract_source | str | 609 | `str(exc)` |
-| extract_source | PathPolicyError | 610 | `PathPolicyError(str(...))` |
-| extract_source | str | 610 | `str(exc)` |
+| extract_source | build_extract_payload | 695 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
+| extract_source | _caused_by | 708 | `_caused_by(exc, OSError)` |
+| _caused_by | set | 481 | `set(data not statically known)` |
+| _caused_by | id | 482 | `id(current)` |
+| _caused_by | isinstance | 483 | `isinstance(current, expected)` |
+| _caused_by | add | 485 | `seen.add(id(...))` |
+| _caused_by | id | 485 | `id(current)` |
+| extract_source | WorkspaceStateError | 709 | `WorkspaceStateError(str(...), code='workspace-state-error', details={...})` |
+| extract_source | str | 710 | `str(exc)` |
+| extract_source | _path_error_field | 712 | `_path_error_field(str(...))` |
+| extract_source | str | 712 | `str(exc)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `_caused_by` | 386 |
+| mutation | `seen.add` | `_caused_by` | 485 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `extract_source` | `extract_cmd.build_extract_payload` | 595 |
-| unresolved_call | `_caused_by` | `id` | 383 |
-| unresolved_call | `_caused_by` | `isinstance` | 384 |
-| unresolved_call | `extract_source` | `PathPolicyError` | 610 |
+| external_call | `extract_source` | `extract_cmd.build_extract_payload` | 695 |
+| unresolved_call | `_caused_by` | `id` | 482 |
+| unresolved_call | `_caused_by` | `isinstance` | 483 |
 | step_limit | `extract_source` | `first 12 steps` | 0 |
 
 ## Behavior

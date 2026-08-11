@@ -1,6 +1,6 @@
 # ContextPayload
 
-**Location:** `src/llm_wiki_cli/api_types.py:42`
+**Location:** `src/llm_wiki_cli/api_types.py:118`
 **Kind:** Class
 **Bases:** `_ContextRequired`
 **Module:** [api_types](../modules/api_types.md)
@@ -14,10 +14,10 @@ Top-level JSON context payload.
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `graphs` | `dict[str, Any]` | *required* | — |
-| `knowledge` | `dict[str, Any]` | *required* | — |
+| `knowledge` | `ContextKnowledgeResult \| dict[str, Any]` | *required* | — |
 | `typed_graph` | `dict[str, Any]` | *required* | — |
 | `surface` | `dict[str, Any]` | *required* | — |
-| `ranking_policy` | `dict[str, Any]` | *required* | — |
+| `ranking_policy` | `RankingPolicy \| dict[str, Any]` | *required* | — |
 | `warnings` | `list[str]` | *required* | — |
 
 ## Methods

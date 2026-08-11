@@ -25,10 +25,11 @@ sequenceDiagram
     participant p13 as _raise_api_error
     participant p14 as leaf
     participant p15 as str
-    participant p16 as _calibration_error_category
-    participant p17 as _has_exception_origin
-    participant p18 as type
-    participant p19 as ArtifactIntegrityError
+    participant p16 as PathPolicyError
+    participant p17 as _wiki_path_policy_details
+    participant p18 as id
+    participant p19 as add
+    participant p20 as _calibration_error_category
     p0->>p0: use_calibration_host_broker_authenticator
     p0-->>p1: isinstance
     p0->>p2: HostBrokerAuthenticationUnavailable
@@ -49,19 +50,19 @@ sequenceDiagram
     p13-->>p1: isinstance
     p13-->>p14: leaf
     p13-->>p15: str
-    p13->>p16: _calibration_error_category
-    p16->>p17: _has_exception_origin
-    p17-->>p7: any
-    p17-->>p18: type
-    p16-->>p1: isinstance
-    p16-->>p1: isinstance
-    p16-->>p1: isinstance
-    p16->>p17: _has_exception_origin
-    p16-->>p1: isinstance
-    p13->>p19: ArtifactIntegrityError
+    p13-->>p1: isinstance
+    p13-->>p16: PathPolicyError
+    p13-->>p15: str
+    p13->>p17: _wiki_path_policy_details
+    p17-->>p10: set
+    p17-->>p18: id
+    p17-->>p19: add
+    p17-->>p18: id
+    p17-->>p1: isinstance
+    p13->>p20: _calibration_error_category
 ```
 
-> Call sequence diagram shows 30 of 69 interactions; 39 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 78 interactions; 48 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -119,7 +120,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| use_calibration_host_broker_authenticator | use_calibration_host_broker_authenticator | 1509 | `implementation(authenticator)` |
+| use_calibration_host_broker_authenticator | use_calibration_host_broker_authenticator | 2583 | `implementation(authenticator)` |
 | use_calibration_host_broker_authenticator | isinstance | 195 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | use_calibration_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |

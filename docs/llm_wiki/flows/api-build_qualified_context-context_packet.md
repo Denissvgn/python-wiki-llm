@@ -40,19 +40,18 @@ sequenceDiagram
     participant p5 as dict
     participant p6 as setdefault
     participant p7 as _validate_protocol_request
-    participant p8 as capture_context_read
-    participant p9 as TypeError
-    participant p10 as callable
-    participant p11 as validate_source_root
-    participant p12 as validate_path
-    participant p13 as PathValidationError
-    participant p14 as resolve
-    participant p15 as cwd
-    participant p16 as relative_to
-    participant p17 as resolve_source_selection
-    participant p18 as capture_source_selection_inputs
-    participant p19 as Path
-    participant p20 as _resolve_snapshot_selection
+    participant p8 as _packet_contract_for_request
+    participant p9 as get
+    participant p10 as capture_context_read
+    participant p11 as TypeError
+    participant p12 as callable
+    participant p13 as validate_source_root
+    participant p14 as validate_path
+    participant p15 as PathValidationError
+    participant p16 as resolve
+    participant p17 as cwd
+    participant p18 as relative_to
+    participant p19 as resolve_source_selection
     p0->>p1: _normalized_request
     p1-->>p2: isinstance
     p1-->>p3: ProtocolRequestError
@@ -61,31 +60,31 @@ sequenceDiagram
     p1-->>p6: setdefault
     p1-->>p6: setdefault
     p1-->>p7: _validate_protocol_request
-    p0->>p8: capture_context_read
-    p8-->>p2: isinstance
-    p8-->>p9: TypeError
-    p8-->>p10: callable
-    p8-->>p9: TypeError
-    p8-->>p11: validate_source_root
-    p8->>p12: validate_path
-    p12->>p13: PathValidationError
-    p12-->>p14: resolve
-    p12-->>p15: cwd
-    p12-->>p14: resolve
-    p12-->>p15: cwd
-    p12-->>p16: relative_to
-    p12->>p13: PathValidationError
-    p8-->>p17: resolve_source_selection
-    p8->>p18: capture_source_selection_inputs
-    p18-->>p14: resolve
-    p18-->>p19: Path
-    p18->>p20: _resolve_snapshot_selection
-    p20->>p17: resolve_source_selection
-    p17-->>p14: resolve
-    p17-->>p19: Path
+    p0->>p8: _packet_contract_for_request
+    p8-->>p9: get
+    p8-->>p3: ProtocolRequestError
+    p0->>p10: capture_context_read
+    p10-->>p2: isinstance
+    p10-->>p11: TypeError
+    p10-->>p12: callable
+    p10-->>p11: TypeError
+    p10-->>p2: isinstance
+    p10-->>p11: TypeError
+    p10-->>p2: isinstance
+    p10-->>p11: TypeError
+    p10-->>p13: validate_source_root
+    p10->>p14: validate_path
+    p14->>p15: PathValidationError
+    p14-->>p16: resolve
+    p14-->>p17: cwd
+    p14-->>p16: resolve
+    p14-->>p17: cwd
+    p14-->>p18: relative_to
+    p14->>p15: PathValidationError
+    p10-->>p19: resolve_source_selection
 ```
 
-> Call sequence diagram shows 30 of 1593 interactions; 1563 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2082 interactions; 2052 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -103,20 +102,20 @@ flowchart LR
     s7["7. setdefault"]
     s8["8. setdefault"]
     s9["9. _validate_protocol_request"]
-    s10["10. capture_context_read"]
-    s11["11. isinstance"]
-    s12["12. TypeError"]
+    s10["10. _packet_contract_for_request"]
+    s11["11. get"]
+    s12["12. ProtocolRequestError"]
     s1 -->|"_normalized_request(...)"| s2
     s2 -. "isinstance(request, Mapping)" .-> s3
     s2 -. "context_service.ProtocolRequestError('Request must be a JSON object.', 'request')" .-> s4
     s2 -. "deepcopy(dict(...))" .-> s5
     s2 -. "dict(request)" .-> s6
-    s2 -. "candidate.setdefault('protocol', context_service.PROTOCOL_VERSION)" .-> s7
+    s2 -. "candidate.setdefault('protocol', ...)" .-> s7
     s2 -. "candidate.setdefault('filters', {...})" .-> s8
     s2 -. "context_service._validate_protocol_request(candidate)" .-> s9
-    s1 -->|"capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=read_only, job_request=job_request, plan_reporter=plan_reporter, sourc…"| s10
-    s10 -. "isinstance(read_only, bool)" .-> s11
-    s10 -. "TypeError('read_only must be a boolean')" .-> s12
+    s1 -->|"_packet_contract_for_request(normalized)"| s10
+    s10 -. "request.get('protocol')" .-> s11
+    s10 -. "context_service.ProtocolRequestError(..., 'protocol')" .-> s12
     click s1 "../modules/context_packet.md"
     click s2 "../modules/context_packet.md"
     click s10 "../modules/context_packet.md"
@@ -126,8 +125,8 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_qualified_context` | `src_dir: str`, `wiki_dir: str`, `request: Mapping[str, Any] \| None`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None` | `CONTEXT_PACKET_SCHEMA_VERSION`, `CONTEXT_PACKET_SCHEMA_VERSION` | - | `validated.packet` |
-| `_normalized_request` | `request: Mapping[str, Any]` | `Mapping`, `context_service` | - | `context_service._validate_protocol_request(...)` |
+| `build_qualified_context` | `src_dir: str`, `wiki_dir: str`, `request: Mapping[str, Any] \| None`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None` | `_KNOWLEDGE_PACKET_CONTRACT`, `_KNOWLEDGE_PACKET_CONTRACT`, `_KNOWLEDGE_PACKET_CONTRACT` | `response[...]` | `validated.packet` |
+| `_normalized_request` | `request: Mapping[str, Any]` | `Mapping`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `context_service` | - | `context_service._validate_protocol_request(...)` |
 | `isinstance` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
 | `deepcopy` | - | - | - | - |
@@ -135,25 +134,25 @@ flowchart LR
 | `setdefault` | - | - | - | - |
 | `setdefault` | - | - | - | - |
 | `_validate_protocol_request` | - | - | - | - |
-| `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError`, `DocumentationQueryError` | - | `CapturedContextRead(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `_packet_contract_for_request` | `request: Mapping[str, Any]` | `_LEGACY_PACKET_CONTRACT`, `_LEGACY_PACKET_CONTRACT`, `_KNOWLEDGE_PACKET_CONTRACT`, `_KNOWLEDGE_PACKET_CONTRACT` | - | `_LEGACY_PACKET_CONTRACT`, `_KNOWLEDGE_PACKET_CONTRACT` |
+| `get` | - | - | - | - |
+| `ProtocolRequestError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalized_request | 807 | `_normalized_request(...)` |
-| _normalized_request | isinstance | 1098 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1099 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy | 1103 | `deepcopy(dict(...))` |
-| _normalized_request | dict | 1103 | `dict(request)` |
-| _normalized_request | setdefault | 1104 | `candidate.setdefault('protocol', context_service.PROTOCOL_VERSION)` |
-| _normalized_request | setdefault | 1105 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1106 | `context_service._validate_protocol_request(candidate)` |
-| build_qualified_context | capture_context_read | 817 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=read_only, job_request=job_request, plan_reporter=plan_reporter, source_selection=source_selection)` |
-| capture_context_read | isinstance | 498 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError | 499 | `TypeError('read_only must be a boolean')` |
+| build_qualified_context | _normalized_request | 1231 | `_normalized_request(...)` |
+| _normalized_request | isinstance | 1726 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1727 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy | 1731 | `deepcopy(dict(...))` |
+| _normalized_request | dict | 1731 | `dict(request)` |
+| _normalized_request | setdefault | 1732 | `candidate.setdefault('protocol', ...)` |
+| _normalized_request | setdefault | 1740 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1741 | `context_service._validate_protocol_request(candidate)` |
+| build_qualified_context | _packet_contract_for_request | 1241 | `_packet_contract_for_request(normalized)` |
+| _packet_contract_for_request | get | 289 | `request.get('protocol')` |
+| _packet_contract_for_request | ProtocolRequestError | 294 | `context_service.ProtocolRequestError(..., 'protocol')` |
 
 ### Boundary effects
 
@@ -163,14 +162,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalized_request` | `isinstance` | 1098 |
-| external_call | `_normalized_request` | `context_service.ProtocolRequestError` | 1099 |
-| external_call | `_normalized_request` | `deepcopy` | 1103 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1104 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1105 |
-| external_call | `_normalized_request` | `context_service._validate_protocol_request` | 1106 |
-| unresolved_call | `capture_context_read` | `isinstance` | 498 |
-| unresolved_call | `capture_context_read` | `TypeError` | 499 |
+| unresolved_call | `_normalized_request` | `isinstance` | 1726 |
+| external_call | `_normalized_request` | `context_service.ProtocolRequestError` | 1727 |
+| external_call | `_normalized_request` | `deepcopy` | 1731 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1732 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1740 |
+| external_call | `_normalized_request` | `context_service._validate_protocol_request` | 1741 |
+| unresolved_call | `_packet_contract_for_request` | `request.get` | 289 |
+| external_call | `_packet_contract_for_request` | `context_service.ProtocolRequestError` | 294 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_qualified_context` | `depth limit` | 0 |
 

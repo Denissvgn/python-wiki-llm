@@ -14,6 +14,10 @@ from llm_wiki_cli.services.schema import (
     CONSTRAINT_START,
     CONSTRAINT_END,
     SCHEMA_FILENAMES,
+    ManagedSchemaBlockState,
+    SchemaRenderProfile,
+    classify_managed_schema_block,
+    decode_managed_document_bytes,
 )
 from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES, reference_skill_state
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
@@ -210,6 +214,42 @@ class TestUpgradePreservesUserContent:
 
         assert receipt is not None
         assert Path("AGENTS.md").read_bytes() == prefix + suffix
+
+    def test_legacy_block_survives_expanded_rollback_and_compact_forward_cycle(
+        self, tmp_path
+    ):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+        legacy = (f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n").encode(
+            "ascii"
+        )
+        suffix = b"# User footer \x97  \r\n"
+        schema = Path("AGENTS.md")
+        schema.write_bytes(prefix + legacy + suffix)
+
+        transitions = (
+            (False, SchemaRenderProfile.EXPANDED_INLINE),
+            (True, SchemaRenderProfile.COMPACT),
+            (False, SchemaRenderProfile.EXPANDED_INLINE),
+            (True, SchemaRenderProfile.COMPACT),
+        )
+        for skills_enabled, expected_profile in transitions:
+            upgrade_cmd.run(_make_args(skills=skills_enabled))
+
+            committed = schema.read_bytes()
+            assert committed.startswith(prefix)
+            assert committed.endswith(suffix)
+            block = classify_managed_schema_block(
+                decode_managed_document_bytes(committed)
+            )
+            assert block.state is ManagedSchemaBlockState.PROFILED
+            assert block.profile is expected_profile
+            assert committed.count(CONSTRAINT_START.encode("ascii")) == 1
+            assert committed.count(CONSTRAINT_END.encode("ascii")) == 1
+            config = read_config("docs/llm_wiki")
+            assert config["reference_skill"] is skills_enabled
+            assert config["rendered_profile"] == expected_profile.value
 
 
 class TestUpgradePreservesWiki:

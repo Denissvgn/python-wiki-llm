@@ -2,13 +2,16 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [uninstall_cmd](../modules/uninstall_cmd.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [io](../modules/io.md), [services_schema](../modules/services_schema.md), and 2 more
+**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [hook_cmd](../modules/hook_cmd.md), and 5 more
 
 **Complete modules touched:**
 
 - [ci_installer](../modules/ci_installer.md)
 - [config](../modules/config.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
+- [hook_cmd](../modules/hook_cmd.md)
 - [io](../modules/io.md)
+- [paths](../modules/paths.md)
 - [services_schema](../modules/services_schema.md)
 - [skills](../modules/skills.md)
 - [uninstall_cmd](../modules/uninstall_cmd.md)
@@ -27,11 +30,16 @@ sequenceDiagram
     participant p6 as relative_to
     participant p7 as str
     participant p8 as Path
-    participant p9 as print
-    participant p10 as _remove_hooks
-    participant p11 as exists
-    participant p12 as read_text
-    participant p13 as unlink
+    participant p9 as _preflight_hooks
+    participant p10 as _require_safe_hook_path
+    participant p11 as first_unsafe_path_component
+    participant p12 as fspath
+    participant p13 as abspath
+    participant p14 as is_absolute
+    participant p15 as list
+    participant p16 as pop
+    participant p17 as lstat
+    participant p18 as S_ISLNK
     p0-->>p1: getattr
     p0->>p2: validate_path
     p2->>p3: PathValidationError
@@ -45,26 +53,28 @@ sequenceDiagram
     p0-->>p8: Path
     p0-->>p1: getattr
     p0-->>p1: getattr
-    p0-->>p9: print
-    p0-->>p9: print
-    p0-->>p9: print
-    p0-->>p9: print
-    p0->>p10: _remove_hooks
-    p10-->>p8: Path
-    p10-->>p11: exists
-    p10-->>p11: exists
-    p10-->>p12: read_text
-    p10-->>p9: print
-    p10-->>p9: print
-    p10-->>p13: unlink
-    p10-->>p9: print
-    p0-->>p9: print
-    p0-->>p9: print
-    p0-->>p8: Path
-    p0-->>p11: exists
+    p0->>p9: _preflight_hooks
+    p9-->>p8: Path
+    p9->>p10: _require_safe_hook_path
+    p10->>p11: first_unsafe_path_component
+    p11-->>p8: Path
+    p11-->>p12: fspath
+    p11-->>p8: Path
+    p11-->>p13: abspath
+    p11-->>p14: is_absolute
+    p11-->>p5: cwd
+    p11-->>p8: Path
+    p11-->>p15: list
+    p11-->>p16: pop
+    p11-->>p17: lstat
+    p11-->>p1: getattr
+    p11-->>p1: getattr
+    p11-->>p18: S_ISLNK
 ```
 
-> Call sequence diagram shows 30 of 228 interactions; 198 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1062 interactions; 1032 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -129,7 +139,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `AGENT_SCHEMA_FILES`, `CONSTRAINT_START`, `RUNTIME_ARTIFACTS`, `RUNTIME_ARTIFACTS`, `KNOWN_INSTALL_TARGETS`, `REFERENCE_SKILL_ID` | - | `none`, `none`, `none` |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `ReferenceSkillState`, `BUNDLED_SKILLS_ROOT`, `REFERENCE_SKILL_ID`, `ManagedSchemaBlockError`, `ManagedSchemaPathError`, `UnsafeUninstallPathError`, `sys` | - | `none`, `none`, `none` |
 | `getattr` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -146,42 +156,43 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 203 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 204 | `validate_path(str(...), '--wiki-dir')` |
-| validate_path | PathValidationError | 128 | `PathValidationError(...)` |
-| validate_path | resolve | 131 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 131 | `Path.cwd(data not statically known)` |
-| validate_path | resolve | 132 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | cwd | 132 | `Path.cwd(data not statically known)` |
-| validate_path | relative_to | 134 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 136 | `PathValidationError(...)` |
-| run | str | 204 | `str(wiki_dir_arg)` |
-| run | Path | 205 | `Path(wiki_dir_arg)` |
+| run | getattr | 856 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 857 | `validate_path(str(...), '--wiki-dir')` |
+| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
+| validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
+| validate_path | resolve | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
+| validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
+| run | str | 857 | `str(wiki_dir_arg)` |
+| run | Path | 858 | `Path(wiki_dir_arg)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 210 |
-| output | `print` | `run` | 213 |
-| output | `print` | `run` | 214 |
-| output | `print` | `run` | 217 |
-| output | `print` | `run` | 220 |
-| output | `print` | `run` | 223 |
-| output | `print` | `run` | 230 |
-| output | `print` | `run` | 232 |
+| output | `print` | `run` | 884 |
+| output | `print` | `run` | 888 |
+| output | `print` | `run` | 891 |
+| output | `print` | `run` | 892 |
+| output | `print` | `run` | 895 |
+| output | `print` | `run` | 898 |
+| output | `print` | `run` | 901 |
+| output | `print` | `run` | 904 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 203 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 131 |
-| external_call | `validate_path` | `Path.cwd` | 131 |
-| external_call | `validate_path` | `Path.cwd().resolve` | 132 |
-| external_call | `validate_path` | `Path.cwd` | 132 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 134 |
+| unresolved_call | `run` | `getattr` | 856 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
+| external_call | `validate_path` | `Path.cwd` | 133 |
+| external_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| external_call | `validate_path` | `Path.cwd` | 134 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
 | step_limit | `run` | `first 12 steps` | 0 |
+| truncated_flow | `run` | `depth limit` | 0 |
 
 ## Behavior
 

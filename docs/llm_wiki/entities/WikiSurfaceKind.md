@@ -1,6 +1,6 @@
 # WikiSurfaceKind
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:50`
+**Location:** `src/llm_wiki_cli/services/wiki_surface.py:62`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface](../modules/wiki_surface.md)

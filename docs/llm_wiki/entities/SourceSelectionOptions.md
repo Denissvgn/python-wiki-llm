@@ -1,6 +1,6 @@
 # _SourceSelectionOptions
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:106`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:218`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [mcp_server](../modules/mcp_server.md)

@@ -1,6 +1,6 @@
 # _McpHttpApplication
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:114`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:226`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [mcp_server](../modules/mcp_server.md)

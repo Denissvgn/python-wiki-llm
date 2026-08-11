@@ -98,17 +98,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| replace_windows_file_write_through | move_windows_path_write_through | 660 | `move_windows_path_write_through(source, target, replace_existing=True)` |
-| move_windows_path_write_through | WindowsDurabilityError | 676 | `WindowsDurabilityError('Write-through Windows moves are unavailable on this platform.')` |
-| move_windows_path_write_through | WinDLL | 681 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| move_windows_path_write_through | move_file | 688 | `move_file(_windows_api_path(...), _windows_api_path(...), flags)` |
-| move_windows_path_write_through | _windows_api_path | 689 | `_windows_api_path(Path(...))` |
-| _windows_api_path | abspath | 1285 | `os.path.abspath(os.fspath(...))` |
-| _windows_api_path | fspath | 1285 | `os.fspath(path)` |
-| _windows_api_path | startswith | 1286 | `value.startswith('\\\\?\\')` |
-| _windows_api_path | startswith | 1288 | `value.startswith('\\\\')` |
-| move_windows_path_write_through | Path | 689 | `Path(source)` |
-| move_windows_path_write_through | _windows_api_path | 690 | `_windows_api_path(Path(...))` |
+| replace_windows_file_write_through | move_windows_path_write_through | 673 | `move_windows_path_write_through(source, target, replace_existing=True)` |
+| move_windows_path_write_through | WindowsDurabilityError | 689 | `WindowsDurabilityError('Write-through Windows moves are unavailable on this platform.')` |
+| move_windows_path_write_through | WinDLL | 694 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| move_windows_path_write_through | move_file | 701 | `move_file(_windows_api_path(...), _windows_api_path(...), flags)` |
+| move_windows_path_write_through | _windows_api_path | 702 | `_windows_api_path(Path(...))` |
+| _windows_api_path | abspath | 1298 | `os.path.abspath(os.fspath(...))` |
+| _windows_api_path | fspath | 1298 | `os.fspath(path)` |
+| _windows_api_path | startswith | 1299 | `value.startswith('\\\\?\\')` |
+| _windows_api_path | startswith | 1301 | `value.startswith('\\\\')` |
+| move_windows_path_write_through | Path | 702 | `Path(source)` |
+| move_windows_path_write_through | _windows_api_path | 703 | `_windows_api_path(Path(...))` |
 
 ### Boundary effects
 
@@ -118,12 +118,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `move_windows_path_write_through` | `ctypes.WinDLL` | 681 |
-| unresolved_call | `move_windows_path_write_through` | `move_file` | 688 |
-| external_call | `_windows_api_path` | `os.path.abspath` | 1285 |
-| external_call | `_windows_api_path` | `os.fspath` | 1285 |
-| unresolved_call | `_windows_api_path` | `value.startswith` | 1286 |
-| unresolved_call | `_windows_api_path` | `value.startswith` | 1288 |
+| external_call | `move_windows_path_write_through` | `ctypes.WinDLL` | 694 |
+| unresolved_call | `move_windows_path_write_through` | `move_file` | 701 |
+| external_call | `_windows_api_path` | `os.path.abspath` | 1298 |
+| external_call | `_windows_api_path` | `os.fspath` | 1298 |
+| unresolved_call | `_windows_api_path` | `value.startswith` | 1299 |
+| unresolved_call | `_windows_api_path` | `value.startswith` | 1301 |
 | step_limit | `replace_windows_file_write_through` | `first 12 steps` | 0 |
 
 ## Behavior

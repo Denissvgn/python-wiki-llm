@@ -1,6 +1,6 @@
 # _SnapshotBuckets
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:396`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:427`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -26,6 +26,7 @@ _Auto-generated from `_SnapshotBuckets` in `src/llm_wiki_cli/services/source_sna
 | `include_tests` | `frozenset[str]` | *required* | — |
 | `source_selection_policy` | `SourceSelectionPolicy \| None` | *required* | — |
 | `selected_regular_paths` | `set[str]` | *required* | — |
+| `expected_gitignore_paths` | `frozenset[str] \| None` | *required* | — |
 
 ## Methods
 
@@ -77,7 +78,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [source_snapshot](../modules/source_snapshot.md) | 0 | `compose_candidates`, `dockerfile_candidates`, `files_by_language`, `gitignore_contents`, `gitignore_rules`, `include_tests`, `package_markers`, `selected_regular_paths`, `source_selection_policy`, `unsupported_files_by_language`, `yaml_candidates` |
+| [source_snapshot](../modules/source_snapshot.md) | 0 | `compose_candidates`, `dockerfile_candidates`, `expected_gitignore_paths`, `files_by_language`, `gitignore_contents`, `gitignore_rules`, `include_tests`, `package_markers`, `selected_regular_paths`, `source_selection_policy`, `unsupported_files_by_language`, `yaml_candidates` |
 
 ### References
 

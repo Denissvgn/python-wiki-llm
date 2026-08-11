@@ -10,11 +10,13 @@ Shared constants and utilities for agent-wiki-cli.
 
 | Source | Symbols |
 |--------|---------|
-| `.services.filesystem_guard` | `WindowsSecurityGuardError`, `windows_current_user_sid`, `windows_path_owner_sid` |
+| `.services.filesystem_guard` | `WindowsSecurityGuardError`, `atomic_write_private_bytes`, `ensure_guarded_directory`, `windows_current_user_sid`, `windows_path_owner_sid` |
 | `.services.io` | `first_unsafe_path_component` |
+| `.services.knowledge_evidence` | `formatted_json_bytes` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable` |
 | `dataclasses` | `dataclass` |
+| `enum` | `Enum` |
 | `fnmatch` | `fnmatch` |
 | `json` | `json` |
 | `os` | `os` |
@@ -41,17 +43,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (46) |
-| Outbound | `src` (2) |
+| Outbound | `src` (3) |
 
-> All 48 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
-| Class | Line | Bases | Description |
-|-------|------|-------|-------------|
-| [PathValidationError](../entities/PathValidationError.md) | 117 | `ValueError` | Raised when a user-provided path escapes the project root. |
-| [_GitignoreRule](../entities/GitignoreRule.md) | 315 | — | — |
-| [GitIgnoreMatcher](../entities/GitIgnoreMatcher.md) | 323 | — | Ordered gitignore matcher for repository scans. |
+| Class | Kind | Line | Bases / Target | Description |
+|-------|------|------|----------------|-------------|
+| [PathValidationError](../entities/PathValidationError.md) | Class | 121 | `ValueError` | Raised when a user-provided path escapes the project root. |
+| [AgentConfigState](../entities/AgentConfigState.md) | Enum | 313 | `str`, `Enum` | Compatibility classification for the local agent configuration. |
+| [AgentConfigInspection](../entities/AgentConfigInspection.md) | Class | 323 | — | One safe configuration read with provenance for status reporting. |
+| [_GitignoreRule](../entities/GitignoreRule.md) | Class | 373 | — | — |
+| [GitIgnoreMatcher](../entities/GitIgnoreMatcher.md) | Class | 381 | — | Ordered gitignore matcher for repository scans. |
 
 ## Functions
 
@@ -70,5 +74,11 @@ flowchart LR
 | `_rule_matches` | `(rel_path: str, rule: _GitignoreRule) -> bool` | — | — |
 | `build_gitignore_matcher` | `(root: 'str \| Path') -> GitIgnoreMatcher` | — | Parse root and nested .gitignore files once for a source scan. |
 | `is_ignored_by_gitignore` | `(rel_path: str, gitignore_path: Path = Path('.gitignore')) -> bool` | — | Check if a relative path is ignored according to one .gitignore file. |
-| `read_config` | `(wiki_dir: 'str \| Path') -> dict` | — | Read the persisted llm-wiki config as a dict. |
-| `write_config` | `(wiki_dir: 'str \| Path', data: dict) -> None` | — | Persist the llm-wiki config dict to the agent config file. |
+| `inspect_config_path` | `(config_path: 'str \| Path') -> AgentConfigInspection` | — | Inspect one exact local-agent config path without hiding its state. |
+| `inspect_config` | `(wiki_dir: 'str \| Path') -> AgentConfigInspection` | — | Inspect the canonical config, adopting one safe legacy home if needed. |
+| `config_requires_manual_recovery` | `(inspection: AgentConfigInspection) -> bool` | — | Return whether config bytes must be inspected before lifecycle mutation. |
+| `read_config` | `(wiki_dir: 'str \| Path') -> dict` | — | Return the backward-compatible config mapping used by older callers. |
+| `require_safe_config_path` | `(wiki_dir: 'str \| Path') -> Path` | — | Return an absent or regular config path with no redirected component. |
+| `write_config` | `(wiki_dir: 'str \| Path', data: dict, *, expected_existing: bytes \| None \| object = _CONFIG_EXPECTATION_UNSET) -> None` | — | Atomically persist config, optionally bound to an inspected snapshot. |
+| `require_committed_config` | `(wiki_dir: 'str \| Path', data: dict) -> None` | — | Require one canonical config home containing exactly the committed bytes. |
+| `require_config_inspection_unchanged` | `(wiki_dir: 'str \| Path', expected: AgentConfigInspection) -> None` | — | Require the exact config/home snapshot inspected before mutation. |

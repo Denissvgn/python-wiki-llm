@@ -98,7 +98,7 @@ sequenceDiagram
     p1-->>p2: getattr
 ```
 
-> Call sequence diagram shows 30 of 5498 interactions; 5468 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 5527 interactions; 5497 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -292,6 +292,18 @@ def test_readme_documents_bundled_skills():
         assert f"`{skill_id}`" in readme
 
 
+def test_public_lifecycle_docs_scope_legacy_generic_schema_migration():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    release_notes = _changelog_section("## [Unreleased]")
+
+    for text in (readme, release_notes):
+        normalized = " ".join(text.split())
+        assert "configured agent's current schema path" in normalized
+        assert "`.agents.md`" in normalized
+        assert "`AGENTS.md`" in normalized
+        assert "user-owned, manually managed content" in normalized
+
+
 def test_readme_documents_autonomous_agent_consumption_paths():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     assert "For autonomous agents" in readme

@@ -1,6 +1,6 @@
 # _BoundedGeneratedDiagram
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:697`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:701`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

@@ -2,9 +2,10 @@
 
 The package ships agent skills (Claude Code-compatible ``SKILL.md``
 workflow directories) under ``llm_wiki_cli/skills/``.  This module lists
-them, exports them to an arbitrary destination (e.g. a personal
-``~/.claude/skills`` directory), and installs them into the current
-project's ``.claude/skills`` directory.
+them, exports them to an arbitrary destination (for example, a personal
+``~/.claude/skills`` directory), and installs them into the configured
+agent's project directory: ``.claude/skills`` for Claude and the neutral
+``.llm-wiki/skills`` directory for other configured agents.
 """
 
 from __future__ import annotations

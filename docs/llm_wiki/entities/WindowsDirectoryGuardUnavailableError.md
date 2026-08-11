@@ -1,6 +1,6 @@
 # _WindowsDirectoryGuardUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:43`
+**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:48`
 **Kind:** Class
 **Bases:** `WindowsDirectoryGuardError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)

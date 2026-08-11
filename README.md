@@ -1903,6 +1903,14 @@ edited locally are never overwritten without `--force` — the run reports
 `existing_file_differs` and exits non-zero instead, so local skill
 customizations survive package upgrades by default.
 
+On a new project, `init` enables and provisions only the managed
+`wiki-reference` tree by default; the other bundled workflows remain explicit
+install/export choices. `init --no-skills` records an opt-out and renders the
+self-contained `expanded_inline` instructions. Omitting the skills flag on a
+later `init` or `upgrade` preserves the stored preference. The opt-out neither
+deletes an existing reference tree nor disables read-only knowledge and context
+interfaces.
+
 An explicitly selected workflow that routes into managed policy requires an
 exact `wiki-reference` tree at the same destination. Add
 `--skill wiki-reference` to the selection, or provision the managed reference
@@ -1911,12 +1919,18 @@ before writing when that prerequisite is absent, incomplete, or modified;
 dependency skills are not added implicitly. An all-skills install or export
 already contains the prerequisite.
 
-`llm-wiki upgrade` refreshes the generated agent constraints and the
-CLI-owned `wiki-reference` policy as one exact nested tree. Missing or drifted
-managed files can be repaired, while unexpected entries and unsafe filesystem
-links are preserved and reported instead of being followed or silently
-deleted. Existing installed workflow-skill copies remain untouched; review
-local changes before deliberately refreshing `wiki-sync`, `wiki-bootstrap`, or
+When managed references remain enabled, `llm-wiki upgrade` refreshes the
+generated agent constraints and the CLI-owned `wiki-reference` policy as one
+exact nested tree. This is the deliberate force-refresh path for expected
+regular files: a locally edited or missing managed topic is restored even when
+the command does not include `--force`. The upgrade command's `--force` flag is
+separate and authorizes replacement of an unrelated post-commit hook. `init`
+and ordinary `skills install`/`skills export` keep differing regular files
+unless their own force behavior is requested. Unexpected, conflicting, or
+unsafe entries are always preserved and reported; inspect and back them up,
+then move them aside if intended before retrying the reference refresh.
+Existing installed workflow-skill copies remain untouched; review local changes
+before deliberately refreshing `wiki-sync`, `wiki-bootstrap`, or
 `onboarding-guide` with repeated `--skill` options and `--force`.
 
 `init` and `upgrade` verify that managed reference tree before choosing the
@@ -1949,6 +1963,68 @@ target; that option removes the named source's managed schema block and exact
 current managed-reference tree only when managed references are enabled and the
 target reference verifies current. Opt-out, modified, and incomplete trees are
 preserved.
+
+#### Managed instruction migration and rollback
+
+The schema profile is selected from live state rather than from a free-form
+profile setting. A current exact managed reference selects `compact`; an
+explicit opt-out or an unavailable, incomplete, or unverifiable reference
+selects `expanded_inline`. Both profiles use knowledge mode `auto` when they
+build a qualified packet, and the expanded profile remains a complete inline
+procedure when no topic can be opened. The `expanded_inline` renderer remains
+supported through at least the next minor compatibility cycle after compact
+delivery becomes the default.
+
+`init` and `upgrade` recognize an older unversioned LLM Wiki block when it is
+already in the configured agent's current schema path. They replace only that
+bounded managed block with a versioned profile: user-authored text outside it
+is preserved, and installed plugin components remain inline in their own
+separately owned blocks. Use `upgrade`, not `migrate`, for this
+instruction-block conversion; `migrate` reconciles the wiki's page layout and
+canonical names.
+
+The legacy generic `.agents.md` filename is not relocated automatically.
+`init` or `upgrade` creates or refreshes the current `AGENTS.md` schema and
+leaves `.agents.md` unchanged as user-owned, manually managed content. Inspect
+and copy any user prose you still need before retiring that obsolete file under
+your repository's normal policy.
+
+To roll a configured installation back to the self-contained profile, then
+move it forward after inspection:
+
+```bash
+llm-wiki upgrade --no-skills
+llm-wiki status
+llm-wiki upgrade --skills
+```
+
+That concise sequence intentionally uses the default `docs/llm_wiki` path.
+Omitting `--wiki-dir` does not discover a custom path used by an earlier
+initialization. For a non-default installation, carry the same existing path
+through every lifecycle read and write; for example:
+
+```bash
+llm-wiki upgrade --wiki-dir .wiki --no-skills
+llm-wiki status --wiki-dir .wiki
+llm-wiki upgrade --wiki-dir .wiki --skills
+```
+
+The first command persists the opt-out, leaves any existing reference tree in
+place, and renders `expanded_inline`. The final command refreshes the managed
+tree and returns to `compact` only after exact verification. For a missing or
+drifted topic, start with `status`, back up changes you need, remove or move
+aside preserved conflicting/extra entries, and rerun `upgrade --skills`,
+retaining the same explicit `--wiki-dir` when it is non-default. Reference
+recovery does not require or imply `knowledge init`.
+
+Agent relocation uses the same ordering and the same wiki-path rule. Run
+`upgrade --agent <target>` with the existing `--wiki-dir` when non-default; the
+target schema and its configured destination (`.claude/skills` for Claude,
+`.llm-wiki/skills` otherwise) become usable before the source managed block is
+removed. If cleanup was interrupted, inspect `status` with that path and use
+its exact `--cleanup-source-agent <source>` recovery command. Modified source
+references at a distinct obsolete location are not removed, and all
+user-authored schema text remains in place for review.
 
 ### `metrics`
 
@@ -1985,6 +2061,9 @@ llm-wiki upgrade
 llm-wiki upgrade --agent copilot
 llm-wiki upgrade --wiki-dir .wiki
 llm-wiki upgrade --force
+llm-wiki upgrade --no-skills
+llm-wiki upgrade --skills
+llm-wiki upgrade --agent claude --cleanup-source-agent generic
 llm-wiki upgrade --no-quality-hints
 llm-wiki upgrade --issue-reporting
 llm-wiki upgrade --no-issue-reporting
@@ -2011,6 +2090,10 @@ llm-wiki migrate --dry-run
 llm-wiki migrate --chunk-size 50 --plan-chunks
 llm-wiki migrate --chunk-size 50 --chunk 1
 ```
+
+This command migrates canonical wiki pages. To convert an older unversioned
+managed instruction block or change its compact/expanded delivery, use
+`llm-wiki upgrade` and the lifecycle guidance under [`skills`](#skills).
 
 ### `knowledge`
 

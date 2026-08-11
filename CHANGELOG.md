@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Explicit `knowledge_mode=off|auto|required` context requests use
+  `llm-wiki-context/v2` and `llm-wiki-qualified-context-packet/v2` for bounded
+  native evidence. Omitting the mode retains the v1 CLI, Python, MCP, and raw
+  protocol behavior and is not deprecated in this release; any future default
+  change will be announced first with a migration window.
 - Versioned `compact` and `expanded_inline` managed-schema profile markers,
   structured managed-reference verification, and live lifecycle reporting for
   current, disabled, unavailable, legacy, and broken combinations.
@@ -36,6 +41,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Older unversioned managed instruction blocks in the configured agent's
+  current schema path now migrate in place to a versioned profile without
+  changing surrounding user prose or separately owned plugin blocks. The
+  obsolete generic `.agents.md` path is not relocated: initialization and
+  upgrade create or refresh `AGENTS.md` while preserving `.agents.md` unchanged
+  as user-owned, manually managed content. `upgrade --no-skills` is the
+  supported self-contained rollback through at least the next minor
+  compatibility cycle, while `upgrade --skills` refreshes and verifies the
+  managed reference before returning to compact delivery. Omitting `--wiki-dir`
+  continues to select `docs/llm_wiki`; non-default installations must carry the
+  same explicit wiki path through upgrade and status lifecycle commands.
 - The `compact` managed-schema profile is now a bounded knowledge-first kernel
   that uses a reusable qualified packet with `--knowledge-mode auto`, concise
   evidence and authority rules, and direct verified-topic routes. The

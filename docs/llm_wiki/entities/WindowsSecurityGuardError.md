@@ -1,6 +1,6 @@
 # WindowsSecurityGuardError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:51`
+**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:56`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
