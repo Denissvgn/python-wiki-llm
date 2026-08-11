@@ -14,6 +14,7 @@ from llm_wiki_cli.services import (
     context_packet,
     context_service,
     documentation_query_builder,
+    knowledge_consumption,
 )
 from llm_wiki_cli.services import mcp_server
 
@@ -926,17 +927,57 @@ def test_snapshot_surface_query_has_representative_scale_bounds(monkeypatch):
     }
 
 
-_CONTEXT_PERFORMANCE_BUDGETS = {
-    "representative_elapsed_seconds": 15.0,
-    "representative_peak_bytes": 128 * 1024 * 1024,
-    "representative_context_bytes": 512 * 1024,
-    "representative_packet_bytes": 2 * 1024 * 1024,
-    "scale_elapsed_seconds": 15.0,
-    "scale_peak_bytes": 256 * 1024 * 1024,
-    "scale_context_bytes": 512 * 1024,
-    "scale_packet_bytes": 2 * 1024 * 1024,
-    "named_stage_nanoseconds": 10_000_000_000,
-}
+_CONTEXT_PERFORMANCE_RECORD_PATH = (
+    Path(__file__).parent / "records" / "knowledge" / "context-performance-gate.json"
+)
+_CONTEXT_PERFORMANCE_RECORD = json.loads(
+    _CONTEXT_PERFORMANCE_RECORD_PATH.read_text(encoding="utf-8")
+)
+_CONTEXT_PERFORMANCE_BUDGETS = _CONTEXT_PERFORMANCE_RECORD["thresholds"]
+
+
+def test_context_performance_threshold_record_is_explicit_and_portable():
+    record = _CONTEXT_PERFORMANCE_RECORD
+
+    assert record["schema_version"] == "llm-wiki-context-performance-gate/v1"
+    assert record["record_kind"] == "context-performance-thresholds"
+    assert record["fixtures"] == {
+        "representative": {
+            "knowledge": "ready one-module two-entity projection",
+            "requests": [
+                "auto context response",
+                "auto qualified context packet",
+            ],
+        },
+        "scale": {
+            "concepts": 2_000,
+            "relationships": 3_998,
+            "source_files": 1,
+        },
+    }
+    assert record["environment"] == {
+        "capacity": "single worker; host CPU and memory capacity unspecified",
+        "execution": "serialized in one pytest process",
+        "filesystem": "temporary local fixture directory",
+        "memory_measurement": "tracemalloc Python allocations",
+        "network": "not used",
+        "python": "project-supported Python >=3.10",
+        "time_measurement": "time.perf_counter wall clock",
+    }
+    assert record["reproduce"] == (
+        ".venv/bin/pytest -q tests/test_knowledge_query_adapters.py"
+    )
+    assert record["thresholds"] == {
+        "representative_elapsed_seconds": 15.0,
+        "representative_peak_bytes": 128 * 1024 * 1024,
+        "representative_context_bytes": 512 * 1024,
+        "representative_packet_bytes": 2 * 1024 * 1024,
+        "scale_elapsed_seconds": 15.0,
+        "scale_peak_bytes": 256 * 1024 * 1024,
+        "scale_context_bytes": 512 * 1024,
+        "scale_packet_bytes": 2 * 1024 * 1024,
+        "named_stage_nanoseconds": 10_000_000_000,
+    }
 
 
 def _instrumented_stage(counters, durations, name, callback):
@@ -1043,13 +1084,17 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
     durations = {}
     real_context_snapshot = context_service.build_source_snapshot
     real_packet_snapshot = context_packet.build_source_snapshot
+    real_packet_input_integrity = (
+        context_packet.source_snapshot_inputs_match_current_files
+    )
+    real_packet_integrity = context_packet.source_snapshot_matches_current_files
     real_inventory = context_service.get_inventory
     real_context_surface = context_service.evaluate_surface_index
     real_packet_surface = context_packet.evaluate_surface_index
     real_knowledge = context_service._build_context_knowledge_view
+    real_freshness = knowledge_consumption.evaluate_knowledge_freshness
     real_service = context_service.DocumentationGraphQueryService
     real_selection = real_service.broad_context_selection
-    packet_snapshot_calls = 0
     inventory_plugin_modes = []
 
     def wrap(name, callback):
@@ -1062,21 +1107,6 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
             )
 
         return measured
-
-    def measured_packet_snapshot(*args, **kwargs):
-        nonlocal packet_snapshot_calls
-        name = (
-            "source_snapshot"
-            if packet_snapshot_calls == 0
-            else "source_mutation_verification"
-        )
-        packet_snapshot_calls += 1
-        return _instrumented_stage(
-            counters,
-            durations,
-            name,
-            lambda: real_packet_snapshot(*args, **kwargs),
-        )
 
     def measured_inventory(*args, **kwargs):
         inventory_plugin_modes.append(kwargs["include_plugins"])
@@ -1095,7 +1125,17 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
     monkeypatch.setattr(
         context_packet,
         "build_source_snapshot",
-        measured_packet_snapshot,
+        wrap("source_snapshot", real_packet_snapshot),
+    )
+    monkeypatch.setattr(
+        context_packet,
+        "source_snapshot_inputs_match_current_files",
+        wrap("source_input_integrity_check", real_packet_input_integrity),
+    )
+    monkeypatch.setattr(
+        context_packet,
+        "source_snapshot_matches_current_files",
+        wrap("source_structural_verification", real_packet_integrity),
     )
     monkeypatch.setattr(context_service, "get_inventory", measured_inventory)
     monkeypatch.setattr(
@@ -1112,6 +1152,11 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
         context_service,
         "_build_context_knowledge_view",
         wrap("knowledge_read", real_knowledge),
+    )
+    monkeypatch.setattr(
+        knowledge_consumption,
+        "evaluate_knowledge_freshness",
+        wrap("freshness_evaluation", real_freshness),
     )
     monkeypatch.setattr(
         context_service,
@@ -1137,6 +1182,15 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
         focus="all",
         knowledge_mode="auto",
     )
+    assert counters == {
+        "source_snapshot": 1,
+        "deep_extraction": 1,
+        "surface_evaluation": 1,
+        "knowledge_read": 1,
+        "freshness_evaluation": 1,
+        "graph_construction": 1,
+        "knowledge_selection": 1,
+    }
     packet = api.build_qualified_context(
         ".",
         "docs/llm_wiki",
@@ -1170,10 +1224,12 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
 
     assert counters == {
         "source_snapshot": 2,
-        "source_mutation_verification": 3,
+        "source_input_integrity_check": 2,
+        "source_structural_verification": 1,
         "deep_extraction": 2,
         "surface_evaluation": 2,
         "knowledge_read": 2,
+        "freshness_evaluation": 2,
         "graph_construction": 2,
         "knowledge_selection": 2,
     }

@@ -97,7 +97,12 @@ from ..io import read_md, write_bytes_atomic, write_text_output
 from ..knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from ..knowledge_consumption import KnowledgeReadView
 from ..knowledge_governance import GOVERNANCE_FILENAME
-from ..skills import export_skills, list_bundled_skills
+from ..skills import (
+    REFERENCE_DEPENDENT_SKILLS,
+    REFERENCE_SKILL_ID,
+    export_skills,
+    list_bundled_skills,
+)
 from ..validation import (
     parse_utc_timestamp,
     portable_path_key,
@@ -252,6 +257,8 @@ __all__ = (
     'GOVERNANCE_FILENAME',
     'export_skills',
     'list_bundled_skills',
+    'REFERENCE_DEPENDENT_SKILLS',
+    'REFERENCE_SKILL_ID',
     'parse_utc_timestamp',
     'portable_path_key',
     'require_shared_exact_fields',

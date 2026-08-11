@@ -8,14 +8,17 @@ from types import SimpleNamespace
 
 import pytest
 
+from llm_wiki_cli import api
 from llm_wiki_cli.services import context_service
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
 from llm_wiki_cli.services.knowledge_consumption import KnowledgeAvailability
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadIssue
 from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
+from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadIssue
 from llm_wiki_cli.services.knowledge_model import ComputedFreshness
+from llm_wiki_cli.services.mcp_server import McpWikiService
+from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from tests.test_knowledge_cmd import _committed_wiki, _run as _run_knowledge
 from tests.test_knowledge_queries import _ready_view
 
@@ -622,6 +625,76 @@ def test_auto_and_required_unavailable_states_share_stable_fallback_error_shape(
     else:
         assert recovery_command == sync_command
     assert required_service.calls == []
+
+
+def test_invalid_projection_surface_has_consistent_read_only_fallbacks(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    from tests.test_context_packet_knowledge import (
+        _materialize_ready_project,
+        _request,
+    )
+    from llm_wiki_cli.services.context_packet import build_qualified_context
+
+    tree, _fixture = _materialize_ready_project(tmp_path, monkeypatch)
+    rejected_payload_sentinel = "projection-only-untrusted-detail"
+    (tree["wiki_root"] / SURFACE_INDEX_FILENAME).write_text(
+        json.dumps(
+            {
+                "schema_version": 999,
+                "untrusted_detail": rejected_payload_sentinel,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    before = _tree_snapshot(tree["root"])
+
+    context_service.run(_context_args(knowledge_mode="auto"))
+    cli_payload = json.loads(capsys.readouterr().out)
+    api_payload = api.build_context(
+        ".",
+        focus="all",
+        wiki_dir="docs/llm_wiki",
+        knowledge_mode="auto",
+    )
+    mcp_payload = McpWikiService(
+        src_dir=".",
+        wiki_dir="docs/llm_wiki",
+    ).get_context(format="json", focus=["all"], knowledge_mode="auto")
+    packet_payload = build_qualified_context(
+        ".",
+        "docs/llm_wiki",
+        _request("auto"),
+    ).to_payload()
+
+    results = (
+        cli_payload["knowledge"],
+        api_payload["knowledge"],
+        mcp_payload["knowledge"],
+        packet_payload["response"]["knowledge"],
+    )
+    for knowledge in results:
+        assert knowledge["status"] == "fallback"
+        assert knowledge["availability"] == "degraded"
+        assert knowledge["reason"] == "surface-validation-failed"
+        assert knowledge["selected"] is False
+        assert "selection" not in knowledge
+        assert knowledge["fallback"] == {
+            "used": True,
+            "evidence": ["markdown", "targeted-source-or-runtime"],
+            "reason": "surface-validation-failed",
+        }
+
+    assert "knowledge-degraded" in packet_payload["delivery"]["limitations"]
+    assert rejected_payload_sentinel not in json.dumps(
+        [cli_payload, api_payload, mcp_payload, packet_payload],
+        sort_keys=True,
+    )
+    assert _tree_snapshot(tree["root"]) == before
+    assert not (tree["wiki_root"] / GOVERNANCE_FILENAME).exists()
 
 
 def test_prefer_fresh_never_crosses_tiers_or_filters_stale_sources() -> None:

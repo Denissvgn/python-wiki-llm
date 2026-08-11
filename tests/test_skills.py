@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import types
 from pathlib import Path
 
@@ -110,6 +111,21 @@ def test_wiki_reference_defines_fail_closed_git_policy():
     assert "nested `.gitignore`, `.git/info/exclude`" in normalized
     assert "never stage a partial native snapshot" in normalized_lower
     assert "never stage or commit the source or adopted input wiki" in normalized_lower
+
+
+def test_reference_dependency_registry_matches_every_bundled_direct_route():
+    direct_consumers = {
+        skill.skill_id
+        for skill in skills.list_bundled_skills()
+        if skill.skill_id != skills.REFERENCE_SKILL_ID
+        and any(
+            "wiki-reference/" in (skill.path / relative).read_text(encoding="utf-8")
+            for relative in skill.files
+            if relative.endswith(".md")
+        )
+    }
+
+    assert direct_consumers == set(skills.REFERENCE_DEPENDENT_SKILLS)
 
 
 class TestBundledAgentDocsSkill:
@@ -1258,6 +1274,145 @@ class TestSkillExport:
         assert report.ok
         assert {op.action for op in report.operations} == {"keep"}
 
+    @pytest.mark.parametrize("skill_id", sorted(skills.REFERENCE_DEPENDENT_SKILLS))
+    def test_selected_reference_consumer_fails_before_writing_without_prerequisite(
+        self,
+        tmp_path,
+        skill_id,
+    ):
+        destination = tmp_path / "out"
+
+        with pytest.raises(
+            skills.SkillsError,
+            match="Include '--skill wiki-reference'",
+        ):
+            skills.export_skills(destination, skills=[skill_id])
+
+        assert not destination.exists()
+
+    def test_selected_consumer_and_reference_are_nested_and_idempotent(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        selected = ["wiki-sync", "wiki-reference"]
+
+        first = skills.export_skills(destination, skills=selected)
+        second = skills.export_skills(destination, skills=selected)
+
+        assert first.ok and second.ok
+        assert first.skills == second.skills == selected
+        reference = destination / "wiki-reference"
+        assert {
+            path.relative_to(reference).as_posix()
+            for path in reference.rglob("*")
+            if path.is_file()
+        } == set(skills.REFERENCE_SKILL_FILES)
+        verification_index = next(
+            index
+            for index, operation in enumerate(first.operations)
+            if operation.action == "verify"
+        )
+        first_consumer_index = next(
+            index
+            for index, operation in enumerate(first.operations)
+            if "wiki-sync" in Path(operation.path).parts
+        )
+        assert verification_index < first_consumer_index
+        assert {operation.action for operation in second.operations} == {
+            "keep",
+            "verify",
+        }
+
+    def test_selected_consumer_accepts_and_reports_existing_exact_prerequisite(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=["wiki-reference"],
+        ).ok
+
+        report = skills.export_skills(destination, skills=["wiki-sync"])
+
+        assert report.ok
+        assert report.skills == ["wiki-sync"]
+        verification = [
+            operation
+            for operation in report.operations
+            if operation.action == "verify"
+        ]
+        assert len(verification) == 1
+        assert verification[0].path == str(destination / "wiki-reference")
+        assert verification[0].message == "Required by: wiki-sync"
+
+    def test_selected_consumer_rejects_drifted_existing_prerequisite(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=["wiki-reference"],
+        ).ok
+        topic = destination / "wiki-reference/references/maintenance.md"
+        topic.write_text("local notes\n", encoding="utf-8")
+
+        with pytest.raises(skills.SkillsError, match="exact 'wiki-reference' tree"):
+            skills.export_skills(destination, skills=["wiki-sync"])
+
+        assert topic.read_text(encoding="utf-8") == "local notes\n"
+        assert not (destination / "wiki-sync").exists()
+
+    def test_reversed_selection_stops_before_consumer_when_reference_is_drifted(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=["wiki-reference"],
+        ).ok
+        topic = destination / "wiki-reference/references/maintenance.md"
+        topic.write_text("local notes\n", encoding="utf-8")
+
+        report = skills.export_skills(
+            destination,
+            skills=["wiki-sync", "wiki-reference"],
+        )
+
+        assert not report.ok
+        assert {issue["category"] for issue in report.issues} >= {
+            "existing_file_differs",
+            "managed_tree_not_exact",
+            "required_skill_unavailable",
+        }
+        assert topic.read_text(encoding="utf-8") == "local notes\n"
+        assert not (destination / "wiki-sync").exists()
+        assert not any(
+            "wiki-sync" in Path(operation.path).parts
+            for operation in report.operations
+        )
+
+    def test_incomplete_bundled_reference_fails_before_destination_creation(
+        self,
+        tmp_path,
+    ):
+        bundled = tmp_path / "bundled"
+        shutil.copytree(skills.BUNDLED_SKILLS_ROOT, bundled)
+        (bundled / "wiki-reference/references/governance.md").unlink()
+        destination = tmp_path / "out"
+
+        with pytest.raises(skills.SkillsError, match="package tree is incomplete"):
+            skills.export_skills(
+                destination,
+                skills=["wiki-sync", "wiki-reference"],
+                skills_root=bundled,
+            )
+
+        assert not destination.exists()
+
     def test_export_accepts_parent_relative_caller_destination(
         self, tmp_path, monkeypatch
     ):
@@ -1476,7 +1631,9 @@ class TestSkillsCli:
         assert excinfo.value.code == 1
         assert "outside the project root" in capsys.readouterr().err
 
-    def test_cli_export_selected_skill(self, tmp_project, monkeypatch, capsys):
+    def test_cli_export_selected_skill_with_reference_prerequisite(
+        self, tmp_project, monkeypatch, capsys
+    ):
         monkeypatch.setattr(
             "sys.argv",
             [
@@ -1487,6 +1644,8 @@ class TestSkillsCli:
                 "exported",
                 "--skill",
                 "wiki-sync",
+                "--skill",
+                "wiki-reference",
                 "--format",
                 "json",
             ],
@@ -1494,8 +1653,35 @@ class TestSkillsCli:
         cli.main()
         data = json.loads(capsys.readouterr().out)
         assert data["ok"] is True
-        assert data["skills"] == ["wiki-sync"]
+        assert data["skills"] == ["wiki-sync", "wiki-reference"]
+        assert any(operation["action"] == "verify" for operation in data["operations"])
         assert (tmp_project / "exported" / "wiki-sync" / "SKILL.md").is_file()
+        assert (
+            tmp_project / "exported" / "wiki-reference" / "references/maintenance.md"
+        ).is_file()
+
+    def test_cli_rejects_selected_consumer_without_reference_prerequisite(
+        self, tmp_project, monkeypatch, capsys
+    ):
+        monkeypatch.setattr(
+            "sys.argv",
+            [
+                "llm-wiki",
+                "skills",
+                "export",
+                "--dest",
+                "exported",
+                "--skill",
+                "wiki-sync",
+            ],
+        )
+
+        with pytest.raises(SystemExit) as excinfo:
+            cli.main()
+
+        assert excinfo.value.code == 1
+        assert "--skill wiki-reference" in capsys.readouterr().err
+        assert not (tmp_project / "exported").exists()
 
     def test_cli_help_includes_skills(self, monkeypatch, capsys):
         monkeypatch.setattr("sys.argv", ["llm-wiki", "skills", "--help"])

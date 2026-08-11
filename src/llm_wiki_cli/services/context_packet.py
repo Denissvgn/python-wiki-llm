@@ -90,6 +90,8 @@ from .source_snapshot import (
     SourceSnapshotError,
     build_source_snapshot,
     capture_source_selection_inputs,
+    source_snapshot_inputs_match_current_files,
+    source_snapshot_matches_current_files,
 )
 from .validation import require_repository_relative_path
 from .wiki_surface_index import SurfaceIndexEvaluation, evaluate_surface_index
@@ -708,7 +710,7 @@ def capture_context_read(
             "qualified context construction requires a valid source inventory"
         )
     source_anchor = _source_anchor(source_snapshot)
-    _assert_source_unchanged(source_snapshot, source_anchor)
+    _assert_source_inputs_unchanged(source_snapshot, source_anchor)
     try:
         validate_live_query_source_selection(
             source_root=source_root,
@@ -805,7 +807,7 @@ def capture_context_read(
         reject_all_symlinks=strict_wiki_symlinks,
     )
     wiki_anchor_after = wiki_anchor_before
-    _assert_source_unchanged(source_snapshot, source_anchor)
+    _assert_source_inputs_unchanged(source_snapshot, source_anchor)
 
     changed = context_service._selected_git_changed_files(
         str(source_root),
@@ -4714,22 +4716,28 @@ def _source_snapshot_anchor_payload(snapshot: SourceSnapshot) -> dict[str, Any]:
 
 def _assert_source_unchanged(snapshot: SourceSnapshot, expected_anchor: str) -> None:
     try:
-        current = build_source_snapshot(
-            snapshot.root,
-            selection_policy=snapshot.source_selection_policy,
-            expected_selection_inputs=snapshot.source_selection_inputs,
+        unchanged = (
+            _source_anchor(snapshot) == expected_anchor
+            and source_snapshot_matches_current_files(snapshot)
         )
-        missing_built_in_paths = set(snapshot.captured_content_hashes) - set(
-            current.captured_content_hashes
-        )
-        if missing_built_in_paths:
-            current = current.with_captured_inventory_paths(
-                sorted(missing_built_in_paths)
-            )
-        current_anchor = _source_anchor(current)
     except (OSError, SourceSnapshotError, ValueError) as exc:
         raise ContextPacketSourceMutationError("source") from exc
-    if current_anchor != expected_anchor:
+    if not unchanged:
+        raise ContextPacketSourceMutationError("source")
+
+
+def _assert_source_inputs_unchanged(
+    snapshot: SourceSnapshot,
+    expected_anchor: str,
+) -> None:
+    try:
+        unchanged = (
+            _source_anchor(snapshot) == expected_anchor
+            and source_snapshot_inputs_match_current_files(snapshot)
+        )
+    except (OSError, SourceSnapshotError, ValueError) as exc:
+        raise ContextPacketSourceMutationError("source") from exc
+    if not unchanged:
         raise ContextPacketSourceMutationError("source")
 
 

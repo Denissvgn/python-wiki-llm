@@ -417,8 +417,10 @@ The canonical wiki surfaces are:
   counts, and outgoing internal links.
 
 Static-site mirror output, when present, is derived from these canonical
-surfaces. Treat it as generated distribution output built and validated with
-`llm-wiki site export|check`, not as an editable source of truth. Use the
+surfaces. Treat it as generated distribution output,
+not as an editable source of truth. Build and validate it with
+`llm-wiki site export --wiki-dir {wiki_dir_arg} --out-dir site` and
+`llm-wiki site check --wiki-dir {wiki_dir_arg} --out-dir site`. Use the
 managed publishing topic above for export profiles, MkDocs/Docusaurus
 specifics, and site checker modes.
 

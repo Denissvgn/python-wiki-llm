@@ -44,9 +44,18 @@ def _render_packet_markdown(payload: Mapping[str, Any]) -> str:
     lines.extend(["", "Forbidden actions:"])
     lines.extend(f"- {value}" for value in forbidden)
     lines.extend(["", "## Ordered skills", ""])
+    lines.append(
+        "Load each skill from its exact recorded run-local path in this order. "
+        "Resolve `wiki-reference` topic links relative to that recorded directory; "
+        "do not substitute a target-agent installation path."
+    )
+    lines.append("")
     for skill in skills:
         if isinstance(skill, dict):
-            lines.append(f"- `{skill.get('id', '')}` (`{skill.get('hash', '')}`)")
+            lines.append(
+                f"- `{skill.get('id', '')}` (`{skill.get('hash', '')}`) at "
+                f"`{skill.get('path', '')}`"
+            )
         else:
             lines.append(f"- `{skill}`")
     lines.extend(
@@ -89,6 +98,34 @@ def build_documentation_agent_packet(
     _assert_packet_stage(run, stage)
     _load_bound_runtime_policy(workspace_root, run)
     _verify_initial_integrity_anchors(workspace_root, run)
+    stage_contract = _stage_contract(stage)
+    skills_by_id = {str(skill["id"]): skill for skill in run.skills}
+    stage_skill_ids = tuple(str(skill_id) for skill_id in stage_contract["skills"])
+    ordered_skill_ids = (
+        (REFERENCE_SKILL_ID, *stage_skill_ids)
+        if any(
+            skill_id in REFERENCE_DEPENDENT_SKILLS for skill_id in stage_skill_ids
+        )
+        else stage_skill_ids
+    )
+    unavailable_skills = [
+        skill_id for skill_id in ordered_skill_ids if skill_id not in skills_by_id
+    ]
+    if unavailable_skills:
+        raise DocumentationIntegrityError(
+            "Documentation stage is missing its exact run-local skill prerequisite: "
+            f"{unavailable_skills[0]}"
+        )
+    selected_skills = [
+        {
+            "id": skill["id"],
+            "package_version": skill["package_version"],
+            "hash": skill["hash"],
+            "path": skill["path"],
+        }
+        for skill_id in ordered_skill_ids
+        for skill in (skills_by_id[skill_id],)
+    ]
     if run.state == "blocked":
         if not run.resume_state:
             raise DocumentationTransitionError(
@@ -128,18 +165,6 @@ def build_documentation_agent_packet(
     run.evidence[f"{stage}_before"] = before_path.relative_to(workspace_root).as_posix()
     pre_stage_evidence_hash = hash_bytes(before_path.read_bytes())
 
-    stage_contract = _stage_contract(stage)
-    skills_by_id = {str(skill["id"]): skill for skill in run.skills}
-    selected_skills = [
-        {
-            "id": skill["id"],
-            "package_version": skill["package_version"],
-            "hash": skill["hash"],
-            "path": skill["path"],
-        }
-        for skill_id in stage_contract["skills"]
-        for skill in (skills_by_id[skill_id],)
-    ]
     imported = [
         {
             "work_id": item.get("id"),

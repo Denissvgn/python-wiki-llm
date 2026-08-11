@@ -768,14 +768,22 @@ def test_compact_issue_reporting_requires_exact_ignore_proof() -> None:
     ) < content.index("## Agent quality guidelines")
 
 
+@pytest.mark.parametrize("agent", tuple(sorted(schema.SCHEMA_FILENAMES)))
 @pytest.mark.parametrize("render_profile", list(SchemaRenderProfile))
+@pytest.mark.parametrize("quality_hints", [False, True])
+@pytest.mark.parametrize("issue_reporting", [False, True])
 def test_generated_context_recipe_parses_with_custom_paths(
+    agent: str,
     render_profile: SchemaRenderProfile,
+    quality_hints: bool,
+    issue_reporting: bool,
 ) -> None:
     content = _build_schema_content(
-        "generic",
+        agent,
         "docs/team wiki",
         render_profile=render_profile,
+        quality_hints=quality_hints,
+        issue_reporting=issue_reporting,
         source_selection="config/team selection.json",
     )
     commands = re.findall(r"`(llm-wiki context [^`\n]+)`", content)
@@ -794,6 +802,59 @@ def test_generated_context_recipe_parses_with_custom_paths(
     assert args.read_only is True
     assert args.prefer_fresh is False
     assert args.source_selection == "config/team selection.json"
+
+    knowledge_route = content.index("--knowledge-mode auto")
+    exact_route = content.index("query_documentation", knowledge_route)
+    navigation_fallback = content.index("docs/team wiki/index.md", exact_route)
+    markdown_fallback = content.index(
+        (
+            "use validated surface/Markdown"
+            if render_profile is SchemaRenderProfile.COMPACT
+            else "then canonical Markdown"
+        ),
+        exact_route,
+    )
+    assert knowledge_route < exact_route < navigation_fallback
+    assert knowledge_route < markdown_fallback
+
+
+def _generated_cli_recipes(content: str) -> tuple[str, ...]:
+    inline = re.findall(r"`(llm-wiki\s+[^`]+)`", content, flags=re.DOTALL)
+    fenced = re.findall(r"(?m)^\s*(llm-wiki [^\n]+)$", content)
+    return tuple(" ".join(recipe.split()) for recipe in (*inline, *fenced))
+
+
+@pytest.mark.parametrize("agent", tuple(sorted(schema.SCHEMA_FILENAMES)))
+@pytest.mark.parametrize("render_profile", list(SchemaRenderProfile))
+@pytest.mark.parametrize("quality_hints", [False, True])
+@pytest.mark.parametrize("issue_reporting", [False, True])
+def test_generated_command_recipes_parse_for_every_target_and_option(
+    agent: str,
+    render_profile: SchemaRenderProfile,
+    quality_hints: bool,
+    issue_reporting: bool,
+) -> None:
+    content = _build_schema_content(
+        agent,
+        "docs/team wiki",
+        render_profile=render_profile,
+        quality_hints=quality_hints,
+        issue_reporting=issue_reporting,
+        source_selection="config/team selection.json",
+    )
+    recipes = _generated_cli_recipes(content)
+    parser = cli._build_parser()
+
+    assert recipes
+    for recipe in recipes:
+        tokens = shlex.split(recipe)
+        assert tokens[0] == "llm-wiki"
+        if tokens[1:] == ["--version"]:
+            with pytest.raises(SystemExit) as caught:
+                parser.parse_args(tokens[1:])
+            assert caught.value.code == 0
+        else:
+            parser.parse_args(tokens[1:])
 
 
 def test_expanded_schema_is_self_contained_when_references_are_unavailable() -> None:

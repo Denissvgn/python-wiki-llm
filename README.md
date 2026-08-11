@@ -1889,7 +1889,7 @@ Sixteen skills are bundled:
 ```bash
 llm-wiki skills list
 llm-wiki skills install                          # configured agent's project skill dir
-llm-wiki skills install --skill wiki-sync --force
+llm-wiki skills install --skill wiki-sync --skill wiki-reference --force
 llm-wiki skills export --dest ~/.claude/skills   # personal skills directory
 llm-wiki skills export --dest exported --format json
 ```
@@ -1902,6 +1902,14 @@ Both are idempotent: identical existing files are kept, and files that were
 edited locally are never overwritten without `--force` — the run reports
 `existing_file_differs` and exits non-zero instead, so local skill
 customizations survive package upgrades by default.
+
+An explicitly selected workflow that routes into managed policy requires an
+exact `wiki-reference` tree at the same destination. Add
+`--skill wiki-reference` to the selection, or provision the managed reference
+first. The CLI verifies the existing or selected tree and rejects the workflow
+before writing when that prerequisite is absent, incomplete, or modified;
+dependency skills are not added implicitly. An all-skills install or export
+already contains the prerequisite.
 
 `llm-wiki upgrade` refreshes the generated agent constraints and the
 CLI-owned `wiki-reference` policy as one exact nested tree. Missing or drifted

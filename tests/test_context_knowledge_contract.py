@@ -215,6 +215,54 @@ def test_explicit_v2_rejects_omitted_or_noncanonical_mode() -> None:
     assert aliased.value.protocol == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
 
 
+def test_request_file_and_cli_mode_conflict_reports_the_mode_field(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    request_path = tmp_path / "context-request.json"
+    request_path.write_text(
+        json.dumps(
+            _raw_request(
+                protocol=CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+                knowledge_mode="auto",
+            )
+        ),
+        encoding="utf-8",
+    )
+    args = cli._build_parser().parse_args(
+        [
+            "context",
+            "--request",
+            request_path.as_posix(),
+            KNOWLEDGE_MODE_CLI_OPTION,
+            "off",
+        ]
+    )
+
+    with pytest.raises(SystemExit) as caught:
+        context_service.run(args)
+
+    assert caught.value.code == 1
+    response = json.loads(capsys.readouterr().out)
+    assert response["protocol"] == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+    assert response["ok"] is False
+    assert response["error"]["code"] == "invalid_request"
+    assert response["error"]["field"] == KNOWLEDGE_MODE_REQUEST_FIELD
+
+
+def test_packet_request_and_api_mode_conflict_reports_the_mode_field() -> None:
+    request = _raw_request(
+        protocol=CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        knowledge_mode="off",
+    )
+
+    with pytest.raises(api.InvalidRequestError) as caught:
+        api.build_qualified_context(request=request, knowledge_mode="auto")
+
+    assert caught.value.code == "invalid-request"
+    assert caught.value.details == {"field": KNOWLEDGE_MODE_REQUEST_FIELD}
+
+
 @pytest.mark.parametrize(
     "override",
     [

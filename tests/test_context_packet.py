@@ -764,12 +764,90 @@ def test_source_recheck_rejects_gitignore_broadening_before_secret_hash(
     ignore.write_text("", encoding="utf-8")
     real_hash = source_snapshot_module._sha256_file
 
-    def guarded_hash(path: Path) -> str:
+    def guarded_hash(path: Path) -> str | None:
         if path == secret:
             pytest.fail("newly admitted source must not be hashed before rejection")
         return real_hash(path)
 
     monkeypatch.setattr(source_snapshot_module, "_sha256_file", guarded_hash)
+
+    with pytest.raises(ContextPacketSourceMutationError, match="source"):
+        context_packet._assert_source_unchanged(snapshot, expected_anchor)
+
+
+def test_source_recheck_rejects_redirected_gitignore_before_external_read(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "app.py").write_bytes(b"VALUE = 1\n")
+    ignore = root / ".gitignore"
+    ignore.write_bytes(b"ignored.py\n")
+    snapshot = build_source_snapshot(root)
+    expected_anchor = context_packet._source_anchor(snapshot)
+    external = tmp_path / "external-secret"
+    external.write_bytes(b"never read this\n")
+    ignore.unlink()
+    ignore.symlink_to(external)
+    real_read_bytes = Path.read_bytes
+
+    def guarded_read_bytes(path: Path) -> bytes:
+        if path == ignore or path == external:
+            pytest.fail("redirected ignore control must be rejected before reading")
+        return real_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", guarded_read_bytes)
+
+    with pytest.raises(ContextPacketSourceMutationError, match="source"):
+        context_packet._assert_source_unchanged(snapshot, expected_anchor)
+
+
+def test_source_recheck_rejects_new_default_selection_before_content_read(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "app.py").write_bytes(b"VALUE = 1\n")
+    snapshot = build_source_snapshot(root)
+    expected_anchor = context_packet._source_anchor(snapshot)
+    policy = root / ".llm-wiki" / "source-selection.json"
+    policy.parent.mkdir()
+    policy.write_bytes(b"new policy bytes must not be read\n")
+    real_open = Path.open
+
+    def guarded_open(path: Path, *args, **kwargs):
+        if path == policy:
+            pytest.fail("new selection control must be rejected before reading")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", guarded_open)
+
+    with pytest.raises(ContextPacketSourceMutationError, match="source"):
+        context_packet._assert_source_unchanged(snapshot, expected_anchor)
+
+
+def test_source_recheck_rejects_new_gitignore_before_content_read(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "project"
+    nested = root / "src"
+    nested.mkdir(parents=True)
+    (nested / "app.py").write_bytes(b"VALUE = 1\n")
+    snapshot = build_source_snapshot(root)
+    expected_anchor = context_packet._source_anchor(snapshot)
+    ignore = nested / ".gitignore"
+    ignore.write_bytes(b"new control bytes must not be read\n")
+    real_read_bytes = Path.read_bytes
+
+    def guarded_read_bytes(path: Path) -> bytes:
+        if path == ignore:
+            pytest.fail("new ignore control must be rejected before reading")
+        return real_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", guarded_read_bytes)
 
     with pytest.raises(ContextPacketSourceMutationError, match="source"):
         context_packet._assert_source_unchanged(snapshot, expected_anchor)

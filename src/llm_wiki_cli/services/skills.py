@@ -46,6 +46,28 @@ REFERENCE_SKILL_FILES: tuple[str, ...] = (
     "references/surfaces-naming.md",
 )
 
+# Optional workflows in this set route correctness or qualification decisions
+# into the separately managed reference tree.  Dependency expansion remains an
+# explicit caller choice: a selected workflow is accepted only when the exact
+# reference is selected in the same request or already exists at the target.
+REFERENCE_DEPENDENT_SKILLS: frozenset[str] = frozenset(
+    {
+        "agent-docs",
+        "dep-audit",
+        "doc-hub",
+        "doc-review",
+        "impact-analysis",
+        "infra-review",
+        "onboarding-guide",
+        "publish-docs",
+        "usage-examples",
+        "user-docs-author",
+        "wiki-bootstrap",
+        "wiki-semantic-enhance",
+        "wiki-sync",
+    }
+)
+
 # Platform-neutral skills home for agents without a native skills runtime.
 # Skills are plain Markdown, so any agent that can read files can follow the
 # constraint block's explicit pointer into this directory.
@@ -251,20 +273,55 @@ def export_skills(
 
     Existing identical files are kept, missing files are written, and
     differing files are only overwritten with ``force`` — otherwise they are
-    reported as issues and the report is marked not ok.
+    reported as issues and the report is marked not ok.  An explicitly
+    selected reference-dependent workflow requires an exact ``wiki-reference``
+    tree at the destination or in the same selection.
     """
     dest = Path(dest_dir).expanduser()
     _ensure_safe_base(dest)
     selected = _select_skills(skills, skills_root=skills_root)
+    reference_requirement = _preflight_reference_requirement(
+        dest,
+        selected,
+        explicitly_selected=bool(skills),
+        skills_root=skills_root,
+    )
 
     report = SkillsReport(dest_dir=str(dest), skills=[s.skill_id for s in selected])
     if not _ensure_regular_directory(dest, report=report):
         report.ok = False
         return report
-    for skill in selected:
+    selected_ids = {skill.skill_id for skill in selected}
+    reference_verified = False
+    if reference_requirement is not None:
+        reference_skill, consumers = reference_requirement
+        reference_target = dest / REFERENCE_SKILL_ID
+        if REFERENCE_SKILL_ID not in selected_ids:
+            report.operations.append(
+                SkillOperation(
+                    "verify",
+                    str(reference_target),
+                    "Required by: " + ", ".join(consumers),
+                )
+            )
+            reference_verified = True
+            ordered = selected
+        else:
+            ordered = [reference_skill]
+            ordered.extend(
+                skill for skill in selected if skill.skill_id != REFERENCE_SKILL_ID
+            )
+    else:
+        ordered = selected
+
+    for skill in ordered:
         expected_files = _expected_skill_files(skill)
         skill_target = dest / skill.skill_id
         if not _ensure_regular_directory(skill_target, root=dest, report=report):
+            if reference_requirement is not None and skill.skill_id == (
+                REFERENCE_SKILL_ID
+            ):
+                break
             continue
         for rel in expected_files:
             source = skill.path / rel
@@ -372,19 +429,43 @@ def export_skills(
                 ),
             )
 
-        if skill.skill_id == REFERENCE_SKILL_ID and not _skill_tree_matches(
-            skill_target, skill
-        ):
-            _append_issue(
-                report,
-                category="managed_tree_not_exact",
-                path=skill_target,
-                message=(
-                    f"Installed skill '{skill.skill_id}' is not the exact bundled "
-                    "tree; expected files remain missing or modified, or local "
-                    "extra/conflicting entries were preserved."
-                ),
-            )
+        if skill.skill_id == REFERENCE_SKILL_ID:
+            exact_reference = _skill_tree_matches(skill_target, skill)
+            if not exact_reference:
+                _append_issue(
+                    report,
+                    category="managed_tree_not_exact",
+                    path=skill_target,
+                    message=(
+                        f"Installed skill '{skill.skill_id}' is not the exact "
+                        "bundled tree; expected files remain missing or modified, "
+                        "or local extra/conflicting entries were preserved."
+                    ),
+                )
+            if reference_requirement is not None:
+                if not exact_reference:
+                    break
+                report.operations.append(
+                    SkillOperation(
+                        "verify",
+                        str(skill_target),
+                        "Required by: " + ", ".join(consumers),
+                    )
+                )
+                reference_verified = True
+
+    if reference_requirement is not None and not reference_verified:
+        reference_target = dest / REFERENCE_SKILL_ID
+        _append_issue(
+            report,
+            category="required_skill_unavailable",
+            path=reference_target,
+            message=(
+                "Selected workflow skill(s) require an exact "
+                f"'{REFERENCE_SKILL_ID}' tree: {', '.join(consumers)}. "
+                "The prerequisite was not current before workflow export."
+            ),
+        )
 
     report.ok = not report.issues
     return report
@@ -728,6 +809,64 @@ def _select_skills(
         if by_id[skill_id] not in selected:
             selected.append(by_id[skill_id])
     return selected
+
+
+def _preflight_reference_requirement(
+    destination: Path,
+    selected: list[BundledSkill],
+    *,
+    explicitly_selected: bool,
+    skills_root: Path | None,
+) -> tuple[BundledSkill, tuple[str, ...]] | None:
+    """Require a current managed reference for selected dependent workflows.
+
+    Selecting all bundled skills already includes the managed reference and
+    keeps the historical all-skills operation unchanged.  Explicit selections
+    remain non-transitive, but they cannot create a workflow tree with a
+    missing, incomplete, modified, or unavailable prerequisite.
+    """
+
+    if not explicitly_selected:
+        return None
+    consumers = tuple(
+        sorted(
+            skill.skill_id
+            for skill in selected
+            if skill.skill_id in REFERENCE_DEPENDENT_SKILLS
+        )
+    )
+    if not consumers:
+        return None
+
+    available = list_bundled_skills(skills_root)
+    reference_skill = next(
+        (skill for skill in available if skill.skill_id == REFERENCE_SKILL_ID),
+        None,
+    )
+    if reference_skill is None:
+        raise SkillsError(
+            f"Selected skill(s) require bundled '{REFERENCE_SKILL_ID}', but "
+            "that prerequisite is unavailable in this installation: "
+            f"{', '.join(consumers)}."
+        )
+    if not _skill_tree_matches(reference_skill.path, reference_skill):
+        raise SkillsError(
+            f"Selected skill(s) require bundled '{REFERENCE_SKILL_ID}', but "
+            "that prerequisite package tree is incomplete or modified: "
+            f"{', '.join(consumers)}."
+        )
+
+    selected_ids = {skill.skill_id for skill in selected}
+    if REFERENCE_SKILL_ID not in selected_ids and not _skill_tree_matches(
+        destination / REFERENCE_SKILL_ID,
+        reference_skill,
+    ):
+        raise SkillsError(
+            f"Selected skill(s) require an exact '{REFERENCE_SKILL_ID}' tree: "
+            f"{', '.join(consumers)}. Include '--skill {REFERENCE_SKILL_ID}' "
+            "in this request or provision the managed reference first."
+        )
+    return reference_skill, consumers
 
 
 def _skill_files(skill_dir: Path) -> tuple[str, ...]:
@@ -1121,7 +1260,7 @@ def _skill_tree_matches(installed_dir: Path, skill: BundledSkill) -> bool:
             read_md(installed_dir / rel) == read_md(skill.path / rel)
             for rel in expected_files
         )
-    except OSError:
+    except (OSError, UnicodeError):
         return False
 
 

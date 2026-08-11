@@ -252,6 +252,30 @@ def test_init_preserves_damaged_tree_and_uses_expanded_profile(
     assert config["render_reason"] == expected_reason
 
 
+def test_init_with_local_drift_and_missing_topic_rejects_compact(
+    tmp_project,
+    capsys,
+) -> None:
+    _initialize_current()
+    reference = Path(".llm-wiki/skills/wiki-reference")
+    modified = reference / "references/maintenance.md"
+    missing = reference / "references/governance.md"
+    modified.write_text("local policy\n", encoding="utf-8")
+    missing.unlink()
+
+    init_cmd.run(_init_args())
+
+    output = capsys.readouterr().out
+    config = read_config(WIKI_DIR)
+    assert modified.read_text(encoding="utf-8") == "local policy\n"
+    assert missing.is_file()
+    assert _profile("AGENTS.md") is SchemaRenderProfile.EXPANDED_INLINE
+    assert config["rendered_profile"] == "expanded_inline"
+    assert config["render_reason"] == "reference-modified"
+    assert "managed-reference-modified" in output
+    assert "--skill wiki-reference --force" in output
+
+
 @pytest.mark.parametrize("command", ["init", "upgrade"])
 def test_reference_extra_entry_recovery_requires_move_aside_before_retry(
     tmp_project,
@@ -416,6 +440,48 @@ def test_init_and_upgrade_preserve_compatible_config_extensions(tmp_project) -> 
         "owner": "local",
         "version": 3,
     }
+
+
+def test_custom_wiki_lifecycle_leaves_default_tree_byte_unchanged(
+    tmp_project,
+    monkeypatch,
+    capsys,
+) -> None:
+    custom_wiki = "managed/custom-wiki"
+    default_wiki = Path(WIKI_DIR)
+    default_wiki.mkdir(parents=True)
+    sentinel = default_wiki / "owner-notes.bin"
+    sentinel.write_bytes(b"default owner bytes: \x81\r\n")
+    before = {
+        path.relative_to(default_wiki).as_posix(): path.read_bytes()
+        for path in default_wiki.rglob("*")
+        if path.is_file()
+    }
+
+    init_cmd.run(_init_args(wiki_dir=custom_wiki))
+    monkeypatch.setattr(status_cmd, "_print_knowledge_status", lambda *_a, **_k: None)
+    status_cmd.run(
+        SimpleNamespace(
+            wiki_dir=custom_wiki,
+            src_dir=".",
+            allow_external_src=False,
+            source_selection=None,
+        )
+    )
+    status_output = capsys.readouterr().out
+    upgrade_cmd.run(_upgrade_args(wiki_dir=custom_wiki, agent="generic"))
+
+    after = {
+        path.relative_to(default_wiki).as_posix(): path.read_bytes()
+        for path in default_wiki.rglob("*")
+        if path.is_file()
+    }
+    schema = Path("AGENTS.md").read_text(encoding="utf-8")
+    assert before == after == {"owner-notes.bin": b"default owner bytes: \x81\r\n"}
+    assert Path(custom_wiki, "index.md").is_file()
+    assert custom_wiki in schema
+    assert WIKI_DIR not in schema
+    assert "Managed lifecycle: compact/current" in status_output
 
 
 @pytest.mark.parametrize(

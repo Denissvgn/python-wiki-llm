@@ -6,7 +6,7 @@ import hashlib
 import os
 import stat
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -29,6 +29,7 @@ from ..extractors.common import (
 )
 from .source_selection import (
     SOURCE_SELECTION_INPUTS_SCHEMA_VERSION,
+    SOURCE_SELECTION_PATH,
     SourceSelectionError,
     SourceSelectionPolicy,
     locate_exact_repository_path,
@@ -110,6 +111,18 @@ class SourceFile:
 
 
 @dataclass(frozen=True)
+class SourceFileIntegrity:
+    """Filesystem identity used for cheap between-stage mutation checks."""
+
+    device: int
+    inode: int
+    mode_type: int
+    size: int
+    mtime_ns: int
+    ctime_ns: int
+
+
+@dataclass(frozen=True)
 class SourceSnapshot:
     """Filtered source-tree discovery results shared by lint/extract paths."""
 
@@ -127,6 +140,12 @@ class SourceSnapshot:
     source_selection_policy: SourceSelectionPolicy | None = None
     selected_regular_paths: frozenset[str] = frozenset()
     gitignore_rules: tuple[_GitignoreRule, ...] = ()
+    include_tests: frozenset[str] = frozenset()
+    only_files: frozenset[str] | None = None
+    captured_file_integrity: dict[str, SourceFileIntegrity] = field(
+        default_factory=dict
+    )
+    captured_gitignore_paths: frozenset[str] = frozenset()
 
     @property
     def source_selection_path(self) -> str | None:
@@ -310,6 +329,7 @@ class SourceSnapshot:
 
         content_hashes = dict(self.captured_content_hashes)
         input_kinds = dict(self.captured_input_kinds)
+        file_integrity = dict(self.captured_file_integrity)
         all_source_paths = set(self.all_source_paths)
         portable_paths = {
             portable_path_key(path): path for path in self.selected_regular_paths
@@ -373,6 +393,13 @@ class SourceSnapshot:
                 )
             content_hashes[path] = content_hash
             input_kinds[path] = ("source",)
+            integrity = _source_file_integrity(resolved)
+            if integrity is None:
+                raise SourceSnapshotError(
+                    f"inventory_paths[{index}]",
+                    f"changed during capture: {path!r}",
+                )
+            file_integrity[path] = integrity
             all_source_paths.add(path)
         return SourceSnapshot(
             root=self.root,
@@ -389,6 +416,10 @@ class SourceSnapshot:
             source_selection_policy=self.source_selection_policy,
             selected_regular_paths=self.selected_regular_paths,
             gitignore_rules=self.gitignore_rules,
+            include_tests=self.include_tests,
+            only_files=self.only_files,
+            captured_file_integrity=file_integrity,
+            captured_gitignore_paths=self.captured_gitignore_paths,
         )
 
 
@@ -405,11 +436,14 @@ class _SnapshotBuckets:
     include_tests: frozenset[str]
     source_selection_policy: SourceSelectionPolicy | None
     selected_regular_paths: set[str]
+    expected_gitignore_paths: frozenset[str] | None
 
 
 def _new_snapshot_buckets(
     include_tests: Iterable[str] | None = None,
     source_selection_policy: SourceSelectionPolicy | None = None,
+    *,
+    expected_gitignore_paths: frozenset[str] | None = None,
 ) -> _SnapshotBuckets:
     return _SnapshotBuckets(
         files_by_language={language: [] for language in LANGUAGE_EXTENSIONS},
@@ -429,6 +463,7 @@ def _new_snapshot_buckets(
         include_tests=normalize_include_tests(include_tests),
         source_selection_policy=source_selection_policy,
         selected_regular_paths=set(),
+        expected_gitignore_paths=expected_gitignore_paths,
     )
 
 
@@ -547,6 +582,35 @@ def _sha256_file(path: Path) -> str | None:
     return "sha256:" + hasher.hexdigest()
 
 
+def _source_file_integrity(path: Path) -> SourceFileIntegrity | None:
+    try:
+        current = path.stat()
+    except OSError:
+        return None
+    if not stat.S_ISREG(current.st_mode):
+        return None
+    return SourceFileIntegrity(
+        device=current.st_dev,
+        inode=current.st_ino,
+        mode_type=stat.S_IFMT(current.st_mode),
+        size=current.st_size,
+        mtime_ns=current.st_mtime_ns,
+        ctime_ns=current.st_ctime_ns,
+    )
+
+
+def _captured_file_integrity(
+    root: Path,
+    content_hashes: Mapping[str, str],
+) -> dict[str, SourceFileIntegrity]:
+    result: dict[str, SourceFileIntegrity] = {}
+    for path in sorted(content_hashes):
+        current = _source_file_integrity(root / path)
+        if current is not None:
+            result[path] = current
+    return result
+
+
 def _sha256_labeled_contents(contents: Mapping[str, bytes | None]) -> str:
     hasher = hashlib.sha256()
     for label, content in sorted(contents.items()):
@@ -621,6 +685,9 @@ def _is_rescuable_typescript_src_lib_file(
 def _empty_source_snapshot(
     root: Path,
     source_selection_policy: SourceSelectionPolicy | None = None,
+    *,
+    include_tests: frozenset[str] = frozenset(),
+    only_files: frozenset[str] | None = None,
 ) -> SourceSnapshot:
     return SourceSnapshot(
         root=root,
@@ -643,6 +710,10 @@ def _empty_source_snapshot(
         source_selection_policy=source_selection_policy,
         selected_regular_paths=frozenset(),
         gitignore_rules=(),
+        include_tests=include_tests,
+        only_files=only_files,
+        captured_file_integrity={},
+        captured_gitignore_paths=frozenset(),
     )
 
 
@@ -673,10 +744,24 @@ def _record_gitignore_rules(
     gitignore = current_dir / ".gitignore"
     policy = buckets.source_selection_policy
     if policy is None:
+        if path_is_link_or_reparse(gitignore):
+            raise SourceSnapshotError(
+                "gitignore",
+                "ignore controls must not be symlinks or reparse points: "
+                f"{gitignore.relative_to(root).as_posix()!r}",
+            )
         if not gitignore.is_file():
             return
         base = "" if rel_dir == Path(".") else rel_dir.as_posix()
         rel_path = gitignore.relative_to(root).as_posix()
+        if (
+            buckets.expected_gitignore_paths is not None
+            and rel_path not in buckets.expected_gitignore_paths
+        ):
+            raise SourceSnapshotError(
+                "gitignore",
+                f"new ignore control appeared during verification: {rel_path!r}",
+            )
         try:
             content = gitignore.read_bytes()
         except OSError:
@@ -707,6 +792,14 @@ def _record_gitignore_rules(
         )
     if not stat.S_ISREG(metadata.st_mode):
         return
+    if (
+        buckets.expected_gitignore_paths is not None
+        and rel_path not in buckets.expected_gitignore_paths
+    ):
+        raise SourceSnapshotError(
+            "source_selection",
+            f"new applicable selection input appeared during verification: {rel_path!r}",
+        )
 
     base = "" if rel_dir == Path(".") else rel_dir.as_posix()
     try:
@@ -1034,7 +1127,7 @@ def _add_captured_input_candidates(
         candidates.setdefault(source_file.rel_path, set()).add(kind)
 
 
-def _captured_snapshot_inputs(
+def _captured_snapshot_candidates(
     *,
     sorted_languages: Mapping[str, tuple[SourceFile, ...]],
     dockerfiles: tuple[SourceFile, ...],
@@ -1043,7 +1136,7 @@ def _captured_snapshot_inputs(
     package_markers: tuple[SourceFile, ...],
     gitignore_contents: Mapping[str, bytes | None],
     source_selection_policy: SourceSelectionPolicy | None,
-) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]:
+) -> tuple[dict[str, set[str]], dict[str, SourceFile]]:
     candidates: dict[str, set[str]] = {}
     files_by_path: dict[str, SourceFile] = {}
 
@@ -1065,6 +1158,28 @@ def _captured_snapshot_inputs(
         candidates.setdefault(source_selection_policy.path, set()).add(
             _SELECTION_INPUT_KIND
         )
+    return candidates, files_by_path
+
+
+def _captured_snapshot_inputs(
+    *,
+    sorted_languages: Mapping[str, tuple[SourceFile, ...]],
+    dockerfiles: tuple[SourceFile, ...],
+    compose_files: tuple[SourceFile, ...],
+    yaml_files: tuple[SourceFile, ...],
+    package_markers: tuple[SourceFile, ...],
+    gitignore_contents: Mapping[str, bytes | None],
+    source_selection_policy: SourceSelectionPolicy | None,
+) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]:
+    candidates, files_by_path = _captured_snapshot_candidates(
+        sorted_languages=sorted_languages,
+        dockerfiles=dockerfiles,
+        compose_files=compose_files,
+        yaml_files=yaml_files,
+        package_markers=package_markers,
+        gitignore_contents=gitignore_contents,
+        source_selection_policy=source_selection_policy,
+    )
 
     content_hashes: dict[str, str] = {}
     input_kinds: dict[str, tuple[str, ...]] = {}
@@ -1084,7 +1199,12 @@ def _captured_snapshot_inputs(
     return content_hashes, input_kinds
 
 
-def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnapshot:
+def _build_source_snapshot(
+    root: Path,
+    buckets: _SnapshotBuckets,
+    *,
+    only_files: frozenset[str] | None,
+) -> SourceSnapshot:
     if (
         buckets.source_selection_policy is not None
         and not buckets.selected_regular_paths
@@ -1128,6 +1248,10 @@ def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnaps
         gitignore_contents=buckets.gitignore_contents,
         source_selection_policy=buckets.source_selection_policy,
     )
+    captured_file_integrity = _captured_file_integrity(
+        root,
+        captured_content_hashes,
+    )
 
     return SourceSnapshot(
         root=root,
@@ -1144,6 +1268,10 @@ def _build_source_snapshot(root: Path, buckets: _SnapshotBuckets) -> SourceSnaps
         source_selection_policy=buckets.source_selection_policy,
         selected_regular_paths=frozenset(buckets.selected_regular_paths),
         gitignore_rules=tuple(buckets.gitignore_rules),
+        include_tests=buckets.include_tests,
+        only_files=only_files,
+        captured_file_integrity=captured_file_integrity,
+        captured_gitignore_paths=frozenset(buckets.gitignore_contents),
     )
 
 
@@ -1272,11 +1400,18 @@ def build_source_snapshot(
         selection_policy=selection_policy,
     )
     only_set = _normalize_only_files(root, only_files)
+    normalized_only_files = None if only_set is None else frozenset(only_set)
+    normalized_include_tests = normalize_include_tests(include_tests)
 
     if not root.exists():
-        return _empty_source_snapshot(root, policy)
+        return _empty_source_snapshot(
+            root,
+            policy,
+            include_tests=normalized_include_tests,
+            only_files=normalized_only_files,
+        )
 
-    buckets = _new_snapshot_buckets(include_tests, policy)
+    buckets = _new_snapshot_buckets(normalized_include_tests, policy)
     _collect_source_tree(root, only_set, buckets)
     if expected_selection_inputs is not _UNSET_EXPECTED_SELECTION_INPUTS:
         current_inputs = _selection_inputs_from_buckets(buckets)
@@ -1285,4 +1420,233 @@ def build_source_snapshot(
                 "source_selection",
                 "applicable source-selection inputs changed during snapshot capture",
             )
-    return _build_source_snapshot(root, buckets)
+    return _build_source_snapshot(
+        root,
+        buckets,
+        only_files=normalized_only_files,
+    )
+
+
+def _hash_extra_inventory_path(
+    root: Path,
+    path: str,
+    *,
+    policy: SourceSelectionPolicy | None,
+    selected_regular_paths: set[str],
+) -> str | None:
+    """Hash one extractor-owned path without admitting a newly selected path."""
+
+    candidate = root / path
+    if policy is not None:
+        if path == policy.path or not path_is_selected(policy, path):
+            return None
+        try:
+            exact_candidate = locate_exact_repository_path(root, path)
+        except SourceSelectionError:
+            return None
+        if exact_candidate is None or path not in selected_regular_paths:
+            return None
+        candidate = exact_candidate
+    try:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError):
+        return None
+    if is_bundled_helper_implementation_path(resolved) or not resolved.is_file():
+        return None
+    return _sha256_file(resolved)
+
+
+def source_snapshot_inputs_match_current_files(snapshot: SourceSnapshot) -> bool:
+    """Cheaply verify that every already captured input retains its identity.
+
+    This checkpoint performs no tree discovery and no content reads for a
+    normally constructed snapshot.  It compares the captured regular files'
+    filesystem identity, type, size, and high-resolution change timestamps.
+    The final structural verifier still re-hashes exact contents and detects
+    added or newly selected candidates before a packet is returned.
+
+    Snapshots constructed by older/direct callers may lack stat commitments;
+    those individual inputs fall back to exact hashing without broadening the
+    committed path set.
+    """
+
+    if not isinstance(snapshot, SourceSnapshot):
+        raise TypeError("snapshot must be a SourceSnapshot")
+    root = snapshot.root.resolve()
+    for path, expected_hash in snapshot.captured_content_hashes.items():
+        expected_integrity = snapshot.captured_file_integrity.get(path)
+        if expected_integrity is not None:
+            if _source_file_integrity(root / path) != expected_integrity:
+                return False
+            continue
+        if _sha256_file(root / path) != expected_hash:
+            return False
+    return True
+
+
+def source_snapshot_matches_current_files(snapshot: SourceSnapshot) -> bool:
+    """Return whether *snapshot* still matches the selected source tree.
+
+    This is an integrity verification, not a second semantic snapshot.  It
+    walks only the built-in structural selectors, compares those paths before
+    hashing, and then re-hashes the exact paths already committed by the
+    snapshot (including extractor-owned paths).  It never runs an extractor or
+    constructs another :class:`SourceSnapshot`.
+
+    Selection controls and structural candidates are compared before content
+    hashing so a changed ignore rule cannot cause a newly admitted file to be
+    read during verification.
+    """
+
+    if not isinstance(snapshot, SourceSnapshot):
+        raise TypeError("snapshot must be a SourceSnapshot")
+    root = snapshot.root.resolve()
+    if snapshot.source_selection_policy is None:
+        try:
+            newly_configured = locate_exact_repository_path(
+                root,
+                SOURCE_SELECTION_PATH,
+            )
+        except SourceSelectionError:
+            return False
+        if newly_configured is not None:
+            return False
+        policy = None
+    else:
+        policy = _resolve_snapshot_selection(
+            root,
+            source_selection=None,
+            selection_policy=snapshot.source_selection_policy,
+        )
+        if policy is None or not _policies_match(
+            snapshot.source_selection_policy,
+            policy,
+        ):
+            return False
+
+    buckets = _new_snapshot_buckets(
+        snapshot.include_tests,
+        policy,
+        expected_gitignore_paths=snapshot.captured_gitignore_paths,
+    )
+    if root.exists():
+        _collect_source_tree(
+            root,
+            None if snapshot.only_files is None else set(snapshot.only_files),
+            buckets,
+        )
+    if policy is not None and not buckets.selected_regular_paths:
+        return False
+    if _selection_inputs_from_buckets(buckets) != snapshot.source_selection_inputs:
+        return False
+
+    sorted_languages = {
+        language: tuple(sorted(files, key=lambda item: item.rel_path))
+        for language, files in buckets.files_by_language.items()
+    }
+    sorted_unsupported = {
+        language: tuple(sorted(files, key=lambda item: item.rel_path))
+        for language, files in buckets.unsupported_files_by_language.items()
+    }
+    dockerfiles = tuple(
+        sorted(buckets.dockerfile_candidates, key=lambda item: item.rel_path)
+    )
+    compose_files = tuple(
+        sorted(buckets.compose_candidates, key=lambda item: item.rel_path)
+    )
+    yaml_files = tuple(sorted(buckets.yaml_candidates, key=lambda item: item.rel_path))
+    package_markers = tuple(
+        sorted(buckets.package_markers, key=lambda item: item.rel_path)
+    )
+
+    def paths(items: Iterable[SourceFile]) -> tuple[str, ...]:
+        return tuple(item.rel_path for item in items)
+
+    if {
+        language: paths(files) for language, files in sorted_languages.items()
+    } != {
+        language: paths(files)
+        for language, files in snapshot.files_by_language.items()
+    }:
+        return False
+    if {
+        language: paths(files) for language, files in sorted_unsupported.items()
+    } != {
+        language: paths(files)
+        for language, files in snapshot.unsupported_files_by_language.items()
+    }:
+        return False
+    if paths(dockerfiles) != paths(snapshot.dockerfile_candidates):
+        return False
+    if paths(compose_files) != paths(snapshot.compose_candidates):
+        return False
+    if paths(yaml_files) != paths(snapshot.yaml_candidates):
+        return False
+    if paths(package_markers) != paths(snapshot.package_markers):
+        return False
+    if (
+        _sha256_labeled_contents(buckets.gitignore_contents)
+        != snapshot.gitignore_fingerprint
+    ):
+        return False
+    if frozenset(buckets.selected_regular_paths) != snapshot.selected_regular_paths:
+        return False
+
+    candidates, _files_by_path = _captured_snapshot_candidates(
+        sorted_languages=sorted_languages,
+        dockerfiles=dockerfiles,
+        compose_files=compose_files,
+        yaml_files=yaml_files,
+        package_markers=package_markers,
+        gitignore_contents=buckets.gitignore_contents,
+        source_selection_policy=policy,
+    )
+    expected_builtin_sources = {
+        item.rel_path
+        for files in snapshot.files_by_language.values()
+        for item in files
+    }
+    extra_inventory_paths = set(snapshot.all_source_paths) - expected_builtin_sources
+    current_all_source_paths = {
+        item.rel_path for files in sorted_languages.values() for item in files
+    }
+    for path in extra_inventory_paths:
+        if path in candidates:
+            return False
+        candidates[path] = {_SOURCE_INPUT_KIND}
+        current_all_source_paths.add(path)
+
+    current_input_kinds = {
+        path: tuple(kind for kind in _INPUT_KIND_ORDER if kind in kinds)
+        for path, kinds in sorted(candidates.items())
+    }
+    if current_input_kinds != snapshot.captured_input_kinds:
+        return False
+    if tuple(sorted(current_all_source_paths)) != snapshot.all_source_paths:
+        return False
+
+    content_hashes, input_kinds = _captured_snapshot_inputs(
+        sorted_languages=sorted_languages,
+        dockerfiles=dockerfiles,
+        compose_files=compose_files,
+        yaml_files=yaml_files,
+        package_markers=package_markers,
+        gitignore_contents=buckets.gitignore_contents,
+        source_selection_policy=policy,
+    )
+    for path in sorted(extra_inventory_paths):
+        content_hash = _hash_extra_inventory_path(
+            root,
+            path,
+            policy=policy,
+            selected_regular_paths=buckets.selected_regular_paths,
+        )
+        if content_hash is None:
+            return False
+        content_hashes[path] = content_hash
+        input_kinds[path] = (_SOURCE_INPUT_KIND,)
+    return (
+        content_hashes == snapshot.captured_content_hashes
+        and input_kinds == snapshot.captured_input_kinds
+    )

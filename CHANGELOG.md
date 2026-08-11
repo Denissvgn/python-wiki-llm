@@ -57,6 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   they need. Reference installation and upgrade validate the complete nested
   tree, repair managed files deliberately, and fail safely around unexpected or
   linked filesystem entries.
+- Explicitly selected workflows that route into managed policy now require and
+  verify an exact `wiki-reference` tree at the same destination. The selection
+  fails before writing when the prerequisite is unavailable or drifted, while
+  callers retain explicit control over which skill directories are included.
 - `ci-check --format json` now emits the versioned
   `llm-wiki-ci-check/v1` envelope. Its nested `llm-wiki-doctor/v1` health
   projection is composed from the same lint evaluation, so the full-integrity

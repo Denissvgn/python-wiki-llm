@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli.services import source_snapshot as source_snapshot_module
 from llm_wiki_cli.extractors.common import (
     discover_source_files,
     filter_bundled_inventory,
@@ -18,6 +19,8 @@ from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.source_snapshot import (
     SourceSnapshotError,
     build_source_snapshot,
+    source_snapshot_inputs_match_current_files,
+    source_snapshot_matches_current_files,
     unsupported_source_summary,
 )
 
@@ -1210,6 +1213,55 @@ def test_snapshot_captures_exact_plugin_inventory_path_without_rescanning(
     assert extended.captured_input_kinds["flow.toy"] == ("source",)
     assert "flow.toy" in extended.all_source_paths
     assert snapshot.captured_content_hashes == {}
+
+
+def test_snapshot_integrity_verification_covers_builtin_and_plugin_inputs(tmp_path):
+    app = tmp_path / "app.py"
+    app.write_bytes(b"VALUE = 1\n")
+    plugin_source = tmp_path / "flow.toy"
+    plugin_source.write_bytes(b"run\r\n")
+    snapshot = build_source_snapshot(tmp_path).with_captured_inventory_paths(
+        ["flow.toy"]
+    )
+
+    assert source_snapshot_inputs_match_current_files(snapshot) is True
+    assert source_snapshot_matches_current_files(snapshot) is True
+
+    plugin_source.write_bytes(b"changed\r\n")
+    assert source_snapshot_inputs_match_current_files(snapshot) is False
+    assert source_snapshot_matches_current_files(snapshot) is False
+
+    plugin_source.write_bytes(b"run\r\n")
+    snapshot = build_source_snapshot(tmp_path).with_captured_inventory_paths(
+        ["flow.toy"]
+    )
+    app.write_bytes(b"VALUE = 2\n")
+    assert source_snapshot_inputs_match_current_files(snapshot) is False
+    assert source_snapshot_matches_current_files(snapshot) is False
+
+    app.write_bytes(b"VALUE = 1\n")
+    snapshot = build_source_snapshot(tmp_path).with_captured_inventory_paths(
+        ["flow.toy"]
+    )
+    (tmp_path / "added.py").write_bytes(b"ADDED = True\n")
+    assert source_snapshot_inputs_match_current_files(snapshot) is True
+    assert source_snapshot_matches_current_files(snapshot) is False
+
+
+def test_input_integrity_checkpoint_performs_no_walk_or_content_read(
+    tmp_path,
+    monkeypatch,
+):
+    (tmp_path / "app.py").write_bytes(b"VALUE = 1\n")
+    snapshot = build_source_snapshot(tmp_path)
+
+    def unexpected(*_args, **_kwargs):
+        raise AssertionError("lightweight integrity checkpoint performed broad I/O")
+
+    monkeypatch.setattr(source_snapshot_module.os, "walk", unexpected)
+    monkeypatch.setattr(source_snapshot_module, "_sha256_file", unexpected)
+
+    assert source_snapshot_inputs_match_current_files(snapshot) is True
 
 
 @pytest.mark.parametrize("path", ["../outside.toy", "missing.toy"])

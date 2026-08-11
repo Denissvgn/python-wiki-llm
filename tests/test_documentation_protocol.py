@@ -85,6 +85,19 @@ def _agent_result(
     }
 
 
+def _assert_run_local_reference_first(packet, expected_workflows: list[str]) -> None:
+    ordered = packet.to_dict()["ordered_skills"]
+
+    assert [item["id"] for item in ordered] == [
+        "wiki-reference",
+        *expected_workflows,
+    ]
+    assert ordered[0]["path"] == ".llm-wiki-docs/skills/wiki-reference"
+    assert ordered[0]["hash"].startswith("sha256:")
+    assert "Resolve `wiki-reference` topic links relative" in packet.to_markdown()
+    assert ".llm-wiki-docs/skills/wiki-reference" in packet.to_markdown()
+
+
 def _imported_page_edit(workspace: Path, canonical_path: str) -> dict:
     run = load_documentation_run(workspace)
     before_payload = json.loads(
@@ -512,7 +525,34 @@ def test_packet_is_provider_neutral_and_quotes_trust_boundary(tmp_path):
     assert "provider" not in json.dumps(payload).lower()
     assert "target AGENTS.md/CLAUDE.md" in markdown
     assert "```json" in markdown
+    _assert_run_local_reference_first(packet, ["wiki-semantic-enhance"])
     assert load_documentation_run(workspace).state == "wiki_enrichment"
+
+
+def test_packet_rejects_legacy_run_without_reference_before_writing(tmp_path):
+    _, _, workspace, _run = _prepare_wiki_only_run(tmp_path)
+    run_path = workspace / ".llm-wiki-docs" / "run.json"
+    payload = json.loads(run_path.read_text(encoding="utf-8"))
+    payload["skills"] = [
+        skill for skill in payload["skills"] if skill["id"] != "wiki-reference"
+    ]
+    run_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    before_path = (
+        workspace
+        / ".llm-wiki-docs"
+        / "evidence"
+        / "wiki-enrichment-01-before.json"
+    )
+    packet_path = workspace / ".llm-wiki-docs" / "packets" / "wiki-enrichment.json"
+
+    with pytest.raises(
+        DocumentationIntegrityError,
+        match="run-local skill prerequisite: wiki-reference",
+    ):
+        build_documentation_agent_packet(workspace, stage="wiki-enrichment")
+
+    assert not before_path.exists()
+    assert not packet_path.exists()
 
 
 @pytest.mark.parametrize(
@@ -603,7 +643,11 @@ def test_user_docs_rejects_semantic_module_and_architecture_edits(
     tmp_path, forbidden_path
 ):
     workspace, run = _prepare_source_run_at_user_docs(tmp_path)
-    build_documentation_agent_packet(workspace, stage="user-docs")
+    packet = build_documentation_agent_packet(workspace, stage="user-docs")
+    _assert_run_local_reference_first(
+        packet,
+        ["user-docs-author", "onboarding-guide", "usage-examples", "publish-docs"],
+    )
     target = workspace / "wiki" / forbidden_path
     assert target.is_file()
     target.write_text(
@@ -691,7 +735,8 @@ def test_user_docs_allows_only_index_deferred_and_guide_markdown(tmp_path):
 
 def test_review_rejects_all_wiki_writes(tmp_path):
     workspace, run = _prepare_source_run_at_review(tmp_path)
-    build_documentation_agent_packet(workspace, stage="review")
+    packet = build_documentation_agent_packet(workspace, stage="review")
+    _assert_run_local_reference_first(packet, ["doc-review"])
     guide = workspace / "wiki" / "guides" / "run-application.md"
     guide.write_text(
         guide.read_text(encoding="utf-8") + "\nReviewer-authored mutation.\n",

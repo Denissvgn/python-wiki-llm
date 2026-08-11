@@ -97,6 +97,30 @@ def test_skill_tree_hash_rejects_ambiguous_nul_framing():
         documentation_run_service._hash_skill_tree(consolidated)
 
 
+def test_documentation_skill_export_records_exact_reference_prerequisite(
+    tmp_path: Path,
+):
+    workspace = tmp_path / "workspace"
+
+    exported = documentation_run_service._export_documentation_skills(workspace)
+
+    assert [skill["id"] for skill in exported] == [
+        skills_service.REFERENCE_SKILL_ID,
+        *documentation_run_service.DEFAULT_DOCUMENTATION_SKILLS,
+    ]
+    reference = (
+        workspace
+        / ".llm-wiki-docs"
+        / "skills"
+        / skills_service.REFERENCE_SKILL_ID
+    )
+    assert {
+        path.relative_to(reference).as_posix()
+        for path in reference.rglob("*")
+        if path.is_file()
+    } == set(skills_service.REFERENCE_SKILL_FILES)
+
+
 def test_documentation_skill_export_hashes_canonical_crlf_source(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

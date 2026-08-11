@@ -54,8 +54,17 @@ def compare_generated_ownership(
 
 def _export_documentation_skills(workspace_root: Path) -> list[dict[str, Any]]:
     bundled = {skill.skill_id: skill for skill in list_bundled_skills()}
+    workflow_ids = tuple(DEFAULT_DOCUMENTATION_SKILLS)
+    prerequisite_ids = (
+        (REFERENCE_SKILL_ID,)
+        if any(
+            skill_id in REFERENCE_DEPENDENT_SKILLS for skill_id in workflow_ids
+        )
+        else ()
+    )
+    exported_ids = (*prerequisite_ids, *workflow_ids)
     missing = [
-        skill_id for skill_id in DEFAULT_DOCUMENTATION_SKILLS if skill_id not in bundled
+        skill_id for skill_id in exported_ids if skill_id not in bundled
     ]
     if missing:
         raise DocumentationRunError(
@@ -64,7 +73,7 @@ def _export_documentation_skills(workspace_root: Path) -> list[dict[str, Any]]:
     destination = workspace_root / RUN_CONTROL_DIR / "skills"
     report = export_skills(
         destination,
-        skills=list(DEFAULT_DOCUMENTATION_SKILLS),
+        skills=list(exported_ids),
         force=True,
     )
     if not report.ok:
@@ -72,7 +81,7 @@ def _export_documentation_skills(workspace_root: Path) -> list[dict[str, Any]]:
             f"Could not export documentation skills: {report.issues}"
         )
     result = []
-    for skill_id in DEFAULT_DOCUMENTATION_SKILLS:
+    for skill_id in exported_ids:
         skill = bundled[skill_id]
         expected_hash = _hash_skill_tree(
             (
