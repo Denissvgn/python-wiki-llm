@@ -61,14 +61,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) |
-| `build_repository_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `build_repository_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `collect_git_repository_evidence` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `collect_git_repository_evidence` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `collect_git_repository_evidence` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) |
-| `collect_runtime_repository_evidence` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `build_repository_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `build_repository_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `collect_git_repository_evidence` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 2 |
+| `collect_git_repository_evidence` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `collect_runtime_repository_evidence` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

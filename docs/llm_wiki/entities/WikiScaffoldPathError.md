@@ -57,12 +57,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) |
-| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `provision_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
-| `require_safe_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
-| `require_safe_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
-| `require_safe_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
+| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) | — |
+| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `provision_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) | 1 |
+| `require_safe_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) | 3 |

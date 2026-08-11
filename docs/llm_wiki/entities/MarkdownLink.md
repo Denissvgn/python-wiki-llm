@@ -43,7 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `markdown_links` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `markdown_links` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `markdown_links` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |
+| `markdown_links` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

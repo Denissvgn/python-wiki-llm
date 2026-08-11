@@ -51,13 +51,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_findings` | call | [review_cmd](../modules/review_cmd.md) |
-| `build_findings` | call | [review_cmd](../modules/review_cmd.md) |
-| `build_findings` | call | [review_cmd](../modules/review_cmd.md) |
-| `build_findings` | call | [review_cmd](../modules/review_cmd.md) |
-| `build_findings` | call | [review_cmd](../modules/review_cmd.md) |
-| `build_findings` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `render_json` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `render_markdown` | type_reference | [review_cmd](../modules/review_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_findings` | call | [review_cmd](../modules/review_cmd.md) | 5 |
+| `build_findings` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `render_json` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `render_markdown` | type_reference | [review_cmd](../modules/review_cmd.md) | — |

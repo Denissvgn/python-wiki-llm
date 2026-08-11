@@ -58,8 +58,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `knowledge_model` | import | [knowledge_model](../modules/knowledge_model.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `knowledge_model` | import | [knowledge_model](../modules/knowledge_model.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

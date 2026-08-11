@@ -43,7 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `committed_runtime_provenance` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `committed_runtime_provenance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `committed_runtime_provenance` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `committed_runtime_provenance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

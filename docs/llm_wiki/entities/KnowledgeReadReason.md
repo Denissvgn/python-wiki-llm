@@ -66,9 +66,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `documentation_queries` | import | [documentation_queries](../modules/documentation_queries.md) |
-| `_unsupported_reason` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) |
-| `metrics` | import | [metrics](../modules/metrics.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `documentation_queries` | import | [documentation_queries](../modules/documentation_queries.md) | — |
+| `_unsupported_reason` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `metrics` | import | [metrics](../modules/metrics.md) | — |

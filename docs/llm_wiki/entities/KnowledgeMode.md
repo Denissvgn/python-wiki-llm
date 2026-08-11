@@ -59,13 +59,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_normalize_optional_knowledge_mode` | type_reference | [api](../modules/api.md) |
-| `build_context` | type_reference | [api](../modules/api.md) |
-| `build_qualified_context` | type_reference | [api](../modules/api.md) |
-| `_normalize_knowledge_mode` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `get_context` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `get_context_packet` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService.get_context` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService.get_context_packet` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_normalize_optional_knowledge_mode` | type_reference | [api](../modules/api.md) | — |
+| `build_context` | type_reference | [api](../modules/api.md) | — |
+| `build_qualified_context` | type_reference | [api](../modules/api.md) | — |
+| `_normalize_knowledge_mode` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `get_context` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `get_context_packet` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `McpWikiService.get_context` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `McpWikiService.get_context_packet` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

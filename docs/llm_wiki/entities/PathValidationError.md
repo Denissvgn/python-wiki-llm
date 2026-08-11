@@ -34,6 +34,8 @@ flowchart LR
     n9["validate_path (src/llm_wiki_cli/config.py)"]
     n10["validate_source_paths (src/llm_wiki_cli/config.py)"]
     n11["validate_source_root (src/llm_wiki_cli/config.py)"]
+    n12["src/llm_wiki_cli/services/context_packet.py"]
+    n13["src/llm_wiki_cli/services/context_service.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,6 +47,8 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/config.md"
     click n2 "../modules/api.md"
     click n3 "../modules/cli.md"
@@ -56,6 +60,8 @@ flowchart LR
     click n9 "../modules/config.md"
     click n10 "../modules/config.md"
     click n11 "../modules/config.md"
+    click n12 "../modules/context_packet.md"
+    click n13 "../modules/context_service.md"
 ```
 
 ### Summary
@@ -72,17 +78,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `cli` | import | [cli](../modules/cli.md) |
-| `docs_cmd` | import | [docs_cmd](../modules/docs_cmd.md) |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `require_committed_config` | call | [config](../modules/config.md) |
-| `require_config_inspection_unchanged` | call | [config](../modules/config.md) |
-| `require_safe_config_path` | call | [config](../modules/config.md) |
-| `require_safe_config_path` | call | [config](../modules/config.md) |
-| `validate_path` | call | [config](../modules/config.md) |
-| `validate_path` | call | [config](../modules/config.md) |
-| `validate_source_paths` | call | [config](../modules/config.md) |
-| `validate_source_root` | call | [config](../modules/config.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `cli` | import | [cli](../modules/cli.md) | — |
+| `docs_cmd` | import | [docs_cmd](../modules/docs_cmd.md) | — |
+| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `require_committed_config` | call | [config](../modules/config.md) | 1 |
+| `require_config_inspection_unchanged` | call | [config](../modules/config.md) | 1 |
+| `require_safe_config_path` | call | [config](../modules/config.md) | 2 |
+| `validate_path` | call | [config](../modules/config.md) | 2 |
+| `validate_source_paths` | call | [config](../modules/config.md) | 1 |
+| `validate_source_root` | call | [config](../modules/config.md) | 6 |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_service` | import | [context_service](../modules/context_service.md) | — |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

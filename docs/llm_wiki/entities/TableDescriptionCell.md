@@ -46,7 +46,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `description_table_cells` | call | [markdown_sections](../modules/markdown_sections.md) |
-| `description_table_cells` | type_reference | [markdown_sections](../modules/markdown_sections.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `description_table_cells` | call | [markdown_sections](../modules/markdown_sections.md) | 1 |
+| `description_table_cells` | type_reference | [markdown_sections](../modules/markdown_sections.md) | — |

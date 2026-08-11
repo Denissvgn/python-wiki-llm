@@ -57,7 +57,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |

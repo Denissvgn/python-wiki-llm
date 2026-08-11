@@ -57,7 +57,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

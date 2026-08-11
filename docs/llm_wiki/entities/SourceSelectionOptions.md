@@ -47,6 +47,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `McpWikiService._source_selection_options` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `McpWikiService._source_selection_options` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

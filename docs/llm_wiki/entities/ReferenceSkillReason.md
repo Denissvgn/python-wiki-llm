@@ -55,6 +55,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `uninstall_cmd` | import | [uninstall_cmd](../modules/uninstall_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `uninstall_cmd` | import | [uninstall_cmd](../modules/uninstall_cmd.md) | — |

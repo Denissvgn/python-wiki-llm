@@ -67,15 +67,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_source_selection_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_prepare_sync_page_maps` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_prepare_sync_page_maps` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_qualify_infrastructure_page_drift` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_regenerate_api_contracts_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_source_selection_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_prepare_sync_page_maps` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_prepare_sync_page_maps` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_qualify_infrastructure_page_drift` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_regenerate_api_contracts_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

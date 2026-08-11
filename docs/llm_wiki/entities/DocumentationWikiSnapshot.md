@@ -82,10 +82,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_adopt_documentation_wiki_snapshot_with_runtime` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_adopt_validated_wiki_snapshot` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_adopt_validated_wiki_snapshot` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `adopt_documentation_wiki_snapshot` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_adopt_documentation_wiki_snapshot_with_runtime` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_adopt_validated_wiki_snapshot` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_adopt_validated_wiki_snapshot` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `adopt_documentation_wiki_snapshot` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |

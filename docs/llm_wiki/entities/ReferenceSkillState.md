@@ -70,11 +70,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) |
-| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) |
-| `uninstall_cmd` | import | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `select_render_profile` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| `_reference_verification` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
+| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) | — |
+| `uninstall_cmd` | import | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `select_render_profile` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |
+| `_reference_verification` | type_reference | [skills](../modules/skills.md) | — |

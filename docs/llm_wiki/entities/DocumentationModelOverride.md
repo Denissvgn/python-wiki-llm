@@ -55,8 +55,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_resolve_override` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
-| `DocumentationModelOverride.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_resolve_override` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
+| `DocumentationModelOverride.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |

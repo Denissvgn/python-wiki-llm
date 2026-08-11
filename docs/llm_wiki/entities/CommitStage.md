@@ -55,7 +55,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `_apply_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `_apply_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |

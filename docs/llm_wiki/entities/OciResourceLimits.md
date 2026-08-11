@@ -48,6 +48,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `OciResourceLimits.from_dict` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `OciResourceLimits.from_dict` | type_reference | [broker](../modules/broker.md) | — |

@@ -53,6 +53,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_MaterializationState.add_edge` | call | [knowledge_graph](../modules/knowledge_graph.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_MaterializationState.add_edge` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |

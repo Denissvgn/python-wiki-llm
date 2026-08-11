@@ -79,10 +79,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_register_directory_resource` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `_register_mcp_resources` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `_register_mcp_tools` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `_register_root_resource` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `create_mcp_server` | call | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_register_directory_resource` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `_register_mcp_resources` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `_register_mcp_tools` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `_register_root_resource` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `create_mcp_server` | call | [mcp_server](../modules/mcp_server.md) | 1 |

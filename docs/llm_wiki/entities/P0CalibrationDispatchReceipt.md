@@ -64,12 +64,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `dispatch_calibration_agent` | type_reference | [api](../modules/api.md) |
-| `record_calibration_agent_result` | type_reference | [api](../modules/api.md) |
-| `_record_p0_calibration_agent_result` | type_reference | [controller](../modules/controller.md) |
-| `_validate_result_import_bindings` | type_reference | [controller](../modules/controller.md) |
-| `dispatch_calibration_agent` | type_reference | [controller](../modules/controller.md) |
-| `P0CalibrationDispatchReceipt.from_dict` | type_reference | [controller](../modules/controller.md) |
-| `record_calibration_agent_result` | type_reference | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `dispatch_calibration_agent` | type_reference | [api](../modules/api.md) | — |
+| `record_calibration_agent_result` | type_reference | [api](../modules/api.md) | — |
+| `_record_p0_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |
+| `_validate_result_import_bindings` | type_reference | [controller](../modules/controller.md) | — |
+| `dispatch_calibration_agent` | type_reference | [controller](../modules/controller.md) | — |
+| `P0CalibrationDispatchReceipt.from_dict` | type_reference | [controller](../modules/controller.md) | — |
+| `record_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |

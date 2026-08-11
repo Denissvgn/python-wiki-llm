@@ -66,13 +66,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_finalize_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_print_sync_artifact_actions` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) |
-| `commit_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `commit_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `finalize_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_finalize_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_print_sync_artifact_actions` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
+| `commit_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `commit_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `finalize_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

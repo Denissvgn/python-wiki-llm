@@ -49,8 +49,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_source_file_integrity` | call | [source_snapshot](../modules/source_snapshot.md) |
-| `_source_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_source_file_integrity` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_source_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |

@@ -47,6 +47,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `run` | call | [trigger_cmd](../modules/trigger_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `run` | call | [trigger_cmd](../modules/trigger_cmd.md) | 1 |

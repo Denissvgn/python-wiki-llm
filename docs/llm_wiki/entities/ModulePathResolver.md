@@ -68,8 +68,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_relationships` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `build_module_path_resolver` | type_reference | [imports](../modules/imports.md) |
-| `ModulePathResolver.build` | type_reference | [imports](../modules/imports.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_relationships` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `build_module_path_resolver` | type_reference | [imports](../modules/imports.md) | — |
+| `ModulePathResolver.build` | type_reference | [imports](../modules/imports.md) | — |

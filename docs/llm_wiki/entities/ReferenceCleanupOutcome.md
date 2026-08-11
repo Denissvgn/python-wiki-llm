@@ -43,17 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_migrate_reference_skill` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 11 |
+| `_migrate_reference_skill` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |

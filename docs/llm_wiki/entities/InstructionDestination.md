@@ -61,14 +61,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_correctness_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_installed_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_skill` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_skill` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_topic` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_topic` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `destination_exists` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `destination_is_packaged` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `inbound_route_resolves` | call | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_correctness_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_installed_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_skill` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |
+| `_skill` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_topic` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |
+| `_topic` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `destination_exists` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `destination_is_packaged` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `inbound_route_resolves` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |

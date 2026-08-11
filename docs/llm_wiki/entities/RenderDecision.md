@@ -44,9 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `select_render_profile` | call | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| `select_render_profile` | call | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| `select_render_profile` | call | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| `select_render_profile` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `select_render_profile` | call | [rendering_lifecycle](../modules/rendering_lifecycle.md) | 3 |
+| `select_render_profile` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |

@@ -1,6 +1,6 @@
 # _FlowResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4121`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4141`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -58,12 +58,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_flow_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_flow_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_flow_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_index` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_write_bootstrap_flow_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_write_bootstrap_flow_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_write_bootstrap_index` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

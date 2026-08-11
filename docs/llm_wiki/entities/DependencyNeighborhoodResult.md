@@ -54,6 +54,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `dependency_neighborhood` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `dependency_neighborhood` | type_reference | [api](../modules/api.md) | — |

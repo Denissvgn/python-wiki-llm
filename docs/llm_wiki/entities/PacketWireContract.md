@@ -83,17 +83,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_candidate_packet_size` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_fit_knowledge_packet_response` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_packet_basis` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_packet_body` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_packet_contract_for_request` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_packet_contract_for_schema` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_validate_basis` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_validate_freshness_basis` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_validate_knowledge_basis` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_validate_packet_request` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_validate_packet_shape` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_validate_response` | type_reference | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_candidate_packet_size` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_fit_knowledge_packet_response` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_packet_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_packet_body` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_packet_contract_for_request` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_packet_contract_for_schema` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_validate_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_validate_freshness_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_validate_knowledge_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_validate_packet_request` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_validate_packet_shape` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_validate_response` | type_reference | [context_packet](../modules/context_packet.md) | — |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

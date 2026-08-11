@@ -71,13 +71,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_concept_for_page` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_derived_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_link_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_structural_facet` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_and_join_inputs` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_observation_endpoint` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_page_evidence` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validated_observations` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_concept_for_page` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_derived_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_link_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_structural_facet` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_and_join_inputs` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_validate_observation_endpoint` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_page_evidence` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validated_observations` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |

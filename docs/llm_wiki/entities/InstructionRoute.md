@@ -64,14 +64,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_correctness_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_installed_route` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_installed_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_profiled_topic_routes` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_profiled_workflow_routes` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_workflow_route` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_workflow_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `route_exists` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_correctness_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_installed_route` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |
+| `_installed_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_profiled_topic_routes` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_profiled_workflow_routes` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_workflow_route` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |
+| `_workflow_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `route_exists` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

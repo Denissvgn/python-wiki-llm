@@ -55,10 +55,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_basis_incompatibility_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_evaluate_concept` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_live_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_validate_live_evaluation` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_validate_live_evaluation` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_basis_incompatibility_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_evaluate_concept` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_live_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_validate_live_evaluation` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_validate_live_evaluation` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |

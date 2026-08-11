@@ -53,7 +53,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `validate_context_packet` | call | [context_packet](../modules/context_packet.md) |
-| `validate_context_packet` | type_reference | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `validate_context_packet` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `validate_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |

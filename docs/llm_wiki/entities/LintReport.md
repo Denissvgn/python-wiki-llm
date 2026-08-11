@@ -90,17 +90,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_ci_check_payload` | type_reference | [ci_report](../modules/ci_report.md) |
-| `_availability_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_governance_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_issues` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_snapshot_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_verification_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `compose_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_add` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_add_extractor_failures` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_add_missing_wiki` | type_reference | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_ci_check_payload` | type_reference | [ci_report](../modules/ci_report.md) | — |
+| `_availability_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_governance_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_issues` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_snapshot_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_verification_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `compose_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_add` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_add_extractor_failures` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_add_missing_wiki` | type_reference | [lint_service](../modules/lint_service.md) | — |
+
+> References: showing 12 of 50 logical references; 38 omitted by the 12-row generated summary limit.

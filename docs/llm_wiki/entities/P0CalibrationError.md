@@ -68,7 +68,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `docs_cmd` | import | [docs_cmd](../modules/docs_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `docs_cmd` | import | [docs_cmd](../modules/docs_cmd.md) | — |

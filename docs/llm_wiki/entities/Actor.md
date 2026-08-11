@@ -57,10 +57,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_concept_for_page` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_actor_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_actor` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_actor` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_semantic_facet` | call | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_concept_for_page` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_actor_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_parse_actor` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_actor` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_parse_semantic_facet` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |

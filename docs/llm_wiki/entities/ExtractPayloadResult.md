@@ -47,8 +47,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) |
-| `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) |
-| `build_extract_payload` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) | 2 |
+| `build_extract_payload` | type_reference | [extraction_service](../modules/extraction_service.md) | — |

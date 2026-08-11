@@ -84,8 +84,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_impact_query` | type_reference | [api](../modules/api.md) |
-| `_with_query_envelope` | type_reference | [api](../modules/api.md) |
-| `query_documentation` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_impact_query` | type_reference | [api](../modules/api.md) | — |
+| `_with_query_envelope` | type_reference | [api](../modules/api.md) | — |
+| `query_documentation` | type_reference | [api](../modules/api.md) | — |

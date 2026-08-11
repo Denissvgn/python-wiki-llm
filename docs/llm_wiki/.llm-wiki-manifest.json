@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:006b590525e1317b482962b6fc1bb7a8980fe2be9ca4a03012526c8f42b66437",
-    "knowledge_index_hash": "sha256:1f40ec4079a042151eef966e081d8645288e8fb1427a4d9ec2864422b7801ca0",
-    "surface_index_hash": "sha256:9e668827bbf11a8572dc8432360139a82a20cacdd4d15c1c3a5675f8ac0f3957"
+    "evaluated_envelope_hash": "sha256:da01c951dbe6d32336ba8ff06e3cdd93b3156ba272bb8433c748643ccd80f389",
+    "knowledge_index_hash": "sha256:d88986044a3c4ad2c427590458dc22bc9f01a5da75dfb6b0042af4cb83fba19d",
+    "surface_index_hash": "sha256:6865b0bcc20e2a01d3febdc9175cc91a78b4132e11fcf697d88f7284c0056399"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -70,7 +70,7 @@
         "concept_observation_hash": "sha256:a0bcbf1c983bd4180f31f6e6fdf6adaa07c63b68e7ce4d8cc5b201006825be98",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -150,7 +150,7 @@
         "concept_observation_hash": "sha256:3f64fa5a390f9ef51606ae4d97e6b37004d22999d132a356ac4bc505c20399ba",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -160,7 +160,7 @@
         "concept_observation_hash": "sha256:8bc90ebfeeacb01fe3461ee34b2ac7d81bc23e9e3919619205f89c6c2e2be0d8",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -200,7 +200,7 @@
         "concept_observation_hash": "sha256:fb7d9e2338b2b5d85f93103971c9f156d75f11fe06c50ac1128d25fa8df57ca9",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -210,7 +210,7 @@
         "concept_observation_hash": "sha256:dbfdfb5d5104c730001d0b75049fe6b2eed81be27c0b9acff8294187b10692ce",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -230,7 +230,7 @@
         "concept_observation_hash": "sha256:ddf898834ef4dd98af2dbcd1c5a7a9cd3e32c8b894e50fcdf4279eefe8faacc9",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -790,7 +790,7 @@
         "concept_observation_hash": "sha256:3ef3b7d8c36b6a28abcdd65808b63bbbe9f232ad60fbd62fc65dbd188451f17e",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -1340,7 +1340,7 @@
         "concept_observation_hash": "sha256:8c1a9910c16d9df031d4bb21a0929fe567f42fa904a9327d3ec4a8249c8e72db",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -1630,7 +1630,7 @@
         "concept_observation_hash": "sha256:c814657f03a0f4f917c90441ea9fa82210ba796cbe7cee77ac9533ce46d4db0f",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -2040,7 +2040,7 @@
         "concept_observation_hash": "sha256:ce9c8f978806db7c5f34c0d4811e67fbca733068546e9ff034e7a5577d285330",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -3140,7 +3140,7 @@
         "concept_observation_hash": "sha256:43932122ae5a15722588c08ddcc682d4ae0b73b75a8cdc584a0f4d40287093a5",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -4100,7 +4100,7 @@
         "concept_observation_hash": "sha256:110e0745ac6906c11f149c0cfcbdadd36133f2769a7444c47734fb5c0e6a2803",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -5160,7 +5160,7 @@
         "concept_observation_hash": "sha256:5e20a6c70f2d81460af4e7b6f01d0345c44077b54b749ac0e6f6516967479a2f",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -5247,10 +5247,10 @@
     },
     "modules/bootstrap_runtime.md": {
       "basis": {
-        "concept_observation_hash": "sha256:7f3a64f411dd2191fbacac2c77068096e408e149bb1f00794e662313658c9cf9",
+        "concept_observation_hash": "sha256:df5e6610e3719352d02c223da9e59bef79e632deb9e63561099443240e8eaa03",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+        "source_content_hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
         "source_path": "src/llm_wiki_cli/services/bootstrap_runtime.py"
       },
       "state": "known"
@@ -6307,10 +6307,10 @@
     },
     "modules/relationships.md": {
       "basis": {
-        "concept_observation_hash": "sha256:65e20cf2688eee6e5965c734de70bfb4c567eac27691107761abf61b1b898154",
+        "concept_observation_hash": "sha256:03a7904abc9465b335c055c7775a9146ce77c237bec566a48cc36225f8917280",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:7e8b511213d6fade206d7d81216608f3d1421be6ef42df94ee928f7d1f3bda80",
+        "source_content_hash": "sha256:77c5def30a55ad394d6f5c750f2f211ef1ce89e0d1cf9ab3535560c35613efd3",
         "source_path": "src/llm_wiki_cli/services/relationships.py"
       },
       "state": "known"
@@ -14760,10 +14760,10 @@
           }
         }
       },
-      "hash": "sha256:8764b681a288bddd745f2fdb095a58c44ac42ec6179cad4deb619a7b5a251c3f",
+      "hash": "sha256:4963e99581d5d8220d18b03de3f7350daa030222103a60bc5d69cccd62c4aa4d",
       "language": "python",
       "module_page": "bootstrap_runtime",
-      "semantic_hash": "sha256:5b87be5fb36f0bdb62fe7086a3577d437d268fb765f40432b744a51cd0cc2755"
+      "semantic_hash": "sha256:caa801a5272fc1a6112c2a908f56974b3450955b432df79ec3c5b6291662eda7"
     },
     "src/llm_wiki_cli/services/bootstrap_service.py": {
       "entities": [
@@ -25706,6 +25706,7 @@
             "_merge_reference_maps": "—",
             "_module_name": "—",
             "_normalize_detailed_record": "—",
+            "_page_reference_projection": "Return bounded logical references for generated entity pages.",
             "_record_sort_key": "—",
             "_resolve_base_key": "—",
             "_resolved_bases": "—",
@@ -25716,14 +25717,15 @@
             "_unbounded_summary_coverage": "—",
             "_visible_class_bindings": "—",
             "build_detailed_entity_relationship_summaries": "Build a versioned relationship-summary view with exact omissions.",
+            "build_entity_page_relationship_summaries": "Build the internal relationship projection used by generated pages.",
             "build_entity_relationship_summaries": "Build bounded class and callable relationship summaries."
           }
         }
       },
-      "hash": "sha256:7e8b511213d6fade206d7d81216608f3d1421be6ef42df94ee928f7d1f3bda80",
+      "hash": "sha256:77c5def30a55ad394d6f5c750f2f211ef1ce89e0d1cf9ab3535560c35613efd3",
       "language": "python",
       "module_page": "relationships",
-      "semantic_hash": "sha256:9f2e1edae5edf22b1811848ed7e1ef6097a30fd310e9aecb454bababb8e60afd"
+      "semantic_hash": "sha256:7b0ab263468e418b16b43de2317f284e760871058234f1b01d2d1fc056ed84ec"
     },
     "src/llm_wiki_cli/services/rendering_lifecycle.py": {
       "entities": [

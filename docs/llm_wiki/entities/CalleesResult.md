@@ -49,6 +49,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `callees` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `callees` | type_reference | [api](../modules/api.md) | — |

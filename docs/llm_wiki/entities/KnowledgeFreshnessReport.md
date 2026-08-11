@@ -48,9 +48,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) |
-| `_knowledge_counts` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `evaluate_knowledge_freshness` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `evaluate_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
+| `_knowledge_counts` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `evaluate_knowledge_freshness` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `evaluate_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |

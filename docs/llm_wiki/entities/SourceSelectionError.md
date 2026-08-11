@@ -80,17 +80,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `hook_cmd` | import | [hook_cmd](../modules/hook_cmd.md) |
-| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) |
-| `_fallback_dependency_analysis` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `api_contracts` | import | [api_contracts](../modules/api_contracts.md) |
-| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) |
-| `context_service` | import | [context_service](../modules/context_service.md) |
-| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) |
-| `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) |
-| `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) |
-| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `hook_cmd` | import | [hook_cmd](../modules/hook_cmd.md) | — |
+| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
+| `_fallback_dependency_analysis` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `api_contracts` | import | [api_contracts](../modules/api_contracts.md) | — |
+| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) | — |
+| `context_service` | import | [context_service](../modules/context_service.md) | — |
+| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
+| `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) | — |
+| `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) | — |
+| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
+
+> References: showing 12 of 46 logical references; 34 omitted by the 12-row generated summary limit.

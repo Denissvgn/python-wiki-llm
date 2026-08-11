@@ -46,6 +46,9 @@ flowchart LR
     n9["src/llm_wiki_cli/services/bootstrap_runtime.py"]
     n10["src/llm_wiki_cli/services/documentation_native.py"]
     n11["src/llm_wiki_cli/services/documentation_worklist.py"]
+    n12["_surface_page_index (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n13["src/llm_wiki_cli/services/knowledge_freshness.py"]
+    n14["src/llm_wiki_cli/services/knowledge_generation.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -57,6 +60,9 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
+    n13 --> n0
+    n14 --> n0
     click n0 "../modules/wiki_surface.md"
     click n3 "../modules/migrate_cmd.md"
     click n4 "../modules/review_cmd.md"
@@ -67,6 +73,9 @@ flowchart LR
     click n9 "../modules/bootstrap_runtime.md"
     click n10 "../modules/documentation_native.md"
     click n11 "../modules/documentation_worklist.md"
+    click n12 "../modules/knowledge_artifacts.md"
+    click n13 "../modules/knowledge_freshness.md"
+    click n14 "../modules/knowledge_generation.md"
 ```
 
 ### Summary
@@ -84,17 +93,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_prepare_migration_governance_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_prepare_migration_governance_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_prepare_migration_governance_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_surface_text_pages` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_status_label` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `_has_generated_surface_shape` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_has_neutral_generated_behavior` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_planned_generated_surface_prune` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_planned_generated_surface_prune` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) |
-| `documentation_worklist` | import | [documentation_worklist](../modules/documentation_worklist.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_prepare_migration_governance_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) | 3 |
+| `_surface_text_pages` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_status_label` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `_has_generated_surface_shape` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_has_neutral_generated_behavior` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_planned_generated_surface_prune` | call | [sync_cmd](../modules/sync_cmd.md) | 2 |
+| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
+| `documentation_worklist` | import | [documentation_worklist](../modules/documentation_worklist.md) | — |
+| `_surface_page_index` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `knowledge_freshness` | import | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+
+> References: showing 12 of 33 logical references; 21 omitted by the 12-row generated summary limit.

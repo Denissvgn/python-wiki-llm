@@ -1,6 +1,6 @@
 # _RootDependencyDiagram
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:2832`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:2852`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -49,12 +49,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_render_dependency_graph_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_render_dependency_graph_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_render_dependency_graph_result` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_render_root_dependency_projection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_render_root_dependency_projection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_render_root_dependency_projection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_render_root_dependency_projection` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_render_dependency_graph_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_render_dependency_graph_result` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_render_root_dependency_projection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 3 |
+| `_render_root_dependency_projection` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

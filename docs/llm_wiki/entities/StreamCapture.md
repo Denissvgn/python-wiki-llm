@@ -41,7 +41,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `run_bounded_process` | call | [broker](../modules/broker.md) |
-| `run_bounded_process` | call | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `run_bounded_process` | call | [broker](../modules/broker.md) | 2 |

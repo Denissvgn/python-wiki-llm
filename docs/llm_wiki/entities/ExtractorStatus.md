@@ -65,16 +65,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_collect_inventory_outcomes` | call | [extraction_service](../modules/extraction_service.md) |
-| `_collect_inventory_outcomes` | call | [extraction_service](../modules/extraction_service.md) |
-| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_inventory_plugin_state` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_ordered_inventory_statuses` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_plan_language_extraction` | call | [extraction_service](../modules/extraction_service.md) |
-| `_plan_language_extraction` | call | [extraction_service](../modules/extraction_service.md) |
-| `_plan_language_extraction` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_save_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_selected_extractor_plugin_components` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `InventoryResult.failed` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_collect_inventory_outcomes` | call | [extraction_service](../modules/extraction_service.md) | 2 |
+| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_inventory_plugin_state` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_ordered_inventory_statuses` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_plan_language_extraction` | call | [extraction_service](../modules/extraction_service.md) | 2 |
+| `_plan_language_extraction` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_save_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_selected_extractor_plugin_components` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `InventoryResult.failed` | type_reference | [extraction_service](../modules/extraction_service.md) | — |

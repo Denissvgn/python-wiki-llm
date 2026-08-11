@@ -63,11 +63,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_nearest_manifest_scope` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_go_manifest` | call | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_haskell_manifest` | call | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_python_manifest` | call | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_ts_manifest` | call | [services_dependencies](../modules/services_dependencies.md) |
-| `_scope_label` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_nearest_manifest_scope` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_parse_go_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
+| `_parse_haskell_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
+| `_parse_python_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
+| `_parse_ts_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
+| `_scope_label` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |

@@ -44,7 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validate_and_join_inputs` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_and_join_inputs` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_and_join_inputs` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_validate_and_join_inputs` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |

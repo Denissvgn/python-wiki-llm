@@ -55,10 +55,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_derived_relationship` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_link_relationship` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_parse_relationship_evidence` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_relationship_evidence` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_relationship_evidence_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_derived_relationship` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_link_relationship` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_parse_relationship_evidence` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_relationship_evidence` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_relationship_evidence_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

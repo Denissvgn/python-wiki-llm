@@ -59,6 +59,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_api_mcp_error` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_api_mcp_error` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

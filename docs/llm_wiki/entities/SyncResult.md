@@ -41,6 +41,7 @@ flowchart LR
     n7["_apply_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n8["_apply_module_page (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n9["_apply_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n10["_apply_refreshed_file_pages (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -50,6 +51,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -60,6 +62,7 @@ flowchart LR
     click n7 "../modules/sync_cmd.md"
     click n8 "../modules/sync_cmd.md"
     click n9 "../modules/sync_cmd.md"
+    click n10 "../modules/sync_cmd.md"
 ```
 
 ### Summary
@@ -70,17 +73,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_applied_sync_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_deselected_infrastructure_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_diff` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_applied_sync_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_deselected_infrastructure_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_diff` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) | 4 |
+| `_apply_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_refreshed_file_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

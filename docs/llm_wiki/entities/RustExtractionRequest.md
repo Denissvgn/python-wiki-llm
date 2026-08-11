@@ -63,13 +63,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `RustExtractor._build_command` | type_reference | [rust_extractor](../modules/rust_extractor.md) |
-| `RustExtractor._coerce_request` | call | [rust_extractor](../modules/rust_extractor.md) |
-| `RustExtractor._coerce_request` | type_reference | [rust_extractor](../modules/rust_extractor.md) |
-| `RustExtractor._load_chunked_inventory` | type_reference | [rust_extractor](../modules/rust_extractor.md) |
-| `RustExtractor._prepared_helper` | type_reference | [rust_extractor](../modules/rust_extractor.md) |
-| `RustExtractor._resolve_source_files` | type_reference | [rust_extractor](../modules/rust_extractor.md) |
-| `RustExtractor.extract` | type_reference | [rust_extractor](../modules/rust_extractor.md) |
-| `_build_builtin_extraction_kwargs` | call | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `RustExtractor._build_command` | type_reference | [rust_extractor](../modules/rust_extractor.md) | — |
+| `RustExtractor._coerce_request` | call | [rust_extractor](../modules/rust_extractor.md) | 1 |
+| `RustExtractor._coerce_request` | type_reference | [rust_extractor](../modules/rust_extractor.md) | — |
+| `RustExtractor._load_chunked_inventory` | type_reference | [rust_extractor](../modules/rust_extractor.md) | — |
+| `RustExtractor._prepared_helper` | type_reference | [rust_extractor](../modules/rust_extractor.md) | — |
+| `RustExtractor._resolve_source_files` | type_reference | [rust_extractor](../modules/rust_extractor.md) | — |
+| `RustExtractor.extract` | type_reference | [rust_extractor](../modules/rust_extractor.md) | — |
+| `_build_builtin_extraction_kwargs` | call | [extraction_service](../modules/extraction_service.md) | 1 |

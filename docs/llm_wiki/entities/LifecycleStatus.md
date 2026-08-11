@@ -54,8 +54,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_recovery_guidance` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `classify_lifecycle_status` | call | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| `classify_lifecycle_status` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_recovery_guidance` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `classify_lifecycle_status` | call | [rendering_lifecycle](../modules/rendering_lifecycle.md) | 1 |
+| `classify_lifecycle_status` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |

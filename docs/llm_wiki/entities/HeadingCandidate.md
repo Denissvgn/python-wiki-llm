@@ -48,6 +48,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `parse_markdown_document` | call | [markdown_sections](../modules/markdown_sections.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `parse_markdown_document` | call | [markdown_sections](../modules/markdown_sections.md) | 1 |

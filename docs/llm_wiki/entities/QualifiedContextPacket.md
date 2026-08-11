@@ -54,8 +54,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `planner` | import | [planner](../modules/planner.md) |
-| `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) |
-| `QualifiedContextPacket._from_validated_payload` | type_reference | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `planner` | import | [planner](../modules/planner.md) | — |
+| `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `QualifiedContextPacket._from_validated_payload` | type_reference | [context_packet](../modules/context_packet.md) | — |

@@ -58,8 +58,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `resolve_documentation_policy` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `resolve_documentation_policy` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `resolve_documentation_policy` | call | [documentation_policy](../modules/documentation_policy.md) | 1 |
+| `resolve_documentation_policy` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |

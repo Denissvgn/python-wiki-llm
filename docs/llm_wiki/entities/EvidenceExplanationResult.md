@@ -48,6 +48,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `explain_evidence` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `explain_evidence` | type_reference | [api](../modules/api.md) | — |

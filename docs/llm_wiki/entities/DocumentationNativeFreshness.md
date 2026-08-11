@@ -44,7 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `evaluate_documentation_native_freshness` | call | [documentation_native](../modules/documentation_native.md) |
-| `evaluate_documentation_native_freshness` | type_reference | [documentation_native](../modules/documentation_native.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `evaluate_documentation_native_freshness` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `evaluate_documentation_native_freshness` | type_reference | [documentation_native](../modules/documentation_native.md) | — |

@@ -5,6 +5,7 @@ from __future__ import annotations
 from llm_wiki_cli.services.relationships import (
     build_detailed_entity_relationship_summaries,
     build_entity_relationship_summaries,
+    build_entity_page_relationship_summaries,
 )
 
 
@@ -404,3 +405,180 @@ def test_detailed_relationship_summaries_are_deterministic_for_shuffled_inputs()
     )
 
     assert first == second
+
+
+def test_page_relationships_group_exact_call_sites_and_preserve_non_calls():
+    inventory = {
+        "models.py": {"classes": [{"name": "Target"}], "functions": []},
+        "usage.py": {
+            "classes": [],
+            "functions": [
+                {
+                    "name": "inspect",
+                    "params": [{"name": "value", "type": "Target"}],
+                    "return_type": "",
+                }
+            ],
+            "imports": [{"module": "models", "name": "Target"}],
+        },
+        "imports_only.py": {
+            "classes": [],
+            "functions": [],
+            "imports": [{"module": "models", "name": "Target"}],
+        },
+    }
+    call_edges = [
+        {
+            "from": {"file": "usage.py", "symbol": "inspect"},
+            "to": {"file": "models.py", "symbol": "Target"},
+            "kind": "internal",
+            "line": line,
+        }
+        for line in (20, 10, 20)
+    ]
+
+    result = build_entity_page_relationship_summaries(inventory, call_edges)
+    target = _by_class(result)[("Target", "models.py")]
+
+    assert target["references"] == [
+        {
+            "file": "imports_only.py",
+            "module": "imports_only",
+            "symbol": None,
+            "kind": "import",
+        },
+        {
+            "file": "usage.py",
+            "module": "usage",
+            "symbol": "inspect",
+            "kind": "call",
+            "call_site_count": 2,
+        },
+        {
+            "file": "usage.py",
+            "module": "usage",
+            "symbol": "inspect",
+            "kind": "type_reference",
+        },
+    ]
+    assert target["reference_coverage"] == {
+        "observed": 3,
+        "emitted": 3,
+        "limit": 12,
+        "truncated": False,
+        "omitted": 0,
+    }
+
+
+def test_page_relationship_grouping_precedes_limit_and_is_deterministic():
+    inventory = {
+        "models.py": {"classes": [{"name": "Target"}], "functions": []}
+    }
+    repeated = [
+        {
+            "from": {"file": "calls.py", "symbol": "caller_00"},
+            "to": {"file": "models.py", "symbol": "Target"},
+            "kind": "internal",
+            "line": line,
+        }
+        for line in range(1, 11)
+        for _ in range(2)
+    ]
+    distinct = [
+        {
+            "from": {"file": "calls.py", "symbol": f"caller_{index:02d}"},
+            "to": {"file": "models.py", "symbol": "Target"},
+            "kind": "internal",
+            "line": 100 + index,
+        }
+        for index in range(1, 13)
+    ]
+    edges = [*repeated, *distinct]
+
+    first = build_entity_page_relationship_summaries(inventory, edges)
+    second = build_entity_page_relationship_summaries(
+        dict(reversed(list(inventory.items()))), list(reversed(edges))
+    )
+    target = _by_class(first)[("Target", "models.py")]
+
+    assert first == second
+    assert [reference["symbol"] for reference in target["references"]] == [
+        f"caller_{index:02d}" for index in range(12)
+    ]
+    assert target["references"][0]["call_site_count"] == 10
+    assert target["reference_coverage"] == {
+        "observed": 13,
+        "emitted": 12,
+        "limit": 12,
+        "truncated": True,
+        "omitted": 1,
+    }
+
+
+def test_page_relationship_projection_preserves_other_collection_limits():
+    classes = [
+        {
+            "name": "Hub",
+            "bases": [f"Base{index:02d}" for index in range(14)],
+            "attributes": [{"name": f"field_{index:02d}"} for index in range(14)],
+        },
+        *[
+            {"name": f"Child{index:02d}", "bases": ["Hub"]}
+            for index in range(14)
+        ],
+    ]
+    inventory = {"models.py": {"classes": classes, "functions": []}}
+
+    result = build_entity_page_relationship_summaries(inventory)
+    hub = _by_class(result)[("Hub", "models.py")]
+
+    assert len(hub["bases"]) == 12
+    assert len(hub["subclasses"]) == 12
+    assert len(hub["attributes"]) == 12
+    assert hub["reference_coverage"] == {
+        "observed": 0,
+        "emitted": 0,
+        "limit": 12,
+        "truncated": False,
+        "omitted": 0,
+    }
+
+
+def test_page_projection_does_not_change_public_relationship_shapes():
+    inventory = {
+        "models.py": {"classes": [{"name": "Target"}], "functions": []}
+    }
+    edges = [
+        {
+            "from": {"file": "usage.py", "symbol": "inspect"},
+            "to": {"file": "models.py", "symbol": "Target"},
+            "kind": "internal",
+            "line": line,
+        }
+        for line in (8, 3)
+    ]
+
+    legacy = _by_class(build_entity_relationship_summaries(inventory, edges))[
+        ("Target", "models.py")
+    ]
+    detailed = _by_class(
+        build_detailed_entity_relationship_summaries(inventory, edges)
+    )[("Target", "models.py")]
+
+    expected_raw = [
+        {
+            "file": "usage.py",
+            "module": "usage",
+            "symbol": "inspect",
+            "kind": "call",
+            "line": line,
+        }
+        for line in (3, 8)
+    ]
+    assert legacy["references"] == expected_raw
+    assert "reference_coverage" not in legacy
+    assert all("call_site_count" not in item for item in legacy["references"])
+    assert detailed["references"] == expected_raw
+    assert detailed["coverage"]["references"]["observed"] == 2
+    assert "reference_coverage" not in detailed
+    assert all("call_site_count" not in item for item in detailed["references"])

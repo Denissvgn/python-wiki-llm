@@ -50,7 +50,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validate_process_result_bounds` | type_reference | [broker](../modules/broker.md) |
-| `OciOutputLimits.from_dict` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_process_result_bounds` | type_reference | [broker](../modules/broker.md) | — |
+| `OciOutputLimits.from_dict` | type_reference | [broker](../modules/broker.md) | — |

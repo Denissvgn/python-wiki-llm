@@ -31,6 +31,11 @@ flowchart LR
     n6["_assert_directory_fd_entries_portable (src/llm_wiki_cli/services/protected_artifacts.py)"]
     n7["_assert_no_portable_collision_fd (src/llm_wiki_cli/services/protected_artifacts.py)"]
     n8["_assert_path_entry_portable (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n9["_assert_path_target_regular (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n10["_assert_portable_entry_names (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n11["_assert_posix_owner_only (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n12["_assert_regular_directory (src/llm_wiki_cli/services/protected_artifacts.py)"]
+    n13["_assert_regular_directory_stat (src/llm_wiki_cli/services/protected_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -39,6 +44,11 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
+    n10 --> n0
+    n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/protected_artifacts.md"
     click n1 "../modules/protected_artifacts.md"
     click n2 "../modules/controller.md"
@@ -48,6 +58,11 @@ flowchart LR
     click n6 "../modules/protected_artifacts.md"
     click n7 "../modules/protected_artifacts.md"
     click n8 "../modules/protected_artifacts.md"
+    click n9 "../modules/protected_artifacts.md"
+    click n10 "../modules/protected_artifacts.md"
+    click n11 "../modules/protected_artifacts.md"
+    click n12 "../modules/protected_artifacts.md"
+    click n13 "../modules/protected_artifacts.md"
 ```
 
 ### Summary
@@ -64,17 +79,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `controller` | import | [controller](../modules/controller.md) |
-| `_assert_darwin_no_extended_acl_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_darwin_no_extended_acl_path` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_darwin_no_extended_acl_path` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_darwin_no_extended_acl_path` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_darwin_no_extended_acl_path` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_directory_entries_portable` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_directory_fd_entries_portable` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_no_portable_collision_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_no_portable_collision_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_path_entry_portable` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_assert_path_entry_portable` | call | [protected_artifacts](../modules/protected_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `controller` | import | [controller](../modules/controller.md) | — |
+| `_assert_darwin_no_extended_acl_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_assert_darwin_no_extended_acl_path` | call | [protected_artifacts](../modules/protected_artifacts.md) | 4 |
+| `_assert_directory_entries_portable` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_assert_directory_fd_entries_portable` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_assert_no_portable_collision_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) | 2 |
+| `_assert_path_entry_portable` | call | [protected_artifacts](../modules/protected_artifacts.md) | 2 |
+| `_assert_path_target_regular` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_assert_portable_entry_names` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_assert_posix_owner_only` | call | [protected_artifacts](../modules/protected_artifacts.md) | 2 |
+| `_assert_regular_directory` | call | [protected_artifacts](../modules/protected_artifacts.md) | 2 |
+| `_assert_regular_directory_stat` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+
+> References: showing 12 of 48 logical references; 36 omitted by the 12-row generated summary limit.

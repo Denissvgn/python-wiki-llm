@@ -81,17 +81,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) |
-| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| `_build_extract_source_snapshot` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_diff_block_is_selected` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `filter_source_diff` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_source_selection_pin` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._assert_source_selection_pin_current` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `_policy_from_content` | call | [source_selection](../modules/source_selection.md) |
-| `_policy_from_content` | type_reference | [source_selection](../modules/source_selection.md) |
-| `_validate_policy_filesystem` | type_reference | [source_selection](../modules/source_selection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) | — |
+| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
+| `_build_extract_source_snapshot` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_diff_block_is_selected` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `filter_source_diff` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_source_selection_pin` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `McpWikiService._assert_source_selection_pin_current` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `_policy_from_content` | call | [source_selection](../modules/source_selection.md) | 1 |
+| `_policy_from_content` | type_reference | [source_selection](../modules/source_selection.md) | — |
+| `_validate_policy_filesystem` | type_reference | [source_selection](../modules/source_selection.md) | — |
+
+> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.

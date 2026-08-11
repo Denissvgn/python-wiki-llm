@@ -52,15 +52,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) |
-| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | call | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | call | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | call | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | call | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | call | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | call | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `IdentityCollisionError.__init__` | type_reference | [concept_identity](../modules/concept_identity.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) | 2 |
+| `find_identity_collisions` | call | [concept_identity](../modules/concept_identity.md) | 6 |
+| `find_identity_collisions` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `IdentityCollisionError.__init__` | type_reference | [concept_identity](../modules/concept_identity.md) | — |

@@ -62,13 +62,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validated_bundle_payload` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_validate_live_producer` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) |
-| `_bundle_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_bundle` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_bundle` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_validate_index_references` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validated_bundle_payload` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `_validate_live_producer` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_bundle_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_parse_bundle` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_bundle` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_validate_index_references` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

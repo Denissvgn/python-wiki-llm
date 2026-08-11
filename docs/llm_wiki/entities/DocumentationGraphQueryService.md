@@ -122,17 +122,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_effective_query_limit` | type_reference | [api](../modules/api.md) |
-| `_query_service` | type_reference | [api](../modules/api.md) |
-| `_snapshot_query_service` | type_reference | [api](../modules/api.md) |
-| `_surface_query` | type_reference | [api](../modules/api.md) |
-| `build_documentation_query_service` | type_reference | [api](../modules/api.md) |
-| `callees` | type_reference | [api](../modules/api.md) |
-| `callers` | type_reference | [api](../modules/api.md) |
-| `data_flow_for_entrypoint` | type_reference | [api](../modules/api.md) |
-| `dependency_neighborhood` | type_reference | [api](../modules/api.md) |
-| `explain_evidence` | type_reference | [api](../modules/api.md) |
-| `flow_for_entrypoint` | type_reference | [api](../modules/api.md) |
-| `get_concept` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_effective_query_limit` | type_reference | [api](../modules/api.md) | — |
+| `_query_service` | type_reference | [api](../modules/api.md) | — |
+| `_snapshot_query_service` | type_reference | [api](../modules/api.md) | — |
+| `_surface_query` | type_reference | [api](../modules/api.md) | — |
+| `build_documentation_query_service` | type_reference | [api](../modules/api.md) | — |
+| `callees` | type_reference | [api](../modules/api.md) | — |
+| `callers` | type_reference | [api](../modules/api.md) | — |
+| `data_flow_for_entrypoint` | type_reference | [api](../modules/api.md) | — |
+| `dependency_neighborhood` | type_reference | [api](../modules/api.md) | — |
+| `explain_evidence` | type_reference | [api](../modules/api.md) | — |
+| `flow_for_entrypoint` | type_reference | [api](../modules/api.md) | — |
+| `get_concept` | type_reference | [api](../modules/api.md) | — |
+
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

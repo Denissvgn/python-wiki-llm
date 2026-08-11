@@ -62,9 +62,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_context_knowledge_view` | call | [context_service](../modules/context_service.md) |
-| `evaluate_documentation_native_freshness` | call | [documentation_native](../modules/documentation_native.md) |
-| `build_runtime_live_evaluation` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_evaluate_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_context_knowledge_view` | call | [context_service](../modules/context_service.md) | 1 |
+| `evaluate_documentation_native_freshness` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `build_runtime_live_evaluation` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `_evaluate_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) | 1 |

@@ -82,17 +82,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_source_snapshot` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_collect_source_selection_controls` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_collect_source_tree` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_new_snapshot_buckets` | call | [source_snapshot](../modules/source_snapshot.md) |
-| `_new_snapshot_buckets` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_prune_dirnames` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_generated_javascript_bundle_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_gitignore_rules` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_infrastructure_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_unsupported_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_source_snapshot` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_collect_source_selection_controls` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_collect_source_tree` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_new_snapshot_buckets` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_new_snapshot_buckets` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_prune_dirnames` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_generated_javascript_bundle_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_gitignore_rules` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_infrastructure_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_unsupported_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

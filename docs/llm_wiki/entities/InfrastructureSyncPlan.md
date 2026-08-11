@@ -95,17 +95,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_deselected_infrastructure_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_discover_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_initialization_infrastructure_index_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_large_infrastructure_message` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_print_dry_run_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_print_sync_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_qualify_infrastructure_page_drift` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_deselected_infrastructure_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_discover_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_initialization_infrastructure_index_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_large_infrastructure_message` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_print_dry_run_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_print_sync_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_qualify_infrastructure_page_drift` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

@@ -98,15 +98,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_migration_runtime_inputs` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_migration_runtime_inputs` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_finalize_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_finalize_bootstrap_artifacts` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) |
-| `_prepared_runtime_governance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_runtime_manifest_generation_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `finalize_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_migration_runtime_inputs` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
+| `_migration_runtime_inputs` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_finalize_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_finalize_bootstrap_artifacts` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_prepared_runtime_governance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `_runtime_manifest_generation_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `finalize_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

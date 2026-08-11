@@ -58,7 +58,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_candidate_to_item` | call | [documentation_worklist](../modules/documentation_worklist.md) |
-| `_candidate_to_item` | type_reference | [documentation_worklist](../modules/documentation_worklist.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_candidate_to_item` | call | [documentation_worklist](../modules/documentation_worklist.md) | 1 |
+| `_candidate_to_item` | type_reference | [documentation_worklist](../modules/documentation_worklist.md) | — |

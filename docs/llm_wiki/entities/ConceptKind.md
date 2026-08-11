@@ -76,11 +76,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) |
-| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_structural_facet` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `concept_kind_for_page_kind` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_structural_facet` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `concept_kind_for_page_kind` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

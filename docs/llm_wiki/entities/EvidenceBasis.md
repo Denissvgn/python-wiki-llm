@@ -65,14 +65,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_basis_payload` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `_basis_incompatibility_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_recorded_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_reliable_recorded_basis` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_evidence_basis` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_evidence_basis` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_basis_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_evidence_basis` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_evidence_basis` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_basis_payload` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `_basis_incompatibility_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_recorded_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_reliable_recorded_basis` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_evidence_basis` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_evidence_basis` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_basis_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_parse_evidence_basis` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_evidence_basis` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

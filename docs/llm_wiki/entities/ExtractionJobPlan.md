@@ -79,17 +79,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) |
-| `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_build_context` | type_reference | [context_service](../modules/context_service.md) |
-| `_build_context_impl` | type_reference | [context_service](../modules/context_service.md) |
-| `get_inventory` | type_reference | [context_service](../modules/context_service.md) |
-| `format_extraction_job_plan` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) |
-| `print_extraction_job_plan` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) |
-| `_build_extraction_job_plan` | call | [extraction_service](../modules/extraction_service.md) |
-| `_build_extraction_job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `capture_context_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_build_context` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_context_impl` | type_reference | [context_service](../modules/context_service.md) | — |
+| `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
+| `format_extraction_job_plan` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) | — |
+| `print_extraction_job_plan` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) | — |
+| `_build_extraction_job_plan` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_build_extraction_job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

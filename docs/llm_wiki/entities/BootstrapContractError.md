@@ -65,13 +65,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_bootstrap_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_run_options_from_request` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_preflight_bootstrap_source_selection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_preflight_bootstrap_source_selection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_preflight_public_bootstrap` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_bootstrap_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_bootstrap_run_options_from_request` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_preflight_bootstrap_source_selection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_preflight_public_bootstrap` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |

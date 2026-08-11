@@ -57,9 +57,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_reject_machine_local_path` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_repository_path` | call | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) |
-| `validate_context_packet` | call | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_reject_machine_local_path` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_repository_path` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `validate_context_packet` | call | [context_packet](../modules/context_packet.md) | 1 |

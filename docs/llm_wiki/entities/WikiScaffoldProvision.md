@@ -43,7 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `provision_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
-| `provision_wiki_scaffold` | type_reference | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `provision_wiki_scaffold` | call | [wiki_lifecycle](../modules/wiki_lifecycle.md) | 1 |
+| `provision_wiki_scaffold` | type_reference | [wiki_lifecycle](../modules/wiki_lifecycle.md) | — |

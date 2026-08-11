@@ -75,17 +75,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `current_infrastructure_bases` | type_reference | [infrastructure_sync](../modules/infrastructure_sync.md) |
-| `infrastructure_evidence_by_page` | type_reference | [infrastructure_sync](../modules/infrastructure_sync.md) |
-| `_unknown_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_unknown_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `build_entity_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `build_entity_observation_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `build_infrastructure_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `build_infrastructure_observation_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `build_module_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `build_module_observation_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_live_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_build_evidence_baselines` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `current_infrastructure_bases` | type_reference | [infrastructure_sync](../modules/infrastructure_sync.md) | — |
+| `infrastructure_evidence_by_page` | type_reference | [infrastructure_sync](../modules/infrastructure_sync.md) | — |
+| `_unknown_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_unknown_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) | — |
+| `build_entity_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `build_entity_observation_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) | — |
+| `build_infrastructure_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `build_infrastructure_observation_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) | — |
+| `build_module_observation_basis` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `build_module_observation_basis` | type_reference | [knowledge_evidence](../modules/knowledge_evidence.md) | — |
+| `_live_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_build_evidence_baselines` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+
+> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.

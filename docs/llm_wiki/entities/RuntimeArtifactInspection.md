@@ -51,13 +51,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_preflight_runtime_artifacts` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_runtime_artifacts` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_runtime_artifacts` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_runtime_artifacts` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_runtime_artifacts` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_runtime_artifacts` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_remove_runtime_artifacts` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_validate_runtime_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_preflight_runtime_artifacts` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 5 |
+| `_preflight_runtime_artifacts` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_remove_runtime_artifacts` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_validate_runtime_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |

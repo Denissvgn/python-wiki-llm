@@ -53,7 +53,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `DocumentationModelEscalationRule.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `DocumentationModelEscalationRule.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |

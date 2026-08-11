@@ -62,9 +62,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `hook_cmd` | import | [hook_cmd](../modules/hook_cmd.md) |
-| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) |
-| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `hook_cmd` | import | [hook_cmd](../modules/hook_cmd.md) | — |
+| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
+| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) | — |
+| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |

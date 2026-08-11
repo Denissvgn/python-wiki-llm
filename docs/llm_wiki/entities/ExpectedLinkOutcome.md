@@ -44,17 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_expected_observation_outcome` | call | [knowledge_index](../modules/knowledge_index.md) | 14 |
+| `_expected_observation_outcome` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |

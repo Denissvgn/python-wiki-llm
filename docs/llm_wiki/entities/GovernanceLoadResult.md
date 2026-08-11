@@ -46,8 +46,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_prepare_existing_mutation` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `load_governance` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `load_governance` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_prepare_existing_mutation` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `load_governance` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `load_governance` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

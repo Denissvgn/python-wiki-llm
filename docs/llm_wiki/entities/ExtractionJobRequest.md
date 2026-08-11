@@ -75,17 +75,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) |
-| `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_build_context` | type_reference | [context_service](../modules/context_service.md) |
-| `_build_context_impl` | type_reference | [context_service](../modules/context_service.md) |
-| `get_inventory` | type_reference | [context_service](../modules/context_service.md) |
-| `build_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) |
-| `extraction_job_request_from_args` | call | [extraction_jobs](../modules/extraction_jobs.md) |
-| `extraction_job_request_from_args` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) |
-| `ExtractionJobRequest.parse` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `capture_context_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_build_context` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_context_impl` | type_reference | [context_service](../modules/context_service.md) | — |
+| `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
+| `build_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
+| `extraction_job_request_from_args` | call | [extraction_jobs](../modules/extraction_jobs.md) | 1 |
+| `extraction_job_request_from_args` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) | — |
+| `ExtractionJobRequest.parse` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) | — |
+
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

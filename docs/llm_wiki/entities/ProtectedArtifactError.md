@@ -61,6 +61,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `controller` | import | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `controller` | import | [controller](../modules/controller.md) | — |

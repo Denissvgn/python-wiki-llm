@@ -45,7 +45,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_upgrade_dirs` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_upgrade_dirs` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_upgrade_dirs` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
+| `_upgrade_dirs` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |

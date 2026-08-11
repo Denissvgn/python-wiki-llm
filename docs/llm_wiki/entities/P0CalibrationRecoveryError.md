@@ -52,17 +52,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_recover_pending_transaction` | call | [controller](../modules/controller.md) |
-| `_recover_pending_transaction` | call | [controller](../modules/controller.md) |
-| `_recover_pending_transaction` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
-| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_recover_pending_transaction` | call | [controller](../modules/controller.md) | 3 |
+| `_validate_pending_transaction_for_recovery` | call | [controller](../modules/controller.md) | 12 |

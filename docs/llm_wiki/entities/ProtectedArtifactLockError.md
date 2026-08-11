@@ -46,7 +46,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `ProtectedArtifactStore.lock` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `ProtectedArtifactStore.lock` | call | [protected_artifacts](../modules/protected_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `ProtectedArtifactStore.lock` | call | [protected_artifacts](../modules/protected_artifacts.md) | 2 |

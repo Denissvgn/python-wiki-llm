@@ -66,12 +66,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `identity_coordinate_key` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `validate_alias_type` | call | [concept_identity](../modules/concept_identity.md) |
-| `validate_alias_type` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `validate_alias_value` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `identity_coordinate_key` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `validate_alias_type` | call | [concept_identity](../modules/concept_identity.md) | 1 |
+| `validate_alias_type` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `validate_alias_value` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) | — |

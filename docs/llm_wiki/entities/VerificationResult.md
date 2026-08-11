@@ -72,13 +72,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `knowledge_verification` | import | [knowledge_verification](../modules/knowledge_verification.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
-| `_parse_check` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `validate_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `VerificationCheckResult.__post_init__` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `VerificationReceipt.__post_init__` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `VerificationReceiptEvaluation.recorded_result` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `knowledge_verification` | import | [knowledge_verification](../modules/knowledge_verification.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `_parse_check` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `validate_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `VerificationCheckResult.__post_init__` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `VerificationReceipt.__post_init__` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `VerificationReceiptEvaluation.recorded_result` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |

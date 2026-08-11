@@ -51,9 +51,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_concept_for_page` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_document_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_document` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_document` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_concept_for_page` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_document_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_parse_document` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_document` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

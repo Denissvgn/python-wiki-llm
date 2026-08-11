@@ -28556,7 +28556,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6069,
+              "line": 6091,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -28657,7 +28657,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 4095,
+          "step_count": 4131,
           "truncated": true
         }
       },
@@ -34812,6 +34812,8 @@
       "mcp_uri": "llm-wiki://entities/ApiContractError",
       "outgoing_internal_links": [
         "modules/api_contracts.md",
+        "modules/bootstrap_runtime.md",
+        "modules/documentation_native.md",
         "modules/sync_cmd.md"
       ],
       "role": "semantic",
@@ -35488,7 +35490,8 @@
         "modules/documentation_native.md",
         "modules/knowledge_envelope.md",
         "modules/knowledge_generation.md",
-        "modules/knowledge_orchestration.md"
+        "modules/knowledge_orchestration.md",
+        "modules/source_snapshot.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_envelope.py",
@@ -35919,7 +35922,8 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/DocumentationCalibrationError",
       "outgoing_internal_links": [
-        "modules/calibration_contracts.md"
+        "modules/calibration_contracts.md",
+        "modules/controller.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/calibration/contracts.py",
@@ -35984,7 +35988,8 @@
       "outgoing_internal_links": [
         "modules/documentation_run___init__.md",
         "modules/documentation_run_contracts.md",
-        "modules/export.md"
+        "modules/export.md",
+        "modules/integrity.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/documentation_run/contracts.py",
@@ -36323,7 +36328,11 @@
       "mcp_uri": "llm-wiki://entities/DocumentationSchemaError",
       "outgoing_internal_links": [
         "modules/documentation_run___init__.md",
-        "modules/documentation_run_contracts.md"
+        "modules/documentation_run_contracts.md",
+        "modules/export.md",
+        "modules/packet.md",
+        "modules/prepare.md",
+        "modules/record.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/documentation_run/contracts.py",
@@ -36340,7 +36349,8 @@
         "modules/export.md",
         "modules/integrity.md",
         "modules/packet.md",
-        "modules/record.md"
+        "modules/record.md",
+        "modules/workspace.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/documentation_run/contracts.py",
@@ -37359,6 +37369,8 @@
       "outgoing_internal_links": [
         "modules/bootstrap_runtime.md",
         "modules/infrastructure_sync.md",
+        "modules/knowledge_artifacts.md",
+        "modules/knowledge_generation.md",
         "modules/sync_cmd.md"
       ],
       "role": "semantic",
@@ -37639,7 +37651,8 @@
       "mcp_uri": "llm-wiki://entities/InventoryRequest",
       "outgoing_internal_links": [
         "modules/documentation_native.md",
-        "modules/extraction_service.md"
+        "modules/extraction_service.md",
+        "modules/mcp_server.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/extraction_service.py",
@@ -37949,7 +37962,8 @@
       "outgoing_internal_links": [
         "modules/context_service.md",
         "modules/knowledge_consumption.md",
-        "modules/knowledge_loader.md"
+        "modules/knowledge_loader.md",
+        "modules/knowledge_observability.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_loader.py",
@@ -39344,6 +39358,9 @@
         "modules/bootstrap_runtime.md",
         "modules/documentation_native.md",
         "modules/documentation_worklist.md",
+        "modules/knowledge_artifacts.md",
+        "modules/knowledge_freshness.md",
+        "modules/knowledge_generation.md",
         "modules/migrate_cmd.md",
         "modules/review_cmd.md",
         "modules/status_cmd.md",
@@ -39400,6 +39417,8 @@
         "modules/api.md",
         "modules/cli.md",
         "modules/config.md",
+        "modules/context_packet.md",
+        "modules/context_service.md",
         "modules/docs_cmd.md",
         "modules/upgrade_cmd.md"
       ],
@@ -39441,6 +39460,8 @@
         "modules/entrypoints.md",
         "modules/generate_prompt_cmd.md",
         "modules/install_cmd.md",
+        "modules/lint_service.md",
+        "modules/plugin_samples.md",
         "modules/plugins.md",
         "modules/plugins_cmd.md",
         "modules/trigger_cmd.md"
@@ -41367,7 +41388,8 @@
         "modules/documentation_policy.md",
         "modules/documentation_run_dependencies.md",
         "modules/documentation_wiki_input.md",
-        "modules/filesystem_guard.md"
+        "modules/filesystem_guard.md",
+        "modules/protected_artifacts.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
@@ -41461,7 +41483,8 @@
       "mcp_uri": "llm-wiki://entities/WindowsSecurityGuardError",
       "outgoing_internal_links": [
         "modules/config.md",
-        "modules/filesystem_guard.md"
+        "modules/filesystem_guard.md",
+        "modules/protected_artifacts.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/filesystem_guard.py",
@@ -51960,5 +51983,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:22f4e98697eaf50f7e56dc896cb421e90d9c111d7dd4410e044d2b65cf76888a"
+  "source_hash": "sha256:d455dfb40014c168bc348f8d3bb3f6943c32a9b1acbe9670bfdfc5940826e8d2"
 }

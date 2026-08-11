@@ -49,11 +49,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_decision_for_ledger` | call | [documentation_review](../modules/documentation_review.md) |
-| `_decision_for_ledger` | call | [documentation_review](../modules/documentation_review.md) |
-| `_decision_for_ledger` | call | [documentation_review](../modules/documentation_review.md) |
-| `_decision_for_ledger` | call | [documentation_review](../modules/documentation_review.md) |
-| `_decision_for_ledger` | call | [documentation_review](../modules/documentation_review.md) |
-| `_decision_for_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_decision_for_ledger` | call | [documentation_review](../modules/documentation_review.md) | 5 |
+| `_decision_for_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) | — |

@@ -72,13 +72,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_issue` | type_reference | [skills](../modules/skills.md) |
-| `_ensure_regular_directory` | type_reference | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | type_reference | [skills](../modules/skills.md) |
-| `install_reference_skill` | type_reference | [skills](../modules/skills.md) |
-| `install_skills` | type_reference | [skills](../modules/skills.md) |
-| `render_report_json` | type_reference | [skills](../modules/skills.md) |
-| `render_report_text` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_issue` | type_reference | [skills](../modules/skills.md) | — |
+| `_ensure_regular_directory` | type_reference | [skills](../modules/skills.md) | — |
+| `export_skills` | call | [skills](../modules/skills.md) | 1 |
+| `export_skills` | type_reference | [skills](../modules/skills.md) | — |
+| `install_reference_skill` | type_reference | [skills](../modules/skills.md) | — |
+| `install_skills` | type_reference | [skills](../modules/skills.md) | — |
+| `render_report_json` | type_reference | [skills](../modules/skills.md) | — |
+| `render_report_text` | type_reference | [skills](../modules/skills.md) | — |

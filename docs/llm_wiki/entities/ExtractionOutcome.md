@@ -62,16 +62,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_collect_inventory_outcomes` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_python_extraction_sidecars` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_run_extraction_plan` | call | [extraction_service](../modules/extraction_service.md) |
-| `_run_extraction_plan` | call | [extraction_service](../modules/extraction_service.md) |
-| `_run_extraction_plan` | call | [extraction_service](../modules/extraction_service.md) |
-| `_run_extraction_plan` | call | [extraction_service](../modules/extraction_service.md) |
-| `_run_extraction_plan` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_run_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_run_parallel_safe_inventory_plans` | call | [extraction_service](../modules/extraction_service.md) |
-| `_run_parallel_safe_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_collect_inventory_outcomes` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_python_extraction_sidecars` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_run_extraction_plan` | call | [extraction_service](../modules/extraction_service.md) | 4 |
+| `_run_extraction_plan` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_run_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_run_parallel_safe_inventory_plans` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_run_parallel_safe_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) | — |

@@ -82,17 +82,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_input_files_resource_bounds` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_assert_semantic_markdown_resource_bounds` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_canonical_markdown_entries` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_copy_file_bytes` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_copy_regular_file` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_decode_json_object` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_InputTree.by_path` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_inspect_markdown` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_load_and_validate_metadata` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_open_input_entry` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_open_windows_input_leaf` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_read_json_object` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_input_files_resource_bounds` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_assert_semantic_markdown_resource_bounds` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_canonical_markdown_entries` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_copy_file_bytes` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_copy_regular_file` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_decode_json_object` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_InputTree.by_path` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_inspect_markdown` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_load_and_validate_metadata` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_open_input_entry` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_open_windows_input_leaf` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_read_json_object` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+
+> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.

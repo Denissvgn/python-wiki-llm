@@ -56,11 +56,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_profile_phase` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_profile_report_to_dict` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_run_report_checks` | type_reference | [lint_service](../modules/lint_service.md) |
-| `build_report` | type_reference | [lint_service](../modules/lint_service.md) |
-| `run` | call | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_profile_phase` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_profile_report_to_dict` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_run_report_checks` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `build_report` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `run` | call | [lint_service](../modules/lint_service.md) | 1 |

@@ -43,10 +43,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `export_skills` | call | [skills](../modules/skills.md) | 5 |

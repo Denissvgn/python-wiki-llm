@@ -88,17 +88,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_builtin_extraction_kwargs` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_build_extraction_job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_build_extraction_kwargs` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_can_use_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_collect_inventory_outcomes` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_fresh_inventory_source_files` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_inventory_plugin_state` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_merge_inventory_results` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_plan_inventory_extractions` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_plan_language_extraction` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_prepare_inventory_build_context` | call | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_builtin_extraction_kwargs` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_build_extraction_job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_build_extraction_kwargs` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_can_use_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_collect_inventory_outcomes` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_fresh_inventory_source_files` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_inventory_plugin_state` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_merge_inventory_results` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_plan_inventory_extractions` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_plan_language_extraction` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_prepare_inventory_build_context` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

@@ -56,6 +56,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `wiki_lifecycle` | import | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `wiki_lifecycle` | import | [wiki_lifecycle](../modules/wiki_lifecycle.md) | — |

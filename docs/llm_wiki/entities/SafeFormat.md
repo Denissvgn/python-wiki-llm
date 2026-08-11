@@ -47,6 +47,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `render_prompt_template` | call | [plugins](../modules/plugins.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `render_prompt_template` | call | [plugins](../modules/plugins.md) | 1 |

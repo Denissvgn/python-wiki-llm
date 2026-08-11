@@ -54,11 +54,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `_build_page_registry` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_build_page_registry` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `_classify_target` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `_validate_asset_paths` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `_validate_page_content` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `_build_page_registry` | call | [knowledge_links](../modules/knowledge_links.md) | 1 |
+| `_build_page_registry` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `_classify_target` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `_validate_asset_paths` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `_validate_page_content` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |

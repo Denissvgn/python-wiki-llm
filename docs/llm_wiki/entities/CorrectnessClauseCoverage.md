@@ -51,6 +51,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `correctness_destination_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `correctness_destination_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

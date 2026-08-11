@@ -45,6 +45,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `buildCommandArgs` | type_reference | [src_main](../modules/src_main.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `buildCommandArgs` | type_reference | [src_main](../modules/src_main.md) | — |

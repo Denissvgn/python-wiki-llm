@@ -81,15 +81,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_expected_observation_outcome` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_link_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_observation_contains_authority_userinfo` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_observation_endpoint` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_observation_source_syntax` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validated_observations` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_build_observation` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `collect_link_observations` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_expected_observation_outcome` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_link_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_observation_contains_authority_userinfo` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_validate_observation_endpoint` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_observation_source_syntax` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validated_observations` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_build_observation` | call | [knowledge_links](../modules/knowledge_links.md) | 1 |
+| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `collect_link_observations` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |

@@ -1,6 +1,6 @@
 # _BootstrapPageMaps
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4100`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4120`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -61,13 +61,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_generate_bootstrap_content` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_governance_moves_for_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_prepare_bootstrap_page_maps` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_prepare_bootstrap_page_maps` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_api_contract_page` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_entity_and_module_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_generate_bootstrap_content` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_governance_moves_for_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_prepare_bootstrap_page_maps` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_prepare_bootstrap_page_maps` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_write_bootstrap_api_contract_page` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_write_entity_and_module_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

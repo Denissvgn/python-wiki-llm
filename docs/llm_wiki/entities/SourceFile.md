@@ -76,17 +76,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_load_inventory_cache_state` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_source_files_by_path` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `hash_source_file` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
-| `is_valid_cache_entry` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
-| `make_cache_entry` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
-| `_add_captured_input_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_append_sorted` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_captured_snapshot_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_make_source_file` | call | [source_snapshot](../modules/source_snapshot.md) |
-| `_make_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_load_inventory_cache_state` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_source_files_by_path` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `hash_source_file` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
+| `is_valid_cache_entry` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
+| `make_cache_entry` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
+| `_add_captured_input_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_append_sorted` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_captured_snapshot_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_make_source_file` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_make_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

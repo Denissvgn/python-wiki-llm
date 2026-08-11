@@ -62,13 +62,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_chunk` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_apply_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_chunks` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_chunks` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_chunks` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_chunk_has_archive_work` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_chunk_link_map` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_print_chunk_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_chunk` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_apply_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
+| `_build_chunks` | call | [migrate_cmd](../modules/migrate_cmd.md) | 2 |
+| `_build_chunks` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_chunk_has_archive_work` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_chunk_link_map` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_print_chunk_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |

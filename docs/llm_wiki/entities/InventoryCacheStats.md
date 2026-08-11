@@ -65,10 +65,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_print_cache_stats` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `extraction_service` | import | [extraction_service](../modules/extraction_service.md) |
-| `format_cache_stats` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
-| `InventoryCache.__init__` | call | [inventory_cache](../modules/inventory_cache.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_print_cache_stats` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `extraction_service` | import | [extraction_service](../modules/extraction_service.md) | — |
+| `format_cache_stats` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
+| `InventoryCache.__init__` | call | [inventory_cache](../modules/inventory_cache.md) | 1 |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |

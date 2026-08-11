@@ -61,13 +61,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_graph_concepts` | call | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_graph_concepts` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_add_supersession_edges` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_graph_concept_payload` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialization_state` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_normalise_graph_concepts` | call | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_normalise_graph_concepts` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_owner_concept` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_graph_concepts` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
+| `_graph_concepts` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_add_supersession_edges` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_graph_concept_payload` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialization_state` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_normalise_graph_concepts` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
+| `_normalise_graph_concepts` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_owner_concept` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |

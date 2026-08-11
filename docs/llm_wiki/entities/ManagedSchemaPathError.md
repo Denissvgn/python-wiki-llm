@@ -32,6 +32,7 @@ flowchart LR
     n7["_require_replaceable_schema_path (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
     n8["_restore_old_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
     n9["_upgrade_schema (src/llm_wiki_cli/commands/upgrade_cmd.py)"]
+    n10["require_safe_schema_path (src/llm_wiki_cli/services/schema.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -41,6 +42,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/services_schema.md"
     click n2 "../modules/init_cmd.md"
     click n3 "../modules/init_cmd.md"
@@ -50,6 +52,7 @@ flowchart LR
     click n7 "../modules/upgrade_cmd.md"
     click n8 "../modules/upgrade_cmd.md"
     click n9 "../modules/upgrade_cmd.md"
+    click n10 "../modules/services_schema.md"
 ```
 
 ### Summary
@@ -66,17 +69,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_managed_schema_agents` | call | [init_cmd](../modules/init_cmd.md) |
-| `run` | call | [init_cmd](../modules/init_cmd.md) |
-| `run` | call | [init_cmd](../modules/init_cmd.md) |
-| `run` | call | [init_cmd](../modules/init_cmd.md) |
-| `run` | call | [init_cmd](../modules/init_cmd.md) |
-| `_clean_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_require_replaceable_schema_path` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_restore_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_upgrade_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_managed_schema_agents` | call | [init_cmd](../modules/init_cmd.md) | 1 |
+| `run` | call | [init_cmd](../modules/init_cmd.md) | 4 |
+| `_clean_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 1 |
+| `_preflight_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 2 |
+| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
+| `_require_replaceable_schema_path` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
+| `_restore_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
+| `_upgrade_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
+| `require_safe_schema_path` | call | [services_schema](../modules/services_schema.md) | 2 |

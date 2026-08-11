@@ -44,10 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `apply_review_loop` | call | [documentation_review](../modules/documentation_review.md) |
-| `apply_review_loop` | call | [documentation_review](../modules/documentation_review.md) |
-| `apply_review_loop` | call | [documentation_review](../modules/documentation_review.md) |
-| `apply_review_loop` | call | [documentation_review](../modules/documentation_review.md) |
-| `apply_review_loop` | type_reference | [documentation_review](../modules/documentation_review.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `apply_review_loop` | call | [documentation_review](../modules/documentation_review.md) | 4 |
+| `apply_review_loop` | type_reference | [documentation_review](../modules/documentation_review.md) | — |

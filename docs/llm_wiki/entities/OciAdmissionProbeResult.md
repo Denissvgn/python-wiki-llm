@@ -54,7 +54,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validate_probe_result_bindings` | type_reference | [broker](../modules/broker.md) |
-| `OciAdmissionProbeResult.from_dict` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_probe_result_bindings` | type_reference | [broker](../modules/broker.md) | — |
+| `OciAdmissionProbeResult.from_dict` | type_reference | [broker](../modules/broker.md) | — |

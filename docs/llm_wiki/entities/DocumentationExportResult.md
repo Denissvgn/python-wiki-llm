@@ -65,6 +65,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `export_documentation_run` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `export_documentation_run` | type_reference | [api](../modules/api.md) | — |

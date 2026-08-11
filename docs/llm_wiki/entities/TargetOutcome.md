@@ -50,17 +50,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_classify_target` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_classify_target` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_classify_target` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_classify_target` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_classify_target` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_classify_target` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_classify_target` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `_concept_candidates` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_concept_candidates` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_concept_candidates` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_concept_candidates` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `_malformed` | call | [knowledge_links](../modules/knowledge_links.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_classify_target` | call | [knowledge_links](../modules/knowledge_links.md) | 6 |
+| `_classify_target` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `_concept_candidates` | call | [knowledge_links](../modules/knowledge_links.md) | 3 |
+| `_concept_candidates` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `_malformed` | call | [knowledge_links](../modules/knowledge_links.md) | 1 |
+| `_malformed` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |

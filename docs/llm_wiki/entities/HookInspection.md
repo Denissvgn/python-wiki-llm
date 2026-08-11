@@ -51,9 +51,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_preflight_hooks` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_hooks` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_remove_hooks` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_validate_hook_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_preflight_hooks` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 1 |
+| `_preflight_hooks` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_remove_hooks` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_validate_hook_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |

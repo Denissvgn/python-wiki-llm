@@ -95,17 +95,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_captured_query_service` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_freshness_basis` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) |
-| `_build_explicit_knowledge_response` | type_reference | [context_service](../modules/context_service.md) |
-| `_context_query_surface` | type_reference | [context_service](../modules/context_service.md) |
-| `_knowledge_error_view` | type_reference | [context_service](../modules/context_service.md) |
-| `_knowledge_fallback_evidence` | type_reference | [context_service](../modules/context_service.md) |
-| `_availability_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_diagnostic_freshness_states` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_governance_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_captured_query_service` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_freshness_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_explicit_knowledge_response` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_context_query_surface` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_knowledge_error_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_knowledge_fallback_evidence` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_availability_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_diagnostic_freshness_states` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_governance_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+
+> References: showing 12 of 44 logical references; 32 omitted by the 12-row generated summary limit.

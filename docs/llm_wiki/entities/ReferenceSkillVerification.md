@@ -70,13 +70,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_print_reference_summary` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `_recovery_guidance` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `_reference_recovery_prerequisites` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `classify_lifecycle_status` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| `_reference_verification` | call | [skills](../modules/skills.md) |
-| `_reference_verification` | type_reference | [skills](../modules/skills.md) |
-| `_safe_reference_verification` | type_reference | [skills](../modules/skills.md) |
-| `verify_reference_skill` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_print_reference_summary` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `_recovery_guidance` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `_reference_recovery_prerequisites` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `classify_lifecycle_status` | type_reference | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |
+| `_reference_verification` | call | [skills](../modules/skills.md) | 1 |
+| `_reference_verification` | type_reference | [skills](../modules/skills.md) | — |
+| `_safe_reference_verification` | type_reference | [skills](../modules/skills.md) | — |
+| `verify_reference_skill` | type_reference | [skills](../modules/skills.md) | — |

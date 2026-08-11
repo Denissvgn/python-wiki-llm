@@ -1,6 +1,6 @@
 # _BootstrapRunState
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4087`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4107`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -82,17 +82,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_manifest_generation_state` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_plugin_roots` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_result` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_build_bootstrap_api_contracts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_build_bootstrap_dependency_analysis` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_build_bootstrap_relationships` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap_warnings` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bootstrap_manifest_generation_state` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bootstrap_plugin_roots` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bootstrap_result` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_build_bootstrap_api_contracts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_build_bootstrap_dependency_analysis` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_build_bootstrap_relationships` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap_warnings` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+
+> References: showing 12 of 31 logical references; 19 omitted by the 12-row generated summary limit.

@@ -60,13 +60,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `asset_relative_path` | type_reference | [wiki_media](../modules/wiki_media.md) |
-| `build_asset_index` | type_reference | [wiki_media](../modules/wiki_media.md) |
-| `collect_media_references` | call | [wiki_media](../modules/wiki_media.md) |
-| `collect_media_references` | call | [wiki_media](../modules/wiki_media.md) |
-| `collect_media_references` | call | [wiki_media](../modules/wiki_media.md) |
-| `collect_media_references` | type_reference | [wiki_media](../modules/wiki_media.md) |
-| `collect_media_references_by_page` | type_reference | [wiki_media](../modules/wiki_media.md) |
-| `is_symlink_escape` | type_reference | [wiki_media](../modules/wiki_media.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `asset_relative_path` | type_reference | [wiki_media](../modules/wiki_media.md) | — |
+| `build_asset_index` | type_reference | [wiki_media](../modules/wiki_media.md) | — |
+| `collect_media_references` | call | [wiki_media](../modules/wiki_media.md) | 3 |
+| `collect_media_references` | type_reference | [wiki_media](../modules/wiki_media.md) | — |
+| `collect_media_references_by_page` | type_reference | [wiki_media](../modules/wiki_media.md) | — |
+| `is_symlink_escape` | type_reference | [wiki_media](../modules/wiki_media.md) | — |

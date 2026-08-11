@@ -92,17 +92,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) |
-| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) |
-| `_build_protocol_enrichment` | type_reference | [context_service](../modules/context_service.md) |
-| `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) |
-| `get_inventory` | type_reference | [context_service](../modules/context_service.md) |
-| `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_completed_inventory_result` | call | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_protocol_enrichment` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) | — |
+| `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_completed_inventory_result` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

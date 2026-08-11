@@ -35,6 +35,9 @@ flowchart LR
     n8["_require_bool (src/llm_wiki_cli/services/knowledge_projection.py)"]
     n9["_require_enum (src/llm_wiki_cli/services/knowledge_projection.py)"]
     n10["_require_exact_fields (src/llm_wiki_cli/services/knowledge_projection.py)"]
+    n11["_require_mapping (src/llm_wiki_cli/services/knowledge_projection.py)"]
+    n12["_require_nonnegative_int (src/llm_wiki_cli/services/knowledge_projection.py)"]
+    n13["_require_positive_int (src/llm_wiki_cli/services/knowledge_projection.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,6 +48,9 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/knowledge_projection.md"
     click n2 "../modules/obsidian_cmd.md"
     click n3 "../modules/knowledge_projection.md"
@@ -55,6 +61,9 @@ flowchart LR
     click n8 "../modules/knowledge_projection.md"
     click n9 "../modules/knowledge_projection.md"
     click n10 "../modules/knowledge_projection.md"
+    click n11 "../modules/knowledge_projection.md"
+    click n12 "../modules/knowledge_projection.md"
+    click n13 "../modules/knowledge_projection.md"
 ```
 
 ### Summary
@@ -71,17 +80,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `obsidian_cmd` | import | [obsidian_cmd](../modules/obsidian_cmd.md) |
-| `_approved_public_repository_identity` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_approved_public_repository_identity` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_approved_public_repository_identity` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_freshness` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_freshness` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_projection_concept_summary_unchecked` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_projection_profile` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_relationship_limit` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_require_bool` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_require_enum` | call | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_require_exact_fields` | call | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `obsidian_cmd` | import | [obsidian_cmd](../modules/obsidian_cmd.md) | — |
+| `_approved_public_repository_identity` | call | [knowledge_projection](../modules/knowledge_projection.md) | 3 |
+| `_project_freshness` | call | [knowledge_projection](../modules/knowledge_projection.md) | 2 |
+| `_projection_concept_summary_unchecked` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+| `_projection_profile` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+| `_relationship_limit` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+| `_require_bool` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+| `_require_enum` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+| `_require_exact_fields` | call | [knowledge_projection](../modules/knowledge_projection.md) | 3 |
+| `_require_mapping` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+| `_require_nonnegative_int` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+| `_require_positive_int` | call | [knowledge_projection](../modules/knowledge_projection.md) | 2 |
+
+> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.

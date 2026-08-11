@@ -48,6 +48,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `collect_media_references` | call | [wiki_media](../modules/wiki_media.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `collect_media_references` | call | [wiki_media](../modules/wiki_media.md) | 1 |

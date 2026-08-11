@@ -81,8 +81,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) |
-| `OciDispatchReceipt.from_dict` | type_reference | [broker](../modules/broker.md) |
-| `controller` | import | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) | — |
+| `OciDispatchReceipt.from_dict` | type_reference | [broker](../modules/broker.md) | — |
+| `controller` | import | [controller](../modules/controller.md) | — |

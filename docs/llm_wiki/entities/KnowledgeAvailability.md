@@ -68,11 +68,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `context_service` | import | [context_service](../modules/context_service.md) |
-| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) |
-| `documentation_queries` | import | [documentation_queries](../modules/documentation_queries.md) |
-| `KnowledgeAggregateSummary.__post_init__` | call | [knowledge_observability](../modules/knowledge_observability.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `context_service` | import | [context_service](../modules/context_service.md) | — |
+| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
+| `documentation_queries` | import | [documentation_queries](../modules/documentation_queries.md) | — |
+| `KnowledgeAggregateSummary.__post_init__` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |

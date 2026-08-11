@@ -47,6 +47,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `cli` | import | [cli](../modules/cli.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `cli` | import | [cli](../modules/cli.md) | — |

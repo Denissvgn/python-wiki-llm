@@ -66,13 +66,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `GoExtractor._build_command` | type_reference | [go_extractor](../modules/go_extractor.md) |
-| `GoExtractor._coerce_request` | call | [go_extractor](../modules/go_extractor.md) |
-| `GoExtractor._coerce_request` | type_reference | [go_extractor](../modules/go_extractor.md) |
-| `GoExtractor._load_chunked_inventory` | type_reference | [go_extractor](../modules/go_extractor.md) |
-| `GoExtractor._prepared_helper` | type_reference | [go_extractor](../modules/go_extractor.md) |
-| `GoExtractor._resolve_source_files` | type_reference | [go_extractor](../modules/go_extractor.md) |
-| `GoExtractor.extract` | type_reference | [go_extractor](../modules/go_extractor.md) |
-| `_build_builtin_extraction_kwargs` | call | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `GoExtractor._build_command` | type_reference | [go_extractor](../modules/go_extractor.md) | — |
+| `GoExtractor._coerce_request` | call | [go_extractor](../modules/go_extractor.md) | 1 |
+| `GoExtractor._coerce_request` | type_reference | [go_extractor](../modules/go_extractor.md) | — |
+| `GoExtractor._load_chunked_inventory` | type_reference | [go_extractor](../modules/go_extractor.md) | — |
+| `GoExtractor._prepared_helper` | type_reference | [go_extractor](../modules/go_extractor.md) | — |
+| `GoExtractor._resolve_source_files` | type_reference | [go_extractor](../modules/go_extractor.md) | — |
+| `GoExtractor.extract` | type_reference | [go_extractor](../modules/go_extractor.md) | — |
+| `_build_builtin_extraction_kwargs` | call | [extraction_service](../modules/extraction_service.md) | 1 |

@@ -52,8 +52,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) |
-| `refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |

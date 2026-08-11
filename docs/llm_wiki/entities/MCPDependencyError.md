@@ -45,7 +45,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `ensure_mcp_runtime` | call | [mcp_server](../modules/mcp_server.md) |
-| `ensure_mcp_runtime` | call | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `ensure_mcp_runtime` | call | [mcp_server](../modules/mcp_server.md) | 2 |

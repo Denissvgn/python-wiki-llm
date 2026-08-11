@@ -50,9 +50,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_clean_agent_schemas` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_agent_schemas` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_validate_schema_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_clean_agent_schemas` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_preflight_agent_schemas` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 1 |
+| `_preflight_agent_schemas` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_validate_schema_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |

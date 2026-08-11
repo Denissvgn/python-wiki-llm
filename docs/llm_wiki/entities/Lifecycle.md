@@ -41,6 +41,7 @@ flowchart LR
     n10["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n11["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n12["_validate_lifecycle_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n13["current_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -53,6 +54,7 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     n12 --> n0
+    n13 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/knowledge_cmd.md"
     click n4 "../modules/context_packet.md"
@@ -64,6 +66,7 @@ flowchart LR
     click n10 "../modules/knowledge_governance.md"
     click n11 "../modules/knowledge_governance.md"
     click n12 "../modules/knowledge_governance.md"
+    click n13 "../modules/knowledge_governance.md"
 ```
 
 ### Summary
@@ -81,17 +84,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) |
-| `_lifecycle_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_lifecycle_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_lifecycle_event` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_lifecycle_event` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_lifecycle_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_concept_summary` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_lifecycle_summary` | call | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `_lifecycle_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_lifecycle_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_parse_lifecycle_event` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
+| `_parse_lifecycle_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_concept_summary` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_lifecycle_summary` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
+| `current_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

@@ -38,6 +38,7 @@ flowchart LR
     n5["config_requires_manual_recovery (src/llm_wiki_cli/config.py)"]
     n6["inspect_config (src/llm_wiki_cli/config.py)"]
     n7["inspect_config_path (src/llm_wiki_cli/config.py)"]
+    n8["require_config_inspection_unchanged (src/llm_wiki_cli/config.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -45,6 +46,7 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/config.md"
     click n1 "../modules/status_cmd.md"
     click n2 "../modules/status_cmd.md"
@@ -53,6 +55,7 @@ flowchart LR
     click n5 "../modules/config.md"
     click n6 "../modules/config.md"
     click n7 "../modules/config.md"
+    click n8 "../modules/config.md"
 ```
 
 ### Summary
@@ -63,17 +66,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_configured_agent` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `_diagnostic_schema_target` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `_print_managed_lifecycle` | type_reference | [status_cmd](../modules/status_cmd.md) |
-| `_resolve_agent` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `config_requires_manual_recovery` | type_reference | [config](../modules/config.md) |
-| `inspect_config` | call | [config](../modules/config.md) |
-| `inspect_config` | type_reference | [config](../modules/config.md) |
-| `inspect_config_path` | call | [config](../modules/config.md) |
-| `inspect_config_path` | call | [config](../modules/config.md) |
-| `inspect_config_path` | call | [config](../modules/config.md) |
-| `inspect_config_path` | call | [config](../modules/config.md) |
-| `inspect_config_path` | call | [config](../modules/config.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_configured_agent` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `_diagnostic_schema_target` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `_print_managed_lifecycle` | type_reference | [status_cmd](../modules/status_cmd.md) | — |
+| `_resolve_agent` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `config_requires_manual_recovery` | type_reference | [config](../modules/config.md) | — |
+| `inspect_config` | call | [config](../modules/config.md) | 1 |
+| `inspect_config` | type_reference | [config](../modules/config.md) | — |
+| `inspect_config_path` | call | [config](../modules/config.md) | 10 |
+| `inspect_config_path` | type_reference | [config](../modules/config.md) | — |
+| `require_config_inspection_unchanged` | type_reference | [config](../modules/config.md) | — |

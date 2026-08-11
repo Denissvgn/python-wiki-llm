@@ -54,9 +54,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) |
-| `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `windows_object_identity_from_values` | call | [filesystem_guard](../modules/filesystem_guard.md) |
-| `WindowsObjectIdentity.__post_init__` | call | [filesystem_guard](../modules/filesystem_guard.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) | — |
+| `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `windows_object_identity_from_values` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
+| `WindowsObjectIdentity.__post_init__` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |

@@ -60,11 +60,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_input_tree_resource_bounds` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_collect_input_tree` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_collect_input_tree` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_collect_input_tree_descriptor` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_collect_input_tree_descriptor` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_copy_input_tree` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_input_tree_resource_bounds` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_collect_input_tree` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_collect_input_tree` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_collect_input_tree_descriptor` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_collect_input_tree_descriptor` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_copy_input_tree` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |

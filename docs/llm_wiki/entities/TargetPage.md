@@ -68,16 +68,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_match_lookups` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_targets` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_targets` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_targets` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_targets` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_match_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_merge_legacy_notes` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_pending_targets` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_should_archive_matched_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_target_needs_apply` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_unique` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_match_lookups` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_build_targets` | call | [migrate_cmd](../modules/migrate_cmd.md) | 3 |
+| `_build_targets` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_match_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_merge_legacy_notes` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_pending_targets` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_should_archive_matched_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_target_needs_apply` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_unique` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |

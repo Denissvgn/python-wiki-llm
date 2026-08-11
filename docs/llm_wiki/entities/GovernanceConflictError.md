@@ -54,9 +54,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `governance_lock` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `save_governance` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `finalize_runtime_knowledge` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `finalize_runtime_knowledge` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `governance_lock` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `save_governance` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `finalize_runtime_knowledge` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 2 |

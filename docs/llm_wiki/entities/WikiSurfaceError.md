@@ -35,6 +35,8 @@ flowchart LR
     n10["src/llm_wiki_cli/services/knowledge_links.py"]
     n11["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
     n12["_validate_page_id (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n13["canonical_path (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n14["mcp_uri (src/llm_wiki_cli/services/wiki_surface.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -47,6 +49,8 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     n12 --> n0
+    n13 --> n0
+    n14 --> n0
     click n0 "../modules/wiki_surface.md"
     click n2 "../modules/wiki_surface.md"
     click n3 "../modules/migrate_cmd.md"
@@ -59,6 +63,8 @@ flowchart LR
     click n10 "../modules/knowledge_links.md"
     click n11 "../modules/wiki_surface.md"
     click n12 "../modules/wiki_surface.md"
+    click n13 "../modules/wiki_surface.md"
+    click n14 "../modules/wiki_surface.md"
 ```
 
 ### Summary
@@ -76,17 +82,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) |
-| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `concept_identity` | import | [concept_identity](../modules/concept_identity.md) |
-| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `knowledge_graph` | import | [knowledge_graph](../modules/knowledge_graph.md) |
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) |
-| `knowledge_links` | import | [knowledge_links](../modules/knowledge_links.md) |
-| `_entry_for` | call | [wiki_surface](../modules/wiki_surface.md) |
-| `_validate_page_id` | call | [wiki_surface](../modules/wiki_surface.md) |
-| `_validate_page_id` | call | [wiki_surface](../modules/wiki_surface.md) |
-| `_validate_page_id` | call | [wiki_surface](../modules/wiki_surface.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `concept_identity` | import | [concept_identity](../modules/concept_identity.md) | — |
+| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `knowledge_graph` | import | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `knowledge_links` | import | [knowledge_links](../modules/knowledge_links.md) | — |
+| `_entry_for` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
+| `_validate_page_id` | call | [wiki_surface](../modules/wiki_surface.md) | 3 |
+| `canonical_path` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
+| `mcp_uri` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

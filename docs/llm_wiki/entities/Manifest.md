@@ -82,17 +82,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_classify_go` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_classify_haskell` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_classify_python` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_classify_rust` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_classify_ts` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_nearest_manifest_scope` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_go_manifest` | call | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_go_manifest` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_haskell_manifest` | call | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_haskell_manifest` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_manifests` | type_reference | [services_dependencies](../modules/services_dependencies.md) |
-| `_parse_python_manifest` | call | [services_dependencies](../modules/services_dependencies.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_classify_go` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_classify_haskell` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_classify_python` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_classify_rust` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_classify_ts` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_nearest_manifest_scope` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_parse_go_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
+| `_parse_go_manifest` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_parse_haskell_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
+| `_parse_haskell_manifest` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_parse_manifests` | type_reference | [services_dependencies](../modules/services_dependencies.md) | — |
+| `_parse_python_manifest` | call | [services_dependencies](../modules/services_dependencies.md) | 1 |
+
+> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.

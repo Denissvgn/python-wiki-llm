@@ -46,9 +46,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_clean_old_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_restore_old_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_clean_old_schema` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 2 |
+| `_clean_old_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_restore_old_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |

@@ -48,6 +48,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `removal_prerequisites_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `removal_prerequisites_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

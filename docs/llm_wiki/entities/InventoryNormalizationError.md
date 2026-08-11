@@ -34,6 +34,10 @@ flowchart LR
     n7["_record_array (src/llm_wiki_cli/services/knowledge_evidence.py)"]
     n8["_record_name (src/llm_wiki_cli/services/knowledge_evidence.py)"]
     n9["_structural_copy (src/llm_wiki_cli/services/knowledge_evidence.py)"]
+    n10["_validate_callable_record (src/llm_wiki_cli/services/knowledge_evidence.py)"]
+    n11["_validate_import_record (src/llm_wiki_cli/services/knowledge_evidence.py)"]
+    n12["_validate_module_call_record (src/llm_wiki_cli/services/knowledge_evidence.py)"]
+    n13["_validate_optional_booleans (src/llm_wiki_cli/services/knowledge_evidence.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -43,6 +47,10 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
+    n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/knowledge_evidence.md"
     click n2 "../modules/knowledge_evidence.md"
     click n3 "../modules/knowledge_evidence.md"
@@ -52,6 +60,10 @@ flowchart LR
     click n7 "../modules/knowledge_evidence.md"
     click n8 "../modules/knowledge_evidence.md"
     click n9 "../modules/knowledge_evidence.md"
+    click n10 "../modules/knowledge_evidence.md"
+    click n11 "../modules/knowledge_evidence.md"
+    click n12 "../modules/knowledge_evidence.md"
+    click n13 "../modules/knowledge_evidence.md"
 ```
 
 ### Summary
@@ -68,17 +80,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_inventory_language` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_inventory_language` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_inventory_language` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_json_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_normalize_entity_observation` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_normalize_module_observation` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_optional_record_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_record_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_record_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_record_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_record_name` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| `_structural_copy` | call | [knowledge_evidence](../modules/knowledge_evidence.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_inventory_language` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 3 |
+| `_json_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_normalize_entity_observation` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_normalize_module_observation` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_optional_record_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_record_array` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 3 |
+| `_record_name` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_structural_copy` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 4 |
+| `_validate_callable_record` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_validate_import_record` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_validate_module_call_record` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+| `_validate_optional_booleans` | call | [knowledge_evidence](../modules/knowledge_evidence.md) | 1 |
+
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

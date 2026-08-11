@@ -50,8 +50,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_managed_topic_route` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_managed_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `inbound_route_resolves` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_managed_topic_route` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |
+| `_managed_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `inbound_route_resolves` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

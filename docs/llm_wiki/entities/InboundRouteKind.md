@@ -53,6 +53,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_managed_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_managed_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

@@ -55,12 +55,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validated_references` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validated_references` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `concept_references_from_knowledge` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `concept_references_from_knowledge` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `reconcile_concepts` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_prepared_runtime_governance` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validated_references` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_validated_references` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `concept_references_from_knowledge` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `concept_references_from_knowledge` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `reconcile_concepts` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_prepared_runtime_governance` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |

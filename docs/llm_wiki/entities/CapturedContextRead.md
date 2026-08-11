@@ -93,17 +93,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_selection_unchanged` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_build_knowledge_context_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_build_legacy_context_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_build_protocol_enrichment_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_candidate_packet_size` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_captured_query_service` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_captured_source_classification` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_fit_knowledge_packet_response` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_packet_basis` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_packet_body` | type_reference | [context_packet](../modules/context_packet.md) |
-| `build_context_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_selection_unchanged` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_build_knowledge_context_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_build_legacy_context_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_build_protocol_enrichment_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_candidate_packet_size` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_captured_query_service` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_captured_source_classification` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_fit_knowledge_packet_response` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_packet_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_packet_body` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `build_context_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 1 |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

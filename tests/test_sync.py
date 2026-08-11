@@ -103,6 +103,32 @@ def _body_line_count(function) -> int:
     return last_body_line - first_body_line + 1
 
 
+def _entity_reference_rows(content: str) -> list[dict[str, str]]:
+    """Parse the generated entity References table into named cells."""
+    relationship_section = content.split("## Relationships", 1)[1]
+    references_section = relationship_section.split("### References", 1)[1]
+    rows: list[dict[str, str]] = []
+    for line in references_section.splitlines():
+        if not line.startswith("|"):
+            if rows:
+                break
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if cells[0] in {"Reference", "---"}:
+            continue
+        assert len(cells) == 4
+        rows.append(
+            dict(
+                zip(
+                    ("reference", "kind", "source", "call_sites"),
+                    cells,
+                    strict=True,
+                )
+            )
+        )
+    return rows
+
+
 def _write_entrypoint_detector_plugin(root: Path, *, body: str) -> None:
     plugin_dir = root / "vendor" / "detector-plugin"
     plugin_dir.mkdir(parents=True)
@@ -4980,6 +5006,86 @@ class TestSyncGeneratedRelationshipSections:
             encoding="utf-8",
         )
         (proj / "service.py").write_text(service_body, encoding="utf-8")
+
+    def test_bootstrap_and_sync_aggregate_constructor_call_sites_idempotently(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        proj, wiki = self._new_project(tmp_path)
+        (proj / "models.py").write_text(
+            textwrap.dedent("""\
+                class User:
+                    \"\"\"A generated user entity.\"\"\"
+            """),
+            encoding="utf-8",
+        )
+        (proj / "service.py").write_text(
+            textwrap.dedent("""\
+                from models import User
+
+                def make_users():
+                    first = User()
+                    second = User()
+                    return User()
+            """),
+            encoding="utf-8",
+        )
+        monkeypatch.chdir(proj)
+
+        bootstrap_cmd.run(_make_bootstrap_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        entity_path = wiki / "entities" / "User.md"
+        bootstrapped = entity_path.read_text(encoding="utf-8")
+        assert "| Reference | Kind | Source | Call sites |" in bootstrapped
+        assert _entity_reference_rows(bootstrapped) == [
+            {
+                "reference": "`make_users`",
+                "kind": "call",
+                "source": "[service](../modules/service.md)",
+                "call_sites": "3",
+            }
+        ]
+
+        entity_path.write_text(
+            sync_cmd._replace_section_body(
+                bootstrapped,
+                "Description",
+                "Human-reviewed user entity.",
+            ),
+            encoding="utf-8",
+        )
+        (proj / "service.py").write_text(
+            textwrap.dedent("""\
+                from models import User
+
+                def make_users():
+                    first = User()
+                    second = User()
+                    third = User()
+                    return User()
+            """),
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        first_output = capsys.readouterr().out
+        refreshed = entity_path.read_text(encoding="utf-8")
+        assert "UPDATE entity relationships: User" in first_output
+        assert "Human-reviewed user entity." in refreshed
+        assert _entity_reference_rows(refreshed) == [
+            {
+                "reference": "`make_users`",
+                "kind": "call",
+                "source": "[service](../modules/service.md)",
+                "call_sites": "4",
+            }
+        ]
+
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki)))
+
+        assert entity_path.read_text(encoding="utf-8") == refreshed
+        assert "Wiki is up to date." in capsys.readouterr().out
 
     def test_changed_reference_updates_unchanged_entity_relationship_section(
         self, tmp_path, monkeypatch, capsys

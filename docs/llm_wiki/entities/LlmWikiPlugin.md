@@ -57,6 +57,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `LlmWikiSettingTab.constructor` | type_reference | [src_main](../modules/src_main.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `LlmWikiSettingTab.constructor` | type_reference | [src_main](../modules/src_main.md) | — |

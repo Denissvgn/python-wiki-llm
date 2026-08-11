@@ -641,6 +641,94 @@ def _unbounded_summary_coverage(observed: int) -> dict:
     }
 
 
+def _page_reference_projection(records: Iterable[dict]) -> tuple[list[dict], dict]:
+    """Return bounded logical references for generated entity pages.
+
+    Raw call references remain line-specific in the public summary builders.  A
+    generated page, however, presents the source callable rather than each
+    individual call site, so collapse calls only after exact record
+    deduplication and expose their distinct site count separately.
+    """
+    exact_records = _dedupe_sorted(records, limit=None)
+    logical_records = []
+    calls: dict[tuple[object, ...], dict] = {}
+    for record in exact_records:
+        if record.get("kind") != "call":
+            logical_records.append(dict(record))
+            continue
+
+        key = tuple(record.get(field) for field in ("file", "module", "symbol", "kind"))
+        grouped = calls.get(key)
+        if grouped is None:
+            grouped = {
+                "file": record.get("file"),
+                "module": record.get("module"),
+                "symbol": record.get("symbol"),
+                "kind": "call",
+                "call_site_count": 0,
+            }
+            calls[key] = grouped
+        grouped["call_site_count"] += 1
+
+    logical_records.extend(calls.values())
+    ordered = _dedupe_sorted(logical_records, limit=None)
+    emitted = ordered[:_RELATION_LIMIT]
+    observed_count = len(ordered)
+    emitted_count = len(emitted)
+    omitted_count = observed_count - emitted_count
+    return emitted, {
+        "observed": observed_count,
+        "emitted": emitted_count,
+        "limit": _RELATION_LIMIT,
+        "truncated": omitted_count > 0,
+        "omitted": omitted_count,
+    }
+
+
+def build_entity_page_relationship_summaries(
+    inventory: Mapping,
+    call_edges: Optional[Iterable[Mapping]] = None,
+    flows: Optional[Iterable[Mapping]] = None,
+) -> dict:
+    """Build the internal relationship projection used by generated pages.
+
+    Entity-page references are logical source relationships: repeated call
+    sites from the same source callable are represented once with a
+    ``call_site_count``.  Other relationship collections retain the legacy
+    presentation limit.  Public and versioned summary builders intentionally
+    do not use this projection.
+    """
+    full = _build_entity_relationship_summaries(
+        inventory,
+        call_edges,
+        flows,
+        relation_limit=None,
+    )
+    classes = []
+    for summary in full["classes"]:
+        page_summary = dict(summary)
+        for field in ("bases", "subclasses", "attributes"):
+            page_summary[field] = list(summary.get(field, []) or [])[
+                :_RELATION_LIMIT
+            ]
+        references, coverage = _page_reference_projection(
+            summary.get("references", []) or []
+        )
+        page_summary["references"] = references
+        page_summary["reference_coverage"] = coverage
+        classes.append(page_summary)
+
+    functions = []
+    for summary in full["functions"]:
+        page_summary = dict(summary)
+        for field in ("callers", "callees", "entrypoints"):
+            page_summary[field] = list(summary.get(field, []) or [])[
+                :_RELATION_LIMIT
+            ]
+        functions.append(page_summary)
+    return {"classes": classes, "functions": functions}
+
+
 def build_detailed_entity_relationship_summaries(
     inventory: Mapping,
     call_edges: Optional[Iterable[Mapping]] = None,

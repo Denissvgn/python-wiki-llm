@@ -53,16 +53,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_complete_publication_export` | call | [site_export](../modules/site_export.md) |
-| `_complete_publication_export` | call | [site_export](../modules/site_export.md) |
-| `_complete_publication_export` | call | [site_export](../modules/site_export.md) |
-| `_complete_publication_export` | call | [site_export](../modules/site_export.md) |
-| `_record_asset_copy_operation` | call | [site_export](../modules/site_export.md) |
-| `_record_asset_copy_operation` | call | [site_export](../modules/site_export.md) |
-| `_record_asset_copy_operation` | call | [site_export](../modules/site_export.md) |
-| `_record_asset_operations` | call | [site_export](../modules/site_export.md) |
-| `_record_write_operation` | call | [site_export](../modules/site_export.md) |
-| `_record_write_operation` | call | [site_export](../modules/site_export.md) |
-| `_record_write_operation` | call | [site_export](../modules/site_export.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_complete_publication_export` | call | [site_export](../modules/site_export.md) | 4 |
+| `_record_asset_copy_operation` | call | [site_export](../modules/site_export.md) | 3 |
+| `_record_asset_operations` | call | [site_export](../modules/site_export.md) | 1 |
+| `_record_write_operation` | call | [site_export](../modules/site_export.md) | 3 |

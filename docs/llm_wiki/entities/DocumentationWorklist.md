@@ -47,7 +47,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_documentation_worklist` | call | [documentation_worklist](../modules/documentation_worklist.md) |
-| `build_documentation_worklist` | type_reference | [documentation_worklist](../modules/documentation_worklist.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_documentation_worklist` | call | [documentation_worklist](../modules/documentation_worklist.md) | 1 |
+| `build_documentation_worklist` | type_reference | [documentation_worklist](../modules/documentation_worklist.md) | — |

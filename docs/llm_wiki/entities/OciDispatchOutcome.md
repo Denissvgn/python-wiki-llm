@@ -44,7 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `dispatch_oci_agent` | call | [broker](../modules/broker.md) |
-| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `dispatch_oci_agent` | call | [broker](../modules/broker.md) | 1 |
+| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) | — |

@@ -57,12 +57,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_selection_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_source_inputs_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_source_inputs_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_wiki_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_wiki_unchanged` | call | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_selection_unchanged` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `_assert_source_inputs_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `_assert_wiki_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |

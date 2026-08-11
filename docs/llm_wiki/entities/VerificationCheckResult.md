@@ -66,14 +66,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_artifact_integrity_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `_bounded_result` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_bounded_result` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `_internal_links_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `_parse_check` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_parse_check` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `build_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `CheckerContract.run` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `run_verification` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_artifact_integrity_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `_bounded_result` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_bounded_result` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `_internal_links_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `_parse_check` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_parse_check` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `build_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `CheckerContract.run` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `run_verification` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |

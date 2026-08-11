@@ -57,11 +57,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_collect_runtime` | call | [documentation_native](../modules/documentation_native.md) |
-| `_collect_runtime` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `_evaluate_runtime_surface` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `_live_source_snapshot_hash` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `_runtime_flow_entries` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `_source_mismatches` | type_reference | [documentation_native](../modules/documentation_native.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_collect_runtime` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_collect_runtime` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `_evaluate_runtime_surface` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `_live_source_snapshot_hash` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `_runtime_flow_entries` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `_source_mismatches` | type_reference | [documentation_native](../modules/documentation_native.md) | — |

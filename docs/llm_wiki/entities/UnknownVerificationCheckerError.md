@@ -51,9 +51,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `checker_contract` | call | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) | 3 |
+| `checker_contract` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |

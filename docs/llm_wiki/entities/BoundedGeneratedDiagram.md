@@ -50,13 +50,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_bounded_data_flow_diagram` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bounded_data_flow_diagram` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bounded_data_flow_diagram` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bounded_sequence_diagram` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bounded_sequence_diagram` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_entity_relationship_projection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_entity_relationship_projection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_entity_relationship_projection` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_bounded_data_flow_diagram` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_bounded_data_flow_diagram` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bounded_sequence_diagram` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_bounded_sequence_diagram` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_entity_relationship_projection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_entity_relationship_projection` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

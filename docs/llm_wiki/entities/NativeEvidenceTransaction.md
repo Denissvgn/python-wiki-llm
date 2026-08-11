@@ -44,6 +44,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_capture_native_evidence_transaction` | call | [record](../modules/record.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_capture_native_evidence_transaction` | call | [record](../modules/record.md) | 1 |

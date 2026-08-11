@@ -34,6 +34,8 @@ flowchart LR
     n9["_exact_object (src/llm_wiki_cli/services/ci_report.py)"]
     n10["_nonnegative_integer (src/llm_wiki_cli/services/ci_report.py)"]
     n11["_object (src/llm_wiki_cli/services/ci_report.py)"]
+    n12["_positive_integer (src/llm_wiki_cli/services/ci_report.py)"]
+    n13["_reject_nonfinite (src/llm_wiki_cli/services/ci_report.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,6 +47,8 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/ci_report.md"
     click n2 "../modules/ci_report.md"
     click n3 "../modules/ci_report.md"
@@ -56,6 +60,8 @@ flowchart LR
     click n9 "../modules/ci_report.md"
     click n10 "../modules/ci_report.md"
     click n11 "../modules/ci_report.md"
+    click n12 "../modules/ci_report.md"
+    click n13 "../modules/ci_report.md"
 ```
 
 ### Summary
@@ -72,17 +78,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_array` | call | [ci_report](../modules/ci_report.md) |
-| `_boolean` | call | [ci_report](../modules/ci_report.md) |
-| `_canonical_plan_ids` | call | [ci_report](../modules/ci_report.md) |
-| `_canonical_string_array` | call | [ci_report](../modules/ci_report.md) |
-| `_contract_object` | call | [ci_report](../modules/ci_report.md) |
-| `_contract_object` | call | [ci_report](../modules/ci_report.md) |
-| `_count_mapping` | call | [ci_report](../modules/ci_report.md) |
-| `_enum` | call | [ci_report](../modules/ci_report.md) |
-| `_exact_object` | call | [ci_report](../modules/ci_report.md) |
-| `_exact_object` | call | [ci_report](../modules/ci_report.md) |
-| `_nonnegative_integer` | call | [ci_report](../modules/ci_report.md) |
-| `_object` | call | [ci_report](../modules/ci_report.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_array` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_boolean` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_canonical_plan_ids` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_canonical_string_array` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_contract_object` | call | [ci_report](../modules/ci_report.md) | 2 |
+| `_count_mapping` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_enum` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_exact_object` | call | [ci_report](../modules/ci_report.md) | 2 |
+| `_nonnegative_integer` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_object` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_positive_integer` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `_reject_nonfinite` | call | [ci_report](../modules/ci_report.md) | 1 |
+
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

@@ -53,8 +53,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_calibration_agent_packet` | type_reference | [api](../modules/api.md) |
-| `build_calibration_agent_packet` | type_reference | [controller](../modules/controller.md) |
-| `P0CalibrationAgentPacket.from_dict` | type_reference | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_calibration_agent_packet` | type_reference | [api](../modules/api.md) | — |
+| `build_calibration_agent_packet` | type_reference | [controller](../modules/controller.md) | — |
+| `P0CalibrationAgentPacket.from_dict` | type_reference | [controller](../modules/controller.md) | — |

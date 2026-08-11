@@ -85,17 +85,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_refreshed_file_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_deprecate_removed_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_moved_entity_retained_page_names` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_record_unchanged_file_skips` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_refresh_entity_relationship_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_refresh_generated_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_refreshed_file_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_apply_diff_context` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_deprecate_removed_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_moved_entity_retained_page_names` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_record_unchanged_file_skips` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_refresh_entity_relationship_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_refresh_generated_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

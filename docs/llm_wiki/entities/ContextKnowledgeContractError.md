@@ -26,12 +26,15 @@ flowchart LR
     n1["ValueError"]
     n2["_matrix_by_state (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
     n3["_validate_context_knowledge_contract (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
+    n4["validate_context_knowledge_contract (src/llm_wiki_cli/services/context_knowledge_contract.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/context_knowledge_contract.md"
     click n2 "../modules/context_knowledge_contract.md"
     click n3 "../modules/context_knowledge_contract.md"
+    click n4 "../modules/context_knowledge_contract.md"
 ```
 
 ### Summary
@@ -48,17 +51,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_matrix_by_state` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_matrix_by_state` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_matrix_by_state` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_matrix_by_state` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_matrix_by_state` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_matrix_by_state` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
-| `_validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_matrix_by_state` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) | 6 |
+| `_validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) | 59 |
+| `validate_context_knowledge_contract` | call | [context_knowledge_contract](../modules/context_knowledge_contract.md) | 1 |

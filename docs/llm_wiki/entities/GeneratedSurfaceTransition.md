@@ -49,9 +49,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_planned_generated_surface_prune` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_planned_generated_surface_prune` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_planned_generated_surface_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_planned_generated_surface_prune` | call | [sync_cmd](../modules/sync_cmd.md) | 2 |
+| `_planned_generated_surface_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |

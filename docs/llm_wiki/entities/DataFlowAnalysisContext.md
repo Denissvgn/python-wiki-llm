@@ -52,11 +52,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_detailed_context` | call | [data_flow](../modules/data_flow.md) |
-| `_detailed_context` | type_reference | [data_flow](../modules/data_flow.md) |
-| `analyze_data_flow` | type_reference | [data_flow](../modules/data_flow.md) |
-| `analyze_data_flow_detailed` | type_reference | [data_flow](../modules/data_flow.md) |
-| `build_data_flow_context` | call | [data_flow](../modules/data_flow.md) |
-| `build_data_flow_context` | type_reference | [data_flow](../modules/data_flow.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_detailed_context` | call | [data_flow](../modules/data_flow.md) | 1 |
+| `_detailed_context` | type_reference | [data_flow](../modules/data_flow.md) | — |
+| `analyze_data_flow` | type_reference | [data_flow](../modules/data_flow.md) | — |
+| `analyze_data_flow_detailed` | type_reference | [data_flow](../modules/data_flow.md) | — |
+| `build_data_flow_context` | call | [data_flow](../modules/data_flow.md) | 1 |
+| `build_data_flow_context` | type_reference | [data_flow](../modules/data_flow.md) | — |

@@ -58,6 +58,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) | — |

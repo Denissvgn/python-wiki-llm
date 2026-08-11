@@ -51,9 +51,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_validate_live_producer` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_parse_snapshot` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_snapshot` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `_validate_live_producer` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_parse_snapshot` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_snapshot` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

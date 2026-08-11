@@ -53,9 +53,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_preflight_reference_skills` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_reference_skills` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_remove_reference_skill` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_validate_reference_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_preflight_reference_skills` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 1 |
+| `_preflight_reference_skills` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_remove_reference_skill` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_validate_reference_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |

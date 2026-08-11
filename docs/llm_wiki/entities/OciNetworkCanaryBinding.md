@@ -54,7 +54,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_LocalEgressCanary.__init__` | call | [broker](../modules/broker.md) |
-| `OciNetworkCanaryBinding.from_dict` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_LocalEgressCanary.__init__` | call | [broker](../modules/broker.md) | 1 |
+| `OciNetworkCanaryBinding.from_dict` | type_reference | [broker](../modules/broker.md) | — |

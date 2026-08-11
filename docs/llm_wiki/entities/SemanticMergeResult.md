@@ -63,16 +63,16 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_merge_entity_page` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_entity_semantics` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_module_page` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_module_semantics` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_semantic_markdown` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `merge_entity_semantics` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `merge_module_semantics` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `merge_semantic_markdown` | call | [section_ownership](../modules/section_ownership.md) |
-| `merge_semantic_markdown` | type_reference | [section_ownership](../modules/section_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_merge_entity_page` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_merge_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_entity_semantics` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_module_page` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_merge_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_module_semantics` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_semantic_markdown` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `merge_entity_semantics` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `merge_module_semantics` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `merge_semantic_markdown` | call | [section_ownership](../modules/section_ownership.md) | 1 |
+| `merge_semantic_markdown` | type_reference | [section_ownership](../modules/section_ownership.md) | — |

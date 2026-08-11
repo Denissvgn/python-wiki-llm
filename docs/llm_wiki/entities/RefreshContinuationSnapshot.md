@@ -45,6 +45,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_capture_refresh_continuation` | call | [refresh](../modules/refresh.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_capture_refresh_continuation` | call | [refresh](../modules/refresh.md) | 1 |

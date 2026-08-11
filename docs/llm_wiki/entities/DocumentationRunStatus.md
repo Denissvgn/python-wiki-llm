@@ -54,7 +54,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) |
-| `get_documentation_run_status` | call | [workspace](../modules/workspace.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
+| `get_documentation_run_status` | call | [workspace](../modules/workspace.md) | 1 |

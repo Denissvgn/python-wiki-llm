@@ -50,13 +50,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_require_structure_state` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_structural_facet` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_structural_facet` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_structural_facet` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_structural_facet` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_structural_facet` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_parse_structural_facet` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_structural_facet` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_require_structure_state` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_structural_facet` | call | [knowledge_index](../modules/knowledge_index.md) | 4 |
+| `_structural_facet` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_parse_structural_facet` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_structural_facet` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

@@ -47,6 +47,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_RunnableMcpServer.streamable_http_app` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_RunnableMcpServer.streamable_http_app` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

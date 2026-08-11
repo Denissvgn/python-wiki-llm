@@ -45,8 +45,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_snapshot_result` | call | [knowledge_observability](../modules/knowledge_observability.md) |
-| `_snapshot_result` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) |
-| `load_snapshot_knowledge_observability` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_snapshot_result` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
+| `_snapshot_result` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `load_snapshot_knowledge_observability` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |

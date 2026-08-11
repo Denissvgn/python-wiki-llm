@@ -42,14 +42,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_cleanup_recorded_source` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_cleanup_recorded_source` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 8 |
+| `_cleanup_recorded_source` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |

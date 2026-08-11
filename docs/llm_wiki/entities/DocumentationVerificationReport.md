@@ -52,7 +52,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) |
-| `verify_documentation_run` | call | [verify](../modules/verify.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
+| `verify_documentation_run` | call | [verify](../modules/verify.md) | 1 |

@@ -53,7 +53,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `ContextPacketReconciliation._from_official_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `ContextPacketReconciliation._from_official_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |

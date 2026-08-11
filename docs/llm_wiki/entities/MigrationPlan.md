@@ -90,17 +90,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_chunk` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_apply_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_chunks` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_migration_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_migration_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_chunk_has_archive_work` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_chunk_link_map` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_finalize_migration_artifacts` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_finalizers_pending` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_legacy_archive_ignore_applicable` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_matched_archive_count` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_migration_runtime_inputs` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_chunk` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_apply_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_build_chunks` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_build_migration_plan` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
+| `_build_migration_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_chunk_has_archive_work` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_chunk_link_map` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_finalize_migration_artifacts` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_finalizers_pending` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_legacy_archive_ignore_applicable` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_matched_archive_count` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_migration_runtime_inputs` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

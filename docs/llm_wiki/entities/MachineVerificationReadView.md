@@ -55,11 +55,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `load_machine_verification_read_view` | call | [knowledge_verification](../modules/knowledge_verification.md) |
-| `load_machine_verification_read_view` | call | [knowledge_verification](../modules/knowledge_verification.md) |
-| `load_machine_verification_read_view` | call | [knowledge_verification](../modules/knowledge_verification.md) |
-| `load_machine_verification_read_view` | call | [knowledge_verification](../modules/knowledge_verification.md) |
-| `load_machine_verification_read_view` | type_reference | [knowledge_verification](../modules/knowledge_verification.md) |
-| `verification_summaries_for_concepts` | type_reference | [knowledge_verification](../modules/knowledge_verification.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `load_machine_verification_read_view` | call | [knowledge_verification](../modules/knowledge_verification.md) | 4 |
+| `load_machine_verification_read_view` | type_reference | [knowledge_verification](../modules/knowledge_verification.md) | — |
+| `verification_summaries_for_concepts` | type_reference | [knowledge_verification](../modules/knowledge_verification.md) | — |

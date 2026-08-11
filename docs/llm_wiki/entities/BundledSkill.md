@@ -62,12 +62,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_expected_skill_files` | type_reference | [skills](../modules/skills.md) |
-| `_preflight_reference_requirement` | type_reference | [skills](../modules/skills.md) |
-| `_skill_tree_matches` | type_reference | [skills](../modules/skills.md) |
-| `list_bundled_skills` | call | [skills](../modules/skills.md) |
-| `list_bundled_skills` | type_reference | [skills](../modules/skills.md) |
-| `render_skill_list_json` | type_reference | [skills](../modules/skills.md) |
-| `render_skill_list_text` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_expected_skill_files` | type_reference | [skills](../modules/skills.md) | — |
+| `_preflight_reference_requirement` | type_reference | [skills](../modules/skills.md) | — |
+| `_skill_tree_matches` | type_reference | [skills](../modules/skills.md) | — |
+| `list_bundled_skills` | call | [skills](../modules/skills.md) | 1 |
+| `list_bundled_skills` | type_reference | [skills](../modules/skills.md) | — |
+| `render_skill_list_json` | type_reference | [skills](../modules/skills.md) | — |
+| `render_skill_list_text` | type_reference | [skills](../modules/skills.md) | — |

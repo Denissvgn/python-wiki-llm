@@ -80,17 +80,17 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_active_managed_pages` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_archive_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_archived_managed_pages` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_existing_legacy_payload` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_match_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_merge_legacy_notes` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_read_existing_page` | call | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_read_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_remove_old_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_should_archive_matched_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_staged_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_target_needs_apply` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_active_managed_pages` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_archive_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_archived_managed_pages` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_existing_legacy_payload` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_match_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_merge_legacy_notes` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_read_existing_page` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
+| `_read_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_remove_old_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_should_archive_matched_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_staged_existing_page` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_target_needs_apply` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |

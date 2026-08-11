@@ -54,10 +54,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) |
-| `_collect_directory_pages` | call | [wiki_surface](../modules/wiki_surface.md) |
-| `resolve_wiki_page_path` | call | [wiki_surface](../modules/wiki_surface.md) |
-| `resolve_wiki_page_path` | call | [wiki_surface](../modules/wiki_surface.md) |
-| `resolve_wiki_page_path` | call | [wiki_surface](../modules/wiki_surface.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) | — |
+| `_collect_directory_pages` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
+| `resolve_wiki_page_path` | call | [wiki_surface](../modules/wiki_surface.md) | 3 |

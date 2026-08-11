@@ -50,9 +50,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_workspace_identity` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `windows_object_identity` | type_reference | [filesystem_guard](../modules/filesystem_guard.md) |
-| `windows_object_identity_from_values` | call | [filesystem_guard](../modules/filesystem_guard.md) |
-| `windows_object_identity_from_values` | type_reference | [filesystem_guard](../modules/filesystem_guard.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_workspace_identity` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `windows_object_identity` | type_reference | [filesystem_guard](../modules/filesystem_guard.md) | — |
+| `windows_object_identity_from_values` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
+| `windows_object_identity_from_values` | type_reference | [filesystem_guard](../modules/filesystem_guard.md) | — |

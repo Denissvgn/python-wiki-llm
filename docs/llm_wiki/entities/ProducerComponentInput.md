@@ -70,17 +70,16 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_component` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `plugin_producer_inputs` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `plugin_producer_inputs` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_infrastructure_extractor_component` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_infrastructure_extractor_component` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_producer_evidence` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_producer_evidence` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_producer_evidence` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `build_runtime_knowledge_plan` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `build_runtime_live_evaluation` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_component` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `plugin_producer_inputs` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `plugin_producer_inputs` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_infrastructure_extractor_component` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `_infrastructure_extractor_component` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `_producer_evidence` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 2 |
+| `_producer_evidence` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `build_runtime_knowledge_plan` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `build_runtime_live_evaluation` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |

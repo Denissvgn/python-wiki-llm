@@ -57,8 +57,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `use_calibration_host_broker_authenticator` | type_reference | [api](../modules/api.md) |
-| `require_process_host_broker_authenticator` | type_reference | [host_broker](../modules/host_broker.md) |
-| `use_calibration_host_broker_authenticator` | type_reference | [host_broker](../modules/host_broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `use_calibration_host_broker_authenticator` | type_reference | [api](../modules/api.md) | — |
+| `require_process_host_broker_authenticator` | type_reference | [host_broker](../modules/host_broker.md) | — |
+| `use_calibration_host_broker_authenticator` | type_reference | [host_broker](../modules/host_broker.md) | — |

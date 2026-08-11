@@ -73,12 +73,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validate_knowledge_summary` | call | [ci_report](../modules/ci_report.md) |
-| `summarize_knowledge_view` | call | [knowledge_observability](../modules/knowledge_observability.md) |
-| `summarize_knowledge_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) |
-| `KnowledgeLintSummary.aggregate_payload` | call | [lint_service](../modules/lint_service.md) |
-| `_safe_knowledge_summary` | call | [metrics](../modules/metrics.md) |
-| `_safe_knowledge_summary` | type_reference | [metrics](../modules/metrics.md) |
-| `record_validation_event` | type_reference | [metrics](../modules/metrics.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_knowledge_summary` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `summarize_knowledge_view` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
+| `summarize_knowledge_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `KnowledgeLintSummary.aggregate_payload` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_safe_knowledge_summary` | call | [metrics](../modules/metrics.md) | 1 |
+| `_safe_knowledge_summary` | type_reference | [metrics](../modules/metrics.md) | — |
+| `record_validation_event` | type_reference | [metrics](../modules/metrics.md) | — |

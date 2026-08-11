@@ -52,11 +52,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_fit_knowledge_packet_response` | call | [context_packet](../modules/context_packet.md) |
-| `_fit_knowledge_packet_response` | call | [context_packet](../modules/context_packet.md) |
-| `_packet_basis` | call | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_fit_knowledge_packet_response` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `_packet_basis` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 3 |

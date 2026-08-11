@@ -75,17 +75,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_component` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_build_component` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `plugin_producer_inputs` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_component_basis_payload` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_component_change_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_components_by_id` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_configuration_marked_unknown` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_configuration_unknown` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_version_unknown` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_component_array` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_component_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_component` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `_build_component` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `plugin_producer_inputs` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_component_basis_payload` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_component_change_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_components_by_id` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_configuration_marked_unknown` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_configuration_unknown` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_version_unknown` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_component_array` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_component_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

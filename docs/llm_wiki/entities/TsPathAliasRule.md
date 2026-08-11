@@ -54,10 +54,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_match_ts_alias_rule` | type_reference | [imports](../modules/imports.md) |
-| `_nearest_ts_alias_root` | type_reference | [imports](../modules/imports.md) |
-| `_parse_tsconfig_aliases` | call | [imports](../modules/imports.md) |
-| `_parse_tsconfig_aliases` | type_reference | [imports](../modules/imports.md) |
-| `_read_ts_path_aliases` | type_reference | [imports](../modules/imports.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_match_ts_alias_rule` | type_reference | [imports](../modules/imports.md) | — |
+| `_nearest_ts_alias_root` | type_reference | [imports](../modules/imports.md) | — |
+| `_parse_tsconfig_aliases` | call | [imports](../modules/imports.md) | 1 |
+| `_parse_tsconfig_aliases` | type_reference | [imports](../modules/imports.md) | — |
+| `_read_ts_path_aliases` | type_reference | [imports](../modules/imports.md) | — |

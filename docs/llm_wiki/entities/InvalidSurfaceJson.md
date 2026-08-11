@@ -48,7 +48,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_reject_json_constant` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_unique_json_object` | call | [knowledge_index](../modules/knowledge_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_reject_json_constant` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_unique_json_object` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |

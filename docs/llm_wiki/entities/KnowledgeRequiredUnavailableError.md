@@ -50,7 +50,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_explicit_knowledge_response` | call | [context_service](../modules/context_service.md) |
-| `_fit_explicit_knowledge_response` | call | [context_service](../modules/context_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_explicit_knowledge_response` | call | [context_service](../modules/context_service.md) | 1 |
+| `_fit_explicit_knowledge_response` | call | [context_service](../modules/context_service.md) | 1 |

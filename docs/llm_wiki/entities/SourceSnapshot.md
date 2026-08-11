@@ -104,17 +104,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_prompt` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_resolved_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_selected_prompt_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_validated_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_validated_prompt_snapshot` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_flow_pages_by_source` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_preflight_review_source_selection` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_prompt` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_resolved_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_selected_prompt_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_validated_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_validated_prompt_snapshot` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_build_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_flow_pages_by_source` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_preflight_review_source_selection` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 144 logical references; 132 omitted by the 12-row generated summary limit.

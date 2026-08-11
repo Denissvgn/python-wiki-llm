@@ -45,8 +45,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_destination_heading_lookup` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `markdown_headings` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `markdown_headings` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_destination_heading_lookup` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `markdown_headings` | call | [instruction_ownership](../modules/instruction_ownership.md) | 1 |
+| `markdown_headings` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

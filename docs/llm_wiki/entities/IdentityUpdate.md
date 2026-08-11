@@ -47,9 +47,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `add_identity_alias` | call | [concept_identity](../modules/concept_identity.md) |
-| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `move_allocation` | call | [concept_identity](../modules/concept_identity.md) |
-| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `add_identity_alias` | call | [concept_identity](../modules/concept_identity.md) | 1 |
+| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `move_allocation` | call | [concept_identity](../modules/concept_identity.md) | 1 |
+| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) | — |

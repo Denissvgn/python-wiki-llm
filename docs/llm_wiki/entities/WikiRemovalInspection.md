@@ -50,13 +50,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_preflight_wiki_removal` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_wiki_removal` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_wiki_removal` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_wiki_removal` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_wiki_removal` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_wiki_removal` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_wiki_removal` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_remove_wiki_dir` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_preflight_wiki_removal` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 6 |
+| `_preflight_wiki_removal` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_remove_wiki_dir` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |

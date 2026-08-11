@@ -49,9 +49,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assemble_protocol_enrichment` | type_reference | [context_service](../modules/context_service.md) |
-| `_capture_protocol_enrichment_session` | call | [context_service](../modules/context_service.md) |
-| `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) |
-| `_context_enrichment_from_session` | type_reference | [context_service](../modules/context_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assemble_protocol_enrichment` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_capture_protocol_enrichment_session` | call | [context_service](../modules/context_service.md) | 1 |
+| `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_context_enrichment_from_session` | type_reference | [context_service](../modules/context_service.md) | — |

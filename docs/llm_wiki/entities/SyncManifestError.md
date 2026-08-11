@@ -36,6 +36,8 @@ flowchart LR
     n9["src/llm_wiki_cli/services/lint_service.py"]
     n10["_basis_from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
     n11["_captured_source_hashes (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n12["_copy_sources (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n13["_mapping_value (src/llm_wiki_cli/services/sync_manifest.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -47,6 +49,8 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/sync_manifest.md"
     click n2 "../modules/bootstrap_runtime.md"
     click n3 "../modules/ci_installer.md"
@@ -58,6 +62,8 @@ flowchart LR
     click n9 "../modules/lint_service.md"
     click n10 "../modules/sync_manifest.md"
     click n11 "../modules/sync_manifest.md"
+    click n12 "../modules/sync_manifest.md"
+    click n13 "../modules/sync_manifest.md"
 ```
 
 ### Summary
@@ -74,17 +80,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) |
-| `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) |
-| `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) |
-| `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
-| `_basis_from_payload` | call | [sync_manifest](../modules/sync_manifest.md) |
-| `_captured_source_hashes` | call | [sync_manifest](../modules/sync_manifest.md) |
-| `_captured_source_hashes` | call | [sync_manifest](../modules/sync_manifest.md) |
-| `_captured_source_hashes` | call | [sync_manifest](../modules/sync_manifest.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) | — |
+| `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) | — |
+| `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `_basis_from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
+| `_captured_source_hashes` | call | [sync_manifest](../modules/sync_manifest.md) | 5 |
+| `_copy_sources` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
+| `_mapping_value` | call | [sync_manifest](../modules/sync_manifest.md) | 2 |
+
+> References: showing 12 of 32 logical references; 20 omitted by the 12-row generated summary limit.

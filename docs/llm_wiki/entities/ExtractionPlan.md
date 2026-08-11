@@ -61,11 +61,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_plan_language_extraction` | call | [extraction_service](../modules/extraction_service.md) |
-| `_plan_language_extraction` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_run_extraction_plan` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_run_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_run_parallel_safe_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_update_inventory_cache_entries` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_plan_language_extraction` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_plan_language_extraction` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_run_extraction_plan` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_run_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_run_parallel_safe_inventory_plans` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_update_inventory_cache_entries` | type_reference | [extraction_service](../modules/extraction_service.md) | — |

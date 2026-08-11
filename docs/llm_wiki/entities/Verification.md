@@ -61,8 +61,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) |
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

@@ -53,11 +53,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `McpWikiService._iter_pages` | call | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_for` | call | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_for` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_from_uri` | call | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_from_uri` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._read_page_result` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `McpWikiService._iter_pages` | call | [mcp_server](../modules/mcp_server.md) | 1 |
+| `McpWikiService._page_for` | call | [mcp_server](../modules/mcp_server.md) | 1 |
+| `McpWikiService._page_for` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `McpWikiService._page_from_uri` | call | [mcp_server](../modules/mcp_server.md) | 1 |
+| `McpWikiService._page_from_uri` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `McpWikiService._read_page_result` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

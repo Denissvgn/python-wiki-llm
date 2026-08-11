@@ -57,6 +57,7 @@ flowchart LR
     n8["_source_snapshot_for_inventory_request (src/llm_wiki_cli/services/extraction_service.py)"]
     n9["build_extract_payload (src/llm_wiki_cli/services/extraction_service.py)"]
     n10["get_inventory (src/llm_wiki_cli/services/extraction_service.py)"]
+    n11["McpWikiService._resolve_module_page_id (src/llm_wiki_cli/services/mcp_server.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -67,6 +68,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/extraction_service.md"
     click n1 "../modules/documentation_native.md"
     click n2 "../modules/extraction_service.md"
@@ -78,6 +80,7 @@ flowchart LR
     click n8 "../modules/extraction_service.md"
     click n9 "../modules/extraction_service.md"
     click n10 "../modules/extraction_service.md"
+    click n11 "../modules/mcp_server.md"
 ```
 
 ### Summary
@@ -88,17 +91,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_collect_runtime` | call | [documentation_native](../modules/documentation_native.md) |
-| `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_coerce_inventory_request` | call | [extraction_service](../modules/extraction_service.md) |
-| `_coerce_inventory_request` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_inventory_helper_cache_dir` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_inventory_or_exit` | call | [extraction_service](../modules/extraction_service.md) |
-| `_load_inventory_cache_state` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_prepare_inventory_build_context` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_source_snapshot_for_inventory_request` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) |
-| `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) |
-| `get_inventory` | call | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_collect_runtime` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_coerce_inventory_request` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_coerce_inventory_request` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_inventory_helper_cache_dir` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_inventory_or_exit` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_load_inventory_cache_state` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_prepare_inventory_build_context` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_source_snapshot_for_inventory_request` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `build_extract_payload` | call | [extraction_service](../modules/extraction_service.md) | 2 |
+| `get_inventory` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `McpWikiService._resolve_module_page_id` | call | [mcp_server](../modules/mcp_server.md) | 1 |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

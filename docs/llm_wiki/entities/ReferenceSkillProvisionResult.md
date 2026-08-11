@@ -56,12 +56,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_provision_reference_skill_guarded` | call | [skills](../modules/skills.md) |
-| `_provision_reference_skill_guarded` | call | [skills](../modules/skills.md) |
-| `_provision_reference_skill_guarded` | call | [skills](../modules/skills.md) |
-| `_provision_reference_skill_guarded` | call | [skills](../modules/skills.md) |
-| `_provision_reference_skill_guarded` | call | [skills](../modules/skills.md) |
-| `_provision_reference_skill_guarded` | type_reference | [skills](../modules/skills.md) |
-| `provision_reference_skill` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_provision_reference_skill_guarded` | call | [skills](../modules/skills.md) | 5 |
+| `_provision_reference_skill_guarded` | type_reference | [skills](../modules/skills.md) | — |
+| `provision_reference_skill` | type_reference | [skills](../modules/skills.md) | — |

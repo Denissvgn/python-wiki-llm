@@ -52,6 +52,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `OciProbeCheck.from_dict` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `OciProbeCheck.from_dict` | type_reference | [broker](../modules/broker.md) | — |

@@ -81,15 +81,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) |
-| `context_service` | import | [context_service](../modules/context_service.md) |
-| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `knowledge_freshness` | import | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_require_structure_state` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `context_service` | import | [context_service](../modules/context_service.md) | — |
+| `knowledge_artifacts` | import | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `knowledge_freshness` | import | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `knowledge_governance` | import | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_require_structure_state` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |

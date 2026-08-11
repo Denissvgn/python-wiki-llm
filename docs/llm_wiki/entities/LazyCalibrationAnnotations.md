@@ -54,6 +54,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_defer_calibration_annotations` | call | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_defer_calibration_annotations` | call | [api](../modules/api.md) | 1 |

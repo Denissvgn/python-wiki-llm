@@ -45,7 +45,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `mixed_table_projection` | call | [markdown_sections](../modules/markdown_sections.md) |
-| `mixed_table_projection` | type_reference | [markdown_sections](../modules/markdown_sections.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `mixed_table_projection` | call | [markdown_sections](../modules/markdown_sections.md) | 1 |
+| `mixed_table_projection` | type_reference | [markdown_sections](../modules/markdown_sections.md) | — |

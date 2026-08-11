@@ -43,7 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_select_skills` | call | [skills](../modules/skills.md) |
-| `_select_skills` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_select_skills` | call | [skills](../modules/skills.md) | 1 |
+| `_select_skills` | type_reference | [skills](../modules/skills.md) | — |

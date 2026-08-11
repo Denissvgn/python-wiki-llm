@@ -46,8 +46,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_raise_api_error` | call | [api](../modules/api.md) | 3 |

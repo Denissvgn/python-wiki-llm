@@ -89,17 +89,17 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_oci_run_command` | type_reference | [broker](../modules/broker.md) |
-| `_cleanup_timed_out_container` | type_reference | [broker](../modules/broker.md) |
-| `_execute_container_command` | type_reference | [broker](../modules/broker.md) |
-| `_validate_runtime_executable_identity` | type_reference | [broker](../modules/broker.md) |
-| `build_oci_dispatch_command` | type_reference | [broker](../modules/broker.md) |
-| `build_oci_probe_command` | type_reference | [broker](../modules/broker.md) |
-| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) |
-| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) |
-| `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) |
-| `OciRuntimeConfig.from_dict` | type_reference | [broker](../modules/broker.md) |
-| `OciRuntimeConfig.from_execution_manifest` | type_reference | [broker](../modules/broker.md) |
-| `controller` | import | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_oci_run_command` | type_reference | [broker](../modules/broker.md) | — |
+| `_cleanup_timed_out_container` | type_reference | [broker](../modules/broker.md) | — |
+| `_execute_container_command` | type_reference | [broker](../modules/broker.md) | — |
+| `_validate_runtime_executable_identity` | type_reference | [broker](../modules/broker.md) | — |
+| `build_oci_dispatch_command` | type_reference | [broker](../modules/broker.md) | — |
+| `build_oci_probe_command` | type_reference | [broker](../modules/broker.md) | — |
+| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) | — |
+| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) | — |
+| `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) | — |
+| `OciRuntimeConfig.from_dict` | type_reference | [broker](../modules/broker.md) | — |
+| `OciRuntimeConfig.from_execution_manifest` | type_reference | [broker](../modules/broker.md) | — |
+| `controller` | import | [controller](../modules/controller.md) | — |

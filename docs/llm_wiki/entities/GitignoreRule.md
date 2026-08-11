@@ -63,13 +63,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_parse_gitignore_file` | type_reference | [config](../modules/config.md) |
-| `_parse_gitignore_text` | call | [config](../modules/config.md) |
-| `_parse_gitignore_text` | type_reference | [config](../modules/config.md) |
-| `_rule_matches` | type_reference | [config](../modules/config.md) |
-| `GitIgnoreMatcher.__init__` | type_reference | [config](../modules/config.md) |
-| `GitIgnoreMatcher.last_matching_rule` | type_reference | [config](../modules/config.md) |
-| `_is_root_unanchored_lib_directory_rule` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_last_directory_ignore_rule` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_parse_gitignore_file` | type_reference | [config](../modules/config.md) | — |
+| `_parse_gitignore_text` | call | [config](../modules/config.md) | 1 |
+| `_parse_gitignore_text` | type_reference | [config](../modules/config.md) | — |
+| `_rule_matches` | type_reference | [config](../modules/config.md) | — |
+| `GitIgnoreMatcher.__init__` | type_reference | [config](../modules/config.md) | — |
+| `GitIgnoreMatcher.last_matching_rule` | type_reference | [config](../modules/config.md) | — |
+| `_is_root_unanchored_lib_directory_rule` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_last_directory_ignore_rule` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |

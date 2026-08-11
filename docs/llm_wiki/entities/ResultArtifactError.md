@@ -51,14 +51,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_load_bounded_json_object` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
-| `_load_single_json_result` | call | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_load_bounded_json_object` | call | [broker](../modules/broker.md) | 1 |
+| `_load_single_json_result` | call | [broker](../modules/broker.md) | 8 |

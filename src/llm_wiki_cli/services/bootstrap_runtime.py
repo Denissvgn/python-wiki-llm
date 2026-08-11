@@ -109,7 +109,7 @@ from .markdown_sections import (
 )
 from .module_maps import build_module_dependency_maps
 from .paths import normalize_source_path, portable_source_root_label
-from .relationships import build_entity_relationship_summaries
+from .relationships import build_entity_page_relationship_summaries
 from .schema import (
     ALL_SCHEMA_FILES as _AGENT_SCHEMA_FILES,
 )
@@ -891,15 +891,33 @@ def _append_entity_relationship_tables(
     references = list(summary.get("references", []) or [])
     if references:
         lines.extend(["### References", ""])
-        lines.append("| Reference | Kind | Source |")
-        lines.append("|---|---|---|")
+        lines.append("| Reference | Kind | Source | Call sites |")
+        lines.append("|---|---|---|---:|")
         for reference in references:
             symbol = reference.get("symbol") or reference.get("module") or "module"
+            call_sites: object = "—"
+            if reference.get("kind") == "call":
+                call_sites = reference.get("call_site_count", 1)
+                if call_sites in (None, ""):
+                    call_sites = 1
             lines.append(
                 f"| `{_md_cell(symbol)}` | {_md_cell(reference.get('kind'))} | "
-                f"{_relationship_source_cell(reference, module_page_map)} |"
+                f"{_relationship_source_cell(reference, module_page_map)} | "
+                f"{_md_cell(call_sites)} |"
             )
         lines.append("")
+
+        coverage = summary.get("reference_coverage") or {}
+        if coverage.get("truncated"):
+            lines.extend(
+                [
+                    f"> References: showing {coverage.get('emitted')} of "
+                    f"{coverage.get('observed')} logical references; "
+                    f"{coverage.get('omitted')} omitted by the "
+                    f"{coverage.get('limit')}-row generated summary limit.",
+                    "",
+                ]
+            )
 
 
 def _generate_entity_relationship_section(
@@ -928,16 +946,18 @@ def _generate_entity_relationship_section(
                     f"> Relationship diagram shows {rendered.shown_items} of "
                     f"{rendered.total_items} relationships; "
                     f"{rendered.omitted_items} omitted to keep the visualization "
-                    "within the generated-diagram limits. Complete structure and "
-                    "reference data remain in the tables below.",
+                    "within the generated-diagram limits. Bounded structure and "
+                    "reference summaries remain in the tables below; table-level "
+                    "reference omissions are reported there.",
                 ]
             )
     elif rendered.total_items:
         lines.append(
             f"> Relationship diagram shows 0 of {rendered.total_items} "
             f"relationships; {rendered.omitted_items} omitted because its focal "
-            "node, links, or style exceed the generated-diagram limits. Complete "
-            "structure and reference data remain in the tables below."
+            "node, links, or style exceed the generated-diagram limits. Bounded "
+            "structure and reference summaries remain in the tables below; "
+            "table-level reference omissions are reported there."
         )
     else:
         lines.append("*No generated relationships detected.*")
@@ -4462,7 +4482,9 @@ def _build_bootstrap_relationships(
 def _build_entity_relationship_summary_map(
     inventory: dict, call_edges: Sequence[Mapping]
 ) -> dict[tuple[str, str], Mapping]:
-    summaries = build_entity_relationship_summaries(inventory, call_edges=call_edges)
+    summaries = build_entity_page_relationship_summaries(
+        inventory, call_edges=call_edges
+    )
     return {
         (str(summary["name"]), str(summary["file"])): summary
         for summary in summaries.get("classes", [])

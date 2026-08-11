@@ -80,16 +80,16 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_artifact_integrity_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `_internal_links_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `build_artifact_verification_context` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `build_artifact_verification_context` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `build_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `CheckerContract.run` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `load_and_evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `run_verification` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `verify` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `verify_and_write_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_artifact_integrity_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `_internal_links_checker` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `build_artifact_verification_context` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `build_artifact_verification_context` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `build_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `CheckerContract.run` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `load_and_evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `run_verification` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `verify` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `verify_and_write_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |

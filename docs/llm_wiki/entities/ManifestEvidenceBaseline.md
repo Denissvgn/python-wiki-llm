@@ -70,13 +70,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_mark_untrusted_evidence` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_preserve_unchanged_unknown_baselines` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) |
-| `_legacy_operational_state` | type_reference | [sync_manifest](../modules/sync_manifest.md) |
-| `ManifestEvidenceBaseline.from_basis` | type_reference | [sync_manifest](../modules/sync_manifest.md) |
-| `ManifestEvidenceBaseline.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) |
-| `ManifestEvidenceBaseline.unknown` | type_reference | [sync_manifest](../modules/sync_manifest.md) |
-| `SyncManifest.build_from_inventory` | type_reference | [sync_manifest](../modules/sync_manifest.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_mark_untrusted_evidence` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_preserve_unchanged_unknown_baselines` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_legacy_operational_state` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
+| `ManifestEvidenceBaseline.from_basis` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
+| `ManifestEvidenceBaseline.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
+| `ManifestEvidenceBaseline.unknown` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
+| `SyncManifest.build_from_inventory` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |

@@ -59,9 +59,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_validate_and_join_inputs` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `build_knowledge_index` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `validate_knowledge_index` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
+| `_validate_and_join_inputs` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `build_knowledge_index` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `validate_knowledge_index` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |

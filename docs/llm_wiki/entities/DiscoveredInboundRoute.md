@@ -45,9 +45,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `discover_managed_reference_inbound_routes` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `discover_managed_reference_inbound_routes` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `discover_managed_reference_inbound_routes` | call | [instruction_ownership](../modules/instruction_ownership.md) |
-| `discover_managed_reference_inbound_routes` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `discover_managed_reference_inbound_routes` | call | [instruction_ownership](../modules/instruction_ownership.md) | 3 |
+| `discover_managed_reference_inbound_routes` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |

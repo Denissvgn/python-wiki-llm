@@ -58,12 +58,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_index_source_link_occurrences` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_observation_source_syntax` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
-| `iter_markdown_link_targets` | call | [wiki_media](../modules/wiki_media.md) |
-| `iter_markdown_link_targets` | type_reference | [wiki_media](../modules/wiki_media.md) |
-| `iter_mermaid_click_targets` | call | [wiki_media](../modules/wiki_media.md) |
-| `iter_mermaid_click_targets` | type_reference | [wiki_media](../modules/wiki_media.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_index_source_link_occurrences` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_observation_source_syntax` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |
+| `iter_markdown_link_targets` | call | [wiki_media](../modules/wiki_media.md) | 1 |
+| `iter_markdown_link_targets` | type_reference | [wiki_media](../modules/wiki_media.md) | — |
+| `iter_mermaid_click_targets` | call | [wiki_media](../modules/wiki_media.md) | 1 |
+| `iter_mermaid_click_targets` | type_reference | [wiki_media](../modules/wiki_media.md) | — |

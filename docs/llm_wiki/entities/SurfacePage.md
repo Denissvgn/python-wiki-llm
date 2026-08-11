@@ -51,8 +51,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_surface_pages` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_surface_page` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_surface_pages` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_surface_page` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |

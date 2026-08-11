@@ -54,6 +54,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `traverse_typed_graph` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `traverse_typed_graph` | type_reference | [api](../modules/api.md) | — |

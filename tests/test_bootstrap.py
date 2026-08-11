@@ -883,7 +883,7 @@ class TestBootstrapCollisions:
             encoding="utf-8"
         )
         assert (
-            "| `consume` | type_reference | [consumer](../modules/consumer.md) |"
+            "| `consume` | type_reference | [consumer](../modules/consumer.md) | — |"
             in a_page
         )
         assert "../modules/consumer.md" in a_page
@@ -909,7 +909,8 @@ class TestBootstrapCollisions:
 
         page = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         assert (
-            "| `consume` | type_reference | [service](../modules/service.md) |" in page
+            "| `consume` | type_reference | [service](../modules/service.md) | — |"
+            in page
         )
         assert "../modules/service.md" in page
 
@@ -932,7 +933,8 @@ class TestBootstrapCollisions:
 
         page = (wiki_dir / "entities" / "User.md").read_text(encoding="utf-8")
         assert (
-            "| `consume` | type_reference | [service](../modules/service.md) |" in page
+            "| `consume` | type_reference | [service](../modules/service.md) | — |"
+            in page
         )
         assert "../modules/service.md" in page
 
@@ -1034,12 +1036,14 @@ class TestBootstrapEntityPages:
         assert 'click n0 "../modules/models.md"' in content
         assert '"../modules/main.md"' in content
         assert "| Module | Methods | Attributes |" in content
-        assert "| Reference | Kind | Source |" in content
+        assert "| Reference | Kind | Source | Call sites |" in content
         assert (
-            "| `create_user` | type_reference | [main](../modules/main.md) |" in content
+            "| `create_user` | type_reference | [main](../modules/main.md) | — |"
+            in content
         )
         assert (
-            "| `list_items` | type_reference | [main](../modules/main.md) |" in content
+            "| `list_items` | type_reference | [main](../modules/main.md) | — |"
+            in content
         )
 
         dense_summary = {
@@ -1075,8 +1079,106 @@ class TestBootstrapEntityPages:
         assert "Subclass18" in dense_diagram
         assert "Subclass19" not in dense_diagram
         assert "reference_0" not in dense_diagram
-        assert "| `reference_19` | call |" in dense
+        assert "| `reference_19` | call | — | 1 |" in dense
+        assert "Complete structure and reference data" not in dense
+        assert "Bounded structure and reference summaries" in dense
         _assert_generated_diagram_budgets(dense)
+
+    def test_entity_relationship_reference_table_renders_call_site_counts(self):
+        summary = {
+            "name": "Target",
+            "file": "target.py",
+            "methods_count": 0,
+            "attributes": [],
+            "bases": [],
+            "subclasses": [],
+            "references": [
+                {
+                    "symbol": "many_calls",
+                    "kind": "call",
+                    "file": "many.py",
+                    "call_site_count": 4,
+                },
+                {
+                    "symbol": "one_call",
+                    "kind": "call",
+                    "file": "one.py",
+                    "call_site_count": 1,
+                },
+                {
+                    "symbol": "legacy_call",
+                    "kind": "call",
+                    "file": "legacy.py",
+                },
+                {
+                    "symbol": "annotation",
+                    "kind": "type_reference",
+                    "file": "types.py",
+                },
+            ],
+            "reference_coverage": {
+                "observed": 4,
+                "emitted": 4,
+                "limit": 12,
+                "truncated": False,
+                "omitted": 0,
+            },
+        }
+
+        content = "\n".join(
+            bootstrap_cmd._generate_entity_relationship_section(summary, {})
+        )
+
+        assert "| Reference | Kind | Source | Call sites |" in content
+        assert "| `many_calls` | call | [many](../modules/many.md) | 4 |" in content
+        assert "| `one_call` | call | [one](../modules/one.md) | 1 |" in content
+        assert (
+            "| `legacy_call` | call | [legacy](../modules/legacy.md) | 1 |"
+            in content
+        )
+        assert (
+            "| `annotation` | type_reference | [types](../modules/types.md) | — |"
+            in content
+        )
+        assert "logical references" not in content
+
+    def test_entity_relationship_reference_table_reports_exact_coverage(self):
+        references = [
+            {
+                "symbol": f"caller_{index:02d}",
+                "kind": "call",
+                "file": "callers.py",
+                "call_site_count": index + 1,
+            }
+            for index in range(12)
+        ]
+        summary = {
+            "name": "Target",
+            "file": "target.py",
+            "methods_count": 0,
+            "attributes": [],
+            "bases": [],
+            "subclasses": [],
+            "references": references,
+            "reference_coverage": {
+                "observed": 15,
+                "emitted": 12,
+                "limit": 12,
+                "truncated": True,
+                "omitted": 3,
+            },
+        }
+
+        content = "\n".join(
+            bootstrap_cmd._generate_entity_relationship_section(summary, {})
+        )
+
+        assert content.count("| `caller_") == 12
+        assert (
+            "> References: showing 12 of 15 logical references; 3 omitted by the "
+            "12-row generated summary limit."
+        ) in content
+        assert "Complete structure and reference data" not in content
 
     def test_entity_relationship_diagram_uses_bounded_plugin_style(
         self, tmp_project, capsys
@@ -1892,7 +1994,7 @@ class TestBootstrapModulePages:
         )
         assert "### References" in relationships
         assert (
-            "| `renderUser` | type_reference | [Main](../modules/Main.md) |"
+            "| `renderUser` | type_reference | [Main](../modules/Main.md) | — |"
             in relationships
         )
 

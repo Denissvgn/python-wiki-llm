@@ -59,8 +59,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_wiki_page_counts` | type_reference | [api](../modules/api.md) |
-| `_wiki_page_payload` | type_reference | [api](../modules/api.md) |
-| `list_wiki_pages` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_wiki_page_counts` | type_reference | [api](../modules/api.md) | — |
+| `_wiki_page_payload` | type_reference | [api](../modules/api.md) | — |
+| `list_wiki_pages` | type_reference | [api](../modules/api.md) | — |

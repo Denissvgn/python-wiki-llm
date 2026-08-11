@@ -49,7 +49,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_extract_bootstrap_inventory` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_extract_bootstrap_inventory` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |

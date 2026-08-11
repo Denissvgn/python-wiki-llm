@@ -42,6 +42,7 @@ flowchart LR
     n6["input_wiki_tree_baseline (src/llm_wiki_cli/services/documentation_policy.py)"]
     n7["source_plugin_tree_baseline (src/llm_wiki_cli/services/documentation_policy.py)"]
     n8["source_snapshot_tree_baseline (src/llm_wiki_cli/services/documentation_policy.py)"]
+    n9["source_tree_baseline (src/llm_wiki_cli/services/documentation_policy.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -50,6 +51,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/documentation_policy.md"
     click n1 "../modules/controller.md"
     click n2 "../modules/documentation_policy.md"
@@ -59,6 +61,7 @@ flowchart LR
     click n6 "../modules/documentation_policy.md"
     click n7 "../modules/documentation_policy.md"
     click n8 "../modules/documentation_policy.md"
+    click n9 "../modules/documentation_policy.md"
 ```
 
 ### Summary
@@ -69,17 +72,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `controller` | import | [controller](../modules/controller.md) |
-| `capture_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `capture_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_source_plugin_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_source_snapshot_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `input_wiki_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `source_plugin_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `source_plugin_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `source_plugin_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `source_snapshot_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `source_snapshot_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `controller` | import | [controller](../modules/controller.md) | — |
+| `capture_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) | 1 |
+| `capture_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `compare_source_plugin_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `compare_source_snapshot_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `compare_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `input_wiki_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `source_plugin_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) | 2 |
+| `source_plugin_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `source_snapshot_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) | 1 |
+| `source_snapshot_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `source_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

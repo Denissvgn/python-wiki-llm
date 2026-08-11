@@ -42,7 +42,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_detect_sync_entry_points` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_detect_sync_entry_points` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_detect_sync_entry_points` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_detect_sync_entry_points` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

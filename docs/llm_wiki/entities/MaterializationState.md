@@ -71,14 +71,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_materialization_state` | call | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialization_state` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialize_calls` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialize_contains` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialize_data_effects` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialize_entrypoints` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialize_external_dependencies` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialize_imports` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_owner_concept` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_materialization_state` | call | [knowledge_graph](../modules/knowledge_graph.md) | 1 |
+| `_materialization_state` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialize_calls` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialize_contains` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialize_data_effects` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialize_entrypoints` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialize_external_dependencies` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialize_imports` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_owner_concept` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |

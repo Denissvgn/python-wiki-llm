@@ -45,9 +45,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_hash_input_file_at` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_hash_input_file_at` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_hash_regular_file` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_hash_regular_file` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_hash_input_file_at` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_hash_input_file_at` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_hash_regular_file` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_hash_regular_file` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |

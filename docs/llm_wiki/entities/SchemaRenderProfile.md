@@ -84,17 +84,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) |
-| `_cleanup_recorded_source` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_migrate_reference_skill` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_target_cleanup_is_ready` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_upgrade_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_installed_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `_workflow_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `correctness_destination_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `removal_prerequisites_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `route_exists` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) |
-| `rendering_lifecycle` | import | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
+| `_cleanup_recorded_source` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_migrate_reference_skill` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_target_cleanup_is_ready` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_upgrade_schema` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `_installed_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `_workflow_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `correctness_destination_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `removal_prerequisites_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `route_exists` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `rendering_lifecycle` | import | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |
+
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

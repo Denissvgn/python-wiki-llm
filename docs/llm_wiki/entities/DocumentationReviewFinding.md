@@ -79,14 +79,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_combine_same_iteration` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `_merge_occurrence` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `_normalise_record` | call | [documentation_review](../modules/documentation_review.md) |
-| `_normalise_record` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `_validate_finding` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `DocumentationReviewFinding.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `DocumentationReviewLedger.unresolved_findings` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `normalize_review_findings` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `normalize_review_records` | type_reference | [documentation_review](../modules/documentation_review.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_combine_same_iteration` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `_merge_occurrence` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `_normalise_record` | call | [documentation_review](../modules/documentation_review.md) | 1 |
+| `_normalise_record` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `_validate_finding` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `DocumentationReviewFinding.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `DocumentationReviewLedger.unresolved_findings` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `normalize_review_findings` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `normalize_review_records` | type_reference | [documentation_review](../modules/documentation_review.md) | — |

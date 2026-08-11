@@ -46,6 +46,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `asset_surface` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `asset_surface` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |

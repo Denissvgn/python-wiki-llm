@@ -54,12 +54,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `skills_cmd` | import | [skills_cmd](../modules/skills_cmd.md) |
-| `_ensure_safe_base` | call | [skills](../modules/skills.md) |
-| `_preflight_reference_requirement` | call | [skills](../modules/skills.md) |
-| `_preflight_reference_requirement` | call | [skills](../modules/skills.md) |
-| `_preflight_reference_requirement` | call | [skills](../modules/skills.md) |
-| `_select_skills` | call | [skills](../modules/skills.md) |
-| `_select_skills` | call | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `skills_cmd` | import | [skills_cmd](../modules/skills_cmd.md) | — |
+| `_ensure_safe_base` | call | [skills](../modules/skills.md) | 1 |
+| `_preflight_reference_requirement` | call | [skills](../modules/skills.md) | 3 |
+| `_select_skills` | call | [skills](../modules/skills.md) | 2 |

@@ -48,8 +48,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `move_windows_path_write_through` | call | [filesystem_guard](../modules/filesystem_guard.md) |
-| `move_windows_path_write_through` | call | [filesystem_guard](../modules/filesystem_guard.md) |
-| `protected_artifacts` | import | [protected_artifacts](../modules/protected_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `move_windows_path_write_through` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
+| `protected_artifacts` | import | [protected_artifacts](../modules/protected_artifacts.md) | — |

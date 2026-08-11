@@ -50,8 +50,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `load_documentation_run` | call | [workspace](../modules/workspace.md) |
-| `load_documentation_run` | call | [workspace](../modules/workspace.md) |
-| `load_documentation_run` | call | [workspace](../modules/workspace.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `load_documentation_run` | call | [workspace](../modules/workspace.md) | 3 |

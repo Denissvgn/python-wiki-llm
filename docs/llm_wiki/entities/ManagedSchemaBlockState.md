@@ -67,10 +67,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) |
-| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) |
-| `uninstall_cmd` | import | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `rendering_lifecycle` | import | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
+| `status_cmd` | import | [status_cmd](../modules/status_cmd.md) | — |
+| `uninstall_cmd` | import | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
+| `rendering_lifecycle` | import | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |

@@ -47,13 +47,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_preflight_ci_workflow` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_ci_workflow` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_ci_workflow` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_ci_workflow` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_ci_workflow` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_ci_workflow` | call | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_preflight_ci_workflow` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
-| `_remove_ci_workflow` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_preflight_ci_workflow` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 6 |
+| `_preflight_ci_workflow` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `_remove_ci_workflow` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |

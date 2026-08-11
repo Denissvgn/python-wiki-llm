@@ -64,7 +64,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `planner` | import | [planner](../modules/planner.md) |
-| `context_service` | import | [context_service](../modules/context_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `planner` | import | [planner](../modules/planner.md) | — |
+| `context_service` | import | [context_service](../modules/context_service.md) | — |

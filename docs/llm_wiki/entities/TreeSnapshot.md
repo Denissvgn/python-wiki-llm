@@ -47,8 +47,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_snapshot_details` | type_reference | [skills](../modules/skills.md) |
-| `_tree_snapshot` | call | [skills](../modules/skills.md) |
-| `_tree_snapshot` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_snapshot_details` | type_reference | [skills](../modules/skills.md) | — |
+| `_tree_snapshot` | call | [skills](../modules/skills.md) | 1 |
+| `_tree_snapshot` | type_reference | [skills](../modules/skills.md) | — |
