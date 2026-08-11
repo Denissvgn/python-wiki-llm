@@ -300,3 +300,19 @@ Append-only chronological log.
 - Pages deprecated: 0
 - Semantic fields preserved: 1
 - Moved entities: none
+
+## 2026-08-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `1.7.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:2dea3d9bffa313dc0651288ab21f88fc1b91c7333102087f5e23b971ddab9328`
+- Pages created: 0
+- Pages updated: 8
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1119
+- Pages deprecated: 0
+- Semantic fields preserved: 22
+- Moved entities: none
