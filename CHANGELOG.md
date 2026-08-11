@@ -36,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The `compact` managed-schema profile is now a bounded knowledge-first kernel
+  that uses a reusable qualified packet with `--knowledge-mode auto`, concise
+  evidence and authority rules, and direct verified-topic routes. The
+  `expanded_inline` profile remains self-contained for opt-out and recovery,
+  while both profiles carry the same durable repository-content safeguards.
 - Initialization and upgrade now provision and verify the managed reference
   before choosing a schema profile. Agent switches commit a usable destination
   schema and config before cleaning an old exact managed path; failures keep an

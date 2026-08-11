@@ -99,6 +99,29 @@ def test_bootstrap_constraint_refresh_pins_selection_for_default_wiki(
     assert "--source-selection config/selection.json" in constraints
 
 
+def test_bootstrap_constraint_refresh_preserves_unmanaged_bytes(tmp_project):
+    from llm_wiki_cli.services.bootstrap_runtime import _update_agent_constraints
+    from llm_wiki_cli.services.schema import CONSTRAINT_END, CONSTRAINT_START
+
+    prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+    managed = (
+        f"{CONSTRAINT_START}\r\nWiki: docs/llm_wiki\r\n{CONSTRAINT_END}\r\n"
+    ).encode("ascii")
+    suffix = (
+        b"# --- LLM Wiki Skill: external/rules ---\r\n"
+        b"preserve \x97 bytes and spaces  \r\n"
+        b"# --- End LLM Wiki Skill: external/rules ---\r\n"
+    )
+    Path("AGENTS.md").write_bytes(prefix + managed + suffix)
+
+    _update_agent_constraints("docs/team wiki")
+
+    committed = Path("AGENTS.md").read_bytes()
+    assert committed.startswith(prefix)
+    assert committed.endswith(suffix)
+    assert b"Wiki: docs/team wiki" in committed
+
+
 def _dense_module_dependency_summary():
     module = "pkg/focal.py"
     neighbors = [f"pkg/n{index:02d}.py" for index in range(11)]

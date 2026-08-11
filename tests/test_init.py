@@ -55,9 +55,10 @@ class TestInitAgentSchemas:
         assert Path("CLAUDE.md").exists()
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "LLM Wiki Maintainer Constraints" in content
-        assert "source of truth for existing page names" in content
-        assert "<module_page_stem>_<ClassName>.md" in content
-        assert "if a COPY/ADD source is ambiguous" in content
+        assert "profile=compact" in content
+        assert ".claude/skills/wiki-reference/references/surfaces-naming.md" in content
+        assert ".claude/skills/wiki-reference/references/maintenance.md" in content
+        assert ".claude/skills/wiki-reference/references/governance.md" in content
 
     def test_cursor_agent(self, tmp_project):
         args = _make_args(agent="cursor")
@@ -75,9 +76,33 @@ class TestInitAgentSchemas:
         assert Path("AGENTS.md").exists()
         assert not Path(".agents.md").exists()
         content = Path("AGENTS.md").read_text(encoding="utf-8")
-        assert "## User docs and usage examples" in content
+        assert "## Managed routes and completion" in content
+        assert "`user-docs-author`" in content
         assert "usage-examples" in content
-        assert "llm-wiki skills export --dest" in content
+        assert ".llm-wiki/skills/wiki-reference/references/context-query.md" in content
+
+    def test_existing_schema_preserves_crlf_and_legacy_user_bytes(
+        self, tmp_project
+    ):
+        from llm_wiki_cli.services.schema import CONSTRAINT_END, CONSTRAINT_START
+
+        prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+        managed = (
+            f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n"
+        ).encode("ascii")
+        suffix = (
+            b"# --- LLM Wiki Skill: external/rules ---\r\n"
+            b"preserve \x97 bytes and spaces  \r\n"
+            b"# --- End LLM Wiki Skill: external/rules ---\r\n"
+        )
+        Path("AGENTS.md").write_bytes(prefix + managed + suffix)
+
+        init_cmd.run(_make_args(agent="generic"))
+
+        committed = Path("AGENTS.md").read_bytes()
+        assert committed.startswith(prefix)
+        assert committed.endswith(suffix)
+        assert b"profile=compact" in committed
 
     def test_omitted_agent_defaults_to_generic_for_new_project(self, tmp_project):
         init_cmd.run(types.SimpleNamespace(wiki_dir="docs/llm_wiki", no_skills=True))
@@ -221,7 +246,7 @@ class TestInitQualityHints:
         init_cmd.run(args)
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "Agent quality guidelines" in content
-        assert "Surgical Changes" in content
+        assert "Keep edits surgical" in content
 
     def test_no_quality_hints_flag(self, tmp_project):
         args = _make_args(agent="claude", no_quality_hints=True)

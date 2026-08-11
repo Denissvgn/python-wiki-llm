@@ -18,7 +18,7 @@ from ..services.filesystem_guard import (
     unlink_guarded_bytes,
     windows_object_identity,
 )
-from ..services.io import first_unsafe_path_component, read_md
+from ..services.io import first_unsafe_path_component
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
     CONSTRAINT_END as CONSTRAINT_END,
@@ -27,6 +27,8 @@ from ..services.schema import (
     ManagedSchemaBlockState,
     ManagedSchemaPathError,
     classify_managed_schema_block,
+    decode_managed_document_bytes,
+    encode_managed_document_text,
     require_safe_schema_path,
     strip_wiki_block as _strip_wiki_block,
 )
@@ -278,7 +280,7 @@ def _preflight_agent_schemas() -> tuple[_SchemaCleanup, ...]:
             )
         try:
             content_bytes = schema_path.read_bytes()
-            content = read_md(schema_path)
+            content = decode_managed_document_bytes(content_bytes)
         except (OSError, UnicodeError) as exc:
             raise ManagedSchemaPathError(
                 f"managed schema path cannot be read safely: {schema_path}"
@@ -351,7 +353,7 @@ def _clean_agent_schemas(
                 if item.stripped:
                     atomic_write_guarded_bytes(
                         absolute,
-                        item.stripped.encode("utf-8"),
+                        encode_managed_document_text(item.stripped),
                         mode=0o644,
                         require_single_link=False,
                         expected_existing=item.content_bytes,

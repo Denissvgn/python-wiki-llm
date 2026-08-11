@@ -69,6 +69,11 @@ class InboundRouteKind(str, Enum):
     REFERENCE_ROOT = "reference_root"
 
 
+_ALL_PROFILES = tuple(SchemaRenderProfile)
+_COMPACT_ONLY = (SchemaRenderProfile.COMPACT,)
+_EXPANDED_ONLY = (SchemaRenderProfile.EXPANDED_INLINE,)
+
+
 @dataclass(frozen=True)
 class InstructionDestination:
     """Package-relative destination for content leaving generated prose."""
@@ -101,6 +106,7 @@ class GeneratedSectionCoverage:
     routes: tuple[InstructionRoute, ...] = ()
     retained_kernel: bool = False
     condition: SectionCondition = SectionCondition.ALWAYS
+    profiles: tuple[SchemaRenderProfile, ...] = _ALL_PROFILES
 
 
 @dataclass(frozen=True)
@@ -220,24 +226,38 @@ def _skill(skill_id: str) -> InstructionDestination:
 def _installed_route(
     source_heading: str,
     destination: InstructionDestination,
+    *,
+    profiles: tuple[SchemaRenderProfile, ...] = _ALL_PROFILES,
 ) -> InstructionRoute:
     return InstructionRoute(
         destination.path,
         source_heading,
         InstructionRouteKind.INSTALLED_PATH,
+        profiles=profiles,
     )
 
 
-def _workflow_route(source_heading: str, skill_id: str) -> InstructionRoute:
+def _workflow_route(
+    source_heading: str,
+    skill_id: str,
+    *,
+    profiles: tuple[SchemaRenderProfile, ...] = _ALL_PROFILES,
+) -> InstructionRoute:
     return InstructionRoute(
         f"skills/{skill_id}/SKILL.md",
         source_heading,
         InstructionRouteKind.WORKFLOW_SKILL,
+        profiles=profiles,
     )
 
 
-def _topic_route(source_heading: str, topic: str) -> InstructionRoute:
-    return _installed_route(source_heading, _topic(topic))
+def _topic_route(
+    source_heading: str,
+    topic: str,
+    *,
+    profiles: tuple[SchemaRenderProfile, ...] = _ALL_PROFILES,
+) -> InstructionRoute:
+    return _installed_route(source_heading, _topic(topic), profiles=profiles)
 
 
 _BEFORE = "## Before you start"
@@ -256,6 +276,10 @@ _AGENT_QUALITY = "## Agent quality guidelines"
 _SYNC = "## How to sync the wiki in this agent session"
 _INCREMENTAL = "## Using `llm-wiki sync` for incremental updates"
 _LARGE_CODEBASES = "## Large codebases"
+_COMPACT_EVIDENCE = "## Select evidence first"
+_COMPACT_AUTHORITY = "## Authority and handoff"
+_REPOSITORY_HYGIENE = "## Repository content hygiene"
+_COMPACT_ROUTES = "## Managed routes and completion"
 
 
 _USER_DOCS_SKILLS = (
@@ -267,6 +291,28 @@ _USER_DOCS_SKILLS = (
 )
 
 
+def _profiled_topic_routes(
+    expanded_heading: str,
+    compact_heading: str,
+    topic: str,
+) -> tuple[InstructionRoute, ...]:
+    return (
+        _topic_route(expanded_heading, topic, profiles=_EXPANDED_ONLY),
+        _topic_route(compact_heading, topic, profiles=_COMPACT_ONLY),
+    )
+
+
+def _profiled_workflow_routes(
+    expanded_heading: str,
+    compact_heading: str,
+    skill_id: str,
+) -> tuple[InstructionRoute, ...]:
+    return (
+        _workflow_route(expanded_heading, skill_id, profiles=_EXPANDED_ONLY),
+        _workflow_route(compact_heading, skill_id, profiles=_COMPACT_ONLY),
+    )
+
+
 GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
     GeneratedSectionCoverage(
         "Preamble/markers",
@@ -275,28 +321,97 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         retained_kernel=True,
     ),
     GeneratedSectionCoverage(
+        "Compact evidence selection",
+        _COMPACT_EVIDENCE,
+        InstructionOwner.KNOWLEDGE_CONSUMER,
+        retained_kernel=True,
+        profiles=_COMPACT_ONLY,
+    ),
+    GeneratedSectionCoverage(
+        "Compact authority and handoff",
+        _COMPACT_AUTHORITY,
+        InstructionOwner.KERNEL,
+        (_topic("repository-handoff"),),
+        (
+            _topic_route(
+                _COMPACT_AUTHORITY,
+                "repository-handoff",
+                profiles=_COMPACT_ONLY,
+            ),
+        ),
+        retained_kernel=True,
+        profiles=_COMPACT_ONLY,
+    ),
+    GeneratedSectionCoverage(
+        "Compact repository content hygiene",
+        _REPOSITORY_HYGIENE,
+        InstructionOwner.KERNEL,
+        retained_kernel=True,
+        profiles=_COMPACT_ONLY,
+    ),
+    GeneratedSectionCoverage(
+        "Compact managed routes and completion",
+        _COMPACT_ROUTES,
+        InstructionOwner.KERNEL,
+        tuple(_topic(topic) for topic in _TOPIC_HEADINGS if topic != "repository-handoff")
+        + tuple(_skill(skill_id) for skill_id in _USER_DOCS_SKILLS),
+        tuple(
+            _topic_route(_COMPACT_ROUTES, topic, profiles=_COMPACT_ONLY)
+            for topic in _TOPIC_HEADINGS
+            if topic != "repository-handoff"
+        )
+        + tuple(
+            _workflow_route(
+                _COMPACT_ROUTES,
+                skill_id,
+                profiles=_COMPACT_ONLY,
+            )
+            for skill_id in _USER_DOCS_SKILLS
+        ),
+        retained_kernel=True,
+        profiles=_COMPACT_ONLY,
+    ),
+    GeneratedSectionCoverage(
         "Before you start",
         _BEFORE,
         InstructionOwner.KNOWLEDGE_CONSUMER,
         (_topic("context-query"),),
-        (_topic_route(_BEFORE, "context-query"),),
+        _profiled_topic_routes(_BEFORE, _COMPACT_ROUTES, "context-query"),
         retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Repository delivery preflight",
         _HANDOFF,
         InstructionOwner.KERNEL,
         (_topic("repository-handoff"),),
-        (_topic_route(_HANDOFF, "repository-handoff"),),
+        _profiled_topic_routes(
+            _HANDOFF,
+            _COMPACT_AUTHORITY,
+            "repository-handoff",
+        ),
         retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Native knowledge preflight",
         _KNOWLEDGE,
         InstructionOwner.KNOWLEDGE_CONSUMER,
         (_topic("knowledge-consumption"),),
-        (_topic_route(_KNOWLEDGE, "knowledge-consumption"),),
+        _profiled_topic_routes(
+            _KNOWLEDGE,
+            _COMPACT_ROUTES,
+            "knowledge-consumption",
+        ),
         retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
+    ),
+    GeneratedSectionCoverage(
+        "Expanded repository content hygiene",
+        _REPOSITORY_HYGIENE,
+        InstructionOwner.KERNEL,
+        retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Deep reference",
@@ -308,19 +423,37 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
             _topic("context-query"),
         ),
         (
-            _topic_route(_DEEP_REFERENCE, "extractors-dependencies"),
-            _topic_route(_DEEP_REFERENCE, "publishing"),
-            _topic_route(_DEEP_REFERENCE, "context-query"),
+            *_profiled_topic_routes(
+                _DEEP_REFERENCE,
+                _COMPACT_ROUTES,
+                "extractors-dependencies",
+            ),
+            *_profiled_topic_routes(
+                _DEEP_REFERENCE,
+                _COMPACT_ROUTES,
+                "publishing",
+            ),
+            *_profiled_topic_routes(
+                _DEEP_REFERENCE,
+                _COMPACT_ROUTES,
+                "context-query",
+            ),
         ),
         retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Resource-aware execution",
         _RESOURCES,
         InstructionOwner.KERNEL,
         (_topic("resources-context"),),
-        (_topic_route(_RESOURCES, "resources-context"),),
+        _profiled_topic_routes(
+            _RESOURCES,
+            _COMPACT_ROUTES,
+            "resources-context",
+        ),
         retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Canonical wiki surfaces",
@@ -328,30 +461,58 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         (_topic("surfaces-naming"), _topic("publishing")),
         (
-            _topic_route(_SURFACES, "surfaces-naming"),
-            _topic_route(_SURFACES, "publishing"),
+            *_profiled_topic_routes(
+                _SURFACES,
+                _COMPACT_ROUTES,
+                "surfaces-naming",
+            ),
+            *_profiled_topic_routes(
+                _SURFACES,
+                _COMPACT_ROUTES,
+                "publishing",
+            ),
         ),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "User docs and usage examples",
         _USER_DOCS,
         InstructionOwner.WORKFLOW_SKILL,
         tuple(_skill(skill_id) for skill_id in _USER_DOCS_SKILLS),
-        tuple(_workflow_route(_USER_DOCS, skill_id) for skill_id in _USER_DOCS_SKILLS),
+        tuple(
+            route
+            for skill_id in _USER_DOCS_SKILLS
+            for route in _profiled_workflow_routes(
+                _USER_DOCS,
+                _COMPACT_ROUTES,
+                skill_id,
+            )
+        ),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "When you change code",
         _CHANGE_CODE,
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         (_topic("maintenance"),),
-        (_topic_route(_CHANGE_CODE, "maintenance"),),
+        _profiled_topic_routes(
+            _CHANGE_CODE,
+            _COMPACT_ROUTES,
+            "maintenance",
+        ),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Wiki file naming rules",
         _NAMING,
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         (_topic("surfaces-naming"),),
-        (_topic_route(_NAMING, "surfaces-naming"),),
+        _profiled_topic_routes(
+            _NAMING,
+            _COMPACT_ROUTES,
+            "surfaces-naming",
+        ),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Quality checks",
@@ -359,9 +520,18 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         InstructionOwner.DETERMINISTIC_CLI_LINT,
         (_topic("maintenance"), _topic("extractors-dependencies")),
         (
-            _topic_route(_QUALITY, "maintenance"),
-            _topic_route(_QUALITY, "extractors-dependencies"),
+            *_profiled_topic_routes(
+                _QUALITY,
+                _COMPACT_ROUTES,
+                "maintenance",
+            ),
+            *_profiled_topic_routes(
+                _QUALITY,
+                _COMPACT_ROUTES,
+                "extractors-dependencies",
+            ),
         ),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Tool issue reporting",
@@ -375,7 +545,12 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         _FORMATTING,
         InstructionOwner.DETERMINISTIC_CLI_LINT,
         (_topic("surfaces-naming"),),
-        (_topic_route(_FORMATTING, "surfaces-naming"),),
+        _profiled_topic_routes(
+            _FORMATTING,
+            _COMPACT_ROUTES,
+            "surfaces-naming",
+        ),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Agent quality guidelines",
@@ -389,21 +564,32 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         _SYNC,
         InstructionOwner.REMOVED_DUPLICATE,
         (_topic("maintenance"),),
-        (_topic_route(_SYNC, "maintenance"),),
+        _profiled_topic_routes(_SYNC, _COMPACT_ROUTES, "maintenance"),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Incremental sync details",
         _INCREMENTAL,
         InstructionOwner.MANAGED_REFERENCE_TOPIC,
         (_topic("maintenance"),),
-        (_topic_route(_INCREMENTAL, "maintenance"),),
+        _profiled_topic_routes(
+            _INCREMENTAL,
+            _COMPACT_ROUTES,
+            "maintenance",
+        ),
+        profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
         "Large codebases",
         _LARGE_CODEBASES,
         InstructionOwner.REMOVED_DUPLICATE,
         (_topic("context-query"),),
-        (_topic_route(_LARGE_CODEBASES, "context-query"),),
+        _profiled_topic_routes(
+            _LARGE_CODEBASES,
+            _COMPACT_ROUTES,
+            "context-query",
+        ),
+        profiles=_EXPANDED_ONLY,
     ),
 )
 
@@ -437,17 +623,21 @@ _EXTRACTORS = _topic("extractors-dependencies")
 
 
 def _correctness_route(
-    source_heading: str,
+    _source_heading: str,
     destination: InstructionDestination,
 ) -> InstructionRoute:
-    return _installed_route(source_heading, destination)
+    return _installed_route(
+        _COMPACT_ROUTES,
+        destination,
+        profiles=_COMPACT_ONLY,
+    )
 
 
 CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
     CorrectnessClauseCoverage(
         "relevant_code_change_activation",
         "How to sync in this session",
-        "**After every code change in this session** that adds, removes, or modifies a class, function, module, or cross-module flow, run the full sync-then-lint workflow",
+        "adds, removes, or modifies a class, function, module, or cross-module flow, run the full sync-then-lint workflow",
         InstructionOwner.KERNEL,
         _MAINTENANCE,
         _correctness_route(_SYNC, _MAINTENANCE),
@@ -774,50 +964,47 @@ MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "Choose among these routes with the managed decision guide at "
-        "`{skills_dir}/wiki-reference/references/context-query.md`.",
+        "`{reference_root}/context-query.md`",
         "context-query",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "extraction, helper, and dependency contracts: "
-        "`{skills_dir}/wiki-reference/references/extractors-dependencies.md`;",
+        "`{reference_root}/extractors-dependencies.md`",
         "extractors-dependencies",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "The complete managed procedure is at "
-        "`{skills_dir}/wiki-reference/references/maintenance.md`.",
+        "`{reference_root}/maintenance.md`",
         "maintenance",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "then follow the managed policy at "
-        "`{skills_dir}/wiki-reference/references/repository-handoff.md`.",
+        "`{reference_root}/repository-handoff.md`",
         "repository-handoff",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "The complete qualification and fallback table is at "
-        "`{skills_dir}/wiki-reference/references/knowledge-consumption.md`.",
+        "`{reference_root}/knowledge-consumption.md`",
         "knowledge-consumption",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "static-site and Obsidian projection contracts: "
-        "`{skills_dir}/wiki-reference/references/publishing.md`;",
+        "`{reference_root}/governance.md`",
+        "governance",
+    ),
+    _managed_topic_route(
+        _SCHEMA_SOURCE,
+        "`{reference_root}/publishing.md`",
         "publishing",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "The full scheduling matrix and concurrency terminology are at "
-        "`{skills_dir}/wiki-reference/references/resources-context.md`.",
+        "`{reference_root}/resources-context.md`",
         "resources-context",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "The canonical catalog and naming/ownership rules are at "
-        "`{skills_dir}/wiki-reference/references/surfaces-naming.md`",
+        "`{reference_root}/surfaces-naming.md`",
         "surfaces-naming",
     ),
     *(
@@ -909,6 +1096,9 @@ _INSTALLED_REFERENCE_PATH = re.compile(
     r"(?:\{skills_dir\}|\.claude/skills|\.llm-wiki/skills)/"
     r"(?P<relative>wiki-reference/(?:reference\.md|references/[a-z0-9-]+\.md))"
 )
+_REFERENCE_ROOT_TOPIC_PATH = re.compile(
+    r"\{reference_root\}/(?P<topic>[a-z0-9-]+\.md)"
+)
 
 
 def _active_reference_sources(package_root: Path) -> tuple[Path, ...]:
@@ -973,6 +1163,24 @@ def discover_managed_reference_inbound_routes(
 
         for match in _INSTALLED_REFERENCE_PATH.finditer(content):
             destination_path = f"skills/{match.group('relative')}"
+            root_heading, _ = _destination_heading_lookup(
+                package_root,
+                destination_path,
+            )
+            discovered.add(
+                DiscoveredInboundRoute(
+                    relative,
+                    InboundRouteKind.INSTALLED_FILE_ROUTE,
+                    destination_path,
+                    root_heading.title if root_heading is not None else "",
+                    root_heading.anchor if root_heading is not None else "",
+                )
+            )
+
+        for match in _REFERENCE_ROOT_TOPIC_PATH.finditer(content):
+            destination_path = (
+                f"{_REFERENCE_TOPICS}/{match.group('topic')}"
+            )
             root_heading, _ = _destination_heading_lookup(
                 package_root,
                 destination_path,
@@ -1115,19 +1323,29 @@ def removal_prerequisites_ready(
 ) -> bool:
     """Fail closed until every destination is packaged and rendered-routable."""
 
-    carries_inline_rule = any(
+    inline_clauses = tuple(
         clause.always_inline and clause.source_section == coverage.section
         for clause in CORRECTNESS_CLAUSE_COVERAGE
     )
     if (
-        coverage.retained_kernel
-        or carries_inline_rule
+        profile in coverage.profiles
+        or coverage.retained_kernel
         or not coverage.destinations
         or not coverage.routes
+        or rendered_content is None
     ):
         return False
+    if any(inline_clauses):
+        normalized = normalize_instruction_text(rendered_content)
+        for clause in CORRECTNESS_CLAUSE_COVERAGE:
+            if clause.always_inline and clause.source_section == coverage.section:
+                if normalize_instruction_text(clause.source_text) not in normalized:
+                    return False
     destination_paths = {item.path for item in coverage.destinations}
-    route_paths = {item.destination_path for item in coverage.routes}
+    relevant_routes = tuple(
+        route for route in coverage.routes if profile in route.profiles
+    )
+    route_paths = {item.destination_path for item in relevant_routes}
     if destination_paths != route_paths:
         return False
     return all(
@@ -1140,7 +1358,7 @@ def removal_prerequisites_ready(
             agent=agent,
             profile=profile,
         )
-        for route in coverage.routes
+        for route in relevant_routes
     )
 
 
@@ -1212,5 +1430,9 @@ def inbound_route_resolves(
     if route.kind is InboundRouteKind.HEADING_REFERENCE:
         return f'"{route.destination_heading}"' in normalized_span
     if route.kind is InboundRouteKind.INSTALLED_FILE_ROUTE:
-        return route.destination_path.removeprefix("skills/") in normalized_span
+        relative = route.destination_path.removeprefix("skills/")
+        topic_name = PurePosixPath(route.destination_path).name
+        return relative in normalized_span or (
+            "{reference_root}" in normalized_span and topic_name in normalized_span
+        )
     return "wiki-reference" in normalized_span

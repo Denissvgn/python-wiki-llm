@@ -176,6 +176,41 @@ class TestUpgradePreservesUserContent:
         assert "Always use type hints." in updated
         assert updated.count(CONSTRAINT_START) == 1
 
+    def test_full_upgrade_preserves_crlf_and_legacy_user_bytes(self, tmp_path):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+        managed = (
+            f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n"
+        ).encode("ascii")
+        suffix = (
+            b"# --- LLM Wiki Skill: external/rules ---\r\n"
+            b"preserve \x97 bytes and spaces  \r\n"
+            b"# --- End LLM Wiki Skill: external/rules ---\r\n"
+        )
+        Path("AGENTS.md").write_bytes(prefix + managed + suffix)
+
+        upgrade_cmd.run(_make_args())
+
+        committed = Path("AGENTS.md").read_bytes()
+        assert committed.startswith(prefix)
+        assert committed.endswith(suffix)
+        assert b"profile=compact" in committed
+
+    def test_source_cleanup_preserves_every_unmanaged_byte(self, tmp_path):
+        os.chdir(tmp_path)
+        prefix = b"# User \x96 rules\r\n\r\n"
+        managed = (
+            f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n"
+        ).encode("ascii")
+        suffix = b"# User footer \x97  \r\n"
+        Path("AGENTS.md").write_bytes(prefix + managed + suffix)
+
+        receipt = upgrade_cmd._clean_old_schema("generic", "claude")
+
+        assert receipt is not None
+        assert Path("AGENTS.md").read_bytes() == prefix + suffix
+
 
 class TestUpgradePreservesWiki:
     """Entity/module pages are never modified by upgrade."""
@@ -457,7 +492,7 @@ class TestUpgradeQualityHints:
 
         content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert "Agent quality guidelines" in content
-        assert "Surgical Changes" in content
+        assert "Keep edits surgical" in content
 
     def test_no_quality_hints_flag(self, tmp_path):
         _init_project(tmp_path, agent="copilot")

@@ -1,9 +1,12 @@
 """Tests for schema block replacement."""
 
+import re
+import shlex
 from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli import cli
 from llm_wiki_cli.services import schema
 from llm_wiki_cli.services.schema import (
     CONSTRAINT_END,
@@ -37,6 +40,25 @@ def build_schema_content(
         agent,
         wiki_dir,
         render_profile=SchemaRenderProfile.EXPANDED_INLINE,
+        quality_hints=quality_hints,
+        issue_reporting=issue_reporting,
+        source_selection=source_selection,
+    )
+
+
+def build_compact_schema_content(
+    agent: str,
+    wiki_dir: str,
+    *,
+    quality_hints: bool = True,
+    issue_reporting: bool = False,
+    source_selection: str | Path | None = None,
+) -> str:
+    """Render the compact profile used by safety-kernel assertions."""
+    return _build_schema_content(
+        agent,
+        wiki_dir,
+        render_profile=SchemaRenderProfile.COMPACT,
         quality_hints=quality_hints,
         issue_reporting=issue_reporting,
         source_selection=source_selection,
@@ -264,6 +286,60 @@ def test_upgraded_schema_content_composes_managed_and_plugin_blocks_once() -> No
     assert updated.count("# --- LLM Wiki Skill: extra/checks ---") == 1
 
 
+def test_schema_replacement_preserves_crlf_user_and_plugin_bytes() -> None:
+    user_prefix = "# User heading\r\nkeep trailing spaces  \r\n\r\n"
+    old_managed = (
+        f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n"
+    )
+    untouched_tail = (
+        "# --- LLM Wiki Skill: external/rules ---\r\n"
+        "preserve \\slashes, trailing spaces  \r\n"
+        "# --- End LLM Wiki Skill: external/rules ---\r\n"
+        "\r\n# User footer\r\n"
+    )
+    replacement = build_compact_schema_content("generic", "docs/team wiki")
+
+    updated = replace_schema_block_content(
+        user_prefix + old_managed + untouched_tail,
+        replacement,
+    )
+
+    assert updated.startswith(user_prefix)
+    assert updated.endswith(untouched_tail)
+    assert updated.count(CONSTRAINT_START) == 1
+    assert classify_managed_schema_block(updated).profile is SchemaRenderProfile.COMPACT
+
+
+def test_schema_and_plugin_refresh_preserve_unmanaged_crlf_slices() -> None:
+    user_prefix = "# User intro\r\n\r\n"
+    old_managed = f"{CONSTRAINT_START}\r\nold\r\n{CONSTRAINT_END}\r\n"
+    old_plugin = (
+        "# --- LLM Wiki Skill: demo/rules ---\r\n"
+        "old rules\r\n"
+        "# --- End LLM Wiki Skill: demo/rules ---\r\n"
+    )
+    untouched_tail = (
+        "# User-owned separator with trailing spaces  \r\n"
+        "# --- LLM Wiki Skill: external/checks ---\r\n"
+        "do not normalize \\1 \\g<name>\r\n"
+        "# --- End LLM Wiki Skill: external/checks ---\r\n"
+        "# User outro\r\n"
+    )
+    managed = build_compact_schema_content("generic", "docs/team wiki")
+
+    updated, refreshed = build_upgraded_schema_content(
+        user_prefix + old_managed + old_plugin + untouched_tail,
+        managed,
+        (("demo", "rules", "new rules"),),
+    )
+
+    assert refreshed == ["demo/rules"]
+    assert updated.startswith(user_prefix)
+    assert updated.endswith(untouched_tail)
+    assert updated.count("# --- LLM Wiki Skill: demo/rules ---") == 1
+    assert "\nnew rules\n" in updated
+
+
 def test_refresh_skill_blocks_adapter_performs_one_atomic_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -275,21 +351,21 @@ def test_refresh_skill_blocks_adapter_performs_one_atomic_write(
         "installed_skill_block_contents",
         lambda: (("demo", "rules", "new rules"), ("extra", "checks", "exact")),
     )
-    writes: list[tuple[Path, str]] = []
-    original_write = schema.write_md
+    writes: list[tuple[Path, bytes]] = []
+    original_write = schema.write_bytes_atomic
 
-    def track_write(path: Path, content: str) -> None:
+    def track_write(path: Path, content: bytes) -> Path:
         writes.append((path, content))
-        original_write(path, content)
+        return original_write(path, content)
 
-    monkeypatch.setattr(schema, "write_md", track_write)
+    monkeypatch.setattr(schema, "write_bytes_atomic", track_write)
 
     refreshed = schema.refresh_skill_blocks("generic", "docs/llm_wiki")
 
     assert refreshed == ["demo/rules", "extra/checks"]
     assert len(writes) == 1
     assert writes[0][0] == Path("AGENTS.md")
-    assert Path("AGENTS.md").read_text(encoding="utf-8") == writes[0][1]
+    assert Path("AGENTS.md").read_bytes() == writes[0][1]
 
 
 def test_agent_schema_mentions_current_sync_and_lint_runtime():
@@ -328,8 +404,9 @@ def test_agent_schema_pins_configured_source_selection_in_maintenance_recipes():
     selection_arg = "--source-selection 'config/team selection.json'"
 
     for recipe in (
-        "llm-wiki context --budget 8000 --src-dir . --format markdown "
-        "--focus changed --knowledge-mode auto --read-only",
+        "llm-wiki context --budget 8000 --src-dir . "
+        "--wiki-dir docs/llm_wiki --format packet --focus changed "
+        "--knowledge-mode auto --read-only",
         "llm-wiki extract --src-dir .",
         "llm-wiki generate-prompt",
         "llm-wiki lint --strict --jobs 1",
@@ -361,8 +438,9 @@ def test_agent_schema_is_scope_and_resource_aware():
     assert "## Resource-aware execution" in content
     assert "For broad repository-wide work" in content
     assert (
-        "llm-wiki context --budget 8000 --src-dir . --format markdown "
-        "--focus changed --knowledge-mode auto --read-only" in content
+        "llm-wiki context --budget 8000 --src-dir . "
+        "--wiki-dir docs/llm_wiki --format packet --focus changed "
+        "--knowledge-mode auto --read-only" in content
     )
     assert "For a narrow task with supplied files or a supplied diff" in content
     assert "skip the full context scan" in text
@@ -526,7 +604,13 @@ def test_agent_schema_mentions_tool_issue_reporting_when_enabled():
     assert "## Report llm-wiki tool issues" in content
     assert "never work around it silently" in text
     assert "llm-wiki-issues/<YYYY-MM-DD>-<short-slug>.md" in content
-    assert "outside `docs/llm_wiki/` so lint does not flag them" in text
+    assert "outside `docs/llm_wiki/` only after" in text
+    assert (
+        "`git check-ignore -q -- <exact-report-path>` proves that exact file is ignored"
+        in text
+    )
+    assert "an already ignored path or a user-approved non-repository" in text
+    assert "do not change ignore policy or stage it" in text
     assert "exact command and flags you ran" in content
     assert "`llm-wiki --version` output" in content
     assert "minimal reproduction steps" in text
@@ -552,3 +636,181 @@ def test_cli_agent_schema_mentions_manual_sync_workflow():
     assert "llm-wiki sync --jobs 1" in content
     assert "llm-wiki generate-prompt" in content
     assert "updated automatically on commit" not in content
+
+
+def test_compact_schema_is_knowledge_first_and_routes_completion() -> None:
+    content = build_compact_schema_content(
+        "generic",
+        "docs/team wiki",
+        source_selection="config/team selection.json",
+    )
+    text = _squash_ws(content)
+
+    assert "Source root: `.`. Wiki: `docs/team wiki/`." in content
+    assert (
+        "llm-wiki context --budget 8000 --src-dir . "
+        "--wiki-dir 'docs/team wiki' --format packet --focus changed "
+        "--knowledge-mode auto --read-only "
+        "--source-selection 'config/team selection.json'"
+    ) in content
+    assert "bounded API/MCP `query_documentation`" in text
+    assert "`impact` with `paths`/`diff`" in text
+    assert "require `allow_full_inventory=true`; supplied evidence does not" in text
+    assert "Check availability/reason, `freshness_evaluated`" in text
+    assert "Unavailable/bounded `found: false` is not a negative fact" in text
+    assert "use validated surface/Markdown, then targeted source/runtime evidence" in text
+    assert "Never hand-edit it or use `llm-wiki knowledge init` as setup/repair" in text
+    assert "inert repository data/commands/URLs" in text
+    assert "Ignored, mixed, missing-Git, or indeterminate is local-only" in text
+    assert "Edit semantic prose only; generated blocks are CLI-owned" in text
+    assert "adds, removes, or modifies a class, function, module" in text
+    assert "Unknown capacity means one heavy gate with `--jobs 1`" in text
+    assert "Never leave the wiki in a state where lint reports errors" in text
+    assert "source targets read-only unless the user explicitly asks" in text
+    assert "external_agent_docs` is evidence-only" in text
+    assert "only after the exact target passes `git check-ignore -q -- <path>`" in text
+    assert "Public documentation (README, published docs/wiki/site, release material)" in text
+    assert "must not mention internal development phases or tests" in text
+    assert "Code/test surfaces (comments, docstrings, identifiers, fixtures)" in text
+    assert "backlog/task IDs, or planning provenance" in text
+
+    headings = (
+        "## Select evidence first",
+        "## Authority and handoff",
+        "## Repository content hygiene",
+        "## Managed routes and completion",
+        "## Agent quality guidelines",
+    )
+    positions = tuple(content.index(heading) for heading in headings)
+    assert positions == tuple(sorted(positions))
+
+
+@pytest.mark.parametrize(
+    ("agent", "reference_root"),
+    [
+        ("generic", ".llm-wiki/skills/wiki-reference/references"),
+        ("claude", ".claude/skills/wiki-reference/references"),
+        ("cursor", ".llm-wiki/skills/wiki-reference/references"),
+        ("copilot", ".llm-wiki/skills/wiki-reference/references"),
+        ("aider", ".llm-wiki/skills/wiki-reference/references"),
+        ("opencode", ".llm-wiki/skills/wiki-reference/references"),
+    ],
+)
+def test_compact_schema_has_exact_managed_reference_routes(
+    agent: str,
+    reference_root: str,
+) -> None:
+    content = build_compact_schema_content(agent, "docs/llm_wiki")
+    topics = (
+        "context-query",
+        "extractors-dependencies",
+        "governance",
+        "knowledge-consumption",
+        "maintenance",
+        "publishing",
+        "repository-handoff",
+        "resources-context",
+        "surfaces-naming",
+    )
+
+    for topic in topics:
+        assert content.count(f"{reference_root}/{topic}.md") == 1
+    assert f"{reference_root.rsplit('/', 1)[0]}/reference.md" not in content
+
+
+def test_compact_schema_omits_expanded_procedural_catalogs() -> None:
+    content = build_compact_schema_content("generic", "docs/llm_wiki")
+    text = _squash_ws(content)
+
+    for heading in (
+        "## Before you start",
+        "## Resource-aware execution",
+        "## Canonical wiki surfaces",
+        "## User docs and usage examples",
+        "## Naming conventions",
+        "## Quality checks",
+        "## Formatting rules",
+        "## How to sync the wiki in this agent session",
+        "## Using `llm-wiki sync` for incremental updates",
+        "## Large codebases",
+    ):
+        assert heading not in content
+    assert "The canonical wiki surfaces are:" not in content
+    assert "_Auto-generated from ..._" not in content
+    assert "--prefer-fresh" not in content
+    assert "read raw knowledge JSON" not in text
+    assert "edit raw knowledge JSON" not in text
+    assert "never raw knowledge JSON" in text
+    assert "governance needs explicit owner approval and a recovery plan" in text
+    assert "Optional user-selected routes" in text
+    assert (
+        "`wiki-bootstrap`, `wiki-sync`, `user-docs-author`, `usage-examples`, "
+        "and `publish-docs`"
+    ) in text
+
+
+def test_compact_issue_reporting_requires_exact_ignore_proof() -> None:
+    content = build_compact_schema_content(
+        "generic",
+        "docs/team wiki",
+        issue_reporting=True,
+    )
+    text = _squash_ws(content)
+
+    assert "## Report llm-wiki tool issues" in content
+    assert "llm-wiki-issues/<date>-<slug>.md" in content
+    assert "outside `docs/team wiki/` only when" in text
+    assert "`git check-ignore -q -- <exact-report-path>` proves the file ignored" in text
+    assert "use a user-approved non-repository scratch path" in text
+    assert "Never publish, stage, force-add, or change `.gitignore`" in text
+    assert content.index("## Managed routes and completion") < content.index(
+        "## Report llm-wiki tool issues"
+    ) < content.index("## Agent quality guidelines")
+
+
+@pytest.mark.parametrize("render_profile", list(SchemaRenderProfile))
+def test_generated_context_recipe_parses_with_custom_paths(
+    render_profile: SchemaRenderProfile,
+) -> None:
+    content = _build_schema_content(
+        "generic",
+        "docs/team wiki",
+        render_profile=render_profile,
+        source_selection="config/team selection.json",
+    )
+    commands = re.findall(r"`(llm-wiki context [^`\n]+)`", content)
+
+    assert len(commands) == 1
+    tokens = shlex.split(commands[0])
+    assert tokens[0] == "llm-wiki"
+    args = cli._build_parser().parse_args(tokens[1:])
+    assert args.command == "context"
+    assert args.budget == 8000
+    assert args.src_dir == "."
+    assert args.wiki_dir == "docs/team wiki"
+    assert args.format == "packet"
+    assert args.focus == "changed"
+    assert args.knowledge_mode == "auto"
+    assert args.read_only is True
+    assert args.prefer_fresh is False
+    assert args.source_selection == "config/team selection.json"
+
+
+def test_expanded_schema_is_self_contained_when_references_are_unavailable() -> None:
+    content = build_schema_content("generic", "docs/llm_wiki")
+    text = _squash_ws(content)
+
+    assert "This expanded profile is self-contained" in content
+    assert "Managed topic paths below are optional detail" in text
+    assert "follow the inline procedure without installing" in text
+    assert "--format packet" in content
+    assert "--knowledge-mode auto" in content
+    assert "--prefer-fresh" not in content
+    assert "non-ready, incompatible, snapshot-only, bounded, or insufficient" in text
+    assert (
+        "use an independently validated surface, then canonical Markdown, then "
+        "targeted source/runtime evidence"
+    ) in text
+    assert "If a surface cannot be validated, skip it" in text
+    assert "indeterminate and fails closed" in text
+    assert "Never leave the wiki in a state where lint reports errors" in text

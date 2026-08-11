@@ -80,7 +80,7 @@ from .infrastructure_sync import (
     validate_infrastructure_generation_input,
     with_infrastructure_generation_input,
 )
-from .io import read_md, write_md
+from .io import read_md, write_bytes_atomic, write_md
 from .knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
@@ -119,7 +119,11 @@ from .schema import (
 from .schema import (
     CONSTRAINT_START as _CONSTRAINT_START,
 )
-from .schema import pin_source_selection_command_recipes
+from .schema import (
+    decode_managed_document_bytes,
+    encode_managed_document_text,
+    pin_source_selection_command_recipes,
+)
 from .source_snapshot import (
     SourceSnapshot,
     build_source_snapshot,
@@ -6095,7 +6099,7 @@ def _update_agent_constraints(
         p = Path(filename)
         if not p.exists():
             continue
-        text = read_md(p)
+        text = decode_managed_document_bytes(p.read_bytes())
         if _CONSTRAINT_START not in text or _CONSTRAINT_END not in text:
             continue
 
@@ -6113,7 +6117,12 @@ def _update_agent_constraints(
             source_selection,
         )
         if new_block != block:
-            write_md(p, text[:start_idx] + new_block + text[end_idx:])
+            write_bytes_atomic(
+                p,
+                encode_managed_document_text(
+                    text[:start_idx] + new_block + text[end_idx:]
+                ),
+            )
             updated.append(filename)
 
     if updated:

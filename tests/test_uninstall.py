@@ -381,8 +381,28 @@ class TestUninstallStripsConstraints:
         uninstall_cmd.run(_make_args())
 
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
-        assert content == "# My Rules\n"
+        assert content == "# My Rules\n\n"
         assert "llm-wiki-schema:" not in content
+
+    def test_schema_cleanup_preserves_crlf_and_legacy_user_bytes(
+        self, tmp_project
+    ):
+        prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+        managed = (
+            f"{uninstall_cmd.CONSTRAINT_START}\r\nlegacy body\r\n"
+            f"{uninstall_cmd.CONSTRAINT_END}\r\n"
+        ).encode("ascii")
+        suffix = (
+            b"# --- LLM Wiki Skill: external/rules ---\r\n"
+            b"preserve \x97 bytes and spaces  \r\n"
+            b"# --- End LLM Wiki Skill: external/rules ---\r\n"
+        )
+        Path("CLAUDE.md").write_bytes(prefix + managed + suffix)
+        plan = uninstall_cmd._preflight_agent_schemas()
+
+        uninstall_cmd._clean_agent_schemas(plan=plan)
+
+        assert Path("CLAUDE.md").read_bytes() == prefix + suffix
 
     def test_schema_cleanup_failure_preserves_reference_and_runtime_config(
         self, tmp_project, capsys, monkeypatch

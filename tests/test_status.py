@@ -14,7 +14,12 @@ from llm_wiki_cli.services.rendering_lifecycle import (
     LifecycleStatus,
     ManagedLifecycleState,
 )
-from llm_wiki_cli.services.schema import CONSTRAINT_END, CONSTRAINT_START
+from llm_wiki_cli.services.schema import (
+    CONSTRAINT_END,
+    CONSTRAINT_START,
+    ManagedSchemaBlockState,
+    SchemaRenderProfile,
+)
 from llm_wiki_cli.services.skills import (
     ReferenceSkillReason,
     ReferenceSkillState,
@@ -63,6 +68,24 @@ def _write_profiled_schema(path: Path, profile: str) -> None:
         f"{CONSTRAINT_END}\n",
         encoding="utf-8",
     )
+
+
+def test_managed_schema_reader_accepts_preserved_non_utf8_user_bytes(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "AGENTS.md"
+    managed = (
+        f"{CONSTRAINT_START}\r\n"
+        "<!-- llm-wiki-schema: version=1 profile=compact -->\r\n"
+        "managed instructions\r\n"
+        f"{CONSTRAINT_END}\r\n"
+    ).encode("ascii")
+    path.write_bytes(b"# User byte: \x81\r\n" + managed)
+
+    block = status_cmd._read_managed_schema(path)
+
+    assert block.state is ManagedSchemaBlockState.PROFILED
+    assert block.profile is SchemaRenderProfile.COMPACT
 
 
 @pytest.mark.parametrize(

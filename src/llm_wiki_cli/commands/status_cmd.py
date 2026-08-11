@@ -15,7 +15,7 @@ from ..config import (
     validate_source_root,
 )
 from ..services import circuit_breaker
-from ..services.io import first_unsafe_path_component, read_md
+from ..services.io import first_unsafe_path_component
 from ..services.knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
@@ -31,6 +31,7 @@ from ..services.schema import (
     ManagedSchemaBlock,
     ManagedSchemaBlockState,
     classify_managed_schema_block,
+    decode_managed_document_bytes,
     require_safe_schema_path,
 )
 from ..services.skills import (
@@ -139,7 +140,7 @@ def _read_managed_schema(path: Path) -> ManagedSchemaBlock:
         safe_path = require_safe_schema_path(path)
         if not safe_path.is_file():
             return ManagedSchemaBlock(ManagedSchemaBlockState.MALFORMED)
-        content = read_md(safe_path)
+        content = decode_managed_document_bytes(safe_path.read_bytes())
     except (OSError, UnicodeError, ValueError):
         return ManagedSchemaBlock(ManagedSchemaBlockState.MALFORMED)
     return classify_managed_schema_block(content)

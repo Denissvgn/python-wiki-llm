@@ -17,7 +17,6 @@ from ..config import (
     validate_path,
     write_config,
 )
-from ..services.io import read_md
 from ..services.filesystem_guard import (
     atomic_write_guarded_bytes,
     ensure_guarded_directory,
@@ -36,6 +35,8 @@ from ..services.schema import (
     SchemaRenderProfile,
     build_schema_content as _build_schema_content,
     classify_managed_schema_block,
+    decode_managed_document_bytes,
+    encode_managed_document_text,
     replace_schema_block_content,
     require_managed_schema_profile,
     require_replaceable_managed_schema,
@@ -74,7 +75,7 @@ def _managed_schema_agents() -> tuple[str, ...]:
             continue
         safe_path = require_safe_schema_path(path)
         try:
-            content = read_md(safe_path)
+            content = decode_managed_document_bytes(safe_path.read_bytes())
         except (OSError, UnicodeError) as exc:
             raise ManagedSchemaPathError(
                 f"managed schema path is unreadable: {safe_path}"
@@ -256,7 +257,9 @@ def run(args):
             schema_path = require_safe_schema_path(filename)
             try:
                 existing_schema_content = (
-                    read_md(schema_path) if schema_path.exists() else ""
+                    decode_managed_document_bytes(schema_path.read_bytes())
+                    if schema_path.exists()
+                    else ""
                 )
             except (OSError, UnicodeError) as exc:
                 raise ManagedSchemaPathError(
@@ -401,7 +404,9 @@ def run(args):
             try:
                 if schema_path.exists():
                     existing_schema_bytes = schema_path.read_bytes()
-                    existing_content = read_md(schema_path)
+                    existing_content = decode_managed_document_bytes(
+                        existing_schema_bytes
+                    )
                 else:
                     existing_schema_bytes = None
                     existing_content = ""
@@ -423,7 +428,7 @@ def run(args):
                 managed_content,
             )
             require_managed_schema_profile(updated_content, decision.profile)
-            committed_schema_bytes = updated_content.encode("utf-8")
+            committed_schema_bytes = encode_managed_document_text(updated_content)
             atomic_write_guarded_bytes(
                 schema_absolute,
                 committed_schema_bytes,
@@ -525,7 +530,7 @@ def run(args):
                     f"managed schema is missing after commit: {current_schema_path}"
                 )
             block = classify_managed_schema_block(
-                current_schema_bytes.decode("utf-8")
+                decode_managed_document_bytes(current_schema_bytes)
             )
             if (
                 block.state is not ManagedSchemaBlockState.PROFILED

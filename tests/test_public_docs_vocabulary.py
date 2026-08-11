@@ -1643,7 +1643,7 @@ def test_source_and_test_artifacts_have_no_implementation_plan_provenance():
         ),
     }
     path_pattern = re.compile(
-        r"(?:^|[_-])(?:m|p)[0-9]+(?=[_-]|$)",
+        r"(?:^|[/_.-])(?:(?:m|p)[0-9]+|phase[-_ ]*[0-9]+)(?=[/_.-]|$)",
         re.IGNORECASE,
     )
     suffixes = frozenset(

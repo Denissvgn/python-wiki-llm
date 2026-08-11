@@ -1924,6 +1924,16 @@ unmodified source reference is removed. Opt-out, modified, and incomplete
 reference trees remain preserved. User prose and unregistered or source-only
 plugin blocks are preserved; blocks owned by installed plugins refresh
 independently.
+
+The compact profile keeps a bounded knowledge-first kernel in the always-loaded
+block: one qualified packet route with `--knowledge-mode auto`, exact query and
+fallback rules, authority and repository handoff boundaries, semantic ownership,
+maintenance activation, and direct links to the verified managed topics. The
+expanded profile retains the complete inline procedure, so opt-out and recovery
+states remain usable without opening a managed topic. Both profiles carry the
+same durable repository-content safeguards, and plugin blocks remain separate
+from the compact core.
+
 If an interrupted switch leaves two managed agent schemas, `status` reports
 the ambiguity instead of choosing one. Its bounded recovery may use
 `upgrade --cleanup-source-agent <source>` only after you explicitly select the

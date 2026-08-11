@@ -54,6 +54,8 @@ from ..services.schema import (
     build_schema_content,
     build_upgraded_schema_content,
     classify_managed_schema_block,
+    decode_managed_document_bytes,
+    encode_managed_document_text,
     installed_skill_block_contents,
     require_managed_schema_profile,
     require_replaceable_managed_schema,
@@ -129,13 +131,9 @@ class SourceCleanupOutcome:
 
 
 def _decode_schema_bytes(data: bytes) -> str:
-    """Decode one immutable schema snapshot using the shared Markdown policy."""
+    """Decode one immutable schema snapshot without rewriting surrounding bytes."""
 
-    try:
-        content = data.decode("utf-8")
-    except UnicodeDecodeError:
-        content = data.decode("cp1252")
-    return content.replace("\r\n", "\n").replace("\r", "\n")
+    return decode_managed_document_bytes(data)
 
 
 def _require_replaceable_schema_path(
@@ -242,7 +240,7 @@ def _upgrade_schema(
             blocks,
         )
         require_managed_schema_profile(updated, render_profile)
-        updated_bytes = updated.encode("utf-8")
+        updated_bytes = encode_managed_document_text(updated)
         atomic_write_guarded_bytes(
             schema_absolute,
             updated_bytes,
@@ -291,7 +289,7 @@ def _clean_old_schema(
         if pre_mutation_check is not None:
             pre_mutation_check()
         if stripped:
-            stripped_bytes = stripped.encode("utf-8")
+            stripped_bytes = encode_managed_document_text(stripped)
             atomic_write_guarded_bytes(
                 old_absolute,
                 stripped_bytes,

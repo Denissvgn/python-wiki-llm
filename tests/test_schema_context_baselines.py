@@ -16,11 +16,11 @@ from llm_wiki_cli.services.schema import (
     SchemaRenderProfile,
     build_schema_content,
 )
-from tests.baseline_measurements import assert_text_baseline
+from tests.baseline_measurements import assert_text_baseline, measure_text
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-BASELINE_PATH = REPO_ROOT / "tests" / "fixtures" / "schema-context-baselines-v2.json"
+BASELINE_PATH = REPO_ROOT / "tests" / "fixtures" / "schema-context-baselines-v3.json"
 PACKET_ID_DOMAIN = b"llm-wiki-qualified-context-packet/v1\x00"
 
 
@@ -95,6 +95,10 @@ def _assert_file_baseline(record: dict) -> bytes:
     return content
 
 
+def _assert_at_most(label: str, metric: str, actual: int, limit: int) -> None:
+    assert actual <= limit, f"{label}: measured {metric}={actual}; limit={limit}"
+
+
 def test_text_baseline_failure_reports_measured_words_and_characters() -> None:
     with pytest.raises(
         AssertionError,
@@ -109,7 +113,7 @@ def test_text_baseline_failure_reports_measured_words_and_characters() -> None:
 
 def test_generated_schema_targets_and_configuration_matrix_match_baseline() -> None:
     baseline = _baseline()
-    assert baseline["schema_version"] == "schema-context-executable-baselines/v2"
+    assert baseline["schema_version"] == "schema-context-executable-baselines/v3"
     generated = baseline["generated_schema"]
     assert generated["measurement"] == {
         "words": "unicode-whitespace-delimited",
@@ -156,28 +160,115 @@ def test_generated_schema_targets_and_configuration_matrix_match_baseline() -> N
                     "issue_reporting"
                 ]
                 assert content.count("--knowledge-mode auto") == 1
-                assert "`query_documentation` API or MCP operation" in content
-                assert "`impact` with `paths` or `diff`" in content
-                assert "`allow_full_inventory=true` cost opt-in" in content
+                assert "query_documentation" in content
+                assert "`impact` with `paths`" in content
+                assert "`allow_full_inventory=true`" in content
 
 
 def test_expanded_observation_and_compact_target_are_separate_profiles() -> None:
     generated = _baseline()["generated_schema"]
-    observed = generated["agents"]["generic"]["profiles"][
-        SchemaRenderProfile.EXPANDED_INLINE.value
-    ]["variants"]["default"]
-
-    assert observed == {
-        "words": 3217,
-        "characters": 24919,
-        "lines": 416,
-        "sha256": "b56793e9e722e1d79575c68e8671a1ce4d36b6f9d35ec70c31857265787f6fe4",
-    }
     assert generated["compact_target"] == {
         "words": {"minimum": 400, "maximum": 650},
         "characters": {"preferred_maximum": 5000},
+        "other_agent_character_delta": {"maximum": 50},
+        "conditional_additions": {
+            "quality_hints": {
+                "words_maximum": 15,
+                "characters_maximum": 100,
+                "lines_maximum": 4,
+            },
+            "issue_reporting": {
+                "words_maximum": 60,
+                "characters_maximum": 480,
+                "lines_maximum": 8,
+            },
+        },
+        "all_options": {"words_maximum": 650, "characters_maximum": 5520},
         "reduction_percent": {"minimum": 75, "maximum": 85},
     }
+
+    target = generated["compact_target"]
+    records = generated["agents"]
+    generic = records["generic"]["profiles"]
+    generic_compact = generic[SchemaRenderProfile.COMPACT.value]["variants"]
+    generic_expanded = generic[SchemaRenderProfile.EXPANDED_INLINE.value]["variants"]
+    compact_default = generic_compact["default"]
+    expanded_default = generic_expanded["default"]
+
+    _assert_at_most(
+        "generic/compact/default",
+        "words",
+        compact_default["words"],
+        target["words"]["maximum"],
+    )
+    _assert_at_most(
+        "generic/compact/default",
+        "characters",
+        compact_default["characters"],
+        target["characters"]["preferred_maximum"],
+    )
+    assert compact_default["words"] >= target["words"]["minimum"]
+
+    reduction = 100 * (1 - compact_default["words"] / expanded_default["words"])
+    assert target["reduction_percent"]["minimum"] <= reduction <= target[
+        "reduction_percent"
+    ]["maximum"], f"generic/compact/default: measured reduction={reduction:.2f}%"
+
+    generic_characters = compact_default["characters"]
+    for agent, record in records.items():
+        variants = record["profiles"][SchemaRenderProfile.COMPACT.value]["variants"]
+        default = variants["default"]
+        _assert_at_most(
+            f"{agent}/compact/default",
+            "words",
+            default["words"],
+            target["words"]["maximum"],
+        )
+        _assert_at_most(
+            f"{agent}/compact/default-preamble-delta",
+            "characters",
+            default["characters"] - generic_characters,
+            target["other_agent_character_delta"]["maximum"],
+        )
+
+        without_quality = variants["without_quality_hints"]
+        quality_limits = target["conditional_additions"]["quality_hints"]
+        for metric in ("words", "characters", "lines"):
+            _assert_at_most(
+                f"{agent}/compact/quality-hints",
+                metric,
+                default[metric] - without_quality[metric],
+                quality_limits[f"{metric}_maximum"],
+            )
+
+        with_issue = variants["with_issue_reporting"]
+        issue_limits = target["conditional_additions"]["issue_reporting"]
+        for metric in ("words", "characters", "lines"):
+            _assert_at_most(
+                f"{agent}/compact/issue-reporting",
+                metric,
+                with_issue[metric] - default[metric],
+                issue_limits[f"{metric}_maximum"],
+            )
+        _assert_at_most(
+            f"{agent}/compact/with-issue-reporting",
+            "words",
+            with_issue["words"],
+            target["all_options"]["words_maximum"],
+        )
+        _assert_at_most(
+            f"{agent}/compact/with-issue-reporting",
+            "characters",
+            with_issue["characters"],
+            target["all_options"]["characters_maximum"],
+        )
+
+    current_compact = build_schema_content(
+        "generic",
+        generated["wiki_dir"],
+        render_profile=SchemaRenderProfile.COMPACT,
+    )
+    assert measure_text(current_compact) == compact_default
 
 
 def test_plain_context_default_and_explicit_false_remain_byte_compatible() -> None:

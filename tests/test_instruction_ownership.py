@@ -42,28 +42,61 @@ PROJECT_ROOT = Path(__file__).parents[1]
 PACKAGE_ROOT = PROJECT_ROOT / "src" / "llm_wiki_cli"
 
 
-EXPECTED_CURRENT_SECTIONS = (
-    ("Preamble/markers", None),
-    ("Before you start", "## Before you start"),
-    ("Repository delivery preflight", "## Repository delivery preflight"),
-    ("Native knowledge preflight", "## Native knowledge preflight"),
-    ("Deep reference", "## Deep reference (read on demand)"),
-    ("Resource-aware execution", "## Resource-aware execution"),
-    ("Canonical wiki surfaces", "## Canonical wiki surfaces"),
-    ("User docs and usage examples", "## User docs and usage examples"),
-    ("When you change code", "## When you change code"),
-    ("Wiki file naming rules", "## Wiki file naming rules"),
-    ("Quality checks", "## Quality checks"),
-    ("Tool issue reporting", "## Report llm-wiki tool issues"),
-    ("Formatting rules", "## Formatting rules"),
-    ("Agent quality guidelines", "## Agent quality guidelines"),
-    ("How to sync in this session", "## How to sync the wiki in this agent session"),
-    (
-        "Incremental sync details",
-        "## Using `llm-wiki sync` for incremental updates",
+EXPECTED_CURRENT_SECTIONS = {
+    SchemaRenderProfile.COMPACT: (
+        ("Preamble/markers", None),
+        ("Compact evidence selection", "## Select evidence first"),
+        ("Compact authority and handoff", "## Authority and handoff"),
+        ("Compact repository content hygiene", "## Repository content hygiene"),
+        ("Compact managed routes and completion", "## Managed routes and completion"),
+        ("Tool issue reporting", "## Report llm-wiki tool issues"),
+        ("Agent quality guidelines", "## Agent quality guidelines"),
     ),
-    ("Large codebases", "## Large codebases"),
-)
+    SchemaRenderProfile.EXPANDED_INLINE: (
+        ("Preamble/markers", None),
+        ("Before you start", "## Before you start"),
+        ("Repository delivery preflight", "## Repository delivery preflight"),
+        ("Native knowledge preflight", "## Native knowledge preflight"),
+        ("Expanded repository content hygiene", "## Repository content hygiene"),
+        ("Deep reference", "## Deep reference (read on demand)"),
+        ("Resource-aware execution", "## Resource-aware execution"),
+        ("Canonical wiki surfaces", "## Canonical wiki surfaces"),
+        ("User docs and usage examples", "## User docs and usage examples"),
+        ("When you change code", "## When you change code"),
+        ("Wiki file naming rules", "## Wiki file naming rules"),
+        ("Quality checks", "## Quality checks"),
+        ("Tool issue reporting", "## Report llm-wiki tool issues"),
+        ("Formatting rules", "## Formatting rules"),
+        ("Agent quality guidelines", "## Agent quality guidelines"),
+        (
+            "How to sync in this session",
+            "## How to sync the wiki in this agent session",
+        ),
+        (
+            "Incremental sync details",
+            "## Using `llm-wiki sync` for incremental updates",
+        ),
+        ("Large codebases", "## Large codebases"),
+    ),
+}
+
+
+EXPECTED_HYGIENE_SECTION = """## Repository content hygiene
+- Create internal docs (ADRs, plans, backlogs, reports, implementation notes)
+  only after the exact target passes `git check-ignore -q -- <path>`. With
+  missing Git or an unignored/indeterminate target, use an already ignored or
+  user-approved non-repository path. Never publish, stage, force-add, or change
+  `.gitignore`, attributes, or global excludes; ignore changes do not authorize
+  publication.
+- Public documentation (README, published docs/wiki/site, release material) must
+  not mention internal development phases or tests. Redirect incompatible
+  material to an ignore-verified internal artifact, or report the conflict.
+- Code/test surfaces (comments, docstrings, identifiers, fixtures) must not carry
+  actual epic/milestone/phase names, backlog/task IDs, or planning provenance.
+  Generic policy/product terms are valid. Do not copy or expand out-of-scope
+  conflicts; report them instead of broadening cleanup.
+
+"""
 
 
 def _level_two_headings(content: str) -> tuple[str, ...]:
@@ -96,13 +129,27 @@ def _rendered_content(
 
 
 def test_current_generated_sections_have_one_authoritative_owner():
-    actual = tuple(
-        (item.section, item.source_heading) for item in GENERATED_SECTION_COVERAGE
-    )
-    assert actual == EXPECTED_CURRENT_SECTIONS
-    assert len({item.section for item in GENERATED_SECTION_COVERAGE}) == len(actual)
+    for profile, expected in EXPECTED_CURRENT_SECTIONS.items():
+        actual = tuple(
+            (item.section, item.source_heading)
+            for item in GENERATED_SECTION_COVERAGE
+            if profile in item.profiles
+        )
+        assert actual == expected
+        assert (
+            len({heading for _, heading in actual if heading is not None})
+            == len(actual) - 1
+        )
+
+    section_names = {item.section for item in GENERATED_SECTION_COVERAGE}
+    assert len(section_names) == len(GENERATED_SECTION_COVERAGE)
     assert all(
         isinstance(item.owner, InstructionOwner) for item in GENERATED_SECTION_COVERAGE
+    )
+    assert all(item.profiles for item in GENERATED_SECTION_COVERAGE)
+    assert all(
+        set(item.profiles) <= set(SchemaRenderProfile)
+        for item in GENERATED_SECTION_COVERAGE
     )
 
     expected_owner = {
@@ -118,20 +165,24 @@ def test_current_generated_sections_have_one_authoritative_owner():
 
 def test_current_renderer_matches_section_inventory_for_every_target_and_option():
     for quality_hints, issue_reporting in product((False, True), repeat=2):
-        expected_headings = tuple(
-            item.source_heading
-            for item in GENERATED_SECTION_COVERAGE
-            if item.source_heading is not None
-            and (
-                item.condition is SectionCondition.ALWAYS
-                or (item.condition is SectionCondition.QUALITY_HINTS and quality_hints)
-                or (
-                    item.condition is SectionCondition.ISSUE_REPORTING
-                    and issue_reporting
+        for agent, render_profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
+            expected_headings = tuple(
+                item.source_heading
+                for item in GENERATED_SECTION_COVERAGE
+                if render_profile in item.profiles
+                and item.source_heading is not None
+                and (
+                    item.condition is SectionCondition.ALWAYS
+                    or (
+                        item.condition is SectionCondition.QUALITY_HINTS
+                        and quality_hints
+                    )
+                    or (
+                        item.condition is SectionCondition.ISSUE_REPORTING
+                        and issue_reporting
+                    )
                 )
             )
-        )
-        for agent, render_profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
             content = build_schema_content(
                 agent,
                 "docs/llm_wiki",
@@ -198,6 +249,23 @@ def test_repository_hygiene_reservations_retain_required_semantics_everywhere():
         assert set(item.agent_targets) == set(SCHEMA_FILENAMES)
         for concept in required_concepts[item.name]:
             assert concept in contract, (item.name, concept)
+
+    for agent, render_profile, quality_hints, issue_reporting, wiki_dir in product(
+        SCHEMA_FILENAMES,
+        SchemaRenderProfile,
+        (False, True),
+        (False, True),
+        ("docs/llm_wiki", "docs/team wiki"),
+    ):
+        content = build_schema_content(
+            agent,
+            wiki_dir,
+            render_profile=render_profile,
+            quality_hints=quality_hints,
+            issue_reporting=issue_reporting,
+        )
+        section = _section_text(content, "## Repository content hygiene")
+        assert section == EXPECTED_HYGIENE_SECTION
 
 
 def test_critical_inline_clauses_are_explicit_and_semantically_present():
@@ -312,21 +380,26 @@ def test_user_documentation_section_maps_every_selected_workflow_subroute():
         assert destination_exists(PROJECT_ROOT, PACKAGE_ROOT, destination)
     for agent, profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
         content = _rendered_content(agent, profile)
-        for route in section.routes:
+        relevant_routes = tuple(
+            route for route in section.routes if profile in route.profiles
+        )
+        assert len(relevant_routes) == len(expected_paths)
+        assert {route.destination_path for route in relevant_routes} == expected_paths
+        for route in relevant_routes:
             assert route_exists(
                 content,
                 route,
                 agent=agent,
                 profile=profile,
             )
-        assert not removal_prerequisites_ready(
+        assert removal_prerequisites_ready(
             PROJECT_ROOT,
             PACKAGE_ROOT,
             section,
             agent=agent,
             profile=profile,
             rendered_content=content,
-        )
+        ) is (profile is SchemaRenderProfile.COMPACT)
 
 
 def test_destination_requires_file_heading_and_package_data_inclusion(tmp_path: Path):
@@ -380,7 +453,14 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
         "Native knowledge preflight",
         "Deep reference",
     } <= retained_routes
-    assert len(deep_reference.routes) == 3
+    assert len(deep_reference.destinations) == 3
+    assert all(
+        len(
+            tuple(route for route in deep_reference.routes if profile in route.profiles)
+        )
+        == 3
+        for profile in SchemaRenderProfile
+    )
     assert all(
         not route_exists(
             raw_schema_source,
@@ -391,11 +471,14 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
         for route in deep_reference.routes
     )
 
-    removable_current = {
+    compact_replacements = {
         "Canonical wiki surfaces",
+        "User docs and usage examples",
         "When you change code",
         "Wiki file naming rules",
+        "Quality checks",
         "Formatting rules",
+        "How to sync in this session",
         "Incremental sync details",
         "Large codebases",
     }
@@ -419,6 +502,7 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
                 profile=profile,
             )
             for route in deep_reference.routes
+            if profile in route.profiles
         )
 
         for section in GENERATED_SECTION_COVERAGE:
@@ -430,36 +514,78 @@ def test_removal_gate_uses_relevant_rendered_profile_for_every_target():
                 profile=profile,
                 rendered_content=content,
             )
-            assert ready is (section.section in removable_current)
-            if (
-                section.source_heading is not None
-                and section.condition is not SectionCondition.ISSUE_REPORTING
-            ):
-                assert content is not None
-                assert section.source_heading in content
+            expected = (
+                profile is SchemaRenderProfile.COMPACT
+                and section.section in compact_replacements
+            )
+            assert ready is expected, (agent, profile, section.section)
+
+            for route in section.routes:
+                if profile in route.profiles:
+                    assert route_exists(
+                        content,
+                        route,
+                        agent=agent,
+                        profile=profile,
+                    ), (agent, profile, section.section, route.destination_path)
+
+        expanded_content = _rendered_content(
+            agent,
+            SchemaRenderProfile.EXPANDED_INLINE,
+            issue_reporting=True,
+        )
+        compact_content = _rendered_content(
+            agent,
+            SchemaRenderProfile.COMPACT,
+            issue_reporting=True,
+        )
+        for section in GENERATED_SECTION_COVERAGE:
+            if section.section not in compact_replacements:
+                continue
+            assert section.source_heading is not None
+            assert section.source_heading in expanded_content
+            assert section.source_heading not in compact_content
 
 
 def test_correctness_destinations_are_ready_without_retiring_inline_kernel_rules():
-    for agent, profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
-        content = _rendered_content(agent, profile)
+    for agent in SCHEMA_FILENAMES:
+        compact_content = _rendered_content(agent, SchemaRenderProfile.COMPACT)
+        expanded_content = _rendered_content(
+            agent,
+            SchemaRenderProfile.EXPANDED_INLINE,
+        )
         for clause in CORRECTNESS_CLAUSE_COVERAGE:
-            ready = correctness_destination_ready(
+            compact_ready = correctness_destination_ready(
                 PROJECT_ROOT,
                 PACKAGE_ROOT,
                 clause,
                 agent=agent,
-                profile=profile,
-                rendered_content=content,
+                profile=SchemaRenderProfile.COMPACT,
+                rendered_content=compact_content,
             )
-            assert ready is (not clause.always_inline), clause.name
-            assert content is not None
+            assert compact_ready is (not clause.always_inline), clause.name
+            assert route_exists(
+                compact_content,
+                clause.route,
+                agent=agent,
+                profile=SchemaRenderProfile.COMPACT,
+            )
+
+            assert not correctness_destination_ready(
+                PROJECT_ROOT,
+                PACKAGE_ROOT,
+                clause,
+                agent=agent,
+                profile=SchemaRenderProfile.EXPANDED_INLINE,
+                rendered_content=expanded_content,
+            )
             section = next(
                 item
                 for item in GENERATED_SECTION_COVERAGE
                 if item.section == clause.source_section
             )
             assert section.source_heading is not None
-            source = _section_text(content, section.source_heading)
+            source = _section_text(expanded_content, section.source_heading)
             assert normalize_instruction_text(
                 clause.source_text
             ) in normalize_instruction_text(source), clause.name
@@ -483,7 +609,7 @@ def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
     assert destination_paths == {
         f"skills/wiki-reference/references/{topic}.md" for topic in expected_topics
     }
-    assert len(MANAGED_REFERENCE_INBOUND_ROUTES) == 38
+    assert len(MANAGED_REFERENCE_INBOUND_ROUTES) == 39
     assert {item.kind for item in MANAGED_REFERENCE_INBOUND_ROUTES} == {
         InboundRouteKind.MARKDOWN_LINK,
         InboundRouteKind.INSTALLED_FILE_ROUTE,
@@ -496,6 +622,14 @@ def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
         inbound_route_resolves(PROJECT_ROOT, PACKAGE_ROOT, item)
         for item in MANAGED_REFERENCE_INBOUND_ROUTES
     )
+    schema_governance_routes = tuple(
+        item
+        for item in MANAGED_REFERENCE_INBOUND_ROUTES
+        if item.source_path == "services/schema.py"
+        and item.destination_path.endswith("/governance.md")
+    )
+    assert len(schema_governance_routes) == 1
+    assert schema_governance_routes[0].source_text == "`{reference_root}/governance.md`"
 
     declared = Counter(
         (
@@ -552,15 +686,19 @@ def test_active_routes_never_require_the_compatibility_index():
         router
     )
 
-    for agent, render_profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
-        content = build_schema_content(
-            agent,
-            "docs/llm_wiki",
-            render_profile=render_profile,
-        )
-        reference_root = skills_install_dir(agent) / "wiki-reference" / "references"
-        assert "wiki-reference/reference.md" not in content
-        for topic in (
+    expected_topics_by_profile = {
+        SchemaRenderProfile.COMPACT: {
+            "context-query",
+            "extractors-dependencies",
+            "governance",
+            "knowledge-consumption",
+            "maintenance",
+            "publishing",
+            "repository-handoff",
+            "resources-context",
+            "surfaces-naming",
+        },
+        SchemaRenderProfile.EXPANDED_INLINE: {
             "context-query",
             "extractors-dependencies",
             "knowledge-consumption",
@@ -569,5 +707,20 @@ def test_active_routes_never_require_the_compatibility_index():
             "repository-handoff",
             "resources-context",
             "surfaces-naming",
-        ):
-            assert (reference_root / f"{topic}.md").as_posix() in content
+        },
+    }
+    all_topics = set().union(*expected_topics_by_profile.values())
+    for agent, render_profile in product(SCHEMA_FILENAMES, SchemaRenderProfile):
+        content = build_schema_content(
+            agent,
+            "docs/llm_wiki",
+            render_profile=render_profile,
+        )
+        reference_root = skills_install_dir(agent) / "wiki-reference" / "references"
+        assert "wiki-reference/reference.md" not in content
+        actual_topics = {
+            topic
+            for topic in all_topics
+            if (reference_root / f"{topic}.md").as_posix() in content
+        }
+        assert actual_topics == expected_topics_by_profile[render_profile]

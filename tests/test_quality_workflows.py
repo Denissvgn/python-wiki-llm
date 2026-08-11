@@ -1,3 +1,5 @@
+"""Quality, reporting, and review workflow contracts."""
+
 from __future__ import annotations
 
 import json
