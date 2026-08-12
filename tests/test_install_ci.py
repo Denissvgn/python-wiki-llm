@@ -634,13 +634,18 @@ def test_uninstall_dry_run_counts_then_removes_unmodified_managed_workflow(
 
     output = capsys.readouterr().out
     assert "Managed CI Workflow" in output
-    assert f"WOULD REMOVE: {MANAGED_WORKFLOW_PATH}" in output
+    assert (
+        f"  WOULD REMOVE: {MANAGED_WORKFLOW_PATH.as_posix()}" in output.splitlines()
+    )
     assert "Dry run complete. 1 item(s) would be affected." in output
     assert target.exists()
 
     monkeypatch.setattr("builtins.input", lambda _: "y")
     args.dry_run = False
     uninstall_cmd.run(args)
+
+    output = capsys.readouterr().out
+    assert f"  REMOVED: {MANAGED_WORKFLOW_PATH.as_posix()}" in output.splitlines()
     assert not target.exists()
 
 
