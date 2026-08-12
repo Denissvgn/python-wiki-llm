@@ -50,11 +50,11 @@ flowchart TD
 | [common](modules/common.md) | 11 | 1 |
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 23 |
 | [knowledge_graph](modules/knowledge_graph.md) | 11 | 5 |
+| [paths](modules/paths.md) | 11 | 0 |
 | [services_dependencies](modules/services_dependencies.md) | 10 | 5 |
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | 10 | 3 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [extraction_jobs](modules/extraction_jobs.md) | 10 | 0 |
-| [paths](modules/paths.md) | 10 | 0 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
 | [skills](modules/skills.md) | 9 | 2 |
 | [documentation_queries](modules/documentation_queries.md) | 8 | 9 |
@@ -143,7 +143,7 @@ flowchart TD
 | [sync_cmd](modules/sync_cmd.md) | 1 | 29 |
 | [team_cmd](modules/team_cmd.md) | 1 | 6 |
 | [trigger_cmd](modules/trigger_cmd.md) | 1 | 12 |
-| [uninstall_cmd](modules/uninstall_cmd.md) | 1 | 7 |
+| [uninstall_cmd](modules/uninstall_cmd.md) | 1 | 8 |
 | [upgrade_cmd](modules/upgrade_cmd.md) | 1 | 9 |
 | [planner](modules/planner.md) | 1 | 3 |
 | [fastapi_contracts](modules/fastapi_contracts.md) | 1 | 0 |

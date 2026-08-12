@@ -14,7 +14,7 @@ _Auto-generated from `src/llm_wiki_cli/commands/status_cmd.py`._
 | `..services` | `circuit_breaker` |
 | `..services.io` | `first_unsafe_path_component` |
 | `..services.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
-| `..services.paths` | `shell_quote` |
+| `..services.paths` | `display_project_path`, `shell_quote` |
 | `..services.rendering_lifecycle` | `LifecycleStatus`, `ManagedLifecycleState`, `classify_lifecycle_status` |
 | `..services.schema` | `SCHEMA_FILENAMES`, `ManagedSchemaBlock`, `ManagedSchemaBlockState`, `classify_managed_schema_block`, `decode_managed_document_bytes`, `require_safe_schema_path` |
 | `..services.skills` | `ReferenceSkillState`, `ReferenceSkillVerification`, `skills_install_dir`, `verify_reference_skill` |
@@ -60,7 +60,6 @@ flowchart LR
 | `_format_counts` | `(counts: object) -> str` | — | — |
 | `_print_knowledge_status` | `(wiki_path: Path, src_dir: str, *, source_selection: str \| Path \| None = None) -> None` | — | — |
 | `_configured_agent` | `(config: AgentConfigInspection) -> str` | — | Return the validated agent value supplied by config inspection. |
-| `_display_project_path` | `(path: Path) -> str` | — | Render checkout-local diagnostics without leaking temporary roots. |
 | `_read_managed_schema` | `(path: Path) -> ManagedSchemaBlock` | — | Classify one schema path without allowing read errors to abort status. |
 | `_managed_schema_candidates` | `() -> tuple[tuple[str, Path, ManagedSchemaBlock], ...]` | — | Return actionable current agent schema paths with any managed state. |
 | `_diagnostic_schema_target` | `(config: AgentConfigInspection) -> tuple[str, Path, ManagedSchemaBlock, bool, bool]` | — | Choose live evidence for status without treating it as persisted intent. |

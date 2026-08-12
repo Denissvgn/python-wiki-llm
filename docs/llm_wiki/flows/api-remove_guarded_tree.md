@@ -145,11 +145,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| remove_guarded_tree | Path | 1777 | `Path(path)` |
-| remove_guarded_tree | is_absolute | 1778 | `target.is_absolute(data not statically known)` |
-| remove_guarded_tree | OSError | 1779 | `OSError(...)` |
-| remove_guarded_tree | uuid4 | 1781 | `uuid.uuid4(data not statically known)` |
-| remove_guarded_tree | guard_windows_directory_chain | 1898 | `guard_windows_directory_chain(Path(...), ...)` |
+| remove_guarded_tree | Path | 1780 | `Path(path)` |
+| remove_guarded_tree | is_absolute | 1781 | `target.is_absolute(data not statically known)` |
+| remove_guarded_tree | OSError | 1782 | `OSError(...)` |
+| remove_guarded_tree | uuid4 | 1784 | `uuid.uuid4(data not statically known)` |
+| remove_guarded_tree | guard_windows_directory_chain | 1901 | `guard_windows_directory_chain(Path(...), ...)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 | guard_windows_directory_chain | Path | 174 | `Path(os.path.abspath(...))` |
 | guard_windows_directory_chain | abspath | 174 | `os.path.abspath(os.fspath(...))` |
@@ -161,22 +161,22 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `claimed.rmdir` | `remove_guarded_tree` | 1950 |
-| filesystem_write | `quarantine.rmdir` | `remove_guarded_tree` | 1963 |
-| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2167 |
-| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2173 |
-| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2192 |
-| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2202 |
-| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2214 |
+| filesystem_write | `claimed.rmdir` | `remove_guarded_tree` | 1953 |
+| filesystem_write | `quarantine.rmdir` | `remove_guarded_tree` | 1966 |
+| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2170 |
+| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2176 |
+| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2195 |
+| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2205 |
+| filesystem_write | `os.rmdir` | `remove_guarded_tree` | 2217 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `remove_guarded_tree` | `target.is_absolute` | 1778 |
-| unresolved_call | `remove_guarded_tree` | `OSError` | 1779 |
-| external_call | `remove_guarded_tree` | `uuid.uuid4` | 1781 |
+| unresolved_call | `remove_guarded_tree` | `target.is_absolute` | 1781 |
+| unresolved_call | `remove_guarded_tree` | `OSError` | 1782 |
+| external_call | `remove_guarded_tree` | `uuid.uuid4` | 1784 |
 | external_call | `guard_windows_directory_chain` | `os.path.abspath` | 174 |
 | external_call | `guard_windows_directory_chain` | `os.fspath` | 174 |
 | step_limit | `remove_guarded_tree` | `first 12 steps` | 0 |

@@ -1,6 +1,6 @@
 # _ReferenceSkillInspection
 
-**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:107`
+**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:108`
 **Kind:** Class
 **Bases:** —
 **Module:** [uninstall_cmd](../modules/uninstall_cmd.md)

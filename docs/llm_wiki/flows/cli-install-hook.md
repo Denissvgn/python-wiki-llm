@@ -74,7 +74,7 @@ sequenceDiagram
     p19-->>p21: abspath
 ```
 
-> Call sequence diagram shows 30 of 954 interactions; 924 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 957 interactions; 927 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -157,13 +157,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path | 591 | `Path('.git')` |
-| run | exists | 592 | `git_dir.exists(data not statically known)` |
-| run | is_symlink | 592 | `git_dir.is_symlink(data not statically known)` |
-| run | print | 593 | `print('Error: No .git directory found. Are you in the root of a git repository?')` |
-| run | exit | 596 | `sys.exit(1)` |
-| run | getattr | 598 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 599 | `validate_path(wiki_dir, '--wiki-dir')` |
+| run | Path | 599 | `Path('.git')` |
+| run | exists | 600 | `git_dir.exists(data not statically known)` |
+| run | is_symlink | 600 | `git_dir.is_symlink(data not statically known)` |
+| run | print | 601 | `print('Error: No .git directory found. Are you in the root of a git repository?')` |
+| run | exit | 604 | `sys.exit(1)` |
+| run | getattr | 606 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 607 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
@@ -173,23 +173,23 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 593 |
-| output | `print` | `run` | 604 |
-| output | `print` | `run` | 624 |
+| output | `print` | `run` | 601 |
+| output | `print` | `run` | 612 |
 | output | `print` | `run` | 632 |
-| output | `print` | `run` | 660 |
-| output | `print` | `run` | 664 |
+| output | `print` | `run` | 640 |
+| output | `print` | `run` | 668 |
 | output | `print` | `run` | 672 |
-| output | `print` | `run` | 678 |
+| output | `print` | `run` | 680 |
+| output | `print` | `run` | 686 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `git_dir.exists` | 592 |
-| unresolved_call | `run` | `git_dir.is_symlink` | 592 |
-| external_call | `run` | `sys.exit` | 596 |
-| unresolved_call | `run` | `getattr` | 598 |
+| unresolved_call | `run` | `git_dir.exists` | 600 |
+| unresolved_call | `run` | `git_dir.is_symlink` | 600 |
+| external_call | `run` | `sys.exit` | 604 |
+| unresolved_call | `run` | `getattr` | 606 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | external_call | `validate_path` | `Path.cwd().resolve` | 134 |

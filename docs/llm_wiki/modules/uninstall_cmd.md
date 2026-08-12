@@ -14,6 +14,7 @@ _Auto-generated from `src/llm_wiki_cli/commands/uninstall_cmd.py`._
 | `..services.ci_installer` | `MANAGED_WORKFLOW_PATH`, `is_unmodified_managed_workflow` |
 | `..services.filesystem_guard` | `GuardedTreeManifest`, `atomic_write_guarded_bytes`, `guarded_tree_manifest`, `remove_guarded_tree`, `unlink_guarded_bytes`, `windows_object_identity` |
 | `..services.io` | `first_unsafe_path_component` |
+| `..services.paths` | `display_project_path` |
 | `..services.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `ManagedSchemaBlockError`, `ManagedSchemaBlockState`, `ManagedSchemaPathError`, `classify_managed_schema_block`, `decode_managed_document_bytes`, `encode_managed_document_text`, `require_safe_schema_path`, `strip_wiki_block` |
 | `..services.skills` | `BUNDLED_SKILLS_ROOT`, `KNOWN_INSTALL_TARGETS`, `REFERENCE_SKILL_ID`, `ReferenceSkillReason`, `ReferenceSkillState`, `verify_reference_skill` |
 | `.hook_cmd` | `is_managed_hook_content` |
@@ -36,14 +37,16 @@ flowchart LR
     n4["src/llm_wiki_cli/services/ci_installer.py"]
     n5["src/llm_wiki_cli/services/filesystem_guard.py"]
     n6["src/llm_wiki_cli/services/io.py"]
-    n7["src/llm_wiki_cli/services/schema.py"]
-    n8["src/llm_wiki_cli/services/skills.py"]
+    n7["src/llm_wiki_cli/services/paths.py"]
+    n8["src/llm_wiki_cli/services/schema.py"]
+    n9["src/llm_wiki_cli/services/skills.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
     n1 --> n3
     n1 --> n5
     n1 --> n6
+    n1 --> n7
     n2 --> n1
     n2 --> n3
     n2 --> n4
@@ -51,12 +54,14 @@ flowchart LR
     n2 --> n6
     n2 --> n7
     n2 --> n8
+    n2 --> n9
     n3 --> n5
     n3 --> n6
     n4 --> n6
-    n7 --> n6
-    n7 --> n8
     n8 --> n6
+    n8 --> n7
+    n8 --> n9
+    n9 --> n6
     click n0 "../modules/cli.md"
     click n1 "../modules/hook_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
@@ -64,8 +69,9 @@ flowchart LR
     click n4 "../modules/ci_installer.md"
     click n5 "../modules/filesystem_guard.md"
     click n6 "../modules/io.md"
-    click n7 "../modules/services_schema.md"
-    click n8 "../modules/skills.md"
+    click n7 "../modules/paths.md"
+    click n8 "../modules/services_schema.md"
+    click n9 "../modules/skills.md"
 ```
 
 ### Internal neighbors
@@ -78,6 +84,7 @@ flowchart LR
 | Outbound | [ci_installer](../modules/ci_installer.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [io](../modules/io.md) |
+| Outbound | [paths](../modules/paths.md) |
 | Outbound | [services_schema](../modules/services_schema.md) |
 | Outbound | [skills](../modules/skills.md) |
 
@@ -85,13 +92,13 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [UnsafeUninstallPathError](../entities/UnsafeUninstallPathError.md) | 57 | `ValueError` | Raised when an uninstall-owned path could escape the project tree. |
-| [_HookInspection](../entities/HookInspection.md) | 62 | — | Immutable hook ownership evidence collected before mutation. |
-| [_SchemaCleanup](../entities/SchemaCleanup.md) | 73 | — | One verified managed-schema cleanup prepared before mutation. |
-| [_RuntimeArtifactInspection](../entities/RuntimeArtifactInspection.md) | 83 | — | One runtime path classified without following unsafe entries. |
-| [_WikiRemovalInspection](../entities/WikiRemovalInspection.md) | 94 | — | Safe root-level evidence for an optional wiki-tree removal. |
-| [_ReferenceSkillInspection](../entities/ReferenceSkillInspection.md) | 107 | — | One managed-reference tree classified for the uninstall preview. |
-| [_CiWorkflowInspection](../entities/CiWorkflowInspection.md) | 120 | — | Managed CI ownership evidence collected before confirmation. |
+| [UnsafeUninstallPathError](../entities/UnsafeUninstallPathError.md) | 58 | `ValueError` | Raised when an uninstall-owned path could escape the project tree. |
+| [_HookInspection](../entities/HookInspection.md) | 63 | — | Immutable hook ownership evidence collected before mutation. |
+| [_SchemaCleanup](../entities/SchemaCleanup.md) | 74 | — | One verified managed-schema cleanup prepared before mutation. |
+| [_RuntimeArtifactInspection](../entities/RuntimeArtifactInspection.md) | 84 | — | One runtime path classified without following unsafe entries. |
+| [_WikiRemovalInspection](../entities/WikiRemovalInspection.md) | 95 | — | Safe root-level evidence for an optional wiki-tree removal. |
+| [_ReferenceSkillInspection](../entities/ReferenceSkillInspection.md) | 108 | — | One managed-reference tree classified for the uninstall preview. |
+| [_CiWorkflowInspection](../entities/CiWorkflowInspection.md) | 121 | — | Managed CI ownership evidence collected before confirmation. |
 
 ## Functions
 

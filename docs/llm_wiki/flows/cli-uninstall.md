@@ -72,7 +72,7 @@ sequenceDiagram
     p11-->>p18: S_ISLNK
 ```
 
-> Call sequence diagram shows 30 of 1062 interactions; 1032 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1116 interactions; 1086 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -156,8 +156,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 856 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 857 | `validate_path(str(...), '--wiki-dir')` |
+| run | getattr | 900 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 901 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
@@ -165,27 +165,27 @@ flowchart LR
 | validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
 | validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| run | str | 857 | `str(wiki_dir_arg)` |
-| run | Path | 858 | `Path(wiki_dir_arg)` |
+| run | str | 901 | `str(wiki_dir_arg)` |
+| run | Path | 902 | `Path(wiki_dir_arg)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 884 |
-| output | `print` | `run` | 888 |
-| output | `print` | `run` | 891 |
-| output | `print` | `run` | 892 |
-| output | `print` | `run` | 895 |
-| output | `print` | `run` | 898 |
-| output | `print` | `run` | 901 |
-| output | `print` | `run` | 904 |
+| output | `print` | `run` | 928 |
+| output | `print` | `run` | 932 |
+| output | `print` | `run` | 935 |
+| output | `print` | `run` | 936 |
+| output | `print` | `run` | 939 |
+| output | `print` | `run` | 942 |
+| output | `print` | `run` | 945 |
+| output | `print` | `run` | 948 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 856 |
+| unresolved_call | `run` | `getattr` | 900 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | external_call | `validate_path` | `Path.cwd().resolve` | 134 |

@@ -93,7 +93,7 @@ sequenceDiagram
     p12-->>p19: S_ISLNK
 ```
 
-> Call sequence diagram shows 30 of 1623 interactions; 1593 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1637 interactions; 1607 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -197,11 +197,11 @@ flowchart LR
 | output | `print` | `run` | 875 |
 | output | `print` | `run` | 876 |
 | output | `print` | `run` | 880 |
-| output | `print` | `run` | 882 |
-| output | `print` | `run` | 886 |
-| output | `print` | `run` | 887 |
+| output | `print` | `run` | 885 |
 | output | `print` | `run` | 889 |
+| output | `print` | `run` | 890 |
 | output | `print` | `run` | 892 |
+| output | `print` | `run` | 895 |
 
 ### Static analysis gaps
 

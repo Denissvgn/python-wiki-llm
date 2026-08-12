@@ -1,6 +1,6 @@
 # UnsafeUninstallPathError
 
-**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:57`
+**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:58`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [uninstall_cmd](../modules/uninstall_cmd.md)

@@ -156,9 +156,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `quarantine.unlink` | `unlink_guarded_bytes` | 1701 |
-| mutation | `chunks.append` | `unlink_guarded_bytes` | 1746 |
-| filesystem_write | `os.unlink` | `unlink_guarded_bytes` | 1753 |
+| filesystem_write | `quarantine.unlink` | `unlink_guarded_bytes` | 1704 |
+| mutation | `chunks.append` | `unlink_guarded_bytes` | 1749 |
+| filesystem_write | `os.unlink` | `unlink_guarded_bytes` | 1756 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 216 |

@@ -108,5 +108,6 @@ flowchart LR
 | `unlink_guarded_bytes` | `(path: Path, *, expected: bytes) -> None` | — | Unlink one exact regular file without following a rebound parent path. |
 | `remove_guarded_tree` | `(path: Path, *, expected_identity: tuple[int, int] \| None = None, expected_manifest: GuardedTreeManifest \| None = None) -> None` | — | Remove one confirmed directory tree through a private quarantine. |
 | `_atomic_write_private_bytes_posix` | `(target: Path, data: bytes, *, mode: int = 384, require_single_link: bool = True, expected_existing: bytes \| None \| object = _EXPECTED_EXISTING_UNSET) -> None` | — | — |
+| `_commit_windows_absent_snapshot` | `(temporary: Path, target: Path) -> None` | — | Commit a staged file only while the inspected target remains absent. |
 | `_atomic_write_private_bytes_windows` | `(target: Path, data: bytes, *, expected_existing: bytes \| None \| object = _EXPECTED_EXISTING_UNSET, require_single_link: bool = True) -> None` | — | — |
 | `_atomic_write_guarded_bytes_windows` | `(target: Path, data: bytes, *, expected_existing: bytes \| None \| object = _EXPECTED_EXISTING_UNSET, require_single_link: bool = True) -> None` | — | Write a public Windows file with inherited ACL and snapshot binding. |

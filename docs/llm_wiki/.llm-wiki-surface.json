@@ -795,7 +795,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2645,
+              "line": 2655,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 9,
               "target": "quarantine.unlink"
@@ -803,7 +803,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2650,
+              "line": 2660,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 9,
               "target": "temporary.unlink"
@@ -866,13 +866,13 @@
             },
             {
               "kind": "external_call",
-              "line": 2552,
+              "line": 2566,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
             {
               "kind": "external_call",
-              "line": 2553,
+              "line": 2567,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
@@ -898,7 +898,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/filesystem_guard.py"
           ],
-          "step_count": 344,
+          "step_count": 346,
           "truncated": true
         }
       },
@@ -919,7 +919,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2645,
+              "line": 2655,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 8,
               "target": "quarantine.unlink"
@@ -927,7 +927,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2650,
+              "line": 2660,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 8,
               "target": "temporary.unlink"
@@ -990,13 +990,13 @@
             },
             {
               "kind": "external_call",
-              "line": 2552,
+              "line": 2566,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
             {
               "kind": "external_call",
-              "line": 2553,
+              "line": 2567,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
@@ -1022,7 +1022,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/filesystem_guard.py"
           ],
-          "step_count": 371,
+          "step_count": 373,
           "truncated": true
         }
       },
@@ -1043,7 +1043,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2515,
+              "line": 2529,
               "step": "_atomic_write_private_bytes_windows",
               "step_index": 8,
               "target": "quarantine.unlink"
@@ -1051,7 +1051,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2520,
+              "line": 2534,
               "step": "_atomic_write_private_bytes_windows",
               "step_index": 8,
               "target": "temporary.unlink"
@@ -1114,13 +1114,13 @@
             },
             {
               "kind": "external_call",
-              "line": 2432,
+              "line": 2450,
               "step": "_atomic_write_private_bytes_windows",
               "target": "uuid.uuid4"
             },
             {
               "kind": "external_call",
-              "line": 2433,
+              "line": 2451,
               "step": "_atomic_write_private_bytes_windows",
               "target": "uuid.uuid4"
             },
@@ -1146,7 +1146,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/filesystem_guard.py"
           ],
-          "step_count": 431,
+          "step_count": 433,
           "truncated": true
         }
       },
@@ -7776,7 +7776,7 @@
             "src/llm_wiki_cli/services/calibration/host_broker.py",
             "src/llm_wiki_cli/services/calibration/broker.py"
           ],
-          "step_count": 2069,
+          "step_count": 2071,
           "truncated": true
         }
       },
@@ -19003,7 +19003,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1950,
+              "line": 1953,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "claimed.rmdir"
@@ -19011,7 +19011,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1963,
+              "line": 1966,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "quarantine.rmdir"
@@ -19019,7 +19019,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2167,
+              "line": 2170,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -19027,7 +19027,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2173,
+              "line": 2176,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -19035,7 +19035,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2192,
+              "line": 2195,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -19043,7 +19043,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2202,
+              "line": 2205,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -19051,7 +19051,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2214,
+              "line": 2217,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -19068,19 +19068,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1778,
+              "line": 1781,
               "step": "remove_guarded_tree",
               "target": "target.is_absolute"
             },
             {
               "kind": "unresolved_call",
-              "line": 1779,
+              "line": 1782,
               "step": "remove_guarded_tree",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1781,
+              "line": 1784,
               "step": "remove_guarded_tree",
               "target": "uuid.uuid4"
             },
@@ -25342,7 +25342,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1701,
+              "line": 1704,
               "step": "unlink_guarded_bytes",
               "step_index": 1,
               "target": "quarantine.unlink"
@@ -25350,7 +25350,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1746,
+              "line": 1749,
               "step": "unlink_guarded_bytes",
               "step_index": 1,
               "target": "chunks.append"
@@ -25358,7 +25358,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1753,
+              "line": 1756,
               "step": "unlink_guarded_bytes",
               "step_index": 1,
               "target": "os.unlink"
@@ -29808,7 +29808,7 @@
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 1324,
+          "step_count": 1326,
           "truncated": true
         }
       },
@@ -30092,7 +30092,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 593,
+              "line": 601,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30100,15 +30100,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 604,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 624,
+              "line": 612,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30124,7 +30116,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 660,
+              "line": 640,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30132,7 +30124,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 664,
+              "line": 668,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30148,7 +30140,15 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 678,
+              "line": 680,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 686,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -30157,25 +30157,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 592,
+              "line": 600,
               "step": "run",
               "target": "git_dir.exists"
             },
             {
               "kind": "unresolved_call",
-              "line": 592,
+              "line": 600,
               "step": "run",
               "target": "git_dir.is_symlink"
             },
             {
               "kind": "external_call",
-              "line": 596,
+              "line": 604,
               "step": "run",
               "target": "sys.exit"
             },
             {
               "kind": "unresolved_call",
-              "line": 598,
+              "line": 606,
               "step": "run",
               "target": "getattr"
             },
@@ -30226,7 +30226,7 @@
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 955,
+          "step_count": 958,
           "truncated": true
         }
       },
@@ -31824,23 +31824,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 882,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 886,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 887,
+              "line": 885,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -31856,7 +31840,23 @@
             {
               "confidence": "unknown",
               "kind": "output",
+              "line": 890,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
               "line": 892,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 895,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -31925,6 +31925,7 @@
             "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/io.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/source_selection.py",
@@ -31946,10 +31947,9 @@
             "src/llm_wiki_cli/services/schema.py",
             "src/llm_wiki_cli/services/skills.py",
             "src/llm_wiki_cli/services/rendering_lifecycle.py",
-            "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/commands/hook_cmd.py"
           ],
-          "step_count": 1624,
+          "step_count": 1638,
           "truncated": true
         }
       },
@@ -32374,7 +32374,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 884,
+              "line": 928,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32382,7 +32382,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 888,
+              "line": 932,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32390,7 +32390,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 891,
+              "line": 935,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32398,7 +32398,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 892,
+              "line": 936,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32406,7 +32406,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 895,
+              "line": 939,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32414,7 +32414,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 898,
+              "line": 942,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32422,7 +32422,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 901,
+              "line": 945,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32430,7 +32430,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 904,
+              "line": 948,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32439,7 +32439,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 856,
+              "line": 900,
               "step": "run",
               "target": "getattr"
             },
@@ -32496,14 +32496,14 @@
             "src/llm_wiki_cli/commands/uninstall_cmd.py",
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/commands/hook_cmd.py",
             "src/llm_wiki_cli/services/paths.py",
+            "src/llm_wiki_cli/commands/hook_cmd.py",
             "src/llm_wiki_cli/services/schema.py",
             "src/llm_wiki_cli/services/skills.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/ci_installer.py"
           ],
-          "step_count": 1063,
+          "step_count": 1117,
           "truncated": true
         }
       },
@@ -32659,7 +32659,7 @@
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 1759,
+          "step_count": 1762,
           "truncated": true
         }
       },
@@ -43377,6 +43377,7 @@
         "modules/services_schema.md",
         "modules/status_cmd.md",
         "modules/sync_cmd.md",
+        "modules/uninstall_cmd.md",
         "modules/wiki_surface_index.md"
       ],
       "role": "semantic",
@@ -44114,6 +44115,7 @@
         "modules/filesystem_guard.md",
         "modules/hook_cmd.md",
         "modules/io.md",
+        "modules/paths.md",
         "modules/services_schema.md",
         "modules/skills.md",
         "modules/uninstall_cmd.md"
@@ -51983,5 +51985,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:d455dfb40014c168bc348f8d3bb3f6943c32a9b1acbe9670bfdfc5940826e8d2"
+  "source_hash": "sha256:736f708770028c5058b7ff734a8dd8b6e66f990c59cf608c1df0e5e0b08f57bb"
 }

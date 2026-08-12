@@ -1,6 +1,6 @@
 # _HookInspection
 
-**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:62`
+**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:63`
 **Kind:** Class
 **Bases:** —
 **Module:** [uninstall_cmd](../modules/uninstall_cmd.md)

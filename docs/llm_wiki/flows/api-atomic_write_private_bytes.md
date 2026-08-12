@@ -63,7 +63,7 @@ sequenceDiagram
     p13->>p9: WindowsDirectoryGuardError
 ```
 
-> Call sequence diagram shows 30 of 430 interactions; 400 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 432 interactions; 402 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -145,17 +145,17 @@ flowchart LR
 | atomic_write_private_bytes | isinstance | 1553 | `isinstance(data, bytes)` |
 | atomic_write_private_bytes | TypeError | 1554 | `TypeError('Private atomic output data must be bytes.')` |
 | atomic_write_private_bytes | _atomic_write_private_bytes_windows | 1556 | `_atomic_write_private_bytes_windows(target, data, expected_existing=expected_existing)` |
-| _atomic_write_private_bytes_windows | uuid4 | 2432 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_private_bytes_windows | uuid4 | 2433 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_private_bytes_windows | guard_windows_directory_chain | 2437 | `guard_windows_directory_chain(Path(...), relative_components)` |
+| _atomic_write_private_bytes_windows | uuid4 | 2450 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | uuid4 | 2451 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | guard_windows_directory_chain | 2455 | `guard_windows_directory_chain(Path(...), relative_components)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `quarantine.unlink` | `_atomic_write_private_bytes_windows` | 2515 |
-| filesystem_write | `temporary.unlink` | `_atomic_write_private_bytes_windows` | 2520 |
+| filesystem_write | `quarantine.unlink` | `_atomic_write_private_bytes_windows` | 2529 |
+| filesystem_write | `temporary.unlink` | `_atomic_write_private_bytes_windows` | 2534 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
@@ -169,8 +169,8 @@ flowchart LR
 | unresolved_call | `atomic_write_private_bytes` | `OSError` | 1552 |
 | unresolved_call | `atomic_write_private_bytes` | `isinstance` | 1553 |
 | unresolved_call | `atomic_write_private_bytes` | `TypeError` | 1554 |
-| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2432 |
-| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2433 |
+| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2450 |
+| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2451 |
 | step_limit | `atomic_write_private_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_private_bytes` | `depth limit` | 0 |
 
