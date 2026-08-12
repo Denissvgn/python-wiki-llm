@@ -20,7 +20,7 @@ from ..services.knowledge_observability import (
     knowledge_status_payload,
     load_snapshot_knowledge_observability,
 )
-from ..services.paths import shell_quote
+from ..services.paths import display_project_path, shell_quote
 from ..services.rendering_lifecycle import (
     LifecycleStatus,
     ManagedLifecycleState,
@@ -118,15 +118,6 @@ def _configured_agent(config: AgentConfigInspection) -> str:
     agent = config.data["agent"]
     assert isinstance(agent, str)
     return agent
-
-
-def _display_project_path(path: Path) -> str:
-    """Render checkout-local diagnostics without leaking temporary roots."""
-
-    try:
-        return path.relative_to(Path.cwd()).as_posix()
-    except ValueError:
-        return path.as_posix()
 
 
 def _read_managed_schema(path: Path) -> ManagedSchemaBlock:
@@ -310,7 +301,7 @@ def _recovery_guidance(
                 )
             )
             displayed = " and ".join(
-                _display_project_path(path) for path in config_homes
+                display_project_path(path) for path in config_homes
             )
             return (
                 f"inspect and preserve both local agent configs at {displayed}; "
@@ -320,7 +311,7 @@ def _recovery_guidance(
                 "or upgrade"
             )
         unsafe_component = first_unsafe_path_component(unsafe_config_path)
-        displayed_component = _display_project_path(
+        displayed_component = display_project_path(
             unsafe_component if unsafe_component is not None else unsafe_config_path
         )
         config_path_problem = (
@@ -331,7 +322,7 @@ def _recovery_guidance(
         return (
             f"move aside or repair {config_path_problem} "
             f"{displayed_component} before accessing "
-            f"{_display_project_path(unsafe_config_path)}"
+            f"{display_project_path(unsafe_config_path)}"
             + "; inspect any quarantined config bytes for pending cleanup evidence "
             "and inspect alternate managed-reference homes; then rerun "
             f"`llm-wiki status --wiki-dir {shell_quote(wiki_dir)}` before any init "
@@ -354,17 +345,17 @@ def _recovery_guidance(
     if unsafe_schema_paths:
         prerequisites.extend(
             "move aside unsafe managed-schema path component "
-            f"{_display_project_path(unsafe)} before accessing "
-            f"{_display_project_path(path)}"
+            f"{display_project_path(unsafe)} before accessing "
+            f"{display_project_path(path)}"
             for path, unsafe in unsafe_schema_paths
         )
     if malformed_paths:
-        paths = ", ".join(path.as_posix() for path in malformed_paths)
+        paths = ", ".join(display_project_path(path) for path in malformed_paths)
         prerequisites.append(
             f"inspect and repair or move aside malformed managed markers at {paths}"
         )
     if ambiguous_paths:
-        paths = ", ".join(path.as_posix() for path in ambiguous_paths)
+        paths = ", ".join(display_project_path(path) for path in ambiguous_paths)
         prerequisites.append(
             f"choose the intended agent from managed schema candidates at {paths}"
         )
@@ -393,7 +384,8 @@ def _recovery_guidance(
                 )
                 if candidate is not None and candidate_prerequisites:
                     return "; ".join(candidate_prerequisites) + (
-                        f" at {candidate.path.as_posix()}, then run `{command}`"
+                        f" at {display_project_path(candidate.path)}, then run "
+                        f"`{command}`"
                     )
                 return f"run `{command}`"
 
@@ -500,7 +492,7 @@ def _recovery_guidance(
         prerequisites.append(
             "back up any user-owned content, then move aside or remove the recorded "
             "obsolete managed-reference trees at "
-            + ", ".join(item.path.as_posix() for item in preserved_obsolete)
+            + ", ".join(display_project_path(item.path) for item in preserved_obsolete)
         )
     if prerequisites:
         suffix = (
@@ -543,7 +535,7 @@ def _print_reference_summary(
         print(
             "Reference repair: use the explicit state-aware Recovery command below; "
             "a tree-only repair can use `llm-wiki skills install --dest "
-            f"{skills_dir.as_posix()} --skill wiki-reference --force`"
+            f"{display_project_path(skills_dir)} --skill wiki-reference --force`"
         )
     incomplete_conflict = reference.state is ReferenceSkillState.INCOMPLETE and not (
         reference.details
@@ -692,13 +684,13 @@ def _print_managed_lifecycle(
     if other_managed:
         warning_parts.append(
             "interrupted-agent-switch:managed-schema-remains-at-"
-            + ",".join(path.as_posix() for path in other_managed)
+            + ",".join(display_project_path(path) for path in other_managed)
         )
     if unsafe_schema_paths:
         warning_parts.append(
             "unsafe-managed-schema-path:"
             + ",".join(
-                f"{path.as_posix()}@{unsafe.as_posix()}"
+                f"{display_project_path(path)}@{display_project_path(unsafe)}"
                 for path, unsafe in unsafe_schema_paths
             )
         )
@@ -708,12 +700,14 @@ def _print_managed_lifecycle(
     if parallel_candidates:
         warning_parts.append(
             "additional-managed-agent-schema-present:"
-            + ",".join(path.as_posix() for path in parallel_candidates)
+            + ",".join(display_project_path(path) for path in parallel_candidates)
         )
     if obsolete_references:
         warning_parts.append(
             "interrupted-agent-switch:managed-reference-remains-at-"
-            + ",".join(item.path.as_posix() for item in obsolete_references)
+            + ",".join(
+                display_project_path(item.path) for item in obsolete_references
+            )
         )
     if pending_agent:
         warning_parts.append(
@@ -758,7 +752,7 @@ def _print_managed_lifecycle(
         dict.fromkeys((agent, *recovery_ambiguous_agents))
     )
 
-    print(f"Managed schema:  {schema_path.as_posix()}")
+    print(f"Managed schema:  {display_project_path(schema_path)}")
     print(f"Managed lifecycle: {lifecycle.state.value}")
     print(f"Rendered profile: {lifecycle.rendered_profile}")
     configured_render_reason = config.data.get("render_reason")
@@ -778,17 +772,21 @@ def _print_managed_lifecycle(
     print(f"Warning:         {'; '.join(warning_parts) if warning_parts else 'none'}")
     if interrupted_switch:
         if other_managed:
-            detail = f"managed schema remains at {', '.join(map(str, other_managed))}"
+            detail = "managed schema remains at " + ", ".join(
+                display_project_path(path) for path in other_managed
+            )
         elif obsolete_references:
             detail = "obsolete managed-reference tree remains"
         elif pending_agent:
             detail = f"pending cleanup marker remains for {pending_agent}"
         elif inferred:
             detail = (
-                f"agent config is missing for live schema {schema_path}"
+                "agent config is missing for live schema "
+                f"{display_project_path(schema_path)}"
                 if config.state is AgentConfigState.ABSENT
-                else f"agent config is invalid or unusable at {config.path} "
-                f"({config.reason}) for live schema {schema_path}"
+                else "agent config is invalid or unusable at "
+                f"{display_project_path(config.path)} ({config.reason}) for live "
+                f"schema {display_project_path(schema_path)}"
             )
         else:
             detail = "managed agent selection is unresolved"
@@ -796,7 +794,9 @@ def _print_managed_lifecycle(
     if obsolete_references:
         print(
             "Reference switch state: managed reference remains at "
-            + ", ".join(item.path.as_posix() for item in obsolete_references)
+            + ", ".join(
+                display_project_path(item.path) for item in obsolete_references
+            )
         )
     recovery = _recovery_guidance(
         lifecycle=lifecycle,
@@ -877,16 +877,19 @@ def run(args) -> None:
 
     # Wiki directory
     if scaffold_error is not None:
-        print(f"Wiki directory:  {wiki_dir} (unavailable: {scaffold_error})")
+        print(
+            f"Wiki directory:  {display_project_path(wiki_path)} "
+            f"(unavailable: {scaffold_error})"
+        )
     elif wiki_path.exists():
-        print(f"Wiki directory:  {wiki_dir} (exists)")
+        print(f"Wiki directory:  {display_project_path(wiki_path)} (exists)")
         for entry in iter_page_kinds():
             label = _status_label(entry.kind, entry.label)
             count = _count_surface_pages(wiki_path, entry)
             print(f"  {label + ':':<15}{count}")
         print(f"  {'Architecture pages:':<15}{_architecture_page_count(wiki_path)}")
     else:
-        print(f"Wiki directory:  {wiki_dir} (not found)")
+        print(f"Wiki directory:  {display_project_path(wiki_path)} (not found)")
 
     if scaffold_error is not None:
         print("Knowledge:       unavailable (reason: wiki-scaffold-unavailable)")
@@ -905,18 +908,21 @@ def run(args) -> None:
         if config.state is AgentConfigState.INVALID:
             print(
                 "Agent:           invalid configuration "
-                f"(reason: {config.reason}; path: {config.path})"
+                f"(reason: {config.reason}; "
+                f"path: {display_project_path(config.path)})"
             )
             print(
                 f"Agent config:    invalid "
-                f"(reason: {config.reason}; path: {config.path})"
+                f"(reason: {config.reason}; "
+                f"path: {display_project_path(config.path)})"
             )
             print(f"  Diagnostic fallback agent: {agent} ({mode})")
         else:
             print(f"Agent:           {agent} ({mode})")
             print(
                 f"Agent config:    {config.state.value} "
-                f"(reason: {config.reason}; path: {config.path})"
+                f"(reason: {config.reason}; "
+                f"path: {display_project_path(config.path)})"
             )
         hints = config.data["quality_hints"]
         print(f"Quality hints:   {'enabled' if hints else 'disabled'}")
@@ -924,7 +930,10 @@ def run(args) -> None:
         print(f"Issue reporting: {'enabled' if issue_reporting else 'disabled'}")
     else:
         print("Agent:           not configured (run `llm-wiki init --agent <agent>`)")
-        print(f"Agent config:    absent (reason: {config.reason}; path: {config.path})")
+        print(
+            f"Agent config:    absent (reason: {config.reason}; "
+            f"path: {display_project_path(config.path)})"
+        )
 
     _print_managed_lifecycle(
         wiki_dir=wiki_dir,
@@ -936,7 +945,10 @@ def run(args) -> None:
     hooks_dir = git_dir / "hooks"
     hooks_unsafe = first_unsafe_path_component(hooks_dir)
     if hooks_unsafe is not None:
-        print(f"Hooks:           unavailable (unsafe path: {hooks_unsafe})")
+        print(
+            "Hooks:           unavailable (unsafe path: "
+            f"{display_project_path(hooks_unsafe)})"
+        )
     elif hooks_dir.exists():
         installed = []
         unavailable = []
@@ -990,9 +1002,15 @@ def run(args) -> None:
     breaker_path = git_dir / "llm-wiki-breaker.json"
     breaker_unsafe = first_unsafe_path_component(breaker_path)
     if git_unsafe is not None:
-        print(f"Circuit breaker: unavailable (unsafe path: {git_unsafe})")
+        print(
+            "Circuit breaker: unavailable (unsafe path: "
+            f"{display_project_path(git_unsafe)})"
+        )
     elif breaker_unsafe is not None:
-        print(f"Circuit breaker: unavailable (unsafe path: {breaker_unsafe})")
+        print(
+            "Circuit breaker: unavailable (unsafe path: "
+            f"{display_project_path(breaker_unsafe)})"
+        )
     elif breaker_path.exists() and not breaker_path.is_file():
         print("Circuit breaker: unavailable (non-regular state file)")
     elif git_dir.exists():

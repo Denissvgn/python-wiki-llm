@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from time import perf_counter, perf_counter_ns
 import tracemalloc
 from types import SimpleNamespace
 
@@ -886,7 +885,7 @@ def test_mcp_dispatcher_uses_the_supported_python_route(monkeypatch, tmp_path):
     assert seen["kwargs"]["allow_external_src"] is True
 
 
-def test_snapshot_surface_query_has_representative_scale_bounds(monkeypatch):
+def test_snapshot_surface_query_has_representative_resource_bounds(monkeypatch):
     service = _SnapshotService()
     service.pages = [
         {
@@ -905,11 +904,9 @@ def test_snapshot_surface_query_has_representative_scale_bounds(monkeypatch):
     )
 
     tracemalloc.start()
-    started = perf_counter()
     result = api.query_documentation(
         {"operation": "surface", "value": "api-contracts.md"}
     )
-    elapsed = perf_counter() - started
     _, peak_bytes = tracemalloc.get_traced_memory()
     tracemalloc.stop()
 
@@ -918,8 +915,7 @@ def test_snapshot_surface_query_has_representative_scale_bounds(monkeypatch):
         "returned": 1,
         "truncated": False,
     }
-    assert elapsed < 2.0
-    assert peak_bytes < 32 * 1024 * 1024
+    assert peak_bytes < _CONTEXT_RESOURCE_BOUNDS["surface_peak_bytes"]
     assert set(result["cost"]) == {
         "scope",
         "full_inventory_performed",
@@ -927,21 +923,25 @@ def test_snapshot_surface_query_has_representative_scale_bounds(monkeypatch):
     }
 
 
-_CONTEXT_PERFORMANCE_RECORD_PATH = (
-    Path(__file__).parent / "records" / "knowledge" / "context-performance-gate.json"
+_CONTEXT_RESOURCE_RECORD_PATH = (
+    Path(__file__).parent / "records" / "knowledge" / "context-resource-gate.json"
 )
-_CONTEXT_PERFORMANCE_RECORD = json.loads(
-    _CONTEXT_PERFORMANCE_RECORD_PATH.read_text(encoding="utf-8")
+_CONTEXT_RESOURCE_RECORD = json.loads(
+    _CONTEXT_RESOURCE_RECORD_PATH.read_text(encoding="utf-8")
 )
-_CONTEXT_PERFORMANCE_BUDGETS = _CONTEXT_PERFORMANCE_RECORD["thresholds"]
+_CONTEXT_RESOURCE_BOUNDS = _CONTEXT_RESOURCE_RECORD["bounds"]
 
 
-def test_context_performance_threshold_record_is_explicit_and_portable():
-    record = _CONTEXT_PERFORMANCE_RECORD
+def test_context_resource_bound_record_is_explicit_and_portable():
+    record = _CONTEXT_RESOURCE_RECORD
 
-    assert record["schema_version"] == "llm-wiki-context-performance-gate/v1"
-    assert record["record_kind"] == "context-performance-thresholds"
+    assert record["schema_version"] == "llm-wiki-context-resource-gate/v1"
+    assert record["record_kind"] == "context-resource-bounds"
     assert record["fixtures"] == {
+        "surface": {
+            "inventory_pages": 10_001,
+            "matching_pages": 1,
+        },
         "representative": {
             "knowledge": "ready one-module two-entity projection",
             "requests": [
@@ -956,36 +956,29 @@ def test_context_performance_threshold_record_is_explicit_and_portable():
         },
     }
     assert record["environment"] == {
-        "capacity": "single worker; host CPU and memory capacity unspecified",
         "execution": "serialized in one pytest process",
         "filesystem": "temporary local fixture directory",
         "memory_measurement": "tracemalloc Python allocations",
         "network": "not used",
         "python": "project-supported Python >=3.10",
-        "time_measurement": "time.perf_counter wall clock",
     }
     assert record["reproduce"] == (
         ".venv/bin/pytest -q tests/test_knowledge_query_adapters.py"
     )
-    assert record["thresholds"] == {
-        "representative_elapsed_seconds": 15.0,
+    assert record["bounds"] == {
+        "surface_peak_bytes": 32 * 1024 * 1024,
         "representative_peak_bytes": 128 * 1024 * 1024,
         "representative_context_bytes": 512 * 1024,
         "representative_packet_bytes": 2 * 1024 * 1024,
-        "scale_elapsed_seconds": 15.0,
         "scale_peak_bytes": 256 * 1024 * 1024,
         "scale_context_bytes": 512 * 1024,
         "scale_packet_bytes": 2 * 1024 * 1024,
-        "named_stage_nanoseconds": 10_000_000_000,
     }
 
 
-def _instrumented_stage(counters, durations, name, callback):
-    started = perf_counter_ns()
+def _counted_stage(counters, name, callback):
     counters[name] = counters.get(name, 0) + 1
-    result = callback()
-    durations[name] = durations.get(name, 0) + perf_counter_ns() - started
-    return result
+    return callback()
 
 
 def _materialize_ready_packet_project(tmp_path, monkeypatch):
@@ -1081,7 +1074,6 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
 ):
     _materialize_ready_packet_project(tmp_path, monkeypatch)
     counters = {}
-    durations = {}
     real_context_snapshot = context_service.build_source_snapshot
     real_packet_snapshot = context_packet.build_source_snapshot
     real_packet_input_integrity = (
@@ -1099,9 +1091,8 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
 
     def wrap(name, callback):
         def measured(*args, **kwargs):
-            return _instrumented_stage(
+            return _counted_stage(
                 counters,
-                durations,
                 name,
                 lambda: callback(*args, **kwargs),
             )
@@ -1110,9 +1101,8 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
 
     def measured_inventory(*args, **kwargs):
         inventory_plugin_modes.append(kwargs["include_plugins"])
-        return _instrumented_stage(
+        return _counted_stage(
             counters,
-            durations,
             "deep_extraction",
             lambda: real_inventory(*args, **kwargs),
         )
@@ -1175,7 +1165,6 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
     )
 
     tracemalloc.start()
-    started = perf_counter()
     context_result = api.build_context(
         ".",
         wiki_dir="docs/llm_wiki",
@@ -1203,7 +1192,6 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
         },
         knowledge_mode="auto",
     )
-    elapsed = perf_counter() - started
     _, peak_bytes = tracemalloc.get_traced_memory()
     tracemalloc.stop()
 
@@ -1234,19 +1222,14 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
         "knowledge_selection": 2,
     }
     assert inventory_plugin_modes == [True, False]
-    assert elapsed < _CONTEXT_PERFORMANCE_BUDGETS["representative_elapsed_seconds"]
-    assert peak_bytes < _CONTEXT_PERFORMANCE_BUDGETS["representative_peak_bytes"]
+    assert peak_bytes < _CONTEXT_RESOURCE_BOUNDS["representative_peak_bytes"]
     assert (
         len(json.dumps(context_result, sort_keys=True).encode("utf-8"))
-        < (_CONTEXT_PERFORMANCE_BUDGETS["representative_context_bytes"])
+        < (_CONTEXT_RESOURCE_BOUNDS["representative_context_bytes"])
     )
     assert (
         len(packet.to_bytes())
-        < _CONTEXT_PERFORMANCE_BUDGETS["representative_packet_bytes"]
-    )
-    assert all(
-        duration < _CONTEXT_PERFORMANCE_BUDGETS["named_stage_nanoseconds"]
-        for duration in durations.values()
+        < _CONTEXT_RESOURCE_BOUNDS["representative_packet_bytes"]
     )
 
 
@@ -1313,13 +1296,10 @@ def test_real_scale_selection_and_packet_validation_stay_bounded(
         lambda *_args, **_kwargs: _scale_surface(scale_knowledge_view),
     )
     counters = {}
-    durations = {}
 
     tracemalloc.start()
-    started = perf_counter()
-    service = _instrumented_stage(
+    service = _counted_stage(
         counters,
-        durations,
         "graph_construction",
         lambda: DocumentationGraphQueryService(
             {},
@@ -1327,9 +1307,8 @@ def test_real_scale_selection_and_packet_validation_stay_bounded(
             knowledge_view=scale_knowledge_view,
         ),
     )
-    knowledge = _instrumented_stage(
+    knowledge = _counted_stage(
         counters,
-        durations,
         "knowledge_selection",
         lambda: context_service._build_explicit_knowledge_response(
             "auto",
@@ -1349,18 +1328,16 @@ def test_real_scale_selection_and_packet_validation_stay_bounded(
             "knowledge_mode": "auto",
         }
     )
-    _instrumented_stage(
+    _counted_stage(
         counters,
-        durations,
         "packet_response_validation",
         lambda: context_packet._validate_explicit_knowledge_response(
             knowledge,
             request,
         ),
     )
-    context_wire = _instrumented_stage(
+    context_wire = _counted_stage(
         counters,
-        durations,
         "context_serialization",
         lambda: json.dumps(
             {"knowledge": knowledge},
@@ -1380,13 +1357,11 @@ def test_real_scale_selection_and_packet_validation_stay_bounded(
         },
         knowledge_mode="auto",
     )
-    validated = _instrumented_stage(
+    validated = _counted_stage(
         counters,
-        durations,
         "packet_validation",
         lambda: context_packet.validate_context_packet(scale_packet.to_bytes()),
     )
-    elapsed = perf_counter() - started
     _, peak_bytes = tracemalloc.get_traced_memory()
     tracemalloc.stop()
 
@@ -1422,16 +1397,11 @@ def test_real_scale_selection_and_packet_validation_stay_bounded(
         "context_serialization": 1,
         "packet_validation": 1,
     }
-    assert elapsed < _CONTEXT_PERFORMANCE_BUDGETS["scale_elapsed_seconds"]
-    assert peak_bytes < _CONTEXT_PERFORMANCE_BUDGETS["scale_peak_bytes"]
-    assert len(context_wire) < _CONTEXT_PERFORMANCE_BUDGETS["scale_context_bytes"]
+    assert peak_bytes < _CONTEXT_RESOURCE_BOUNDS["scale_peak_bytes"]
+    assert len(context_wire) < _CONTEXT_RESOURCE_BOUNDS["scale_context_bytes"]
     assert (
         len(scale_packet.to_bytes())
-        < _CONTEXT_PERFORMANCE_BUDGETS["scale_packet_bytes"]
-    )
-    assert all(
-        duration < _CONTEXT_PERFORMANCE_BUDGETS["named_stage_nanoseconds"]
-        for duration in durations.values()
+        < _CONTEXT_RESOURCE_BOUNDS["scale_packet_bytes"]
     )
     serialized = context_wire.decode("utf-8")
     assert "source_content_hash" not in serialized

@@ -62,6 +62,15 @@ def shell_quote(value: str | Path) -> str:
     return shlex.quote(str(value))
 
 
+def display_project_path(path: Path) -> str:
+    """Render a checkout-local path with stable POSIX separators."""
+
+    try:
+        return path.relative_to(Path.cwd()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def portable_source_root_label(
     value: str | Path,
     *,

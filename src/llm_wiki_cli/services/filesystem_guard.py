@@ -1690,7 +1690,10 @@ def unlink_guarded_bytes(path: Path, *, expected: bytes) -> None:
                     raise WindowsFileGuardError(
                         f"Guarded unlink target is a reparse point: {target}"
                     )
-                with open_windows_readonly_file(quarantine) as (stream, opened):
+                with open_windows_readonly_file(
+                    quarantine,
+                    require_single_link=False,
+                ) as (stream, opened):
                     if (
                         not stat.S_ISREG(opened.st_mode)
                         or stream.read() != expected
@@ -2420,6 +2423,21 @@ def _atomic_write_private_bytes_posix(
         os.close(parent_fd)
 
 
+def _commit_windows_absent_snapshot(temporary: Path, target: Path) -> None:
+    """Commit a staged file only while the inspected target remains absent."""
+
+    try:
+        move_windows_path_write_through(
+            temporary,
+            target,
+            replace_existing=False,
+        )
+    except FileExistsError as exc:
+        raise OSError(
+            f"Guarded output target appeared after preflight: {target}"
+        ) from exc
+
+
 def _atomic_write_private_bytes_windows(
     target: Path,
     data: bytes,
@@ -2465,11 +2483,7 @@ def _atomic_write_private_bytes_windows(
                 replace_windows_file_write_through(temporary, target)
                 temporary_exists = False
             elif expected_existing is None:
-                move_windows_path_write_through(
-                    temporary,
-                    target,
-                    replace_existing=False,
-                )
+                _commit_windows_absent_snapshot(temporary, target)
                 temporary_exists = False
             else:
                 if not isinstance(expected_existing, bytes):
@@ -2597,11 +2611,7 @@ def _atomic_write_guarded_bytes_windows(
                 )
                 temporary_exists = False
             elif expected_existing is None:
-                move_windows_path_write_through(
-                    temporary,
-                    target,
-                    replace_existing=False,
-                )
+                _commit_windows_absent_snapshot(temporary, target)
                 temporary_exists = False
             else:
                 if not isinstance(expected_existing, bytes):

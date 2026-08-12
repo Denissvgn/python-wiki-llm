@@ -65,7 +65,7 @@ def test_verifier_is_read_only_and_reports_exact_absent_target(tmp_path: Path) -
     assert result.to_dict() == {
         "state": "absent",
         "reason": "managed-reference-absent",
-        "path": str(_installed(tmp_path)),
+        "path": _installed(tmp_path).as_posix(),
         "details": [],
         "current": False,
     }
@@ -312,6 +312,7 @@ def test_successful_provision_exposes_report_and_current_verification(
     assert result.reason is ReferenceSkillReason.CURRENT
     assert result.verification.current
     assert result.report is not None and result.report.ok
+    assert result.to_dict()["path"] == result.path.as_posix()
     assert result.to_dict()["verification"]["state"] == "current"
 
 

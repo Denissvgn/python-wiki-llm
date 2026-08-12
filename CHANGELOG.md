@@ -106,6 +106,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and uses a measured 15-minute timeout while retaining single-worker source
   evaluation.
 
+### Fixed
+
+- Windows lifecycle operations now recognize CRLF-managed hooks, report guarded
+  filesystem collisions consistently, and safely remove verified hardlinked
+  paths without weakening linked-file protections for writes.
+- Lifecycle, status, and uninstall diagnostics now render checkout paths with
+  stable `/` separators on every platform.
+- Context resource gates now enforce deterministic memory, payload-size,
+  selection, and work-count bounds without host-speed-sensitive wall-clock
+  cutoffs.
+
 ## [1.6.0] - 2026-08-09
 
 ### Added

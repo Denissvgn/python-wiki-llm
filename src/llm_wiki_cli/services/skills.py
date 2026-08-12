@@ -214,7 +214,7 @@ class ReferenceSkillVerification:
         return {
             "state": self.state.value,
             "reason": self.reason.value,
-            "path": str(self.path),
+            "path": self.path.as_posix(),
             "details": list(self.details),
             "current": self.current,
         }
@@ -253,7 +253,7 @@ class ReferenceSkillProvisionResult:
             "ok": self.ok,
             "state": self.state.value,
             "reason": self.reason.value,
-            "path": str(self.path),
+            "path": self.path.as_posix(),
             "details": list(self.details),
             "verification": self.verification.to_dict(),
             "report": self.report.to_dict() if self.report is not None else None,

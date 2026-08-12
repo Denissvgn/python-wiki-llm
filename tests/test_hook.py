@@ -221,6 +221,38 @@ class TestHookInstallSafety:
         assert "generate-prompt" in hook_text
         assert "trigger-agent" not in hook_text
 
+    @pytest.mark.parametrize(
+        ("name", "content"),
+        [
+            ("post-commit", "#!/bin/sh\n# LLM Wiki old hook\n"),
+            (
+                "post-commit",
+                hook_cmd._build_ide_post_commit("docs/llm_wiki"),
+            ),
+            (
+                "pre-commit",
+                hook_cmd._build_validation_pre_commit("docs/llm_wiki"),
+            ),
+        ],
+    )
+    def test_crlf_managed_hook_is_owned(self, name: str, content: str):
+        crlf = content.replace("\n", "\r\n")
+
+        assert hook_cmd.is_managed_hook_content(name, crlf)
+
+    @pytest.mark.parametrize(
+        "content",
+        [
+            hook_cmd._build_ide_post_commit("docs/llm_wiki").replace("\n", "\r"),
+            hook_cmd._build_ide_post_commit("docs/llm_wiki").replace(
+                "\n", "\r\n"
+            )
+            + "echo user-tail\r\n",
+        ],
+    )
+    def test_non_crlf_or_modified_managed_hook_is_not_owned(self, content: str):
+        assert not hook_cmd.is_managed_hook_content("post-commit", content)
+
     @pytest.mark.parametrize("agent", ["custom-agent", "$(id)"])
     def test_legacy_hook_with_non_generated_agent_is_not_owned(
         self,

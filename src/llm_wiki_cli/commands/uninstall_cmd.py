@@ -19,6 +19,7 @@ from ..services.filesystem_guard import (
     windows_object_identity,
 )
 from ..services.io import first_unsafe_path_component
+from ..services.paths import display_project_path
 from ..services.schema import (
     ALL_SCHEMA_FILES as AGENT_SCHEMA_FILES,
     CONSTRAINT_END as CONSTRAINT_END,
@@ -172,7 +173,10 @@ def _require_safe_hook_path(path: Path) -> Path:
 
     unsafe = first_unsafe_path_component(path)
     if unsafe is not None:
-        raise UnsafeUninstallPathError(f"hook path contains unsafe component: {unsafe}")
+        raise UnsafeUninstallPathError(
+            "hook path contains unsafe component: "
+            f"{display_project_path(unsafe)}"
+        )
     return path
 
 
@@ -186,7 +190,8 @@ def _preflight_hooks() -> tuple[_HookInspection, ...]:
         return ()
     if not hooks_dir.is_dir():
         raise UnsafeUninstallPathError(
-            f"hook directory is not a regular directory: {hooks_dir}"
+            "hook directory is not a regular directory: "
+            f"{display_project_path(hooks_dir)}"
         )
 
     inspections: list[_HookInspection] = []
@@ -196,14 +201,16 @@ def _preflight_hooks() -> tuple[_HookInspection, ...]:
             continue
         if not hook_path.is_file():
             raise UnsafeUninstallPathError(
-                f"hook path is not a regular file: {hook_path}"
+                "hook path is not a regular file: "
+                f"{display_project_path(hook_path)}"
             )
         try:
             content_bytes = hook_path.read_bytes()
             content = content_bytes.decode("utf-8")
         except (OSError, UnicodeError) as exc:
             raise UnsafeUninstallPathError(
-                f"hook path cannot be verified safely: {hook_path}"
+                "hook path cannot be verified safely: "
+                f"{display_project_path(hook_path)}"
             ) from exc
         inspections.append(
             _HookInspection(
@@ -247,7 +254,7 @@ def _remove_hooks(
             continue
 
         if dry_run:
-            print(f"  WOULD REMOVE hook: {inspection.path}")
+            print(f"  WOULD REMOVE hook: {display_project_path(inspection.path)}")
         else:
             absolute = (
                 inspection.path
@@ -258,9 +265,10 @@ def _remove_hooks(
                 unlink_guarded_bytes(absolute, expected=inspection.content_bytes)
             except OSError as exc:
                 raise UnsafeUninstallPathError(
-                    f"managed hook changed during guarded removal: {inspection.path}"
+                    "managed hook changed during guarded removal: "
+                    f"{display_project_path(inspection.path)}"
                 ) from exc
-            print(f"  REMOVED hook: {inspection.path}")
+            print(f"  REMOVED hook: {display_project_path(inspection.path)}")
         removed += 1
 
     return removed
@@ -276,19 +284,22 @@ def _preflight_agent_schemas() -> tuple[_SchemaCleanup, ...]:
             continue
         if not schema_path.is_file():
             raise ManagedSchemaPathError(
-                f"managed schema path is not a regular file: {schema_path}"
+                "managed schema path is not a regular file: "
+                f"{display_project_path(schema_path)}"
             )
         try:
             content_bytes = schema_path.read_bytes()
             content = decode_managed_document_bytes(content_bytes)
         except (OSError, UnicodeError) as exc:
             raise ManagedSchemaPathError(
-                f"managed schema path cannot be read safely: {schema_path}"
+                "managed schema path cannot be read safely: "
+                f"{display_project_path(schema_path)}"
             ) from exc
         block = classify_managed_schema_block(content)
         if block.state is ManagedSchemaBlockState.MALFORMED:
             raise ManagedSchemaBlockError(
-                f"managed schema block is malformed: {schema_path}"
+                "managed schema block is malformed: "
+                f"{display_project_path(schema_path)}"
             )
         if block.state is ManagedSchemaBlockState.ABSENT:
             continue
@@ -299,7 +310,8 @@ def _preflight_agent_schemas() -> tuple[_SchemaCleanup, ...]:
             is not ManagedSchemaBlockState.ABSENT
         ):
             raise ManagedSchemaBlockError(
-                f"managed schema block could not be removed safely: {schema_path}"
+                "managed schema block could not be removed safely: "
+                f"{display_project_path(schema_path)}"
             )
         cleanup.append(_SchemaCleanup(schema_path, content, content_bytes, stripped))
     return tuple(cleanup)
@@ -318,7 +330,8 @@ def _validate_schema_plan(plan: tuple[_SchemaCleanup, ...]) -> None:
             is not ManagedSchemaBlockState.ABSENT
         ):
             raise ManagedSchemaBlockError(
-                f"managed schema block could not be removed safely: {item.path}"
+                "managed schema block could not be removed safely: "
+                f"{display_project_path(item.path)}"
             )
 
 
@@ -339,9 +352,15 @@ def _clean_agent_schemas(
     for item in cleanup:
         if dry_run:
             if item.stripped:
-                print(f"  WOULD CLEAN block from: {item.path} (user content preserved)")
+                print(
+                    "  WOULD CLEAN block from: "
+                    f"{display_project_path(item.path)} (user content preserved)"
+                )
             else:
-                print(f"  WOULD DELETE: {item.path} (only contained wiki constraints)")
+                print(
+                    f"  WOULD DELETE: {display_project_path(item.path)} "
+                    "(only contained wiki constraints)"
+                )
         else:
             absolute = (
                 item.path
@@ -358,13 +377,20 @@ def _clean_agent_schemas(
                         require_single_link=False,
                         expected_existing=item.content_bytes,
                     )
-                    print(f"  CLEANED block from: {item.path} (user content preserved)")
+                    print(
+                        "  CLEANED block from: "
+                        f"{display_project_path(item.path)} (user content preserved)"
+                    )
                 else:
                     unlink_guarded_bytes(absolute, expected=item.content_bytes)
-                    print(f"  DELETED: {item.path} (only contained wiki constraints)")
+                    print(
+                        f"  DELETED: {display_project_path(item.path)} "
+                        "(only contained wiki constraints)"
+                    )
             except OSError as exc:
                 raise ManagedSchemaPathError(
-                    f"managed schema changed during guarded cleanup: {item.path}"
+                    "managed schema changed during guarded cleanup: "
+                    f"{display_project_path(item.path)}"
                 ) from exc
 
     return len(cleanup)
@@ -395,7 +421,7 @@ def _preflight_wiki_removal(
             wiki_dir,
             True,
             False,
-            reason=f"unsafe path component: {unsafe}",
+            reason=f"unsafe path component: {display_project_path(unsafe)}",
         )
     if not wiki_dir.is_dir():
         return _WikiRemovalInspection(
@@ -497,15 +523,20 @@ def _remove_wiki_dir(
         current = _preflight_wiki_removal(wiki_dir, requested=True)
         if current != inspection:
             raise UnsafeUninstallPathError(
-                f"wiki root changed after uninstall preflight: {wiki_dir}"
+                "wiki root changed after uninstall preflight: "
+                f"{display_project_path(wiki_dir)}"
             )
 
     if dry_run:
-        print(f"  WOULD REMOVE: {wiki_dir}/ ({inspection.page_count} markdown files)")
+        print(
+            f"  WOULD REMOVE: {display_project_path(wiki_dir)}/ "
+            f"({inspection.page_count} markdown files)"
+        )
     else:
         if inspection.root_identity is None:
             raise UnsafeUninstallPathError(
-                f"wiki root has no confirmed identity: {wiki_dir}"
+                "wiki root has no confirmed identity: "
+                f"{display_project_path(wiki_dir)}"
             )
         absolute = (
             wiki_dir if wiki_dir.is_absolute() else Path.cwd().resolve() / wiki_dir
@@ -518,9 +549,10 @@ def _remove_wiki_dir(
             )
         except OSError as exc:
             raise UnsafeUninstallPathError(
-                f"wiki root changed during guarded removal: {wiki_dir}"
+                "wiki root changed during guarded removal: "
+                f"{display_project_path(wiki_dir)}"
             ) from exc
-        print(f"  REMOVED: {wiki_dir}/")
+        print(f"  REMOVED: {display_project_path(wiki_dir)}/")
     return True
 
 
@@ -605,17 +637,19 @@ def _remove_reference_skill(
             if not inspection.present:
                 continue
             print(
-                f"  SKIP {skill_dir}/ (locally modified, incomplete, or unverifiable: "
+                f"  SKIP {display_project_path(skill_dir)}/ "
+                "(locally modified, incomplete, or unverifiable: "
                 f"{inspection.reason}; remove manually if intended)"
             )
             continue
 
         if dry_run:
-            print(f"  WOULD REMOVE: {skill_dir}/")
+            print(f"  WOULD REMOVE: {display_project_path(skill_dir)}/")
         else:
             if inspection.root_identity is None:
                 raise UnsafeUninstallPathError(
-                    f"managed-reference has no confirmed identity: {skill_dir}"
+                    "managed-reference has no confirmed identity: "
+                    f"{display_project_path(skill_dir)}"
                 )
             absolute = (
                 skill_dir
@@ -630,9 +664,10 @@ def _remove_reference_skill(
                 )
             except OSError as exc:
                 raise UnsafeUninstallPathError(
-                    f"managed-reference changed during guarded removal: {skill_dir}"
+                    "managed-reference changed during guarded removal: "
+                    f"{display_project_path(skill_dir)}"
                 ) from exc
-            print(f"  REMOVED: {skill_dir}/")
+            print(f"  REMOVED: {display_project_path(skill_dir)}/")
         removed += 1
     return removed
 
@@ -689,7 +724,8 @@ def _preflight_runtime_artifacts(
                 _RuntimeArtifactInspection(
                     path,
                     False,
-                    f"unsafe path component: {unsafe}",
+                    "unsafe path component: "
+                    f"{display_project_path(unsafe)}",
                 )
             )
             continue
@@ -765,14 +801,18 @@ def _remove_runtime_artifacts(
         )
     for inspection in inspections:
         if not inspection.removable:
-            print(f"  SKIP {inspection.path} ({inspection.reason})")
+            print(
+                f"  SKIP {display_project_path(inspection.path)} "
+                f"({inspection.reason})"
+            )
             continue
         if dry_run:
-            print(f"  WOULD REMOVE: {inspection.path}")
+            print(f"  WOULD REMOVE: {display_project_path(inspection.path)}")
         else:
             if inspection.content is None:
                 raise UnsafeUninstallPathError(
-                    f"runtime artifact has no confirmed content: {inspection.path}"
+                    "runtime artifact has no confirmed content: "
+                    f"{display_project_path(inspection.path)}"
                 )
             absolute = (
                 inspection.path
@@ -784,9 +824,9 @@ def _remove_runtime_artifacts(
             except OSError as exc:
                 raise UnsafeUninstallPathError(
                     "runtime artifact changed during guarded removal: "
-                    f"{inspection.path}"
+                    f"{display_project_path(inspection.path)}"
                 ) from exc
-            print(f"  REMOVED: {inspection.path}")
+            print(f"  REMOVED: {display_project_path(inspection.path)}")
         removed += 1
     return removed
 
@@ -830,15 +870,16 @@ def _remove_ci_workflow(
     path = inspection.path
     if not inspection.removable:
         if inspection.reason != "absent":
-            print(f"  SKIP {path} ({inspection.reason})")
+            print(f"  SKIP {display_project_path(path)} ({inspection.reason})")
         return 0
     if not dry_run and _preflight_ci_workflow() != inspection:
         raise UnsafeUninstallPathError(
-            f"managed CI workflow changed after uninstall preflight: {path}"
+            "managed CI workflow changed after uninstall preflight: "
+            f"{display_project_path(path)}"
         )
 
     if dry_run:
-        print(f"  WOULD REMOVE: {path}")
+        print(f"  WOULD REMOVE: {display_project_path(path)}")
     else:
         try:
             if inspection.content is None:
@@ -846,9 +887,12 @@ def _remove_ci_workflow(
             absolute = path if path.is_absolute() else Path.cwd().resolve() / path
             unlink_guarded_bytes(absolute, expected=inspection.content)
         except OSError as exc:
-            print(f"  SKIP {path} (cannot remove managed workflow: {exc})")
+            print(
+                f"  SKIP {display_project_path(path)} "
+                f"(cannot remove managed workflow: {exc})"
+            )
             return 0
-        print(f"  REMOVED: {path}")
+        print(f"  REMOVED: {display_project_path(path)}")
     return 1
 
 
@@ -906,11 +950,17 @@ def run(args):
     # Wiki dir
     print("\n3. Wiki Directory:")
     if wiki_plan.removable:
-        print(f"  {wiki_dir}/ — {wiki_plan.page_count} markdown file(s)")
+        print(
+            f"  {display_project_path(wiki_dir)}/ — "
+            f"{wiki_plan.page_count} markdown file(s)"
+        )
     elif remove_wiki and wiki_plan.present:
-        print(f"  {wiki_dir}/ — KEPT ({wiki_plan.reason})")
+        print(f"  {display_project_path(wiki_dir)}/ — KEPT ({wiki_plan.reason})")
     elif wiki_plan.present:
-        print(f"  {wiki_dir}/ — KEPT (use --remove-wiki to delete)")
+        print(
+            f"  {display_project_path(wiki_dir)}/ — KEPT "
+            "(use --remove-wiki to delete)"
+        )
     else:
         print("  Not found.")
 
@@ -921,9 +971,11 @@ def run(args):
     if present_runtime_artifacts:
         for item in runtime_plan:
             if item.removable:
-                print(f"  {item.path}")
+                print(f"  {display_project_path(item.path)}")
             else:
-                print(f"  {item.path} — KEPT ({item.reason})")
+                print(
+                    f"  {display_project_path(item.path)} — KEPT ({item.reason})"
+                )
     else:
         print("  Nothing to remove.")
 
@@ -939,11 +991,12 @@ def run(args):
             continue
         skill_found = True
         if inspection.state is ReferenceSkillState.CURRENT:
-            print(f"  {skill_dir}/")
+            print(f"  {display_project_path(skill_dir)}/")
             skill_count += 1
         else:
             print(
-                f"  {skill_dir}/ — KEPT (locally modified, incomplete, or "
+                f"  {display_project_path(skill_dir)}/ — KEPT "
+                "(locally modified, incomplete, or "
                 f"unverifiable: {inspection.reason})"
             )
     if not skill_found:
@@ -998,7 +1051,8 @@ def run(args):
         )
         if _preflight_wiki_removal(wiki_dir, requested=remove_wiki) != wiki_plan:
             raise UnsafeUninstallPathError(
-                f"wiki root changed after uninstall preflight: {wiki_dir}"
+                "wiki root changed after uninstall preflight: "
+                f"{display_project_path(wiki_dir)}"
             )
         _validate_reference_plan(reference_plan)
         if _preflight_ci_workflow() != ci_plan:

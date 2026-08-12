@@ -46,6 +46,36 @@ def test_public_guarded_mismatch_preserves_current_bytes(tmp_path) -> None:
     assert target.read_bytes() == b"custom\n"
 
 
+def test_public_absent_snapshot_collision_preserves_target_and_cleans_stage(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    target = tmp_path / "managed.md"
+    real_move = guard.move_windows_path_write_through
+
+    def collide(source, destination, *, replace_existing):
+        if destination == target and not replace_existing:
+            target.write_bytes(b"concurrent\n")
+        return real_move(
+            source,
+            destination,
+            replace_existing=replace_existing,
+        )
+
+    monkeypatch.setattr(guard, "move_windows_path_write_through", collide)
+
+    with pytest.raises(OSError, match="appeared after preflight"):
+        guard.atomic_write_guarded_bytes(
+            target,
+            b"managed\n",
+            mode=0o644,
+            expected_existing=None,
+        )
+
+    assert target.read_bytes() == b"concurrent\n"
+    assert not list(tmp_path.glob(".llm-wiki-*.guarded-tmp"))
+
+
 def test_private_guarded_create_and_snapshot_replace(tmp_path) -> None:
     target = tmp_path / ".llm-wiki-agent"
 
@@ -75,6 +105,66 @@ def test_private_guarded_mismatch_preserves_current_bytes(tmp_path) -> None:
         )
 
     assert target.read_bytes() == b"custom\n"
+
+
+def test_private_absent_snapshot_collision_preserves_target_and_cleans_stage(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    target = tmp_path / ".llm-wiki-agent"
+    real_move = guard.move_windows_path_write_through
+
+    def collide(source, destination, *, replace_existing):
+        if destination == target and not replace_existing:
+            target.write_bytes(b"concurrent\n")
+        return real_move(
+            source,
+            destination,
+            replace_existing=replace_existing,
+        )
+
+    monkeypatch.setattr(guard, "move_windows_path_write_through", collide)
+
+    with pytest.raises(OSError, match="appeared after preflight"):
+        guard.atomic_write_private_bytes(
+            target,
+            b"managed\n",
+            expected_existing=None,
+        )
+
+    assert target.read_bytes() == b"concurrent\n"
+    assert not list(tmp_path.glob(".llm-wiki-*.private-tmp"))
+
+
+def test_guarded_unlink_removes_only_requested_hardlink(tmp_path) -> None:
+    target = tmp_path / "managed-hook"
+    sibling = tmp_path / "managed-hook-copy"
+    target.write_bytes(b"managed\n")
+    try:
+        sibling.hardlink_to(target)
+    except OSError as exc:
+        pytest.skip(f"hard links unavailable: {exc}")
+
+    guard.unlink_guarded_bytes(target, expected=b"managed\n")
+
+    assert not target.exists()
+    assert sibling.read_bytes() == b"managed\n"
+
+
+def test_guarded_unlink_restores_hardlink_after_content_mismatch(tmp_path) -> None:
+    target = tmp_path / "managed-hook"
+    sibling = tmp_path / "managed-hook-copy"
+    target.write_bytes(b"custom\n")
+    try:
+        sibling.hardlink_to(target)
+    except OSError as exc:
+        pytest.skip(f"hard links unavailable: {exc}")
+
+    with pytest.raises(OSError, match="changed after preflight"):
+        guard.unlink_guarded_bytes(target, expected=b"managed\n")
+
+    assert target.read_bytes() == b"custom\n"
+    assert sibling.read_bytes() == b"custom\n"
 
 
 def test_exact_manifest_tree_removal(tmp_path) -> None:

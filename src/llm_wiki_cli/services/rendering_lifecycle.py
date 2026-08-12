@@ -173,7 +173,7 @@ def classify_lifecycle_status(
         "--skills" if reference_enabled else "--no-skills"
     )
     reference_state = reference.state.value
-    reference_path = str(reference.path)
+    reference_path = reference.path.as_posix()
     current = reference.current
 
     if schema.state is ManagedSchemaBlockState.ABSENT:

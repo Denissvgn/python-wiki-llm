@@ -447,7 +447,15 @@ def _legacy_skeleton_digest(name: str, content: str) -> str | None:
 
 
 def is_managed_hook_content(name: str, content: str) -> bool:
-    """Return whether ``content`` exactly matches a recognized managed hook."""
+    """Return whether ``content`` exactly matches a recognized managed hook.
+
+    Git hooks are shell scripts, so Windows text writes may represent their
+    generated LF line endings as CRLF. Normalize only that representation at
+    this ownership boundary; callers retain the original bytes for guarded
+    replacement or removal.
+    """
+
+    content = content.replace("\r\n", "\n")
 
     if content in _EXACT_LEGACY_MANAGED_HOOKS.get(name, set()):
         return True

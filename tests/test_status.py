@@ -1,6 +1,7 @@
 """Tests for commands/status_cmd.py"""
 
 import json
+import os
 import types
 from pathlib import Path
 
@@ -404,6 +405,10 @@ class TestStatusHooks:
         out = capsys.readouterr().out
         assert "post-commit" in out
 
+    @pytest.mark.skipif(
+        os.name == "nt",
+        reason="Windows does not expose a POSIX hook execute-bit contract",
+    )
     def test_exact_managed_hook_without_execute_bit_is_reported_broken(
         self, tmp_project, capsys
     ):
