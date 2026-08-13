@@ -1,7 +1,7 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:7eb242c862a9827bca6d1ef5221eca612740b590c819e9b08fc317bdcc3d5858",
-    "knowledge_index_hash": "sha256:62f5ac1f77514b5417afb64b2b5297bcbeee8addcc9fdda3038f5bf288a87ab9",
+    "evaluated_envelope_hash": "sha256:bc999b4e4aac65603fd2a39fe1439cbc2796373cc256ef73ea5878a7c6372f10",
+    "knowledge_index_hash": "sha256:c69d9d9be00208893cf874a07ef8cd88daa04eee1775c48a08043c3477ad4a68",
     "surface_index_hash": "sha256:2c548e11465cb5c153922a4b2c05ffaf1a9b94e503f248c9df59229209f35084"
   },
   "evidence_baselines": {
@@ -6740,7 +6740,7 @@
           {
             "path": "integrations/github-action/action.yml",
             "reason": "unrecognized-yaml",
-            "source_content_hash": "sha256:b61d2888d870ddfdac2c07c19a8506c112fd924e2789b71802ad51c4e34e5f47"
+            "source_content_hash": "sha256:5f0d4e2c5fd6a09b55347525a91d1f32ac11c71dd2199fa97a42522f52bd3968"
           },
           {
             "path": "integrations/wiki-integrity/action.yml",
