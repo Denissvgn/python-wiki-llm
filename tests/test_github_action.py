@@ -241,6 +241,22 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
     assert action["inputs"]["fail-on"]["default"] == "unhealthy"
     assert action["inputs"]["evidence-id"]["default"] == "default"
     steps = action["runs"]["steps"]
+    scalar_validation = steps[0]
+    assert scalar_validation["name"] == "Validate scalar inputs"
+    assert scalar_validation["env"] == {
+        "INPUT_EVIDENCE_ID": "${{ inputs.evidence-id }}",
+        "INPUT_STRICT": "${{ inputs.strict }}",
+        "INPUT_FAIL_ON": "${{ inputs.fail-on }}",
+    }
+    assert "^[a-z0-9][a-z0-9._-]{0,39}$" in scalar_validation["run"]
+    assert "true|false" in scalar_validation["run"]
+    assert "unhealthy|degraded" in scalar_validation["run"]
+    setup_index = next(
+        index
+        for index, step in enumerate(steps)
+        if step.get("uses") == f"actions/setup-python@{SETUP_PYTHON_SHA}"
+    )
+    assert setup_index > 0
     assert any(
         step.get("uses") == f"actions/setup-python@{SETUP_PYTHON_SHA}" for step in steps
     )
@@ -828,13 +844,31 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
     jobs = workflow["jobs"]
     steps = jobs["repository-fixture"]["steps"]
 
+    triggers = workflow[True]
+    assert triggers["push"]["branches"] == ["main"]
+    assert triggers["push"]["paths"] == triggers["pull_request"]["paths"]
+    assert workflow["concurrency"] == {
+        "group": (
+            "${{ github.workflow }}-${{ "
+            "github.event.pull_request.number || github.ref }}"
+        ),
+        "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
+    }
+
     checkout = next(
         step for step in steps if step.get("uses") == f"actions/checkout@{CHECKOUT_SHA}"
     )
     assert checkout["with"]["persist-credentials"] is False
-    assert any(
-        step.get("uses") == f"actions/setup-python@{SETUP_PYTHON_SHA}" for step in steps
+    setup = next(
+        step
+        for step in steps
+        if step.get("uses") == f"actions/setup-python@{SETUP_PYTHON_SHA}"
     )
+    assert setup["with"] == {
+        "python-version": "3.13",
+        "cache": "pip",
+        "cache-dependency-path": "pyproject.toml",
+    }
     remote_uses = [
         str(step["uses"])
         for step in steps
@@ -852,18 +886,23 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
         "evidence-id": "valid",
     }
     invalid_strict = next(step for step in steps if step.get("id") == "invalid-strict")
+    invalid_evidence_id = next(
+        step for step in steps if step.get("id") == "invalid-evidence-id"
+    )
     invalid_fail_on = next(
         step for step in steps if step.get("id") == "invalid-fail-on"
     )
     assert invalid_strict["with"]["evidence-id"] == "invalid-strict"
+    assert invalid_evidence_id["with"]["evidence-id"] == "Invalid/evidence"
     assert invalid_fail_on["with"]["evidence-id"] == "invalid-fail-on"
     assert len(
         {
             action_step["with"]["evidence-id"],
             invalid_strict["with"]["evidence-id"],
+            invalid_evidence_id["with"]["evidence-id"],
             invalid_fail_on["with"]["evidence-id"],
         }
-    ) == 3
+    ) == 4
     bootstrap = next(
         step
         for step in steps

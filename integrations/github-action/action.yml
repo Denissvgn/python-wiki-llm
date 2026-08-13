@@ -38,6 +38,27 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Validate scalar inputs
+      shell: bash
+      env:
+        INPUT_EVIDENCE_ID: ${{ inputs.evidence-id }}
+        INPUT_STRICT: ${{ inputs.strict }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        set -euo pipefail
+        if [[ ! "${INPUT_EVIDENCE_ID}" =~ ^[a-z0-9][a-z0-9._-]{0,39}$ ]]; then
+          printf 'evidence-id must match ^[a-z0-9][a-z0-9._-]{0,39}$\n' >&2
+          exit 2
+        fi
+        case "${INPUT_STRICT}" in
+          true|false) ;;
+          *) printf 'strict must be true or false\n' >&2; exit 2 ;;
+        esac
+        case "${INPUT_FAIL_ON}" in
+          unhealthy|degraded) ;;
+          *) printf 'fail-on must be unhealthy or degraded\n' >&2; exit 2 ;;
+        esac
+
     - name: Set up Python 3.13
       id: setup-python
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0

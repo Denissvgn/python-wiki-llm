@@ -23,7 +23,7 @@ import uuid
 import venv
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
-from pathlib import Path, PurePath
+from pathlib import Path, PurePath, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 try:
@@ -34,6 +34,8 @@ except ModuleNotFoundError:  # pragma: no cover - only freeze reads TOML
 
 IDENTITY_SCHEMA = "agent-wiki-release-identity/v1"
 ALLOWLIST_SCHEMA = "agent-wiki-release-skip-allowlist/v1"
+SKIP_DISCOVERY_SCHEMA = "agent-wiki-release-skip-discovery/v1"
+JUNIT_PROJECTION_SCHEMA = "agent-wiki-release-junit-projection/v1"
 OWNER_LANE_SCHEMA = "agent-wiki-release-owner-lanes/v2"
 DECISION_SCHEMA = "agent-wiki-release-decision/v1"
 QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v2"
@@ -54,6 +56,7 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+){2}(?:[a-zA-Z0-9.+-]*)$")
 EVIDENCE_LABEL_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
+JUNIT_SELECTOR_RE = re.compile(r"^[A-Za-z0-9_./*?-]+$")
 DIST_RE = re.compile(
     r"^agent_wiki_cli-(?P<version>[^/]+?)(?:-py3-none-any\.whl|\.tar\.gz)$"
 )
@@ -555,24 +558,295 @@ def verify_junit(args: argparse.Namespace) -> int:
     return 0
 
 
-def discover_allowlist(args: argparse.Namespace) -> int:
-    entries: list[dict[str, str]] = []
-    for spec in args.result:
+def _parse_result_specs(
+    specs: Sequence[str],
+    expected_lanes: Sequence[str],
+) -> tuple[dict[str, Path], list[str]]:
+    expected = set(expected_lanes)
+    paths: dict[str, Path] = {}
+    for spec in specs:
         lane, separator, path_text = spec.partition("=")
-        if not separator:
+        if not separator or not lane or not path_text:
             raise QualificationError("--result must be LANE=JUNIT.xml")
-        tuples, _ = _skip_tuples(Path(path_text).resolve(), lane)
-        for item in tuples:
-            item["owner_lane"] = "REVIEW-REQUIRED"
-            entries.append(item)
-    entries.sort(key=lambda item: (item["lane"], item["node_id"], item["reason"]))
-    write_json(
-        args.output.resolve(),
-        {"schema_version": ALLOWLIST_SCHEMA, "entries": entries},
+        if lane not in expected:
+            raise QualificationError(f"unexpected discovery result lane: {lane}")
+        if lane in paths:
+            raise QualificationError(f"duplicate discovery result lane: {lane}")
+        paths[lane] = Path(path_text).resolve()
+    available = {
+        lane: path
+        for lane, path in paths.items()
+        if path.is_file()
+    }
+    missing = sorted(expected - set(available))
+    return available, missing
+
+
+def discover_allowlist(args: argparse.Namespace) -> int:
+    expected_lanes = list(args.expected_lane)
+    if not expected_lanes:
+        raise QualificationError("at least one --expected-lane is required")
+    if len(set(expected_lanes)) != len(expected_lanes):
+        raise QualificationError("discovery expected lanes must be unique")
+    expected_lanes.sort()
+
+    baseline_path = args.baseline.resolve()
+    baseline = _load_skip_allowlist(baseline_path)
+    expected_lane_set = set(expected_lanes)
+    baseline_keys: dict[tuple[str, str, str], dict[str, str]] = {}
+    baseline_nodes: set[tuple[str, str]] = set()
+    for entry in baseline:
+        key = (entry["lane"], entry["node_id"], entry["reason"])
+        node = (entry["lane"], entry["node_id"])
+        if key in baseline_keys or node in baseline_nodes:
+            raise QualificationError(
+                "skip allowlist contains a duplicate lane/node contract"
+            )
+        baseline_keys[key] = entry
+        baseline_nodes.add(node)
+
+    result_paths, missing_lanes = _parse_result_specs(
+        args.result,
+        expected_lanes,
     )
-    print(
-        "Discovery allowlist generated with REVIEW-REQUIRED owner lanes; "
-        "it must be reviewed and committed before qualification."
+    observed: list[dict[str, str]] = []
+    junit_digests: dict[str, str] = {}
+    for lane, path in sorted(result_paths.items()):
+        _junit_node_outcomes(path)
+        tuples, _ = _skip_tuples(path, lane)
+        observed.extend(tuples)
+        junit_digests[lane] = sha256_file(path)
+
+    out_of_scope = [
+        dict(entry)
+        for entry in baseline
+        if entry["lane"] not in expected_lane_set
+    ]
+    retained: list[dict[str, str]] = list(out_of_scope)
+    review_required: list[dict[str, str]] = []
+    proposed_entries: list[dict[str, str]] = list(out_of_scope)
+    observed_keys: set[tuple[str, str, str]] = set()
+    for item in observed:
+        key = (item["lane"], item["node_id"], item["reason"])
+        observed_keys.add(key)
+        existing = baseline_keys.get(key)
+        if existing is not None:
+            entry = dict(existing)
+            retained.append(entry)
+        else:
+            entry = {**item, "owner_lane": "REVIEW-REQUIRED"}
+            review_required.append(entry)
+        proposed_entries.append(entry)
+
+    observed_lanes = set(result_paths)
+    removed = [
+        dict(entry)
+        for key, entry in baseline_keys.items()
+        if entry["lane"] in observed_lanes and key not in observed_keys
+    ]
+    def sort_key(item: Mapping[str, str]) -> tuple[str, str, str]:
+        return item["lane"], item["node_id"], item["reason"]
+
+    retained.sort(key=sort_key)
+    review_required.sort(key=sort_key)
+    removed.sort(key=sort_key)
+    proposed_entries.sort(key=sort_key)
+
+    complete = not missing_lanes
+    proposed_written = False
+    if complete:
+        write_json(
+            args.output.resolve(),
+            {"schema_version": ALLOWLIST_SCHEMA, "entries": proposed_entries},
+        )
+        proposed_written = True
+    else:
+        try:
+            args.output.resolve().unlink()
+        except FileNotFoundError:
+            pass
+
+    write_json(
+        args.diagnostic.resolve(),
+        {
+            "schema_version": SKIP_DISCOVERY_SCHEMA,
+            "baseline_sha256": sha256_file(baseline_path),
+            "expected_lanes": expected_lanes,
+            "observed_lanes": sorted(result_paths),
+            "missing_lanes": missing_lanes,
+            "junit_sha256": junit_digests,
+            "complete": complete,
+            "proposed_written": proposed_written,
+            "retained_entries": retained,
+            "review_required_entries": review_required,
+            "removed_entries": removed,
+        },
+    )
+    if complete:
+        print(
+            "Discovery reconciliation generated a complete proposed allowlist; "
+            "REVIEW-REQUIRED owner lanes must be reviewed before qualification."
+        )
+    else:
+        print(
+            "Discovery reconciliation is incomplete; no proposed allowlist was "
+            f"written because lanes are missing: {missing_lanes}"
+        )
+    return 0
+
+
+def _canonical_junit_selector(value: str) -> str:
+    if not value or "\\" in value or not JUNIT_SELECTOR_RE.fullmatch(value):
+        raise QualificationError(f"unsafe JUnit selector: {value!r}")
+    path = PurePosixPath(value)
+    if (
+        path.is_absolute()
+        or value != path.as_posix()
+        or any(part in {"", ".", ".."} for part in path.parts)
+    ):
+        raise QualificationError(f"unsafe JUnit selector: {value!r}")
+    if path.parts[0] != "tests" or not path.name.startswith("test_"):
+        raise QualificationError(
+            f"JUnit selector must select a tests/test_*.py file: {value!r}"
+        )
+    if not path.name.endswith(".py"):
+        raise QualificationError(
+            f"JUnit selector must select a tests/test_*.py file: {value!r}"
+        )
+    return path.as_posix()
+
+
+def _projected_testcase(testcase: ET.Element) -> ET.Element:
+    projected = ET.Element(
+        "testcase",
+        {
+            "classname": testcase.attrib.get("classname", ""),
+            "name": testcase.attrib.get("name", ""),
+        },
+    )
+    skipped = testcase.find("skipped")
+    if skipped is not None:
+        reason = skipped.attrib.get("message") or (skipped.text or "").strip()
+        ET.SubElement(projected, "skipped", {"message": reason})
+    return projected
+
+
+def project_junit(args: argparse.Namespace) -> int:
+    for name, value in (
+        ("source lane", args.source_lane),
+        ("target lane", args.target_lane),
+    ):
+        if not EVIDENCE_LABEL_RE.fullmatch(value):
+            raise QualificationError(f"{name} is not a safe lane name: {value!r}")
+    if args.source_lane == args.target_lane:
+        raise QualificationError("JUnit projection source and target lanes must differ")
+    identity_path = args.identity.resolve()
+    identity = _validate_identity(load_json(identity_path))
+    source_path = args.source_junit.resolve()
+    try:
+        source_root = ET.parse(source_path).getroot()
+    except (OSError, ET.ParseError) as exc:
+        raise QualificationError(f"invalid JUnit XML {source_path}: {exc}") from exc
+
+    selectors = sorted(_canonical_junit_selector(item) for item in args.selector)
+    if not selectors:
+        raise QualificationError("at least one --selector is required")
+    if len(set(selectors)) != len(selectors):
+        raise QualificationError("JUnit projection selectors must be unique")
+
+    by_node: dict[str, ET.Element] = {}
+    for testcase in _junit_testcases(source_root):
+        node_id = _node_id(testcase)
+        if node_id in by_node:
+            raise QualificationError(
+                f"JUnit XML {source_path} contains duplicate node ID: {node_id}"
+            )
+        by_node[node_id] = testcase
+
+    selected_nodes: set[str] = set()
+    for selector in selectors:
+        matches = {
+            node_id
+            for node_id in by_node
+            if PurePosixPath(node_id.partition("::")[0]).match(selector)
+        }
+        if not matches:
+            raise QualificationError(
+                f"JUnit projection selector matched no tests: {selector}"
+            )
+        selected_nodes.update(matches)
+
+    selected = [(node_id, by_node[node_id]) for node_id in sorted(selected_nodes)]
+    nonpassing: dict[str, str] = {}
+    passed = 0
+    skipped = 0
+    for node_id, testcase in selected:
+        if testcase.find("failure") is not None:
+            nonpassing[node_id] = "failed"
+        elif testcase.find("error") is not None:
+            nonpassing[node_id] = "error"
+        elif testcase.find("skipped") is not None:
+            skipped += 1
+        else:
+            passed += 1
+    if nonpassing:
+        raise QualificationError(
+            f"selected JUnit projection nodes did not pass or skip: {nonpassing}"
+        )
+
+    projected_root = ET.Element(
+        "testsuites",
+        {
+            "tests": str(len(selected)),
+            "failures": "0",
+            "errors": "0",
+            "skipped": str(skipped),
+        },
+    )
+    suite = ET.SubElement(
+        projected_root,
+        "testsuite",
+        {
+            "name": args.target_lane,
+            "tests": str(len(selected)),
+            "failures": "0",
+            "errors": "0",
+            "skipped": str(skipped),
+        },
+    )
+    for _, testcase in selected:
+        suite.append(_projected_testcase(testcase))
+    ET.indent(projected_root, space="  ")
+    projected_path = args.projected_junit.resolve()
+    projected_path.parent.mkdir(parents=True, exist_ok=True)
+    ET.ElementTree(projected_root).write(
+        projected_path,
+        encoding="utf-8",
+        xml_declaration=True,
+        short_empty_elements=True,
+    )
+    with projected_path.open("ab") as stream:
+        stream.write(b"\n")
+
+    write_json(
+        args.receipt.resolve(),
+        {
+            "schema_version": JUNIT_PROJECTION_SCHEMA,
+            "identity": identity,
+            "identity_sha256": sha256_file(identity_path),
+            "source_lane": args.source_lane,
+            "target_lane": args.target_lane,
+            "source_junit_sha256": sha256_file(source_path),
+            "projected_junit_sha256": sha256_file(projected_path),
+            "selectors": selectors,
+            "counts": {
+                "source": len(by_node),
+                "selected": len(selected),
+                "passed": passed,
+                "skipped": skipped,
+            },
+            "selected_node_ids": [node_id for node_id, _ in selected],
+        },
     )
     return 0
 
@@ -2252,9 +2526,22 @@ def _parser() -> argparse.ArgumentParser:
     junit.set_defaults(function=verify_junit)
 
     discover = subparsers.add_parser("discover-allowlist")
-    discover.add_argument("--result", action="append", required=True)
+    discover.add_argument("--result", action="append", default=[])
+    discover.add_argument("--baseline", type=Path, required=True)
+    discover.add_argument("--expected-lane", action="append", required=True)
     discover.add_argument("--output", type=Path, required=True)
+    discover.add_argument("--diagnostic", type=Path, required=True)
     discover.set_defaults(function=discover_allowlist)
+
+    projection = subparsers.add_parser("project-junit")
+    projection.add_argument("--identity", type=Path, required=True)
+    projection.add_argument("--source-junit", type=Path, required=True)
+    projection.add_argument("--source-lane", required=True)
+    projection.add_argument("--target-lane", required=True)
+    projection.add_argument("--selector", action="append", required=True)
+    projection.add_argument("--projected-junit", type=Path, required=True)
+    projection.add_argument("--receipt", type=Path, required=True)
+    projection.set_defaults(function=project_junit)
 
     owners = subparsers.add_parser("verify-owner-lanes")
     owners.add_argument("--identity", type=Path, required=True)

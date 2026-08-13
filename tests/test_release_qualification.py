@@ -29,6 +29,24 @@ def _write_json(path: Path, payload: object) -> None:
     )
 
 
+def _write_identity(path: Path) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "schema_version": qualification.IDENTITY_SCHEMA,
+        "repository": REPOSITORY,
+        "source": {
+            "sha": SHA,
+            "tree": TREE,
+            "archive_sha256": ARCHIVE_SHA,
+            "commit_epoch": 1_788_134_400,
+        },
+        "version": VERSION,
+        "tag": f"v{VERSION}",
+        "mode": "candidate",
+    }
+    _write_json(path, payload)
+    return payload
+
+
 def _smoke(path: Path, artifact: Path, kind: str) -> dict:
     payload = {
         "schema_version": qualification.SMOKE_SCHEMA,
@@ -1001,38 +1019,382 @@ def test_skip_allowlist_rejects_unreviewed_owner_lane(tmp_path: Path) -> None:
         qualification.verify_junit(args)
 
 
-def test_discovery_generates_review_required_owner_lanes(tmp_path: Path) -> None:
+def test_discovery_reconciles_retained_changed_and_removed_tuples(
+    tmp_path: Path,
+) -> None:
     junit = tmp_path / "junit.xml"
     junit.write_text(
         """
+        <testsuite tests="2" skipped="2">
+          <testcase classname="tests.test_example.TestCase" name="test_retained">
+            <skipped message="Windows only" />
+          </testcase>
+          <testcase classname="tests.test_example.TestCase" name="test_changed">
+            <skipped message="new reason" />
+          </testcase>
+        </testsuite>
+        """,
+        encoding="utf-8",
+    )
+    baseline = tmp_path / "baseline.json"
+    retained = {
+        "lane": "core-linux",
+        "node_id": "tests/test_example.py::TestCase::test_retained",
+        "reason": "Windows only",
+        "owner_lane": "core-windows",
+    }
+    changed_old = {
+        "lane": "core-linux",
+        "node_id": "tests/test_example.py::TestCase::test_changed",
+        "reason": "old reason",
+        "owner_lane": "core-windows",
+    }
+    removed = {
+        "lane": "core-linux",
+        "node_id": "tests/test_example.py::TestCase::test_removed",
+        "reason": "Windows only",
+        "owner_lane": "core-windows",
+    }
+    _write_json(
+        baseline,
+        {
+            "schema_version": qualification.ALLOWLIST_SCHEMA,
+            "entries": [retained, changed_old, removed],
+        },
+    )
+    output = tmp_path / "allowlist.json"
+    diagnostic = tmp_path / "diagnostic.json"
+
+    assert (
+        qualification.discover_allowlist(
+            argparse.Namespace(
+                result=[f"core-linux={junit}"],
+                baseline=baseline,
+                expected_lane=["core-linux"],
+                output=output,
+                diagnostic=diagnostic,
+            )
+        )
+        == 0
+    )
+
+    changed_new = {
+        "lane": "core-linux",
+        "node_id": "tests/test_example.py::TestCase::test_changed",
+        "owner_lane": "REVIEW-REQUIRED",
+        "reason": "new reason",
+    }
+    assert qualification.load_json(output) == {
+        "schema_version": qualification.ALLOWLIST_SCHEMA,
+        "entries": [changed_new, retained],
+    }
+    assert qualification.load_json(diagnostic) == {
+        "schema_version": qualification.SKIP_DISCOVERY_SCHEMA,
+        "baseline_sha256": qualification.sha256_file(baseline),
+        "expected_lanes": ["core-linux"],
+        "observed_lanes": ["core-linux"],
+        "missing_lanes": [],
+        "junit_sha256": {"core-linux": qualification.sha256_file(junit)},
+        "complete": True,
+        "proposed_written": True,
+        "retained_entries": [retained],
+        "review_required_entries": [changed_new],
+        "removed_entries": [changed_old, removed],
+    }
+
+
+def test_discovery_preserves_out_of_scope_baseline_lanes(tmp_path: Path) -> None:
+    junit = tmp_path / "core.xml"
+    junit.write_text(
+        """
         <testsuite tests="1" skipped="1">
-          <testcase classname="tests.test_example.TestCase" name="test_guard">
+          <testcase classname="tests.test_example" name="test_guard">
             <skipped message="Windows only" />
           </testcase>
         </testsuite>
         """,
         encoding="utf-8",
     )
-    output = tmp_path / "allowlist.json"
+    core_entry = {
+        "lane": "core-linux",
+        "node_id": "tests/test_example.py::test_guard",
+        "reason": "Windows only",
+        "owner_lane": "core-windows",
+    }
+    optional_entry = {
+        "lane": "mcp-3.10",
+        "node_id": "tests/test_optional.py::test_registration",
+        "reason": "optional SDK not installed",
+        "owner_lane": "mcp-3.13",
+    }
+    baseline = tmp_path / "baseline.json"
+    _write_json(
+        baseline,
+        {
+            "schema_version": qualification.ALLOWLIST_SCHEMA,
+            "entries": [core_entry, optional_entry],
+        },
+    )
+    output = tmp_path / "proposed.json"
+    diagnostic = tmp_path / "diagnostic.json"
 
     assert (
         qualification.discover_allowlist(
             argparse.Namespace(
                 result=[f"core-linux={junit}"],
+                baseline=baseline,
+                expected_lane=["core-linux"],
                 output=output,
+                diagnostic=diagnostic,
             )
         )
         == 0
     )
 
     assert qualification.load_json(output)["entries"] == [
-        {
-            "lane": "core-linux",
-            "node_id": "tests/test_example.py::TestCase::test_guard",
-            "owner_lane": "REVIEW-REQUIRED",
-            "reason": "Windows only",
-        }
+        core_entry,
+        optional_entry,
     ]
+    receipt = qualification.load_json(diagnostic)
+    assert receipt["retained_entries"] == [core_entry, optional_entry]
+    assert receipt["review_required_entries"] == []
+    assert receipt["removed_entries"] == []
+
+
+def test_discovery_incomplete_diagnostic_never_writes_partial_allowlist(
+    tmp_path: Path,
+) -> None:
+    junit = tmp_path / "linux.xml"
+    junit.write_text(
+        """
+        <testsuite tests="1" skipped="1">
+          <testcase classname="tests.test_example" name="test_guard">
+            <skipped message="Windows only" />
+          </testcase>
+        </testsuite>
+        """,
+        encoding="utf-8",
+    )
+    baseline = tmp_path / "baseline.json"
+    entry = {
+        "lane": "core-linux",
+        "node_id": "tests/test_example.py::test_guard",
+        "reason": "Windows only",
+        "owner_lane": "core-windows",
+    }
+    _write_json(
+        baseline,
+        {
+            "schema_version": qualification.ALLOWLIST_SCHEMA,
+            "entries": [entry],
+        },
+    )
+    output = tmp_path / "proposed.json"
+    output.write_text("stale partial output", encoding="utf-8")
+    diagnostic = tmp_path / "diagnostic.json"
+
+    assert (
+        qualification.discover_allowlist(
+            argparse.Namespace(
+                result=[f"core-linux={junit}"],
+                baseline=baseline,
+                expected_lane=["core-linux", "core-windows"],
+                output=output,
+                diagnostic=diagnostic,
+            )
+        )
+        == 0
+    )
+
+    assert not output.exists()
+    receipt = qualification.load_json(diagnostic)
+    assert receipt["complete"] is False
+    assert receipt["proposed_written"] is False
+    assert receipt["observed_lanes"] == ["core-linux"]
+    assert receipt["missing_lanes"] == ["core-windows"]
+    assert receipt["retained_entries"] == [entry]
+    assert receipt["removed_entries"] == []
+
+
+def test_discovery_with_no_results_records_every_expected_lane_missing(
+    tmp_path: Path,
+) -> None:
+    baseline = tmp_path / "baseline.json"
+    _write_json(
+        baseline,
+        {"schema_version": qualification.ALLOWLIST_SCHEMA, "entries": []},
+    )
+    output = tmp_path / "proposed.json"
+    diagnostic = tmp_path / "diagnostic.json"
+
+    assert (
+        qualification.discover_allowlist(
+            argparse.Namespace(
+                result=[],
+                baseline=baseline,
+                expected_lane=["core-linux", "core-windows"],
+                output=output,
+                diagnostic=diagnostic,
+            )
+        )
+        == 0
+    )
+
+    assert not output.exists()
+    receipt = qualification.load_json(diagnostic)
+    assert receipt["observed_lanes"] == []
+    assert receipt["missing_lanes"] == ["core-linux", "core-windows"]
+    assert receipt["junit_sha256"] == {}
+    assert receipt["complete"] is False
+
+
+def test_project_junit_is_deterministic_and_binds_candidate_identity(
+    tmp_path: Path,
+) -> None:
+    identity = tmp_path / "identity.json"
+    identity_payload = _write_identity(identity)
+    source = tmp_path / "source.xml"
+    source.write_text(
+        """
+        <testsuites tests="3">
+          <testsuite name="pytest" time="123.0">
+            <testcase classname="tests.test_alpha.TestThing" name="test_z" time="8" />
+            <testcase classname="tests.test_beta" name="test_skip[absent]" time="9">
+              <skipped message="platform contract" />
+            </testcase>
+            <testcase classname="tests.test_alpha.TestThing" name="test_a" time="7" />
+          </testsuite>
+        </testsuites>
+        """,
+        encoding="utf-8",
+    )
+    projected = tmp_path / "projected.xml"
+    receipt = tmp_path / "receipt.json"
+    args = argparse.Namespace(
+        identity=identity,
+        source_junit=source,
+        source_lane="core-windows-3.13",
+        target_lane="security-windows-2025",
+        selector=["tests/test_b*.py", "tests/test_alpha.py"],
+        projected_junit=projected,
+        receipt=receipt,
+    )
+
+    assert qualification.project_junit(args) == 0
+    first_bytes = projected.read_bytes()
+    first_receipt = receipt.read_bytes()
+    assert qualification.project_junit(args) == 0
+    assert projected.read_bytes() == first_bytes
+    assert receipt.read_bytes() == first_receipt
+
+    payload = qualification.load_json(receipt)
+    assert payload == {
+        "schema_version": qualification.JUNIT_PROJECTION_SCHEMA,
+        "identity": identity_payload,
+        "identity_sha256": qualification.sha256_file(identity),
+        "source_lane": "core-windows-3.13",
+        "target_lane": "security-windows-2025",
+        "source_junit_sha256": qualification.sha256_file(source),
+        "projected_junit_sha256": qualification.sha256_file(projected),
+        "selectors": ["tests/test_alpha.py", "tests/test_b*.py"],
+        "counts": {
+            "source": 3,
+            "selected": 3,
+            "passed": 2,
+            "skipped": 1,
+        },
+        "selected_node_ids": [
+            "tests/test_alpha.py::TestThing::test_a",
+            "tests/test_alpha.py::TestThing::test_z",
+            "tests/test_beta.py::test_skip[absent]",
+        ],
+    }
+    rendered = projected.read_text(encoding="utf-8")
+    assert "time=" not in rendered
+    assert qualification._junit_node_outcomes(projected) == {
+        "tests/test_alpha.py::TestThing::test_a": "passed",
+        "tests/test_alpha.py::TestThing::test_z": "passed",
+        "tests/test_beta.py::test_skip[absent]": "skipped",
+    }
+
+
+@pytest.mark.parametrize(
+    "selector",
+    [
+        "/tests/test_alpha.py",
+        "../tests/test_alpha.py",
+        "tests/../tests/test_alpha.py",
+        r"tests\test_alpha.py",
+        "src/test_alpha.py",
+        "tests/example.py",
+        "tests/test_alpha.txt",
+        "tests/[ab].py",
+    ],
+)
+def test_project_junit_rejects_unsafe_selectors(
+    tmp_path: Path,
+    selector: str,
+) -> None:
+    identity = tmp_path / "identity.json"
+    _write_identity(identity)
+    source = tmp_path / "source.xml"
+    source.write_text(
+        '<testsuite><testcase classname="tests.test_alpha" name="test_a" /></testsuite>',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(qualification.QualificationError, match="selector"):
+        qualification.project_junit(
+            argparse.Namespace(
+                identity=identity,
+                source_junit=source,
+                source_lane="core-windows-3.13",
+                target_lane="security-windows-2025",
+                selector=[selector],
+                projected_junit=tmp_path / "projected.xml",
+                receipt=tmp_path / "receipt.json",
+            )
+        )
+
+
+@pytest.mark.parametrize("mutation", ["unmatched", "duplicate", "failure", "error"])
+def test_project_junit_rejects_invalid_source_evidence(
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    identity = tmp_path / "identity.json"
+    _write_identity(identity)
+    source = tmp_path / "source.xml"
+    if mutation == "unmatched":
+        body = '<testcase classname="tests.test_beta" name="test_a" />'
+        selector = "tests/test_alpha.py"
+    elif mutation == "duplicate":
+        body = (
+            '<testcase classname="tests.test_alpha" name="test_a" />'
+            '<testcase classname="tests.test_alpha" name="test_a" />'
+        )
+        selector = "tests/test_alpha.py"
+    else:
+        body = (
+            '<testcase classname="tests.test_alpha" name="test_a">'
+            f'<{mutation} message="bad" />'
+            "</testcase>"
+        )
+        selector = "tests/test_alpha.py"
+    source.write_text(f"<testsuite>{body}</testsuite>", encoding="utf-8")
+
+    with pytest.raises(qualification.QualificationError):
+        qualification.project_junit(
+            argparse.Namespace(
+                identity=identity,
+                source_junit=source,
+                source_lane="core-windows-3.13",
+                target_lane="security-windows-2025",
+                selector=[selector],
+                projected_junit=tmp_path / "projected.xml",
+                receipt=tmp_path / "receipt.json",
+            )
+        )
 
 
 def test_owner_lane_verifier_requires_every_owner_to_pass(tmp_path: Path) -> None:

@@ -8,6 +8,18 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_site_and_source_immutability",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_multilanguage_no_cache_convergence",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_documentation_input_recheck.py::test_fingerprint_rejects_windows_input_junction",
       "owner_lane": "security-windows-2025",
       "reason": "Windows junction semantics only"
@@ -71,6 +83,72 @@
       "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_exact_manifest_tree_removal",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_removes_only_requested_hardlink",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_restores_hardlink_after_content_mismatch",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_post_plan_tree_addition_is_preserved",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_tree_symlink_is_unlinked_without_traversing_target",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
     },
     {
       "lane": "core-macos-3.14",
@@ -296,13 +374,7 @@
     },
     {
       "lane": "core-macos-3.14",
-      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
-      "owner_lane": "toolchains",
-      "reason": "prepared Go helper cache is required for full-repo dogfood"
-    },
-    {
-      "lane": "core-macos-3.14",
-      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "node_id": "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
     },
@@ -752,6 +824,18 @@
     },
     {
       "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_site_and_source_immutability",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_multilanguage_no_cache_convergence",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_documentation_input_recheck.py::test_fingerprint_rejects_windows_input_junction",
       "owner_lane": "security-windows-2025",
       "reason": "Windows junction semantics only"
@@ -821,6 +905,72 @@
       "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_exact_manifest_tree_removal",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_removes_only_requested_hardlink",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_restores_hardlink_after_content_mismatch",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_post_plan_tree_addition_is_preserved",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_tree_symlink_is_unlinked_without_traversing_target",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -1046,13 +1196,7 @@
     },
     {
       "lane": "core-ubuntu-3.10",
-      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
-      "owner_lane": "toolchains",
-      "reason": "prepared Go helper cache is required for full-repo dogfood"
-    },
-    {
-      "lane": "core-ubuntu-3.10",
-      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "node_id": "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
     },
@@ -1574,6 +1718,18 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_site_and_source_immutability",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_multilanguage_no_cache_convergence",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_documentation_wiki_input.py::test_descriptor_copy_rejects_parent_swap_between_inspection_and_open",
       "owner_lane": "product-ubuntu-24.04",
       "reason": "descriptor-relative no-follow directory opens unavailable"
@@ -1613,6 +1769,54 @@
       "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_absent_target_appearing_at_commit_is_preserved",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_directory_claim_is_restored_without_overwrite",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_expected_file_change_at_claim_is_preserved",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_post_link_replacement_fails_identity_check[absent]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_post_link_replacement_fails_identity_check[present]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_tree_addition_after_manifest_check_is_not_deleted",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_tree_addition_at_claim_aborts_and_restores",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_unlink_restore_never_replaces_concurrent_target",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
     },
     {
       "lane": "core-windows-3.13",
@@ -1838,13 +2042,7 @@
     },
     {
       "lane": "core-windows-3.13",
-      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
-      "owner_lane": "toolchains",
-      "reason": "prepared Go helper cache is required for full-repo dogfood"
-    },
-    {
-      "lane": "core-windows-3.13",
-      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "node_id": "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
     },

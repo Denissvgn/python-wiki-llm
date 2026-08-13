@@ -146,37 +146,23 @@ jobs:
         env:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: "utf-8"
-        run: >-
-          python -I trusted-verifier/release/qualification.py verify-bundle
-          --bundle qualified-release
-          --repository "${REPOSITORY}"
-          --workflow-run-id "${QUALIFICATION_RUN_ID}"
-          --candidate-sha "${CANDIDATE_SHA}"
-          --wheel-sha256 "${WHEEL_SHA256}"
-          --sdist-sha256 "${SDIST_SHA256}"
-          --repository-root candidate-source
-          --verify-repository
-          --check-registry
-          --output bundle-verification.json
-
-      - name: Require the release tag only for a real publication
-        if: ${{ inputs.publish }}
-        env:
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: >-
-          python -I trusted-verifier/release/qualification.py verify-bundle
-          --bundle qualified-release
-          --repository "${REPOSITORY}"
-          --workflow-run-id "${QUALIFICATION_RUN_ID}"
-          --candidate-sha "${CANDIDATE_SHA}"
-          --wheel-sha256 "${WHEEL_SHA256}"
-          --sdist-sha256 "${SDIST_SHA256}"
-          --repository-root candidate-source
-          --verify-repository
-          --check-registry
-          --require-tag
-          --output bundle-verification.json
+        run: |
+          tag_requirement=()
+          if [[ "${PUBLISH_REQUESTED}" == "true" ]]; then
+            tag_requirement=(--require-tag)
+          fi
+          python -I trusted-verifier/release/qualification.py verify-bundle \
+            --bundle qualified-release \
+            --repository "${REPOSITORY}" \
+            --workflow-run-id "${QUALIFICATION_RUN_ID}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --wheel-sha256 "${WHEEL_SHA256}" \
+            --sdist-sha256 "${SDIST_SHA256}" \
+            --repository-root candidate-source \
+            --verify-repository \
+            --check-registry \
+            "${tag_requirement[@]}" \
+            --output bundle-verification.json
 
       - name: Emit the final technical release decision
         run: |

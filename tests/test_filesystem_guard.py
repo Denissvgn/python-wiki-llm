@@ -64,7 +64,11 @@ def test_absent_target_appearing_at_commit_is_preserved(tmp_path, monkeypatch) -
     assert target.read_bytes() == appeared
 
 
-@pytest.mark.parametrize("existing", [None, b"expected\n"])
+@pytest.mark.parametrize(
+    "existing",
+    [None, b"expected\n"],
+    ids=["absent", "present"],
+)
 def test_post_link_replacement_fails_identity_check(
     tmp_path,
     monkeypatch,
