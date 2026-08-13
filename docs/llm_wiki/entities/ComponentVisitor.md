@@ -60,7 +60,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_scan_python_files` | call | [python_extractor](../modules/python_extractor.md) |
-| `extraction_service` | import | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_scan_python_files` | call | [python_extractor](../modules/python_extractor.md) | 1 |
+| `extraction_service` | import | [extraction_service](../modules/extraction_service.md) | — |

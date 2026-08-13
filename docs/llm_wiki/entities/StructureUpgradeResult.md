@@ -1,6 +1,6 @@
 # StructureUpgradeResult
 
-**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:64`
+**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:95`
 **Kind:** Class
 **Bases:** —
 **Module:** [upgrade_cmd](../modules/upgrade_cmd.md)
@@ -45,7 +45,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_upgrade_dirs` | call | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_upgrade_dirs` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_upgrade_dirs` | call | [upgrade_cmd](../modules/upgrade_cmd.md) | 1 |
+| `_upgrade_dirs` | type_reference | [upgrade_cmd](../modules/upgrade_cmd.md) | — |

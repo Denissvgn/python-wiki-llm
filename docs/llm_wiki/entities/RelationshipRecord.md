@@ -68,16 +68,16 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_derived_relationship` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_derived_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_link_relationship` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_link_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_builder_derived` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_builder_link` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_parse_relationship` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_relationship` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_relationship_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_validate_index_references` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_validate_relationship_shape` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_derived_relationship` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_derived_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_link_relationship` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_link_relationship` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_builder_derived` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_builder_link` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_parse_relationship` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_relationship` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_relationship_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_validate_index_references` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_validate_relationship_shape` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

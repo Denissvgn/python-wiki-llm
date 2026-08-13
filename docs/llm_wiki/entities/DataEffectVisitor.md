@@ -67,6 +67,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_extract_data_effects` | call | [python_extractor](../modules/python_extractor.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_extract_data_effects` | call | [python_extractor](../modules/python_extractor.md) | 1 |

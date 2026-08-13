@@ -7,6 +7,116 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-08-12
+
+### Added
+
+- Explicit `knowledge_mode=off|auto|required` context requests use
+  `llm-wiki-context/v2` and `llm-wiki-qualified-context-packet/v2` for bounded
+  native evidence. Omitting the mode retains the v1 CLI, Python, MCP, and raw
+  protocol behavior and is not deprecated in this release; any future default
+  change will be announced first with a migration window.
+- A shared bounded `llm-wiki-documentation-query/v1` dispatcher through Python
+  `query_documentation(...)` and MCP `query_documentation`, with exact
+  snapshot-backed concept, surface, and relationship queries plus opt-in
+  full-inventory symbol, entrypoint, dependency, and supplied-impact queries.
+- Versioned `compact` and `expanded_inline` managed-schema profile markers,
+  structured managed-reference verification, and live lifecycle reporting for
+  current, disabled, unavailable, legacy, and broken combinations.
+- A bounded `upgrade --cleanup-source-agent` recovery option for explicitly
+  reconciling an interrupted agent switch without guessing which parallel
+  schema is authoritative.
+- A one-hop managed `wiki-reference` topic tree for maintenance, canonical
+  surfaces, repository handoff, qualified knowledge use, context and query
+  selection, governance, extraction, publishing, and resource-aware execution.
+  Legacy anchors remain available through a compact compatibility index.
+- Exact, fork-safe extractor-helper cache reuse in the reusable full-integrity
+  action. The cache identity binds the selected helper plan, runner platform,
+  locked toolchains, helper sources and dependency locks, helper-cache contract,
+  CLI version, and immutable action revision; helper preparation always
+  revalidates restored state before integrity checks run.
+- A read-only scheduled/manual convergence workflow that performs one real,
+  plugin-disabled sync from a clean default-branch checkout and publishes
+  complete wiki status, tracked diff, full-worktree status, sync output, and a
+  versioned hash receipt.
+- A separately named strict doctor dashboard with locked helper preparation,
+  explicit healthy/degraded/unhealthy presentation, bounded summary output,
+  and a fixed diagnostic evidence artifact.
+- `sync --no-plugins` for trusted automation that must never import or execute
+  project-local extractor or generation plugins.
+
+### Changed
+
+- Multi-wiki ownership is now explicit without changing the public Site CLI:
+  `doc-hub` owns source aggregation, hub export, and the first mirror check;
+  `publish-docs` consumes that checked mirror and owns builder detection,
+  built-site validation, and deploy handoff. Existing combined workflows move
+  only their hub aggregation stage to `doc-hub`.
+- Older unversioned managed instruction blocks in the configured agent's
+  current schema path now migrate in place to a versioned profile without
+  changing surrounding user prose or separately owned plugin blocks. The
+  obsolete generic `.agents.md` path is not relocated: initialization and
+  upgrade create or refresh `AGENTS.md` while preserving `.agents.md` unchanged
+  as user-owned, manually managed content. `upgrade --no-skills` is the
+  supported self-contained rollback through at least the next minor
+  compatibility cycle, while `upgrade --skills` refreshes and verifies the
+  managed reference before returning to compact delivery. Omitting `--wiki-dir`
+  continues to select `docs/llm_wiki`; non-default installations must carry the
+  same explicit wiki path through upgrade and status lifecycle commands.
+- The `compact` managed-schema profile is now a bounded knowledge-first kernel
+  that uses a reusable qualified packet with `--knowledge-mode auto`, concise
+  evidence and authority rules, and direct verified-topic routes. The
+  `expanded_inline` profile remains self-contained for opt-out and recovery,
+  while both profiles carry the same durable repository-content safeguards.
+- Initialization and upgrade now provision and verify the managed reference
+  before choosing a schema profile. Agent switches commit a usable destination
+  schema and config before cleaning an old exact managed path; failures keep an
+  expanded inline procedure and preserve prior or locally changed content.
+- Explicit source-agent cleanup removes only that agent's managed schema block.
+  When managed references are enabled and the target verifies current, it may
+  also remove an exact current source reference; opt-out, modified, and
+  incomplete reference trees remain preserved for review.
+- Agent configuration writes are atomic, preserve compatible extension keys,
+  and record user intent separately from the last rendered profile and reason.
+  Status derives health from live schema/reference state, while uninstall
+  removes only exact current managed-reference trees after schema cleanup.
+- Generated and bundled skill routes now open the exact managed reference topic
+  they need. Reference installation and upgrade validate the complete nested
+  tree, repair managed files deliberately, and fail safely around unexpected or
+  linked filesystem entries.
+- Generated entity References tables now aggregate exact repeated call
+  observations into one logical row with a call-site count, keep call and type
+  references distinct, apply the 12-row presentation bound after grouping, and
+  disclose exact logical coverage when truncated. Raw and versioned
+  relationship interfaces retain their line-specific records.
+- Selected skill installs and exports now expand a central, portable dependency
+  map transitively in deterministic dependency-first order. Knowledge-consuming
+  workflows automatically include and verify `wiki-reference`; reports separate
+  requested roots from dependency-included skills, cycles or missing bundled
+  dependencies fail before writing, and local reference drift stops its
+  consumers. `--force` can refresh differing expected regular files, while
+  unexpected or conflicting entries remain preserved and keep consumers
+  blocked until reviewed and moved aside.
+- `ci-check --format json` now emits the versioned
+  `llm-wiki-ci-check/v1` envelope. Its nested `llm-wiki-doctor/v1` health
+  projection is composed from the same lint evaluation, so the full-integrity
+  action can render broad blocking policy and polished health status without a
+  second source scan.
+- The repository's full-integrity workflow now delegates to the reusable action
+  and uses a measured 15-minute timeout while retaining single-worker source
+  evaluation.
+
+### Fixed
+
+- Windows lifecycle operations now recognize CRLF-managed hooks, report guarded
+  filesystem collisions consistently, and safely remove verified hardlinked
+  paths without weakening linked-file protections for writes.
+- Lifecycle, status, and uninstall diagnostics now render checkout paths with
+  stable `/` separators on every platform.
+- Context resource gates now enforce deterministic memory, payload-size,
+  selection, and work-count bounds without host-speed-sensitive wall-clock
+  cutoffs.
+
 ## [1.6.0] - 2026-08-09
 
 ### Added
@@ -173,8 +283,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Generated Mermaid diagrams now contextually escape bounded Unicode labels,
   validate plugin class names, percent-encode validated relative links,
-  deduplicate graph edges, and omit excess visual detail without truncating
-  authoritative tables.
+  deduplicate graph edges, and omit excess visual detail independently of
+  separately generated table projections.
 - Generated agent prompts, repository instructions, and bundled wiki-mutating
   skills now respect effective Git ignore rules: ignored or indeterminate wiki
   paths remain local-only, while commits require a nonignored path plus
@@ -337,7 +447,7 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 ## [1.2.0] - 2026-07-08
 
 ### Changed
-- Minimum supported Python is now 3.10; CI now tests Python 3.10 and 3.13
+- Minimum supported Python is now 3.10; release automation covers Python 3.10 and 3.13
   across Ubuntu, macOS, and Windows.
 
 ### Fixed
@@ -431,8 +541,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - Haskell helper preparation now documents GHC 9.6.x as the supported release
   line, treats newer GHC 9.x releases as best-effort, and fails clearly for
   malformed or too-old GHC version output.
-- The default CI does not require GHC; Haskell helper tests that
-  need a real compiler remain opt-in through environments where GHC is present.
+- The default CI does not require GHC; real-compiler Haskell validation remains
+  opt-in through environments where GHC is present.
 
 ## [1.0.0] - 2026-06-23
 
@@ -608,13 +718,11 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - Compose parser flush-list bug — nested key:value blocks (environment, build, depends_on, healthcheck, deploy) were overwritten with `[]` on the next sibling key
 - Dockerfile discovery no longer matches `.md` documentation files as Dockerfiles
 - **Docker inventory in prompts** — `generate-prompt` and `extract` now include Docker/Compose file inventory for agent context
-- **44 new tests** — `test_docker_extract.py` (24), `test_docker_bootstrap.py` (11), `test_docker_lint.py` (9)
 - **`status` command** — displays wiki directory, configured agent, installed hooks, circuit breaker state, and page counts
 - **`config.py` module** — centralized `DEFAULT_WIKI_DIR`, `AGENT_CHOICES`, `CLI_AGENTS`, `IDE_AGENTS` constants and `validate_path()` utility
 - **Path validation** — `--wiki-dir` and `--src-dir` arguments are validated to prevent path traversal; rejects paths outside the project root
 - **`.gitignore` auto-entries** — `init` appends llm-wiki temp file patterns (`.git/llm-wiki-*.txt`, `.lock`, `.json`, `.log`) to `.gitignore`
 - **Global error handler** — `cli.py` catches unhandled exceptions and prints a friendly message instead of a raw traceback
-- **22 new tests** — `test_config.py` (7), `test_status.py` (10), `test_trigger.py` (5) covering path validation, status output, and trigger edge cases (mock-based)
 - **`generate-prompt` command** — builds a diff + AST sync prompt and writes it to `.git/llm-wiki-prompt.txt` for pasting into IDE agent chats; supports `--print`, `--no-diff`, `--output`, `--wiki-dir`, `--src-dir`
 - **IDE agent hook** — `install-hook` now installs a prompt-generation post-commit hook for `copilot`, `cursor`, and `generic` agents (instead of skipping); prints a reminder box after every commit
 - **Agent config persistence** — `init` writes `{wiki_dir}/.llm-wiki-agent` so `install-hook` and `generate-prompt` automatically pick up the chosen agent without requiring `--agent` every time
@@ -647,7 +755,6 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 ### Added
 - New agent targets: `aider` (`.aider.conf.yml`) and `opencode` (`.opencode/instructions.md`)
 - Improved agent constraint templates with structured sections and agent-specific preambles
-- Full test suite — 89 unit, integration, and E2E tests (pytest + pytest-cov)
 - GitHub Actions CI matrix: Python 3.9 / 3.12 / 3.13 on Ubuntu, macOS, Windows
 - PyPI publish workflow via OIDC trusted publisher on `v*` tags
 
@@ -675,10 +782,10 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Workflow detection** — call-graph analysis identifies cross-module functions touching 3+ internal modules as workflow candidates
 - **Clean uninstall** — safely removes hooks, strips constraint blocks from agent schema files, preserves user content
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
-- **Test suite** — 89 unit + integration tests with pytest
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.4.0...v1.5.0

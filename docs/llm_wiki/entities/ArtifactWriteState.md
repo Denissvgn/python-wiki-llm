@@ -58,8 +58,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) |
-| `_record_bootstrap_artifact` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_record_bootstrap_artifact` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

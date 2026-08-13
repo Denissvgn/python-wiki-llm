@@ -82,7 +82,7 @@ sequenceDiagram
     p16-->>p1: isinstance
 ```
 
-> Call sequence diagram shows 30 of 1085 interactions; 1055 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1105 interactions; 1075 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -137,7 +137,7 @@ flowchart LR
 | `callable` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `Path` | - | - | - | - |
-| `_load_once` | `root: Path`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `KnowledgeArtifactError`, `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `KnowledgeEnvelopeError`, `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState` | - | `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)` |
+| `_load_once` | `root: Path`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `KnowledgeArtifactError`, `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `WikiSurfacePathError`, `KnowledgeEnvelopeError`, `SURFACE_INDEX_FILENAME` | - | `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)` |
 | `_read_artifact` | `root: Path`, `filename: str`, `absent_is_issue: bool` | - | - | `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)` |
 | `is_symlink` | - | - | - | - |
 | `KnowledgeLoadIssue` | - | - | - | - |
@@ -155,14 +155,14 @@ flowchart LR
 | load_knowledge_state | Path | 115 | `Path(wiki_dir)` |
 | load_knowledge_state | _load_once | 116 | `_load_once(root, markdown_pages=markdown_pages)` |
 | _load_once | _read_artifact | 149 | `_read_artifact(root, SURFACE_INDEX_FILENAME)` |
-| _read_artifact | is_symlink | 473 | `path.is_symlink(data not statically known)` |
-| _read_artifact | KnowledgeLoadIssue | 474 | `KnowledgeLoadIssue(code='artifact-not-regular', artifact_path=filename, message='artifact must be a regular file, not a symbolic link')` |
+| _read_artifact | is_symlink | 475 | `path.is_symlink(data not statically known)` |
+| _read_artifact | KnowledgeLoadIssue | 476 | `KnowledgeLoadIssue(code='artifact-not-regular', artifact_path=filename, message='artifact must be a regular file, not a symbolic link')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `_read_artifact` | 494 |
+| filesystem_read | `path.read_bytes` | `_read_artifact` | 496 |
 
 ### Static analysis gaps
 
@@ -173,7 +173,7 @@ flowchart LR
 | unresolved_call | `load_knowledge_state` | `ValueError` | 111 |
 | unresolved_call | `load_knowledge_state` | `callable` | 112 |
 | unresolved_call | `load_knowledge_state` | `TypeError` | 113 |
-| unresolved_call | `_read_artifact` | `path.is_symlink` | 473 |
+| unresolved_call | `_read_artifact` | `path.is_symlink` | 475 |
 | step_limit | `load_knowledge_state` | `first 12 steps` | 0 |
 | truncated_flow | `load_knowledge_state` | `depth limit` | 0 |
 

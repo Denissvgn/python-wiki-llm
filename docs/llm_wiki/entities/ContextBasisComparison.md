@@ -1,6 +1,6 @@
 # ContextBasisComparison
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:299`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:429`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)
@@ -47,7 +47,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `compare_context_packet_basis` | call | [context_packet](../modules/context_packet.md) |
-| `compare_context_packet_basis` | type_reference | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `compare_context_packet_basis` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `compare_context_packet_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |

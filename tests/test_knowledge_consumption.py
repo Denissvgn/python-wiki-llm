@@ -1,4 +1,4 @@
-"""Shared native-consumer read-session tests (KNOW-202)."""
+"""Shared native-consumer read-session coverage."""
 
 from __future__ import annotations
 

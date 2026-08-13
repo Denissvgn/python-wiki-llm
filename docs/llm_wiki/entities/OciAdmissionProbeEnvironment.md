@@ -51,10 +51,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validate_probe_result_bindings` | type_reference | [broker](../modules/broker.md) |
-| `create_oci_admission_probe_environment` | call | [broker](../modules/broker.md) |
-| `create_oci_admission_probe_environment` | type_reference | [broker](../modules/broker.md) |
-| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) |
-| `OciAdmissionProbeRequest.create` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_probe_result_bindings` | type_reference | [broker](../modules/broker.md) | — |
+| `create_oci_admission_probe_environment` | call | [broker](../modules/broker.md) | 1 |
+| `create_oci_admission_probe_environment` | type_reference | [broker](../modules/broker.md) | — |
+| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) | — |
+| `OciAdmissionProbeRequest.create` | type_reference | [broker](../modules/broker.md) | — |

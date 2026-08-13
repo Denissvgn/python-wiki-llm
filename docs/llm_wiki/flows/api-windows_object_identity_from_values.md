@@ -48,9 +48,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| windows_object_identity_from_values | WindowsIdentityUnavailableError | 119 | `WindowsIdentityUnavailableError(...)` |
-| windows_object_identity_from_values | WindowsObjectIdentity | 122 | `WindowsObjectIdentity(device=int(...), file_id=file_id)` |
-| windows_object_identity_from_values | int | 123 | `int(device)` |
+| windows_object_identity_from_values | WindowsIdentityUnavailableError | 124 | `WindowsIdentityUnavailableError(...)` |
+| windows_object_identity_from_values | WindowsObjectIdentity | 127 | `WindowsObjectIdentity(device=int(...), file_id=file_id)` |
+| windows_object_identity_from_values | int | 128 | `int(device)` |
 
 ### Boundary effects
 

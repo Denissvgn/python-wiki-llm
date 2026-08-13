@@ -48,6 +48,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "prepare_calibration_run",
     "prepare_documentation_run",
     "prepare_p0_calibration_run",
+    "query_documentation",
     "record_calibration_agent_result",
     "record_documentation_agent_result",
     "record_p0_calibration_agent_result",
@@ -84,6 +85,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "pages_for_symbol",
         "prepare_calibration_run",
         "prepare_p0_calibration_run",
+        "query_documentation",
         "record_calibration_agent_result",
         "record_p0_calibration_agent_result",
         "related_concepts",
@@ -242,6 +244,9 @@ def _failure_cases(tmp_path: Path):
         "build_documentation_query_service": lambda: (
             api.build_documentation_query_service(str(missing_source))
         ),
+        "query_documentation": lambda: api.query_documentation(
+            {"operation": "concept", "value": ""}
+        ),
         "flow_for_entrypoint": lambda: api.flow_for_entrypoint(
             "entry",
             service=query_service,
@@ -299,8 +304,8 @@ def _failure_cases(tmp_path: Path):
             source_root=missing_source,
             site_name="Project",
         ),
-        "get_documentation_run_status": lambda: (
-            api.get_documentation_run_status(missing_workspace)
+        "get_documentation_run_status": lambda: api.get_documentation_run_status(
+            missing_workspace
         ),
         "build_documentation_agent_packet": lambda: (
             api.build_documentation_agent_packet(
@@ -329,22 +334,18 @@ def _failure_cases(tmp_path: Path):
         "get_calibration_run_status": lambda: api.get_calibration_run_status(
             missing_controller
         ),
-        "build_calibration_agent_packet": lambda: (
-            api.build_calibration_agent_packet(
-                missing_controller,
-                role="intake-a",
-            )
+        "build_calibration_agent_packet": lambda: api.build_calibration_agent_packet(
+            missing_controller,
+            role="intake-a",
         ),
         "dispatch_calibration_agent": lambda: api.dispatch_calibration_agent(
             missing_controller,
             role="intake-a",
         ),
-        "record_calibration_agent_result": lambda: (
-            api.record_calibration_agent_result(
-                missing_controller,
-                dispatch_receipt={},
-                result={},
-            )
+        "record_calibration_agent_result": lambda: api.record_calibration_agent_result(
+            missing_controller,
+            dispatch_receipt={},
+            result={},
         ),
         "verify_calibration_run": lambda: api.verify_calibration_run(
             missing_controller
@@ -394,11 +395,9 @@ def _failure_cases(tmp_path: Path):
             api.verify_p0_calibration_run,
             missing_controller,
         ),
-        "use_p0_calibration_host_broker_authenticator": lambda: (
-            _deprecated_context(
-                api.use_p0_calibration_host_broker_authenticator,
-                object(),
-            )
+        "use_p0_calibration_host_broker_authenticator": lambda: _deprecated_context(
+            api.use_p0_calibration_host_broker_authenticator,
+            object(),
         ),
     }
 
@@ -406,9 +405,7 @@ def _failure_cases(tmp_path: Path):
 def test_every_public_api_function_has_an_exception_boundary(tmp_path):
     cases = _failure_cases(tmp_path)
     public_functions = {
-        name
-        for name in api.__all__
-        if inspect.isfunction(getattr(api, name))
+        name for name in api.__all__ if inspect.isfunction(getattr(api, name))
     }
 
     assert set(_PUBLIC_FUNCTION_NAMES) == set(cases) == public_functions
@@ -434,18 +431,9 @@ def test_nul_wiki_dir_is_an_invalid_request():
 @pytest.mark.parametrize("function_name", _PUBLIC_FUNCTION_NAMES)
 def test_public_api_function_maps_a_provoked_failure(tmp_path, function_name):
     expected_types = {
-        **{
-            name: api.InvalidRequestError
-            for name in _INVALID_REQUEST_FAILURES
-        },
-        **{
-            name: api.WorkspaceStateError
-            for name in _WORKSPACE_STATE_FAILURES
-        },
-        **{
-            name: api.ArtifactIntegrityError
-            for name in _ARTIFACT_INTEGRITY_FAILURES
-        },
+        **{name: api.InvalidRequestError for name in _INVALID_REQUEST_FAILURES},
+        **{name: api.WorkspaceStateError for name in _WORKSPACE_STATE_FAILURES},
+        **{name: api.ArtifactIntegrityError for name in _ARTIFACT_INTEGRITY_FAILURES},
     }
     assert set(expected_types) == set(_PUBLIC_FUNCTION_NAMES)
 
@@ -570,10 +558,7 @@ def test_submitted_documentation_result_schema_is_invalid_request(
     run_path = tmp_path / ".llm-wiki-docs" / "run.json"
     run_path.parent.mkdir()
     fixture_path = (
-        Path(__file__).parent
-        / "fixtures"
-        / "documentation_runs"
-        / "partial.json"
+        Path(__file__).parent / "fixtures" / "documentation_runs" / "partial.json"
     )
     run_path.write_bytes(fixture_path.read_bytes())
 
@@ -586,9 +571,7 @@ def test_submitted_documentation_result_schema_is_invalid_request(
 def test_public_dict_return_annotations_import_and_resolve():
     expected = {
         "extract_source": api_types.ExtractSourceResult,
-        "build_context": (
-            api_types.ContextPayload | api_types.MarkdownContextResult
-        ),
+        "build_context": (api_types.ContextPayload | api_types.MarkdownContextResult),
         "build_qualified_context": api.QualifiedContextPacket,
         "validate_context_packet": api.ContextPacketValidation,
         "compare_context_packet_basis": api.ContextBasisComparison,
@@ -606,12 +589,12 @@ def test_public_dict_return_annotations_import_and_resolve():
         "related_concepts": api_types.RelatedConceptsResult,
         "traverse_typed_graph": api_types.TypedGraphTraversalResult,
         "explain_evidence": api_types.EvidenceExplanationResult,
+        "query_documentation": api_types.DocumentationQueryResult,
         "export_documentation_run": api_types.DocumentationExportResult,
     }
 
     assert {
-        name: typing.get_type_hints(getattr(api, name))["return"]
-        for name in expected
+        name: typing.get_type_hints(getattr(api, name))["return"] for name in expected
     } == expected
 
     bounded = {
@@ -624,6 +607,109 @@ def test_public_dict_return_annotations_import_and_resolve():
     }
     concept = bounded | {"knowledge", "concept", "total", "returned"}
     expected_keys = {
+        api_types.ResultBounds: (
+            {"total", "returned", "truncated"},
+            set(),
+        ),
+        api_types.ByteResultBounds: (
+            {"total", "returned", "truncated", "limit"},
+            set(),
+        ),
+        api_types.KnowledgeStatus: (
+            {"availability", "reason", "freshness", "freshness_evaluated"},
+            set(),
+        ),
+        api_types.ContextKnowledgeSelection: (
+            {"concepts", "pages", "relationships", "relationship_coverage"},
+            set(),
+        ),
+        api_types.ContextKnowledgeResult: (
+            {
+                "mode",
+                "status",
+                "availability",
+                "reason",
+                "selected",
+                "freshness_evaluated",
+                "bounds",
+                "fallback",
+            },
+            {"selection"},
+        ),
+        api_types.RankingPolicy: (
+            {
+                "requested",
+                "policy",
+                "scope",
+                "budget_pressure",
+                "applied",
+                "reason",
+            },
+            set(),
+        ),
+        api_types.RequiredKnowledgeErrorDetails: (
+            {
+                "code",
+                "field",
+                "mode",
+                "availability",
+                "reason",
+                "fallback_evidence",
+                "recovery_command",
+                "mutation_permitted",
+            },
+            set(),
+        ),
+        api_types.QueryCostDisclosure: (
+            {"scope", "full_inventory_performed", "supplied_paths"},
+            set(),
+        ),
+        api_types.DocumentationQueryResult: (
+            {
+                "schema_version",
+                "operation",
+                "query",
+                "found",
+                "ambiguous",
+                "matches",
+                "bounds",
+                "truncated",
+                "cost",
+            },
+            {
+                "knowledge",
+                "concept",
+                "total",
+                "returned",
+                "direction",
+                "kinds",
+                "relationships",
+                "related_concepts",
+                "unresolved_targets",
+                "external_targets",
+                "origins",
+                "resolutions",
+                "include_evidence",
+                "typed_graph",
+                "edges",
+                "symbol",
+                "pages",
+                "callers",
+                "callees",
+                "flow",
+                "data_flow",
+                "path",
+                "inbound",
+                "outbound",
+                "metrics",
+                "cycle_groups",
+                "load_order_index",
+                "impacted_paths",
+                "concepts",
+                "limitations",
+                "raw_evidence",
+            },
+        ),
         api_types.ExtractSourceResult: (
             {"schema_version", "inventory", "data_flow_details"},
             {
@@ -832,7 +918,7 @@ def test_public_dict_return_annotations_import_and_resolve():
         ),
     }
 
-    assert set(expected_keys) == {
+    assert set(expected_keys) | {api_types.KnowledgeMode} == {
         getattr(api_types, name) for name in api_types.__all__
     }
     for contract, (required, optional) in expected_keys.items():

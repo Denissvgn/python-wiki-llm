@@ -53,11 +53,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_load_and_validate_metadata` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_load_and_validate_metadata` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_load_and_validate_metadata` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_load_and_validate_metadata` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_load_and_validate_metadata` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_resolve_metadata_freshness` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_load_and_validate_metadata` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 4 |
+| `_load_and_validate_metadata` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_resolve_metadata_freshness` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |

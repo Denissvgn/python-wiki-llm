@@ -61,7 +61,9 @@ questions. This creates predictable failure modes:
 - public projections leak internal metadata or imply live freshness they did
   not evaluate.
 
-The implementation now has the primitives needed to avoid those failure modes:
+After bootstrap or sync commits a knowledge-capable wiki, its generated
+observations are the normal bounded evidence plane for knowledge-aware agents.
+The implementation has the primitives needed to keep that plane qualified:
 
 - explicit `ready`, `absent`, `degraded`, and `unsupported` availability;
 - persisted observation bases and read-time freshness;
@@ -297,7 +299,8 @@ of related concepts.
 1. For a broad task, build one live documentation query service or one bounded
    context request.
 2. Inspect `knowledge.availability`, `reason`, and
-   `freshness_evaluated` before interpreting matches.
+   `freshness_evaluated` before interpreting matches. In explicit v2 context,
+   also branch on `status`, `selected`, and `fallback.used`.
 3. Use exact locators, canonical paths, durable UIDs, or persisted aliases for
    identity. Do not fuzzy-resolve concept identity.
 4. For ordinary work, prefer compact results and typed traversal without raw
@@ -308,13 +311,39 @@ of related concepts.
    warnings in the agent's conclusion.
 7. Fall back to validated surface/Markdown and targeted source reads when
    native knowledge is absent, degraded, or unsupported.
+8. Use `prefer_fresh` only when current-first ordering within the same
+   relevance tier is useful under budget pressure. It is not a filter or a
+   validity threshold.
 
 ### Delivery options
 
-- `llm-wiki context --request ...`;
-- Python `build_documentation_query_service(...)` plus query wrappers;
-- MCP `get_concept`, `related_concepts`, `traverse_typed_graph`, and
-  `explain_evidence`.
+The CLI selects the same explicit v2 contract as a raw
+`llm-wiki-context/v2` request:
+
+```console
+llm-wiki context --budget 32000 --knowledge-mode auto --read-only
+```
+
+Other supported interfaces are:
+
+- Python `query_documentation(...)` for bounded exact or supplied-impact
+  queries, and `build_documentation_query_service(...)` when several live
+  full-inventory queries should share one service;
+- MCP `query_documentation`, `get_context`, `get_context_packet`, and the
+  dedicated exact concept and traversal tools.
+
+The shared documentation-query dispatcher discloses whether a request used
+only the committed snapshot, targeted supplied-path extraction, or a full
+inventory. Symbol, entrypoint, and dependency operations require an explicit
+full-inventory opt-in. Supplied paths and unified diffs never establish a
+global live-freshness claim.
+
+`auto` preserves a successful read-only route through validated surface,
+Markdown, and targeted source/runtime evidence when native knowledge is
+unavailable. `required` returns `knowledge-required-unavailable` instead. A
+ready snapshot-only projection can satisfy `required`, but remains explicitly
+not live-qualified. See [Native knowledge reads](native-knowledge.md) for the
+exact status, reason, fallback, and bound fields.
 
 ### Real value
 

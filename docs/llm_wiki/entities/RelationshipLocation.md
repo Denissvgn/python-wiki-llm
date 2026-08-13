@@ -49,9 +49,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_build_observation` | call | [knowledge_links](../modules/knowledge_links.md) |
-| `_parse_relationship_location` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_relationship_location` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_build_observation` | call | [knowledge_links](../modules/knowledge_links.md) | 1 |
+| `_parse_relationship_location` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_relationship_location` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

@@ -1,6 +1,6 @@
 # TypedGraphTraversalResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:155`
+**Location:** `src/llm_wiki_cli/api_types.py:231`
 **Kind:** Class
 **Bases:** `ConceptResult`
 **Module:** [api_types](../modules/api_types.md)
@@ -54,6 +54,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `traverse_typed_graph` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `traverse_typed_graph` | type_reference | [api](../modules/api.md) | — |

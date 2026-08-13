@@ -104,10 +104,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_application_knowledge_extensions` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `build_runtime_knowledge_plan` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_application_knowledge_extensions` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `build_runtime_knowledge_plan` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |

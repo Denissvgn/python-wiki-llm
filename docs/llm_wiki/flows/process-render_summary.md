@@ -2,7 +2,9 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [render_summary](../modules/render_summary.md)
-**Modules touched:** [render_summary](../modules/render_summary.md)
+**Modules touched:** [ci_report](../modules/ci_report.md), [render_summary](../modules/render_summary.md)
+
+**Related modules:** [ci_report](../modules/ci_report.md)
 
 ## Call sequence
 
@@ -36,6 +38,8 @@ sequenceDiagram
     p1-->>p4: sorted
     p1-->>p3: add_argument
     p1-->>p5: range
+    p1-->>p3: add_argument
+    p1-->>p3: add_argument
     p1-->>p6: parse_args
     p0->>p7: load_report
     p7-->>p8: loads
@@ -57,11 +61,11 @@ sequenceDiagram
     p18-->>p19: strip
     p18-->>p11: ValueError
     p17-->>p11: ValueError
-    p7-->>p16: get
-    p7-->>p14: isinstance
 ```
 
-> Call sequence diagram shows 30 of 134 interactions; 104 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 304 interactions; 274 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -76,10 +80,10 @@ flowchart LR
     s6["6. sorted"]
     s7["7. add_argument"]
     s8["8. range"]
-    s9["9. parse_args"]
-    s10["10. load_report"]
-    s11["11. loads"]
-    s12["12. read_text"]
+    s9["9. add_argument"]
+    s10["10. add_argument"]
+    s11["11. parse_args"]
+    s12["12. load_report"]
     s1 -->|"_arguments(data not statically known)"| s2
     s2 -. "argparse.ArgumentParser(data not statically known)" .-> s3
     s2 -. "parser.add_argument('--report', required=True)" .-> s4
@@ -87,17 +91,17 @@ flowchart LR
     s2 -. "sorted(FAIL_THRESHOLDS)" .-> s6
     s2 -. "parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)" .-> s7
     s2 -. "range(4)" .-> s8
-    s2 -. "parser.parse_args(data not statically known)" .-> s9
-    s1 -->|"load_report(args.report, doctor_exit_code=args.doctor_exit_code)"| s10
-    s10 -. "json.loads(..., object_pairs_hook=_strict_json_object, parse_constant=_reject_nonfinite)" .-> s11
-    s10 -. "Path(path).read_text(encoding='utf-8')" .-> s12
+    s2 -. "parser.add_argument('--expected-strict', choices=(...), required=True)" .-> s9
+    s2 -. "parser.add_argument('--receipt')" .-> s10
+    s2 -. "parser.parse_args(data not statically known)" .-> s11
+    s1 -->|"load_report(args.report, doctor_exit_code=args.doctor_exit_code, expected_strict=...)"| s12
     b0["environment_read os.environ.get"]
     s1 -. "environment_read os.environ.get" .-> b0
     b1["environment_read os.environ.get"]
     s1 -. "environment_read os.environ.get" .-> b1
     click s1 "../modules/render_summary.md"
     click s2 "../modules/render_summary.md"
-    click s10 "../modules/render_summary.md"
+    click s12 "../modules/render_summary.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -107,7 +111,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `main` | - | `FAIL_THRESHOLDS`, `STATUS_SEVERITY` | - | `int(...)` |
+| `main` | - | `FAIL_THRESHOLDS`, `STATUS_SEVERITY` | - | `dashboard_exit` |
 | `_arguments` | - | `FAIL_THRESHOLDS` | - | `parser.parse_args(...)` |
 | `ArgumentParser` | - | - | - | - |
 | `add_argument` | - | - | - | - |
@@ -115,48 +119,49 @@ flowchart LR
 | `sorted` | - | - | - | - |
 | `add_argument` | - | - | - | - |
 | `range` | - | - | - | - |
+| `add_argument` | - | - | - | - |
+| `add_argument` | - | - | - | - |
 | `parse_args` | - | - | - | - |
-| `load_report` | `path: str \| Path`, `doctor_exit_code: int` | `_strict_json_object`, `_reject_nonfinite`, `json`, `REPORT_FIELDS`, `SCHEMA_VERSION`, `SCHEMA_VERSION`, `STATUS_SEVERITY`, `STATUS_SEVERITY` | - | `report` |
-| `loads` | - | - | - | - |
-| `read_text` | - | - | - | - |
+| `load_report` | `path: str \| Path`, `doctor_exit_code: int`, `expected_strict: bool \| None` | `_strict_json_object`, `_reject_nonfinite`, `json`, `REPORT_FIELDS`, `SCHEMA_VERSION`, `SCHEMA_VERSION`, `STATUS_SEVERITY`, `STATUS_SEVERITY` | - | `report` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _arguments | 437 | `_arguments(data not statically known)` |
-| _arguments | ArgumentParser | 107 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | add_argument | 108 | `parser.add_argument('--report', required=True)` |
-| _arguments | add_argument | 109 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
-| _arguments | sorted | 109 | `sorted(FAIL_THRESHOLDS)` |
-| _arguments | add_argument | 110 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
-| _arguments | range | 112 | `range(4)` |
-| _arguments | parse_args | 116 | `parser.parse_args(data not statically known)` |
-| main | load_report | 439 | `load_report(args.report, doctor_exit_code=args.doctor_exit_code)` |
-| load_report | loads | 344 | `json.loads(..., object_pairs_hook=_strict_json_object, parse_constant=_reject_nonfinite)` |
-| load_report | read_text | 345 | `Path(path).read_text(encoding='utf-8')` |
+| main | _arguments | 508 | `_arguments(data not statically known)` |
+| _arguments | ArgumentParser | 108 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | add_argument | 109 | `parser.add_argument('--report', required=True)` |
+| _arguments | add_argument | 110 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
+| _arguments | sorted | 110 | `sorted(FAIL_THRESHOLDS)` |
+| _arguments | add_argument | 111 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
+| _arguments | range | 113 | `range(4)` |
+| _arguments | add_argument | 117 | `parser.add_argument('--expected-strict', choices=(...), required=True)` |
+| _arguments | add_argument | 122 | `parser.add_argument('--receipt')` |
+| _arguments | parse_args | 123 | `parser.parse_args(data not statically known)` |
+| main | load_report | 510 | `load_report(args.report, doctor_exit_code=args.doctor_exit_code, expected_strict=...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| environment_read | `os.environ.get` | `main` | 447 |
-| environment_read | `os.environ.get` | `main` | 449 |
+| environment_read | `os.environ.get` | `main` | 519 |
+| environment_read | `os.environ.get` | `main` | 521 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_arguments` | `argparse.ArgumentParser` | 107 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 108 |
+| external_call | `_arguments` | `argparse.ArgumentParser` | 108 |
 | unresolved_call | `_arguments` | `parser.add_argument` | 109 |
-| unresolved_call | `_arguments` | `sorted` | 109 |
 | unresolved_call | `_arguments` | `parser.add_argument` | 110 |
-| unresolved_call | `_arguments` | `range` | 112 |
-| unresolved_call | `_arguments` | `parser.parse_args` | 116 |
-| external_call | `load_report` | `json.loads` | 344 |
-| unresolved_call | `load_report` | `Path(path).read_text` | 345 |
+| unresolved_call | `_arguments` | `sorted` | 110 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 111 |
+| unresolved_call | `_arguments` | `range` | 113 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 117 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 122 |
+| unresolved_call | `_arguments` | `parser.parse_args` | 123 |
 | step_limit | `main` | `first 12 steps` | 0 |
+| truncated_flow | `main` | `depth limit` | 0 |
 
 ## Behavior
 

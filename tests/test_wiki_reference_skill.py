@@ -1,23 +1,24 @@
-"""Tests for the bundled wiki-reference skill and its provisioning.
+"""Tests for the bundled wiki-reference topics and their provisioning."""
 
-The agent constraint block points at this skill for contract-level detail,
-so its reference.md must keep every contract sentence that used to live in
-the injected block (progressive disclosure must not lose content).
-"""
-
+import shutil
 from pathlib import Path
+
+import pytest
 
 from llm_wiki_cli.services.skills import (
     BUNDLED_SKILLS_ROOT,
+    GENERIC_INSTALL_TARGET,
     REFERENCE_SKILL_ID,
+    REFERENCE_SKILL_FILES,
+    export_skills,
     install_reference_skill,
     list_bundled_skills,
     reference_skill_state,
 )
 
 
-def _reference_text() -> str:
-    path = BUNDLED_SKILLS_ROOT / REFERENCE_SKILL_ID / "reference.md"
+def _topic_text(filename: str) -> str:
+    path = BUNDLED_SKILLS_ROOT / REFERENCE_SKILL_ID / "references" / filename
     return path.read_text(encoding="utf-8")
 
 
@@ -30,12 +31,11 @@ def test_wiki_reference_is_bundled_with_frontmatter():
     assert REFERENCE_SKILL_ID in skills
     skill = skills[REFERENCE_SKILL_ID]
     assert skill.description
-    assert "SKILL.md" in skill.files
-    assert "reference.md" in skill.files
+    assert skill.files == REFERENCE_SKILL_FILES
 
 
 def test_reference_documents_extractor_helpers_and_toolchains():
-    content = _reference_text()
+    content = _topic_text("extractors-dependencies.md")
 
     assert "llm-wiki prepare-extractors --src-dir ." in content
     assert "llm-wiki prepare-extractors --cache-dir .cache/llm-wiki-helpers" in content
@@ -46,91 +46,94 @@ def test_reference_documents_extractor_helpers_and_toolchains():
     assert "--include-tests go" in content
     assert "LLM_WIKI_GO=/path/to/go" in content
     assert "LLM_WIKI_GHC=/path/to/ghc" in content
-    assert "prepared TypeScript/JavaScript/Go/Rust/Haskell helpers" in content
+    assert (
+        "TypeScript/JavaScript, Go, Rust, and Haskell extraction runs through "
+        "prepared helper toolchains"
+    ) in _squash_ws(content)
 
 
 def test_reference_documents_haskell_contract():
-    content = _reference_text()
+    content = _topic_text("extractors-dependencies.md")
     text = _squash_ws(content)
 
-    assert "normal CLI extraction invokes the prepared Haskell helper" in content
-    assert (
-        "syntax-only Haskell inventory without typechecking the target project" in text
-    )
-    assert "does not start Haskell Language Server" in text
+    assert "Normal extraction invokes the prepared helper" in text
+    assert "syntax-only inventory without typechecking the target project" in text
+    assert "starting Haskell Language Server" in text
     assert (
         "Haskell dependency reconciliation reads Cabal `build-depends` statically"
         in text
     )
-    assert (
-        "Stack `extra-deps` and Nix package hints as optional advisory metadata" in text
-    )
+    assert "Stack `extra-deps`, and Nix package hints" in text
+    assert "optional advisory metadata" in text
     assert "Unknown Haskell imports are ignored rather than guessed" in text
-    assert "GHC 9.6.x is the supported Haskell helper toolchain" in text
+    assert "GHC 9.6.x is the supported helper toolchain" in text
     assert "newer GHC 9.x releases are best-effort" in text
-    assert "Generated Haskell module pages render declared module names" in content
-    assert "Haskell lockfile pinning is intentionally out of scope" in text
+    assert "Generated Haskell module pages can render declared module names" in text
+    assert "Haskell lockfile pinning is outside" in text
 
 
 def test_reference_documents_haskell_inventory_schema():
-    content = _reference_text()
+    content = _topic_text("extractors-dependencies.md")
     text = _squash_ws(content)
 
-    assert "Haskell inventory stays additive under `llm-wiki-extract/v1`" in text
+    assert "Haskell inventory remains additive under `llm-wiki-extract/v1`" in text
     assert (
-        "Haskell file entries include `language`, `imports`, `classes`, and `functions`"
-        in text
+        "file entries contain `language`, `imports`, `classes`, and `functions`" in text
     )
-    assert "`module` is present when the source declares one" in text
-    assert "`module`, `qualified`, `alias`, and `line`" in content
-    assert "`classes` stores type-oriented declarations" in text
+    assert "`module` is present when source declares one" in text
+    assert "import records contain `module`, `qualified`, `alias`, and `line`" in text
+    assert "`classes` stores" in text
     assert "`data`, `newtype`, `type`, `class`, or `instance`" in content
-    assert "`functions` stores top-level signatures, functions, and values" in text
+    assert "`functions` stores" in text
     assert "`signature`, `function`, or `value`" in content
-    assert "`language_pragmas`, `exports`, and `deriving`" in text
+    assert "`language_pragmas`, `exports`, and `deriving` are best-effort" in text
 
 
 def test_reference_documents_dependency_reconciliation_and_flows():
-    content = _reference_text()
+    content = _topic_text("extractors-dependencies.md")
     text = _squash_ws(content)
 
-    assert "nested Python `pyproject.toml` and `requirements*.txt` files" in text
+    assert "Nested Python `pyproject.toml` and `requirements*.txt` files" in text
     assert "Go `// indirect` requirements are transitive" in text
-    assert "optional lockfile-backed `versions`" in content
+    assert "Optional lockfile-backed `versions`" in content
     assert "`dependencies.version_details`" in content
     assert "llm-wiki-dependency-version-details/v1" in content
     assert "`go.mod` selections remain distinct from `go.sum` observations" in text
     assert "`data_flow_details` sibling" in text
     assert "llm-wiki-extract-data-flow-details/v1" in content
     assert "`not_evaluated`, `unsupported`, and `evaluated`" in content
-    assert "Raw Node `http.createServer` and `https.createServer` calls" in content
+    assert "Raw Node `http.createServer` and `https.createServer` calls" in text
     assert "javascript_flow_unsupported" in content
 
 
 def test_reference_documents_site_export_and_context():
-    content = _reference_text()
+    publishing = _topic_text("publishing.md")
+    context = _topic_text("context-query.md")
+    publishing_text = _squash_ws(publishing)
+    context_text = _squash_ws(context)
 
     assert (
-        "Docusaurus exports include generated front matter and sidebars.json" in content
+        "Docusaurus output includes generated front matter and `sidebars.json`"
+        in publishing_text
     )
-    assert "--profile reference" in content
-    assert "--file-friendly" in content
+    assert "--profile reference" in publishing
+    assert "--file-friendly" in publishing
     assert (
         "llm-wiki context --budget 8000 --src-dir . "
-        "--format markdown --focus changed --read-only" in content
+        "--wiki-dir docs/llm_wiki --format packet --focus changed "
+        "--knowledge-mode auto --read-only" in context_text
     )
-    assert "budget and focus bound emitted output after a full" in content
-    assert "do not bound scan work" in content
-    assert "For a narrow task" in content
-    assert "skip context" in content
+    assert '"protocol": "llm-wiki-context/v2"' in context
+    assert "`prefer_fresh` is independent" in context
+    assert "Python or MCP `query_documentation`" in context
+    assert "Budget and focus bound emitted output, not scan work" in context_text
+    assert "Broad repository orientation" in context
+    assert "Exact concept" in context
+    assert "Supplied changed paths or unified diff" in context
 
 
 def test_reference_covers_all_strict_native_categories_without_conflation():
-    content = _reference_text()
-    section = content[
-        content.index("## Strict knowledge lint") :
-        content.index("## Knowledge query, API, and MCP boundaries")
-    ]
+    section = _topic_text("knowledge-consumption.md")
 
     for category in (
         "knowledge_schema",
@@ -145,12 +148,12 @@ def test_reference_covers_all_strict_native_categories_without_conflation():
         assert f"`{category}`" in section
     normalized = _squash_ws(section)
     assert "human review" in normalized
-    assert "disposable machine receipt" in normalized
+    assert "machine-verification findings remain separate" in normalized
     assert "never runs a checker" in normalized
 
 
 def test_reference_documents_typed_context_traversal_and_independent_bounds():
-    content = _reference_text()
+    content = _topic_text("context-query.md")
     normalized = _squash_ws(content)
 
     for refinement in (
@@ -168,11 +171,9 @@ def test_reference_documents_typed_context_traversal_and_independent_bounds():
         "explain_evidence",
     ):
         assert wrapper in content
-    assert "Build one Python service" in content
-    assert "pass `service=` to every wrapper" in normalized
-    assert "query `truncated: false` does not prove an analyzer was complete" in (
-        normalized
-    )
+    assert "Build one Python documentation query service" in content
+    assert "Supplying `service=` performs no new extraction" in normalized
+    assert "A non-truncated query does not prove analyzer completeness" in normalized
     assert "`bounds.edges` describes post-filter response limiting" in normalized
     assert "evidence-sample omission" in normalized
     assert "Resolved, ambiguous, external, and unresolved endpoints remain" in (
@@ -183,17 +184,14 @@ def test_reference_documents_typed_context_traversal_and_independent_bounds():
 
 
 def test_reference_documents_exact_identity_and_governance_lifecycle():
-    content = _reference_text()
-    normalized = _squash_ws(content)
-    governance = content[
-        content.index("## Durable governance, lifecycle, review, and verification") :
-        content.index("## JavaScript and TypeScript flows")
-    ]
+    identity = _topic_text("context-query.md")
+    governance = _topic_text("governance.md")
+    normalized = _squash_ws(identity)
 
-    assert "current concept locator/MCP URI" in normalized
+    assert "current concept locators/MCP URIs" in normalized
     assert "exact canonical wiki path" in normalized
     assert "durable UID" in normalized
-    assert "persisted governance alias" in normalized
+    assert "persisted locator/natural-key aliases" in normalized
     for action in (
         "knowledge init",
         "knowledge status",
@@ -208,19 +206,17 @@ def test_reference_documents_exact_identity_and_governance_lifecycle():
         assert action in governance
     normalized_governance = _squash_ws(governance)
     assert "All governance mutations support `--dry-run`" in normalized_governance
-    assert "no implicit merge, reallocation, or overwrite" in normalized_governance
-    assert "Source disappearance does not deprecate" in normalized_governance
-    assert "agent review cannot satisfy it" in normalized_governance
+    assert "never merge, overwrite, delete, reallocate" in normalized_governance
+    assert "disappearance does not deprecate" in normalized_governance
+    assert "Agent review cannot satisfy it" in normalized_governance
     assert "restore the exact `.llm-wiki-governance.json`" in normalized_governance
-    assert "Never run `knowledge init` or reconstruct it" in normalized_governance
+    assert "Never reconstruct it from the generated projection" in (
+        normalized_governance
+    )
 
 
 def test_reference_documents_safe_site_and_obsidian_projection_boundary():
-    content = _reference_text()
-    section = content[
-        content.index("### Opt-in native metadata for Site and Obsidian") :
-        content.index("## Resource-aware execution")
-    ]
+    section = _topic_text("publishing.md")
     normalized = _squash_ws(section)
 
     for required in (
@@ -232,32 +228,32 @@ def test_reference_documents_safe_site_and_obsidian_projection_boundary():
         "configured-public",
     ):
         assert required in section
-    assert "Canonical Markdown bodies and copied media are preserved" in normalized
-    assert "not redacted or reviewed by the knowledge projection" in normalized
-    assert "rebuild them from the validated canonical snapshot" in normalized
+    assert "Canonical Markdown bodies and copied media remain" in normalized
+    assert "knowledge projection neither redacts nor reviews them" in normalized
+    assert "Rebuild them from the validated canonical snapshot" in normalized
 
 
 def test_reference_skill_routes_native_contracts_by_task():
-    manifest = (
-        BUNDLED_SKILLS_ROOT / REFERENCE_SKILL_ID / "SKILL.md"
-    ).read_text(encoding="utf-8")
+    manifest = (BUNDLED_SKILLS_ROOT / REFERENCE_SKILL_ID / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
 
     for route in (
-        "Knowledge observations and freshness",
-        "Knowledge lint and context",
-        "Knowledge query/API/MCP contract",
-        "Durable governance, review, and verification",
-        "Static-site and Obsidian export",
+        "](references/knowledge-consumption.md)",
+        "](references/context-query.md)",
+        "](references/governance.md)",
+        "](references/publishing.md)",
     ):
         assert route in manifest
-    assert "open [reference.md](reference.md) at the section" in manifest
+    assert "[reference.md](reference.md)" not in manifest
+    assert "compatibility index for legacy anchors" in manifest
 
 
 def test_reference_documents_resource_aware_execution():
-    content = _reference_text()
+    content = _topic_text("resources-context.md")
     text = _squash_ws(content)
 
-    assert "## Resource-aware execution" in content
+    assert "# Resource-aware execution" in content
     for environment in [
         "Interactive IDE or unknown capacity",
         "Isolated terminal",
@@ -265,13 +261,13 @@ def test_reference_documents_resource_aware_execution():
     ]:
         assert environment in content
     assert "The supervisor owns the schedule" in content
-    assert "must not launch heavy gates unless explicitly assigned" in content
-    assert "`requested_jobs` is the user's raw selection" in content
+    assert "must not launch a heavy gate unless explicitly assigned" in content
+    assert "`requested_jobs` is the caller's raw choice" in content
     assert "`resolved_jobs` is the integer concurrency ceiling" in content
     assert "`effective_workers` is the maximum number" in content
     assert "absent languages, cache-elided work, sequential-only" in text
     assert "not a global host-resource cap" in content
-    assert "one later manual retry may use `--jobs 1`" in text
+    assert "One later manual retry may use `--jobs 1`" in text
     assert "not proof that `llm-wiki` leaked a watcher" in text
 
 
@@ -281,35 +277,184 @@ class TestReferenceSkillProvisioning:
 
         assert report.ok
         skill_dir = tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID
-        assert (skill_dir / "SKILL.md").is_file()
-        assert (skill_dir / "reference.md").is_file()
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
         assert reference_skill_state(tmp_path) == "unmodified"
 
     def test_state_absent_before_install(self, tmp_path):
         assert reference_skill_state(tmp_path) == "absent"
 
-    def test_local_edit_marks_modified_and_force_refresh_restores(self, tmp_path):
+    def test_root_owned_platform_alias_preserves_install_and_export(
+        self, tmp_path
+    ):
+        alias_root = Path("/var")
+        if (
+            not alias_root.is_symlink()
+            or getattr(alias_root.lstat(), "st_uid", None) != 0
+        ):
+            pytest.skip("no root-owned /var platform alias")
+        try:
+            relative = tmp_path.resolve().relative_to(alias_root.resolve())
+        except ValueError:
+            pytest.skip("temporary directory is not below the /var alias target")
+
+        aliased_tmp = alias_root / relative
+        project = aliased_tmp / "alias-project"
+        project.mkdir()
+        assert reference_skill_state(project, agent="generic") == "absent"
+
+        install_report = install_reference_skill(project, agent="generic")
+
+        assert install_report.ok
+        assert reference_skill_state(project, agent="generic") == "unmodified"
+
+        export_dest = aliased_tmp / "alias-export"
+        export_report = export_skills(
+            export_dest,
+            skills=[REFERENCE_SKILL_ID],
+        )
+
+        assert export_report.ok
+        assert (export_dest / REFERENCE_SKILL_ID / "SKILL.md").is_file()
+
+    def test_local_edit_requires_force_refresh(self, tmp_path):
         install_reference_skill(tmp_path)
         ref_path = (
-            tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID / "reference.md"
+            tmp_path
+            / ".claude"
+            / "skills"
+            / REFERENCE_SKILL_ID
+            / "references"
+            / "maintenance.md"
         )
         ref_path.write_text("local notes\n", encoding="utf-8")
         assert reference_skill_state(tmp_path) == "modified"
 
-        # Without force the differing file is preserved and reported
         report = install_reference_skill(tmp_path)
         assert not report.ok
         assert ref_path.read_text(encoding="utf-8") == "local notes\n"
 
         report = install_reference_skill(tmp_path, force=True)
         assert report.ok
+        assert ref_path.read_text(encoding="utf-8") != "local notes\n"
+        assert reference_skill_state(tmp_path) == "unmodified"
+
+    def test_missing_nested_file_is_restored(self, tmp_path):
+        install_reference_skill(tmp_path)
+        topic = (
+            tmp_path
+            / ".claude"
+            / "skills"
+            / REFERENCE_SKILL_ID
+            / "references"
+            / "governance.md"
+        )
+        topic.unlink()
+
+        assert reference_skill_state(tmp_path) == "modified"
+        report = install_reference_skill(tmp_path, force=True)
+
+        assert report.ok
+        assert topic.is_file()
         assert reference_skill_state(tmp_path) == "unmodified"
 
     def test_extra_file_marks_modified(self, tmp_path):
         install_reference_skill(tmp_path)
         skill_dir = tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID
-        (skill_dir / "notes.md").write_text("extra\n", encoding="utf-8")
+        extra = skill_dir / "references" / "notes.md"
+        extra.write_text("extra\n", encoding="utf-8")
         assert reference_skill_state(tmp_path) == "modified"
+
+        report = install_reference_skill(tmp_path, force=True)
+
+        assert not report.ok
+        assert extra.read_text(encoding="utf-8") == "extra\n"
+        assert any(
+            issue["category"] == "managed_tree_not_exact" for issue in report.issues
+        )
+
+    def test_extra_empty_directory_marks_modified(self, tmp_path):
+        install_reference_skill(tmp_path)
+        skill_dir = tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID
+        (skill_dir / "references" / "local").mkdir()
+
+        assert reference_skill_state(tmp_path) == "modified"
+
+    def test_expected_file_symlink_is_modified_and_never_followed(self, tmp_path):
+        install_reference_skill(tmp_path)
+        skill_dir = tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID
+        topic = skill_dir / "references" / "maintenance.md"
+        outside = tmp_path / "outside.md"
+        sentinel = "outside sentinel must never change\n"
+        outside.write_text(sentinel, encoding="utf-8")
+        topic.unlink()
+        try:
+            topic.symlink_to(outside)
+        except OSError as exc:  # pragma: no cover - platform policy
+            pytest.skip(f"symlinks unavailable: {exc}")
+
+        assert reference_skill_state(tmp_path) == "modified"
+        report = install_reference_skill(tmp_path, force=True)
+
+        assert not report.ok
+        assert topic.is_symlink()
+        assert outside.read_text(encoding="utf-8") == sentinel
+
+    def test_expected_file_directory_conflict_is_preserved(self, tmp_path):
+        install_reference_skill(tmp_path)
+        skill_dir = tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID
+        topic = skill_dir / "references" / "maintenance.md"
+        topic.unlink()
+        topic.mkdir()
+
+        report = install_reference_skill(tmp_path, force=True)
+
+        assert not report.ok
+        assert topic.is_dir()
+        assert reference_skill_state(tmp_path) == "modified"
+        assert any(
+            issue["category"] == "unsafe_or_conflicting_entry"
+            for issue in report.issues
+        )
+
+    def test_symlinked_topic_directory_cannot_receive_outside_writes(self, tmp_path):
+        install_reference_skill(tmp_path)
+        skill_dir = tmp_path / ".claude" / "skills" / REFERENCE_SKILL_ID
+        references = skill_dir / "references"
+        shutil.rmtree(references)
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        try:
+            references.symlink_to(outside, target_is_directory=True)
+        except OSError as exc:  # pragma: no cover - platform policy
+            pytest.skip(f"symlinks unavailable: {exc}")
+
+        report = install_reference_skill(tmp_path, force=True)
+
+        assert not report.ok
+        assert reference_skill_state(tmp_path) == "modified"
+        assert list(outside.iterdir()) == []
+        assert references.is_symlink()
+
+    def test_symlinked_install_parent_cannot_receive_outside_writes(self, tmp_path):
+        project = tmp_path / "project"
+        project.mkdir()
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        try:
+            (project / ".llm-wiki").symlink_to(outside, target_is_directory=True)
+        except OSError as exc:  # pragma: no cover - platform policy
+            pytest.skip(f"symlinks unavailable: {exc}")
+
+        report = install_reference_skill(project, agent="generic", force=True)
+
+        assert not report.ok
+        assert reference_skill_state(project, agent="generic") == "modified"
+        assert list(outside.iterdir()) == []
+        assert (project / ".llm-wiki").is_symlink()
 
     def test_state_checks_configured_target(self, tmp_path):
         target = Path("agent-skills")
@@ -324,8 +469,11 @@ class TestReferenceSkillProvisioning:
         ).is_file()
 
         install_reference_skill(tmp_path, agent="cursor")
-        assert (
-            tmp_path / ".llm-wiki" / "skills" / REFERENCE_SKILL_ID / "SKILL.md"
-        ).is_file()
+        generic_dir = tmp_path / GENERIC_INSTALL_TARGET / REFERENCE_SKILL_ID
+        assert {
+            path.relative_to(generic_dir).as_posix()
+            for path in generic_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
         assert reference_skill_state(tmp_path, agent="cursor") == "unmodified"
         assert reference_skill_state(tmp_path, agent="copilot") == "unmodified"

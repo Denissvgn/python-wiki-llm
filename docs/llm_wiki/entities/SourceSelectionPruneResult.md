@@ -56,13 +56,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_source_selection_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_print_dry_run_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `prune_manifest_for_source_selection` | call | [sync_manifest](../modules/sync_manifest.md) |
-| `prune_manifest_for_source_selection` | call | [sync_manifest](../modules/sync_manifest.md) |
-| `prune_manifest_for_source_selection` | call | [sync_manifest](../modules/sync_manifest.md) |
-| `prune_manifest_for_source_selection` | type_reference | [sync_manifest](../modules/sync_manifest.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_source_selection_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_print_dry_run_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `prune_manifest_for_source_selection` | call | [sync_manifest](../modules/sync_manifest.md) | 3 |
+| `prune_manifest_for_source_selection` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |

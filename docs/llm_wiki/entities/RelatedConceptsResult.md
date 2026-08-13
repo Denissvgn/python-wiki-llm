@@ -1,6 +1,6 @@
 # RelatedConceptsResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:146`
+**Location:** `src/llm_wiki_cli/api_types.py:222`
 **Kind:** Class
 **Bases:** `ConceptResult`
 **Module:** [api_types](../modules/api_types.md)
@@ -53,6 +53,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `related_concepts` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `related_concepts` | type_reference | [api](../modules/api.md) | — |

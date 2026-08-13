@@ -48,18 +48,18 @@ Validated, immutable-by-contract state for one native read operation.
 ```mermaid
 flowchart LR
     n0["KnowledgeReadView (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n1["_freshness_basis (src/llm_wiki_cli/services/context_packet.py)"]
-    n2["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
-    n3["_context_query_surface (src/llm_wiki_cli/services/context_service.py)"]
-    n4["_knowledge_error_view (src/llm_wiki_cli/services/context_service.py)"]
-    n5["_availability_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n6["_diagnostic_freshness_states (src/llm_wiki_cli/services/doctor_service.py)"]
-    n7["_drift_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n8["_freshness_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n9["_governance_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n10["_snapshot_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n11["_verification_section (src/llm_wiki_cli/services/doctor_service.py)"]
-    n12["src/llm_wiki_cli/services/documentation_native.py"]
+    n1["_captured_query_service (src/llm_wiki_cli/services/context_packet.py)"]
+    n2["_freshness_basis (src/llm_wiki_cli/services/context_packet.py)"]
+    n3["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
+    n4["_build_explicit_knowledge_response (src/llm_wiki_cli/services/context_service.py)"]
+    n5["_context_query_surface (src/llm_wiki_cli/services/context_service.py)"]
+    n6["_knowledge_error_view (src/llm_wiki_cli/services/context_service.py)"]
+    n7["_knowledge_fallback_evidence (src/llm_wiki_cli/services/context_service.py)"]
+    n8["_availability_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n9["_diagnostic_freshness_states (src/llm_wiki_cli/services/doctor_service.py)"]
+    n10["_drift_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n11["_freshness_section (src/llm_wiki_cli/services/doctor_service.py)"]
+    n12["_governance_section (src/llm_wiki_cli/services/doctor_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -74,17 +74,17 @@ flowchart LR
     n12 --> n0
     click n0 "../modules/knowledge_consumption.md"
     click n1 "../modules/context_packet.md"
-    click n2 "../modules/context_service.md"
+    click n2 "../modules/context_packet.md"
     click n3 "../modules/context_service.md"
     click n4 "../modules/context_service.md"
-    click n5 "../modules/doctor_service.md"
-    click n6 "../modules/doctor_service.md"
-    click n7 "../modules/doctor_service.md"
+    click n5 "../modules/context_service.md"
+    click n6 "../modules/context_service.md"
+    click n7 "../modules/context_service.md"
     click n8 "../modules/doctor_service.md"
     click n9 "../modules/doctor_service.md"
     click n10 "../modules/doctor_service.md"
     click n11 "../modules/doctor_service.md"
-    click n12 "../modules/documentation_native.md"
+    click n12 "../modules/doctor_service.md"
 ```
 
 ### Summary
@@ -95,17 +95,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_freshness_basis` | type_reference | [context_packet](../modules/context_packet.md) |
-| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) |
-| `_context_query_surface` | type_reference | [context_service](../modules/context_service.md) |
-| `_knowledge_error_view` | type_reference | [context_service](../modules/context_service.md) |
-| `_availability_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_diagnostic_freshness_states` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_governance_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_snapshot_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_verification_section` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_captured_query_service` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_freshness_basis` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_explicit_knowledge_response` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_context_query_surface` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_knowledge_error_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_knowledge_fallback_evidence` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_availability_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_diagnostic_freshness_states` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_governance_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+
+> References: showing 12 of 44 logical references; 32 omitted by the 12-row generated summary limit.

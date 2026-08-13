@@ -73,15 +73,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_begin_publication_export` | type_reference | [site_export](../modules/site_export.md) |
-| `_build_publication_selection` | call | [site_export](../modules/site_export.md) |
-| `_build_publication_selection` | type_reference | [site_export](../modules/site_export.md) |
-| `_complete_publication_export` | type_reference | [site_export](../modules/site_export.md) |
-| `_preflight_publication_export` | type_reference | [site_export](../modules/site_export.md) |
-| `_publication_payload` | type_reference | [site_export](../modules/site_export.md) |
-| `_selection_from_payload` | call | [site_export](../modules/site_export.md) |
-| `_selection_from_payload` | type_reference | [site_export](../modules/site_export.md) |
-| `_selection_id` | type_reference | [site_export](../modules/site_export.md) |
-| `_selection_mismatch_issues` | type_reference | [site_export](../modules/site_export.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_begin_publication_export` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_build_publication_selection` | call | [site_export](../modules/site_export.md) | 1 |
+| `_build_publication_selection` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_complete_publication_export` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_preflight_publication_export` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_publication_payload` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_selection_from_payload` | call | [site_export](../modules/site_export.md) | 1 |
+| `_selection_from_payload` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_selection_id` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_selection_mismatch_issues` | type_reference | [site_export](../modules/site_export.md) | — |

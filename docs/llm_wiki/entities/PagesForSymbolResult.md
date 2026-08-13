@@ -1,6 +1,6 @@
 # PagesForSymbolResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:128`
+**Location:** `src/llm_wiki_cli/api_types.py:204`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`
 **Module:** [api_types](../modules/api_types.md)
@@ -49,6 +49,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `pages_for_symbol` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `pages_for_symbol` | type_reference | [api](../modules/api.md) | — |

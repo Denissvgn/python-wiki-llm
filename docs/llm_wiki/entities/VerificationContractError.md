@@ -34,6 +34,10 @@ flowchart LR
     n9["_portable_text (src/llm_wiki_cli/services/verification_contracts.py)"]
     n10["_scope_uid (src/llm_wiki_cli/services/verification_contracts.py)"]
     n11["_selected_contracts (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n12["_sha256 (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n13["build_artifact_verification_context (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n14["build_verification_receipt (src/llm_wiki_cli/services/verification_contracts.py)"]
+    n15["CheckerContract.__post_init__ (src/llm_wiki_cli/services/verification_contracts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,6 +49,10 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
+    n13 --> n0
+    n14 --> n0
+    n15 --> n0
     click n0 "../modules/verification_contracts.md"
     click n2 "../modules/verification_contracts.md"
     click n3 "../modules/verification_contracts.md"
@@ -56,6 +64,10 @@ flowchart LR
     click n9 "../modules/verification_contracts.md"
     click n10 "../modules/verification_contracts.md"
     click n11 "../modules/verification_contracts.md"
+    click n12 "../modules/verification_contracts.md"
+    click n13 "../modules/verification_contracts.md"
+    click n14 "../modules/verification_contracts.md"
+    click n15 "../modules/verification_contracts.md"
 ```
 
 ### Summary
@@ -74,17 +86,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_checker_id` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_checker_version` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_diagnostic_subject` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_machine_code` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_normalized_anchor_mapping` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_normalized_anchor_mapping` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_normalized_anchor_mapping` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_portable_text` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_scope_uid` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_checker_id` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_checker_version` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_diagnostic_subject` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_machine_code` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_normalized_anchor_mapping` | call | [verification_contracts](../modules/verification_contracts.md) | 3 |
+| `_portable_text` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_scope_uid` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) | 4 |
+| `_sha256` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `build_artifact_verification_context` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `build_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) | 2 |
+| `CheckerContract.__post_init__` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

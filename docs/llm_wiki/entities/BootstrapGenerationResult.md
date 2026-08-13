@@ -1,6 +1,6 @@
 # _BootstrapGenerationResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4153`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4177`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -57,9 +57,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_generate_bootstrap_content` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_generate_bootstrap_content` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_generate_bootstrap_content` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_generate_bootstrap_content` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

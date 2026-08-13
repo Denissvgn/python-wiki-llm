@@ -50,7 +50,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_oci_run_command` | type_reference | [broker](../modules/broker.md) |
-| `OciImageCommand.from_dict` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_oci_run_command` | type_reference | [broker](../modules/broker.md) | — |
+| `OciImageCommand.from_dict` | type_reference | [broker](../modules/broker.md) | — |

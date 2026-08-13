@@ -69,13 +69,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_parse_review_event` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_review_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_review_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_review_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `add_review_event` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `evaluate_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_parse_review_event` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_parse_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_review_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_review_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_review_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `add_review_event` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `evaluate_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

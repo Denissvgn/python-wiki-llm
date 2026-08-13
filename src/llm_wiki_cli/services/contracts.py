@@ -36,18 +36,17 @@ from __future__ import annotations
 
 EXTRACT_SCHEMA_VERSION = "llm-wiki-extract/v1"
 CONTEXT_PROTOCOL_VERSION = "llm-wiki-context/v1"
+CONTEXT_KNOWLEDGE_PROTOCOL_VERSION = "llm-wiki-context/v2"
+CI_CHECK_SCHEMA_VERSION = "llm-wiki-ci-check/v1"
 DOCTOR_SCHEMA_VERSION = "llm-wiki-doctor/v1"
-QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION = (
-    "llm-wiki-qualified-context-packet/v1"
+QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION = "llm-wiki-qualified-context-packet/v1"
+QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION = (
+    "llm-wiki-qualified-context-packet/v2"
 )
 EVAL_LITE_TASK_SCHEMA_VERSION = "llm-wiki-eval-lite-task/v1"
 EVAL_LITE_PLAN_SCHEMA_VERSION = "llm-wiki-eval-lite-plan/v1"
-EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION = (
-    "llm-wiki-extract-data-flow-details/v1"
-)
-DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION = (
-    "llm-wiki-dependency-version-details/v1"
-)
+EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION = "llm-wiki-extract-data-flow-details/v1"
+DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION = "llm-wiki-dependency-version-details/v1"
 BOOTSTRAP_SUMMARY_SCHEMA_VERSION = "llm-wiki-bootstrap-summary/v1"
 KNOWLEDGE_SCHEMA_VERSION = "llm-wiki-knowledge/v1"
 KNOWLEDGE_SCHEMA_FILENAME = "llm-wiki-knowledge-v1.schema.json"
@@ -140,8 +139,11 @@ P0_CALIBRATION_DECISION_SCOPE = "p0_policy_default"
 PROTOCOL_VERSIONS = (
     EXTRACT_SCHEMA_VERSION,
     CONTEXT_PROTOCOL_VERSION,
+    CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+    CI_CHECK_SCHEMA_VERSION,
     DOCTOR_SCHEMA_VERSION,
     QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+    QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
     EVAL_LITE_TASK_SCHEMA_VERSION,
     EVAL_LITE_PLAN_SCHEMA_VERSION,
     EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION,

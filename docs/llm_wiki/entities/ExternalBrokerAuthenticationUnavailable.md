@@ -46,7 +46,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_authenticate_external_receipt` | call | [controller](../modules/controller.md) |
-| `_authenticate_external_receipt` | call | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_authenticate_external_receipt` | call | [controller](../modules/controller.md) | 2 |

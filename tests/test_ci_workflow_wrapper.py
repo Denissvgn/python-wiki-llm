@@ -11,10 +11,48 @@ from typing import TypedDict
 
 import pytest
 
+from llm_wiki_cli.services.ci_report import build_ci_check_payload
+from llm_wiki_cli.services.lint_service import LintIssue, LintReport
+
 
 ROOT = Path(__file__).parents[1]
 WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
-PYTHON = Path(sys.executable).resolve()
+PYTHON = Path(sys.executable)
+_DEFAULT_OUTPUT = object()
+
+
+def _ci_payload(*, ok: bool = True) -> dict:
+    report = LintReport(
+        wiki_dir=".ci-wrapper-missing-wiki",
+        src_dir=".",
+        strict=True,
+        knowledge_drift_report=True,
+    )
+    if not ok:
+        report.issues.append(LintIssue("broken_links", "Broken link"))
+    return build_ci_check_payload(report)
+
+
+def _ci_output(*, ok: bool = True) -> str:
+    return json.dumps(_ci_payload(ok=ok), sort_keys=True) + "\n"
+
+
+def _mutated_ci_output(path: tuple[str, ...], value: object) -> str:
+    payload = _ci_payload()
+    current = payload
+    for key in path[:-1]:
+        child = current[key]
+        assert isinstance(child, dict)
+        current = child
+    current[path[-1]] = value
+    return json.dumps(payload, sort_keys=True) + "\n"
+
+
+def _duplicate_schema_output() -> str:
+    payload = json.dumps(_ci_payload(), sort_keys=True)
+    return (
+        '{"schema_version":"llm-wiki-ci-check/v1",' + payload.removeprefix("{") + "\n"
+    )
 
 
 class WrapperCase(TypedDict):
@@ -40,8 +78,11 @@ if [[ "$*" == *"llm-wiki-ci-python-v1"* ]]; then
   printf '%s' 'llm-wiki-ci-python-v1'
   exit 0
 fi
-if [[ "$*" == *"MAX_LINES = int"* && "${FAKE_SUMMARY_FAIL:-0}" == "1" ]]; then
+if [[ "$*" == *"llm_wiki_cli.services.ci_report render-summary"* && "${FAKE_SUMMARY_FAIL:-0}" == "1" ]]; then
   exit 88
+fi
+if [[ "$*" == *"-I -m llm_wiki_cli.services.ci_report"* ]]; then
+  exec "${REAL_PYTHON}" "$@"
 fi
 if [[ "$*" == *"-I -m llm_wiki_cli.cli ci-check"* ]]; then
   if [[ "${FAKE_DELETE_RAW:-0}" == "1" ]]; then
@@ -143,7 +184,7 @@ def _run(
     case: WrapperCase,
     *,
     cli_exit: int = 0,
-    output: str | None = '{"ok": true}\n',
+    output: str | None | object = _DEFAULT_OUTPUT,
     create_markdown: bool = True,
     create_path: Path | None = None,
     create_evidence_name: str | None = None,
@@ -174,9 +215,12 @@ def _run(
     if environment is not None:
         env.update(environment)
     stdout_file = Path(case["stdout_file"])
-    if output is None:
+    if output is _DEFAULT_OUTPUT:
+        stdout_file.write_text(_ci_output(), encoding="utf-8")
+    elif output is None:
         env["FAKE_STDOUT_FILE"] = ""
     else:
+        assert isinstance(output, str)
         stdout_file.write_text(output, encoding="utf-8")
 
     command = [
@@ -255,7 +299,9 @@ def test_explicit_interpreter_runs_cli_and_parses_json(
     assert result.returncode == 0, result.stderr
     invocations = Path(wrapper_case["invocations"]).read_text(encoding="utf-8")
     assert "-I -m llm_wiki_cli.cli ci-check" in invocations
-    assert "json.loads" in invocations
+    assert "-m llm_wiki_cli.services.ci_report validate" in invocations
+    assert "-m llm_wiki_cli.services.ci_report render-summary" in invocations
+    assert "llm_wiki_cli.cli doctor" not in invocations
     assert "--jobs 1 --knowledge-drift-report --format json" in invocations
     assert "--no-plugins" in invocations
 
@@ -273,7 +319,7 @@ def test_explicit_interpreter_path_with_spaces_is_used_consistently(
     invocations = Path(wrapper_case["invocations"]).read_text(encoding="utf-8")
     assert "llm-wiki-ci-python-v1" in invocations
     assert "-I -m llm_wiki_cli.cli ci-check" in invocations
-    assert "json.loads" in invocations
+    assert "-m llm_wiki_cli.services.ci_report validate" in invocations
 
 
 def test_candidate_package_cannot_shadow_installed_cli(
@@ -330,12 +376,15 @@ def test_success_preserves_only_valid_json_and_reports_clean_tree(
     assert result.returncode == 0, result.stderr
     assert json.loads(
         (report_dir / "llm-wiki-ci-report.json").read_text(encoding="utf-8")
-    ) == {"ok": True}
+    ) == _ci_payload()
     assert (report_dir / "llm-wiki-ci-report.md").is_file()
     assert not (report_dir / "llm-wiki-ci-report.invalid.txt").exists()
     summary = Path(wrapper_case["summary"]).read_text(encoding="utf-8")
     assert "Result: **PASS**" in summary
     assert "Worktree: clean" in summary
+    assert "Knowledge health: `absent`" in summary
+    assert "Availability: `absent`" in summary
+    assert "Verification receipt: `absent`" in summary
     assert "Native drift diagnostics are advisory" in summary
 
 
@@ -420,7 +469,7 @@ def test_nonzero_cli_exit_is_preserved_when_raw_output_is_absent(
 @pytest.mark.parametrize(
     ("output", "delete_raw", "expected"),
     [
-        ("invalid output\n", False, "invalid output"),
+        ("invalid output\n", False, "invalid v1 output"),
         ("", False, "empty output"),
         (None, True, "no output"),
     ],
@@ -435,6 +484,9 @@ def test_successful_cli_fails_closed_without_parseable_json(
 
     assert result.returncode != 0
     assert expected in (result.stderr + Path(wrapper_case["summary"]).read_text())
+    assert "Knowledge health: `unavailable`" in Path(
+        wrapper_case["summary"]
+    ).read_text(encoding="utf-8")
     assert not (
         Path(wrapper_case["report_dir"]) / "llm-wiki-ci-report.json"
     ).exists()
@@ -451,6 +503,87 @@ def test_invalid_raw_output_never_uses_json_name(
     assert (report_dir / "llm-wiki-ci-report.invalid.txt").read_text(
         encoding="utf-8"
     ) == "{broken\n"
+
+
+def test_valid_failed_ci_payload_is_promoted_and_original_exit_is_preserved(
+    wrapper_case: WrapperCase,
+) -> None:
+    result = _run(wrapper_case, cli_exit=1, output=_ci_output(ok=False))
+    report_dir = wrapper_case["report_dir"]
+
+    assert result.returncode == 1
+    assert json.loads(
+        (report_dir / "llm-wiki-ci-report.json").read_text(encoding="utf-8")
+    ) == _ci_payload(ok=False)
+    assert not (report_dir / "llm-wiki-ci-report.invalid.txt").exists()
+    summary = wrapper_case["summary"].read_text(encoding="utf-8")
+    assert "Result: **FAIL**" in summary
+    assert "Original `ci-check` exit: `1`" in summary
+    assert "Blocking issues: `1`" in summary
+    assert "Knowledge health: `absent`" in summary
+
+
+@pytest.mark.parametrize(
+    ("output", "cli_exit"),
+    [
+        ('{"ok": true}\n', 0),
+        (_mutated_ci_output(("schema_version",), "llm-wiki-ci-check/v2"), 0),
+        (_mutated_ci_output(("strict",), False), 0),
+        (_mutated_ci_output(("issue_count",), 1), 0),
+        (
+            _mutated_ci_output(
+                ("knowledge_health", "schema_version"),
+                "llm-wiki-doctor/v2",
+            ),
+            0,
+        ),
+        (_mutated_ci_output(("knowledge_health", "strict"), True), 0),
+        (
+            _mutated_ci_output(("knowledge_health", "availability", "usable"), True),
+            0,
+        ),
+        (
+            _mutated_ci_output(("knowledge_health", "status"), "healthy"),
+            0,
+        ),
+        (_duplicate_schema_output(), 0),
+        (
+            _mutated_ci_output(
+                ("execution", "extractor_jobs", "effective_workers"),
+                float("nan"),
+            ),
+            0,
+        ),
+        (_ci_output(), 1),
+    ],
+    ids=(
+        "legacy-unversioned",
+        "wrong-ci-version",
+        "non-strict-ci",
+        "issue-count-mismatch",
+        "wrong-doctor-version",
+        "strict-doctor",
+        "availability-mismatch",
+        "health-classification-mismatch",
+        "duplicate-key",
+        "non-finite-number",
+        "captured-exit-mismatch",
+    ),
+)
+def test_schema_or_semantically_invalid_ci_output_is_never_promoted(
+    wrapper_case: WrapperCase,
+    output: str,
+    cli_exit: int,
+) -> None:
+    result = _run(wrapper_case, output=output, cli_exit=cli_exit)
+    report_dir = wrapper_case["report_dir"]
+
+    assert result.returncode != 0
+    assert not (report_dir / "llm-wiki-ci-report.json").exists()
+    assert (report_dir / "llm-wiki-ci-report.invalid.txt").read_text(
+        encoding="utf-8"
+    ) == output
+    assert "does not satisfy llm-wiki-ci-check/v1" in result.stderr
 
 
 @pytest.mark.parametrize(
@@ -609,6 +742,9 @@ def test_post_validation_support_failure_preserves_original_cli_exit(
     assert result.returncode == 41
     assert "Could not sort complete worktree status diagnostics" in result.stderr
     assert "Could not write the bounded CI summary" in result.stderr
+    assert "Knowledge health: `unavailable`" in wrapper_case["summary"].read_text(
+        encoding="utf-8"
+    )
 
 
 def test_git_status_failure_strengthens_success_and_is_summarized(

@@ -55,8 +55,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_working_tree` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_working_tree` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_working_tree` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `_working_tree` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

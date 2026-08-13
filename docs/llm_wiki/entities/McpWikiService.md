@@ -1,6 +1,6 @@
 # McpWikiService
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:290`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:402`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -18,6 +18,7 @@ Pure read/check operations exposed through MCP tools and resources.
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__init__` | `(src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', *, source_selection: str \| None = None, allow_external_src: bool = False)` | — | — |
+| `_assert_source_selection_pin_current` | `() -> SourceSelectionPolicy \| None` | — | — |
 | `_assert_source_selection_current` | `() -> SourceSnapshot` | — | — |
 | `_source_selection_options` | `() -> _SourceSelectionOptions` | — | — |
 | `_external_source_options` | `() -> _ExternalSourceOptions` | — | — |
@@ -26,14 +27,15 @@ Pure read/check operations exposed through MCP tools and resources.
 | `get_flow` | `(flow_id: str) -> dict` | — | — |
 | `get_architecture_page` | `(page: str) -> dict` | — | — |
 | `query_graph` | `(query: Mapping[str, object]) -> dict` | — | — |
+| `query_documentation` | `(request: Mapping[str, Any]) -> dict` | — | Dispatch an exact bounded query through the shared API contract. |
 | `get_concept` | `(locator_or_exact_route: str, limit: int = 20) -> dict` | — | Return one concept by current coordinate, durable UID, or alias. |
 | `related_concepts` | `(locator_or_exact_route: str, direction: str = 'both', kinds: list[str] \| None = None, limit: int = 20) -> dict` | — | Return bounded relationships for one exact concept identity. |
 | `list_concept_sections` | `(locator_or_exact_route: str, ownership: str \| None = None, limit: int = 20) -> dict` | — | Return bounded document-order sections for one exact concept. |
 | `traverse_typed_graph` | `(locator_or_exact_route: str, direction: str = 'both', kinds: list[str] \| None = None, origins: list[str] \| None = None, resolutions: list[str] \| None = None, include_evidence: bool = False, limit: int = 20) -> dict` | — | Traverse bounded persisted typed relationships for one concept. |
 | `explain_evidence` | `(locator_or_exact_route: str, limit: int = 20) -> dict` | — | Return bounded evidence for one exact concept identity. |
 | `search_wiki` | `(query: str, kinds: list[str] \| None = None, limit: int = 20) -> dict` | — | — |
-| `get_context` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'markdown', filters: dict \| None = None, prefer_fresh: bool = False) -> dict` | — | — |
-| `get_context_packet` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'json', filters: dict \| None = None, prefer_fresh: bool = False, if_packet_id: str \| None = None) -> dict` | — | Return a fresh qualified packet or an unchanged cache marker. |
+| `get_context` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'markdown', filters: dict \| None = None, prefer_fresh: bool = False, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | — |
+| `get_context_packet` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'json', filters: dict \| None = None, prefer_fresh: bool = False, if_packet_id: str \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | Return a fresh qualified packet or an unchanged cache marker. |
 | `check_wiki` | `(strict: bool = False, format: str = 'json', knowledge_drift_report: bool = False) -> dict` | — | — |
 | `get_status` | `() -> dict` | — | — |
 | `_run_documentation_query` | `(method_name: str, value: str, *, limit: int, **query_options) -> dict` | — | — |
@@ -73,14 +75,14 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 27 | — |
+| [mcp_server](../modules/mcp_server.md) | 29 | — |
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_register_directory_resource` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `_register_mcp_resources` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `_register_mcp_tools` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `_register_root_resource` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `create_mcp_server` | call | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_register_directory_resource` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `_register_mcp_resources` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `_register_mcp_tools` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `_register_root_resource` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `create_mcp_server` | call | [mcp_server](../modules/mcp_server.md) | 1 |

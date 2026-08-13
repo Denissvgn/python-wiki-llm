@@ -2,16 +2,18 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [ci_check_cmd](../modules/ci_check_cmd.md), [common](../modules/common.md), [config](../modules/config.md), and 36 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), [common](../modules/common.md), and 38 more
 
 **Complete modules touched:**
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [ci_check_cmd](../modules/ci_check_cmd.md)
+- [ci_report](../modules/ci_report.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
+- [doctor_service](../modules/doctor_service.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -99,7 +101,7 @@ sequenceDiagram
     p4->>p14: windows_current_user_sid
 ```
 
-> Call sequence diagram shows 30 of 2582 interactions; 2552 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2679 interactions; 2649 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -166,38 +168,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 41 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 42 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr | 43 | `getattr(args, 'format', 'text')` |
-| run | Path | 44 | `Path(getattr(...))` |
-| run | getattr | 44 | `getattr(args, 'report', DEFAULT_REPORT)` |
-| run | getattr | 45 | `getattr(args, 'helper_cache_dir', None)` |
-| run | getattr | 46 | `getattr(args, 'include_tests', None)` |
-| run | bool | 47 | `bool(getattr(...))` |
-| run | getattr | 47 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr | 48 | `getattr(args, 'source_selection', None)` |
-| run | validate_source_root | 50 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| run | getattr | 43 | `getattr(args, 'src_dir', '.')` |
+| run | getattr | 44 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr | 45 | `getattr(args, 'format', 'text')` |
+| run | Path | 46 | `Path(getattr(...))` |
+| run | getattr | 46 | `getattr(args, 'report', DEFAULT_REPORT)` |
+| run | getattr | 47 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr | 48 | `getattr(args, 'include_tests', None)` |
+| run | bool | 49 | `bool(getattr(...))` |
+| run | getattr | 49 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr | 50 | `getattr(args, 'source_selection', None)` |
+| run | validate_source_root | 52 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `report_path.write_text` | `run` | 78 |
-| output | `print` | `run` | 80 |
-| output | `print` | `run` | 81 |
+| filesystem_write | `report_path.write_text` | `run` | 80 |
+| output | `print` | `run` | 82 |
+| output | `print` | `run` | 83 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 41 |
-| unresolved_call | `run` | `getattr` | 42 |
 | unresolved_call | `run` | `getattr` | 43 |
 | unresolved_call | `run` | `getattr` | 44 |
 | unresolved_call | `run` | `getattr` | 45 |
 | unresolved_call | `run` | `getattr` | 46 |
 | unresolved_call | `run` | `getattr` | 47 |
 | unresolved_call | `run` | `getattr` | 48 |
+| unresolved_call | `run` | `getattr` | 49 |
+| unresolved_call | `run` | `getattr` | 50 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

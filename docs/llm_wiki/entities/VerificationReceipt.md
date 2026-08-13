@@ -80,17 +80,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `machine_verification_summary` | type_reference | [knowledge_verification](../modules/knowledge_verification.md) |
-| `_receipt_to_payload` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `build_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `build_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `deserialize_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `load_and_evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `load_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `serialize_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `validate_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `validate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `verification_receipt_to_payload` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `machine_verification_summary` | type_reference | [knowledge_verification](../modules/knowledge_verification.md) | — |
+| `_receipt_to_payload` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `build_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `build_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `deserialize_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `load_and_evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `load_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `serialize_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `validate_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `validate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `verification_receipt_to_payload` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+
+> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

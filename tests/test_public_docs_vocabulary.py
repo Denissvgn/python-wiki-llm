@@ -55,44 +55,77 @@ class ForbiddenProse:
     rationale: str
 
 
+_INTERNAL_TASK_PREFIXES = (
+    "FND",
+    "DEC",
+    "REF",
+    "PRV",
+    "KNW",
+    "SCH",
+    "POL",
+    "VER",
+    "REL",
+    "CLN",
+    "KNOW",
+    "DL",
+    "NKC",
+    "PUB",
+    "SKL",
+    "SEC",
+    "ARC",
+    "KUX",
+    "VEC",
+    "HYG",
+    "QCP",
+    "CLX",
+    "M2MAIN",
+)
+_INTERNAL_TASK_PREFIX_PATTERN = "(?:" + "|".join(
+    re.escape(prefix) for prefix in _INTERNAL_TASK_PREFIXES
+) + ")"
+_INTERNAL_TASK_ID_PATTERN = re.compile(
+    rf"(?<![\w-]){_INTERNAL_TASK_PREFIX_PATTERN}-[0-9]+(?![\w-])",
+    re.IGNORECASE,
+)
+_NUMBERED_LABEL_GAP = rf"(?:{_PROSE_GAP}|[-_]+)"
+
+
 FORBIDDEN_INTERNAL_PROSE: Mapping[str, ForbiddenProse] = {
     "delivery-stage-label": ForbiddenProse(
         re.compile(r"(?<!\w)M[0-9]+(?!\w)"),
         "Standalone M-number labels identify internal delivery stages.",
     ),
     "internal-task-id": ForbiddenProse(
-        re.compile(
-            r"(?<![\w-])"
-            r"(?:KNOW|DL|NKC|PUB|SKL|SEC|ARC|KUX|VEC|HYG|DEC|QCP|CLX|M2MAIN)"
-            r"-[0-9]+(?![\w-])"
-        ),
+        _INTERNAL_TASK_ID_PATTERN,
         "These prefixes identify internal remediation or delivery tasks.",
     ),
     "priority-calibration-name": ForbiddenProse(
-        re.compile(rf"\bP0{_PROSE_GAP}calibration\b"),
+        re.compile(rf"\bP0{_PROSE_GAP}calibration\b", re.IGNORECASE),
         "The public feature name is documentation calibration.",
     ),
     "shadow-pilot-claim": ForbiddenProse(
-        re.compile(rf"\b[Ss]hadow{_PROSE_GAP}pilot\b"),
+        re.compile(rf"\bshadow{_PROSE_GAP}pilot\b", re.IGNORECASE),
         "This phrase implies an internal evaluation that did not run.",
     ),
     "numbered-delivery-milestone": ForbiddenProse(
         re.compile(
-            rf"\b(?:[Dd]elivery{_PROSE_GAP})?"
-            rf"[Mm]ilestone{_PROSE_GAP}"
-            rf"(?:\#(?:{_PROSE_GAP})?)?(?:[0-9]+|[IVX]+)\b"
+            rf"\b(?:delivery{_PROSE_GAP})?"
+            rf"milestone{_NUMBERED_LABEL_GAP}"
+            rf"(?:\#(?:{_NUMBERED_LABEL_GAP})?)?(?:[0-9]+|[IVX]+)\b",
+            re.IGNORECASE,
         ),
         "Numbered milestone labels expose internal delivery sequencing.",
     ),
     "numbered-delivery-epic": ForbiddenProse(
         re.compile(
-            rf"\b[Ee]pic{_PROSE_GAP}"
-            rf"(?:\#(?:{_PROSE_GAP})?)?[0-9]+(?:\.[0-9]+)*\b"
+            rf"\bepic{_NUMBERED_LABEL_GAP}"
+            rf"(?:\#(?:{_NUMBERED_LABEL_GAP})?)?[0-9]+(?:\.[0-9]+)*\b",
+            re.IGNORECASE,
         ),
         "Numbered epic labels expose internal delivery sequencing.",
     ),
     "closure-review": ForbiddenProse(
-        re.compile(rf"\b[Cc]losure{_PROSE_GAP}review\b"),
+        re.compile(rf"\bclosure{_PROSE_GAP}review\b", re.IGNORECASE),
         "This phrase identifies an internal completion checkpoint.",
     ),
 }
@@ -102,17 +135,50 @@ FORBIDDEN_INTERNAL_PROSE: Mapping[str, ForbiddenProse] = {
 # cannot be removed. Keys must be exact literals and values must explain the
 # public compatibility obligation; path, line, and whole-file exceptions are
 # deliberately unsupported.
-PUBLIC_LEGACY_IDENTIFIERS: Mapping[str, str] = {}
+PUBLIC_LEGACY_IDENTIFIERS: Mapping[str, str] = {
+    "m4-documentation-hooks": (
+        "Deprecated public plugin-sample identifier retained for CLI compatibility."
+    ),
+}
 _SOURCE_IDENTITY_RULES = frozenset(
     {"delivery-stage-label", "internal-task-id"}
 )
 _SELECTED_SOURCE_INTERNAL_IDENTIFIER = re.compile(
-    r"\b(?:KNOW|DL|NKC)-\d+\b|\bM\d+\b|"
-    r"(?i:\bEpic\s+\d+(?:\.\d+)*\b)"
+    rf"(?i:\b{_INTERNAL_TASK_PREFIX_PATTERN}-\d+\b)|\bM\d+\b|"
+    rf"(?i:\bEpic{_NUMBERED_LABEL_GAP}\d+(?:\.\d+)*\b)"
 )
 _RUNTIME_DOC_INTERNAL_PROSE = re.compile(
     r"\btests?\s*/\s*runners?\b",
     re.IGNORECASE,
+)
+_IMPLEMENTATION_PATH_PATTERN = re.compile(
+    r"(?:^|[/_.-])(?:"
+    r"(?:m|p)[0-9]+|phase[-_ ]*[0-9]+|"
+    r"milestone[-_ ]+#?[-_ ]*(?:[0-9]+|[ivx]+)|"
+    r"epic[-_ ]+#?[-_ ]*[0-9]+(?:\.[0-9]+)*|"
+    rf"{_INTERNAL_TASK_PREFIX_PATTERN}-[0-9]+"
+    r")(?=[/_.-]|$)",
+    re.IGNORECASE,
+)
+_PROVENANCE_ARTIFACT_ROOTS = (
+    ".github/",
+    ".llm-wiki/",
+    "examples/plugins/",
+    "integrations/",
+    "release/",
+    "src/",
+    "tests/",
+)
+_PROVENANCE_ARTIFACT_FILES = frozenset(
+    {
+        ".gitattributes",
+        ".gitignore",
+        "MANIFEST.in",
+        "pyproject.toml",
+        "pyrightconfig.json",
+        "release_build_backend.py",
+        "ruff.toml",
+    }
 )
 _SOURCE_SELECTION_PAYLOAD = json.loads(
     (REPO_ROOT / ".llm-wiki/source-selection.json").read_text(
@@ -208,9 +274,40 @@ def _tracked_files() -> tuple[str, ...]:
     )
 
 
+def _provenance_artifacts(
+    tracked_files: Iterable[str] | None = None,
+) -> tuple[str, ...]:
+    """Return tracked implementation and verification artifacts."""
+
+    tracked = _tracked_files() if tracked_files is None else tuple(tracked_files)
+    return tuple(
+        sorted(
+            path
+            for path in tracked
+            if path in _PROVENANCE_ARTIFACT_FILES
+            or path.startswith(_PROVENANCE_ARTIFACT_ROOTS)
+        )
+    )
+
+
+def _decode_provenance_artifact(path: str, raw: bytes) -> str:
+    """Decode tracked text and reject binary or malformed content."""
+
+    if b"\0" in raw:
+        raise AssertionError(f"{path} must not contain NUL bytes")
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise AssertionError(
+            f"tracked provenance artifact {path} must be UTF-8 text"
+        ) from exc
+
+
 def _is_public_documentation_path(path: str) -> bool:
     pure = PurePosixPath(path)
-    if path in {"README.md", "CHANGELOG.md", "SECURITY.md"}:
+    if pure.name.casefold() == "readme.md":
+        return True
+    if path in {"CHANGELOG.md", "CODE_OF_CONDUCT.md", "SECURITY.md"}:
         return True
     if path.startswith("docs/") and pure.suffix == ".md":
         return True
@@ -1046,128 +1143,267 @@ def test_archive_inventory_rejects_non_file_member_types(tmp_path):
         _tracked_files_from_archive(archive_path)
 
 
+def _synthetic_marker(*parts: str) -> str:
+    """Assemble a synthetic forbidden marker without tripping the self-scan."""
+
+    return "".join(parts)
+
+
+_STAGE_PREFIX = "M"
+_STAGE_NUMBER = "987654"
+_STAGE_MARKER = _synthetic_marker(_STAGE_PREFIX, _STAGE_NUMBER)
+_TASK_PREFIX = "PUB"
+_TASK_NUMBER = "987654"
+_TASK_MARKER = _synthetic_marker(_TASK_PREFIX, "-", _TASK_NUMBER)
+_PRIORITY_MARKER = _synthetic_marker("P", "0")
+_CALIBRATION_WORD = _synthetic_marker("calibra", "tion")
+_SHADOW_WORD = _synthetic_marker("sha", "dow")
+_PILOT_WORD = _synthetic_marker("pi", "lot")
+_MILESTONE_WORD = "Milestone"
+_MILESTONE_NUMBER = "987654"
+_MILESTONE_ROMAN = "XXVII"
+_EPIC_WORD = "Epic"
+_EPIC_NUMBER = "987654"
+_EPIC_SUBNUMBER = "987654.321"
+_CLOSURE_WORD = _synthetic_marker("clo", "sure")
+_REVIEW_WORD = _synthetic_marker("re", "view")
+
+
 @pytest.mark.parametrize(
     ("snippet", "rule"),
     [
-        ("The M4 stage expanded the graph.", "delivery-stage-label"),
-        ("Complete PUB-008 before release.", "internal-task-id"),
-        ("Complete PUB&#45;008 before release.", "internal-task-id"),
-        ("P0 calibration is now complete.", "priority-calibration-name"),
-        ("P0 cali&#98;ration is now complete.", "priority-calibration-name"),
-        ("Run a shadow pilot first.", "shadow-pilot-claim"),
-        ("Milestone 4 adds governance.", "numbered-delivery-milestone"),
-        ("Milestone #4 adds governance.", "numbered-delivery-milestone"),
-        ("Delivery milestone #\nIV is next.", "numbered-delivery-milestone"),
-        ("Epic 2 adds dependency analysis.", "numbered-delivery-epic"),
-        ("Epic 2.4 adds aggregation.", "numbered-delivery-epic"),
-        ("Epic\n2.4 adds aggregation.", "numbered-delivery-epic"),
-        ("Start the closure review.", "closure-review"),
-        ("P0\ncalibration is now complete.", "priority-calibration-name"),
-        ("P0  \ncalibration is now complete.", "priority-calibration-name"),
-        ("P0\\\ncalibration is now complete.", "priority-calibration-name"),
-        ("Run a shadow\n  pilot first.", "shadow-pilot-claim"),
-        ("Delivery\nmilestone IV is next.", "numbered-delivery-milestone"),
-        ("Start the closure\treview.", "closure-review"),
-        ("P0 *calibration* is now complete.", "priority-calibration-name"),
-        ("P0 ~~calibration~~ is now complete.", "priority-calibration-name"),
-        ("![P0 *calibration*](image.png)", "priority-calibration-name"),
-        ("P0<br>calibration is now complete.", "priority-calibration-name"),
+        (f"The {_STAGE_MARKER} stage expanded the graph.", "delivery-stage-label"),
+        (f"Complete {_TASK_MARKER} before release.", "internal-task-id"),
         (
-            "<div>P0<br>\ncalibration</div>",
+            f"Complete {_TASK_PREFIX}&#45;{_TASK_NUMBER} before release.",
+            "internal-task-id",
+        ),
+        (
+            f"{_PRIORITY_MARKER} {_CALIBRATION_WORD} is now complete.",
             "priority-calibration-name",
         ),
-        ("Run a shadow<br/>pilot first.", "shadow-pilot-claim"),
         (
-            '<span title="P0 calibration">public</span>',
+            f"{_PRIORITY_MARKER} cali&#98;ration is now complete.",
             "priority-calibration-name",
         ),
-        ('<img alt="P0 calibration">', "priority-calibration-name"),
+        (f"Run a {_SHADOW_WORD} {_PILOT_WORD} first.", "shadow-pilot-claim"),
         (
-            '<button aria-label="shadow pilot">x</button>',
+            f"{_MILESTONE_WORD} {_MILESTONE_NUMBER} adds governance.",
+            "numbered-delivery-milestone",
+        ),
+        (
+            f"{_MILESTONE_WORD} #{_MILESTONE_NUMBER} adds governance.",
+            "numbered-delivery-milestone",
+        ),
+        (
+            f"{_MILESTONE_WORD}-{_MILESTONE_NUMBER} adds governance.",
+            "numbered-delivery-milestone",
+        ),
+        (
+            f"Delivery {_MILESTONE_WORD.lower()} #\n{_MILESTONE_ROMAN} is next.",
+            "numbered-delivery-milestone",
+        ),
+        (
+            f"{_EPIC_WORD} {_EPIC_NUMBER} adds dependency analysis.",
+            "numbered-delivery-epic",
+        ),
+        (
+            f"{_EPIC_WORD} {_EPIC_SUBNUMBER} adds aggregation.",
+            "numbered-delivery-epic",
+        ),
+        (
+            f"{_EPIC_WORD}_{_EPIC_SUBNUMBER} adds aggregation.",
+            "numbered-delivery-epic",
+        ),
+        (
+            f"{_EPIC_WORD}\n{_EPIC_SUBNUMBER} adds aggregation.",
+            "numbered-delivery-epic",
+        ),
+        (f"Start the {_CLOSURE_WORD} {_REVIEW_WORD}.", "closure-review"),
+        (
+            f"{_PRIORITY_MARKER}\n{_CALIBRATION_WORD} is now complete.",
+            "priority-calibration-name",
+        ),
+        (
+            f"{_PRIORITY_MARKER}  \n{_CALIBRATION_WORD} is now complete.",
+            "priority-calibration-name",
+        ),
+        (
+            f"{_PRIORITY_MARKER}\\\n{_CALIBRATION_WORD} is now complete.",
+            "priority-calibration-name",
+        ),
+        (
+            f"Run a {_SHADOW_WORD}\n  {_PILOT_WORD} first.",
             "shadow-pilot-claim",
         ),
         (
-            'P0 <span title="tooltip">calibration</span>',
+            f"Delivery\n{_MILESTONE_WORD.lower()} {_MILESTONE_ROMAN} is next.",
+            "numbered-delivery-milestone",
+        ),
+        (
+            f"Start the {_CLOSURE_WORD}\t{_REVIEW_WORD}.",
+            "closure-review",
+        ),
+        (
+            f"{_PRIORITY_MARKER} *{_CALIBRATION_WORD}* is now complete.",
             "priority-calibration-name",
         ),
         (
-            'Run a shadow <span aria-label="note">pilot</span> first.',
+            f"{_PRIORITY_MARKER} ~~{_CALIBRATION_WORD}~~ is now complete.",
+            "priority-calibration-name",
+        ),
+        (
+            f"![{_PRIORITY_MARKER} *{_CALIBRATION_WORD}*](image.png)",
+            "priority-calibration-name",
+        ),
+        (
+            f"{_PRIORITY_MARKER}<br>{_CALIBRATION_WORD} is now complete.",
+            "priority-calibration-name",
+        ),
+        (
+            f"<div>{_PRIORITY_MARKER}<br>\n{_CALIBRATION_WORD}</div>",
+            "priority-calibration-name",
+        ),
+        (
+            f"Run a {_SHADOW_WORD}<br/>{_PILOT_WORD} first.",
             "shadow-pilot-claim",
         ),
         (
-            'P0 <img alt="calibration" src="https://example.com/image.png">',
+            f'<span title="{_PRIORITY_MARKER} {_CALIBRATION_WORD}">public</span>',
             "priority-calibration-name",
         ),
         (
-            'Run a shadow <img alt="pilot" src="https://example.com/image.png">',
+            f'<img alt="{_PRIORITY_MARKER} {_CALIBRATION_WORD}">',
+            "priority-calibration-name",
+        ),
+        (
+            f'<button aria-label="{_SHADOW_WORD} {_PILOT_WORD}">x</button>',
             "shadow-pilot-claim",
         ),
         (
-            'P0 <input type="image" alt="calibration" src="image.png">',
+            f'{_PRIORITY_MARKER} <span title="tooltip">{_CALIBRATION_WORD}</span>',
             "priority-calibration-name",
         ),
         (
-            'P0 <input type="submit" value="calibration">',
-            "priority-calibration-name",
+            f'Run a {_SHADOW_WORD} <span aria-label="note">{_PILOT_WORD}</span> first.',
+            "shadow-pilot-claim",
         ),
         (
-            'P0 <textarea placeholder="calibration"></textarea>',
-            "priority-calibration-name",
-        ),
-        (
-            'P0 <textarea placeholder="calibration">\n</textarea>',
-            "priority-calibration-name",
-        ),
-        (
-            'P0 <input type="unknown" placeholder="calibration">',
-            "priority-calibration-name",
-        ),
-        (
-            'P0 <input type=" text " placeholder="calibration">',
-            "priority-calibration-name",
-        ),
-        (
-            'P0 <input type=" hidden " value="calibration">',
-            "priority-calibration-name",
-        ),
-        (
-            'P0 <input type="number" value="invalid" '
-            'placeholder="calibration">',
-            "priority-calibration-name",
-        ),
-        ("Run a shadow **pilot** first.", "shadow-pilot-claim"),
-        ("> P0\n> calibration is complete.", "priority-calibration-name"),
-        ("`Complete PUB-008 before release.`", "internal-task-id"),
-        ("```\nM4\n```", "delivery-stage-label"),
-        ("<!-- Complete PUB-008 before release. -->", "internal-task-id"),
-        ("<!-- P0 calibration -->", "priority-calibration-name"),
-        ("M&#x200B;4", "delivery-stage-label"),
-        ("PUB&ZeroWidthSpace;-008", "internal-task-id"),
-        ("P0 cali&shy;bration", "priority-calibration-name"),
-        ("shadow pi&#x200B;lot", "shadow-pilot-claim"),
-        ("closure re&#xfeff;view", "closure-review"),
-        ("M\u034f4", "delivery-stage-label"),
-        ("M\ufe0f4", "delivery-stage-label"),
-        ("M\u180b4", "delivery-stage-label"),
-        ("M\U000e01004", "delivery-stage-label"),
-        ("M\u20654", "delivery-stage-label"),
-        ("M\ufff04", "delivery-stage-label"),
-        (
-            '<span aria-description="P0 calibration">x</span>',
-            "priority-calibration-name",
-        ),
-        ('<option label="P0 calibration">Public</option>', "priority-calibration-name"),
-        ('<track label="shadow pilot">', "shadow-pilot-claim"),
-        (
-            '<img alt="P0 calibration" alt="safe" '
+            f'{_PRIORITY_MARKER} <img alt="{_CALIBRATION_WORD}" '
             'src="https://example.com/image.png">',
             "priority-calibration-name",
         ),
         (
-            '<input type="submit" value="P0 calibration" value="safe">',
+            f'Run a {_SHADOW_WORD} <img alt="{_PILOT_WORD}" '
+            'src="https://example.com/image.png">',
+            "shadow-pilot-claim",
+        ),
+        (
+            f'{_PRIORITY_MARKER} <input type="image" '
+            f'alt="{_CALIBRATION_WORD}" src="image.png">',
             "priority-calibration-name",
         ),
-        ("M4\0", "delivery-stage-label"),
+        (
+            f'{_PRIORITY_MARKER} <input type="submit" '
+            f'value="{_CALIBRATION_WORD}">',
+            "priority-calibration-name",
+        ),
+        (
+            f'{_PRIORITY_MARKER} <textarea '
+            f'placeholder="{_CALIBRATION_WORD}"></textarea>',
+            "priority-calibration-name",
+        ),
+        (
+            f'{_PRIORITY_MARKER} <textarea '
+            f'placeholder="{_CALIBRATION_WORD}">\n</textarea>',
+            "priority-calibration-name",
+        ),
+        (
+            f'{_PRIORITY_MARKER} <input type="unknown" '
+            f'placeholder="{_CALIBRATION_WORD}">',
+            "priority-calibration-name",
+        ),
+        (
+            f'{_PRIORITY_MARKER} <input type=" text " '
+            f'placeholder="{_CALIBRATION_WORD}">',
+            "priority-calibration-name",
+        ),
+        (
+            f'{_PRIORITY_MARKER} <input type=" hidden " '
+            f'value="{_CALIBRATION_WORD}">',
+            "priority-calibration-name",
+        ),
+        (
+            f'{_PRIORITY_MARKER} <input type="number" value="invalid" '
+            f'placeholder="{_CALIBRATION_WORD}">',
+            "priority-calibration-name",
+        ),
+        (
+            f"Run a {_SHADOW_WORD} **{_PILOT_WORD}** first.",
+            "shadow-pilot-claim",
+        ),
+        (
+            f"> {_PRIORITY_MARKER}\n> {_CALIBRATION_WORD} is complete.",
+            "priority-calibration-name",
+        ),
+        (f"`Complete {_TASK_MARKER} before release.`", "internal-task-id"),
+        (f"```\n{_STAGE_MARKER}\n```", "delivery-stage-label"),
+        (
+            f"<!-- Complete {_TASK_MARKER} before release. -->",
+            "internal-task-id",
+        ),
+        (
+            f"<!-- {_PRIORITY_MARKER} {_CALIBRATION_WORD} -->",
+            "priority-calibration-name",
+        ),
+        (
+            f"{_STAGE_PREFIX}&#x200B;{_STAGE_NUMBER}",
+            "delivery-stage-label",
+        ),
+        (
+            f"{_TASK_PREFIX}&ZeroWidthSpace;-{_TASK_NUMBER}",
+            "internal-task-id",
+        ),
+        (
+            f"{_PRIORITY_MARKER} cali&shy;bration",
+            "priority-calibration-name",
+        ),
+        (f"{_SHADOW_WORD} pi&#x200B;lot", "shadow-pilot-claim"),
+        (f"{_CLOSURE_WORD} re&#xfeff;view", "closure-review"),
+        (f"{_STAGE_PREFIX}\u034f{_STAGE_NUMBER}", "delivery-stage-label"),
+        (f"{_STAGE_PREFIX}\ufe0f{_STAGE_NUMBER}", "delivery-stage-label"),
+        (f"{_STAGE_PREFIX}\u180b{_STAGE_NUMBER}", "delivery-stage-label"),
+        (
+            f"{_STAGE_PREFIX}\U000e0100{_STAGE_NUMBER}",
+            "delivery-stage-label",
+        ),
+        (f"{_STAGE_PREFIX}\u2065{_STAGE_NUMBER}", "delivery-stage-label"),
+        (f"{_STAGE_PREFIX}\ufff0{_STAGE_NUMBER}", "delivery-stage-label"),
+        (
+            f'<span aria-description="{_PRIORITY_MARKER} '
+            f'{_CALIBRATION_WORD}">x</span>',
+            "priority-calibration-name",
+        ),
+        (
+            f'<option label="{_PRIORITY_MARKER} '
+            f'{_CALIBRATION_WORD}">Public</option>',
+            "priority-calibration-name",
+        ),
+        (
+            f'<track label="{_SHADOW_WORD} {_PILOT_WORD}">',
+            "shadow-pilot-claim",
+        ),
+        (
+            f'<img alt="{_PRIORITY_MARKER} {_CALIBRATION_WORD}" alt="safe" '
+            'src="https://example.com/image.png">',
+            "priority-calibration-name",
+        ),
+        (
+            f'<input type="submit" value="{_PRIORITY_MARKER} '
+            f'{_CALIBRATION_WORD}" value="safe">',
+            "priority-calibration-name",
+        ),
+        (f"{_STAGE_MARKER}\0", "delivery-stage-label"),
     ],
 )
 def test_internal_prose_scanner_rejects_delivery_vocabulary(snippet, rule):
@@ -1177,47 +1413,93 @@ def test_internal_prose_scanner_rejects_delivery_vocabulary(snippet, rule):
 
 
 @pytest.mark.parametrize(
+    ("snippet", "rule"),
+    [
+        (
+            f"{_PRIORITY_MARKER} {_CALIBRATION_WORD.title()}",
+            "priority-calibration-name",
+        ),
+        (
+            f"{_SHADOW_WORD.title()} {_PILOT_WORD.title()}",
+            "shadow-pilot-claim",
+        ),
+        (
+            f"{_MILESTONE_WORD.upper()} {_MILESTONE_NUMBER}",
+            "numbered-delivery-milestone",
+        ),
+        (
+            f"{_MILESTONE_WORD.lower()} {_MILESTONE_ROMAN.lower()}",
+            "numbered-delivery-milestone",
+        ),
+        (
+            f"{_EPIC_WORD.upper()} {_EPIC_NUMBER}",
+            "numbered-delivery-epic",
+        ),
+        (
+            f"{_CLOSURE_WORD.title()} {_REVIEW_WORD.title()}",
+            "closure-review",
+        ),
+    ],
+)
+def test_internal_prose_scanner_rejects_phrase_case_variants(snippet, rule):
+    assert [finding.rule for finding in scan_internal_prose(snippet)] == [rule]
+
+
+@pytest.mark.parametrize(
     "snippet",
     [
         "Keep the remainder backlog in `bootstrap-remainder.md`.",
-        "Use P0, P1, and P2 as public content priorities.",
+        f"Use {_PRIORITY_MARKER}, P1, and P2 as public content priorities.",
         "A pilot can establish a milestone before ordinary project closure.",
         "Write the generated report to reports/dep_vuln_triage_<date>.md.",
-        "The protocol remains `llm-wiki-p0-calibration-run/v1`.",
-        "- P0\n- calibration\n",
-        "| left | right |\n|---|---|\n| P0 | calibration |\n",
-        "xPUB-008y is an external identifier.",
-        "x\u200bPUB-008 is an embedded identifier.",
-        "x\u00adM4 is an embedded identifier.",
-        "`some_PUB-008_name` is an embedded identifier.",
-        "éPUB-008é is an embedded identifier.",
-        "e\u0301PUB-008 is an embedded identifier.",
-        "αM4β is an embedded identifier.",
-        "α\u0301M4 is an embedded identifier.",
-        "<p>P0</p><p>calibration</p>",
-        "<center>P0</center>\n<center>calibration</center>",
-        "<div>PUB&amp;#45;008</div>",
-        "<div>P0&amp;#32;calibration</div>",
-        "<pre>P0\n\ncalibration</pre>",
-        "<pre>P0<br>\ncalibration</pre>",
-        "<textarea>P0\n\ncalibration</textarea>",
-        "<textarea>P0<br>\ncalibration</textarea>",
-        "![P0<br>calibration](image.png)",
-        '![<span title="P0 calibration">x</span>](image.png)',
-        '<div value="P0 calibration" label="shadow pilot">public</div>',
-        '<button value="P0 calibration">Public</button>',
-        '<input type="hidden" value="P0 calibration">',
-        '<input type="number" value="P0 calibration">',
-        '<input type="date" value="P0 calibration">',
-        '<img alt="safe" alt="P0 calibration" src="image.png">',
+        f"The protocol remains `llm-wiki-{_PRIORITY_MARKER.lower()}-"
+        f"{_CALIBRATION_WORD}-run/v1`.",
+        f"- {_PRIORITY_MARKER}\n- {_CALIBRATION_WORD}\n",
+        f"| left | right |\n|---|---|\n| {_PRIORITY_MARKER} | "
+        f"{_CALIBRATION_WORD} |\n",
+        f"x{_TASK_MARKER}y is an external identifier.",
+        f"x\u200b{_TASK_MARKER} is an embedded identifier.",
+        f"x\u00ad{_STAGE_MARKER} is an embedded identifier.",
+        f"`some_{_TASK_MARKER}_name` is an embedded identifier.",
+        f"é{_TASK_MARKER}é is an embedded identifier.",
+        f"e\u0301{_TASK_MARKER} is an embedded identifier.",
+        f"α{_STAGE_MARKER}β is an embedded identifier.",
+        f"α\u0301{_STAGE_MARKER} is an embedded identifier.",
+        f"<p>{_PRIORITY_MARKER}</p><p>{_CALIBRATION_WORD}</p>",
+        f"<center>{_PRIORITY_MARKER}</center>\n"
+        f"<center>{_CALIBRATION_WORD}</center>",
+        f"<div>{_TASK_PREFIX}&amp;#45;{_TASK_NUMBER}</div>",
+        f"<div>{_PRIORITY_MARKER}&amp;#32;{_CALIBRATION_WORD}</div>",
+        f"<pre>{_PRIORITY_MARKER}\n\n{_CALIBRATION_WORD}</pre>",
+        f"<pre>{_PRIORITY_MARKER}<br>\n{_CALIBRATION_WORD}</pre>",
+        f"<textarea>{_PRIORITY_MARKER}\n\n{_CALIBRATION_WORD}</textarea>",
+        f"<textarea>{_PRIORITY_MARKER}<br>\n{_CALIBRATION_WORD}</textarea>",
+        f"![{_PRIORITY_MARKER}<br>{_CALIBRATION_WORD}](image.png)",
+        f'![<span title="{_PRIORITY_MARKER} '
+        f'{_CALIBRATION_WORD}">x</span>](image.png)',
+        f'<div value="{_PRIORITY_MARKER} {_CALIBRATION_WORD}" '
+        f'label="{_SHADOW_WORD} {_PILOT_WORD}">public</div>',
+        f'<button value="{_PRIORITY_MARKER} '
+        f'{_CALIBRATION_WORD}">Public</button>',
+        f'<input type="hidden" value="{_PRIORITY_MARKER} '
+        f'{_CALIBRATION_WORD}">',
+        f'<input type="number" value="{_PRIORITY_MARKER} '
+        f'{_CALIBRATION_WORD}">',
+        f'<input type="date" value="{_PRIORITY_MARKER} '
+        f'{_CALIBRATION_WORD}">',
+        f'<img alt="safe" alt="{_PRIORITY_MARKER} {_CALIBRATION_WORD}" '
+        'src="image.png">',
         (
-            'P0 <textarea placeholder="calibration">'
+            f'{_PRIORITY_MARKER} <textarea placeholder="{_CALIBRATION_WORD}">'
             "visible value</textarea>"
         ),
-        'P0 <textarea placeholder="calibration">\n\n</textarea>',
-        'P0 <input value="visible" placeholder="calibration">',
-        'P0 cali<img alt="icon" src="https://example.com/image.png">bration',
-        'Start closure <input value="x">review.',
+        f'{_PRIORITY_MARKER} <textarea '
+        f'placeholder="{_CALIBRATION_WORD}">\n\n</textarea>',
+        f'{_PRIORITY_MARKER} <input value="visible" '
+        f'placeholder="{_CALIBRATION_WORD}">',
+        f'{_PRIORITY_MARKER} cali<img alt="icon" '
+        'src="https://example.com/image.png">bration',
+        f'Start {_CLOSURE_WORD} <input value="x">{_REVIEW_WORD}.',
     ],
 )
 def test_internal_prose_scanner_preserves_public_product_language(snippet):
@@ -1538,7 +1820,11 @@ def test_public_text_decoding_fails_closed_for_required_markdown():
         _decode_public_text("docs/guide.md", b"\xff")
 
     assert _decode_public_text("examples/image.bin", b"\xff") is None
-    assert _decode_public_text("README.md", b"M4\0") == "M4\0"
+    stage_with_nul = f"{_STAGE_MARKER}\0"
+    assert (
+        _decode_public_text("README.md", stage_with_nul.encode())
+        == stage_with_nul
+    )
 
 
 def test_scan_set_is_tracked_and_excludes_internal_reports():
@@ -1547,8 +1833,10 @@ def test_scan_set_is_tracked_and_excludes_internal_reports():
 
     assert "README.md" in scanned
     assert "CHANGELOG.md" in scanned
+    assert "CODE_OF_CONDUCT.md" in scanned
     assert "SECURITY.md" in scanned
     assert "docs/native-knowledge.md" in scanned
+    assert "integrations/obsidian/llm-wiki/README.md" in scanned
     assert "src/llm_wiki_cli/skills/agent-docs/SKILL.md" in scanned
     assert any(path.startswith("examples/") for path in scanned)
     assert all(path in tracked for path in scanned)
@@ -1615,5 +1903,138 @@ def test_selected_python_docstrings_have_no_test_runner_prose():
                     "\n", 0, match.start()
                 )
                 findings.append(f"{path}:{line}: {match.group(0)!r}")
+
+    assert not findings, "\n" + "\n".join(findings)
+
+
+def test_provenance_scan_includes_tracked_non_python_text_surfaces():
+    artifacts = set(_provenance_artifacts())
+    representatives = {
+        ".github/scripts/run-llm-wiki-ci-check.sh",
+        ".github/workflows/ci.yml",
+        "examples/plugins/documentation-hooks/detectors.py",
+        "integrations/github-action/render_summary.py",
+        "integrations/obsidian/llm-wiki/esbuild.config.mjs",
+        "integrations/obsidian/llm-wiki/main.js",
+        "integrations/obsidian/llm-wiki/src/main.ts",
+        "release/qualification.py",
+        "src/llm_wiki_cli/extractors/go_scripts/go.mod",
+        "src/llm_wiki_cli/extractors/go_scripts/main.go",
+        "src/llm_wiki_cli/extractors/haskell_scripts/Main.hs",
+        "src/llm_wiki_cli/extractors/rust_scripts/.gitignore",
+        "src/llm_wiki_cli/extractors/rust_scripts/Cargo.lock",
+        "src/llm_wiki_cli/extractors/rust_scripts/src/main.rs",
+        "src/llm_wiki_cli/extractors/ts_scripts/extract.js",
+        "tests/fixtures/oci_calibration/Dockerfile",
+    }
+
+    assert representatives <= artifacts
+    assert all(
+        _decode_provenance_artifact(
+            path,
+            (REPO_ROOT / path).read_bytes(),
+        )
+        is not None
+        for path in representatives
+    )
+
+
+def test_provenance_text_decoder_fails_closed():
+    with pytest.raises(AssertionError, match="must not contain NUL"):
+        _decode_provenance_artifact("fixture.txt", b"text\0payload")
+    with pytest.raises(AssertionError, match="must be UTF-8"):
+        _decode_provenance_artifact("fixture.txt", b"\xff")
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        f"tests/{_MILESTONE_WORD.lower()}-{_MILESTONE_NUMBER}.py",
+        f"tests/{_MILESTONE_WORD.lower()}-{_MILESTONE_ROMAN}/case.js",
+        f"tests/{_EPIC_WORD.lower()}-{_EPIC_SUBNUMBER}/case.rs",
+        f"tests/{_TASK_MARKER}.json",
+    ],
+)
+def test_provenance_path_pattern_rejects_planning_families(path):
+    assert _IMPLEMENTATION_PATH_PATTERN.search(path)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        f"tests/{_MILESTONE_WORD.lower()}{_MILESTONE_NUMBER}.py",
+        f"tests/{_EPIC_WORD.lower()}{_EPIC_NUMBER}/case.rs",
+        f"tests/{_TASK_MARKER}x.json",
+    ],
+)
+def test_provenance_path_pattern_requires_family_boundaries(path):
+    assert _IMPLEMENTATION_PATH_PATTERN.search(path) is None
+
+
+@pytest.mark.parametrize("prefix", _INTERNAL_TASK_PREFIXES)
+def test_internal_task_prefix_inventory_is_shared(prefix):
+    marker = _synthetic_marker(prefix, "-", _TASK_NUMBER)
+
+    assert [finding.rule for finding in scan_internal_prose(marker)] == [
+        "internal-task-id"
+    ]
+    assert _INTERNAL_TASK_ID_PATTERN.search(marker)
+    assert _IMPLEMENTATION_PATH_PATTERN.search(f"tests/{marker}.json")
+
+
+def test_internal_task_prefix_matching_is_case_insensitive():
+    marker = _synthetic_marker("cLn", "-", _TASK_NUMBER)
+
+    assert [finding.rule for finding in scan_internal_prose(marker)] == [
+        "internal-task-id"
+    ]
+    assert _INTERNAL_TASK_ID_PATTERN.search(marker)
+    assert _IMPLEMENTATION_PATH_PATTERN.search(f"tests/{marker}.json")
+
+
+def test_documentation_defect_ids_remain_public_product_language():
+    marker = _synthetic_marker("DOC", "-", _TASK_NUMBER)
+
+    assert scan_internal_prose(marker) == []
+    assert _INTERNAL_TASK_ID_PATTERN.search(marker) is None
+    assert _IMPLEMENTATION_PATH_PATTERN.search(f"tests/{marker}.json") is None
+
+
+def test_lowercase_stage_compatibility_literal_remains_public():
+    literal = next(iter(PUBLIC_LEGACY_IDENTIFIERS))
+
+    assert scan_internal_prose(literal) == []
+
+
+def test_source_and_test_artifacts_have_no_implementation_plan_provenance():
+    """Keep implementation planning labels out of source and verification assets."""
+
+    content_patterns = {
+        "delivery-stage-label": FORBIDDEN_INTERNAL_PROSE[
+            "delivery-stage-label"
+        ].pattern,
+        "numbered-milestone": FORBIDDEN_INTERNAL_PROSE[
+            "numbered-delivery-milestone"
+        ].pattern,
+        "numbered-epic": FORBIDDEN_INTERNAL_PROSE[
+            "numbered-delivery-epic"
+        ].pattern,
+        "backlog-task-id": _INTERNAL_TASK_ID_PATTERN,
+    }
+    findings: list[str] = []
+
+    for relative in _provenance_artifacts():
+        if _IMPLEMENTATION_PATH_PATTERN.search(relative):
+            findings.append(f"{relative}: implementation-shaped path")
+        text = _decode_provenance_artifact(
+            relative,
+            (REPO_ROOT / relative).read_bytes(),
+        )
+        for rule, pattern in content_patterns.items():
+            for match in pattern.finditer(text):
+                line = text.count("\n", 0, match.start()) + 1
+                findings.append(
+                    f"{relative}:{line}: {rule}: {match.group(0)!r}"
+                )
 
     assert not findings, "\n" + "\n".join(findings)

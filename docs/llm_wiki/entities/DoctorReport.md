@@ -61,9 +61,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `compose_doctor_report` | call | [doctor_service](../modules/doctor_service.md) |
-| `compose_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `render_doctor_text` | type_reference | [doctor_service](../modules/doctor_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `compose_doctor_report` | call | [doctor_service](../modules/doctor_service.md) | 1 |
+| `compose_doctor_report` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `render_doctor_text` | type_reference | [doctor_service](../modules/doctor_service.md) | — |

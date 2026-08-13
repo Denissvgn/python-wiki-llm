@@ -2,7 +2,15 @@
 
 **Entry point:** `validate_context_packet` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [context_packet](../modules/context_packet.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [context_packet](../modules/context_packet.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_graph](../modules/knowledge_graph.md), [knowledge_model](../modules/knowledge_model.md), and 1 more
+
+**Complete modules touched:**
+
+- [context_packet](../modules/context_packet.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_model](../modules/knowledge_model.md)
+- [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -24,9 +32,8 @@ sequenceDiagram
     participant p12 as _validate_json_tree
     participant p13 as set
     participant p14 as visit
-    participant p15 as _validate_packet_shape
-    participant p16 as _exact_fields
-    participant p17 as sorted
+    participant p15 as _packet_contract_for_schema
+    participant p16 as get
     p0->>p1: _coerce_packet_bytes
     p1-->>p2: isinstance
     p1-->>p2: isinstance
@@ -50,16 +57,16 @@ sequenceDiagram
     p9->>p12: _validate_json_tree
     p12-->>p13: set
     p12-->>p14: visit
-    p0->>p15: _validate_packet_shape
-    p15->>p16: _exact_fields
-    p16-->>p13: set
-    p16-->>p17: sorted
-    p16-->>p13: set
-    p16->>p5: ContextPacketMalformedError
-    p16-->>p17: sorted
+    p0->>p15: _packet_contract_for_schema
+    p15-->>p2: isinstance
+    p15->>p5: ContextPacketMalformedError
+    p15-->>p16: get
+    p15->>p5: ContextPacketMalformedError
+    p0-->>p16: get
+    p0-->>p6: len
 ```
 
-> Call sequence diagram shows 30 of 212 interactions; 182 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 596 interactions; 566 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -119,17 +126,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet | _coerce_packet_bytes | 859 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance | 1557 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance | 1559 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes | 1560 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError | 1562 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 1564 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len | 1565 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 1566 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | startswith | 1570 | `raw.startswith(b'\xef\xbb\xbf')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 1571 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
-| _coerce_packet_bytes | endswith | 1575 | `raw.endswith(b'\n')` |
+| validate_context_packet | _coerce_packet_bytes | 1488 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance | 2251 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance | 2253 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes | 2254 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError | 2256 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2258 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len | 2259 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2260 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | startswith | 2264 | `raw.startswith(b'\xef\xbb\xbf')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2265 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
+| _coerce_packet_bytes | endswith | 2269 | `raw.endswith(b'\n')` |
 
 ### Boundary effects
 
@@ -139,12 +146,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 1557 |
-| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 1559 |
-| unresolved_call | `_coerce_packet_bytes` | `bytes` | 1560 |
-| unresolved_call | `_coerce_packet_bytes` | `TypeError` | 1562 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 1570 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.endswith` | 1575 |
+| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 2251 |
+| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 2253 |
+| unresolved_call | `_coerce_packet_bytes` | `bytes` | 2254 |
+| unresolved_call | `_coerce_packet_bytes` | `TypeError` | 2256 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2264 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.endswith` | 2269 |
 | step_limit | `validate_context_packet` | `first 12 steps` | 0 |
 | truncated_flow | `validate_context_packet` | `depth limit` | 0 |
 

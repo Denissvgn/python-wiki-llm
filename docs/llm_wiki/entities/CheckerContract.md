@@ -53,8 +53,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_selected_contracts` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `checker_contract` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `checker_registry` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_selected_contracts` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `checker_contract` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `checker_registry` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |

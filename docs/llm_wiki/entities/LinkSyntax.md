@@ -61,9 +61,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_index_source_link_occurrences` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `_validate_observation_source_syntax` | type_reference | [knowledge_index](../modules/knowledge_index.md) |
-| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_index_source_link_occurrences` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_validate_builder_link` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `_validate_observation_source_syntax` | type_reference | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_build_observation` | type_reference | [knowledge_links](../modules/knowledge_links.md) | — |

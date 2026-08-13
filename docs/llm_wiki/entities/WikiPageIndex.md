@@ -64,14 +64,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_page_index` | call | [lint_service](../modules/lint_service.md) |
-| `_build_page_index` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_canonical_markdown_content` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_check_broken_links` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_check_generated_diagrams` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_check_media_references` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_check_orphan_pages` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_check_workflow_coverage` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_content_by_relative_path` | type_reference | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_page_index` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_build_page_index` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_canonical_markdown_content` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_check_broken_links` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_check_generated_diagrams` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_check_media_references` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_check_orphan_pages` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_check_workflow_coverage` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_content_by_relative_path` | type_reference | [lint_service](../modules/lint_service.md) | — |

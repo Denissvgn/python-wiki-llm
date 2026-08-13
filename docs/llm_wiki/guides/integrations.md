@@ -36,25 +36,63 @@ helper languages through default source-selection discovery, using
 `.llm-wiki/source-selection.json` when present. It installs checksum-verified
 toolchains in runner-temporary storage only when required and prepares detected
 TypeScript/JavaScript, Go, Rust, and Haskell helpers; Python extraction is built
-in. It then runs the strict integrity check with advisory native-drift
-diagnostics, verifies a clean worktree, and uploads a fixed, allowlisted set of
-reports even when validation fails. Project-local Python plugins are disabled,
-so pull-request content is never imported or executed; projects that depend on
+in. An exact helper-cache key binds the runner platform, locked toolchains,
+selected helper sources and locks, helper-cache contract, CLI version, and
+immutable action ref. Preparation always revalidates restored state; pull
+requests restore but never save cache entries. The action then runs the strict
+integrity check with advisory native-drift diagnostics, verifies a clean
+worktree, and uploads a fixed, allowlisted set of reports and cache measurements
+even when validation fails. Project-local Python plugins are disabled, so
+pull-request content is never imported or executed; projects that depend on
 trusted extractor, generation, or lint plugins need a separately reviewed
 trusted workflow. Installation does not bootstrap or synchronize the wiki,
 install hooks, add secrets, push changes, or alter branch protection.
 
-### Context-health gate
+The JSON evidence uses the `llm-wiki-ci-check/v1` envelope. Its nested
+`llm-wiki-doctor/v1` projection is composed from the same lint evaluation, so
+the summary can present knowledge health without a duplicate source scan. The
+top-level `ok` value, blocking issue count, and original `ci-check` exit remain
+authoritative.
 
-`integrations/github-action/action.yml` defines the context-health gate. It:
+### Scheduled convergence observation
 
-1. installs this repository's Python package;
-2. runs `llm-wiki doctor` with the configured source root, wiki path, source
+`.github/workflows/llm-wiki-convergence.yml` runs one real, plugin-disabled
+sync from an exact credential-free checkout of this repository's default
+branch. It requires clean pre-sync state and treats any post-sync wiki change
+or unrelated worktree change as a failure. The fixed artifact records complete
+pre/post wiki status, full post-sync status, the tracked wiki diff, the sync
+log, and a versioned hash receipt; only a bounded preview reaches the job
+summary. This scheduled/manual observation never uses `--dry-run` or `--force`
+and never replaces the separate blocking integrity gate.
+
+### Strict doctor dashboard
+
+`integrations/github-action/action.yml` defines a separately named diagnostic
+knowledge-health dashboard. It does not run or replace the blocking
+`llm-wiki ci-check` gate, general wiki integrity, trusted plugin validation, or
+team-owned review policy. The action:
+
+1. installs this repository's Python package from the same immutable action
+   checkout;
+2. uses default source-selection discovery to plan and prepare detected
+   TypeScript/JavaScript, Go, Rust, or Haskell extractor helpers with the
+   release's checksum-verified toolchains;
+3. runs `llm-wiki doctor` with the configured source root, wiki path, source
    selection, and strictness;
-3. captures the documented doctor exit code and JSON report; and
-4. invokes `render_summary.py` to validate the complete report, publish a job
-   summary, expose the status output, and apply the selected `fail-on`
-   threshold.
+4. captures the documented doctor exit code and JSON report; and
+5. invokes `render_summary.py` to validate the complete report, publish a
+   bounded job summary, expose the status output, apply the selected `fail-on`
+   threshold, and write a hash-bound dashboard receipt.
+
+The action reserves isolated runner-temporary cache, toolchain, and evidence
+directories.
+Its artifact contains only the doctor JSON, dashboard receipt, extractor plan,
+and helper-preparation log. A validated `evidence-id` keeps repeated action
+invocations in one job separate; unsafe identifiers or occupied paths fail
+before artifact upload. The repository's scheduled/manual dashboard workflow
+is read-only and has no pull-request or push trigger. Protected branches should
+require the exact `LLM Wiki integrity` context from the full gate, never this
+diagnostic workflow.
 
 The selected source snapshot includes both action descriptors, but the current
 infrastructure classifiers do not model GitHub composite-action descriptors.
@@ -63,10 +101,11 @@ infrastructure pages for this repository. The Python summary renderer is
 analyzed normally; see [render_summary](../modules/render_summary.md) and its
 [process flow](../flows/process-render_summary.md).
 
-The action pins `actions/setup-python` by commit and accepts only `unhealthy`
+The action pins its GitHub dependencies by commit and accepts only `unhealthy`
 or `degraded` as failure thresholds. Its renderer rejects unreadable JSON,
-missing required fields, unsupported states, inconsistent status and exit-code
-values, and malformed nested health sections before writing the summary.
+missing required fields, unsupported states, inconsistent strictness, status,
+or exit-code values, and malformed nested health sections before writing the
+summary. Human disclosure cells are escaped and clipped before rendering.
 
 ## Obsidian plugin
 

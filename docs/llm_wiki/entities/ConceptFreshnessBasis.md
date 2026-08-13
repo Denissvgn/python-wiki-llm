@@ -53,10 +53,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_live_basis_details` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_live_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_recorded_basis_details` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_recorded_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_live_basis_details` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_live_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_recorded_basis_details` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_recorded_basis_details` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |

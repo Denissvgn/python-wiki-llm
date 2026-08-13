@@ -76,14 +76,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_decision_for_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `_validate_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `apply_review_loop` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `create_review_ledger` | call | [documentation_review](../modules/documentation_review.md) |
-| `create_review_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `DocumentationReviewLedger.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `reconcile_review_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) |
-| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| `_record_review_ledger_iteration` | call | [record](../modules/record.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_decision_for_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `_validate_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `apply_review_loop` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `create_review_ledger` | call | [documentation_review](../modules/documentation_review.md) | 1 |
+| `create_review_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `DocumentationReviewLedger.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `reconcile_review_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
+| `_record_review_ledger_iteration` | call | [record](../modules/record.md) | 1 |

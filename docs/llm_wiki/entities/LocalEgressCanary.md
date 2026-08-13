@@ -47,7 +47,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `create_oci_admission_probe_environment` | call | [broker](../modules/broker.md) |
-| `OciAdmissionProbeEnvironment.__init__` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `create_oci_admission_probe_environment` | call | [broker](../modules/broker.md) | 1 |
+| `OciAdmissionProbeEnvironment.__init__` | type_reference | [broker](../modules/broker.md) | — |

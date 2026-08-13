@@ -54,9 +54,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_add_imported_page_candidates` | call | [documentation_worklist](../modules/documentation_worklist.md) |
-| `_require_non_negative_int` | call | [documentation_worklist](../modules/documentation_worklist.md) |
-| `_require_positive_int` | call | [documentation_worklist](../modules/documentation_worklist.md) |
-| `build_documentation_worklist` | call | [documentation_worklist](../modules/documentation_worklist.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_add_imported_page_candidates` | call | [documentation_worklist](../modules/documentation_worklist.md) | 1 |
+| `_require_non_negative_int` | call | [documentation_worklist](../modules/documentation_worklist.md) | 1 |
+| `_require_positive_int` | call | [documentation_worklist](../modules/documentation_worklist.md) | 1 |
+| `build_documentation_worklist` | call | [documentation_worklist](../modules/documentation_worklist.md) | 1 |

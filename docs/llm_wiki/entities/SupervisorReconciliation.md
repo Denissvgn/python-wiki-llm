@@ -52,7 +52,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `reconcile_review_ledger` | call | [documentation_review](../modules/documentation_review.md) |
-| `SupervisorReconciliation.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `reconcile_review_ledger` | call | [documentation_review](../modules/documentation_review.md) | 1 |
+| `SupervisorReconciliation.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) | — |

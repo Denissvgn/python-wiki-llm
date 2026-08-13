@@ -550,7 +550,7 @@ def test_native_mcp_examples_validate_through_public_tool_methods():
         skill_dir = skills.BUNDLED_SKILLS_ROOT / skill_id
         examples_by_skill[skill_id] = tuple(
             example
-            for path in (skill_dir / "SKILL.md", skill_dir / "reference.md")
+            for path in sorted(skill_dir.rglob("*.md"))
             for example in extract_mcp_tool_examples(path)
         )
 
@@ -560,6 +560,7 @@ def test_native_mcp_examples_validate_through_public_tool_methods():
         "related_concepts",
         "traverse_typed_graph",
         "explain_evidence",
+        "query_documentation",
     }
     assert {example.tool_name for example in examples_by_skill["impact-analysis"]} == {
         "get_concept",

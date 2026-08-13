@@ -1,6 +1,6 @@
 # _SyncRunOptions
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1572`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1581`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -31,6 +31,7 @@ _Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py
 | `flow_categories` | `frozenset[str] \| None` | *required* | — |
 | `exclude_tests` | `bool` | *required* | — |
 | `dry_run` | `bool` | *required* | — |
+| `include_plugins` | `bool` | *required* | — |
 | `openapi_file` | `str \| None` | *required* | — |
 | `clear_openapi_file` | `bool` | *required* | — |
 | `source_selection` | `str \| Path \| None` | *required* | — |
@@ -88,21 +89,23 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `allow_external_src`, `cache_options`, `cache_stats_enabled`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `flow_categories`, `force`, `helper_cache_dir`, `include_tests`, `initialize_surfaces`, `job_request` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `allow_external_src`, `cache_options`, `cache_stats_enabled`, `clear_openapi_file`, `dry_run`, `exclude_tests`, `flow_categories`, `force`, `helper_cache_dir`, `include_plugins`, `include_tests`, `initialize_surfaces` |
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_applied_sync_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_deselected_infrastructure_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_surface_initialization_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_sync_graph_observations` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_canonical_sync_surface_flow_targets` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_applied_sync_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_deselected_infrastructure_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_surface_initialization_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_sync_graph_observations` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_canonical_sync_surface_flow_targets` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 38 logical references; 26 omitted by the 12-row generated summary limit.

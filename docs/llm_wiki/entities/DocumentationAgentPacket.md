@@ -50,7 +50,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) |
-| `build_documentation_agent_packet` | call | [packet](../modules/packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
+| `build_documentation_agent_packet` | call | [packet](../modules/packet.md) | 1 |

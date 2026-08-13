@@ -265,6 +265,24 @@ def test_collect_wiki_pages_accepts_legacy_layout_without_optional_surfaces(tmp_
     ]
 
 
+def test_collect_wiki_pages_rejects_canonical_page_symlinks(tmp_path):
+    wiki = tmp_path / "docs" / "llm_wiki"
+    outside = tmp_path / "outside.md"
+    outside.write_text("# External secret\n", encoding="utf-8")
+    page = wiki / "entities" / "User.md"
+    page.parent.mkdir(parents=True)
+    page.symlink_to(outside)
+
+    with pytest.raises(
+        wiki_surface.WikiSurfacePathError,
+        match="must not traverse a symbolic link",
+    ) as raised:
+        wiki_surface.collect_wiki_pages(wiki)
+
+    assert raised.value.code == wiki_surface.WIKI_SURFACE_PATH_ERROR_CODE
+    assert raised.value.relative_path == "entities/User.md"
+
+
 def test_knowledge_sidecars_do_not_change_page_ids_paths_or_mcp_uris(tmp_path):
     wiki = tmp_path / "docs" / "llm_wiki"
     _write(wiki / "index.md")
@@ -286,8 +304,12 @@ def test_knowledge_sidecars_do_not_change_page_ids_paths_or_mcp_uris(tmp_path):
         for page in wiki_surface.collect_wiki_pages(wiki)
     ]
 
-    assert after == before == [
-        ("index", "index.md", "llm-wiki://index"),
-        ("User", "entities/User.md", "llm-wiki://entities/User"),
-        ("models", "modules/models.md", "llm-wiki://modules/models"),
-    ]
+    assert (
+        after
+        == before
+        == [
+            ("index", "index.md", "llm-wiki://index"),
+            ("User", "entities/User.md", "llm-wiki://entities/User"),
+            ("models", "modules/models.md", "llm-wiki://modules/models"),
+        ]
+    )

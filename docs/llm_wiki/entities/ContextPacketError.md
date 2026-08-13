@@ -1,6 +1,6 @@
 # ContextPacketError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:131`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:227`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -64,7 +64,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `planner` | import | [planner](../modules/planner.md) |
-| `context_service` | import | [context_service](../modules/context_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `planner` | import | [planner](../modules/planner.md) | — |
+| `context_service` | import | [context_service](../modules/context_service.md) | — |

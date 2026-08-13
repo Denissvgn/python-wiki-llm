@@ -78,16 +78,16 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_lifecycle_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_lifecycle_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_lifecycle_event` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_lifecycle_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `current_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `lifecycle_state_by_uid` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `set_lifecycle` | call | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_lifecycle_event_digest_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_lifecycle_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_parse_lifecycle_event` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_parse_lifecycle_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `current_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `lifecycle_state_by_uid` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `set_lifecycle` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |

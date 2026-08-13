@@ -75,13 +75,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `context_service` | import | [context_service](../modules/context_service.md) |
-| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) |
-| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `_live_governance_issues` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) |
-| `KnowledgeStateLoadError.__init__` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) |
-| `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `context_service` | import | [context_service](../modules/context_service.md) | — |
+| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
+| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `_live_governance_issues` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
+| `KnowledgeStateLoadError.__init__` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
+| `knowledge_observability` | import | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |

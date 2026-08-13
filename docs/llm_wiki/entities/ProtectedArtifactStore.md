@@ -107,17 +107,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_admit_external_broker` | type_reference | [controller](../modules/controller.md) |
-| `_admit_local_oci` | type_reference | [controller](../modules/controller.md) |
-| `_authority_freshness_failure` | type_reference | [controller](../modules/controller.md) |
-| `_block_ambiguous_recovery` | type_reference | [controller](../modules/controller.md) |
-| `_bound_outbound_roots` | type_reference | [controller](../modules/controller.md) |
-| `_build_host_authorization` | type_reference | [controller](../modules/controller.md) |
-| `_commit_transition` | type_reference | [controller](../modules/controller.md) |
-| `_frozen_intake_proposals` | type_reference | [controller](../modules/controller.md) |
-| `_load_emergency_rejection` | type_reference | [controller](../modules/controller.md) |
-| `_load_run_locked` | type_reference | [controller](../modules/controller.md) |
-| `_load_transition_events` | type_reference | [controller](../modules/controller.md) |
-| `_open_store` | call | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_admit_external_broker` | type_reference | [controller](../modules/controller.md) | — |
+| `_admit_local_oci` | type_reference | [controller](../modules/controller.md) | — |
+| `_authority_freshness_failure` | type_reference | [controller](../modules/controller.md) | — |
+| `_block_ambiguous_recovery` | type_reference | [controller](../modules/controller.md) | — |
+| `_bound_outbound_roots` | type_reference | [controller](../modules/controller.md) | — |
+| `_build_host_authorization` | type_reference | [controller](../modules/controller.md) | — |
+| `_commit_transition` | type_reference | [controller](../modules/controller.md) | — |
+| `_frozen_intake_proposals` | type_reference | [controller](../modules/controller.md) | — |
+| `_load_emergency_rejection` | type_reference | [controller](../modules/controller.md) | — |
+| `_load_run_locked` | type_reference | [controller](../modules/controller.md) | — |
+| `_load_transition_events` | type_reference | [controller](../modules/controller.md) | — |
+| `_open_store` | call | [controller](../modules/controller.md) | 1 |
+
+> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.

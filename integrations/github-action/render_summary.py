@@ -3,14 +3,21 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from llm_wiki_cli.services.ci_report import validate_doctor_payload
+
 
 SCHEMA_VERSION = "llm-wiki-doctor/v1"
+DASHBOARD_RECEIPT_SCHEMA = "llm-wiki-doctor-dashboard/v1"
+SUMMARY_MAX_BYTES = 8192
+SUMMARY_MAX_LINES = 40
+CELL_MAX_BYTES = 240
 STATUS_SEVERITY = {
     "healthy": 0,
     "degraded": 1,
@@ -33,9 +40,7 @@ FRESHNESS_STATES = frozenset(
 )
 AVAILABILITY_STATES = frozenset({"ready", "absent", "degraded", "unsupported"})
 SNAPSHOT_STATES = frozenset({"valid", "mixed", "invalid", "not-available"})
-GOVERNANCE_STATES = frozenset(
-    {"valid", "invalid", "not-present", "not-available"}
-)
+GOVERNANCE_STATES = frozenset({"valid", "invalid", "not-present", "not-available"})
 GOVERNANCE_LEDGER_STATES = frozenset({"valid", "invalid", "not-present"})
 GOVERNANCE_PROJECTION_STATES = frozenset(
     {"valid", "invalid", "not-present", "not-available"}
@@ -73,9 +78,7 @@ REPORT_FIELDS = frozenset(
     }
 )
 AVAILABILITY_FIELDS = frozenset({"state", "reason", "usable"})
-FRESHNESS_FIELDS = frozenset(
-    {"evaluated", "disclosure", "concepts", "counts_by_state"}
-)
+FRESHNESS_FIELDS = frozenset({"evaluated", "disclosure", "concepts", "counts_by_state"})
 SNAPSHOT_FIELDS = frozenset({"state", "issue_count", "reasons"})
 GOVERNANCE_FIELDS = frozenset(
     {
@@ -98,9 +101,7 @@ DRIFT_FIELDS = frozenset(
         "reasons",
     }
 )
-VERIFICATION_FIELDS = frozenset(
-    {"state", "reason", "recorded_result", "passed"}
-)
+VERIFICATION_FIELDS = frozenset({"state", "reason", "recorded_result", "passed"})
 
 
 def _arguments() -> argparse.Namespace:
@@ -113,6 +114,12 @@ def _arguments() -> argparse.Namespace:
         required=True,
         type=int,
     )
+    parser.add_argument(
+        "--expected-strict",
+        choices=("true", "false"),
+        required=True,
+    )
+    parser.add_argument("--receipt")
     return parser.parse_args()
 
 
@@ -226,13 +233,11 @@ def _validate_freshness(value: object) -> None:
     )
     if evaluated != (counts is not None):
         raise ValueError(
-            "report.freshness.counts_by_state does not match "
-            "report.freshness.evaluated"
+            "report.freshness.counts_by_state does not match report.freshness.evaluated"
         )
     if counts is not None and sum(int(value) for value in counts.values()) != concepts:
         raise ValueError(
-            "report.freshness.concepts does not match "
-            "report.freshness.counts_by_state"
+            "report.freshness.concepts does not match report.freshness.counts_by_state"
         )
 
 
@@ -337,6 +342,7 @@ def load_report(
     path: str | Path,
     *,
     doctor_exit_code: int,
+    expected_strict: bool | None = None,
 ) -> Mapping[str, Any]:
     """Load and strictly validate the complete doctor v1 contract."""
 
@@ -369,7 +375,9 @@ def load_report(
         raise ValueError(
             "report.exit_code does not match the captured doctor process exit code"
         )
-    _boolean(report["strict"], "report.strict")
+    strict = _boolean(report["strict"], "report.strict")
+    if expected_strict is not None and strict is not expected_strict:
+        raise ValueError("report.strict does not match the requested strict mode")
     _string(report["wiki_dir"], "report.wiki_dir")
     _string(report["src_dir"], "report.src_dir")
     _validate_availability(report["availability"])
@@ -380,11 +388,30 @@ def load_report(
     _validate_verification(report["verification_receipt"])
     _string_list(report["degraded_reasons"], "report.degraded_reasons")
     _string_list(report["unhealthy_reasons"], "report.unhealthy_reasons")
+    validate_doctor_payload(
+        report,
+        expected_strict=strict,
+        allow_additive=True,
+    )
     return report
 
 
+def _clip_utf8(value: str, limit: int = CELL_MAX_BYTES) -> str:
+    encoded = value.encode("utf-8")
+    if len(encoded) <= limit:
+        return value
+    prefix = encoded[: limit - 3]
+    while True:
+        try:
+            return prefix.decode("utf-8") + "..."
+        except UnicodeDecodeError as exc:
+            prefix = prefix[: exc.start]
+
+
 def _cell(value: object) -> str:
-    return str(value).replace("|", r"\|").replace("\r", " ").replace("\n", " ")
+    text = str(value).replace("\r", " ").replace("\n", " ")
+    text = text.replace("`", r"\x60").replace("|", r"\|")
+    return _clip_utf8(text)
 
 
 def render_summary(report: Mapping[str, Any]) -> str:
@@ -416,14 +443,26 @@ def render_summary(report: Mapping[str, Any]) -> str:
         ("Verification receipt", verification.get("state", "unknown")),
     )
     lines = [
-        "## LLM Wiki context health",
+        "## LLM Wiki strict doctor dashboard",
+        "",
+        (
+            "> Diagnostic knowledge-health dashboard only. It does not run or "
+            "replace `llm-wiki ci-check`; the blocking integrity context remains "
+            "`LLM Wiki integrity`."
+        ),
         "",
         "| Check | Result |",
         "|---|---|",
         *(f"| {_cell(label)} | `{_cell(value)}` |" for label, value in rows),
         "",
     ]
-    return "\n".join(lines)
+    rendered = "\n".join(lines)
+    if (
+        len(lines) > SUMMARY_MAX_LINES
+        or len(rendered.encode("utf-8")) > SUMMARY_MAX_BYTES
+    ):
+        raise ValueError("rendered summary exceeds its fixed bounds")
+    return rendered
 
 
 def _append(path: str | None, content: str) -> None:
@@ -433,12 +472,45 @@ def _append(path: str | None, content: str) -> None:
         output.write(content)
 
 
+def _write_receipt(
+    path: str | None,
+    *,
+    report_path: str | Path,
+    report: Mapping[str, Any],
+    fail_on: str,
+    doctor_exit_code: int,
+    dashboard_exit_code: int,
+) -> None:
+    if not path:
+        return
+    target = Path(path)
+    if target.exists() or target.is_symlink():
+        raise ValueError("dashboard receipt path must not already exist")
+    report_bytes = Path(report_path).read_bytes()
+    receipt = {
+        "schema_version": DASHBOARD_RECEIPT_SCHEMA,
+        "report_schema_version": report["schema_version"],
+        "status": report["status"],
+        "strict": report["strict"],
+        "fail_on": fail_on,
+        "doctor_exit_code": doctor_exit_code,
+        "dashboard_exit_code": dashboard_exit_code,
+        "report_sha256": hashlib.sha256(report_bytes).hexdigest(),
+    }
+    target.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
 def main() -> int:
     args = _arguments()
     try:
         report = load_report(
             args.report,
             doctor_exit_code=args.doctor_exit_code,
+            expected_strict=args.expected_strict == "true",
         )
         summary = render_summary(report)
     except ValueError as exc:
@@ -450,7 +522,19 @@ def main() -> int:
         f"status={report['status']}\n",
     )
     threshold = FAIL_THRESHOLDS[args.fail_on]
-    return int(STATUS_SEVERITY[str(report["status"])] >= threshold)
+    dashboard_exit = int(STATUS_SEVERITY[str(report["status"])] >= threshold)
+    try:
+        _write_receipt(
+            args.receipt,
+            report_path=args.report,
+            report=report,
+            fail_on=args.fail_on,
+            doctor_exit_code=args.doctor_exit_code,
+            dashboard_exit_code=dashboard_exit,
+        )
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"Could not write dashboard receipt: {exc}") from exc
+    return dashboard_exit
 
 
 if __name__ == "__main__":

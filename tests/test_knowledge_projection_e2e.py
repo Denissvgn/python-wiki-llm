@@ -1,4 +1,4 @@
-"""End-to-end coverage for governed M5 derived projections."""
+"""End-to-end coverage for governed derived projections."""
 
 from __future__ import annotations
 
@@ -89,7 +89,7 @@ from tests.test_knowledge_freshness import _live_evaluation
 from tests.test_knowledge_generation import _planner_inputs
 
 
-PRIVATE_TOKEN = "ghp_seededM5Secret123456789"
+PRIVATE_TOKEN = "ghp_seededProjectionSecret123456789"
 PRIVATE_COORDINATE = "/Users/alice/private/checkout/accounts.py:99"
 MODULE_LOCATOR = "llm-wiki://modules/accounts"
 USER_LOCATOR = "llm-wiki://entities/User"
@@ -272,7 +272,7 @@ def _commit_governed_fixture(tmp_path: Path) -> Path:
     )
 
     ledger = reconcile_concepts(
-        GovernanceLedger.empty("kb_m5_e2e"),
+        GovernanceLedger.empty("kb_projection_e2e"),
         concept_references_from_knowledge(prior_knowledge),
     )
     module_uid = _uid_for(ledger, MODULE_LOCATOR)
@@ -402,7 +402,7 @@ def _commit_duplicate_occurrence_fixture(tmp_path: Path) -> Path:
         json.loads(generated.knowledge_index.content)
     )
     ledger = reconcile_concepts(
-        GovernanceLedger.empty("kb_m5_duplicate"),
+        GovernanceLedger.empty("kb_projection_duplicate"),
         concept_references_from_knowledge(knowledge),
     )
     save_governance(wiki, ledger, expected_hash=None)
@@ -429,7 +429,7 @@ def _write_machine_receipt(wiki: Path, state: str) -> None:
     assert hashes is not None
     knowledge_hash = hashes.knowledge_index_hash
     if state == "invalidated":
-        knowledge_hash = fixture_hash("m5-prior-knowledge")
+        knowledge_hash = fixture_hash("projection-prior-knowledge")
     context = build_artifact_verification_context(
         view.knowledge,
         knowledge_hash=knowledge_hash,
@@ -473,7 +473,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
     assert projection.source_knowledge_hash == sha256_bytes(
         (wiki / KNOWLEDGE_INDEX_FILENAME).read_bytes()
     )
-    assert projection.bundle["bundle_id"] == "kb_m5_e2e"
+    assert projection.bundle["bundle_id"] == "kb_projection_e2e"
     assert projection.bundle["repository_identity"] == FIXTURE_REPOSITORY_IDENTITY
     assert PRIVATE_TOKEN not in encoded_projection
     assert PRIVATE_COORDINATE not in encoded_projection
@@ -551,10 +551,10 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         live_evaluation=_live_evaluation(
             view.knowledge,
             source_hash_by_path={
-                FIXTURE_SOURCE_PATH: fixture_hash("m5-live-source-changed")
+                FIXTURE_SOURCE_PATH: fixture_hash("projection-live-source-changed")
             },
             observation_by_locator={
-                USER_LOCATOR: fixture_hash("m5-live-user-changed")
+                USER_LOCATOR: fixture_hash("projection-live-user-changed")
             },
         ),
     )
@@ -597,7 +597,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         live_evaluation=_live_evaluation(
             view.knowledge,
             generation_options_hash=fixture_hash(
-                "m5-live-generation-options-incompatible"
+                "projection-live-generation-options-incompatible"
             ),
         ),
     )
@@ -1169,7 +1169,7 @@ def test_same_corpus_runs_bootstrap_sync_migrate_and_strict_lint_with_rename(
         types.SimpleNamespace(
             knowledge_action="init",
             wiki_dir=str(wiki),
-            bundle_id="kb_m5_command_workflow",
+            bundle_id="kb_projection_command_workflow",
             dry_run=False,
         )
     )

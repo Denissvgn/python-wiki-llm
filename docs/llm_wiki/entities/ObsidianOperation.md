@@ -46,11 +46,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) |
-| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) |
-| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) |
-| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) |
-| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) |
-| `install_obsidian_plugin` | call | [obsidian](../modules/obsidian.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) | 5 |
+| `install_obsidian_plugin` | call | [obsidian](../modules/obsidian.md) | 1 |

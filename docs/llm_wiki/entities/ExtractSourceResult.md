@@ -1,6 +1,6 @@
 # ExtractSourceResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:20`
+**Location:** `src/llm_wiki_cli/api_types.py:96`
 **Kind:** Class
 **Bases:** `_ExtractSourceRequired`
 **Module:** [api_types](../modules/api_types.md)
@@ -54,6 +54,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `extract_source` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `extract_source` | type_reference | [api](../modules/api.md) | — |

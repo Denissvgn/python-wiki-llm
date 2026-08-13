@@ -39,21 +39,24 @@ Low-cardinality knowledge status safe for reports and local metrics.
 flowchart LR
     n0["KnowledgeAggregateSummary (src/llm_wiki_cli/services/knowledge_observability.py)"]
     n1["KnowledgeLintSummary (src/llm_wiki_cli/services/lint_service.py)"]
-    n2["summarize_knowledge_view (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n3["KnowledgeLintSummary.aggregate_payload (src/llm_wiki_cli/services/lint_service.py)"]
-    n4["_safe_knowledge_summary (src/llm_wiki_cli/services/metrics.py)"]
-    n5["record_validation_event (src/llm_wiki_cli/services/metrics.py)"]
+    n2["_validate_knowledge_summary (src/llm_wiki_cli/services/ci_report.py)"]
+    n3["summarize_knowledge_view (src/llm_wiki_cli/services/knowledge_observability.py)"]
+    n4["KnowledgeLintSummary.aggregate_payload (src/llm_wiki_cli/services/lint_service.py)"]
+    n5["_safe_knowledge_summary (src/llm_wiki_cli/services/metrics.py)"]
+    n6["record_validation_event (src/llm_wiki_cli/services/metrics.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/knowledge_observability.md"
     click n1 "../modules/lint_service.md"
-    click n2 "../modules/knowledge_observability.md"
-    click n3 "../modules/lint_service.md"
-    click n4 "../modules/metrics.md"
+    click n2 "../modules/ci_report.md"
+    click n3 "../modules/knowledge_observability.md"
+    click n4 "../modules/lint_service.md"
     click n5 "../modules/metrics.md"
+    click n6 "../modules/metrics.md"
 ```
 
 ### Summary
@@ -70,11 +73,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `summarize_knowledge_view` | call | [knowledge_observability](../modules/knowledge_observability.md) |
-| `summarize_knowledge_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) |
-| `KnowledgeLintSummary.aggregate_payload` | call | [lint_service](../modules/lint_service.md) |
-| `_safe_knowledge_summary` | call | [metrics](../modules/metrics.md) |
-| `_safe_knowledge_summary` | type_reference | [metrics](../modules/metrics.md) |
-| `record_validation_event` | type_reference | [metrics](../modules/metrics.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_knowledge_summary` | call | [ci_report](../modules/ci_report.md) | 1 |
+| `summarize_knowledge_view` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
+| `summarize_knowledge_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `KnowledgeLintSummary.aggregate_payload` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_safe_knowledge_summary` | call | [metrics](../modules/metrics.md) | 1 |
+| `_safe_knowledge_summary` | type_reference | [metrics](../modules/metrics.md) | — |
+| `record_validation_event` | type_reference | [metrics](../modules/metrics.md) | — |

@@ -1,6 +1,6 @@
 # _SurfaceInitializationPlan
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1630`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1640`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -95,17 +95,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_surface_initialization_plan` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_surface_initialization_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_sync_graph_observations` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_canonical_sync_surface_flow_targets` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_exit_if_large_unforced_surface_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_initialization_flow_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_large_surface_message` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_print_dry_run_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_print_surface_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_surface_initialization_plan` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_build_surface_initialization_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_sync_graph_observations` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_canonical_sync_surface_flow_targets` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_exit_if_large_unforced_surface_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_initialization_flow_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_large_surface_message` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_print_dry_run_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_print_surface_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

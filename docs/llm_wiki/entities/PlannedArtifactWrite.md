@@ -52,9 +52,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `_planned_write` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `_planned_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `_verify_persisted` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `_planned_write` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `_planned_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `_verify_persisted` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |

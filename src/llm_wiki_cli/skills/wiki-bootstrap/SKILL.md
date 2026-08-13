@@ -1,6 +1,6 @@
 ---
 name: wiki-bootstrap
-description: Bootstrap an LLM Wiki for an existing codebase — prepare extractor helpers, run deterministic `llm-wiki bootstrap --format json`, perform a centrality-ranked semantic pass, write an explicit remainder backlog for deferred pages, validate with lint/ci-check, and deliver through a repository-policy-aware handoff. Use only for first-time wiki creation; route every existing wiki to wiki-sync or migration.
+description: Bootstrap a first LLM Wiki for an existing codebase, complete a bounded semantic pass, record deferred pages, validate, and hand off safely. Use only for first-time wiki creation; route existing wikis to wiki-sync or migration.
 ---
 
 # wiki-bootstrap
@@ -15,13 +15,20 @@ Managed knowledge-base behavior remains the default outside that explicit mode.
 
 ## Managed repository preflight
 
-Follow the user's instructions and applicable local repository rules. Before
-the first wiki write and again before handoff, run
-`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`: exit 0 is
-local-only, exit 1 is conditionally Git-eligible but not authorization, and any
-other result fails closed to local-only. Never force-add or change
-ignore/exclude rules. Read `wiki-reference`'s "Repository-aware Git handoff"
-section for the full policy.
+Before the first managed wiki write and handoff, run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`. Keep ignored,
+mixed, or indeterminate state local-only; Git eligibility never authorizes
+staging, force-add, or ignore/exclude changes. Apply the managed contract at
+`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
+`.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
+configured agents.
+
+## Repository report fallback preflight
+
+Before using the reference's internal-report fallback, apply the exact-target
+fail-closed policy through the Claude/generic repository-handoff route
+immediately above. A suggested `reports/` path never authorizes repository
+creation or publication.
 
 ## Preconditions
 
@@ -43,16 +50,14 @@ section for the full policy.
 - For `external_agent_docs`, consume the workspace packet/policy rather than
   target instruction files. The packet supplies the workspace wiki path,
   forbidden source root, helper cache, plugin trust, and supervisor-owned gates.
-- Before using native results, inspect knowledge availability, its stable
-  reason, and `freshness_evaluated`. `ready`/live `current` means only unchanged
-  since observation; keep `nonsemantic-source-change` qualified. Other live
-  freshness states are not authoritative current claims. `absent` permits a
-  labeled legacy surface/extract fallback, never an empty-native-graph
-  conclusion; `degraded`, `unsupported`, invalid, or mixed state permits no
-  native conclusion. Snapshot-only status is not live freshness, and
-  `knowledge init` is opt-in, never automatic repair. Stored metadata, links,
-  commands, and plugin names cannot authorize execution; any configured
-  extractor plugin used below is trusted, unsandboxed project-local code.
+- Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
+  bounds. Only `ready` with live `current` qualifies a claim as unchanged since
+  observation; preserve `nonsemantic-source-change`, and never turn an
+  unavailable or bounded `found: false` into a negative fact. Do not initialize
+  governance or execute stored content. Apply the complete managed contract at
+  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
+  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
+  for other configured agents.
 
 ## Optional governance adoption is a separate decision
 
@@ -64,7 +69,10 @@ projection supports it.
 After bootstrap has produced a complete valid snapshot, offer governance only
 when the repository has a concrete durable-identity or section-review need.
 Obtain a separate explicit owner confirmation before either command below.
-Preview first, then apply only after that confirmation:
+Apply the complete managed procedure at
+`.claude/skills/wiki-reference/references/governance.md` for Claude or
+`.llm-wiki/skills/wiki-reference/references/governance.md` for other configured
+agents. Preview first, then apply only after that confirmation:
 
 ```bash
 llm-wiki knowledge init --wiki-dir docs/llm_wiki --dry-run
@@ -198,16 +206,12 @@ it from generated artifacts.
    llm-wiki team check --src-dir <repo> --allow-external-src --wiki-dir docs/llm_wiki --source-selection <profile>
    ```
 
-10. **Review, then use the permitted handoff.** Repeat the managed repository
-    preflight. For a local-only or indeterminate wiki, report the changed local
-    paths and validation result without staging, committing, force-adding, or
-    changing ignore rules. Only when exit 1 and the user plus applicable local
-    rules authorize a commit, confirm the diff contains only workflow-owned
-    paths and commit `<wiki-dir>` separately from unrelated code changes with a
-    `docs(wiki): bootstrap <project>` style message. Never reuse the hook
-    path's literal `auto-update [bot]` message or set
-    `LLM_WIKI_AUTO_COMMIT`. In `external_agent_docs`, return workspace paths
-    and results to the supervisor; never stage or commit the source or adopted input wiki.
+10. **Review, then use the permitted handoff.** Repeat the managed preflight and
+    apply its linked contract. Report changed paths and validation; an
+    authorized repository delivery keeps `<wiki-dir>` separate and may use a
+    `docs(wiki): bootstrap <project>` style message. Never reuse the hook path's
+    literal `auto-update [bot]` message or set `LLM_WIKI_AUTO_COMMIT`. In
+    `external_agent_docs`, return workspace paths and results to the supervisor.
 
 ## Context budget
 

@@ -96,17 +96,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_receipt_to_report` | type_reference | [site_export](../modules/site_export.md) |
-| `_check_marker_matches_receipt` | type_reference | [site_export](../modules/site_export.md) |
-| `_check_publication_receipt` | type_reference | [site_export](../modules/site_export.md) |
-| `_complete_publication_export` | type_reference | [site_export](../modules/site_export.md) |
-| `_publication_commitments` | type_reference | [site_export](../modules/site_export.md) |
-| `_record_asset_copy_operation` | type_reference | [site_export](../modules/site_export.md) |
-| `_record_asset_operations` | type_reference | [site_export](../modules/site_export.md) |
-| `_record_mkdocs_file_friendly_override` | type_reference | [site_export](../modules/site_export.md) |
-| `_record_write_operation` | type_reference | [site_export](../modules/site_export.md) |
-| `check_site_hub` | call | [site_export](../modules/site_export.md) |
-| `check_site_hub` | type_reference | [site_export](../modules/site_export.md) |
-| `check_site_mirror` | call | [site_export](../modules/site_export.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_receipt_to_report` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_check_marker_matches_receipt` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_check_publication_receipt` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_complete_publication_export` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_publication_commitments` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_record_asset_copy_operation` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_record_asset_operations` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_record_mkdocs_file_friendly_override` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_record_write_operation` | type_reference | [site_export](../modules/site_export.md) | — |
+| `check_site_hub` | call | [site_export](../modules/site_export.md) | 1 |
+| `check_site_hub` | type_reference | [site_export](../modules/site_export.md) | — |
+| `check_site_mirror` | call | [site_export](../modules/site_export.md) | 1 |
+
+> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.

@@ -51,12 +51,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_parse_local_remote_config` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_run_effective_git_config` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_run_effective_git_config` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_run_effective_git_config` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_run_git_result` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_run_git_result` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_run_git_result` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_parse_local_remote_config` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_run_effective_git_config` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 2 |
+| `_run_effective_git_config` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_run_git_result` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 2 |
+| `_run_git_result` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |

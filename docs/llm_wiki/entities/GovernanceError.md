@@ -35,6 +35,10 @@ flowchart LR
     n8["_load_required_ledger (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n9["_read_bytes (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n10["_run_lifecycle (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
+    n11["_run_review (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
+    n12["_run_status (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
+    n13["_run_verify (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
+    n14["_scope_locator_for_uid (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,6 +49,10 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
+    n12 --> n0
+    n13 --> n0
+    n14 --> n0
     click n0 "../modules/knowledge_governance.md"
     click n2 "../modules/knowledge_governance.md"
     click n3 "../modules/knowledge_cmd.md"
@@ -55,6 +63,10 @@ flowchart LR
     click n8 "../modules/knowledge_cmd.md"
     click n9 "../modules/knowledge_cmd.md"
     click n10 "../modules/knowledge_cmd.md"
+    click n11 "../modules/knowledge_cmd.md"
+    click n12 "../modules/knowledge_cmd.md"
+    click n13 "../modules/knowledge_cmd.md"
+    click n14 "../modules/knowledge_cmd.md"
 ```
 
 ### Summary
@@ -72,17 +84,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_bundle_continuity` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_assert_snapshot_unchanged` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_committed_artifact_snapshot` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_committed_artifact_snapshot` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_concept_for_uid` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_concept_for_uid` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_init_ledger` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_load_required_ledger` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_read_bytes` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_read_bytes` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_read_bytes` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_run_lifecycle` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_bundle_continuity` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_assert_snapshot_unchanged` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_committed_artifact_snapshot` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 2 |
+| `_concept_for_uid` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 2 |
+| `_init_ledger` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_load_required_ledger` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_read_bytes` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 3 |
+| `_run_lifecycle` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_run_review` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_run_status` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 2 |
+| `_run_verify` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_scope_locator_for_uid` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+
+> References: showing 12 of 73 logical references; 61 omitted by the 12-row generated summary limit.

@@ -1,5 +1,15 @@
 # user-docs-author reference
 
+## Contents
+
+- [Evidence Sources](#evidence-sources)
+- [Page Contract](#page-contract)
+- [Command Matrix](#command-matrix)
+- [External documentation workspace](#external-documentation-workspace)
+- [Adjustment Loop](#adjustment-loop)
+- [Failure Modes](#failure-modes)
+- [Usage examples handoff](#usage-examples-handoff)
+
 Use this reference after the main skill confirms that a full user-docs pass is needed. Keep the pass deterministic-first: commands establish evidence, the agent writes semantic prose, and validation decides what gets adjusted.
 
 ## Evidence Sources

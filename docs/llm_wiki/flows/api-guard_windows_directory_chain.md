@@ -130,34 +130,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| guard_windows_directory_chain | WindowsDirectoryGuardError | 165 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
-| guard_windows_directory_chain | Path | 169 | `Path(os.path.abspath(...))` |
-| guard_windows_directory_chain | abspath | 169 | `os.path.abspath(os.fspath(...))` |
-| guard_windows_directory_chain | fspath | 169 | `os.fspath(root)` |
-| guard_windows_directory_chain | WindowsDirectoryGuardError | 171 | `WindowsDirectoryGuardError(...)` |
-| guard_windows_directory_chain | Path | 174 | `Path(root_path.anchor)` |
-| guard_windows_directory_chain | append | 177 | `handles.append(_open_windows_directory_guard(...))` |
-| guard_windows_directory_chain | _open_windows_directory_guard | 177 | `_open_windows_directory_guard(current)` |
-| _open_windows_directory_guard | WinDLL | 230 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _open_windows_directory_guard | create_file | 254 | `create_file(_windows_api_path(...), desired_access, ..., None, _OPEN_EXISTING, ..., None)` |
-| _open_windows_directory_guard | _windows_api_path | 255 | `_windows_api_path(path)` |
+| guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
+| guard_windows_directory_chain | Path | 174 | `Path(os.path.abspath(...))` |
+| guard_windows_directory_chain | abspath | 174 | `os.path.abspath(os.fspath(...))` |
+| guard_windows_directory_chain | fspath | 174 | `os.fspath(root)` |
+| guard_windows_directory_chain | WindowsDirectoryGuardError | 176 | `WindowsDirectoryGuardError(...)` |
+| guard_windows_directory_chain | Path | 179 | `Path(root_path.anchor)` |
+| guard_windows_directory_chain | append | 182 | `handles.append(_open_windows_directory_guard(...))` |
+| guard_windows_directory_chain | _open_windows_directory_guard | 182 | `_open_windows_directory_guard(current)` |
+| _open_windows_directory_guard | WinDLL | 235 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _open_windows_directory_guard | create_file | 259 | `create_file(_windows_api_path(...), desired_access, ..., None, _OPEN_EXISTING, ..., None)` |
+| _open_windows_directory_guard | _windows_api_path | 260 | `_windows_api_path(path)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `handles.append` | `guard_windows_directory_chain` | 177 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 184 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 211 |
+| mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
+| mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
+| mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `guard_windows_directory_chain` | `os.path.abspath` | 169 |
-| external_call | `guard_windows_directory_chain` | `os.fspath` | 169 |
-| external_call | `_open_windows_directory_guard` | `ctypes.WinDLL` | 230 |
-| unresolved_call | `_open_windows_directory_guard` | `create_file` | 254 |
+| external_call | `guard_windows_directory_chain` | `os.path.abspath` | 174 |
+| external_call | `guard_windows_directory_chain` | `os.fspath` | 174 |
+| external_call | `_open_windows_directory_guard` | `ctypes.WinDLL` | 235 |
+| unresolved_call | `_open_windows_directory_guard` | `create_file` | 259 |
 | step_limit | `guard_windows_directory_chain` | `first 12 steps` | 0 |
 
 ## Behavior

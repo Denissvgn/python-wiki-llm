@@ -1,10 +1,13 @@
 # Native knowledge reads
 
-LLM Wiki keeps human-editable Markdown as the canonical documentation. The
-experimental generated `.llm-wiki-knowledge.json` file is a validated,
-deterministic read projection of observations about those pages and their
-source basis. It is not an editable source of truth, an approval record, or
-proof that an observation is still current.
+LLM Wiki keeps human-editable Markdown as the canonical documentation. After
+bootstrap or sync commits a knowledge-capable wiki, its generated observations
+are the normal bounded evidence plane for coding agents and other
+knowledge-aware readers through the supported context and query interfaces.
+The `.llm-wiki-knowledge.json` file is the validated, deterministic projection
+behind those interfaces, not the normal consumer interface or an editable
+source of truth. It is not an approval record or proof that an observation is
+still current.
 
 For operational details, see
 [Native knowledge artifact operations](native-knowledge-artifacts.md). For
@@ -41,10 +44,9 @@ The live generation-options commitment is recomputed from the validated
 manifest policy, the reader's active options and defaults, and the actual
 inventory mode. Readers never reuse the recorded hash as the live value. A
 different effective option basis reports `basis-incompatible`; an option basis
-that cannot be evaluated leaves freshness unavailable. When strict lint opts
-into test-language extraction, use the same `--include-tests` selection that
-was used to generate the projection if a positive freshness comparison is
-required.
+that cannot be evaluated leaves freshness unavailable. A positive comparison
+requires the same effective source-selection inputs that generated the
+projection.
 
 Freshness does not imply truth, human review, lifecycle, or authorization. A
 hash match means only that the compared observation basis is unchanged. It
@@ -79,6 +81,126 @@ Callers should branch on `availability`, not interpret `found: false` as proof
 that no concept exists. In degraded, unsupported, and absent states, native
 queries return explicit status and do not fabricate empty knowledge,
 evidence, or freshness.
+
+## Bounded knowledge mode
+
+Use an explicit knowledge mode when context should carry the bounded native
+evidence selection and its qualification signals:
+
+```console
+llm-wiki context --src-dir . --wiki-dir docs/llm_wiki \
+  --budget 32000 --focus changed --knowledge-mode auto --read-only \
+  --format json
+```
+
+Explicit mode selects the `llm-wiki-context/v2` contract. The same field and
+values are available on every context interface:
+
+| Interface | Mode input | Context result |
+|---|---|---|
+| CLI | `--knowledge-mode` on `llm-wiki context` | `knowledge` and, when requested, `ranking_policy` |
+| Python | `build_context(..., knowledge_mode=...)` | `knowledge` and, when requested, `ranking_policy` |
+| Python packet | `build_qualified_context(..., knowledge_mode=...)` or `request["knowledge_mode"]` | `response.knowledge` and, when requested, `response.ranking_policy` |
+| MCP | `get_context(..., knowledge_mode=...)` | `knowledge` and, when requested, `ranking_policy` |
+| MCP packet | `get_context_packet(..., knowledge_mode=...)` | `packet.response.knowledge` and, when requested, `packet.response.ranking_policy` |
+| Raw protocol | `knowledge_mode` in a `llm-wiki-context/v2` request | The same v2 context fields |
+
+The mode values have deliberately different availability behavior:
+
+| Mode | Behavior |
+|---|---|
+| `off` | Does not construct or select native knowledge. It returns `status: disabled`, `availability: not-evaluated`, and `reason: knowledge-selection-disabled`. A qualified packet still records the independently captured knowledge basis. |
+| `auto` | Selects bounded native knowledge when it is ready; otherwise returns a successful, read-only fallback with the exact availability and reason. |
+| `required` | Selects when availability is ready. Unavailable knowledge produces `knowledge-required-unavailable` and no normal context response or packet. It does not require every selected concept to be live-current. |
+
+A ready projection with no relevant concepts is a successful fallback in both
+`auto` and `required`: `status` is `fallback`, availability remains `ready`,
+and the reason is `no-relevant-native-selection`. Snapshot-only knowledge can
+also satisfy `required` because the availability is ready, but its freshness
+limitation remains explicit.
+
+### Outcome and fallback signals
+
+Every successful v2 response carries `mode`, `status`, `availability`,
+`reason`, `selected`, `freshness_evaluated`, three independent `bounds`
+records, and `fallback`. Consumers should use those fields together:
+
+| Outcome | Status and availability | Stable reason |
+|---|---|---|
+| Native selection | `selected`, `ready` | `knowledge-ready`, `knowledge-snapshot-only`, `knowledge-source-changed`, or `knowledge-results-truncated` |
+| No relevant native selection | `fallback`, `ready` | `no-relevant-native-selection` |
+| Projection absent | `fallback`, `absent` in `auto` | `knowledge-projection-not-present` |
+| Projection or basis rejected | `fallback`, `degraded` in `auto` | `policy-selected-surface-only-fallback-after-invalid`, `policy-selected-surface-only-fallback-after-mixed-snapshot`, `surface-validation-failed`, `knowledge-basis-incompatible`, or `governance-missing` |
+| Projection schema too new | `fallback`, `unsupported` in `auto` | `knowledge-schema-version-unsupported` |
+| Minimal selection exceeds the wire limit | `fallback`, `degraded` in `auto` | `knowledge-result-exceeds-size-limit` |
+
+For an unavailable `required` request, these availability and reason values
+appear in the `knowledge-required-unavailable` error instead of a normal
+response. The error does not emit a packet or authorize a mutation.
+
+An `auto` fallback reports its evidence order in `fallback.evidence`:
+`independently-validated-surface` when that surface is safe, then `markdown`,
+then `targeted-source-or-runtime`. A failed surface validation omits the first
+entry. The array is a conservative next-evidence route, not an assertion that
+the fallback evidence proves the missing native conclusion. In particular,
+`found: false` remains inconclusive whenever native knowledge was not selected.
+
+Selected native results are bounded independently at 20 `concepts`, 20
+`pages`, and 40 `relationships`. Each collection reports exact `total`,
+`returned`, and `truncated` values. The source-file token budget and
+`bounds.files` remain a separate boundary. When serialized size requires
+further reduction, the response drops relationships, then pages, then concepts
+deterministically; it never presents a reduced result as complete.
+
+### Optional freshness preference
+
+`prefer_fresh` defaults to false and never controls whether native knowledge
+is included. When explicitly requested, it is only a current-first ordering
+preference within an existing source relevance tier, and only under budget
+pressure. It applies only when `auto` or `required` selected knowledge and
+qualified freshness ranks are available. It does not filter stale content,
+move a less-relevant file into a higher tier, or turn `current` into a truth or
+review claim. The CLI spelling is `--prefer-fresh`; Python, MCP, and raw
+requests use `prefer_fresh`.
+
+A successful response includes `ranking_policy` only when the preference was
+requested. Inspect `applied` and `reason`; the stable non-application reasons
+are `knowledge-selection-disabled`, `knowledge-unavailable`,
+`no-budget-pressure`, and `qualified-freshness-ranks-unavailable`.
+
+### Snapshot-only versus live-qualified reads
+
+Snapshot-only operations use committed or captured bytes without collecting a
+live source basis. Status validates the committed wiki view, packet-byte
+validation checks the retained packet bytes, and the command-line derived
+projections described below use their committed input view. They must retain
+`freshness_evaluated: false` or the exact snapshot-only disclosure and must not
+infer currentness.
+
+An explicit `auto` or `required` live context request, or a live documentation
+query service, collects a live source basis and produces bounded output. Even
+then, inspect each concept's `state`, `reason`, and
+`live_comparison_performed`: an evaluated aggregate can contain concepts for
+which no reliable live comparison was possible. Packet reconciliation
+performs a new binding comparison; it does not retroactively turn a
+snapshot-only per-concept result into a live-qualified one. Neither kind of
+read establishes runtime behavior, semantic truth, approval, or authorization.
+
+### Recovery is separate from governance adoption
+
+Fallback is read-only and never initializes governance or refreshes artifacts
+implicitly. If an ordinary ungoverned projection is absent or a generated
+projection is drifted while its authority inputs remain valid, explicitly run
+sync with the same source root, wiki root, source-selection policy, and any
+external-source authorization. If the installed reader does not support the
+projection schema, update that installed package first, verify its version,
+and only then sync.
+
+If a governed projection declares a ledger that is missing, restore
+`.llm-wiki-governance.json` from version control or an owner-approved backup
+before regeneration. Do not run `knowledge init` as recovery. Choosing to
+adopt durable governance in a previously ungoverned repository remains a
+separate, explicit product decision described below.
 
 ## Semantics you should expect
 
@@ -486,12 +608,13 @@ Analyzer limitation codes are part of the graph's committed input basis.
 `deep-analysis-disabled`, `flow-analysis-disabled`, and
 `data-flow-analysis-disabled` mean the corresponding collection was not
 evaluated. Dependency analysis additionally distinguishes disabled,
-not-evaluated, and test-excluding scopes. Import locations depend on extractor
-support; unavailable locations remain absent. Entry-point coverage identifies
-invalid plugin records and failed detectors. Flow and data-flow coverage
-reports static-inference, depth, per-collection, and upstream-total limits;
-when an older extractor cannot supply pre-limit effect totals, the graph says
-that those totals may be unavailable instead of claiming completeness.
+not-evaluated, and source-selection-limited scopes. Import locations depend on
+extractor support; unavailable locations remain absent. Entry-point coverage
+identifies invalid plugin records and failed detectors. Flow and data-flow
+coverage reports static-inference, depth, per-collection, and upstream-total
+limits; when an older extractor cannot supply pre-limit effect totals, the
+graph says that those totals may be unavailable instead of claiming
+completeness.
 
 ### Section ownership contract
 
@@ -564,16 +687,18 @@ llm-wiki lint --strict --profile \
 ```
 
 When present, `knowledge_summary` contains aggregate availability, concept,
-freshness, evidence-issue, degraded-reason, and phase-duration values. It does
-not contain concept locators, source hashes, actors, private remotes, or
+freshness, evidence-issue, degraded-reason, and operation-duration values. It
+does not contain concept locators, source hashes, actors, private remotes, or
 absolute paths.
 
 ## Context filters and ranking
 
-The `llm-wiki-context/v1` request protocol accepts `freshness`, `evidence`, and
-typed-relationship filters as concept refinements. Each refinement must
-accompany `surface` or `symbol`, because those fields produce the concept
-candidates to refine.
+The omitted-mode `llm-wiki-context/v1` compatibility protocol accepts
+`freshness`, `evidence`, and typed-relationship filters as concept
+refinements. Each refinement must accompany `surface` or `symbol`, because
+those fields produce the concept candidates to refine. This legacy candidate
+ordering is separate from the optional v2 `prefer_fresh` source-file ranking
+described above.
 
 ```json
 {
@@ -617,6 +742,11 @@ and a warning explains their presence. If knowledge or live freshness is
 unavailable, context does not apply optimistic ranking: it uses deterministic
 path order, reports the availability reason, and explains whether a requested
 refinement matched no candidates.
+
+This refinement ranking does not remove a stale or unknown candidate unless
+the request supplied an explicit filter. It also does not change relevance
+tiers or imply that a `current` observation is true, reviewed, or representative
+of runtime state.
 
 The `knowledge_selection` object on a knowledge-aware surface or symbol result
 discloses:

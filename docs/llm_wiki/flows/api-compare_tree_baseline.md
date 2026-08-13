@@ -60,7 +60,7 @@ sequenceDiagram
     p5->>p10: _assert_safe_directory
 ```
 
-> Call sequence diagram shows 30 of 321 interactions; 291 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 323 interactions; 293 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

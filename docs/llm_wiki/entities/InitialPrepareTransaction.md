@@ -46,6 +46,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `prepare_documentation_run` | call | [prepare](../modules/prepare.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `prepare_documentation_run` | call | [prepare](../modules/prepare.md) | 1 |

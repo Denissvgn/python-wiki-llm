@@ -27,15 +27,15 @@ artifacts only after the public Markdown surface has been written.
 | `.imports` | `ModulePathResolver`, `build_module_path_resolver` |
 | `.infrastructure_inventory` | `RUNTIME_CONFIG_TYPES`, `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `build_infrastructure_page_map`, `build_infrastructure_sync_plan`, `validate_infrastructure_generation_input`, `with_infrastructure_generation_input` |
-| `.io` | `read_md`, `write_md` |
+| `.io` | `read_md`, `write_bytes_atomic`, `write_md` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_source_snapshot_hash` |
 | `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.paths` | `normalize_source_path`, `portable_source_root_label` |
-| `.relationships` | `build_entity_relationship_summaries` |
-| `.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `pin_source_selection_command_recipes` |
+| `.relationships` | `build_entity_page_relationship_summaries` |
+| `.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `decode_managed_document_bytes`, `encode_managed_document_text`, `pin_source_selection_command_recipes` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
@@ -84,19 +84,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 697 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 955 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 2828 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4059 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4083 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4096 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4103 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4111 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4117 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4127 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4138 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4146 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4153 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 701 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 979 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 2852 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4083 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4107 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4120 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4127 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4135 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4141 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4151 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4162 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4170 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4177 | — | — |
 
 ## Functions
 

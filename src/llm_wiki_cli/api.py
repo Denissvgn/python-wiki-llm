@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import inspect
+import json
+import re
 import warnings
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from functools import wraps
+from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NoReturn, ParamSpec, TypeVar, cast
 
@@ -21,11 +24,13 @@ from .api_types import (
     ContextPayload,
     DataFlowForEntrypointResult,
     DependencyNeighborhoodResult,
+    DocumentationQueryResult,
     DocumentationExportResult,
     DoctorResult,
     EvidenceExplanationResult,
     ExtractSourceResult,
     FlowForEntrypointResult,
+    KnowledgeMode,
     MarkdownContextResult,
     PagesForSymbolResult,
     RelatedConceptsResult,
@@ -41,9 +46,14 @@ from .config import (
     validate_source_root,
 )
 from .services import context_packet as context_packet_service
+from .services.context_knowledge_contract import (
+    KNOWLEDGE_MODE_REQUEST_FIELD,
+    KNOWLEDGE_MODE_VALUES,
+)
 from .services import wiki_surface
 from .services.contracts import (
     BOOTSTRAP_SUMMARY_SCHEMA_VERSION,
+    CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION,
     DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
     DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION,
@@ -60,6 +70,7 @@ from .services.contracts import (
     P0_CALIBRATION_RUN_SCHEMA_VERSION,
     P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION,
     QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+    QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
 )
 from .services.bootstrap_service import (
     BootstrapContractError,
@@ -74,13 +85,25 @@ from .services.doctor_service import build_doctor_report
 from .services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
+    fit_documentation_query_result,
 )
 from .services.documentation_query_builder import (
     build_live_documentation_query_service,
+    build_snapshot_documentation_query_service,
+    normalize_concept_coordinate,
+    normalize_documentation_query_limit,
+    normalize_documentation_query_text,
+    normalize_supplied_paths,
+    supplied_paths_from_unified_diff,
 )
 from .services.knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
+)
+from .services.knowledge_graph import (
+    CORE_RELATIONSHIP_KINDS,
+    GRAPH_ORIGINS,
+    GRAPH_RESOLUTIONS,
 )
 from .services.documentation_model_policy import (
     DocumentationModelEscalationRule,
@@ -152,12 +175,8 @@ ContextPacketMalformedError = context_packet_service.ContextPacketMalformedError
 ContextPacketSourceMutationError = (
     context_packet_service.ContextPacketSourceMutationError
 )
-ContextPacketUnavailableError = (
-    context_packet_service.ContextPacketUnavailableError
-)
-ContextPacketPathPolicyError = (
-    context_packet_service.ContextPacketPathPolicyError
-)
+ContextPacketUnavailableError = context_packet_service.ContextPacketUnavailableError
+ContextPacketPathPolicyError = context_packet_service.ContextPacketPathPolicyError
 
 _CALIBRATION_CONTROLLER_TYPE_EXPORTS = frozenset(
     {
@@ -206,18 +225,12 @@ def _load_calibration_type_exports(names: frozenset[str]) -> None:
     if controller_names:
         from .services.calibration import controller
 
-        globals().update(
-            (name, getattr(controller, name))
-            for name in controller_names
-        )
+        globals().update((name, getattr(controller, name)) for name in controller_names)
     host_names = names & _CALIBRATION_HOST_TYPE_EXPORTS
     if host_names:
         from .services.calibration import host_broker
 
-        globals().update(
-            (name, getattr(host_broker, name))
-            for name in host_names
-        )
+        globals().update((name, getattr(host_broker, name)) for name in host_names)
 
 
 class _LazyCalibrationAnnotations(dict[str, Any]):
@@ -273,10 +286,7 @@ def _defer_calibration_annotations(
         exports = frozenset(
             export
             for export in _CALIBRATION_TYPE_EXPORTS
-            if any(
-                export in str(annotation)
-                for annotation in annotations.values()
-            )
+            if any(export in str(annotation) for annotation in annotations.values())
         )
         current.__annotations__ = _LazyCalibrationAnnotations(
             annotations,
@@ -307,6 +317,17 @@ def __dir__() -> list[str]:
 class LlmWikiApiError(RuntimeError):
     """Base exception raised by the supported Python API."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str | None = None,
+        details: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.details = None if details is None else dict(details)
+
 
 class InvalidRequestError(LlmWikiApiError):
     """Raised when arguments or a submitted request contract are invalid."""
@@ -331,6 +352,84 @@ _API_ERROR_LEAVES = (
     WorkspaceStateError,
     ArtifactIntegrityError,
 )
+
+
+def _normalize_optional_knowledge_mode(value: object) -> KnowledgeMode | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or value not in KNOWLEDGE_MODE_VALUES:
+        choices = ", ".join(repr(item) for item in KNOWLEDGE_MODE_VALUES)
+        raise InvalidRequestError(
+            f"knowledge_mode must be one of {choices}, or None",
+            code="invalid-request",
+            details={"field": KNOWLEDGE_MODE_REQUEST_FIELD},
+        )
+    return cast(KnowledgeMode, value)
+
+
+def _required_knowledge_failure(exc: BaseException) -> dict[str, Any] | None:
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        code = getattr(current, "code", None)
+        if code == "knowledge-required-unavailable" or type(current).__name__ == (
+            "KnowledgeRequiredUnavailableError"
+        ):
+            details = getattr(current, "details", None)
+            if isinstance(details, Mapping):
+                copied = dict(details)
+                nested = copied.get("error")
+                if isinstance(nested, Mapping):
+                    return dict(nested)
+                return copied
+            break
+        current = current.__cause__ or current.__context__
+    if current is None:
+        return None
+    return {
+        "code": "knowledge-required-unavailable",
+        "field": KNOWLEDGE_MODE_REQUEST_FIELD,
+        "mode": "required",
+        "availability": "degraded",
+        "reason": "knowledge-required-unavailable",
+        "fallback_evidence": [],
+        "recovery_command": "none-required",
+        "mutation_permitted": False,
+    }
+
+
+def _raise_required_knowledge_api_error(exc: BaseException) -> None:
+    details = _required_knowledge_failure(exc)
+    if details is None:
+        return
+    raise WorkspaceStateError(
+        str(exc),
+        code="knowledge-required-unavailable",
+        details=details,
+    ) from exc
+
+
+def _path_error_field(message: str) -> str:
+    if "--src-dir" in message:
+        return "src_dir"
+    if "--wiki-dir" in message:
+        return "wiki_dir"
+    return "path"
+
+
+def _wiki_path_policy_details(exc: BaseException) -> dict[str, Any]:
+    details: dict[str, Any] = {"field": "wiki_dir"}
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, wiki_surface.WikiSurfacePathError):
+            details["path"] = current.relative_path
+            break
+        current = current.__cause__ or current.__context__
+    return details
+
 
 _WIKI_INPUT_ARTIFACT_CATEGORIES = frozenset(
     {
@@ -394,10 +493,7 @@ def _has_exception_origin(
 ) -> bool:
     """Return whether one exception inherits from a named service module."""
 
-    return any(
-        base.__module__ in module_names
-        for base in type(exc).__mro__
-    )
+    return any(base.__module__ in module_names for base in type(exc).__mro__)
 
 
 def _calibration_error_category(exc: Exception) -> str | None:
@@ -438,6 +534,12 @@ def _raise_api_error(exc: Exception) -> NoReturn:
     for leaf in _API_ERROR_LEAVES:
         if isinstance(exc, leaf):
             raise leaf(str(exc)) from exc
+    if isinstance(exc, wiki_surface.WikiSurfacePathError):
+        raise PathPolicyError(
+            str(exc),
+            code="path-policy-error",
+            details=_wiki_path_policy_details(exc),
+        ) from exc
     calibration_category = _calibration_error_category(exc)
     if calibration_category == "artifact":
         raise ArtifactIntegrityError(str(exc)) from exc
@@ -458,9 +560,7 @@ def _raise_api_error(exc: Exception) -> NoReturn:
         raise InvalidRequestError(str(exc)) from exc
     if isinstance(
         exc,
-        (
-            DocumentationIntegrityError,
-        ),
+        (DocumentationIntegrityError,),
     ):
         raise ArtifactIntegrityError(str(exc)) from exc
     if isinstance(
@@ -606,8 +706,16 @@ def extract_source(
         )
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
-            raise WorkspaceStateError(str(exc)) from exc
-        raise PathPolicyError(str(exc)) from exc
+            raise WorkspaceStateError(
+                str(exc),
+                code="workspace-state-error",
+                details={"field": _path_error_field(str(exc))},
+            ) from exc
+        raise PathPolicyError(
+            str(exc),
+            code="path-policy-error",
+            details={"field": _path_error_field(str(exc))},
+        ) from exc
     except extract_cmd.ExtractorFailureError as exc:
         raise WorkspaceStateError(str(exc)) from exc
     except ValueError as exc:
@@ -628,17 +736,25 @@ def build_context(
     allow_external_src: bool = False,
     read_only: bool = True,
     source_selection: str | Path | None = None,
+    knowledge_mode: KnowledgeMode | None = None,
 ) -> ContextPayload | MarkdownContextResult:
     """Return a supported context payload without depending on CLI internals."""
     focus_values = _normalise_focus(focus)
+    selected_mode = _normalize_optional_knowledge_mode(knowledge_mode)
     request = {
-        "protocol": context_cmd.PROTOCOL_VERSION,
+        "protocol": (
+            context_cmd.PROTOCOL_VERSION
+            if selected_mode is None
+            else CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+        ),
         "budget_tokens": budget,
         "focus": focus_values,
         "format": format,
-        "filters": filters or {},
+        "filters": {} if filters is None else filters,
         "prefer_fresh": prefer_fresh,
     }
+    if selected_mode is not None:
+        request[KNOWLEDGE_MODE_REQUEST_FIELD] = selected_mode
     try:
         validated = context_cmd._validate_protocol_request(request)
         payload, warnings = context_cmd._build_context(
@@ -653,17 +769,39 @@ def build_context(
             read_only=read_only,
             wiki_dir=wiki_dir,
             source_selection=source_selection,
+            knowledge_mode=validated.get(KNOWLEDGE_MODE_REQUEST_FIELD),
+            include_plugins=True,
         )
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
-            raise WorkspaceStateError(str(exc)) from exc
-        raise PathPolicyError(str(exc)) from exc
+            raise WorkspaceStateError(
+                str(exc),
+                code="workspace-state-error",
+                details={"field": _path_error_field(str(exc))},
+            ) from exc
+        raise PathPolicyError(
+            str(exc),
+            code="path-policy-error",
+            details={"field": _path_error_field(str(exc))},
+        ) from exc
+    except context_cmd.KnowledgeRequiredUnavailableError as exc:
+        _raise_required_knowledge_api_error(exc)
+        raise WorkspaceStateError(str(exc)) from exc
     except context_cmd.ProtocolRequestError as exc:
+        _raise_required_knowledge_api_error(exc)
         if exc.field == "wiki_dir":
-            raise PathPolicyError(str(exc)) from exc
+            raise PathPolicyError(
+                str(exc),
+                code="path-policy-error",
+                details=_wiki_path_policy_details(exc),
+            ) from exc
         if exc.field == "src_dir":
             raise WorkspaceStateError(str(exc)) from exc
-        raise InvalidRequestError(str(exc)) from exc
+        raise InvalidRequestError(
+            str(exc),
+            code="invalid-request",
+            details={"field": exc.field},
+        ) from exc
 
     if validated["format"] == "markdown":
         return cast(
@@ -690,35 +828,109 @@ def build_qualified_context(
     allow_external_src: bool = False,
     read_only: bool = True,
     source_selection: str | Path | None = None,
+    knowledge_mode: KnowledgeMode | None = None,
 ) -> QualifiedContextPacket:
     """Build a canonical in-memory qualified-context packet."""
+
+    selected_mode = _normalize_optional_knowledge_mode(knowledge_mode)
+    packet_request: Mapping[str, Any] | None = request
+    if selected_mode is not None:
+        if request is not None and KNOWLEDGE_MODE_REQUEST_FIELD in request:
+            raise InvalidRequestError(
+                "knowledge_mode cannot be supplied both as an API parameter "
+                "and in the packet request",
+                code="invalid-request",
+                details={"field": KNOWLEDGE_MODE_REQUEST_FIELD},
+            )
+        supplied_protocol = None if request is None else request.get("protocol")
+        if supplied_protocol is not None and (
+            not isinstance(supplied_protocol, str)
+            or supplied_protocol
+            not in {
+                context_cmd.PROTOCOL_VERSION,
+                CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+            }
+        ):
+            raise InvalidRequestError(
+                "protocol is not supported",
+                code="invalid-request",
+                details={"field": "protocol"},
+            )
+        if request is None:
+            packet_request = {
+                "protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+                "budget_tokens": 32_000,
+                "focus": ["changed", "neighbors"],
+                "format": "json",
+                "filters": {},
+                "prefer_fresh": False,
+                KNOWLEDGE_MODE_REQUEST_FIELD: selected_mode,
+            }
+        else:
+            packet_request = {
+                **request,
+                "protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+                KNOWLEDGE_MODE_REQUEST_FIELD: selected_mode,
+            }
 
     try:
         packet = context_packet_service.build_qualified_context(
             src_dir,
             wiki_dir,
-            request,
+            packet_request,
             allow_external_src=allow_external_src,
             read_only=read_only,
             source_selection=source_selection,
         )
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
-            raise WorkspaceStateError(str(exc)) from exc
-        raise PathPolicyError(str(exc)) from exc
+            raise WorkspaceStateError(
+                str(exc),
+                code="workspace-state-error",
+                details={"field": _path_error_field(str(exc))},
+            ) from exc
+        raise PathPolicyError(
+            str(exc),
+            code="path-policy-error",
+            details={"field": _path_error_field(str(exc))},
+        ) from exc
     except context_packet_service.ContextPacketPathPolicyError as exc:
-        raise PathPolicyError(str(exc)) from exc
+        raise PathPolicyError(
+            str(exc),
+            code="path-policy-error",
+            details={"field": getattr(exc, "field", "path")},
+        ) from exc
     except (
         context_packet_service.ContextPacketSourceMutationError,
         context_packet_service.ContextPacketUnavailableError,
     ) as exc:
+        _raise_required_knowledge_api_error(exc)
         raise WorkspaceStateError(str(exc)) from exc
+    except context_cmd.KnowledgeRequiredUnavailableError as exc:
+        _raise_required_knowledge_api_error(exc)
+        raise WorkspaceStateError(str(exc)) from exc
+    except context_packet_service.ContextPacketError as exc:
+        _raise_required_knowledge_api_error(exc)
+        raise InvalidRequestError(
+            str(exc),
+            code="invalid-request",
+            details={"field": getattr(exc, "field", "request")},
+        ) from exc
     except context_cmd.ProtocolRequestError as exc:
+        _raise_required_knowledge_api_error(exc)
         if exc.field == "wiki_dir":
-            raise PathPolicyError(str(exc)) from exc
+            raise PathPolicyError(
+                str(exc),
+                code="path-policy-error",
+                details=_wiki_path_policy_details(exc),
+            ) from exc
         if exc.field == "src_dir":
             raise WorkspaceStateError(str(exc)) from exc
-        raise InvalidRequestError(str(exc)) from exc
+        raise InvalidRequestError(
+            str(exc),
+            code="invalid-request",
+            details={"field": exc.field},
+        ) from exc
     return packet
 
 
@@ -810,6 +1022,12 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult:
         ]
     except PathValidationError as exc:
         raise PathPolicyError(str(exc)) from exc
+    except wiki_surface.WikiSurfacePathError as exc:
+        raise PathPolicyError(
+            str(exc),
+            code="path-policy-error",
+            details=_wiki_path_policy_details(exc),
+        ) from exc
     except wiki_surface.WikiSurfaceError as exc:
         raise InvalidRequestError(str(exc)) from exc
     except OSError as exc:
@@ -855,6 +1073,7 @@ def build_documentation_query_service(
 ) -> DocumentationGraphQueryService:
     """Build a supported graph query service over derived documentation data."""
     try:
+        bounded_limit = normalize_documentation_query_limit(limit)
         src_root = validate_source_root(
             src_dir,
             "--src-dir",
@@ -864,8 +1083,9 @@ def build_documentation_query_service(
         return build_live_documentation_query_service(
             source_root=src_root,
             wiki_root=wiki_root,
-            limit=limit,
+            limit=bounded_limit,
             read_only=read_only,
+            include_plugins=False,
             source_selection=source_selection,
             extract_payload_builder=extract_cmd.build_extract_payload,
             source_snapshot_builder=extract_cmd.build_source_snapshot,
@@ -886,11 +1106,137 @@ def build_documentation_query_service(
     except extract_cmd.ExtractorFailureError as exc:
         raise WorkspaceStateError(str(exc)) from exc
     except DocumentationQueryError as exc:
-        raise InvalidRequestError(str(exc)) from exc
+        field = "limit" if str(exc).startswith("limit ") else "request"
+        raise InvalidRequestError(
+            str(exc),
+            code="invalid-request",
+            details={"field": field},
+        ) from exc
     except ValueError as exc:
-        raise InvalidRequestError(str(exc)) from exc
+        raise InvalidRequestError(
+            str(exc),
+            code="invalid-request",
+            details={"field": "request"},
+        ) from exc
     except OSError as exc:
         raise WorkspaceStateError(str(exc)) from exc
+
+
+_KNOWLEDGE_QUERY_DIRECTIONS = ("inbound", "outbound", "both")
+_KNOWLEDGE_QUERY_KINDS = ("derived_from", "links_to")
+_SECTION_OWNERSHIP_VALUES = ("generated", "semantic", "mixed", "unknown")
+_TYPED_QUERY_DIRECTIONS = ("incoming", "outgoing", "both")
+MAX_QUERY_FILTER_VALUES = 100
+_QUALIFIED_GRAPH_KIND_RE = re.compile(
+    r"^[A-Za-z][A-Za-z0-9._-]*/[A-Za-z][A-Za-z0-9._-]*$"
+)
+
+
+def _normalize_query_input(callback: Callable[[], _R], *, field: str = "request") -> _R:
+    try:
+        return callback()
+    except DocumentationQueryError as exc:
+        raise InvalidRequestError(
+            str(exc),
+            code="invalid-request",
+            details={"field": field},
+        ) from exc
+
+
+def _normalize_query_choice(
+    value: object,
+    *,
+    field: str,
+    allowed: tuple[str, ...],
+) -> str:
+    if not isinstance(value, str) or value not in allowed:
+        choices = ", ".join(repr(item) for item in allowed)
+        raise InvalidRequestError(
+            f"{field} must be one of {choices}.",
+            code="invalid-request",
+            details={"field": field},
+        )
+    return value
+
+
+def _normalize_query_values(
+    values: object,
+    *,
+    field: str,
+    allowed: tuple[str, ...],
+    allow_qualified: bool = False,
+) -> list[str] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes, Mapping)) or not isinstance(values, Iterable):
+        raise InvalidRequestError(
+            f"{field} must be an iterable of strings.",
+            code="invalid-request",
+            details={"field": field},
+        )
+    try:
+        requested = list(islice(values, MAX_QUERY_FILTER_VALUES + 1))
+    except Exception as exc:
+        raise InvalidRequestError(
+            f"{field} could not be read as an iterable of strings.",
+            code="invalid-request",
+            details={"field": field},
+        ) from exc
+    if len(requested) > MAX_QUERY_FILTER_VALUES:
+        raise InvalidRequestError(
+            f"{field} must contain at most {MAX_QUERY_FILTER_VALUES} values.",
+            code="invalid-request",
+            details={"field": field},
+        )
+    if any(not isinstance(value, str) for value in requested):
+        raise InvalidRequestError(
+            f"{field} must contain only strings.",
+            code="invalid-request",
+            details={"field": field},
+        )
+    invalid = sorted(
+        value
+        for value in set(requested)
+        if value not in allowed
+        and not (allow_qualified and _QUALIFIED_GRAPH_KIND_RE.fullmatch(value))
+    )
+    if invalid:
+        raise InvalidRequestError(
+            f"unsupported {field.rstrip('s')}: {invalid[0]!r}.",
+            code="invalid-request",
+            details={"field": field},
+        )
+    selected = set(requested)
+    return [
+        *[value for value in allowed if value in selected],
+        *(sorted(selected - set(allowed)) if allow_qualified else []),
+    ]
+
+
+def _normalize_optional_ownership(value: object) -> str | None:
+    if value is None:
+        return None
+    return _normalize_query_choice(
+        value,
+        field="ownership",
+        allowed=_SECTION_OWNERSHIP_VALUES,
+    )
+
+
+def _normalize_query_limit(value: object) -> int:
+    return _normalize_query_input(
+        lambda: normalize_documentation_query_limit(value),
+        field="limit",
+    )
+
+
+def _effective_query_limit(
+    service: DocumentationGraphQueryService | None,
+    value: int,
+) -> int:
+    # A prebuilt service owns its bound.  The compatibility-only ``limit``
+    # argument cannot change that service and therefore triggers no extraction.
+    return value if service is not None else _normalize_query_limit(value)
 
 
 @_api_boundary
@@ -906,6 +1252,13 @@ def flow_for_entrypoint(
     source_selection: str | Path | None = None,
 ) -> FlowForEntrypointResult:
     """Return a bounded user-flow query result for an entry point."""
+    query = _normalize_query_input(
+        lambda: normalize_documentation_query_text(
+            id_or_symbol,
+            field="id_or_symbol",
+        )
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         FlowForEntrypointResult,
         _run_query(
@@ -913,11 +1266,11 @@ def flow_for_entrypoint(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).flow_for_entrypoint(id_or_symbol)
+            ).flow_for_entrypoint(query)
         ),
     )
 
@@ -935,6 +1288,13 @@ def data_flow_for_entrypoint(
     source_selection: str | Path | None = None,
 ) -> DataFlowForEntrypointResult:
     """Return a bounded data-flow query result for an entry point."""
+    query = _normalize_query_input(
+        lambda: normalize_documentation_query_text(
+            id_or_symbol,
+            field="id_or_symbol",
+        )
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         DataFlowForEntrypointResult,
         _run_query(
@@ -942,11 +1302,11 @@ def data_flow_for_entrypoint(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).data_flow_for_entrypoint(id_or_symbol)
+            ).data_flow_for_entrypoint(query)
         ),
     )
 
@@ -964,6 +1324,10 @@ def callers(
     source_selection: str | Path | None = None,
 ) -> CallersResult:
     """Return bounded callers for one callable symbol."""
+    query = _normalize_query_input(
+        lambda: normalize_documentation_query_text(symbol, field="symbol")
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         CallersResult,
         _run_query(
@@ -971,11 +1335,11 @@ def callers(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).callers(symbol)
+            ).callers(query)
         ),
     )
 
@@ -993,6 +1357,10 @@ def callees(
     source_selection: str | Path | None = None,
 ) -> CalleesResult:
     """Return bounded callees for one callable symbol."""
+    query = _normalize_query_input(
+        lambda: normalize_documentation_query_text(symbol, field="symbol")
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         CalleesResult,
         _run_query(
@@ -1000,11 +1368,11 @@ def callees(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).callees(symbol)
+            ).callees(query)
         ),
     )
 
@@ -1022,6 +1390,8 @@ def dependency_neighborhood(
     source_selection: str | Path | None = None,
 ) -> DependencyNeighborhoodResult:
     """Return bounded dependency neighbors for one source path."""
+    query = _normalize_query_input(lambda: normalize_supplied_paths((path,))[0])
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         DependencyNeighborhoodResult,
         _run_query(
@@ -1029,11 +1399,11 @@ def dependency_neighborhood(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).dependency_neighborhood(path)
+            ).dependency_neighborhood(query)
         ),
     )
 
@@ -1051,6 +1421,10 @@ def pages_for_symbol(
     source_selection: str | Path | None = None,
 ) -> PagesForSymbolResult:
     """Return wiki surface pages related to one symbol."""
+    query = _normalize_query_input(
+        lambda: normalize_documentation_query_text(symbol, field="symbol")
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         PagesForSymbolResult,
         _run_query(
@@ -1058,11 +1432,11 @@ def pages_for_symbol(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).pages_for_symbol(symbol)
+            ).pages_for_symbol(query)
         ),
     )
 
@@ -1080,6 +1454,10 @@ def get_concept(
     source_selection: str | Path | None = None,
 ) -> ConceptResult:
     """Return one concept by current coordinate, durable UID, or alias."""
+    query = _normalize_query_input(
+        lambda: normalize_concept_coordinate(locator_or_exact_route)
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         ConceptResult,
         _run_query(
@@ -1087,11 +1465,11 @@ def get_concept(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).get_concept(locator_or_exact_route)
+            ).get_concept(query)
         ),
     )
 
@@ -1110,6 +1488,11 @@ def list_concept_sections(
     source_selection: str | Path | None = None,
 ) -> ConceptSectionsResult:
     """Return bounded document-order sections for one exact concept."""
+    query = _normalize_query_input(
+        lambda: normalize_concept_coordinate(locator_or_exact_route)
+    )
+    selected_ownership = _normalize_optional_ownership(ownership)
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         ConceptSectionsResult,
         _run_query(
@@ -1117,13 +1500,13 @@ def list_concept_sections(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
             ).list_concept_sections(
-                locator_or_exact_route,
-                ownership=ownership,
+                query,
+                ownership=selected_ownership,
             )
         ),
     )
@@ -1144,6 +1527,20 @@ def related_concepts(
     source_selection: str | Path | None = None,
 ) -> RelatedConceptsResult:
     """Return bounded knowledge relationships for one exact concept identity."""
+    query = _normalize_query_input(
+        lambda: normalize_concept_coordinate(locator_or_exact_route)
+    )
+    selected_direction = _normalize_query_choice(
+        direction,
+        field="direction",
+        allowed=_KNOWLEDGE_QUERY_DIRECTIONS,
+    )
+    selected_kinds = _normalize_query_values(
+        kinds,
+        field="kinds",
+        allowed=_KNOWLEDGE_QUERY_KINDS,
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         RelatedConceptsResult,
         _run_query(
@@ -1151,14 +1548,14 @@ def related_concepts(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
             ).related_concepts(
-                locator_or_exact_route,
-                direction=direction,
-                kinds=kinds,
+                query,
+                direction=selected_direction,
+                kinds=selected_kinds,
             )
         ),
     )
@@ -1182,6 +1579,37 @@ def traverse_typed_graph(
     source_selection: str | Path | None = None,
 ) -> TypedGraphTraversalResult:
     """Traverse persisted typed relationships for one exact concept."""
+    query = _normalize_query_input(
+        lambda: normalize_concept_coordinate(locator_or_exact_route)
+    )
+    selected_direction = _normalize_query_choice(
+        direction,
+        field="direction",
+        allowed=_TYPED_QUERY_DIRECTIONS,
+    )
+    selected_kinds = _normalize_query_values(
+        kinds,
+        field="kinds",
+        allowed=tuple(CORE_RELATIONSHIP_KINDS),
+        allow_qualified=True,
+    )
+    selected_origins = _normalize_query_values(
+        origins,
+        field="origins",
+        allowed=tuple(GRAPH_ORIGINS),
+    )
+    selected_resolutions = _normalize_query_values(
+        resolutions,
+        field="resolutions",
+        allowed=tuple(GRAPH_RESOLUTIONS),
+    )
+    if not isinstance(include_evidence, bool):
+        raise InvalidRequestError(
+            "include_evidence must be a boolean.",
+            code="invalid-request",
+            details={"field": "include_evidence"},
+        )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         TypedGraphTraversalResult,
         _run_query(
@@ -1189,16 +1617,16 @@ def traverse_typed_graph(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
             ).traverse_typed_graph(
-                locator_or_exact_route,
-                direction=direction,
-                kinds=kinds,
-                origins=origins,
-                resolutions=resolutions,
+                query,
+                direction=selected_direction,
+                kinds=selected_kinds,
+                origins=selected_origins,
+                resolutions=selected_resolutions,
                 include_evidence=include_evidence,
             )
         ),
@@ -1218,6 +1646,10 @@ def explain_evidence(
     source_selection: str | Path | None = None,
 ) -> EvidenceExplanationResult:
     """Return stored and computed evidence for one exact concept identity."""
+    query = _normalize_query_input(
+        lambda: normalize_concept_coordinate(locator_or_exact_route)
+    )
+    bounded_limit = _effective_query_limit(service, limit)
     return cast(
         EvidenceExplanationResult,
         _run_query(
@@ -1225,13 +1657,659 @@ def explain_evidence(
                 service,
                 src_dir=src_dir,
                 wiki_dir=wiki_dir,
-                limit=limit,
+                limit=bounded_limit,
                 allow_external_src=allow_external_src,
                 read_only=read_only,
                 source_selection=source_selection,
-            ).explain_evidence(locator_or_exact_route)
+            ).explain_evidence(query)
         ),
     )
+
+
+DOCUMENTATION_QUERY_SCHEMA_VERSION = "llm-wiki-documentation-query/v1"
+MAX_RAW_QUERY_EVIDENCE_BYTES = 64 * 1024
+_DOCUMENTATION_QUERY_FIELDS = {
+    "concept": frozenset({"operation", "value", "limit"}),
+    "related": frozenset({"operation", "value", "limit", "direction", "kinds"}),
+    "surface": frozenset({"operation", "value", "limit"}),
+    "typed": frozenset(
+        {
+            "operation",
+            "value",
+            "limit",
+            "direction",
+            "kinds",
+            "origins",
+            "resolutions",
+            "include_evidence",
+        }
+    ),
+    "symbol": frozenset({"operation", "value", "limit", "allow_full_inventory"}),
+    "entrypoint": frozenset({"operation", "value", "limit", "allow_full_inventory"}),
+    "dependency": frozenset({"operation", "value", "limit", "allow_full_inventory"}),
+    "impact": frozenset(
+        {
+            "operation",
+            "paths",
+            "diff",
+            "limit",
+            "include_raw_evidence",
+        }
+    ),
+}
+
+
+def _query_cost(
+    scope: str,
+    *,
+    supplied_paths: int = 0,
+) -> dict[str, Any]:
+    return {
+        "scope": scope,
+        "full_inventory_performed": scope == "full-inventory",
+        "supplied_paths": supplied_paths,
+    }
+
+
+def _with_query_envelope(
+    operation: str,
+    payload: Mapping[str, Any],
+    *,
+    scope: str,
+    supplied_paths: int = 0,
+) -> DocumentationQueryResult:
+    return cast(
+        DocumentationQueryResult,
+        fit_documentation_query_result(
+            {
+                "schema_version": DOCUMENTATION_QUERY_SCHEMA_VERSION,
+                "operation": operation,
+                **dict(payload),
+                "cost": _query_cost(scope, supplied_paths=supplied_paths),
+            }
+        ),
+    )
+
+
+def _bounded_query_records(
+    records: Iterable[Mapping[str, Any]],
+    *,
+    limit: int,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    unique: dict[str, dict[str, Any]] = {}
+    for record in records:
+        copied = dict(record)
+        key = json.dumps(copied, sort_keys=True, separators=(",", ":"))
+        unique[key] = copied
+    ordered = [unique[key] for key in sorted(unique)]
+    returned = ordered[:limit]
+    return returned, {
+        "total": len(ordered),
+        "returned": len(returned),
+        "truncated": len(ordered) > len(returned),
+    }
+
+
+def _bounded_raw_query_evidence(
+    records: Iterable[Mapping[str, Any]],
+    *,
+    limit: int,
+) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
+    canonical: dict[bytes, dict[str, Any]] = {}
+    for record in records:
+        copied = dict(record)
+        encoded = json.dumps(
+            copied,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        canonical[encoded] = copied
+    ordered = sorted(canonical.items(), key=lambda item: item[0])
+    # Count the exact compact JSON array representation, including separators,
+    # so the disclosed byte limit bounds what callers can actually serialize.
+    total_bytes = (
+        2 + sum(len(encoded) for encoded, _ in ordered) + max(0, len(ordered) - 1)
+    )
+    selected: list[dict[str, Any]] = []
+    returned_bytes = 2
+    for encoded, record in ordered:
+        if len(selected) == limit:
+            break
+        separator_bytes = 1 if selected else 0
+        if (
+            returned_bytes + separator_bytes + len(encoded)
+            > MAX_RAW_QUERY_EVIDENCE_BYTES
+        ):
+            continue
+        selected.append(record)
+        returned_bytes += separator_bytes + len(encoded)
+    return (
+        selected,
+        {
+            "total": len(ordered),
+            "returned": len(selected),
+            "truncated": len(selected) < len(ordered),
+        },
+        {
+            "total": total_bytes,
+            "returned": returned_bytes,
+            "limit": MAX_RAW_QUERY_EVIDENCE_BYTES,
+            "truncated": returned_bytes < total_bytes,
+        },
+    )
+
+
+def _validate_documentation_query_request(
+    request: Mapping[str, Any],
+) -> tuple[str, int]:
+    if not isinstance(request, Mapping):
+        raise InvalidRequestError(
+            "request must be an object.",
+            code="invalid-request",
+            details={"field": "request"},
+        )
+    non_string_key = next((key for key in request if not isinstance(key, str)), None)
+    if non_string_key is not None:
+        raise InvalidRequestError(
+            "request fields must be strings.",
+            code="invalid-request",
+            details={"field": "request"},
+        )
+    operation = request.get("operation")
+    if not isinstance(operation, str) or operation not in _DOCUMENTATION_QUERY_FIELDS:
+        choices = ", ".join(repr(item) for item in _DOCUMENTATION_QUERY_FIELDS)
+        raise InvalidRequestError(
+            f"operation must be one of {choices}.",
+            code="invalid-request",
+            details={"field": "operation"},
+        )
+    unknown = sorted(set(request) - _DOCUMENTATION_QUERY_FIELDS[operation])
+    if unknown:
+        raise InvalidRequestError(
+            f"unknown {operation} query field: {unknown[0]!r}.",
+            code="invalid-request",
+            details={"field": unknown[0]},
+        )
+    return operation, _normalize_query_limit(request.get("limit", 20))
+
+
+def _require_full_inventory_opt_in(request: Mapping[str, Any]) -> None:
+    value = request.get("allow_full_inventory", False)
+    if not isinstance(value, bool):
+        raise InvalidRequestError(
+            "allow_full_inventory must be a boolean.",
+            code="invalid-request",
+            details={"field": "allow_full_inventory"},
+        )
+    if not value:
+        raise InvalidRequestError(
+            "this query requires a full source inventory; set "
+            "allow_full_inventory=true to authorize that cost.",
+            code="full-inventory-required",
+            details={"field": "allow_full_inventory"},
+        )
+
+
+def _snapshot_query_service(
+    wiki_dir: str,
+    *,
+    limit: int,
+) -> DocumentationGraphQueryService:
+    wiki_root = _validate_wiki_dir(wiki_dir)
+    return build_snapshot_documentation_query_service(
+        wiki_root=wiki_root,
+        limit=limit,
+    )
+
+
+def _combined_query_payload(
+    query: str,
+    payloads: Iterable[Mapping[str, Any]],
+    *,
+    limit: int,
+) -> dict[str, Any]:
+    selected = [dict(payload) for payload in payloads]
+    matches, matches_bound = _bounded_query_records(
+        (
+            match
+            for payload in selected
+            for match in payload.get("matches", [])
+            if isinstance(match, Mapping)
+        ),
+        limit=limit,
+    )
+    return {
+        "query": query,
+        "found": any(bool(payload.get("found")) for payload in selected),
+        "ambiguous": any(bool(payload.get("ambiguous")) for payload in selected),
+        "matches": matches,
+        "bounds": {"matches": matches_bound},
+        "truncated": matches_bound["truncated"]
+        or any(bool(payload.get("truncated")) for payload in selected),
+    }
+
+
+def _surface_query(
+    service: DocumentationGraphQueryService,
+    coordinate: str,
+) -> dict[str, Any]:
+    pages = [
+        dict(page)
+        for page in service.pages
+        if coordinate in {page.get("canonical_path"), page.get("mcp_uri")}
+    ]
+    bound = {
+        "total": len(pages),
+        "returned": len(pages),
+        "truncated": False,
+    }
+    return {
+        "query": coordinate,
+        "found": bool(pages),
+        "ambiguous": len(pages) > 1,
+        "matches": pages,
+        "pages": pages,
+        "bounds": {"matches": bound, "pages": dict(bound)},
+        "truncated": False,
+        "knowledge": dict(service.knowledge_status),
+    }
+
+
+def _source_inventory_summary(
+    path: str,
+    record: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    if record is None:
+        return {"path": path, "present": False, "counts": {}}
+    counts = {
+        field: len(value)
+        for field in (
+            "classes",
+            "functions",
+            "imports",
+            "routes",
+            "commands",
+        )
+        if isinstance((value := record.get(field)), list)
+    }
+    return {
+        "path": path,
+        "present": True,
+        "language": record.get("language"),
+        "counts": counts,
+    }
+
+
+def _existing_supplied_source_paths(
+    source_root: Path,
+    paths: Iterable[str],
+) -> tuple[str, ...]:
+    resolved_root = source_root.resolve()
+    existing: list[str] = []
+    for path in paths:
+        candidate = source_root / path
+        current = source_root
+        for component in Path(path).parts:
+            current /= component
+            if current.is_symlink():
+                raise PathPolicyError(
+                    f"supplied source path must not traverse a symlink: {path}"
+                )
+        try:
+            resolved = candidate.resolve(strict=True)
+            resolved.relative_to(resolved_root)
+        except FileNotFoundError:
+            continue
+        except (OSError, ValueError) as exc:
+            raise PathPolicyError(
+                f"supplied source path must stay inside the source root: {path}"
+            ) from exc
+        if resolved.is_file():
+            existing.append(path)
+    return tuple(existing)
+
+
+def _impact_query(
+    request: Mapping[str, Any],
+    *,
+    src_dir: str,
+    wiki_dir: str,
+    limit: int,
+    allow_external_src: bool,
+    source_selection: str | Path | None,
+) -> DocumentationQueryResult:
+    explicit_paths = _normalize_query_input(
+        lambda: normalize_supplied_paths(request.get("paths", ())),
+        field="paths",
+    )
+    diff_paths = (
+        ()
+        if "diff" not in request
+        else _normalize_query_input(
+            lambda: supplied_paths_from_unified_diff(request["diff"]),
+            field="diff",
+        )
+    )
+    selected_paths = _normalize_query_input(
+        lambda: normalize_supplied_paths((*explicit_paths, *diff_paths)),
+        field="paths",
+    )
+    if not selected_paths:
+        raise InvalidRequestError(
+            "impact requires at least one supplied path or unified-diff path.",
+            code="invalid-request",
+            details={"field": "paths"},
+        )
+    include_raw = request.get("include_raw_evidence", False)
+    if not isinstance(include_raw, bool):
+        raise InvalidRequestError(
+            "include_raw_evidence must be a boolean.",
+            code="invalid-request",
+            details={"field": "include_raw_evidence"},
+        )
+
+    src_root = validate_source_root(
+        src_dir,
+        "--src-dir",
+        allow_external=allow_external_src,
+    )
+    wiki_root = _validate_wiki_dir(wiki_dir)
+    existing_paths = _existing_supplied_source_paths(src_root, selected_paths)
+    if existing_paths:
+        service = build_live_documentation_query_service(
+            source_root=src_root,
+            wiki_root=wiki_root,
+            limit=100,
+            read_only=True,
+            include_plugins=False,
+            source_selection=source_selection,
+            paths=existing_paths,
+            extract_payload_builder=extract_cmd.build_extract_payload,
+            source_snapshot_builder=extract_cmd.build_source_snapshot,
+            call_edge_resolver=extract_cmd.resolve_call_edges,
+            flow_builder=build_flow,
+            dependency_analyzer=analyze_dependencies,
+            verification_view_attacher=attach_machine_verification_read_view,
+            verification_summarizer=verification_summaries_for_concepts,
+            service_factory=DocumentationGraphQueryService,
+        )
+        scope = "targeted-extraction"
+    else:
+        service = build_snapshot_documentation_query_service(
+            wiki_root=wiki_root,
+            limit=100,
+        )
+        scope = "snapshot-index-only"
+
+    concept_records: list[dict[str, Any]] = []
+    for path in selected_paths:
+        for concept in service.concepts_by_source_path.get(path, ()):
+            locator = concept.get("locator")
+            if not isinstance(locator, str):
+                continue
+            selected = service.get_concept(locator).get("concept")
+            if isinstance(selected, Mapping):
+                concept_records.append(dict(selected))
+    concepts, concept_bound = _bounded_query_records(concept_records, limit=limit)
+
+    page_records = [
+        dict(page)
+        for page in service.pages
+        if page.get("source_path") in set(selected_paths)
+    ]
+    pages, page_bound = _bounded_query_records(page_records, limit=limit)
+
+    relationship_indexes = sorted(
+        {
+            index
+            for path in selected_paths
+            for index in service.relationships_by_source_path.get(path, ())
+        },
+        key=service._knowledge_relationship_order.__getitem__,
+    )
+    relationships, relationship_bound = _bounded_query_records(
+        (
+            service._compact_knowledge_relationship(index, "outbound")
+            for index in relationship_indexes
+        ),
+        limit=limit,
+    )
+
+    source_summaries, source_bound = _bounded_query_records(
+        (
+            _source_inventory_summary(path, service.inventory.get(path))
+            for path in selected_paths
+        ),
+        limit=limit,
+    )
+    impacted_paths = [
+        path
+        for summary in source_summaries
+        if isinstance((path := summary.get("path")), str)
+    ]
+    bounds = {
+        "matches": dict(source_bound),
+        "paths": dict(source_bound),
+        "concepts": concept_bound,
+        "pages": page_bound,
+        "relationships": relationship_bound,
+    }
+    payload: dict[str, Any] = {
+        "query": {
+            "paths": list(selected_paths),
+            "diff_supplied": "diff" in request,
+        },
+        "found": any(
+            (concept_records, page_records, relationship_indexes, existing_paths)
+        ),
+        "ambiguous": False,
+        "matches": source_summaries,
+        "impacted_paths": impacted_paths,
+        "concepts": concepts,
+        "pages": pages,
+        "relationships": relationships,
+        "knowledge": dict(service.knowledge_status),
+        "bounds": bounds,
+        "truncated": any(bool(bound["truncated"]) for bound in bounds.values()),
+        "limitations": [
+            "knowledge and page attribution use the committed snapshot; "
+            "targeted source extraction does not establish global live freshness"
+        ],
+    }
+    if include_raw:
+        raw_records, raw_bound, raw_byte_bound = _bounded_raw_query_evidence(
+            (
+                {"path": path, "inventory": dict(record)}
+                for path in existing_paths
+                if (record := service.inventory.get(path)) is not None
+            ),
+            limit=limit,
+        )
+        payload["raw_evidence"] = raw_records
+        bounds["raw_evidence"] = raw_bound
+        bounds["raw_evidence_bytes"] = raw_byte_bound
+        payload["truncated"] = (
+            bool(payload["truncated"])
+            or raw_bound["truncated"]
+            or raw_byte_bound["truncated"]
+        )
+    return _with_query_envelope(
+        "impact",
+        payload,
+        scope=scope,
+        supplied_paths=len(selected_paths),
+    )
+
+
+@_api_boundary
+def query_documentation(
+    request: Mapping[str, Any],
+    *,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    allow_external_src: bool = False,
+    source_selection: str | Path | None = None,
+) -> DocumentationQueryResult:
+    """Dispatch one exact bounded read-only documentation query."""
+
+    operation, limit = _validate_documentation_query_request(request)
+    if operation == "impact":
+        return _impact_query(
+            request,
+            src_dir=src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            source_selection=source_selection,
+        )
+
+    if operation in {"concept", "related", "typed"}:
+        value = _normalize_query_input(
+            lambda: normalize_concept_coordinate(request.get("value")),
+            field="value",
+        )
+    elif operation == "surface":
+        try:
+            value = wiki_surface.validate_exact_page_coordinate(request.get("value"))
+        except wiki_surface.WikiSurfaceError as exc:
+            raise InvalidRequestError(
+                str(exc),
+                code="invalid-request",
+                details={"field": "value"},
+            ) from exc
+    elif operation == "dependency":
+        value = _normalize_query_input(
+            lambda: normalize_supplied_paths((request.get("value"),))[0],
+            field="value",
+        )
+    else:
+        value = _normalize_query_input(
+            lambda: normalize_documentation_query_text(
+                request.get("value"),
+                field="value",
+            ),
+            field="value",
+        )
+
+    if operation in {"symbol", "entrypoint", "dependency"}:
+        _require_full_inventory_opt_in(request)
+        service = build_documentation_query_service(
+            src_dir,
+            wiki_dir=wiki_dir,
+            limit=limit,
+            allow_external_src=allow_external_src,
+            read_only=True,
+            source_selection=source_selection,
+        )
+        scope = "full-inventory"
+    else:
+        service = _snapshot_query_service(wiki_dir, limit=limit)
+        scope = "snapshot-index-only"
+
+    if operation == "concept":
+        payload = service.get_concept(value)
+    elif operation == "related":
+        direction = _normalize_query_choice(
+            request.get("direction", "both"),
+            field="direction",
+            allowed=_KNOWLEDGE_QUERY_DIRECTIONS,
+        )
+        kinds = _normalize_query_values(
+            request.get("kinds"),
+            field="kinds",
+            allowed=_KNOWLEDGE_QUERY_KINDS,
+        )
+        payload = service.related_concepts(
+            value,
+            direction=direction,
+            kinds=kinds,
+        )
+    elif operation == "surface":
+        payload = _surface_query(service, value)
+    elif operation == "typed":
+        direction = _normalize_query_choice(
+            request.get("direction", "both"),
+            field="direction",
+            allowed=_TYPED_QUERY_DIRECTIONS,
+        )
+        kinds = _normalize_query_values(
+            request.get("kinds"),
+            field="kinds",
+            allowed=tuple(CORE_RELATIONSHIP_KINDS),
+            allow_qualified=True,
+        )
+        origins = _normalize_query_values(
+            request.get("origins"),
+            field="origins",
+            allowed=tuple(GRAPH_ORIGINS),
+        )
+        resolutions = _normalize_query_values(
+            request.get("resolutions"),
+            field="resolutions",
+            allowed=tuple(GRAPH_RESOLUTIONS),
+        )
+        include_evidence = request.get("include_evidence", False)
+        if not isinstance(include_evidence, bool):
+            raise InvalidRequestError(
+                "include_evidence must be a boolean.",
+                code="invalid-request",
+                details={"field": "include_evidence"},
+            )
+        payload = service.traverse_typed_graph(
+            value,
+            direction=direction,
+            kinds=kinds,
+            origins=origins,
+            resolutions=resolutions,
+            include_evidence=include_evidence,
+        )
+    elif operation == "symbol":
+        pages = service.pages_for_symbol(value)
+        caller_result = service.callers(value)
+        callee_result = service.callees(value)
+        payload = _combined_query_payload(
+            value,
+            (pages, caller_result, callee_result),
+            limit=limit,
+        )
+        payload.update(
+            {
+                "symbol": pages.get("symbol"),
+                "pages": pages.get("pages", []),
+                "callers": caller_result.get("callers", []),
+                "callees": callee_result.get("callees", []),
+            }
+        )
+        payload["bounds"].update(
+            {
+                "pages": pages["bounds"]["pages"],
+                "callers": caller_result["bounds"]["callers"],
+                "callees": callee_result["bounds"]["callees"],
+            }
+        )
+    elif operation == "entrypoint":
+        flow = service.flow_for_entrypoint(value)
+        data_flow = service.data_flow_for_entrypoint(value)
+        payload = _combined_query_payload(value, (flow, data_flow), limit=limit)
+        payload.update(
+            {
+                "flow": flow.get("flow"),
+                "data_flow": data_flow.get("data_flow"),
+            }
+        )
+        for component in (flow, data_flow):
+            payload["bounds"].update(
+                {
+                    path: bound
+                    for path, bound in component.get("bounds", {}).items()
+                    if path != "matches"
+                }
+            )
+    else:
+        payload = service.dependency_neighborhood(value)
+
+    return _with_query_envelope(operation, payload, scope=scope)
 
 
 def _normalise_focus(focus: str | list[str]) -> list[str]:
@@ -1332,9 +2410,7 @@ prepare_documentation_run = _api_boundary(_prepare_documentation_run_impl)
 _get_documentation_run_status_impl = get_documentation_run_status
 get_documentation_run_status = _api_boundary(_get_documentation_run_status_impl)
 _build_documentation_agent_packet_impl = build_documentation_agent_packet
-build_documentation_agent_packet = _api_boundary(
-    _build_documentation_agent_packet_impl
-)
+build_documentation_agent_packet = _api_boundary(_build_documentation_agent_packet_impl)
 _record_documentation_agent_result_impl = record_documentation_agent_result
 record_documentation_agent_result = _api_boundary(
     _record_documentation_agent_result_impl
@@ -1363,9 +2439,7 @@ def export_documentation_run(
             build=build,
             builder_command=builder_command,
             knowledge_mode=knowledge_mode,
-            knowledge_public_repository_identity=(
-                knowledge_public_repository_identity
-            ),
+            knowledge_public_repository_identity=(knowledge_public_repository_identity),
         ),
     )
 
@@ -1486,14 +2560,14 @@ def verify_calibration_run(
         advance=advance,
     )
 
+
 _select_documentation_model_impl = select_documentation_model
 select_documentation_model = _api_boundary(_select_documentation_model_impl)
-_validate_documentation_model_selection_impl = (
-    validate_documentation_model_selection
-)
+_validate_documentation_model_selection_impl = validate_documentation_model_selection
 validate_documentation_model_selection = _api_boundary(
     _validate_documentation_model_selection_impl
 )
+
 
 @contextmanager
 def use_calibration_host_broker_authenticator(
@@ -1622,6 +2696,7 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 __all__ = [
     "ArtifactIntegrityError",
     "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
+    "CONTEXT_KNOWLEDGE_PROTOCOL_VERSION",
     "BootstrapError",
     "BootstrapRequest",
     "BootstrapResult",
@@ -1641,6 +2716,7 @@ __all__ = [
     "ContextPayload",
     "DataFlowForEntrypointResult",
     "DependencyNeighborhoodResult",
+    "DOCUMENTATION_QUERY_SCHEMA_VERSION",
     "DocumentationAgentPacket",
     "DocumentationAgentResult",
     "DocumentationExportResult",
@@ -1658,6 +2734,7 @@ __all__ = [
     "DocumentationModelRoutingRequest",
     "DocumentationModelSelection",
     "DocumentationPolicyError",
+    "DocumentationQueryResult",
     "DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION",
     "DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION",
     "DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION",
@@ -1672,6 +2749,7 @@ __all__ = [
     "P0_CALIBRATION_RUN_SCHEMA_VERSION",
     "P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION",
     "QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION",
+    "QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION",
     "DocumentationRun",
     "DocumentationRunError",
     "DocumentationRunStatus",
@@ -1686,6 +2764,7 @@ __all__ = [
     "FlowForEntrypointResult",
     "LlmWikiApiError",
     "InvalidRequestError",
+    "KnowledgeMode",
     "PathPolicyError",
     "WorkspaceStateError",
     "P0CalibrationAgentPacket",
@@ -1744,6 +2823,7 @@ __all__ = [
     "prepare_calibration_run",
     "prepare_documentation_run",
     "prepare_p0_calibration_run",
+    "query_documentation",
     "record_documentation_agent_result",
     "record_calibration_agent_result",
     "record_p0_calibration_agent_result",

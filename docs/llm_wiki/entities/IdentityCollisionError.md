@@ -51,8 +51,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) |
-| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) |
-| `validate_identity_registry` | call | [concept_identity](../modules/concept_identity.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) | 2 |
+| `validate_identity_registry` | call | [concept_identity](../modules/concept_identity.md) | 1 |

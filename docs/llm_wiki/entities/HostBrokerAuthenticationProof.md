@@ -74,10 +74,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `HostBrokerAuthenticator.authenticate_attestation` | type_reference | [host_broker](../modules/host_broker.md) |
-| `HostBrokerAuthenticator.authenticate_receipt` | type_reference | [host_broker](../modules/host_broker.md) |
-| `require_attestation_authentication` | type_reference | [host_broker](../modules/host_broker.md) |
-| `require_receipt_authentication` | type_reference | [host_broker](../modules/host_broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `HostBrokerAuthenticator.authenticate_attestation` | type_reference | [host_broker](../modules/host_broker.md) | — |
+| `HostBrokerAuthenticator.authenticate_receipt` | type_reference | [host_broker](../modules/host_broker.md) | — |
+| `require_attestation_authentication` | type_reference | [host_broker](../modules/host_broker.md) | — |
+| `require_receipt_authentication` | type_reference | [host_broker](../modules/host_broker.md) | — |

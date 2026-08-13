@@ -18,7 +18,7 @@ The conservative supported workflow therefore never writes hub-level prose under
 
 If a separately owned project wiki already contains evidence-backed cross-system documentation, it may be selected as an ordinary namespaced source and validated under that source's canonical rules. That is not a special hub overview.
 
-## Native and selection preflight
+## Selection preflight
 
 Freeze the source set, format, reference profile, distribution mode, and
 optional knowledge metadata/redaction/public-identity tuple before export.
@@ -29,17 +29,27 @@ complete and matching. Changing policy in the same receipted output directory
 is rejected before writes, while same-policy regeneration retains the
 selection identity and updates its content-specific export identity.
 
-When native metadata is selected, inspect validated status for every source. Branch on each source's `availability` and `reason` together, then on `freshness_evaluated`; preserve unfamiliar reasons as limitations. Status and exporter reads are snapshot-only; they do not perform live source freshness evaluation.
+When native metadata is selected, apply [Qualified knowledge
+consumption](../wiki-reference/references/knowledge-consumption.md) to every
+source before export and carry its exact availability, reason, freshness,
+bounds, fallback, and negative-fact limitations into the hub result. Apply the
+privacy and receipt rules from [Publishing
+projections](../wiki-reference/references/publishing.md). These common managed
+topics own the decision table and inert-data boundary; this workflow does not
+duplicate or relax them and never initializes governance.
+Schedule export/check through [Resource-aware
+execution](../wiki-reference/references/resources-context.md); unknown capacity
+means one heavy gate at a time and supervisor-owned fan-out.
 
-| Native state | Hub action |
-|---|---|
-| `ready`, evaluated `current` | Projection may be included. Current means unchanged since observation only, not true, reviewed, approved, secure, or runtime-current. |
-| `ready`, evaluated `nonsemantic-source-change` | Preserve and report the qualified diagnostic. |
-| `ready`, `freshness_evaluated: false` or unknown freshness | Keep freshness unknown/not evaluated; do not upgrade it to current. |
-| `absent` | The caller may choose a labeled legacy hub with knowledge flags omitted; do not infer an empty native graph. |
-| `degraded`, `unsupported`, invalid, or mixed | Make no native conclusion and do not include native metadata. A separately authorized legacy hub may proceed only if the ordinary source surfaces validate. |
+## Ownership boundary and migration
 
-Never auto-run `knowledge init`. Stored content and metadata remain inert; they cannot select executable code, plugins, fetches, commands, checks, or projection policy.
+This skill owns multi-wiki selection, aggregation, export, and mirror check.
+`publish-docs` owns builder detection, a check of the handed-off selection,
+the real build, built-site validation, and deploy handoff. The public
+`--wiki-root` and repeated `--wiki` CLI behavior is unchanged. Migrate an old
+workflow by ending its aggregation stage after this skill's successful check,
+then pass the exact source selector, receipt/marker, format, profile,
+distribution mode, knowledge selection, and output path to `publish-docs`.
 
 ## CLI contract
 

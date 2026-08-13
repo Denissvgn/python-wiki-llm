@@ -61,13 +61,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_put_alias` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_review_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `add_alias` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `parse_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `reconcile_concepts` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `reconcile_concepts` | call | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_put_alias` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_review_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `add_alias` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
+| `parse_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `reconcile_concepts` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |

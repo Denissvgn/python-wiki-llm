@@ -158,6 +158,38 @@ runs:
             fail(f"step outputs cannot be written: {exc}")
         PY
 
+    - name: Bind the exact extractor-helper cache identity
+      id: helper-cache-identity
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        CACHE_RUNNER_OS: ${{ runner.os }}
+        CACHE_RUNNER_ARCH: ${{ runner.arch }}
+        CACHE_ACTION_REF: ${{ github.action_ref }}
+      run: >-
+        "${{ steps.setup-python.outputs.python-path }}"
+        -I "${GITHUB_ACTION_PATH}/../../.github/scripts/llm-wiki-helper-cache.py"
+        identity
+        --plan "${LLM_WIKI_EVIDENCE_DIR}/extractor-plan.json"
+        --project-root "${GITHUB_ACTION_PATH}/../.."
+        --lock "${GITHUB_ACTION_PATH}/../../release/toolchain-lock.json"
+        --runner-os "${CACHE_RUNNER_OS}"
+        --runner-arch "${CACHE_RUNNER_ARCH}"
+        --action-ref "${CACHE_ACTION_REF}"
+        --github-output "${GITHUB_OUTPUT}"
+
+    - name: Restore the exact prepared extractor-helper cache
+      id: helper-cache-restore
+      if: steps.helper-cache-identity.outputs.has-helpers == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/llm-wiki-cache/llm-wiki-extractors
+        key: ${{ steps.helper-cache-identity.outputs.cache-key }}
+
     - name: Install the locked TypeScript and JavaScript extractor toolchain
       if: steps.extractor-plan.outputs.typescript == 'true'
       shell: bash
@@ -323,13 +355,47 @@ runs:
         PYTHONUTF8: "1"
         PYTHONIOENCODING: utf-8
         INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        CACHE_HIT: ${{ steps.helper-cache-restore.outputs.cache-hit }}
       run: |
         set -euo pipefail
+        prepare_started_ns="$(
+          "${{ steps.setup-python.outputs.python-path }}" \
+            -I -c 'import time; print(time.monotonic_ns())'
+        )"
+        set +e
         "${{ steps.setup-python.outputs.python-path }}" \
           -I -m llm_wiki_cli.cli prepare-extractors \
           --src-dir "${INPUT_SRC_DIR}" \
           --cache-dir "${LLM_WIKI_CACHE_DIR}" \
           2>&1 | tee "${LLM_WIKI_EVIDENCE_DIR}/prepare-extractors.log"
+        prepare_pipeline=("${PIPESTATUS[@]}")
+        set -e
+        prepare_finished_ns="$(
+          "${{ steps.setup-python.outputs.python-path }}" \
+            -I -c 'import time; print(time.monotonic_ns())'
+        )"
+
+        set +e
+        "${{ steps.setup-python.outputs.python-path }}" \
+          -I "${GITHUB_ACTION_PATH}/../../.github/scripts/llm-wiki-helper-cache.py" \
+          metrics \
+          --plan "${LLM_WIKI_EVIDENCE_DIR}/extractor-plan.json" \
+          --cache-hit "${CACHE_HIT}" \
+          --started-ns "${prepare_started_ns}" \
+          --finished-ns "${prepare_finished_ns}" \
+          --output "${LLM_WIKI_EVIDENCE_DIR}/helper-cache-metrics.json"
+        metrics_status=$?
+        set -e
+
+        prepare_status="${prepare_pipeline[0]}"
+        tee_status="${prepare_pipeline[1]}"
+        if (( prepare_status != 0 )); then
+          exit "${prepare_status}"
+        fi
+        if (( tee_status != 0 )); then
+          exit "${tee_status}"
+        fi
+        exit "${metrics_status}"
 
     - name: Validate committed wiki (native drift diagnostics are advisory)
       shell: bash
@@ -351,16 +417,29 @@ runs:
         --jobs 1
         --knowledge-drift-report
 
+    - name: Save the exact prepared extractor-helper cache
+      if: >-
+        success() &&
+        steps.helper-cache-identity.outputs.has-helpers == 'true' &&
+        steps.helper-cache-restore.outputs.cache-hit != 'true' &&
+        github.event_name == 'push' &&
+        github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/llm-wiki-cache/llm-wiki-extractors
+        key: ${{ steps.helper-cache-identity.outputs.cache-key }}
+
     - name: Upload fixed allowlisted wiki integrity evidence
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.sha }}
+        name: llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.sha }}-${{ github.run_attempt }}
         path: |
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt
           ${{ runner.temp }}/llm-wiki-evidence/extractor-plan.json
+          ${{ runner.temp }}/llm-wiki-evidence/helper-cache-metrics.json
           ${{ runner.temp }}/llm-wiki-evidence/prepare-extractors.log
           ${{ runner.temp }}/llm-wiki-evidence/locked-toolchain-versions.txt
         retention-days: 14

@@ -1,6 +1,6 @@
 # _BootstrapRunOptions
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4059`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4083`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -75,13 +75,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_bootstrap_run_options_from_args` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_run_options_from_args` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_run_options_from_request` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_run_options_from_request` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_execute_bootstrap_options` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_first_use_guidance` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_preflight_bootstrap_source_selection` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_preflight_public_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_bootstrap_run_options_from_args` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_bootstrap_run_options_from_args` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bootstrap_run_options_from_request` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_bootstrap_run_options_from_request` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_execute_bootstrap_options` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_first_use_guidance` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_preflight_bootstrap_source_selection` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_preflight_public_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

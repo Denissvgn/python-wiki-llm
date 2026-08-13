@@ -23,59 +23,60 @@
 ```mermaid
 sequenceDiagram
     participant p0 as list_concept_sections
-    participant p1 as cast
-    participant p2 as _run_query
-    participant p3 as callback
-    participant p4 as InvalidRequestError
-    participant p5 as str
-    participant p6 as _query_service
-    participant p7 as build_documentation_query_service
-    participant p8 as validate_source_root
-    participant p9 as validate_path
-    participant p10 as PathValidationError
-    participant p11 as resolve
-    participant p12 as cwd
-    participant p13 as relative_to
-    participant p14 as expanduser
-    participant p15 as Path
-    participant p16 as is_absolute
-    participant p17 as is_dir
-    participant p18 as abspath
-    participant p19 as windows_current_user_sid
-    participant p20 as WindowsSecurityGuardError
-    p0-->>p1: cast
-    p0->>p2: _run_query
-    p2-->>p3: callback
-    p2->>p4: InvalidRequestError
-    p2-->>p5: str
-    p0-->>p0: list_concept_sections
-    p0->>p6: _query_service
-    p6->>p4: InvalidRequestError
-    p6->>p7: build_documentation_query_service
-    p7->>p8: validate_source_root
-    p8->>p9: validate_path
-    p9->>p10: PathValidationError
-    p9-->>p11: resolve
-    p9-->>p12: cwd
-    p9-->>p11: resolve
-    p9-->>p12: cwd
-    p9-->>p13: relative_to
-    p9->>p10: PathValidationError
-    p8-->>p14: expanduser
-    p8-->>p15: Path
-    p8-->>p16: is_absolute
-    p8-->>p12: cwd
-    p8-->>p11: resolve
-    p8->>p10: PathValidationError
-    p8-->>p17: is_dir
-    p8->>p10: PathValidationError
-    p8-->>p15: Path
-    p8-->>p18: abspath
-    p8->>p19: windows_current_user_sid
-    p19->>p20: WindowsSecurityGuardError
+    participant p1 as _normalize_query_input
+    participant p2 as callback
+    participant p3 as InvalidRequestError
+    participant p4 as str
+    participant p5 as normalize_concept_coordinate
+    participant p6 as normalize_documentation_query_text
+    participant p7 as isinstance
+    participant p8 as strip
+    participant p9 as DocumentationQueryError
+    participant p10 as len
+    participant p11 as encode
+    participant p12 as validate_exact_page_coordinate
+    participant p13 as validator
+    participant p14 as _normalize_optional_ownership
+    participant p15 as _normalize_query_choice
+    participant p16 as join
+    participant p17 as repr
+    participant p18 as _effective_query_limit
+    participant p19 as _normalize_query_limit
+    participant p20 as normalize_documentation_query_limit
+    participant p21 as min
+    p0->>p1: _normalize_query_input
+    p1-->>p2: callback
+    p1->>p3: InvalidRequestError
+    p1-->>p4: str
+    p0->>p5: normalize_concept_coordinate
+    p5->>p6: normalize_documentation_query_text
+    p6-->>p7: isinstance
+    p6-->>p8: strip
+    p6->>p9: DocumentationQueryError
+    p6-->>p8: strip
+    p6-->>p10: len
+    p6-->>p11: encode
+    p6->>p9: DocumentationQueryError
+    p5-->>p12: validate_exact_page_coordinate
+    p5-->>p13: validator
+    p5->>p9: DocumentationQueryError
+    p0->>p14: _normalize_optional_ownership
+    p14->>p15: _normalize_query_choice
+    p15-->>p7: isinstance
+    p15-->>p16: join
+    p15-->>p17: repr
+    p15->>p3: InvalidRequestError
+    p0->>p18: _effective_query_limit
+    p18->>p19: _normalize_query_limit
+    p19->>p1: _normalize_query_input
+    p19->>p20: normalize_documentation_query_limit
+    p20-->>p7: isinstance
+    p20-->>p7: isinstance
+    p20->>p9: DocumentationQueryError
+    p20-->>p21: min
 ```
 
-> Call sequence diagram shows 30 of 280 interactions; 250 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 357 interactions; 327 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -85,36 +86,34 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. list_concept_sections"]
-    s2["2. cast"]
-    s3["3. _run_query"]
-    s4["4. callback"]
-    s5["5. InvalidRequestError"]
-    s6["6. str"]
-    s7["7. list_concept_sections"]
-    s8["8. _query_service"]
-    s9["9. InvalidRequestError"]
-    s10["10. build_documentation_query_service"]
-    s11["11. validate_source_root"]
-    s12["12. validate_path"]
-    s1 -. "cast(ConceptSectionsResult, _run_query(...))" .-> s2
-    s1 -->|"_run_query(...)"| s3
-    s3 -. "callback(data not statically known)" .-> s4
-    s3 -->|"InvalidRequestError(str(...))"| s5
-    s3 -. "str(exc)" .-> s6
-    s1 -. "_query_service(service, src_dir=src_dir, wiki_dir=wiki_dir, limit=limit, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_se…" .-> s7
-    s1 -->|"_query_service(service, src_dir=src_dir, wiki_dir=wiki_dir, limit=limit, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_se…"| s8
-    s8 -->|"InvalidRequestError('source_selection cannot be combined with a prebuilt query service')"| s9
-    s8 -->|"build_documentation_query_service(src_dir, wiki_dir=wiki_dir, limit=limit, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_…"| s10
-    s10 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s11
-    s11 -->|"validate_path(path, label)"| s12
+    s2["2. _normalize_query_input"]
+    s3["3. callback"]
+    s4["4. InvalidRequestError"]
+    s5["5. str"]
+    s6["6. normalize_concept_coordinate"]
+    s7["7. normalize_documentation_query_text"]
+    s8["8. isinstance"]
+    s9["9. strip"]
+    s10["10. DocumentationQueryError"]
+    s11["11. strip"]
+    s12["12. len"]
+    s1 -->|"_normalize_query_input(...)"| s2
+    s2 -. "callback(data not statically known)" .-> s3
+    s2 -->|"InvalidRequestError(str(...), code='invalid-request', details={...})"| s4
+    s2 -. "str(exc)" .-> s5
+    s1 -->|"normalize_concept_coordinate(locator_or_exact_route)"| s6
+    s6 -->|"normalize_documentation_query_text(value, field='locator_or_exact_route')"| s7
+    s7 -. "isinstance(value, str)" .-> s8
+    s7 -. "value.strip(data not statically known)" .-> s9
+    s7 -->|"DocumentationQueryError(...)"| s10
+    s7 -. "value.strip(data not statically known)" .-> s11
+    s7 -. "len(selected.encode(...))" .-> s12
     click s1 "../modules/api.md"
-    click s3 "../modules/api.md"
-    click s5 "../modules/api.md"
-    click s8 "../modules/api.md"
-    click s9 "../modules/api.md"
-    click s10 "../modules/api.md"
-    click s11 "../modules/config.md"
-    click s12 "../modules/config.md"
+    click s2 "../modules/api.md"
+    click s4 "../modules/api.md"
+    click s6 "../modules/documentation_query_builder.md"
+    click s7 "../modules/documentation_query_builder.md"
+    click s10 "../modules/documentation_queries.md"
 ```
 
 ### Step data
@@ -122,33 +121,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `list_concept_sections` | `locator_or_exact_route: object`, `ownership: str \| None`, `service: DocumentationGraphQueryService \| None`, `src_dir: str`, `wiki_dir: str`, `limit: int`, `allow_external_src: bool`, `read_only: bool` | `ConceptSectionsResult` | - | `cast(...)` |
-| `cast` | - | - | - | - |
-| `_run_query` | `callback: Callable[[], dict[str, Any]]` | `DocumentationQueryError` | - | `callback(...)` |
+| `_normalize_query_input` | `callback: Callable[[], _R]`, `field: str` | `DocumentationQueryError` | - | `callback(...)` |
 | `callback` | - | - | - | - |
 | `InvalidRequestError` | - | - | - | - |
 | `str` | - | - | - | - |
-| `list_concept_sections` | - | - | - | - |
-| `_query_service` | `service: DocumentationGraphQueryService \| None`, `src_dir: str`, `wiki_dir: str`, `limit: int`, `allow_external_src: bool`, `read_only: bool`, `source_selection: str \| Path \| None` | - | - | `service`, `build_documentation_query_service(...)` |
-| `InvalidRequestError` | - | - | - | - |
-| `build_documentation_query_service` | `src_dir: str`, `wiki_dir: str`, `limit: int`, `allow_external_src: bool`, `read_only: bool`, `source_selection: str \| Path \| None` | `extract_cmd`, `extract_cmd`, `extract_cmd`, `build_flow`, `evaluate_surface_index`, `context_cmd`, `context_cmd`, `analyze_dependencies` | - | `build_live_documentation_query_service(...)` |
-| `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
-| `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
+| `normalize_concept_coordinate` | `value: object` | `wiki_surface`, `validate_concept_uid`, `validate_natural_key`, `ConceptIdentityError` | - | `wiki_surface.validate_exact_page_coordinate(...)`, `validator(...)` |
+| `normalize_documentation_query_text` | `value: object`, `field: str` | `QUERY_IDENTITY_BYTE_LIMIT`, `QUERY_IDENTITY_BYTE_LIMIT` | - | `selected` |
+| `isinstance` | - | - | - | - |
+| `strip` | - | - | - | - |
+| `DocumentationQueryError` | - | - | - | - |
+| `strip` | - | - | - | - |
+| `len` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_concept_sections | cast | 1113 | `cast(ConceptSectionsResult, _run_query(...))` |
-| list_concept_sections | _run_query | 1115 | `_run_query(...)` |
-| _run_query | callback | 1314 | `callback(data not statically known)` |
-| _run_query | InvalidRequestError | 1316 | `InvalidRequestError(str(...))` |
-| _run_query | str | 1316 | `str(exc)` |
-| list_concept_sections | list_concept_sections | 1116 | `_query_service(service, src_dir=src_dir, wiki_dir=wiki_dir, limit=limit, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection).list_concept_sections(locator_or_exact_route, ownership=ownership)` |
-| list_concept_sections | _query_service | 1116 | `_query_service(service, src_dir=src_dir, wiki_dir=wiki_dir, limit=limit, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| _query_service | InvalidRequestError | 1298 | `InvalidRequestError('source_selection cannot be combined with a prebuilt query service')` |
-| _query_service | build_documentation_query_service | 1302 | `build_documentation_query_service(src_dir, wiki_dir=wiki_dir, limit=limit, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| build_documentation_query_service | validate_source_root | 858 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 156 | `validate_path(path, label)` |
+| list_concept_sections | _normalize_query_input | 1491 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback | 1137 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1139 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str | 1140 | `str(exc)` |
+| list_concept_sections | normalize_concept_coordinate | 1492 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| normalize_concept_coordinate | normalize_documentation_query_text | 73 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
+| normalize_documentation_query_text | isinstance | 60 | `isinstance(value, str)` |
+| normalize_documentation_query_text | strip | 60 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 61 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | strip | 62 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len | 63 | `len(selected.encode(...))` |
 
 ### Boundary effects
 
@@ -158,9 +157,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `list_concept_sections` | `cast` | 1113 |
-| unresolved_call | `_run_query` | `callback` | 1314 |
-| unresolved_call | `list_concept_sections` | `_query_service(service, src_dir=src_dir, wiki_dir=wiki_dir, limit=limit, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection).list_concept_sections` | 1116 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1137 |
+| unresolved_call | `normalize_documentation_query_text` | `isinstance` | 60 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |
 | step_limit | `list_concept_sections` | `first 12 steps` | 0 |
 | truncated_flow | `list_concept_sections` | `depth limit` | 0 |
 

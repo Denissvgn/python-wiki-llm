@@ -34,6 +34,8 @@ flowchart LR
     n9["_assert_regular_directory (src/llm_wiki_cli/services/calibration/controller.py)"]
     n10["_assert_stable_evidence_metadata (src/llm_wiki_cli/services/calibration/controller.py)"]
     n11["_authority_freshness_failure (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n12["_block_ambiguous_recovery (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n13["_bound_outbound_roots (src/llm_wiki_cli/services/calibration/controller.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,6 +47,8 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/controller.md"
     click n1 "../modules/controller.md"
     click n2 "../modules/api.md"
@@ -57,6 +61,8 @@ flowchart LR
     click n9 "../modules/controller.md"
     click n10 "../modules/controller.md"
     click n11 "../modules/controller.md"
+    click n12 "../modules/controller.md"
+    click n13 "../modules/controller.md"
 ```
 
 ### Summary
@@ -73,17 +79,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_assert_controls_match` | call | [controller](../modules/controller.md) |
-| `_assert_not_link_or_reparse` | call | [controller](../modules/controller.md) |
-| `_assert_not_link_or_reparse` | call | [controller](../modules/controller.md) |
-| `_assert_open_evidence_directory` | call | [controller](../modules/controller.md) |
-| `_assert_open_evidence_file` | call | [controller](../modules/controller.md) |
-| `_assert_outbound_payload_safe` | call | [controller](../modules/controller.md) |
-| `_assert_portable_leaf_name` | call | [controller](../modules/controller.md) |
-| `_assert_regular_directory` | call | [controller](../modules/controller.md) |
-| `_assert_stable_evidence_metadata` | call | [controller](../modules/controller.md) |
-| `_authority_freshness_failure` | call | [controller](../modules/controller.md) |
-| `_authority_freshness_failure` | call | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_assert_controls_match` | call | [controller](../modules/controller.md) | 1 |
+| `_assert_not_link_or_reparse` | call | [controller](../modules/controller.md) | 2 |
+| `_assert_open_evidence_directory` | call | [controller](../modules/controller.md) | 1 |
+| `_assert_open_evidence_file` | call | [controller](../modules/controller.md) | 1 |
+| `_assert_outbound_payload_safe` | call | [controller](../modules/controller.md) | 1 |
+| `_assert_portable_leaf_name` | call | [controller](../modules/controller.md) | 1 |
+| `_assert_regular_directory` | call | [controller](../modules/controller.md) | 1 |
+| `_assert_stable_evidence_metadata` | call | [controller](../modules/controller.md) | 1 |
+| `_authority_freshness_failure` | call | [controller](../modules/controller.md) | 7 |
+| `_block_ambiguous_recovery` | call | [controller](../modules/controller.md) | 1 |
+| `_bound_outbound_roots` | call | [controller](../modules/controller.md) | 2 |
+
+> References: showing 12 of 47 logical references; 35 omitted by the 12-row generated summary limit.

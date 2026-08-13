@@ -71,16 +71,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_diagnostic_freshness_states` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_diagnostic_reasons` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_issues` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_reasons` | type_reference | [doctor_service](../modules/doctor_service.md) |
-| `_add` | call | [lint_service](../modules/lint_service.md) |
-| `_coerce_plugin_issue` | call | [lint_service](../modules/lint_service.md) |
-| `_coerce_plugin_issue` | call | [lint_service](../modules/lint_service.md) |
-| `_coerce_plugin_issue` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_diagnose` | call | [lint_service](../modules/lint_service.md) |
-| `_lint_issue_payload` | type_reference | [lint_service](../modules/lint_service.md) |
-| `LintReport.by_category` | type_reference | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_diagnostic_freshness_states` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_diagnostic_reasons` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_issues` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_reasons` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `_add` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_coerce_plugin_issue` | call | [lint_service](../modules/lint_service.md) | 2 |
+| `_coerce_plugin_issue` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_diagnose` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_lint_issue_payload` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `LintReport.by_category` | type_reference | [lint_service](../modules/lint_service.md) | — |

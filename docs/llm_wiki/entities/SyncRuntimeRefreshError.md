@@ -45,6 +45,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |

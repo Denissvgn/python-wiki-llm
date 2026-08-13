@@ -51,10 +51,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_go_package_dir_for_module` | type_reference | [imports](../modules/imports.md) |
-| `_read_go_module_scopes` | call | [imports](../modules/imports.md) |
-| `_read_go_module_scopes` | type_reference | [imports](../modules/imports.md) |
-| `ModulePathResolver._go_scope_matches` | type_reference | [imports](../modules/imports.md) |
-| `ModulePathResolver._nearest_go_scope` | type_reference | [imports](../modules/imports.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_go_package_dir_for_module` | type_reference | [imports](../modules/imports.md) | — |
+| `_read_go_module_scopes` | call | [imports](../modules/imports.md) | 1 |
+| `_read_go_module_scopes` | type_reference | [imports](../modules/imports.md) | — |
+| `ModulePathResolver._go_scope_matches` | type_reference | [imports](../modules/imports.md) | — |
+| `ModulePathResolver._nearest_go_scope` | type_reference | [imports](../modules/imports.md) | — |

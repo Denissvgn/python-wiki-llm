@@ -44,7 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_StreamCapture.finish` | call | [broker](../modules/broker.md) |
-| `_StreamCapture.finish` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_StreamCapture.finish` | call | [broker](../modules/broker.md) | 1 |
+| `_StreamCapture.finish` | type_reference | [broker](../modules/broker.md) | — |

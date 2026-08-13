@@ -63,8 +63,11 @@ The renderer normalizes and bounds labels while preserving printable Unicode,
 grammar-escapes source-derived text, and emits only validated relative diagram
 links with URL characters percent-encoded. When a visualization cannot show
 every analyzed item within its node, line, and character budgets, its omission
-note identifies the bounded projection; the generated tables remain the complete
-authoritative view.
+note identifies the bounded projection. Generated tables must also be read
+according to their stated limits: entity relationship reference tables show at
+most 12 logical rows and report exact coverage and omission counts when
+truncated. That table is a presentation summary, not an exhaustive line-level
+call-site record.
 Full bootstrap renders entity `## Relationships` sections with bounded Mermaid
 diagrams and compact reference tables when relationship metadata exists. When
 dependency analysis is enabled, module pages also get a generated
@@ -79,11 +82,13 @@ interfaces. The MCP server exposes read-only resources, search, and status
 counts for the same surface kinds. The supported Python API exposes source
 inventory, context payloads, registry-backed page metadata, and graph queries
 through `extract_source(...)`, `build_context(...)`, `list_wiki_pages(...)`, and
-the documentation query wrappers. `llm-wiki obsidian export` mirrors the canonical
-Markdown wiki for Obsidian, and `llm-wiki site export|check` mirrors and validates
-plain, MkDocs-compatible, or Docusaurus-compatible Markdown output without
-invoking external builders. Static-site output is a derived artifact; it must
-not become a second editable source of truth.
+`query_documentation(...)` plus the dedicated query wrappers. It also exposes
+canonical packets through `build_qualified_context(...)`.
+`llm-wiki obsidian export` mirrors the canonical Markdown wiki for Obsidian,
+and `llm-wiki site export|check` mirrors and validates plain, MkDocs-compatible,
+or Docusaurus-compatible Markdown output without invoking external builders.
+Static-site output is a derived artifact; it must not become a second editable
+source of truth.
 
 After normal Python signature binding succeeds, all functions exported by
 `llm_wiki_cli.api` report operational and validation failures through
@@ -467,10 +472,18 @@ discovers helper languages through default source-selection discovery (using
 `.llm-wiki/source-selection.json` when present), installs their
 checksum-verified toolchains in runner-temporary storage, and prepares detected
 TypeScript/JavaScript, Go, Rust, and Haskell helpers. Python extraction is built
-in and needs no external helper. The action then runs the strict `ci-check` gate
-with advisory native-drift diagnostics, verifies that the project worktree
-stayed clean, and uploads a fixed, allowlisted set of validation and toolchain
-evidence even when validation fails.
+in and needs no external helper. A pinned GitHub cache action restores only an
+exact helper-cache key covering the runner platform, release toolchain lock,
+selected helper sources and dependency locks, helper-cache contract, CLI
+version, and immutable action ref. Helper preparation still runs after every
+restore, so a miss or unusable entry rebuilds instead of reducing language
+coverage. Pull requests may restore the cache but only a successful push to the
+default branch may save a new entry.
+
+The action then runs the strict `ci-check` gate with advisory native-drift
+diagnostics, verifies that the project worktree stayed clean, and uploads a
+fixed, allowlisted set of validation, cache-measurement, and toolchain evidence
+even when validation fails.
 
 The portable gate disables project-local Python plugins so pull-request content
 is never imported or executed. A project that intentionally depends on trusted
@@ -480,6 +493,21 @@ workflow instead of this pull-request gate.
 Installation does not bootstrap or synchronize the wiki, change branch
 protection, install hooks, push commits, or add repository secrets. Those
 remain explicit maintainer actions.
+
+### Scheduled convergence observation
+
+`.github/workflows/llm-wiki-convergence.yml` provides a separately named
+scheduled and manual convergence check for this repository. From an exact,
+credential-free checkout of the default branch, it prepares the selected locked
+helpers and runs one real `llm-wiki sync` with project-local plugins disabled.
+The run starts only from a clean worktree, never uses `--dry-run` or `--force`,
+and fails when the sync changes the committed wiki or leaves any unrelated
+worktree state.
+
+The workflow uploads the complete pre/post wiki status, full post-sync
+worktree status, tracked wiki diff, sync log, and a versioned hash receipt. Its
+job summary contains only a bounded preview. This observation complements but
+never replaces the blocking `ci-check` integrity gate.
 
 `llm-wiki install-hook` installs a `post-commit` hook that generates
 `.git/llm-wiki-prompt.txt` with `llm-wiki generate-prompt` and prints a reminder
@@ -534,50 +562,70 @@ Use `--force` when you intentionally want to replace an existing unrelated hook:
 llm-wiki install-hook --force
 ```
 
-### CI gate
+### Strict doctor dashboard
 
-The lighter context-health composite action runs the knowledge health check on
-a pull request, writes its structured results as a job-summary table, and
-applies a configurable failure threshold:
+The context-health composite action publishes a diagnostic knowledge-health
+dashboard and applies a configurable failure threshold. It is intentionally
+separate from the blocking full-integrity gate: it does not replace general
+wiki checks, trusted plugin validation, or team-owned review policy.
 
 ```yaml
 - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-- uses: Denissvgn/python-wiki-llm/integrations/github-action@main
+- uses: Denissvgn/python-wiki-llm/integrations/github-action@<FULL_RELEASE_COMMIT_SHA>
   with:
     wiki-dir: docs/llm_wiki
     src-dir: .
     source-selection: .llm-wiki/source-selection.json
     strict: "true"
     fail-on: unhealthy
+    evidence-id: default
 ```
 
 Use `fail-on: unhealthy` to allow degraded-but-usable knowledge while blocking
 mixed snapshots, invalid governance, confirmed stale concepts, and invalid
 verification receipts. Use `fail-on: degraded` when any degraded result must
 block the job. `strict: "true"` also classifies indeterminate or nonsemantic
-source drift as unhealthy. For a protected production workflow, replace the
-branch reference with an immutable released commit.
+source drift as unhealthy. Replace `<FULL_RELEASE_COMMIT_SHA>` with the full
+40-character SHA of the immutable released commit; never use a branch or tag
+for a protected workflow.
 
 The action installs `agent-wiki-cli` from the same action checkout, so pinning
-the action reference also binds the CLI implementation. It invokes
-`llm-wiki doctor --format json` and reads only the complete, versioned
-`llm-wiki-doctor/v1` object. It rejects a report when its declared exit code
-does not match the doctor process exit captured by the runner, and it does not
-scrape human output. Within that schema major, required fields and documented
-state values remain strict while additive object fields are ignored. A wiki
-that has not been initialized is reported as `absent` and fails either
-threshold.
+the action reference also binds the CLI implementation. Through the same
+default source-selection discovery used by the CLI, it plans and prepares any
+detected TypeScript/JavaScript, Go, Rust, or Haskell extractor helper with the
+release's checksum-verified toolchains; Python extraction needs no helper. It
+then invokes `llm-wiki doctor --format json` and reads only the complete,
+versioned `llm-wiki-doctor/v1` object. The renderer rejects a report when its
+strictness or declared exit code does not match the captured request and
+process status, and it never scrapes human output. Within that schema major,
+required fields and documented state values remain strict while additive
+object fields are ignored. A wiki that has not been initialized is reported as
+`absent` and fails either threshold.
+
+The action reserves isolated runner-temporary cache, toolchain, and evidence
+paths and uploads only the JSON
+report, a hash-bound dashboard receipt, the extractor plan, and the preparation
+log. Human disclosure text is escaped and the job summary has fixed size and
+line bounds. This repository also provides a separately named scheduled and
+manual dashboard workflow; it has read-only permissions and no pull-request or
+push trigger. Branch protection should continue to require the exact
+`LLM Wiki integrity` context produced by the full gate, not this diagnostic
+dashboard.
 
 Omit `source-selection` to use default discovery. Set it to the same
 source-root-relative non-default profile used by local maintenance commands
 when a repository does not use `.llm-wiki/source-selection.json`.
+The default `evidence-id` is sufficient for one invocation in a job. Give each
+invocation a unique lowercase identifier when the same action is used more
+than once; unsafe identifiers and occupied runner paths fail closed before any
+artifact upload.
 
 ## Command Reference
 
 ### Resource-aware execution
 
 In an interactive IDE or whenever host capacity is unknown, run one heavy gate
-at a time. Heavy gates include `context`, full tests, coverage, builds, browser
+at a time. Heavy gates include `context`, full validation, coverage, builds, browser
 suites, `sync`, `lint`, and `ci-check`. The supervising agent owns that
 schedule; subagents may inspect bounded files and diffs, but should not launch
 heavy gates unless explicitly assigned.
@@ -691,6 +739,7 @@ llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --jobs 1 --cache-stats --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --cache-dir .cache/llm-wiki-inventory --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki sync --include-tests go --src-dir . --wiki-dir docs/llm_wiki
+llm-wiki sync --no-plugins --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --dry-run
 llm-wiki sync --initialize-surfaces flows,dependencies --flow-category http --exclude-tests --dry-run
 llm-wiki sync --initialize-surfaces api-contracts --openapi-file openapi.yaml --dry-run
@@ -703,8 +752,11 @@ existing wiki is present, run `bootstrap` first. Sync uses the same safe
 persistent inventory cache as lint when a git directory is available. Use
 `--no-cache`, `--rebuild-cache`, `--cache-dir PATH`, and `--cache-stats` to
 control or inspect inventory cache behavior. Use `--helper-cache-dir PATH` to
-point Go/Rust/Haskell extraction at prepared helpers in a separate cache. Use
-The interactive default is `--jobs 1`. Use `--jobs N` or `--jobs auto` to opt
+point TypeScript/JavaScript, Go, Rust, and Haskell extraction at prepared
+helpers in a separate cache.
+`--no-plugins` disables project-local extractor and generation plugins for
+trusted automation that must not import repository Python extensions. The
+interactive default is `--jobs 1`. Use `--jobs N` or `--jobs auto` to opt
 into parallel extraction for built-in languages and plugin extractors whose
 manifests set `"parallel_safe": true`; reserve `auto` for an isolated terminal
 or controlled CI runner with known capacity.
@@ -1048,7 +1100,12 @@ exits nonzero on validation failure. Native freshness/drift is disabled unless
 `--knowledge-drift-report` is supplied, and enabled findings remain
 nonblocking. Structured output discloses the report mode through
 `knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
-is always `false`.
+is always `false`. JSON output uses the closed `llm-wiki-ci-check/v1`
+envelope. Its `knowledge_health` member is a `llm-wiki-doctor/v1` projection
+composed from the same lint report, not a second source scan. The top-level
+`ok`, issue count, and process exit remain the authoritative blocking integrity
+result; the nested health status presents availability, freshness, snapshot,
+governance, drift, and verification state without changing that policy.
 `--no-plugins` disables project-local extractor, generation, and lint plugins;
 the portable integrity workflow always uses this fail-closed mode.
 For trusted source trees outside the runner workspace, pass
@@ -1103,23 +1160,36 @@ llm-wiki context --budget 8000 --src-dir . --format json
 llm-wiki context --budget 8000 --src-dir . --format markdown
 llm-wiki context --budget 8000 --focus changed
 llm-wiki context --budget 8000 --focus all
+llm-wiki context --budget 8000 --focus changed --knowledge-mode auto --read-only
 llm-wiki context --budget 8000 --focus all --prefer-fresh
 llm-wiki context --budget 12000 --format json --focus all --output context.json --read-only
 ```
 
 `--focus changed` is the default. Changed files get full detail, one-hop import
 neighbors get slim detail, and remaining files get names only.
+`--knowledge-mode` enables the explicit knowledge-aware context contract:
+`auto` returns bounded native knowledge when it is ready and otherwise reports
+the qualified fallback, `off` disables native selection, and `required` fails
+with a structured recovery reason unless ready qualified knowledge can be
+produced. Omitting the option preserves the legacy context response.
 `--prefer-fresh` is opt-in: under budget pressure it prefers current knowledge
 within an existing relevance tier, without moving candidates across relevance
-tiers or dropping content solely because it is stale. JSON output discloses
-whether the ranking policy was evaluated and applied.
+tiers or dropping content solely because it is stale. It controls ranking, not
+whether knowledge is included. JSON output discloses whether the ranking policy
+was evaluated and applied.
 
 For broad repository-wide work, run one serialized
-`llm-wiki context --budget 8000 --focus changed --read-only`, then read only the
-source and wiki pages it selects. For a narrow task with supplied files or a
-supplied diff, skip the full context scan and use the wiki index only for
-navigation. The budget and focus bound emitted output after a full deep
-inventory; they do not make the scan computationally cheap.
+`llm-wiki context --budget 8000 --focus changed --knowledge-mode auto --read-only`,
+then read only the source and wiki pages it selects. For a narrow task with
+supplied files or a supplied diff, use the bounded
+`llm_wiki_cli.api.query_documentation(...)` function or the MCP
+`query_documentation` tool with the `impact` operation. Exact concept,
+related-concept, surface, and typed queries use the committed snapshot;
+supplied file or unified-diff impact queries use targeted extraction. Symbol,
+entrypoint, and dependency queries
+perform a full inventory only when `allow_full_inventory=true` is supplied.
+The context budget and focus bound emitted output after a full deep inventory;
+they do not make that scan computationally cheap.
 
 External tools can use the `llm-wiki-context/v1` JSON request protocol:
 
@@ -1145,6 +1215,27 @@ Example request:
   }
 }
 ```
+
+Version 1 remains the compatibility protocol and does not accept
+`knowledge_mode`. To request explicit knowledge behavior, use
+`llm-wiki-context/v2` and include exactly one of `"off"`, `"auto"`, or
+`"required"`:
+
+```json
+{
+  "protocol": "llm-wiki-context/v2",
+  "budget_tokens": 8000,
+  "focus": ["changed", "neighbors"],
+  "format": "json",
+  "filters": {},
+  "prefer_fresh": false,
+  "knowledge_mode": "auto"
+}
+```
+
+The Python `build_context(...)` function and MCP `get_context` tool expose the
+same optional `knowledge_mode`. Qualified packet versioning and validation are
+described in [Qualified context packets](docs/qualified-context-packets.md).
 
 `filters.language` and `filters.module` scope the budgeted `files` payload.
 `filters.symbol`, `filters.entrypoint`, and `filters.surface` add bounded
@@ -1736,11 +1827,10 @@ Sixteen skills are bundled:
   reachability, and write a severity × reachability `DVT-NNN` report with
   proposed bumps or mitigations; packages without resolved versions are
   reported as unknowns, never safe paths.
-- `doc-hub`: multi-repo documentation hub aggregation — keep each source
-  wiki current, export/check a multi-wiki static-site hub with
-  `site export --wiki-root`/`site check`, and write one LLM-owned hub
-  overview page only when the source repositories are genuinely related
-  (never fabricate a cross-repo relationship that isn't real).
+- `doc-hub`: the owner of multi-repository hub aggregation — keep every source
+  wiki current, freeze the source selection, and export/check the mechanical
+  namespaced hub. No durable authored hub-overview surface exists, so it never
+  invents cross-repository synthesis or runs a builder/deploy step.
 - `doc-review`: documentation review follow-through — start from review JSON,
   branch diffs, patch findings, lint, or sync diagnostics; validate each
   finding against source truth; update semantic wiki/source-doc surfaces; run
@@ -1764,10 +1854,12 @@ Sixteen skills are bundled:
   remainder, and validate with `lint --strict` and a sync re-link pass. This
   authors navigation; it does not establish human completion time, reuse, or
   static/runtime comprehension.
-- `publish-docs`: wire static-site export into an actually publishable
-  site — export (single-wiki or hub), validate with `site check`, run the
-  real mkdocs/docusaurus builder when installed, and hand off (never
-  perform) the deploy step.
+- `publish-docs`: the owner of publication/build handoff — export one wiki or
+  consume the checked mirror returned by `doc-hub`, validate the frozen
+  selection, run the real mkdocs/docusaurus builder when installed, check the
+  build, and hand off (never perform) deployment. Existing multi-wiki callers
+  move only their aggregation/export/first-check stage to `doc-hub`; public
+  `site` CLI behavior is unchanged.
 - `usage-examples`: capture evidence-linked examples for user docs — run
   documented flows in a disposable environment, attach screenshots or
   recordings under `assets/<surface>/<page-stem>/`, validate media links and
@@ -1784,9 +1876,11 @@ Sixteen skills are bundled:
   explicit `bootstrap-remainder.md` record for deferred pages, validate with
   `lint --strict`/`ci-check`, and use a repository-policy-aware local or Git
   handoff.
-- `wiki-reference`: progressive-disclosure reference for extractor contracts,
-  helper toolchains/caches, dependency reconciliation, static-site profiles,
-  repository-aware Git handoff, resource-aware execution, and context budgets.
+- `wiki-reference`: a one-hop managed reference router for maintenance,
+  canonical surfaces and naming, repository-aware handoff, qualified knowledge
+  consumption, context/query selection, durable governance, extractors and
+  dependencies, publishing projections, and resource-aware execution. The
+  legacy `reference.md` remains only as a compact anchor-compatible index.
 - `wiki-semantic-enhance`: resumable standalone semantic-enrichment pass —
   ground or reuse imported LLM prose, complete/defer stable worklist IDs within
   budget, edit only agent-owned semantic surfaces, and return readiness/result
@@ -1798,24 +1892,147 @@ Sixteen skills are bundled:
 
 ```bash
 llm-wiki skills list
-llm-wiki skills install                          # into ./.claude/skills/
-llm-wiki skills install --skill wiki-sync --force
+llm-wiki skills install                          # configured agent's project skill dir
+llm-wiki skills install --skill wiki-sync        # includes wiki-reference automatically
 llm-wiki skills export --dest ~/.claude/skills   # personal skills directory
 llm-wiki skills export --dest exported --format json
 ```
 
-`install` writes into the current project (default `.claude/skills/`, must
-stay inside the project root); `export` accepts any destination directory.
+`install` writes into the current project's configured agent directory
+(`.claude/skills/` for Claude and `.llm-wiki/skills/` for other configured
+agents; an unconfigured project keeps the Claude default) and must stay inside
+the project root. `export` accepts any destination directory.
 Both are idempotent: identical existing files are kept, and files that were
 edited locally are never overwritten without `--force` — the run reports
 `existing_file_differs` and exits non-zero instead, so local skill
 customizations survive package upgrades by default.
 
-`llm-wiki upgrade` refreshes the generated agent constraints and the
-CLI-owned `wiki-reference` policy. Existing installed workflow-skill copies
-remain untouched; review local changes before deliberately refreshing
-`wiki-sync`, `wiki-bootstrap`, or `onboarding-guide` with repeated `--skill`
-options and `--force`.
+On a new project, `init` enables and provisions only the managed
+`wiki-reference` tree by default; the other bundled workflows remain explicit
+install/export choices. `init --no-skills` records an opt-out and renders the
+self-contained `expanded_inline` instructions. Omitting the skills flag on a
+later `init` or `upgrade` preserves the stored preference. The opt-out neither
+deletes an existing reference tree nor disables read-only knowledge and context
+interfaces.
+
+Each repeated `--skill` value is a requested root. The CLI expands those roots
+to their complete bundled dependency closure in deterministic dependency-first
+order, so selecting a workflow that consumes managed policy automatically
+includes and verifies `wiki-reference` at the same destination. JSON reports
+use `requested_skills` and `dependency_skills`, text reports label the same two
+sets, and `skills` records the effective install/export order. If an included
+reference tree has local drift, an ordinary run preserves it, reports the
+conflict, and stops before writing its consumers; use `--force` only after
+reviewing changes to expected regular files. Unexpected or conflicting entries
+remain preserved and keep consumers blocked until they are moved aside.
+Explicit `--skill wiki-reference` and all-skills operations remain supported.
+
+When managed references remain enabled, `llm-wiki upgrade` refreshes the
+generated agent constraints and the CLI-owned `wiki-reference` policy as one
+exact nested tree. This is the deliberate force-refresh path for expected
+regular files: a locally edited or missing managed topic is restored even when
+the command does not include `--force`. The upgrade command's `--force` flag is
+separate and authorizes replacement of an unrelated post-commit hook. `init`
+and ordinary `skills install`/`skills export` keep differing regular files
+unless their own force behavior is requested. Unexpected, conflicting, or
+unsafe entries are always preserved and reported; inspect and back them up,
+then move them aside if intended before retrying the reference refresh.
+Existing installed workflow-skill copies remain untouched; review local changes
+before deliberately refreshing `wiki-sync`, `wiki-bootstrap`, or
+`onboarding-guide` with repeated `--skill` options and `--force`.
+
+`init` and `upgrade` verify that managed reference tree before choosing the
+schema profile. A verified current tree permits the `compact` profile;
+`--no-skills`, an unavailable package, an installation error, or a tree that
+is incomplete or preserved with local changes selects the safe
+`expanded_inline` profile. The versioned profile marker lives inside the
+existing managed-block boundaries, so older installations can still replace
+or remove the block. During an agent switch, the destination schema is made
+usable before an old managed schema is removed. When managed references are
+enabled, the destination reference must also verify current before an exact
+unmodified source reference is removed. Opt-out, modified, and incomplete
+reference trees remain preserved. User prose and unregistered or source-only
+plugin blocks are preserved; blocks owned by installed plugins refresh
+independently.
+
+The compact profile keeps a bounded knowledge-first kernel in the always-loaded
+block: one qualified packet route with `--knowledge-mode auto`, exact query and
+fallback rules, authority and repository handoff boundaries, semantic ownership,
+maintenance activation, and direct links to the verified managed topics. The
+expanded profile retains the complete inline procedure, so opt-out and recovery
+states remain usable without opening a managed topic. Both profiles carry the
+same durable repository-content safeguards, and plugin blocks remain separate
+from the compact core.
+
+If an interrupted switch leaves two managed agent schemas, `status` reports
+the ambiguity instead of choosing one. Its bounded recovery may use
+`upgrade --cleanup-source-agent <source>` only after you explicitly select the
+target; that option removes the named source's managed schema block and exact
+current managed-reference tree only when managed references are enabled and the
+target reference verifies current. Opt-out, modified, and incomplete trees are
+preserved.
+
+#### Managed instruction migration and rollback
+
+The schema profile is selected from live state rather than from a free-form
+profile setting. A current exact managed reference selects `compact`; an
+explicit opt-out or an unavailable, incomplete, or unverifiable reference
+selects `expanded_inline`. Both profiles use knowledge mode `auto` when they
+build a qualified packet, and the expanded profile remains a complete inline
+procedure when no topic can be opened. The `expanded_inline` renderer remains
+supported through at least the next minor compatibility cycle after compact
+delivery becomes the default.
+
+`init` and `upgrade` recognize an older unversioned LLM Wiki block when it is
+already in the configured agent's current schema path. They replace only that
+bounded managed block with a versioned profile: user-authored text outside it
+is preserved, and installed plugin components remain inline in their own
+separately owned blocks. Use `upgrade`, not `migrate`, for this
+instruction-block conversion; `migrate` reconciles the wiki's page layout and
+canonical names.
+
+The legacy generic `.agents.md` filename is not relocated automatically.
+`init` or `upgrade` creates or refreshes the current `AGENTS.md` schema and
+leaves `.agents.md` unchanged as user-owned, manually managed content. Inspect
+and copy any user prose you still need before retiring that obsolete file under
+your repository's normal policy.
+
+To roll a configured installation back to the self-contained profile, then
+move it forward after inspection:
+
+```bash
+llm-wiki upgrade --no-skills
+llm-wiki status
+llm-wiki upgrade --skills
+```
+
+That concise sequence intentionally uses the default `docs/llm_wiki` path.
+Omitting `--wiki-dir` does not discover a custom path used by an earlier
+initialization. For a non-default installation, carry the same existing path
+through every lifecycle read and write; for example:
+
+```bash
+llm-wiki upgrade --wiki-dir .wiki --no-skills
+llm-wiki status --wiki-dir .wiki
+llm-wiki upgrade --wiki-dir .wiki --skills
+```
+
+The first command persists the opt-out, leaves any existing reference tree in
+place, and renders `expanded_inline`. The final command refreshes the managed
+tree and returns to `compact` only after exact verification. For a missing or
+drifted topic, start with `status`, back up changes you need, remove or move
+aside preserved conflicting/extra entries, and rerun `upgrade --skills`,
+retaining the same explicit `--wiki-dir` when it is non-default. Reference
+recovery does not require or imply `knowledge init`.
+
+Agent relocation uses the same ordering and the same wiki-path rule. Run
+`upgrade --agent <target>` with the existing `--wiki-dir` when non-default; the
+target schema and its configured destination (`.claude/skills` for Claude,
+`.llm-wiki/skills` otherwise) become usable before the source managed block is
+removed. If cleanup was interrupted, inspect `status` with that path and use
+its exact `--cleanup-source-agent <source>` recovery command. Modified source
+references at a distinct obsolete location are not removed, and all
+user-authored schema text remains in place for review.
 
 ### `metrics`
 
@@ -1852,6 +2069,9 @@ llm-wiki upgrade
 llm-wiki upgrade --agent copilot
 llm-wiki upgrade --wiki-dir .wiki
 llm-wiki upgrade --force
+llm-wiki upgrade --no-skills
+llm-wiki upgrade --skills
+llm-wiki upgrade --agent claude --cleanup-source-agent generic
 llm-wiki upgrade --no-quality-hints
 llm-wiki upgrade --issue-reporting
 llm-wiki upgrade --no-issue-reporting
@@ -1878,6 +2098,10 @@ llm-wiki migrate --dry-run
 llm-wiki migrate --chunk-size 50 --plan-chunks
 llm-wiki migrate --chunk-size 50 --chunk 1
 ```
+
+This command migrates canonical wiki pages. To convert an older unversioned
+managed instruction block or change its compact/expanded delivery, use
+`llm-wiki upgrade` and the lifecycle guidance under [`skills`](#skills).
 
 ### `knowledge`
 
@@ -1911,12 +2135,23 @@ llm-wiki uninstall --remove-wiki
 
 `status` reports knowledge availability from the committed wiki snapshot. It
 does not run source extraction or live freshness evaluation; a ready snapshot
-therefore reports freshness as not evaluated rather than current.
+therefore reports freshness as not evaluated rather than current. It also
+classifies the live managed lifecycle, including `compact/current`,
+`expanded/skills-disabled`, `expanded/reference-unavailable`,
+`legacy-expanded`, and `compact/broken`. The schema marker and exact live
+reference tree determine health; persisted profile fields explain the last
+successful render but cannot make broken files healthy. Recovery guidance is
+scoped to the configured agent and keeps read-only knowledge available
+independently.
 
 `uninstall` removes project integration artifacts, including an unmodified
 workflow created by `install-ci`. A locally modified or unmanaged workflow is
-preserved. The command does not uninstall the CLI itself; remove the Python
-package separately with `pip uninstall agent-wiki-cli`.
+preserved. Exact current managed-reference trees are removable; locally
+modified, incomplete, extra-bearing, or unverifiable trees are retained.
+Managed schema cleanup completes before reference removal, and both legacy and
+profiled blocks use the same ownership boundaries. The command does not
+uninstall the CLI itself; remove the Python package separately with
+`pip uninstall agent-wiki-cli`.
 
 ## Security Model
 
@@ -1976,40 +2211,27 @@ The repository includes community health files:
 
 ## Development
 
-Run tests from the repository root:
+Install an editable development checkout from the repository root:
 
 ```bash
 .venv/bin/pip install -e ".[dev]"
-.venv/bin/pytest tests/ -v
 ```
 
-Run the MCP tests with the optional dependency installed:
+Include the optional MCP dependency when working on that integration:
 
 ```bash
 .venv/bin/pip install -e ".[dev,mcp]"
-.venv/bin/pytest tests/test_mcp.py
 ```
 
-Before release, check metadata and docs:
+Build distribution artifacts locally with:
 
 ```bash
-.venv/bin/pytest tests/test_package_metadata.py tests/test_release.py -q
 .venv/bin/python -m build
-git diff --check
 ```
 
 Release notes and package metadata record the surface, distribution,
-compatibility, and local verification gates for documentation-surface work. Use
+compatibility, and release behavior for documentation-surface work. Use
 `llm-wiki release` separately when stamping a real version.
-
-The self-hosted documentation smoke exercises this repository's own
-documentation surface by copying the checkout to a temp project, bootstrapping
-a full wiki, running `sync`, exporting a MkDocs mirror, and checking the mirror:
-
-```bash
-.venv/bin/pytest tests/test_bootstrap.py::TestGenerateFlowMd tests/test_m4_dogfood.py -q
-.venv/bin/pytest -q
-```
 
 ## Contribution Policy
 

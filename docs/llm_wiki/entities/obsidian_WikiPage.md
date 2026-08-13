@@ -81,17 +81,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_aliases_for` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_build_related_links` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_collect_outgoing_links` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_knowledge_frontmatter_summary` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_merge_inventory_relationships` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_merge_source_coordinate_relationships` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_mirror_scan_relative_path` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_render_projected_target` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_render_related_links` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_render_typed_relationships` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_resolve_markdown_target` | type_reference | [obsidian](../modules/obsidian.md) |
-| `_select_knowledge_projection` | type_reference | [obsidian](../modules/obsidian.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_aliases_for` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_build_related_links` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_collect_outgoing_links` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_knowledge_frontmatter_summary` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_merge_inventory_relationships` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_merge_source_coordinate_relationships` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_mirror_scan_relative_path` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_render_projected_target` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_render_related_links` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_render_typed_relationships` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_resolve_markdown_target` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `_select_knowledge_projection` | type_reference | [obsidian](../modules/obsidian.md) | — |
+
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

@@ -67,10 +67,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_validate_probe_result_bindings` | type_reference | [broker](../modules/broker.md) |
-| `OciAdmissionProbeEnvironment.validate_request` | type_reference | [broker](../modules/broker.md) |
-| `OciAdmissionProbeRequest.create` | type_reference | [broker](../modules/broker.md) |
-| `OciAdmissionProbeRequest.from_dict` | type_reference | [broker](../modules/broker.md) |
-| `controller` | import | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_validate_probe_result_bindings` | type_reference | [broker](../modules/broker.md) | — |
+| `OciAdmissionProbeEnvironment.validate_request` | type_reference | [broker](../modules/broker.md) | — |
+| `OciAdmissionProbeRequest.create` | type_reference | [broker](../modules/broker.md) | — |
+| `OciAdmissionProbeRequest.from_dict` | type_reference | [broker](../modules/broker.md) | — |
+| `controller` | import | [controller](../modules/controller.md) | — |

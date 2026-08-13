@@ -46,8 +46,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `install_ci_workflow` | call | [ci_installer](../modules/ci_installer.md) |
-| `install_ci_workflow` | call | [ci_installer](../modules/ci_installer.md) |
-| `install_ci_workflow` | type_reference | [ci_installer](../modules/ci_installer.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `install_ci_workflow` | call | [ci_installer](../modules/ci_installer.md) | 2 |
+| `install_ci_workflow` | type_reference | [ci_installer](../modules/ci_installer.md) | — |

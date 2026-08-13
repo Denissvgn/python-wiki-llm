@@ -2,7 +2,7 @@
 
 **Entry point:** `compare_context_packet_basis` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [context_packet](../modules/context_packet.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [context_packet](../modules/context_packet.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -25,9 +25,8 @@ sequenceDiagram
     participant p13 as _validate_json_tree
     participant p14 as set
     participant p15 as visit
-    participant p16 as _validate_packet_shape
-    participant p17 as _exact_fields
-    participant p18 as sorted
+    participant p16 as _packet_contract_for_schema
+    participant p17 as get
     p0->>p1: validate_context_packet
     p1->>p2: _coerce_packet_bytes
     p2-->>p3: isinstance
@@ -52,15 +51,15 @@ sequenceDiagram
     p10->>p13: _validate_json_tree
     p13-->>p14: set
     p13-->>p15: visit
-    p1->>p16: _validate_packet_shape
-    p16->>p17: _exact_fields
-    p17-->>p14: set
-    p17-->>p18: sorted
-    p17-->>p14: set
-    p17->>p6: ContextPacketMalformedError
+    p1->>p16: _packet_contract_for_schema
+    p16-->>p3: isinstance
+    p16->>p6: ContextPacketMalformedError
+    p16-->>p17: get
+    p16->>p6: ContextPacketMalformedError
+    p1-->>p17: get
 ```
 
-> Call sequence diagram shows 30 of 222 interactions; 192 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 499 interactions; 469 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -121,17 +120,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_context_packet_basis | validate_context_packet | 905 | `validate_context_packet(packet_bytes)` |
-| validate_context_packet | _coerce_packet_bytes | 859 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance | 1557 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance | 1559 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes | 1560 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError | 1562 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 1564 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len | 1565 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 1566 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | startswith | 1570 | `raw.startswith(b'\xef\xbb\xbf')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 1571 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
+| compare_context_packet_basis | validate_context_packet | 1537 | `validate_context_packet(packet_bytes)` |
+| validate_context_packet | _coerce_packet_bytes | 1488 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance | 2251 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance | 2253 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes | 2254 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError | 2256 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2258 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len | 2259 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2260 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | startswith | 2264 | `raw.startswith(b'\xef\xbb\xbf')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2265 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
 
 ### Boundary effects
 
@@ -141,11 +140,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 1557 |
-| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 1559 |
-| unresolved_call | `_coerce_packet_bytes` | `bytes` | 1560 |
-| unresolved_call | `_coerce_packet_bytes` | `TypeError` | 1562 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 1570 |
+| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 2251 |
+| unresolved_call | `_coerce_packet_bytes` | `isinstance` | 2253 |
+| unresolved_call | `_coerce_packet_bytes` | `bytes` | 2254 |
+| unresolved_call | `_coerce_packet_bytes` | `TypeError` | 2256 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2264 |
 | step_limit | `compare_context_packet_basis` | `first 12 steps` | 0 |
 | truncated_flow | `compare_context_packet_basis` | `depth limit` | 0 |
 

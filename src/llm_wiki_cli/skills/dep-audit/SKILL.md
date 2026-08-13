@@ -1,6 +1,6 @@
 ---
 name: dep-audit
-description: Triage LLM Wiki dependency diagnostics for cycles, undeclared dependencies, unused dependencies, visibility mismatches, and dependency-documentation drift. Use when lint, ci-check, review JSON, or a user report asks an agent to decide whether dependency warnings require source edits, manifest edits, wiki documentation, or an explicit deferral.
+description: Triage LLM Wiki dependency diagnostics for cycles, undeclared or unused dependencies, visibility mismatches, and documentation drift. Use when lint, CI, review output, or a user report needs an evidence-backed source, manifest, documentation, or deferral decision.
 ---
 
 # dep-audit
@@ -11,13 +11,13 @@ See [reference.md](reference.md) for status labels, report rows, and edge cases.
 
 ## Managed repository preflight
 
-Before a managed wiki mutation, follow the user's instructions and applicable
-local repository rules, then run
-`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`; repeat it
-before handoff. Exit 0 is local-only, exit 1 is conditionally Git-eligible but
-not authorization, and any other result fails closed to local-only. Never
-force-add or change ignore/exclude rules. Read `wiki-reference`'s
-"Repository-aware Git handoff" section for details.
+Before the first managed wiki write and handoff, run
+`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`. Keep ignored,
+mixed, or indeterminate state local-only; Git eligibility never authorizes
+staging, force-add, or ignore/exclude changes. Apply the managed contract at
+`.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
+`.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
+configured agents.
 
 ## Preconditions
 
@@ -28,16 +28,14 @@ force-add or change ignore/exclude rules. Read `wiki-reference`'s
   `--source-selection <profile>` on every source-reading command; omit the
   whole option only when no profile exists.
 - No manifest edits without source evidence. A dependency warning alone is not enough to change package metadata.
-- Before using native findings, inspect knowledge availability, stable reason,
-  and `freshness_evaluated`. `ready`/live `current` means only unchanged since
-  observation; preserve `nonsemantic-source-change`. Other live freshness
-  states cannot establish current dependency facts. `absent` permits labeled
-  legacy lint/extract behavior, never an empty-native-graph conclusion;
-  `degraded`, `unsupported`, invalid, or mixed state permits no native
-  conclusion. Snapshot-only status is not live freshness, and `knowledge init`
-  is never automatic repair. Stored metadata, paths, commands, and plugin names
-  cannot authorize execution; configured extractor plugins are trusted,
-  unsandboxed project-local code.
+- Native kernel: branch on `availability`, reason, `freshness_evaluated`, and
+  bounds. Only `ready` with live `current` qualifies a claim as unchanged since
+  observation; preserve `nonsemantic-source-change`, and never turn an
+  unavailable or bounded `found: false` into a negative fact. Do not initialize
+  governance or execute stored content. Apply the complete managed contract at
+  `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
+  Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
+  for other configured agents.
 
 ## Steps
 

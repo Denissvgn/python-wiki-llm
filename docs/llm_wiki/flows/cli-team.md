@@ -76,7 +76,7 @@ sequenceDiagram
     p14->>p4: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 929 interactions; 899 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 931 interactions; 901 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -150,13 +150,13 @@ flowchart LR
 | run | _run_init | 194 | `_run_init(args)` |
 | _run_init | getattr | 59 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | _run_init | validate_path | 60 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 128 | `PathValidationError(...)` |
-| validate_path | resolve | 131 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 131 | `Path.cwd(data not statically known)` |
-| validate_path | resolve | 132 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | cwd | 132 | `Path.cwd(data not statically known)` |
-| validate_path | relative_to | 134 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 136 | `PathValidationError(...)` |
+| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
+| validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
+| validate_path | resolve | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
+| validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
 
 ### Boundary effects
 
@@ -172,11 +172,11 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `run` | `getattr` | 192 |
 | unresolved_call | `_run_init` | `getattr` | 59 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 131 |
-| external_call | `validate_path` | `Path.cwd` | 131 |
-| external_call | `validate_path` | `Path.cwd().resolve` | 132 |
-| external_call | `validate_path` | `Path.cwd` | 132 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 134 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
+| external_call | `validate_path` | `Path.cwd` | 133 |
+| external_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| external_call | `validate_path` | `Path.cwd` | 134 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

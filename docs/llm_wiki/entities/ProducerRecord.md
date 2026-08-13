@@ -59,13 +59,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_producer_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_analysis_basis_hash` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_downgrade_incompatible_tombstones` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_validated_previous_producer` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_parse_producer` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_producer` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `_previous_committed_producer` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_producer_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_analysis_basis_hash` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_downgrade_incompatible_tombstones` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_validated_previous_producer` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_parse_producer` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_producer` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `_previous_committed_producer` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

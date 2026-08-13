@@ -66,12 +66,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `load_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `_validate_live_evaluation` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_validate_live_producer` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `evaluate_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `build_runtime_live_evaluation` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `build_runtime_live_evaluation` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `load_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `_validate_live_evaluation` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_validate_live_producer` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `evaluate_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `build_runtime_live_evaluation` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `build_runtime_live_evaluation` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

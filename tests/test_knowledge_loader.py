@@ -68,7 +68,7 @@ def _committed_state(root):
     return fixture, plan, result
 
 
-def _committed_m3_state(root):
+def _committed_knowledge_state(root):
     inputs = _planner_inputs(root)
     _write_fixture_pages(root, one_module_two_entities_fixture())
     plan = build_knowledge_generation_plan(inputs)
@@ -372,7 +372,7 @@ def test_manifest_marker_mismatches_are_mixed_snapshots(
 
 
 def test_valid_graph_from_another_inventory_is_a_mixed_snapshot(tmp_path):
-    plan, result = _committed_m3_state(tmp_path)
+    plan, result = _committed_knowledge_state(tmp_path)
     payload = json.loads(plan.knowledge_index.content)
     graph = payload["extensions"][TYPED_GRAPH_EXTENSION_KEY]
     graph["input_hashes"]["inventory"] = "sha256:" + ("f" * 64)
@@ -409,7 +409,7 @@ def test_valid_graph_from_another_inventory_is_a_mixed_snapshot(tmp_path):
 
 
 def test_valid_graph_with_foreign_concept_reference_is_a_mixed_snapshot(tmp_path):
-    plan, result = _committed_m3_state(tmp_path)
+    plan, result = _committed_knowledge_state(tmp_path)
     payload = json.loads(plan.knowledge_index.content)
     graph = payload["extensions"][TYPED_GRAPH_EXTENSION_KEY]
     edge = next(edge for edge in graph["edges"] if edge["kind"] == "contains")
@@ -447,7 +447,7 @@ def test_valid_graph_with_foreign_concept_reference_is_a_mixed_snapshot(tmp_path
 
 
 def test_malformed_typed_graph_is_invalid_even_with_matching_marker(tmp_path):
-    plan, result = _committed_m3_state(tmp_path)
+    plan, result = _committed_knowledge_state(tmp_path)
     payload = json.loads(plan.knowledge_index.content)
     graph = payload["extensions"][TYPED_GRAPH_EXTENSION_KEY]
     graph["edges"][0]["coverage"]["omitted"] = 99
@@ -475,7 +475,7 @@ def test_malformed_typed_graph_is_invalid_even_with_matching_marker(tmp_path):
 
 
 def test_valid_section_ownership_from_another_snapshot_is_mixed(tmp_path):
-    plan, result = _committed_m3_state(tmp_path)
+    plan, result = _committed_knowledge_state(tmp_path)
     payload = json.loads(plan.knowledge_index.content)
     sections = payload["extensions"][SECTION_OWNERSHIP_EXTENSION_KEY]
     sections["pages"][0]["source_hash"] = "sha256:" + ("f" * 64)
@@ -503,7 +503,7 @@ def test_valid_section_ownership_from_another_snapshot_is_mixed(tmp_path):
 
 
 def test_malformed_section_ownership_is_invalid_with_matching_marker(tmp_path):
-    plan, result = _committed_m3_state(tmp_path)
+    plan, result = _committed_knowledge_state(tmp_path)
     payload = json.loads(plan.knowledge_index.content)
     sections = payload["extensions"][SECTION_OWNERSHIP_EXTENSION_KEY]
     sections["pages"][0]["sections"][0]["occurrence"] = 0

@@ -82,17 +82,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `admit_calibration_run` | type_reference | [api](../modules/api.md) |
-| `prepare_calibration_run` | type_reference | [api](../modules/api.md) |
-| `record_calibration_agent_result` | type_reference | [api](../modules/api.md) |
-| `_admit_external_broker` | type_reference | [controller](../modules/controller.md) |
-| `_admit_local_oci` | type_reference | [controller](../modules/controller.md) |
-| `_authenticate_external_attestation` | type_reference | [controller](../modules/controller.md) |
-| `_authenticate_external_receipt` | type_reference | [controller](../modules/controller.md) |
-| `_authority_freshness_failure` | type_reference | [controller](../modules/controller.md) |
-| `_block_ambiguous_recovery` | type_reference | [controller](../modules/controller.md) |
-| `_build_host_authorization` | type_reference | [controller](../modules/controller.md) |
-| `_build_label_field_contract` | type_reference | [controller](../modules/controller.md) |
-| `_build_optimizer_search_contract` | type_reference | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `admit_calibration_run` | type_reference | [api](../modules/api.md) | — |
+| `prepare_calibration_run` | type_reference | [api](../modules/api.md) | — |
+| `record_calibration_agent_result` | type_reference | [api](../modules/api.md) | — |
+| `_admit_external_broker` | type_reference | [controller](../modules/controller.md) | — |
+| `_admit_local_oci` | type_reference | [controller](../modules/controller.md) | — |
+| `_authenticate_external_attestation` | type_reference | [controller](../modules/controller.md) | — |
+| `_authenticate_external_receipt` | type_reference | [controller](../modules/controller.md) | — |
+| `_authority_freshness_failure` | type_reference | [controller](../modules/controller.md) | — |
+| `_block_ambiguous_recovery` | type_reference | [controller](../modules/controller.md) | — |
+| `_build_host_authorization` | type_reference | [controller](../modules/controller.md) | — |
+| `_build_label_field_contract` | type_reference | [controller](../modules/controller.md) | — |
+| `_build_optimizer_search_contract` | type_reference | [controller](../modules/controller.md) | — |
+
+> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.

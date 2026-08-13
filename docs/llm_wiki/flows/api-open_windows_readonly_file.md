@@ -59,7 +59,7 @@ sequenceDiagram
     p17-->>p3: WinDLL
 ```
 
-> Call sequence diagram shows 30 of 168 interactions; 138 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 170 interactions; 140 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -79,7 +79,7 @@ flowchart LR
     s11["11. HANDLE"]
     s12["12. WinError"]
     s1 -->|"WindowsFileGuardError('Windows read-only file guards are unavailable on this platform.')"| s2
-    s1 -->|"_open_windows_readonly_file_handle(Path(...), require_restrictive_dacl=True)"| s3
+    s1 -->|"_open_windows_readonly_file_handle(Path(...), require_restrictive_dacl=True, require_single_link=require_single_link)"| s3
     s3 -. "ctypes.WinDLL('kernel32', use_last_error=True)" .-> s4
     s3 -. "create_file(_windows_api_path(...), ..., 1, None, 3, ..., None)" .-> s5
     s3 -->|"_windows_api_path(path)"| s6
@@ -99,9 +99,9 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `open_windows_readonly_file` | `path: Path`, `require_restrictive_dacl: bool` | `os`, `os`, `os`, `os`, `WindowsIdentityUnavailableError`, `WindowsFileGuardError` | - | - |
+| `open_windows_readonly_file` | `path: Path`, `require_restrictive_dacl: bool`, `require_single_link: bool` | `os`, `os`, `os`, `os`, `WindowsIdentityUnavailableError`, `WindowsFileGuardError` | - | - |
 | `WindowsFileGuardError` | - | - | - | - |
-| `_open_windows_readonly_file_handle` | `path: Path`, `require_restrictive_dacl: bool` | - | `create_file.argtypes`, `create_file.restype`, `get_file_type.argtypes`, `get_file_type.restype`, `get_information.argtypes`, `get_information.restype` | `native_handle` |
+| `_open_windows_readonly_file_handle` | `path: Path`, `require_restrictive_dacl: bool`, `require_single_link: bool` | - | `create_file.argtypes`, `create_file.restype`, `get_file_type.argtypes`, `get_file_type.restype`, `get_information.argtypes`, `get_information.restype` | `native_handle` |
 | `WinDLL` | - | - | - | - |
 | `create_file` | - | - | - | - |
 | `_windows_api_path` | `path: Path` | - | - | `value`, `...`, `...` |
@@ -116,17 +116,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| open_windows_readonly_file | WindowsFileGuardError | 333 | `WindowsFileGuardError('Windows read-only file guards are unavailable on this platform.')` |
-| open_windows_readonly_file | _open_windows_readonly_file_handle | 338 | `_open_windows_readonly_file_handle(Path(...), require_restrictive_dacl=True)` |
-| _open_windows_readonly_file_handle | WinDLL | 394 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _open_windows_readonly_file_handle | create_file | 409 | `create_file(_windows_api_path(...), ..., 1, None, 3, ..., None)` |
-| _open_windows_readonly_file_handle | _windows_api_path | 410 | `_windows_api_path(path)` |
-| _windows_api_path | abspath | 1285 | `os.path.abspath(os.fspath(...))` |
-| _windows_api_path | fspath | 1285 | `os.fspath(path)` |
-| _windows_api_path | startswith | 1286 | `value.startswith('\\\\?\\')` |
-| _windows_api_path | startswith | 1288 | `value.startswith('\\\\')` |
-| _open_windows_readonly_file_handle | HANDLE | 418 | `wintypes.HANDLE(...)` |
-| _open_windows_readonly_file_handle | WinError | 420 | `ctypes.WinError(ctypes.get_last_error(...))` |
+| open_windows_readonly_file | WindowsFileGuardError | 339 | `WindowsFileGuardError('Windows read-only file guards are unavailable on this platform.')` |
+| open_windows_readonly_file | _open_windows_readonly_file_handle | 344 | `_open_windows_readonly_file_handle(Path(...), require_restrictive_dacl=True, require_single_link=require_single_link)` |
+| _open_windows_readonly_file_handle | WinDLL | 407 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _open_windows_readonly_file_handle | create_file | 422 | `create_file(_windows_api_path(...), ..., 1, None, 3, ..., None)` |
+| _open_windows_readonly_file_handle | _windows_api_path | 423 | `_windows_api_path(path)` |
+| _windows_api_path | abspath | 1298 | `os.path.abspath(os.fspath(...))` |
+| _windows_api_path | fspath | 1298 | `os.fspath(path)` |
+| _windows_api_path | startswith | 1299 | `value.startswith('\\\\?\\')` |
+| _windows_api_path | startswith | 1301 | `value.startswith('\\\\')` |
+| _open_windows_readonly_file_handle | HANDLE | 431 | `wintypes.HANDLE(...)` |
+| _open_windows_readonly_file_handle | WinError | 433 | `ctypes.WinError(ctypes.get_last_error(...))` |
 
 ### Boundary effects
 
@@ -136,14 +136,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinDLL` | 394 |
-| unresolved_call | `_open_windows_readonly_file_handle` | `create_file` | 409 |
-| external_call | `_windows_api_path` | `os.path.abspath` | 1285 |
-| external_call | `_windows_api_path` | `os.fspath` | 1285 |
-| unresolved_call | `_windows_api_path` | `value.startswith` | 1286 |
-| unresolved_call | `_windows_api_path` | `value.startswith` | 1288 |
-| external_call | `_open_windows_readonly_file_handle` | `wintypes.HANDLE` | 418 |
-| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinError` | 420 |
+| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinDLL` | 407 |
+| unresolved_call | `_open_windows_readonly_file_handle` | `create_file` | 422 |
+| external_call | `_windows_api_path` | `os.path.abspath` | 1298 |
+| external_call | `_windows_api_path` | `os.fspath` | 1298 |
+| unresolved_call | `_windows_api_path` | `value.startswith` | 1299 |
+| unresolved_call | `_windows_api_path` | `value.startswith` | 1301 |
+| external_call | `_open_windows_readonly_file_handle` | `wintypes.HANDLE` | 431 |
+| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinError` | 433 |
 | step_limit | `open_windows_readonly_file` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -20,7 +20,7 @@ sequenceDiagram
 flowchart LR
     s1["1. get_context"]
     s2["2. get_context"]
-    s1 -. "service.get_context(budget_tokens=budget_tokens, focus=focus, format=format, filters=filters, prefer_fresh=prefer_fresh)" .-> s2
+    s1 -. "service.get_context(**=options)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
 
@@ -28,14 +28,14 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `get_context` | `budget_tokens: int`, `focus: list[str] \| None`, `format: str`, `filters: dict \| None`, `prefer_fresh: bool` | - | - | `service.get_context(...)` |
+| `get_context` | `budget_tokens: int`, `focus: list[str] \| None`, `format: str`, `filters: dict \| None`, `prefer_fresh: bool`, `knowledge_mode: KnowledgeMode \| None` | - | `options[...]` | `service.get_context(...)` |
 | `get_context` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_context | get_context | 1036 | `service.get_context(budget_tokens=budget_tokens, focus=focus, format=format, filters=filters, prefer_fresh=prefer_fresh)` |
+| get_context | get_context | 1260 | `service.get_context(**=options)` |
 
 ### Boundary effects
 
@@ -45,7 +45,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_context` | `service.get_context` | 1036 |
+| unresolved_call | `get_context` | `service.get_context` | 1260 |
 
 ## Behavior
 

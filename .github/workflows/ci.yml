@@ -71,7 +71,7 @@ jobs:
   wiki-integrity:
     name: LLM Wiki integrity
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 15
     permissions:
       contents: read
     env:
@@ -87,130 +87,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python 3.13
-        id: setup-python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      - name: Check LLM Wiki integrity
+        uses: ./integrations/wiki-integrity
         with:
-          python-version: "3.13"
-
-      - name: Install the candidate package
-        run: >-
-          "${{ steps.setup-python.outputs.python-path }}"
-          -I -m pip install --no-cache-dir .
-
-      - name: Bind runner-temporary wiki paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          cache_dir="${RUNNER_TEMP}/llm-wiki-cache"
-          evidence_dir="${RUNNER_TEMP}/llm-wiki-evidence"
-          occupied=false
-          for reserved_dir in "${cache_dir}" "${evidence_dir}"; do
-            if [[ -e "${reserved_dir}" || -L "${reserved_dir}" ]]; then
-              occupied=true
-              printf 'Runner-temporary path is already occupied: %s\n' \
-                "${reserved_dir}" >&2
-            fi
-          done
-          if ${occupied}; then
-            quarantine_dir="$(
-              /usr/bin/mktemp -d "${RUNNER_TEMP}/llm-wiki-collisions.XXXXXX"
-            )"
-            for reserved_dir in "${cache_dir}" "${evidence_dir}"; do
-              if [[ -e "${reserved_dir}" || -L "${reserved_dir}" ]]; then
-                leaf="${reserved_dir##*/}"
-                if ! /bin/mv -- \
-                  "${reserved_dir}" "${quarantine_dir}/${leaf}"; then
-                  /bin/rm -rf -- "${reserved_dir}"
-                fi
-                [[ ! -e "${reserved_dir}" && ! -L "${reserved_dir}" ]]
-              fi
-            done
-            exit 1
-          fi
-          for reserved_dir in "${cache_dir}" "${evidence_dir}"; do
-            mkdir -- "${reserved_dir}"
-            [[ -d "${reserved_dir}" && ! -L "${reserved_dir}" ]]
-          done
-          {
-            printf 'LLM_WIKI_CACHE_DIR=%s\n' "${cache_dir}"
-            printf 'LLM_WIKI_EVIDENCE_DIR=%s\n' "${evidence_dir}"
-          } >> "${GITHUB_ENV}"
-
-      - name: Install the locked routine toolchain
-        shell: bash
-        run: >-
-          .github/scripts/setup-llm-wiki-ci-toolchains.sh
-          --mode routine
-          --install-root "${RUNNER_TEMP}/llm-wiki-toolchains"
-          --python "${{ steps.setup-python.outputs.python-path }}"
-
-      - name: Record locked routine toolchain versions
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p -- "${LLM_WIKI_EVIDENCE_DIR}"
-
-          expected_node="$(
-            "${{ steps.setup-python.outputs.python-path }}" \
-              -I release/qualification.py lock-value \
-              --lock release/toolchain-lock.json \
-              --key toolchains.node.version_output
-          )"
-          expected_npm="$(
-            "${{ steps.setup-python.outputs.python-path }}" \
-              -I release/qualification.py lock-value \
-              --lock release/toolchain-lock.json \
-              --key toolchains.npm.version_output
-          )"
-          actual_node="$(node --version)"
-          actual_npm="$(npm --version)"
-
-          {
-            printf 'node expected: %s\n' "${expected_node}"
-            printf 'node actual: %s\n' "${actual_node}"
-            printf 'npm expected: %s\n' "${expected_npm}"
-            printf 'npm actual: %s\n' "${actual_npm}"
-          } | tee "${LLM_WIKI_EVIDENCE_DIR}/locked-toolchain-versions.txt"
-
-          test "${actual_node}" = "${expected_node}"
-          test "${actual_npm}" = "${expected_npm}"
-
-      - name: Prepare the automatically selected extractor helpers
-        shell: bash
-        run: |
-          set -euo pipefail
-          "${{ steps.setup-python.outputs.python-path }}" \
-            -I -m llm_wiki_cli.cli prepare-extractors \
-            --src-dir . \
-            --cache-dir "${LLM_WIKI_CACHE_DIR}" \
-            2>&1 | tee "${LLM_WIKI_EVIDENCE_DIR}/prepare-extractors.log"
-
-      - name: Validate committed wiki (native drift diagnostics are advisory)
-        shell: bash
-        run: >-
-          .github/scripts/run-llm-wiki-ci-check.sh
-          --python "${{ steps.setup-python.outputs.python-path }}"
-          --src-dir .
-          --wiki-dir docs/llm_wiki
-          --helper-cache-dir "${LLM_WIKI_CACHE_DIR}"
-          --report-dir "${LLM_WIKI_EVIDENCE_DIR}"
-          --jobs 1
-          --knowledge-drift-report
-
-      - name: Upload bounded wiki integrity evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: llm-wiki-ci-${{ github.sha }}
-          path: |
-            ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md
-            ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json
-            ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt
-            ${{ runner.temp }}/llm-wiki-evidence/prepare-extractors.log
-            ${{ runner.temp }}/llm-wiki-evidence/locked-toolchain-versions.txt
-          retention-days: 14
-          if-no-files-found: warn
+          src-dir: .
+          wiki-dir: docs/llm_wiki
 
   p0-oci-integration:
     name: P0 synthetic OCI isolation

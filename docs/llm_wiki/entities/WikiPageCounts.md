@@ -1,6 +1,6 @@
 # WikiPageCounts
 
-**Location:** `src/llm_wiki_cli/api_types.py:73`
+**Location:** `src/llm_wiki_cli/api_types.py:149`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)
@@ -49,6 +49,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_wiki_page_counts` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_wiki_page_counts` | type_reference | [api](../modules/api.md) | — |

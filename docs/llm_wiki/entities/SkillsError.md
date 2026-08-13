@@ -1,6 +1,6 @@
 # SkillsError
 
-**Location:** `src/llm_wiki_cli/services/skills.py:58`
+**Location:** `src/llm_wiki_cli/services/skills.py:110`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [skills](../modules/skills.md)
@@ -24,23 +24,20 @@ Raised for invalid skill list/export/install requests.
 flowchart LR
     n0["SkillsError (src/llm_wiki_cli/services/skills.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/commands/init_cmd.py"]
-    n3["src/llm_wiki_cli/commands/skills_cmd.py"]
-    n4["src/llm_wiki_cli/commands/upgrade_cmd.py"]
-    n5["_ensure_safe_base (src/llm_wiki_cli/services/skills.py)"]
-    n6["_select_skills (src/llm_wiki_cli/services/skills.py)"]
+    n2["src/llm_wiki_cli/commands/skills_cmd.py"]
+    n3["_ensure_safe_base (src/llm_wiki_cli/services/skills.py)"]
+    n4["_preflight_reference_requirement (src/llm_wiki_cli/services/skills.py)"]
+    n5["_select_skills (src/llm_wiki_cli/services/skills.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
-    n6 --> n0
     click n0 "../modules/skills.md"
-    click n2 "../modules/init_cmd.md"
-    click n3 "../modules/skills_cmd.md"
-    click n4 "../modules/upgrade_cmd.md"
+    click n2 "../modules/skills_cmd.md"
+    click n3 "../modules/skills.md"
+    click n4 "../modules/skills.md"
     click n5 "../modules/skills.md"
-    click n6 "../modules/skills.md"
 ```
 
 ### Summary
@@ -57,11 +54,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `init_cmd` | import | [init_cmd](../modules/init_cmd.md) |
-| `skills_cmd` | import | [skills_cmd](../modules/skills_cmd.md) |
-| `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) |
-| `_ensure_safe_base` | call | [skills](../modules/skills.md) |
-| `_select_skills` | call | [skills](../modules/skills.md) |
-| `_select_skills` | call | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `skills_cmd` | import | [skills_cmd](../modules/skills_cmd.md) | — |
+| `_ensure_safe_base` | call | [skills](../modules/skills.md) | 1 |
+| `_preflight_reference_requirement` | call | [skills](../modules/skills.md) | 3 |
+| `_select_skills` | call | [skills](../modules/skills.md) | 2 |

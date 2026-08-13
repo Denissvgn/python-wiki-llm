@@ -52,8 +52,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `verify_calibration_run` | type_reference | [api](../modules/api.md) |
-| `P0CalibrationVerificationReport.from_dict` | type_reference | [controller](../modules/controller.md) |
-| `verify_calibration_run` | type_reference | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `verify_calibration_run` | type_reference | [api](../modules/api.md) | — |
+| `P0CalibrationVerificationReport.from_dict` | type_reference | [controller](../modules/controller.md) | — |
+| `verify_calibration_run` | type_reference | [controller](../modules/controller.md) | — |

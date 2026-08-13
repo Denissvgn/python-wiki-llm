@@ -71,16 +71,16 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `run` | call | [ci_check_cmd](../modules/ci_check_cmd.md) |
-| `_cache_options_from_args` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_cache_options_from_args` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_sync_run_options_from_args` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_collect_runtime` | call | [documentation_native](../modules/documentation_native.md) |
-| `_run_wiki_validation_pair` | call | [integrity](../modules/integrity.md) |
-| `extraction_service` | import | [extraction_service](../modules/extraction_service.md) |
-| `InventoryCache.__init__` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
-| `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) |
-| `build_report` | type_reference | [lint_service](../modules/lint_service.md) |
-| `run` | call | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `run` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 1 |
+| `_cache_options_from_args` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_cache_options_from_args` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_sync_run_options_from_args` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_collect_runtime` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_run_wiki_validation_pair` | call | [integrity](../modules/integrity.md) | 1 |
+| `extraction_service` | import | [extraction_service](../modules/extraction_service.md) | — |
+| `InventoryCache.__init__` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
+| `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `build_report` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `run` | call | [lint_service](../modules/lint_service.md) | 1 |

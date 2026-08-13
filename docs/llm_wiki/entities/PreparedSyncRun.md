@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1673`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1683`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -84,14 +84,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_applied_sync_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_enforce_sync_write_safety` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_finalize_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_prepare_sync_run` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_print_selection_prune_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_run_sync_dry_run` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_selection_pruning_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_applied_sync_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_enforce_sync_write_safety` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_finalize_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_prepare_sync_run` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_print_selection_prune_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_run_sync_dry_run` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_selection_pruning_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

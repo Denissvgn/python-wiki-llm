@@ -54,10 +54,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `aliases_for_move` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `allocate_concept` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `ConceptAllocation.reference` | call | [concept_identity](../modules/concept_identity.md) |
-| `ConceptAllocation.reference` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `aliases_for_move` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `allocate_concept` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `ConceptAllocation.reference` | call | [concept_identity](../modules/concept_identity.md) | 1 |
+| `ConceptAllocation.reference` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) | — |

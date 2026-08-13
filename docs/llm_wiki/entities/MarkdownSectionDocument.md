@@ -53,8 +53,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `parse_markdown_document` | call | [markdown_sections](../modules/markdown_sections.md) |
-| `parse_markdown_document` | type_reference | [markdown_sections](../modules/markdown_sections.md) |
-| `_preamble_observation` | type_reference | [section_ownership](../modules/section_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `parse_markdown_document` | call | [markdown_sections](../modules/markdown_sections.md) | 1 |
+| `parse_markdown_document` | type_reference | [markdown_sections](../modules/markdown_sections.md) | — |
+| `_preamble_observation` | type_reference | [section_ownership](../modules/section_ownership.md) | — |

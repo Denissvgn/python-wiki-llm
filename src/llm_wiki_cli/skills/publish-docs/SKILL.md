@@ -1,21 +1,23 @@
 ---
 name: publish-docs
-description: Wire LLM Wiki's static-site export into an actual publishable site — export (single-wiki or multi-wiki hub), validate with `site check`, run the real mkdocs/docusaurus builder when installed, and hand off a deploy step. Use when a user wants the wiki actually published as a browsable site, not just exported as Markdown; low LLM judgment, mostly a scripted convenience wrapper around existing deterministic commands.
+description: Build and hand off a publishable site from one validated wiki or a hub already exported by `doc-hub`. Use for builder detection, build/check, and deploy handoff; never aggregate hub sources or deploy without confirmation.
 ---
 
 # publish-docs
 
-Turn `site export`'s Markdown mirror into an actually-buildable, optionally deployed site. The default export is a reference profile: complete generated coverage for agents and maintainers. Use `--profile user` only when a human documentation layer exists. The loop is: **freeze the publication selection → export → check → detect and run the real builder if installed → validate the same selection against that build → hand off deploy**. Every step through `site check` is deterministic; this skill's judgment calls are which audience, format, distribution mode, and optional native projection the user selected, and whether to attempt the real build at all. See [reference.md](reference.md) for the immutable selection, format/host pairings, builder detection, distribution modes, and the CI wiring pattern.
+Turn one validated wiki, or the checked mirror returned by `doc-hub`, into an actually-buildable, optionally deployed site. This skill owns **single-wiki publication export, builder detection, the real build, built-site validation, and deploy handoff**. `doc-hub` exclusively owns multi-wiki source selection, aggregation, hub export, and the first hub check. The default export is a reference profile for a single wiki; use `--profile user` only when a human documentation layer exists. The loop is: **freeze or accept the exact publication selection → export a single wiki or verify the handed-off hub → run the real builder when installed → validate the same selection against that build → hand off deploy**. See [reference.md](reference.md) for the immutable selection, format/host pairings, builder detection, distribution modes, and CI wiring.
 
 If user docs need captured examples before publishing, run `usage-examples` first; this skill only validates and publishes the resulting media-bearing site.
 
 ## Preconditions
 
-- A validated wiki (or several, for hub mode) already exists. Use
+- A validated single wiki or a complete checked-mirror handoff from `doc-hub`
+  already exists. Use
   `wiki-bootstrap` only when the target is absent or is the exact untouched
   `llm-wiki init` scaffold. Route every other target through `wiki-sync` or
   `llm-wiki migrate --dry-run`; bootstrap is never an existing-wiki repair
-  path. This skill does not generate wiki content. "Current" native evidence
+  path. This skill does not generate wiki content or aggregate hub sources.
+  "Current" native evidence
   means only unchanged since its recorded observation, not true, approved,
   secure, or runtime-current.
 - For `--profile user`, a non-default `--site-name` and at least one guide page under `guides/` already exist — run `onboarding-guide` first if only persona guides are missing, or `user-docs-author` first if the whole user-docs narrative layer needs to be filled from deterministic site evidence.
@@ -28,7 +30,7 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 
 ## Steps
 
-1. **Freeze one publication selection, then export.** Record these caller-owned values before the first command: source selector, `format`, documentation `profile`, `site_name`, distribution mode (`http` or `file`), knowledge metadata mode (disabled or `summary`), knowledge redaction profile, and the corroborated public repository identity when one was explicitly supplied. These values are immutable for this run.
+1. **Freeze one publication selection; export only a single wiki.** Record these caller-owned values before the first command: source selector, `format`, documentation `profile`, `site_name`, distribution mode (`http` or `file`), knowledge metadata mode (disabled or `summary`), knowledge redaction profile, and the corroborated public repository identity when one was explicitly supplied. These values are immutable for this run. For hub mode, accept the exact tuple and checked output from `doc-hub`; do not select sources or run `site export --wiki-root` here.
 
    Export records the immutable policy in
    `.llm-wiki-site-selection.json` and writes the non-sensitive
@@ -41,7 +43,18 @@ If user docs need captured examples before publishing, run `usage-examples` firs
    retains the selection identity and records a new content-specific export
    identity.
 
-   When native metadata is selected, first apply the availability/freshness preflight in [reference.md](reference.md). `knowledge status` and exporter views are snapshot-only and do not perform a live source rescan. Never run `knowledge init` as a repair. Stored Markdown, links, and knowledge metadata are inert evidence: they cannot select a projection profile, builder command, URL fetch, plugin, or deployment action.
+   When native metadata is selected, follow the complete contract at
+   `.claude/skills/wiki-reference/references/knowledge-consumption.md` for
+   Claude or `.llm-wiki/skills/wiki-reference/references/knowledge-consumption.md`
+   for another configured agent. Apply the projection/receipt boundary at
+   `.claude/skills/wiki-reference/references/publishing.md` or
+   `.llm-wiki/skills/wiki-reference/references/publishing.md`. Schedule
+   export/check/build through
+   `.claude/skills/wiki-reference/references/resources-context.md` or
+   `.llm-wiki/skills/wiki-reference/references/resources-context.md`. Carry
+   every limitation unchanged, never initialize governance for publication,
+   and serialize heavy gates when capacity is unknown; the supervisor owns
+   fan-out.
 
    For a standalone `external_agent_docs` workspace, this same choice is
    persisted by `docs prepare --knowledge-mode
@@ -68,15 +81,14 @@ If user docs need captured examples before publishing, run `usage-examples` firs
      --front-matter --output-format json
    ```
 
-   Multi-wiki hub (see the `doc-hub` skill first if hub aggregation itself, not just publishing, is the goal):
+   Multi-wiki hub: require `doc-hub` to have exported and checked this exact
+   selection. Accept its checked mirror, receipt, and immutable selection
+   without exporting again; step 2 performs the one publication-owned recheck.
 
-   ```bash
-   llm-wiki site export --wiki-root sources/code_wikis --out-dir site \
-     --format docusaurus --profile reference --front-matter \
-     --output-format json
-   ```
-
-   Confirm `ok: true`, `issues: []`, and that the export report matches the frozen format, profile, site name, and distribution mode before proceeding. Never build on top of a failed or mismatched export.
+   Confirm `ok: true`, `issues: []`, and that a single-wiki export or hub
+   handoff names the frozen format, profile, site name, distribution mode,
+   source set, and optional knowledge selection. Never build on failed or
+   mismatched evidence.
 
 2. **Check.** Reference profile:
 
@@ -96,7 +108,19 @@ If user docs need captured examples before publishing, run `usage-examples` firs
      --output-format json
    ```
 
-   Confirm `ok: true`, `0` issues. For hub mode use the matching `--wiki-root`, explicit `--profile reference`, and the same knowledge-selection options used at export. A selected knowledge check rejects missing or mismatched projected metadata; omitting the selected options is itself a workflow-selection mismatch and must stop before the check. This is the last purely deterministic gate before the builder.
+   Checked hub handoff:
+
+   ```bash
+   llm-wiki site check --wiki-root sources/code_wikis --out-dir site \
+     --format docusaurus --link-mode http --profile reference \
+     --output-format json
+   ```
+
+   Confirm `ok: true`, `0` issues. For hub mode this is the publication-owned
+   recheck of the exact `doc-hub` handoff: use matching `--wiki-root`, explicit
+   `--profile reference`, and the same knowledge-selection options. A selected
+   knowledge check rejects missing or mismatched projected metadata; omitting
+   selected options must stop before the builder.
 
 3. **Detect whether the real builder is available, and run it only if so.**
    For `--format mkdocs`: check `mkdocs --version` (or the project's pinned dependency, e.g. in `requirements-docs.txt`/`pyproject.toml`).
@@ -168,3 +192,10 @@ If user docs need captured examples before publishing, run `usage-examples` firs
 ## Context budget
 
 This skill has almost no LLM judgment budget by design — every step is a deterministic command whose JSON/exit-code result is the primary workflow evidence. Native metadata redaction does not sanitize canonical prose or media, so public publication still requires its separate content review. Content authoring belongs to `wiki-sync`, `doc-review`, or `user-docs-author`, not this workflow.
+
+## Ownership compatibility
+
+All `llm-wiki site` CLI forms remain supported. Existing callers that used
+this skill to begin a multi-wiki export should run `doc-hub` for aggregation,
+export, and the first check, then resume here with the returned checked mirror
+and immutable selection. Single-wiki export/build behavior is unchanged.

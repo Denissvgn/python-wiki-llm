@@ -63,12 +63,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `bootstrap_wiki` | type_reference | [api](../modules/api.md) |
-| `_bootstrap_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_result` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_execute_bootstrap_options` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_execute_documentation_workspace_refresh` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `execute_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `bootstrap_wiki` | type_reference | [api](../modules/api.md) | — |
+| `_bootstrap_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_bootstrap_result` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_execute_bootstrap_options` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_execute_documentation_workspace_refresh` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `execute_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

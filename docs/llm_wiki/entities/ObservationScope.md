@@ -72,12 +72,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) |
-| `_live_basis_details` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_evidence_basis` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `knowledge_orchestration` | import | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_promised_evidence_reason` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_promised_structural_scope` | type_reference | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
+| `_live_basis_details` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_evidence_basis` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `knowledge_orchestration` | import | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_promised_evidence_reason` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_promised_structural_scope` | type_reference | [lint_service](../modules/lint_service.md) | — |

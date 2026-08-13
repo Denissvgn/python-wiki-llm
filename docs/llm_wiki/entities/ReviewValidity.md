@@ -48,8 +48,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_review_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `evaluate_review_event` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `evaluate_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_review_event_summary` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `evaluate_review_event` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `evaluate_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

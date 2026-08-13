@@ -29,10 +29,12 @@ surfaces can consume the same deterministic query answers later.
 | `collections.abc` | `Iterable` |
 | `dataclasses` | `dataclass` |
 | `enum` | `Enum` |
+| `functools` | `wraps` |
+| `itertools` | `islice` |
 | `json` | `json` |
 | `pathlib` | `PurePosixPath` |
 | `re` | `re` |
-| `typing` | `Any`, `Iterable`, `Mapping`, `Optional`, `Sequence`, `cast` |
+| `typing` | `Any`, `Callable`, `Iterable`, `Mapping`, `Optional`, `ParamSpec`, `Sequence`, `cast` |
 
 ## Local dependency map
 
@@ -61,14 +63,24 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 66 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 71 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 339 | — | Read-only graph query service over already-derived documentation payloads. |
+| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 128 | `ValueError` | Raised when a documentation graph query request is invalid. |
+| [_BoundedResult](../entities/BoundedResult.md) | 342 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 832 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `knowledge_view_selection_eligible` | `(knowledge_view: KnowledgeReadView \| None, *, basis_incompatible: bool = False) -> bool` | — | Return whether a captured projection is safe for native selection. |
+| `_ineligible_knowledge_status` | `(knowledge_view: KnowledgeReadView) -> tuple[str, str]` | — | — |
+| `_truncate_utf8` | `(value: str, limit: int) -> str` | — | Return a deterministic UTF-8 prefix that never exceeds ``limit`` bytes. |
+| `_cap_query_result_strings` | `(value: object, limit: int, *, field: str \| None = None) -> object` | — | — |
+| `_query_result_byte_bound` | `(total: int, returned: int) -> dict[str, int \| bool]` | — | — |
+| `_attach_query_result_byte_bound` | `(result: dict[str, Any], *, total: int) -> tuple[dict[str, Any], int]` | — | — |
+| `_minimal_oversized_query_result` | `(result: Mapping[str, Any], *, total_bytes: int) -> dict[str, Any]` | — | Preserve query status while omitting every oversized returned record. |
+| `_fit_query_result` | `(result: dict[str, Any]) -> dict[str, Any]` | — | Enforce a shared serialized-byte ceiling for every public query result. |
+| `fit_documentation_query_result` | `(result: Mapping[str, Any]) -> dict[str, Any]` | — | Return a detached public query payload within the shared byte limit. |
+| `_bounded_query_result` | `(method: Callable[_QueryParameters, dict[str, Any]]) -> Callable[_QueryParameters, dict[str, Any]]` | — | — |
 | `_text_key` | `(value: object) -> tuple[str, str]` | — | — |
 | `_value_key` | `(value: object) -> tuple` | — | — |
 | `_record_sort_key` | `(record: Mapping[str, Any]) -> tuple` | — | — |
@@ -76,6 +88,7 @@ flowchart LR
 | `_jsonable_mapping` | `(value: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_jsonable_mapping_list` | `(values: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]` | — | — |
 | `_require_query` | `(value: object, field: str) -> str` | — | Retain query-request whitespace normalization for API compatibility. |
+| `_query_identity_within_limit` | `(query: str, field: str) -> str` | — | Enforce the public query-identity byte ceiling. |
 | `_normalise_source_path` | `(value: object, *, field: str, required: bool) -> Optional[str]` | — | — |
 | `_module_name` | `(filepath: Optional[str]) -> Optional[str]` | — | — |
 | `_callable_ref` | `(summary: Mapping[str, Any]) -> dict[str, Any]` | — | — |
@@ -88,5 +101,13 @@ flowchart LR
 | `_summary_relationship_records` | `(summary: Mapping[str, Any], field: str) -> list[dict[str, Any]]` | — | — |
 | `_wire_value` | `(value: object) -> object` | — | — |
 | `_canonical_json` | `(value: object) -> str` | — | — |
+| `_raw_evidence_byte_bound` | `(value: object) -> dict[str, int \| bool]` | — | — |
 | `_knowledge_target_ref` | `(target: Mapping[str, Any], resolution: object) -> dict[str, Any]` | — | Return only the coordinates needed to understand a compact target. |
+| `_compact_context_endpoint` | `(value: object, *, include_normalized_target: bool = False, source_canonical_path: str \| None = None) -> dict[str, Any]` | — | Project graph coordinates without raw target text or stored diagnostics. |
+| `_safe_context_coordinate_text` | `(value: object, *, limit: int) -> str \| None` | — | — |
+| `_safe_context_asset_path` | `(source_canonical_path: str, value: object) -> str \| None` | — | — |
+| `_safe_normalized_context_target` | `(value: object) -> str \| None` | — | — |
+| `_compact_context_coverage` | `(value: Mapping[str, Any]) -> dict[str, Any]` | — | Retain bounded graph coverage while omitting operational samples. |
+| `_compact_context_graph_status` | `(value: Mapping[str, Any]) -> dict[str, Any]` | — | — |
+| `_compact_context_page` | `(value: Mapping[str, Any]) -> dict[str, str] \| None` | — | Return the exact bounded page coordinates permitted on the v2 wire. |
 | `_freshness_basis_payload` | `(value: object) -> Optional[dict[str, Any]]` | — | — |

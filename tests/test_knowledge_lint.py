@@ -1,4 +1,4 @@
-"""Strict knowledge-lint contract tests (KNOW-203)."""
+"""Strict knowledge-lint contract coverage."""
 
 from __future__ import annotations
 

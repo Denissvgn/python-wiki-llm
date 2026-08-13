@@ -57,11 +57,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `context_packet` | import | [context_packet](../modules/context_packet.md) |
-| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) |
-| `_evaluate_runtime_surface` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `knowledge_orchestration` | import | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `evaluate_surface_index` | call | [wiki_surface_index](../modules/wiki_surface_index.md) |
-| `evaluate_surface_index` | type_reference | [wiki_surface_index](../modules/wiki_surface_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_evaluate_runtime_surface` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `knowledge_orchestration` | import | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `evaluate_surface_index` | call | [wiki_surface_index](../modules/wiki_surface_index.md) | 1 |
+| `evaluate_surface_index` | type_reference | [wiki_surface_index](../modules/wiki_surface_index.md) | — |

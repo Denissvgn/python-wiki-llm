@@ -1,6 +1,6 @@
 # _SourceSelectionPin
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:142`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:254`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -43,8 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_source_selection_pin` | call | [mcp_server](../modules/mcp_server.md) |
-| `_source_selection_pin` | call | [mcp_server](../modules/mcp_server.md) |
-| `_source_selection_pin` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_source_selection_pin` | call | [mcp_server](../modules/mcp_server.md) | 2 |
+| `_source_selection_pin` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

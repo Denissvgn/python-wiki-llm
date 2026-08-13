@@ -202,21 +202,36 @@ def test_evidence_and_plugin_relationships_are_explicit_opt_ins(tmp_path):
     )
 
     assert "example.test/invokes" in unfiltered["kinds"]
-    assert any(
-        edge["kind"] == "example.test/invokes"
-        for edge in unfiltered["edges"]
-    )
+    assert any(edge["kind"] == "example.test/invokes" for edge in unfiltered["edges"])
     assert compact["total"] == 1
     assert compact["edges"][0]["direction"] == "incoming"
-    assert compact["edges"][0]["related_concept"]["locator"].endswith(
-        "/AccountService"
-    )
+    assert compact["edges"][0]["related_concept"]["locator"].endswith("/AccountService")
     assert "samples" not in compact["edges"][0]["evidence"]
     assert detailed["include_evidence"] is True
     assert detailed["edges"][0]["evidence"]["samples"][0]["kind"] == "call"
     assert detailed["edges"][0]["evidence"]["aggregate_input_hash"].startswith(
         "sha256:"
     )
+
+
+def test_explicit_typed_raw_evidence_has_a_truthful_serialized_byte_cap(tmp_path):
+    service = _service(tmp_path)
+    edge = next(item for item in service._typed_graph_edges if item["kind"] == "calls")
+    edge["evidence"]["samples"][0]["attributes"]["oversized"] = "x" * (2 << 20)
+
+    result = service.traverse_typed_graph(
+        USER_LOCATOR,
+        direction="incoming",
+        include_evidence=True,
+    )
+    byte_bound = result["bounds"]["raw_evidence_bytes"]
+
+    assert byte_bound["total"] > 2 << 20
+    assert byte_bound["returned"] <= 64 * 1024
+    assert byte_bound["truncated"] is True
+    assert result["truncated"] is True
+    assert result["edges"][0]["evidence"]["omitted"] is True
+    assert result["edges"][0]["evidence"]["reason"] == "raw-evidence-byte-limit"
 
 
 def test_shuffled_extension_edges_produce_identical_traversal_json(tmp_path):
@@ -303,9 +318,7 @@ def test_python_api_wrapper_reuses_service_and_forwards_all_filters(tmp_path):
     assert actual == expected
 
 
-def test_mcp_method_validates_and_delegates_typed_graph_options(
-    tmp_path, monkeypatch
-):
+def test_mcp_method_validates_and_delegates_typed_graph_options(tmp_path, monkeypatch):
     calls = []
 
     class QueryService:

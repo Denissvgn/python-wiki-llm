@@ -63,10 +63,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `get_calibration_run_status` | type_reference | [api](../modules/api.md) |
-| `_status_from_run` | call | [controller](../modules/controller.md) |
-| `_status_from_run` | type_reference | [controller](../modules/controller.md) |
-| `get_calibration_run_status` | type_reference | [controller](../modules/controller.md) |
-| `P0CalibrationStatus.from_dict` | type_reference | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `get_calibration_run_status` | type_reference | [api](../modules/api.md) | — |
+| `_status_from_run` | call | [controller](../modules/controller.md) | 1 |
+| `_status_from_run` | type_reference | [controller](../modules/controller.md) | — |
+| `get_calibration_run_status` | type_reference | [controller](../modules/controller.md) | — |
+| `P0CalibrationStatus.from_dict` | type_reference | [controller](../modules/controller.md) | — |

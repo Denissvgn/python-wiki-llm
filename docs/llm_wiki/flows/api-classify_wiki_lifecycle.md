@@ -2,7 +2,7 @@
 
 **Entry point:** `classify_wiki_lifecycle` (`api`)
 **Source:** [wiki_lifecycle](../modules/wiki_lifecycle.md)
-**Modules touched:** [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -27,9 +27,9 @@ sequenceDiagram
     participant p15 as read_text
     participant p16 as loads
     participant p17 as isinstance
-    participant p18 as any
-    participant p19 as type
-    participant p20 as dumps
+    participant p18 as frozenset
+    participant p19 as any
+    participant p20 as type
     p0-->>p1: Path
     p0-->>p2: exists
     p0-->>p3: is_symlink
@@ -54,15 +54,15 @@ sequenceDiagram
     p4-->>p15: read_text
     p4-->>p16: loads
     p4-->>p17: isinstance
+    p4-->>p18: frozenset
+    p4-->>p18: frozenset
+    p4-->>p18: frozenset
+    p4-->>p19: any
+    p4-->>p20: type
     p4-->>p11: set
-    p4-->>p18: any
-    p4-->>p19: type
-    p4-->>p20: dumps
-    p0-->>p5: is_dir
-    p0-->>p13: is_file
 ```
 
-> Call sequence diagram shows 30 of 31 interactions; 1 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 40 interactions; 10 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -115,7 +115,7 @@ flowchart LR
 | `Path` | - | - | - | - |
 | `exists` | - | - | - | - |
 | `is_symlink` | - | - | - | - |
-| `is_pristine_wiki_target` | `wiki_dir: Union[str, Path]` | `INITIAL_WIKI_INDEX_MARKDOWN`, `INITIAL_WIKI_LOG_MARKDOWN`, `AGENT_CHOICES` | `paths_by_relative[...]` | `False`, `True`, `False`, `False`, `True`, `False`, `False`, `False` |
+| `is_pristine_wiki_target` | `wiki_dir: Union[str, Path]` | `INITIAL_WIKI_INDEX_MARKDOWN`, `INITIAL_WIKI_LOG_MARKDOWN`, `AGENT_CHOICES`, `SchemaRenderProfile`, `SCHEMA_BLOCK_VERSION`, `RenderReason` | `paths_by_relative[...]` | `False`, `True`, `False`, `False`, `True`, `False`, `False`, `False` |
 | `Path` | - | - | - | - |
 | `is_symlink` | - | - | - | - |
 | `exists` | - | - | - | - |
@@ -128,37 +128,37 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_wiki_lifecycle | Path | 152 | `Path(wiki_dir)` |
-| classify_wiki_lifecycle | exists | 154 | `manifest.exists(data not statically known)` |
-| classify_wiki_lifecycle | is_symlink | 154 | `manifest.is_symlink(data not statically known)` |
-| classify_wiki_lifecycle | is_pristine_wiki_target | 156 | `is_pristine_wiki_target(root)` |
-| is_pristine_wiki_target | Path | 48 | `Path(wiki_dir)` |
-| is_pristine_wiki_target | is_symlink | 49 | `root.is_symlink(data not statically known)` |
-| is_pristine_wiki_target | exists | 51 | `root.exists(data not statically known)` |
-| is_pristine_wiki_target | is_dir | 53 | `root.is_dir(data not statically known)` |
-| is_pristine_wiki_target | iter_page_kinds | 58 | `iter_page_kinds(data not statically known)` |
-| is_pristine_wiki_target | sorted | 71 | `sorted(root.rglob(...))` |
-| is_pristine_wiki_target | rglob | 71 | `root.rglob('*')` |
+| classify_wiki_lifecycle | Path | 276 | `Path(wiki_dir)` |
+| classify_wiki_lifecycle | exists | 278 | `manifest.exists(data not statically known)` |
+| classify_wiki_lifecycle | is_symlink | 278 | `manifest.is_symlink(data not statically known)` |
+| classify_wiki_lifecycle | is_pristine_wiki_target | 280 | `is_pristine_wiki_target(root)` |
+| is_pristine_wiki_target | Path | 156 | `Path(wiki_dir)` |
+| is_pristine_wiki_target | is_symlink | 157 | `root.is_symlink(data not statically known)` |
+| is_pristine_wiki_target | exists | 159 | `root.exists(data not statically known)` |
+| is_pristine_wiki_target | is_dir | 161 | `root.is_dir(data not statically known)` |
+| is_pristine_wiki_target | iter_page_kinds | 165 | `iter_page_kinds(data not statically known)` |
+| is_pristine_wiki_target | sorted | 177 | `sorted(root.rglob(...))` |
+| is_pristine_wiki_target | rglob | 177 | `root.rglob('*')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 106 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 109 |
-| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 112 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 212 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 215 |
+| filesystem_read | `path.read_text` | `is_pristine_wiki_target` | 218 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 154 |
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 154 |
-| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 49 |
-| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 51 |
-| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 53 |
-| unresolved_call | `is_pristine_wiki_target` | `sorted` | 71 |
-| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 71 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 278 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 278 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 157 |
+| unresolved_call | `is_pristine_wiki_target` | `root.exists` | 159 |
+| unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 161 |
+| unresolved_call | `is_pristine_wiki_target` | `sorted` | 177 |
+| unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 177 |
 | step_limit | `classify_wiki_lifecycle` | `first 12 steps` | 0 |
 
 ## Behavior

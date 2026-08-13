@@ -41,8 +41,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| export_documentation_run | cast | 1359 | `cast(DocumentationExportResult, _export_documentation_run_impl(...))` |
-| export_documentation_run | _export_documentation_run_impl | 1361 | `_export_documentation_run_impl(workspace, build=build, builder_command=builder_command, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=knowledge_public_repository_identity)` |
+| export_documentation_run | cast | 2435 | `cast(DocumentationExportResult, _export_documentation_run_impl(...))` |
+| export_documentation_run | _export_documentation_run_impl | 2437 | `_export_documentation_run_impl(workspace, build=build, builder_command=builder_command, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=knowledge_public_repository_identity)` |
 
 ### Boundary effects
 
@@ -52,8 +52,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `export_documentation_run` | `cast` | 1359 |
-| unresolved_call | `export_documentation_run` | `_export_documentation_run_impl` | 1361 |
+| external_call | `export_documentation_run` | `cast` | 2435 |
+| unresolved_call | `export_documentation_run` | `_export_documentation_run_impl` | 2437 |
 
 ## Behavior
 

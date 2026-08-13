@@ -37,6 +37,12 @@ def _reference(skill_id: str) -> str:
     return (SKILLS_ROOT / skill_id / "reference.md").read_text(encoding="utf-8")
 
 
+def _managed_topic(topic_name: str) -> str:
+    return (SKILLS_ROOT / "wiki-reference" / "references" / topic_name).read_text(
+        encoding="utf-8"
+    )
+
+
 def _table_row(text: str, selector: str) -> str:
     return next(line for line in text.splitlines() if line.startswith(selector))
 
@@ -49,8 +55,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "freshness_evaluated": True,
             "freshness": "current",
         },
-        "| `ready`, live `current` |",
-        "unchanged since",
+        "| `ready`, dedicated-query reason `all-projection-commitments-match` |",
+        "ready",
+        "structural observations",
         id="ready-current",
     ),
     pytest.param(
@@ -60,7 +67,8 @@ NATIVE_RESPONSE_FIXTURES = (
             "freshness_evaluated": True,
             "freshness": "nonsemantic-source-change",
         },
-        "| `ready`, live `nonsemantic-source-change` |",
+        "| `nonsemantic-source-change` |",
+        "nonsemantic-source-change",
         "byte-change diagnostic",
         id="ready-nonsemantic-change",
     ),
@@ -71,8 +79,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "freshness_evaluated": True,
             "freshness": "unknown",
         },
-        "| `ready`, live `source-changed`, `source-missing`, `basis-incompatible`, or `unknown` |",
-        "not an authoritative current claim",
+        "| `unknown` |",
+        "unknown",
+        "Preserve unknown",
         id="ready-unknown",
     ),
     pytest.param(
@@ -81,8 +90,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "knowledge-projection-not-present",
             "freshness_evaluated": False,
         },
-        "| `absent` (`knowledge-projection-not-present`) |",
-        "legacy fallback",
+        "| `absent`, including `knowledge-projection-not-present` |",
+        "absent",
+        "labeled validated surface",
         id="absent",
     ),
     pytest.param(
@@ -91,8 +101,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "policy-selected-surface-only-fallback-after-invalid",
             "freshness_evaluated": False,
         },
-        "| `degraded` after invalid state (`policy-selected-surface-only-fallback-after-invalid`) |",
-        "native knowledge unavailable",
+        "| `degraded`, reason `policy-selected-surface-only-fallback-after-invalid` |",
+        "degraded",
+        "rejected native payload",
         id="degraded-invalid",
     ),
     pytest.param(
@@ -101,7 +112,8 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "knowledge-schema-version-unsupported",
             "freshness_evaluated": False,
         },
-        "| `unsupported` (`knowledge-schema-version-unsupported`, `manifest-version-unsupported`, or `surface-schema-version-unsupported`) |",
+        "| `unsupported`, reason `knowledge-schema-version-unsupported`, `manifest-version-unsupported`, or `surface-schema-version-unsupported` |",
+        "unsupported",
         "unsupported boundary",
         id="unsupported",
     ),
@@ -111,8 +123,9 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "policy-selected-surface-only-fallback-after-mixed-snapshot",
             "freshness_evaluated": False,
         },
-        "| `degraded` after a mixed snapshot (`policy-selected-surface-only-fallback-after-mixed-snapshot`) |",
-        "inconsistent commit",
+        "| `degraded`, reason `policy-selected-surface-only-fallback-after-mixed-snapshot` |",
+        "degraded",
+        "owning refresh",
         id="mixed-snapshot",
     ),
     pytest.param(
@@ -121,7 +134,8 @@ NATIVE_RESPONSE_FIXTURES = (
             "reason": "all-projection-commitments-match",
             "freshness_evaluated": False,
         },
-        "| `ready`, `freshness_evaluated: false` |",
+        "| `ready`, dedicated-query reason `all-projection-commitments-match` |",
+        "ready",
         "snapshot-only",
         id="snapshot-only-ready",
     ),
@@ -129,28 +143,32 @@ NATIVE_RESPONSE_FIXTURES = (
 
 
 @pytest.mark.parametrize(
-    ("response", "row_selector", "required_text"),
+    ("response", "row_selector", "response_token", "required_text"),
     NATIVE_RESPONSE_FIXTURES,
 )
 def test_normative_native_preflight_covers_response_fixture(
     response: dict[str, object],
     row_selector: str,
+    response_token: str,
     required_text: str,
 ) -> None:
-    reference = _reference("wiki-reference")
-    row = _table_row(reference, row_selector)
+    topic = _managed_topic("knowledge-consumption.md")
+    row = _table_row(topic, row_selector)
 
-    assert response["availability"] in row
+    assert response_token in {str(value) for value in response.values()}
     assert required_text in row
 
 
-def test_normative_native_preflight_defines_all_freshness_states_and_authority() -> None:
-    reference = _reference("wiki-reference")
-    section = reference[
-        reference.index("### Normative native preflight") :
-        reference.index("## Strict knowledge lint")
+def test_normative_native_preflight_defines_all_freshness_states_and_authority() -> (
+    None
+):
+    topic = _managed_topic("knowledge-consumption.md")
+    section = topic[
+        topic.index("## Availability and fallback decision table") : topic.index(
+            "## Strict validation interpretation"
+        )
     ]
-    normalized = " ".join(section.split())
+    normalized = " ".join(topic.split())
 
     for state in (
         "current",
@@ -162,13 +180,11 @@ def test_normative_native_preflight_defines_all_freshness_states_and_authority()
     ):
         assert _table_row(section, f"| `{state}` |")
 
-    assert "not a scalar trust score" in normalized
-    assert "never reinterpret no native matches as an empty graph" in normalized
-    assert (
-        "`llm-wiki knowledge init` is an explicit governance-adoption" in normalized
-    )
-    assert "ordinary exporter views are snapshot-only" in normalized
-    assert "trusted, unsandboxed project-local Python" in normalized
+    assert "never coerce them to ready or absent" in normalized
+    assert "no match is not an empty graph or negative fact" in normalized
+    assert "Neither mode initializes, repairs, or persists governance" in normalized
+    assert "ordinary Site or Obsidian exporter views are snapshot-only" in normalized
+    assert "trusted unsandboxed project-local Python" in normalized
     assert "cannot authorize code execution" in normalized
 
 
@@ -186,23 +202,48 @@ NATIVE_CONSUMING_SKILLS = (
 )
 
 
-@pytest.mark.parametrize("skill_id", NATIVE_CONSUMING_SKILLS)
-def test_native_consuming_skill_has_self_contained_preflight(skill_id: str) -> None:
+@pytest.mark.parametrize(
+    "skill_id",
+    NATIVE_CONSUMING_SKILLS + ("infra-review",),
+)
+def test_native_consuming_skill_keeps_kernel_and_managed_dependency(
+    skill_id: str,
+) -> None:
     manifest = _manifest(skill_id)
     normalized = " ".join(manifest.split())
 
-    for required in (
-        "availability",
-        "freshness_evaluated",
-        "nonsemantic-source-change",
-        "absent",
-        "degraded",
-        "unsupported",
-        "empty-native-graph",
-        "knowledge init",
-    ):
+    for required in ("ready", "current", "nonsemantic-source-change"):
         assert required in normalized, f"{skill_id} omits {required!r}"
-    assert "cannot authorize" in normalized
+    assert "found: false" in normalized or "empty-native-graph" in normalized
+    assert "| Result | Permitted interpretation" not in manifest
+    assert skills.SKILL_DEPENDENCIES[skill_id] == (skills.REFERENCE_SKILL_ID,)
+
+
+MANAGED_KNOWLEDGE_CONSUMERS = NATIVE_CONSUMING_SKILLS + (
+    "infra-review",
+    "publish-docs",
+    "doc-hub",
+)
+
+
+@pytest.mark.parametrize("skill_id", MANAGED_KNOWLEDGE_CONSUMERS)
+def test_native_consuming_skill_routes_to_managed_knowledge_topic(
+    skill_id: str,
+) -> None:
+    manifest = _manifest(skill_id)
+
+    assert (
+        ".claude/skills/wiki-reference/references/knowledge-consumption.md" in manifest
+    )
+    assert (
+        ".llm-wiki/skills/wiki-reference/references/knowledge-consumption.md"
+        in manifest
+    )
+    assert manifest.count("wiki-reference/references/knowledge-consumption.md") == 2
+    assert skills.SKILL_DEPENDENCIES[skill_id] == (skills.REFERENCE_SKILL_ID,)
+    assert (
+        SKILLS_ROOT / skills.REFERENCE_SKILL_ID / "references/knowledge-consumption.md"
+    ).is_file()
 
 
 MANAGED_SEMANTIC_WORKFLOWS = (
@@ -302,8 +343,9 @@ def test_doc_review_splits_mutation_contract_before_any_sync_or_edit() -> None:
 
     assert mode_split < dry_run < applied_sync < final_sync
     external = manifest[
-        manifest.index("- **External `external_agent_docs`:**") :
-        manifest.index("2. **Collect review inputs.**")
+        manifest.index("- **External `external_agent_docs`:**") : manifest.index(
+            "2. **Collect review inputs.**"
+        )
     ]
     assert "llm-wiki sync" not in external
     assert "only the packet-named review result" in external
@@ -352,12 +394,15 @@ def test_doc_review_maps_native_fact_classes_without_conflating_authority() -> N
     )
 
 
-def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance() -> None:
+def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance() -> (
+    None
+):
     manifest = _manifest("wiki-bootstrap")
     reference = _reference("wiki-bootstrap")
     section = manifest[
-        manifest.index("## Optional governance adoption is a separate decision") :
-        manifest.index("## Steps")
+        manifest.index(
+            "## Optional governance adoption is a separate decision"
+        ) : manifest.index("## Steps")
     ]
     normalized = " ".join(section.split())
 
@@ -376,8 +421,9 @@ def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance
     assert "restore that exact ledger from version control or backup" in normalized
 
     ownership = reference[
-        reference.index("## Native artifact ownership and recovery") :
-        reference.index("## Validation expectations")
+        reference.index("## Native artifact ownership and recovery") : reference.index(
+            "## Validation expectations"
+        )
     ]
     for artifact in (
         ".llm-wiki-manifest.json",
@@ -394,18 +440,23 @@ def test_bootstrap_keeps_locator_only_default_and_separately_confirms_governance
 
 def test_sync_documents_governed_move_preview_confirmation_mutation_order() -> None:
     manifest = _manifest("wiki-sync")
-    reference = _reference("wiki-sync")
-    section = manifest[
-        manifest.index("## Governed rename preflight and owner handoff") :
-        manifest.index("## Steps")
+    topic = _managed_topic("governance.md")
+    section = topic[
+        topic.index("## Moves, aliases, and allocation conflicts") : topic.index(
+            "## Lifecycle, review, and verification"
+        )
     ]
+
+    assert ".claude/skills/wiki-reference/references/governance.md" in manifest
+    assert ".llm-wiki/skills/wiki-reference/references/governance.md" in manifest
+    assert skills.SKILL_DEPENDENCIES["wiki-sync"] == (skills.REFERENCE_SKILL_ID,)
 
     filesystem_rename = section.index("filesystem/source rename")
     sync_preview = section.index("llm-wiki sync --dry-run", filesystem_rename)
     status = section.index("llm-wiki knowledge status", sync_preview)
     move_preview = section.index("llm-wiki knowledge move", status)
     dry_run = section.index("--dry-run", move_preview)
-    confirmation = section.index("The owner must confirm", dry_run)
+    confirmation = section.index("After the preview succeeds", dry_run)
     move_mutation = section.index("llm-wiki knowledge move", confirmation)
     owning_sync = section.index("llm-wiki sync --jobs 1", move_mutation)
 
@@ -419,16 +470,17 @@ def test_sync_documents_governed_move_preview_confirmation_mutation_order() -> N
         < move_mutation
         < owning_sync
     )
-    normalized = " ".join(f"{manifest}\n{reference}".split())
+    normalized = " ".join(topic.split())
     for required in (
-        "retain old coordinates as aliases automatically",
-        "target owned by another UID is a hard conflict",
-        "implicit merge",
-        "Source disappearance never authors",
-        "expire prior human section reviews",
-        "make a machine verification receipt stale",
-        "restore the exact ledger from version control or backup",
-        "Generated `.llm-wiki-knowledge.json`",
+        "retain old locator and natural-key coordinates as aliases",
+        "Reject the implicit merge",
+        "already owned by another UID is a hard conflict",
+        "Source or page disappearance does not deprecate",
+        "changed scope, evidence, basis",
+        "Machine verification is separate and explicit",
+        "restore the exact `.llm-wiki-governance.json`",
+        "disposable projection and cannot recover or replace the ledger",
+        "`projection: pending-sync`",
     ):
         assert required in normalized
 
@@ -461,10 +513,15 @@ def test_doc_review_hands_changed_native_review_scope_to_a_human() -> None:
 def test_doc_review_limits_infrastructure_semantics_to_notes() -> None:
     manifest = " ".join(_manifest("doc-review").split())
     reference = " ".join(_reference("doc-review").split())
-    shared = schema.build_schema_content("generic", "docs/llm_wiki")
+    shared = schema.build_schema_content(
+        "generic",
+        "docs/llm_wiki",
+        render_profile=schema.SchemaRenderProfile.EXPANDED_INLINE,
+    )
     edit_targets = shared[
-        shared.index("- Keep semantic edits surgical:") :
-        shared.index("- After the last canonical Markdown edit")
+        shared.index("- Keep semantic edits surgical:") : shared.index(
+            "- After the last canonical Markdown edit"
+        )
     ]
 
     assert "incremental source observations" in manifest
@@ -473,16 +530,22 @@ def test_doc_review_limits_infrastructure_semantics_to_notes() -> None:
     assert "Infrastructure `## Notes` is the sole semantic section" in reference
     assert "unsupported custom headings are dropped" in reference
     assert "Infrastructure `## Notes` is the only supported semantic" in edit_targets
-    assert "separate redacted infrastructure-review report" in " ".join(
-        shared.split()
+    assert "separate redacted infrastructure-review report" in " ".join(shared.split())
+
+
+def test_shared_agent_instructions_include_native_preflight_and_final_reanchor() -> (
+    None
+):
+    content = schema.build_schema_content(
+        "generic",
+        "docs/llm_wiki",
+        render_profile=schema.SchemaRenderProfile.EXPANDED_INLINE,
     )
 
-
-def test_shared_agent_instructions_include_native_preflight_and_final_reanchor() -> None:
-    content = schema.build_schema_content("generic", "docs/llm_wiki")
-
     assert "## Native knowledge preflight" in content
-    assert "ready` with live `current` means only unchanged since observation" in content
+    assert (
+        "ready` with live `current` means only unchanged since observation" in content
+    )
     assert "ordinary exporter views" in content
     assert "knowledge init` is opt-in governance adoption" in content
     assert "trusted, unsandboxed project-local code" in content
@@ -526,9 +589,7 @@ def test_governed_semantic_edit_reanchors_and_preserves_valid_review(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     (tmp_path / "app.py").write_text(
-        "class User:\n"
-        '    """A documented user."""\n'
-        "    pass\n",
+        'class User:\n    """A documented user."""\n    pass\n',
         encoding="utf-8",
     )
     monkeypatch.chdir(tmp_path)
@@ -659,9 +720,7 @@ def test_governed_semantic_edit_reanchors_and_preserves_valid_review(
         encoding="utf-8",
     )
     pre_expiry = lint_cmd.build_report(wiki, ".", strict=True)
-    assert any(
-        issue.category == "knowledge_snapshot" for issue in pre_expiry.issues
-    )
+    assert any(issue.category == "knowledge_snapshot" for issue in pre_expiry.issues)
 
     sync_cmd.run(
         types.SimpleNamespace(
@@ -684,9 +743,7 @@ def test_governed_semantic_edit_reanchors_and_preserves_valid_review(
 
     expired_lint = lint_cmd.build_report(wiki, ".", strict=True)
     expired_reviews = [
-        issue
-        for issue in expired_lint.issues
-        if issue.category == "knowledge_review"
+        issue for issue in expired_lint.issues if issue.category == "knowledge_review"
     ]
     assert expired_reviews
     assert "[reason=scope-changed]" in expired_reviews[0].message

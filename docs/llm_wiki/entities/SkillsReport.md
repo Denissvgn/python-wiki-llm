@@ -1,6 +1,6 @@
 # SkillsReport
 
-**Location:** `src/llm_wiki_cli/services/skills.py:87`
+**Location:** `src/llm_wiki_cli/services/skills.py:161`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)
@@ -9,7 +9,12 @@
 
 ## Description
 
-_Auto-generated from `SkillsReport` in `src/llm_wiki_cli/services/skills.py`._
+One export/install result with requested and effective skill identities.
+
+``skills`` is the dependency-first effective order. ``requested_skills``
+preserves the de-duplicated roots supplied by the caller (or every bundled
+skill for the all-skills default), while ``dependency_skills`` contains
+only closure members that were not themselves requested.
 
 ## Attributes
 
@@ -20,6 +25,8 @@ _Auto-generated from `SkillsReport` in `src/llm_wiki_cli/services/skills.py`._
 | `skills` | `list[str]` | `field(default_factory=list)` | — |
 | `operations` | `list[SkillOperation]` | `field(default_factory=list)` | — |
 | `issues` | `list[dict[str, str]]` | `field(default_factory=list)` | — |
+| `requested_skills` | `list[str]` | `field(default_factory=list)` | — |
+| `dependency_skills` | `list[str]` | `field(default_factory=list)` | — |
 
 ## Methods
 
@@ -33,37 +40,45 @@ _Auto-generated from `SkillsReport` in `src/llm_wiki_cli/services/skills.py`._
 ```mermaid
 flowchart LR
     n0["SkillsReport (src/llm_wiki_cli/services/skills.py)"]
-    n1["export_skills (src/llm_wiki_cli/services/skills.py)"]
-    n2["install_reference_skill (src/llm_wiki_cli/services/skills.py)"]
-    n3["install_skills (src/llm_wiki_cli/services/skills.py)"]
-    n4["render_report_json (src/llm_wiki_cli/services/skills.py)"]
-    n5["render_report_text (src/llm_wiki_cli/services/skills.py)"]
+    n1["_append_issue (src/llm_wiki_cli/services/skills.py)"]
+    n2["_ensure_regular_directory (src/llm_wiki_cli/services/skills.py)"]
+    n3["export_skills (src/llm_wiki_cli/services/skills.py)"]
+    n4["install_reference_skill (src/llm_wiki_cli/services/skills.py)"]
+    n5["install_skills (src/llm_wiki_cli/services/skills.py)"]
+    n6["render_report_json (src/llm_wiki_cli/services/skills.py)"]
+    n7["render_report_text (src/llm_wiki_cli/services/skills.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
+    n7 --> n0
     click n0 "../modules/skills.md"
     click n1 "../modules/skills.md"
     click n2 "../modules/skills.md"
     click n3 "../modules/skills.md"
     click n4 "../modules/skills.md"
     click n5 "../modules/skills.md"
+    click n6 "../modules/skills.md"
+    click n7 "../modules/skills.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [skills](../modules/skills.md) | 1 | `dest_dir`, `issues`, `ok`, `operations`, `skills` |
+| [skills](../modules/skills.md) | 1 | `dependency_skills`, `dest_dir`, `issues`, `ok`, `operations`, `requested_skills`, `skills` |
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | type_reference | [skills](../modules/skills.md) |
-| `install_reference_skill` | type_reference | [skills](../modules/skills.md) |
-| `install_skills` | type_reference | [skills](../modules/skills.md) |
-| `render_report_json` | type_reference | [skills](../modules/skills.md) |
-| `render_report_text` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_issue` | type_reference | [skills](../modules/skills.md) | — |
+| `_ensure_regular_directory` | type_reference | [skills](../modules/skills.md) | — |
+| `export_skills` | call | [skills](../modules/skills.md) | 1 |
+| `export_skills` | type_reference | [skills](../modules/skills.md) | — |
+| `install_reference_skill` | type_reference | [skills](../modules/skills.md) | — |
+| `install_skills` | type_reference | [skills](../modules/skills.md) | — |
+| `render_report_json` | type_reference | [skills](../modules/skills.md) | — |
+| `render_report_text` | type_reference | [skills](../modules/skills.md) | — |

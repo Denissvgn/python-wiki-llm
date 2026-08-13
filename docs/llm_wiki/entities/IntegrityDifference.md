@@ -59,13 +59,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `compare_source_plugin_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_source_plugin_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_source_snapshot_baseline` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_source_snapshot_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) |
-| `compare_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) |
-| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| `_compare_bound_source_baseline` | call | [workspace](../modules/workspace.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `compare_source_plugin_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) | 1 |
+| `compare_source_plugin_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `compare_source_snapshot_baseline` | call | [documentation_policy](../modules/documentation_policy.md) | 1 |
+| `compare_source_snapshot_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `compare_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) | 1 |
+| `compare_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
+| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
+| `_compare_bound_source_baseline` | call | [workspace](../modules/workspace.md) | 1 |

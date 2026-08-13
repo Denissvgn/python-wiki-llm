@@ -1,44 +1,46 @@
 ---
 name: wiki-reference
-description: Deep reference for llm-wiki extraction contracts, helper toolchains and caches, native availability/freshness, typed graph queries, durable governance and review, safe verification, bounded context/API/MCP consumption, projection-aware Site and Obsidian export, dependency reconciliation, resource-aware execution, and context budgeting. Read only the section that matches the command or diagnostic in front of you.
+description: Route an LLM Wiki task to one bounded managed contract. Use for maintenance, canonical surfaces, repository handoff, qualified knowledge, context queries, governance, extraction, publishing, or resource-aware execution without loading unrelated policy.
 ---
 
 # wiki-reference
 
-Contract-level detail intentionally kept out of the injected agent
-instructions (`AGENTS.md` / `CLAUDE.md` / …). Nothing here is part of the
-routine sync-then-lint loop; open [reference.md](reference.md) at the section
-a task actually needs:
+Open only the topic that matches the task. Each route is one hop from this
+file, owns its stated contract, and cannot grant authority that the user,
+repository policy, or calling application did not provide.
 
-- **Extractor helpers and toolchains** — missing prepared helpers,
-  `LLM_WIKI_GO` / `LLM_WIKI_GHC` fallbacks, helper vs inventory cache
-  separation, Go test-file inclusion.
-- **Haskell extraction contract** — supported GHC toolchain, syntax-only
-  guarantees, Cabal reconciliation, the `llm-wiki-extract/v1` inventory schema.
-- **Dependency reconciliation** — monorepo manifest scoping, import aliases,
-  Go `// indirect`, lockfile-backed `versions` metadata.
-- **Knowledge observations and freshness** — the normative native preflight,
-  persisted evidence versus read-time freshness, availability/degraded states,
-  snapshot-only status, legacy fallback, and authority boundaries.
-- **Knowledge lint and context** — strict failure policy, concept refinements,
-  typed-relationship refinements, deterministic ranking, warnings, and
-  filtered/truncated counts.
-- **Knowledge query/API/MCP contract** — exact UID/current-locator/canonical-path/
-  persisted-alias lookups, core relationships, typed traversal, analyzer and
-  evidence bounds, response envelopes, and service reuse.
-- **Durable governance, review, and verification** — opt-in initialization,
-  moves and aliases, lifecycle and successors, section-scoped human review,
-  explicit machine checks, dry-run/conflict behavior, and ledger recovery.
-- **JavaScript and TypeScript flows** — `.js`/`.jsx` extraction, raw Node
-  `createServer` entry points, `javascript_flow_unsupported` scope.
-- **Static-site and Obsidian export** — ordinary output plus opt-in native
-  `summary`, `public-portable`/`internal` privacy profiles, snapshot-only
-  freshness, identity corroboration, and the separate body/media review
-  boundary.
-- **Resource-aware execution** — interactive, isolated-terminal, and controlled
-  CI scheduling plus requested/resolved/effective extractor-job semantics.
-- **Repository-aware Git handoff** — effective ignore-policy checks,
-  conditional commit eligibility, local-only delivery, and fail-closed mixed
-  or indeterminate state.
-- **`llm-wiki context` for large codebases** — token-budgeted snapshots and
-  flag semantics, including the full-inventory cost boundary.
+- [Maintenance and validation](references/maintenance.md) — use after relevant
+  code or source changes for owning sync, semantic pass, final re-anchor,
+  strict validation, recovery, and handoff ordering.
+- [Canonical surfaces and naming](references/surfaces-naming.md) — use before
+  editing, naming, linking, or recovering canonical wiki pages and generated
+  structures.
+- [Repository handoff](references/repository-handoff.md) — use before the first
+  wiki write and delivery to classify local-only, conditionally Git-eligible,
+  mixed, or indeterminate repository state.
+- [Qualified knowledge consumption](references/knowledge-consumption.md) — use
+  before interpreting availability, freshness, evidence, ambiguity, bounds, or
+  a negative native-knowledge result.
+- [Context and query selection](references/context-query.md) — use to choose a
+  broad packet, exact query, supplied-path/diff impact, or full-inventory route.
+- [Durable knowledge governance](references/governance.md) — use only for an
+  explicit adoption, durable identity, alias, lifecycle, review, verification,
+  conflict, loss, or recovery operation.
+- [Extractors and dependencies](references/extractors-dependencies.md) — use
+  for prepared helpers, language analyzers, API/flow observations, dependency
+  reconciliation, cache behavior, or unsupported coverage.
+- [Publishing projections](references/publishing.md) — use for Site or Obsidian
+  export/check, projection profiles, receipts, privacy, or publication review.
+- [Resource-aware execution](references/resources-context.md) — use before a
+  heavy gate or when diagnosing job concurrency and host-capacity failures.
+
+Claude follows the native installed route at
+`.claude/skills/wiki-reference/SKILL.md`. A configured non-Claude agent reads
+ordinary Markdown at `.llm-wiki/skills/wiki-reference/SKILL.md`; resolve the
+relative links above directly from that installed directory.
+
+`reference.md` is a compatibility index for legacy anchors, not an active
+task route. If a required topic is missing or modified, stop only the affected
+mutation workflow and restore the complete managed tree. Supported read-only
+knowledge/context interfaces may continue with their explicit availability,
+bounds, and fallback disclosures.

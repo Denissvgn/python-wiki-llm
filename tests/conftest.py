@@ -16,7 +16,11 @@ _GIT_AVAILABLE = shutil.which("git") is not None
 # boundaries. Linux and macOS exercise them dynamically; Windows still
 # validates their static contracts without collecting the Bash-only modules.
 collect_ignore = (
-    ["test_ci_toolchain_setup.py", "test_ci_workflow_wrapper.py"]
+    [
+        "test_ci_toolchain_setup.py",
+        "test_ci_workflow_wrapper.py",
+        "test_llm_wiki_convergence_script.py",
+    ]
     if os.name == "nt"
     else []
 )

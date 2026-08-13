@@ -66,11 +66,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_resolve_override` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
-| `_selection` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
-| `DocumentationModelRoutingPolicy.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
-| `select_documentation_model` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
-| `validate_documentation_model_selection` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_resolve_override` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
+| `_selection` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
+| `DocumentationModelRoutingPolicy.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
+| `select_documentation_model` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
+| `validate_documentation_model_selection` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |

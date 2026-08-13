@@ -48,6 +48,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `check_built_site_links` | call | [site_html_check](../modules/site_html_check.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `check_built_site_links` | call | [site_html_check](../modules/site_html_check.md) | 1 |

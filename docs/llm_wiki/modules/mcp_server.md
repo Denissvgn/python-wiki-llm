@@ -16,10 +16,12 @@ origin validation; stdio remains the default.
 | Source | Symbols |
 |--------|---------|
 | `.` | `circuit_breaker`, `context_service`, `lint_service`, `wiki_surface` |
-| `..api` | `LlmWikiApiError`, `build_documentation_query_service` |
-| `..config` | `IDE_AGENTS`, `get_agent_config_path`, `read_config`, `validate_path`, `validate_source_root` |
+| `..api` | `LlmWikiApiError`, `build_documentation_query_service`, `query_documentation` |
+| `..api_types` | `KnowledgeMode` |
+| `..config` | `IDE_AGENTS`, `PathValidationError`, `get_agent_config_path`, `read_config`, `validate_path`, `validate_source_root` |
 | `.bootstrap_runtime` | `build_module_page_map` |
 | `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
@@ -33,6 +35,7 @@ origin validation; stdio remains the default.
 | `collections.abc` | `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
 | `ipaddress` | `ipaddress` |
+| `itertools` | `islice` |
 | `json` | `json` |
 | `mcp` | `mcp` |
 | `mcp.server.fastmcp` | `FastMCP` |
@@ -62,7 +65,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (17) |
+| Outbound | `src` (19) |
 
 ### External packages
 
@@ -70,28 +73,35 @@ flowchart LR
 |---|---:|---:|
 | python | 2 | 1 |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MCPDependencyError](../entities/MCPDependencyError.md) | 98 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
-| [McpWikiError](../entities/McpWikiError.md) | 102 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 106 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 110 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 114 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 122 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 129 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 142 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 161 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 248 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 290 | — | Pure read/check operations exposed through MCP tools and resources. |
+| [MCPDependencyError](../entities/MCPDependencyError.md) | 111 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
+| [McpWikiError](../entities/McpWikiError.md) | 115 | `ValueError` | Raised for invalid MCP wiki requests. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 218 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 222 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 226 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 234 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 241 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 254 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 273 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 360 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 402 | — | Pure read/check operations exposed through MCP tools and resources. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_normalize_knowledge_mode` | `(value: object) -> KnowledgeMode \| None` | — | — |
+| `_required_knowledge_mcp_error` | `(exc: BaseException) -> McpWikiError` | — | — |
+| `_is_required_knowledge_failure` | `(exc: BaseException) -> bool` | — | — |
+| `_api_mcp_error` | `(exc: LlmWikiApiError) -> McpWikiError` | — | — |
+| `_path_validation_mcp_error` | `(exc: PathValidationError) -> McpWikiError` | — | — |
+| `_wiki_surface_path_mcp_error` | `(exc: wiki_surface.WikiSurfacePathError) -> McpWikiError` | — | — |
+| `_wiki_surface_path_data` | `(exc: BaseException) -> dict[str, Any] \| None` | — | — |
 | `_source_selection_pin` | `(policy: SourceSelectionPolicy \| None) -> _SourceSelectionPin` | — | — |
 | `ensure_mcp_runtime` | `() -> None` | — | Validate that the optional MCP SDK can be imported on this runtime. |
 | `validate_loopback_host` | `(host: str) -> None` | — | Reject non-loopback HTTP binds for local-only MCP v1. |
@@ -110,6 +120,7 @@ flowchart LR
 | `_knowledge_locator` | `(value: object) -> str` | — | — |
 | `_knowledge_direction` | `(value: object) -> str` | — | — |
 | `_section_ownership` | `(value: object) -> str \| None` | — | — |
+| `_bounded_query_filter_values` | `(values: object, *, field: str, item_description: str) -> list[str]` | — | — |
 | `_knowledge_kinds` | `(values: object) -> list[str] \| None` | — | — |
 | `_typed_graph_direction` | `(value: object) -> str` | — | — |
 | `_typed_graph_kinds` | `(values: object) -> list[str] \| None` | — | — |
@@ -118,7 +129,7 @@ flowchart LR
 | `_validate_page_id` | `(page_id: str) -> str` | — | — |
 | `_is_safe_page_id` | `(page_id: str) -> bool` | — | — |
 | `_normalise_source_path` | `(path: str) -> str` | — | — |
-| `_ensure_inside` | `(root: Path, path: Path) -> None` | — | — |
+| `_ensure_inside` | `(root: Path, path: Path) -> None` | — | Retain the legacy lexical helper for callers outside page reads. |
 | `_relative_posix` | `(path: Path, root: Path) -> str` | — | — |
 | `_posix_string` | `(value: object) -> str` | — | — |
 | `_normalise_report_paths` | `(payload: dict) -> None` | — | — |

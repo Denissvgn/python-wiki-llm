@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
+from ..services.ci_report import build_ci_check_payload
 from ..services.extraction_jobs import (
     extraction_job_request_from_args,
     print_extraction_job_plan,
@@ -16,7 +17,6 @@ from ..services.lint_service import (
     build_report,
     render_markdown,
     render_text,
-    report_to_dict,
 )
 
 DEFAULT_REPORT = ".git/llm-wiki-ci-report.md"
@@ -26,7 +26,9 @@ def _render_console(report, output_format: str) -> str:
     if output_format == "json":
         return (
             json.dumps(
-                report_to_dict(report, include_execution=True),
+                build_ci_check_payload(report),
+                # ``ci-check`` owns a separately versioned public envelope.
+                # Generic lint/MCP serializers intentionally remain unchanged.
                 indent=2,
                 sort_keys=True,
             )

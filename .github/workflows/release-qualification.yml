@@ -347,7 +347,7 @@ jobs:
         working-directory: candidate
         run: |
           python -m pytest -q \
-            tests/test_knowledge_m1_hardening.py::test_representative_m1_generation_stays_deterministic_and_within_budget \
+            tests/test_knowledge_hardening.py::test_representative_knowledge_generation_stays_deterministic_and_within_budget \
             -p no:cacheprovider --strict-config --strict-markers \
             -W error -o xfail_strict=true --junitxml=../evidence/slow.xml
           python -m pytest -q \
@@ -356,8 +356,8 @@ jobs:
             tests/test_knowledge_performance.py::test_default_and_mcp_bounds_disclose_stress_truncation \
             tests/test_knowledge_performance.py::test_exact_lookup_is_indexed_and_neighbor_work_is_local \
             tests/test_knowledge_performance.py::test_thousands_scale_output_is_deterministic_across_shuffled_inputs \
-            tests/test_m3_scale.py::test_high_fanout_graph_keeps_evidence_and_query_output_bounded \
-            tests/test_m3_scale.py::test_recorded_scale_gate_is_reproducible_current_and_sanitized \
+            tests/test_knowledge_scale.py::test_high_fanout_graph_keeps_evidence_and_query_output_bounded \
+            tests/test_knowledge_scale.py::test_recorded_scale_gate_is_reproducible_current_and_sanitized \
             tests/test_context_packet.py::test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden \
             tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_off_matches_protocol_baseline_golden \
             tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_on_matches_deterministic_protocol_golden \
@@ -760,7 +760,7 @@ jobs:
           tests/test_migrate.py
           tests/test_extract.py
           tests/test_lint.py
-          tests/test_m4_dogfood.py
+          tests/test_documentation_dogfood.py
           -p no:cacheprovider --strict-config --strict-markers
           -W error -o xfail_strict=true --junitxml=../evidence/toolchains.xml
       - name: Enforce complete toolchain owner evidence
@@ -1094,6 +1094,7 @@ jobs:
         with:
           wiki-dir: candidate/.action-selftest/wiki
           src-dir: candidate/tests/fixtures/context-health-action/source
+          evidence-id: valid
           strict: "true"
           fail-on: unhealthy
       - name: Reject invalid strict
@@ -1103,6 +1104,7 @@ jobs:
         with:
           wiki-dir: candidate/.action-selftest/wiki
           src-dir: candidate/tests/fixtures/context-health-action/source
+          evidence-id: invalid-strict
           strict: invalid
           fail-on: unhealthy
       - name: Reject invalid fail-on
@@ -1112,6 +1114,7 @@ jobs:
         with:
           wiki-dir: candidate/.action-selftest/wiki
           src-dir: candidate/tests/fixtures/context-health-action/source
+          evidence-id: invalid-fail-on
           strict: "true"
           fail-on: warning
       - name: Assert both invalid inputs failed closed
@@ -1211,6 +1214,7 @@ jobs:
           result_path = pathlib.Path(sys.argv[2])
           expected_files = {
               "extractor-plan.json",
+              "helper-cache-metrics.json",
               "llm-wiki-ci-report.json",
               "llm-wiki-ci-report.md",
               "locked-toolchain-versions.txt",
@@ -1232,6 +1236,67 @@ jobs:
               "languages": ["typescript"],
           }:
               raise SystemExit(f"unexpected extractor plan: {plan!r}")
+
+          cache_metrics_path = evidence / "helper-cache-metrics.json"
+          cache_metrics_raw = cache_metrics_path.read_bytes()
+          if not (0 < len(cache_metrics_raw) <= 1024):
+              raise SystemExit("helper-cache metrics exceed their byte contract")
+
+          def strict_object(pairs):
+              result = {}
+              for key, value in pairs:
+                  if key in result:
+                      raise ValueError(f"duplicate object key {key!r}")
+                  result[key] = value
+              return result
+
+          def reject_nonfinite(value):
+              raise ValueError(f"non-finite JSON number {value!r}")
+
+          try:
+              cache_metrics = json.loads(
+                  cache_metrics_raw.decode("utf-8"),
+                  object_pairs_hook=strict_object,
+                  parse_constant=reject_nonfinite,
+              )
+          except (UnicodeError, ValueError) as exc:
+              raise SystemExit(
+                  f"helper-cache metrics are not strict UTF-8 JSON: {exc}"
+              ) from exc
+          expected_cache_metric_keys = {
+              "schema",
+              "cache_key_schema",
+              "cache_attempted",
+              "cache_hit",
+              "selected_languages",
+              "prepare_elapsed_ms",
+          }
+          if (
+              type(cache_metrics) is not dict
+              or set(cache_metrics) != expected_cache_metric_keys
+          ):
+              raise SystemExit("unexpected helper-cache metric keys")
+          expected_cache_metrics = {
+              "schema": "llm-wiki-helper-cache-metrics/v1",
+              "cache_key_schema": "llm-wiki-helpers-v1",
+              "cache_attempted": True,
+              "selected_languages": ["typescript"],
+          }
+          for key, expected in expected_cache_metrics.items():
+              if cache_metrics.get(key) != expected:
+                  raise SystemExit(
+                      f"unexpected helper-cache metric {key}: "
+                      f"{cache_metrics.get(key)!r}"
+                  )
+          if type(cache_metrics.get("cache_hit")) is not bool:
+              raise SystemExit("helper-cache hit evidence must be boolean")
+          prepare_elapsed_ms = cache_metrics.get("prepare_elapsed_ms")
+          if (
+              type(prepare_elapsed_ms) is not int
+              or prepare_elapsed_ms < 0
+              or prepare_elapsed_ms > 3_600_000
+          ):
+              raise SystemExit("helper-cache elapsed evidence is invalid")
 
           report = json.loads(
               (evidence / "llm-wiki-ci-report.json").read_text("utf-8")

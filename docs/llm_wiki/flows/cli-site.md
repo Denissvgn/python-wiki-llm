@@ -151,12 +151,12 @@ flowchart LR
 | run | getattr | 143 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr | 144 | `getattr(args, 'out_dir')` |
 | run | validate_path | 145 | `validate_path(out_dir, '--out-dir')` |
-| validate_path | PathValidationError | 128 | `PathValidationError(...)` |
-| validate_path | resolve | 131 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 131 | `Path.cwd(data not statically known)` |
-| validate_path | resolve | 132 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | cwd | 132 | `Path.cwd(data not statically known)` |
-| validate_path | relative_to | 134 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
+| validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
+| validate_path | resolve | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
+| validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
@@ -173,11 +173,11 @@ flowchart LR
 | unresolved_call | `run` | `getattr` | 139 |
 | unresolved_call | `run` | `getattr` | 143 |
 | unresolved_call | `run` | `getattr` | 144 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 131 |
-| external_call | `validate_path` | `Path.cwd` | 131 |
-| external_call | `validate_path` | `Path.cwd().resolve` | 132 |
-| external_call | `validate_path` | `Path.cwd` | 132 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 134 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
+| external_call | `validate_path` | `Path.cwd` | 133 |
+| external_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| external_call | `validate_path` | `Path.cwd` | 134 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

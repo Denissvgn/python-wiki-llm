@@ -51,8 +51,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_bounded_result` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_parse_coverage` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_parse_coverage` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_bounded_result` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_parse_coverage` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_parse_coverage` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |

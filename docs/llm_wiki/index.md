@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 459 | [Open section](#entities) |
-| Modules | 147 | [Open section](#modules) |
+| Entities | 521 | [Open section](#entities) |
+| Modules | 151 | [Open section](#modules) |
 | Workflows | 12 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 421 | [Open section](#entry-point-flows) |
+| Entry-point flows | 436 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -20,6 +20,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 - [Actor](entities/Actor.md)
 - [ActorKind](entities/ActorKind.md)
+- [AgentConfigInspection](entities/AgentConfigInspection.md)
+- [AgentConfigState](entities/AgentConfigState.md)
 - [AliasType](entities/AliasType.md)
 - [ApiContractError](entities/ApiContractError.md)
 - [ApiContractResult](entities/ApiContractResult.md)
@@ -45,12 +47,15 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [BuildContext](entities/BuildContext.md)
 - [BundleRecord](entities/BundleRecord.md)
 - [BundledSkill](entities/BundledSkill.md)
+- [ByteResultBounds](entities/ByteResultBounds.md)
 - [CalleesResult](entities/CalleesResult.md)
 - [CallersResult](entities/CallersResult.md)
 - [Candidate](entities/Candidate.md)
 - [CapturedContextRead](entities/CapturedContextRead.md)
 - [CapturedStream](entities/CapturedStream.md)
 - [CheckerContract](entities/CheckerContract.md)
+- [CiCheckReportError](entities/CiCheckReportError.md)
+- [CiWorkflowInspection](entities/CiWorkflowInspection.md)
 - [CommitStage](entities/CommitStage.md)
 - [CommittedRuntimeProvenance](entities/CommittedRuntimeProvenance.md)
 - [CompatibilityModule](entities/CompatibilityModule.md)
@@ -73,6 +78,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ConsumedInput](entities/ConsumedInput.md)
 - [ConsumedInputKind](entities/ConsumedInputKind.md)
 - [ContextBasisComparison](entities/ContextBasisComparison.md)
+- [ContextKnowledgeContractError](entities/ContextKnowledgeContractError.md)
+- [ContextKnowledgeRequired](entities/ContextKnowledgeRequired.md)
+- [ContextKnowledgeResult](entities/ContextKnowledgeResult.md)
+- [ContextKnowledgeSelection](entities/ContextKnowledgeSelection.md)
 - [ContextPacketError](entities/ContextPacketError.md)
 - [ContextPacketMalformedError](entities/ContextPacketMalformedError.md)
 - [ContextPacketPathPolicyError](entities/ContextPacketPathPolicyError.md)
@@ -82,12 +91,14 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ContextPacketValidation](entities/ContextPacketValidation.md)
 - [ContextPayload](entities/ContextPayload.md)
 - [ContextRequired](entities/ContextRequired.md)
+- [CorrectnessClauseCoverage](entities/CorrectnessClauseCoverage.md)
 - [DataEffectVisitor](entities/DataEffectVisitor.md)
 - [DataFlowAnalysisContext](entities/DataFlowAnalysisContext.md)
 - [DataFlowForEntrypointResult](entities/DataFlowForEntrypointResult.md)
 - [DependencyNeighborhoodResult](entities/DependencyNeighborhoodResult.md)
 - [DependencyResult](entities/DependencyResult.md)
 - [DiagnosticCoverage](entities/DiagnosticCoverage.md)
+- [DiscoveredInboundRoute](entities/DiscoveredInboundRoute.md)
 - [DoctorAvailability](entities/DoctorAvailability.md)
 - [DoctorDrift](entities/DoctorDrift.md)
 - [DoctorFreshness](entities/DoctorFreshness.md)
@@ -122,6 +133,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DocumentationPersistedStateError](entities/DocumentationPersistedStateError.md)
 - [DocumentationPolicyError](entities/DocumentationPolicyError.md)
 - [DocumentationQueryError](entities/DocumentationQueryError.md)
+- [DocumentationQueryRequired](entities/DocumentationQueryRequired.md)
+- [DocumentationQueryResult](entities/DocumentationQueryResult.md)
 - [DocumentationReviewError](entities/DocumentationReviewError.md)
 - [DocumentationReviewFinding](entities/DocumentationReviewFinding.md)
 - [DocumentationReviewLedger](entities/DocumentationReviewLedger.md)
@@ -170,6 +183,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [FlowResult](entities/FlowResult.md)
 - [FrontMatterParseResult](entities/FrontMatterParseResult.md)
 - [GeneratedSectionContext](entities/GeneratedSectionContext.md)
+- [GeneratedSectionCoverage](entities/GeneratedSectionCoverage.md)
 - [GeneratedSurfacePruneError](entities/GeneratedSurfacePruneError.md)
 - [GeneratedSurfaceTransition](entities/GeneratedSurfaceTransition.md)
 - [GitCommandResult](entities/GitCommandResult.md)
@@ -194,6 +208,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HaskellExtractor](entities/HaskellExtractor.md)
 - [HeadingCandidate](entities/HeadingCandidate.md)
 - [HelperPrepareResult](entities/HelperPrepareResult.md)
+- [HookInspection](entities/HookInspection.md)
 - [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
 - [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
 - [HostBrokerAuthenticationUnavailable](entities/HostBrokerAuthenticationUnavailable.md)
@@ -205,6 +220,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [IdentityCollision](entities/IdentityCollision.md)
 - [IdentityCollisionError](entities/IdentityCollisionError.md)
 - [IdentityUpdate](entities/IdentityUpdate.md)
+- [InboundRouteKind](entities/InboundRouteKind.md)
 - [InfrastructureResult](entities/InfrastructureResult.md)
 - [InfrastructureSyncError](entities/InfrastructureSyncError.md)
 - [InfrastructureSyncPlan](entities/InfrastructureSyncPlan.md)
@@ -214,6 +230,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [InputTree](entities/InputTree.md)
 - [InstallCiError](entities/InstallCiError.md)
 - [InstallCiResult](entities/InstallCiResult.md)
+- [InstructionDestination](entities/InstructionDestination.md)
+- [InstructionOrigin](entities/InstructionOrigin.md)
+- [InstructionOwner](entities/InstructionOwner.md)
+- [InstructionRoute](entities/InstructionRoute.md)
+- [InstructionRouteKind](entities/InstructionRouteKind.md)
 - [IntegrityDifference](entities/IntegrityDifference.md)
 - [InvalidRequestError](entities/InvalidRequestError.md)
 - [InvalidSurfaceJson](entities/InvalidSurfaceJson.md)
@@ -248,6 +269,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [KnowledgeLoadResult](entities/KnowledgeLoadResult.md)
 - [KnowledgeLoadState](entities/KnowledgeLoadState.md)
 - [KnowledgeMismatchPolicy](entities/KnowledgeMismatchPolicy.md)
+- [KnowledgeMode](entities/KnowledgeMode.md)
 - [KnowledgeModelError](entities/KnowledgeModelError.md)
 - [KnowledgePhaseDurations](entities/KnowledgePhaseDurations.md)
 - [KnowledgeProjection](entities/KnowledgeProjection.md)
@@ -257,11 +279,14 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [KnowledgeReadMode](entities/KnowledgeReadMode.md)
 - [KnowledgeReadReason](entities/KnowledgeReadReason.md)
 - [KnowledgeReadView](entities/KnowledgeReadView.md)
+- [KnowledgeRequiredUnavailableError](entities/KnowledgeRequiredUnavailableError.md)
 - [KnowledgeStateLoadError](entities/KnowledgeStateLoadError.md)
+- [KnowledgeStatus](entities/KnowledgeStatus.md)
 - [LanguagePlugin](entities/LanguagePlugin.md)
 - [LazyCalibrationAnnotations](entities/LazyCalibrationAnnotations.md)
 - [Lifecycle](entities/Lifecycle.md)
 - [LifecycleEvent](entities/LifecycleEvent.md)
+- [LifecycleStatus](entities/LifecycleStatus.md)
 - [LinkObservation](entities/LinkObservation.md)
 - [LinkSyntax](entities/LinkSyntax.md)
 - [LintInputs](entities/LintInputs.md)
@@ -278,6 +303,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [MCPDependencyError](entities/MCPDependencyError.md)
 - [MachineVerificationAvailability](entities/MachineVerificationAvailability.md)
 - [MachineVerificationReadView](entities/MachineVerificationReadView.md)
+- [ManagedLifecycleState](entities/ManagedLifecycleState.md)
+- [ManagedReferenceInboundRoute](entities/ManagedReferenceInboundRoute.md)
+- [ManagedSchemaBlock](entities/ManagedSchemaBlock.md)
+- [ManagedSchemaBlockError](entities/ManagedSchemaBlockError.md)
+- [ManagedSchemaBlockState](entities/ManagedSchemaBlockState.md)
+- [ManagedSchemaPathError](entities/ManagedSchemaPathError.md)
 - [Manifest](entities/Manifest.md)
 - [ManifestArtifactHashes](entities/ManifestArtifactHashes.md)
 - [ManifestEvidenceBaseline](entities/ManifestEvidenceBaseline.md)
@@ -285,7 +316,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ManifestScope](entities/ManifestScope.md)
 - [ManifestTombstone](entities/ManifestTombstone.md)
 - [MarkdownContextResult](entities/MarkdownContextResult.md)
+- [MarkdownHeading](entities/MarkdownHeading.md)
 - [MarkdownInspection](entities/MarkdownInspection.md)
+- [MarkdownLink](entities/MarkdownLink.md)
 - [MarkdownLinkTarget](entities/MarkdownLinkTarget.md)
 - [MarkdownSection](entities/MarkdownSection.md)
 - [MarkdownSectionDocument](entities/MarkdownSectionDocument.md)
@@ -337,6 +370,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [P0CalibrationTransitionError](entities/P0CalibrationTransitionError.md)
 - [P0CalibrationVerificationReport](entities/P0CalibrationVerificationReport.md)
 - [PackageInfo](entities/PackageInfo.md)
+- [PacketWireContract](entities/PacketWireContract.md)
 - [PageKind](entities/PageKind.md)
 - [PageRegistry](entities/PageRegistry.md)
 - [PageSectionObservations](entities/PageSectionObservations.md)
@@ -356,9 +390,18 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ProtectedArtifactLimitError](entities/ProtectedArtifactLimitError.md)
 - [ProtectedArtifactLockError](entities/ProtectedArtifactLockError.md)
 - [ProtectedArtifactStore](entities/ProtectedArtifactStore.md)
+- [ProtocolEnrichmentSession](entities/ProtocolEnrichmentSession.md)
 - [ProtocolRequestError](entities/ProtocolRequestError.md)
 - [PythonExtractor](entities/PythonExtractor.md)
 - [QualifiedContextPacket](entities/QualifiedContextPacket.md)
+- [QueryCostDisclosure](entities/QueryCostDisclosure.md)
+- [RankingPolicy](entities/RankingPolicy.md)
+- [ReferenceCleanupOutcome](entities/ReferenceCleanupOutcome.md)
+- [ReferenceSkillInspection](entities/ReferenceSkillInspection.md)
+- [ReferenceSkillProvisionResult](entities/ReferenceSkillProvisionResult.md)
+- [ReferenceSkillReason](entities/ReferenceSkillReason.md)
+- [ReferenceSkillState](entities/ReferenceSkillState.md)
+- [ReferenceSkillVerification](entities/ReferenceSkillVerification.md)
 - [RefreshArchiveTransaction](entities/RefreshArchiveTransaction.md)
 - [RefreshContinuationSnapshot](entities/RefreshContinuationSnapshot.md)
 - [RelatedConceptsResult](entities/RelatedConceptsResult.md)
@@ -368,11 +411,16 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [RelationshipLocation](entities/RelationshipLocation.md)
 - [RelationshipRecord](entities/RelationshipRecord.md)
 - [RelationshipTarget](entities/RelationshipTarget.md)
+- [RenderDecision](entities/RenderDecision.md)
+- [RenderReason](entities/RenderReason.md)
 - [RepositoryEvidence](entities/RepositoryEvidence.md)
+- [RepositoryHygieneCoverage](entities/RepositoryHygieneCoverage.md)
 - [RepositoryIdentitySource](entities/RepositoryIdentitySource.md)
 - [RepositoryRecord](entities/RepositoryRecord.md)
+- [RequiredKnowledgeErrorDetails](entities/RequiredKnowledgeErrorDetails.md)
 - [Resolution](entities/Resolution.md)
 - [ResultArtifactError](entities/ResultArtifactError.md)
+- [ResultBounds](entities/ResultBounds.md)
 - [ReviewEvent](entities/ReviewEvent.md)
 - [ReviewEvidence](entities/ReviewEvidence.md)
 - [ReviewFinding](entities/ReviewFinding.md)
@@ -381,12 +429,17 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ReviewValidity](entities/ReviewValidity.md)
 - [RootDependencyDiagram](entities/RootDependencyDiagram.md)
 - [RunnableMcpServer](entities/RunnableMcpServer.md)
+- [RuntimeArtifactInspection](entities/RuntimeArtifactInspection.md)
 - [RuntimeGraphObservations](entities/RuntimeGraphObservations.md)
 - [RuntimeKnowledgeInputs](entities/RuntimeKnowledgeInputs.md)
 - [RuntimeLiveEvaluationInputs](entities/RuntimeLiveEvaluationInputs.md)
 - [RustExtractionRequest](entities/RustExtractionRequest.md)
 - [RustExtractor](entities/RustExtractor.md)
 - [SafeFormat](entities/SafeFormat.md)
+- [SchemaCleanup](entities/SchemaCleanup.md)
+- [SchemaCleanupReceipt](entities/SchemaCleanupReceipt.md)
+- [SchemaRenderProfile](entities/SchemaRenderProfile.md)
+- [SectionCondition](entities/SectionCondition.md)
 - [SectionObservation](entities/SectionObservation.md)
 - [SectionOwnership](entities/SectionOwnership.md)
 - [SectionOwnershipError](entities/SectionOwnershipError.md)
@@ -399,12 +452,15 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SitePublicationReceipt](entities/SitePublicationReceipt.md)
 - [SitePublicationSelection](entities/SitePublicationSelection.md)
 - [SkillOperation](entities/SkillOperation.md)
+- [SkillSelection](entities/SkillSelection.md)
 - [SkillsError](entities/SkillsError.md)
 - [SkillsReport](entities/SkillsReport.md)
 - [SnapshotBuckets](entities/SnapshotBuckets.md)
 - [SnapshotKnowledgeObservability](entities/SnapshotKnowledgeObservability.md)
 - [SnapshotRecord](entities/SnapshotRecord.md)
+- [SourceCleanupOutcome](entities/SourceCleanupOutcome.md)
 - [SourceFile](entities/SourceFile.md)
+- [SourceFileIntegrity](entities/SourceFileIntegrity.md)
 - [SourceSelectionError](entities/SourceSelectionError.md)
 - [SourceSelectionOptions](entities/SourceSelectionOptions.md)
 - [SourceSelectionPin](entities/SourceSelectionPin.md)
@@ -435,10 +491,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [TeamConfigError](entities/TeamConfigError.md)
 - [TeamConventionRequest](entities/TeamConventionRequest.md)
 - [TreeBaseline](entities/TreeBaseline.md)
+- [TreeSnapshot](entities/TreeSnapshot.md)
 - [TsPathAliasRule](entities/TsPathAliasRule.md)
 - [TypeScriptExtractor](entities/TypeScriptExtractor.md)
 - [TypedGraphTraversalResult](entities/TypedGraphTraversalResult.md)
 - [UnknownVerificationCheckerError](entities/UnknownVerificationCheckerError.md)
+- [UnsafeUninstallPathError](entities/UnsafeUninstallPathError.md)
 - [ValidatedKnowledgeArtifacts](entities/ValidatedKnowledgeArtifacts.md)
 - [ValidatedLiveEvaluation](entities/ValidatedLiveEvaluation.md)
 - [ValidatedWikiMetadata](entities/ValidatedWikiMetadata.md)
@@ -460,9 +518,13 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [WikiPageCounts](entities/WikiPageCounts.md)
 - [WikiPageIndex](entities/WikiPageIndex.md)
 - [WikiPagesResult](entities/WikiPagesResult.md)
+- [WikiRemovalInspection](entities/WikiRemovalInspection.md)
+- [WikiScaffoldPathError](entities/WikiScaffoldPathError.md)
+- [WikiScaffoldProvision](entities/WikiScaffoldProvision.md)
 - [WikiSurfaceError](entities/WikiSurfaceError.md)
 - [WikiSurfaceKind](entities/WikiSurfaceKind.md)
 - [WikiSurfacePage](entities/WikiSurfacePage.md)
+- [WikiSurfacePathError](entities/WikiSurfacePathError.md)
 - [WindowsDirectoryGuardError](entities/WindowsDirectoryGuardError.md)
 - [WindowsDirectoryGuardUnavailableError](entities/WindowsDirectoryGuardUnavailableError.md)
 - [WindowsDurabilityError](entities/WindowsDurabilityError.md)
@@ -491,11 +553,13 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [calibration_contracts](modules/calibration_contracts.md) - Deterministic evidence contracts for standalone documentation calibration.
 - [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
 - [ci_installer](modules/ci_installer.md) - Portable installation of the managed LLM Wiki integrity workflow.
+- [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
 - [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
 - [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
 - [concept_identity](modules/concept_identity.md) - Pure stable-identity primitives for governed knowledge concepts.
 - [config](modules/config.md) - Shared constants and utilities for agent-wiki-cli.
+- [context_knowledge_contract](modules/context_knowledge_contract.md) - Frozen compatibility and failure contracts for context knowledge selection.
 - [context_packet](modules/context_packet.md) - Canonical Qualified Context Packet construction and verification.
 - [context_service](modules/context_service.md) - Structured context budgeting — return priority-ranked, token-budgeted codebase context for LLM agents.
 - [controller](modules/controller.md) - Evidence-backed admission and intake controller for documentation calibration.
@@ -539,6 +603,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [init_cmd](modules/init_cmd.md) - `src/llm_wiki_cli/commands/init_cmd.py`
 - [install_ci_cmd](modules/install_ci_cmd.md) - CLI adapter for installing the portable LLM Wiki integrity workflow.
 - [install_cmd](modules/install_cmd.md) - `src/llm_wiki_cli/commands/install_cmd.py`
+- [instruction_ownership](modules/instruction_ownership.md) - Machine-checkable ownership and routing for generated agent instructions.
 - [integrity](modules/integrity.md) - Documentation-run integrity services.
 - [inventory_cache](modules/inventory_cache.md) - Persistent inventory cache used by lint and CI validation.
 - [io](modules/io.md) - Encoding-safe and atomic I/O helpers for wiki artifacts.
@@ -589,6 +654,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [relationships](modules/relationships.md) - Pure entity and callable relationship summaries.
 - [release_cmd](modules/release_cmd.md) - release_cmd — stamp the [Unreleased] CHANGELOG section with the current version.
 - [render_summary](modules/render_summary.md) - Render a GitHub job summary from the stable doctor JSON contract.
+- [rendering_lifecycle](modules/rendering_lifecycle.md) - Profile selection and live managed-schema lifecycle classification.
 - [resource_diagnostics](modules/resource_diagnostics.md) - `src/llm_wiki_cli/services/resource_diagnostics.py`
 - [review_cmd](modules/review_cmd.md) - `src/llm_wiki_cli/commands/review_cmd.py`
 - [rust_extractor](modules/rust_extractor.md) - Rust AST extractor for agent-wiki-cli.
@@ -668,6 +734,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-allocate_concept](flows/api-allocate_concept.md) - entry: `allocate_concept`
 - [api-apply_governance_projection](flows/api-apply_governance_projection.md) - entry: `apply_governance_projection`
 - [api-assemble_documentation_query_service](flows/api-assemble_documentation_query_service.md) - entry: `assemble_documentation_query_service`
+- [api-atomic_write_executable_bytes](flows/api-atomic_write_executable_bytes.md) - entry: `atomic_write_executable_bytes`
+- [api-atomic_write_guarded_bytes](flows/api-atomic_write_guarded_bytes.md) - entry: `atomic_write_guarded_bytes`
 - [api-atomic_write_private_bytes](flows/api-atomic_write_private_bytes.md) - entry: `atomic_write_private_bytes`
 - [api-attach_fastapi_declarations](flows/api-attach_fastapi_declarations.md) - entry: `attach_fastapi_declarations`
 - [api-attach_machine_verification_read_view](flows/api-attach_machine_verification_read_view.md) - entry: `attach_machine_verification_read_view`
@@ -756,6 +824,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-dispatch_calibration_agent-controller](flows/api-dispatch_calibration_agent-controller.md) - entry: `dispatch_calibration_agent`
 - [api-doctor](flows/api-doctor.md) - entry: `doctor`
 - [api-documentation_run_path](flows/api-documentation_run_path.md) - entry: `documentation_run_path`
+- [api-ensure_guarded_directory](flows/api-ensure_guarded_directory.md) - entry: `ensure_guarded_directory`
 - [api-entity_observation_hash](flows/api-entity_observation_hash.md) - entry: `entity_observation_hash`
 - [api-evaluate_documentation_native_freshness](flows/api-evaluate_documentation_native_freshness.md) - entry: `evaluate_documentation_native_freshness`
 - [api-evaluate_knowledge_freshness](flows/api-evaluate_knowledge_freshness.md) - entry: `evaluate_knowledge_freshness`
@@ -786,6 +855,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-governance_hash_from_knowledge](flows/api-governance_hash_from_knowledge.md) - entry: `governance_hash_from_knowledge`
 - [api-governance_lock](flows/api-governance_lock.md) - entry: `governance_lock`
 - [api-guard_windows_directory_chain](flows/api-guard_windows_directory_chain.md) - entry: `guard_windows_directory_chain`
+- [api-guarded_tree_manifest](flows/api-guarded_tree_manifest.md) - entry: `guarded_tree_manifest`
 - [api-hash_aggregate_inputs](flows/api-hash_aggregate_inputs.md) - entry: `hash_aggregate_inputs`
 - [api-hash_bytes](flows/api-hash_bytes.md) - entry: `hash_bytes`
 - [api-hash_component_configuration](flows/api-hash_component_configuration.md) - entry: `hash_component_configuration`
@@ -844,6 +914,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-nonnegative_int_or_none](flows/api-nonnegative_int_or_none.md) - entry: `nonnegative_int_or_none`
 - [api-normalize_action_ref](flows/api-normalize_action_ref.md) - entry: `normalize_action_ref`
 - [api-normalize_claim_evidence_records](flows/api-normalize_claim_evidence_records.md) - entry: `normalize_claim_evidence_records`
+- [api-normalize_concept_coordinate](flows/api-normalize_concept_coordinate.md) - entry: `normalize_concept_coordinate`
+- [api-normalize_documentation_query_limit](flows/api-normalize_documentation_query_limit.md) - entry: `normalize_documentation_query_limit`
+- [api-normalize_documentation_query_text](flows/api-normalize_documentation_query_text.md) - entry: `normalize_documentation_query_text`
 - [api-normalize_entity_observation](flows/api-normalize_entity_observation.md) - entry: `normalize_entity_observation`
 - [api-normalize_legacy_portable_relative_path](flows/api-normalize_legacy_portable_relative_path.md) - entry: `normalize_legacy_portable_relative_path`
 - [api-normalize_markdown](flows/api-normalize_markdown.md) - entry: `normalize_markdown`
@@ -851,6 +924,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-normalize_observational_posix_path](flows/api-normalize_observational_posix_path.md) - entry: `normalize_observational_posix_path`
 - [api-normalize_optional_portable_relative_path](flows/api-normalize_optional_portable_relative_path.md) - entry: `normalize_optional_portable_relative_path`
 - [api-normalize_runtime_capture_records](flows/api-normalize_runtime_capture_records.md) - entry: `normalize_runtime_capture_records`
+- [api-normalize_supplied_paths](flows/api-normalize_supplied_paths.md) - entry: `normalize_supplied_paths`
 - [api-normalize_vcs_remote](flows/api-normalize_vcs_remote.md) - entry: `normalize_vcs_remote`
 - [api-observe_page_sections](flows/api-observe_page_sections.md) - entry: `observe_page_sections`
 - [api-open_windows_guarded_lock_file](flows/api-open_windows_guarded_lock_file.md) - entry: `open_windows_guarded_lock_file`
@@ -885,6 +959,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-projection_json_value](flows/api-projection_json_value.md) - entry: `projection_json_value`
 - [api-prune_manifest_for_source_selection](flows/api-prune_manifest_for_source_selection.md) - entry: `prune_manifest_for_source_selection`
 - [api-qualify_claim_evidence](flows/api-qualify_claim_evidence.md) - entry: `qualify_claim_evidence`
+- [api-query_documentation](flows/api-query_documentation.md) - entry: `query_documentation`
 - [api-reconcile_claim_evidence_records](flows/api-reconcile_claim_evidence_records.md) - entry: `reconcile_claim_evidence_records`
 - [api-reconcile_concepts](flows/api-reconcile_concepts.md) - entry: `reconcile_concepts`
 - [api-reconcile_context_packet-api](flows/api-reconcile_context_packet-api.md) - entry: `reconcile_context_packet`
@@ -897,6 +972,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-refresh_documentation_native_projection](flows/api-refresh_documentation_native_projection.md) - entry: `refresh_documentation_native_projection`
 - [api-related_concepts](flows/api-related_concepts.md) - entry: `related_concepts`
 - [api-relationship_edge_key](flows/api-relationship_edge_key.md) - entry: `relationship_edge_key`
+- [api-remove_guarded_tree](flows/api-remove_guarded_tree.md) - entry: `remove_guarded_tree`
 - [api-render_api_contracts_markdown](flows/api-render_api_contracts_markdown.md) - entry: `render_api_contracts_markdown`
 - [api-render_doctor_text](flows/api-render_doctor_text.md) - entry: `render_doctor_text`
 - [api-render_flow_api_contract_section](flows/api-render_flow_api_contract_section.md) - entry: `render_flow_api_contract_section`
@@ -933,6 +1009,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-require_receipt_authentication](flows/api-require_receipt_authentication.md) - entry: `require_receipt_authentication`
 - [api-require_repository_relative_path](flows/api-require_repository_relative_path.md) - entry: `require_repository_relative_path`
 - [api-require_safe_base_path](flows/api-require_safe_base_path.md) - entry: `require_safe_base_path`
+- [api-require_safe_wiki_scaffold](flows/api-require_safe_wiki_scaffold.md) - entry: `require_safe_wiki_scaffold`
 - [api-require_sequence](flows/api-require_sequence.md) - entry: `require_sequence`
 - [api-require_sha256](flows/api-require_sha256.md) - entry: `require_sha256`
 - [api-require_string](flows/api-require_string.md) - entry: `require_string`
@@ -981,6 +1058,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-split_table_row](flows/api-split_table_row.md) - entry: `split_table_row`
 - [api-strip_governance_projection](flows/api-strip_governance_projection.md) - entry: `strip_governance_projection`
 - [api-summarize_knowledge_view](flows/api-summarize_knowledge_view.md) - entry: `summarize_knowledge_view`
+- [api-supplied_paths_from_unified_diff](flows/api-supplied_paths_from_unified_diff.md) - entry: `supplied_paths_from_unified_diff`
 - [api-sync_guidance](flows/api-sync_guidance.md) - entry: `sync_guidance`
 - [api-table_description_cells](flows/api-table_description_cells.md) - entry: `table_description_cells`
 - [api-transition_documentation_run](flows/api-transition_documentation_run.md) - entry: `transition_documentation_run`
@@ -988,6 +1066,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-trim_blank_lines](flows/api-trim_blank_lines.md) - entry: `trim_blank_lines`
 - [api-trimmed_text_or_none](flows/api-trimmed_text_or_none.md) - entry: `trimmed_text_or_none`
 - [api-typed_graph_from_knowledge_extensions](flows/api-typed_graph_from_knowledge_extensions.md) - entry: `typed_graph_from_knowledge_extensions`
+- [api-unlink_guarded_bytes](flows/api-unlink_guarded_bytes.md) - entry: `unlink_guarded_bytes`
 - [api-unresolved_endpoint](flows/api-unresolved_endpoint.md) - entry: `unresolved_endpoint`
 - [api-use_calibration_host_broker_authenticator-api](flows/api-use_calibration_host_broker_authenticator-api.md) - entry: `use_calibration_host_broker_authenticator`
 - [api-use_calibration_host_broker_authenticator-host_broker](flows/api-use_calibration_host_broker_authenticator-host_broker.md) - entry: `use_calibration_host_broker_authenticator`
@@ -1079,6 +1158,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [mcp-get_module](flows/mcp-get_module.md) - entry: `get_module`
 - [mcp-get_status](flows/mcp-get_status.md) - entry: `get_status`
 - [mcp-list_concept_sections](flows/mcp-list_concept_sections.md) - entry: `list_concept_sections`
+- [mcp-query_documentation](flows/mcp-query_documentation.md) - entry: `query_documentation`
 - [mcp-query_graph](flows/mcp-query_graph.md) - entry: `query_graph`
 - [mcp-related_concepts](flows/mcp-related_concepts.md) - entry: `related_concepts`
 - [mcp-search_wiki](flows/mcp-search_wiki.md) - entry: `search_wiki`
@@ -1086,6 +1166,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 **process**
 
+- [process-ci_report](flows/process-ci_report.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
 

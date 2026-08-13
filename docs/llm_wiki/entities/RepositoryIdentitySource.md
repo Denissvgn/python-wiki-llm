@@ -58,9 +58,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `select_repository_identity` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `RepositoryRecord.identity_source` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `RepositoryRecord.identity_source` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `select_repository_identity` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `RepositoryRecord.identity_source` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `RepositoryRecord.identity_source` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

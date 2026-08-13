@@ -67,14 +67,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_existing_uid` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_put_alias` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_validate_review_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `parse_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `reconcile_concepts` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `reconcile_concepts` | call | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_existing_uid` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_put_alias` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_review_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `move_concept` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `parse_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `reconcile_concepts` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |

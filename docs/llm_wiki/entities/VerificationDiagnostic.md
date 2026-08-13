@@ -61,11 +61,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_artifact_integrity_checker` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_bounded_result` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `_internal_links_checker` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_parse_diagnostic` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `_parse_diagnostic` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `build_artifact_verification_context` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_artifact_integrity_checker` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_bounded_result` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `_internal_links_checker` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_parse_diagnostic` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `_parse_diagnostic` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `build_artifact_verification_context` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |

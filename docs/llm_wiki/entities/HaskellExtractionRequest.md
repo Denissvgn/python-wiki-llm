@@ -66,14 +66,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_missing_haskell_helper_message` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) |
-| `HaskellExtractor._build_command` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) |
-| `HaskellExtractor._coerce_request` | call | [haskell_extractor](../modules/haskell_extractor.md) |
-| `HaskellExtractor._coerce_request` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) |
-| `HaskellExtractor._load_chunked_inventory` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) |
-| `HaskellExtractor._prepared_helper` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) |
-| `HaskellExtractor._resolve_source_files` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) |
-| `HaskellExtractor.extract` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) |
-| `_build_builtin_extraction_kwargs` | call | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_missing_haskell_helper_message` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) | — |
+| `HaskellExtractor._build_command` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) | — |
+| `HaskellExtractor._coerce_request` | call | [haskell_extractor](../modules/haskell_extractor.md) | 1 |
+| `HaskellExtractor._coerce_request` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) | — |
+| `HaskellExtractor._load_chunked_inventory` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) | — |
+| `HaskellExtractor._prepared_helper` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) | — |
+| `HaskellExtractor._resolve_source_files` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) | — |
+| `HaskellExtractor.extract` | type_reference | [haskell_extractor](../modules/haskell_extractor.md) | — |
+| `_build_builtin_extraction_kwargs` | call | [extraction_service](../modules/extraction_service.md) | 1 |

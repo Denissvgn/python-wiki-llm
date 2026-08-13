@@ -35,7 +35,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| related_concepts | related_concepts | 971 | `service.related_concepts(locator_or_exact_route, direction=direction, kinds=kinds, limit=limit)` |
+| related_concepts | related_concepts | 1185 | `service.related_concepts(locator_or_exact_route, direction=direction, kinds=kinds, limit=limit)` |
 
 ### Boundary effects
 
@@ -45,7 +45,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `related_concepts` | `service.related_concepts` | 971 |
+| unresolved_call | `related_concepts` | `service.related_concepts` | 1185 |
 
 ## Behavior
 

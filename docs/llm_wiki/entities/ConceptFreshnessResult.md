@@ -50,8 +50,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_evaluate_concept` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_result` | call | [knowledge_freshness](../modules/knowledge_freshness.md) |
-| `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_evaluate_concept` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `_result` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |

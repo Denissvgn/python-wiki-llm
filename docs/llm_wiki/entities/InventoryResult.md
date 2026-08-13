@@ -53,9 +53,10 @@ flowchart LR
     n6["src/llm_wiki_cli/services/context_packet.py"]
     n7["_build_context_knowledge_view (src/llm_wiki_cli/services/context_service.py)"]
     n8["_build_protocol_enrichment (src/llm_wiki_cli/services/context_service.py)"]
-    n9["get_inventory (src/llm_wiki_cli/services/context_service.py)"]
-    n10["_build_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
-    n11["_completed_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
+    n9["_capture_protocol_enrichment_session (src/llm_wiki_cli/services/context_service.py)"]
+    n10["get_inventory (src/llm_wiki_cli/services/context_service.py)"]
+    n11["_build_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
+    n12["_completed_inventory_result (src/llm_wiki_cli/services/extraction_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -67,6 +68,7 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/extraction_service.md"
     click n1 "../modules/migrate_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -77,8 +79,9 @@ flowchart LR
     click n7 "../modules/context_service.md"
     click n8 "../modules/context_service.md"
     click n9 "../modules/context_service.md"
-    click n10 "../modules/extraction_service.md"
+    click n10 "../modules/context_service.md"
     click n11 "../modules/extraction_service.md"
+    click n12 "../modules/extraction_service.md"
 ```
 
 ### Summary
@@ -89,17 +92,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `context_packet` | import | [context_packet](../modules/context_packet.md) |
-| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) |
-| `_build_protocol_enrichment` | type_reference | [context_service](../modules/context_service.md) |
-| `get_inventory` | type_reference | [context_service](../modules/context_service.md) |
-| `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_completed_inventory_result` | call | [extraction_service](../modules/extraction_service.md) |
-| `_completed_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_finalize_bootstrap_artifacts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
+| `_build_context_knowledge_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_protocol_enrichment` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) | — |
+| `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
+| `_build_inventory_result` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_completed_inventory_result` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

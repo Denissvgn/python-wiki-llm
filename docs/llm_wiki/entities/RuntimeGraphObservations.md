@@ -1,6 +1,6 @@
 # _RuntimeGraphObservations
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1614`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1624`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -67,12 +67,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_sync_graph_observations` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_sync_graph_observations` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_initialization_flow_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_planned_generated_surface_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_sync_flow_index_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_sync_graph_observations` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_build_sync_graph_observations` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_initialization_flow_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_planned_generated_surface_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_sync_flow_index_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

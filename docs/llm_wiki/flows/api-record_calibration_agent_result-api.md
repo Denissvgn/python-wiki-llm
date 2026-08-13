@@ -42,8 +42,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| record_calibration_agent_result | _call_calibration_controller | 1467 | `_call_calibration_controller('record_calibration_agent_result', root, dispatch_receipt=dispatch_receipt, result=result)` |
-| _call_calibration_controller | getattr | 1382 | `getattr(controller, name)` |
+| record_calibration_agent_result | _call_calibration_controller | 2541 | `_call_calibration_controller('record_calibration_agent_result', root, dispatch_receipt=dispatch_receipt, result=result)` |
+| _call_calibration_controller | getattr | 2456 | `getattr(controller, name)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_call_calibration_controller` | `getattr` | 1382 |
+| unresolved_call | `_call_calibration_controller` | `getattr` | 2456 |
 
 ## Behavior
 

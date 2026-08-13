@@ -1,6 +1,6 @@
 # ConceptSectionsResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:140`
+**Location:** `src/llm_wiki_cli/api_types.py:216`
 **Kind:** Class
 **Bases:** `ConceptResult`
 **Module:** [api_types](../modules/api_types.md)
@@ -50,6 +50,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `list_concept_sections` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `list_concept_sections` | type_reference | [api](../modules/api.md) | — |

@@ -50,7 +50,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_team_issues` | call | [team](../modules/team.md) |
-| `check_team_conventions` | type_reference | [team](../modules/team.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_team_issues` | call | [team](../modules/team.md) | 1 |
+| `check_team_conventions` | type_reference | [team](../modules/team.md) | — |

@@ -62,9 +62,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
-| `knowledge_verification` | import | [knowledge_verification](../modules/knowledge_verification.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `knowledge_verification` | import | [knowledge_verification](../modules/knowledge_verification.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |

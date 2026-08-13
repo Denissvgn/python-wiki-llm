@@ -58,13 +58,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_prompt` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_render_repository_handoff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_template_values` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_indeterminate` | call | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `_indeterminate` | type_reference | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `classify_wiki_git_policy` | call | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `classify_wiki_git_policy` | call | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `classify_wiki_git_policy` | type_reference | [wiki_git_policy](../modules/wiki_git_policy.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_prompt` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_render_repository_handoff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_template_values` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_indeterminate` | call | [wiki_git_policy](../modules/wiki_git_policy.md) | 1 |
+| `_indeterminate` | type_reference | [wiki_git_policy](../modules/wiki_git_policy.md) | — |
+| `classify_wiki_git_policy` | call | [wiki_git_policy](../modules/wiki_git_policy.md) | 2 |
+| `classify_wiki_git_policy` | type_reference | [wiki_git_policy](../modules/wiki_git_policy.md) | — |

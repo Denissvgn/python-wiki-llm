@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import types
 from pathlib import Path
 
@@ -44,29 +45,33 @@ def _write_custom_skill(root: Path, skill_id: str = "demo") -> Path:
 
 def test_canonical_wiki_mutators_require_repository_aware_handoff():
     for skill_id in _CANONICAL_WIKI_MUTATORS:
-        manifest = (
-            skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
-        ).read_text(encoding="utf-8")
+        manifest = (skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
         normalized = " ".join(manifest.split())
         normalized_lower = normalized.lower()
 
         assert "## Managed repository preflight" in manifest, skill_id
         assert (
-            "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md"
+            "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in manifest
+        ), skill_id
+        assert "local-only" in normalized_lower, skill_id
+        assert (
+            "fails closed" in normalized_lower
+            or "indeterminate state local-only" in normalized_lower
+        ), skill_id
+        assert "force-add" in normalized_lower, skill_id
+        assert "ignore/exclude" in normalized_lower, skill_id
+        assert (
+            ".claude/skills/wiki-reference/references/repository-handoff.md" in manifest
+        ), skill_id
+        assert (
+            ".llm-wiki/skills/wiki-reference/references/repository-handoff.md"
             in manifest
         ), skill_id
-        assert "exit 0 is local-only" in normalized_lower, skill_id
-        assert (
-            "exit 1 is conditionally git-eligible but not authorization"
-            in normalized_lower
+        assert skills.SKILL_DEPENDENCIES[skill_id] == (
+            skills.REFERENCE_SKILL_ID,
         ), skill_id
-        assert (
-            "any other result fails closed to local-only" in normalized_lower
-        ), skill_id
-        assert (
-            "never force-add or change ignore/exclude rules" in normalized_lower
-        ), skill_id
-        assert '"Repository-aware Git handoff"' in manifest, skill_id
 
 
 def test_bundled_skills_never_stage_a_wiki_unconditionally():
@@ -79,31 +84,73 @@ def test_bundled_skills_never_stage_a_wiki_unconditionally():
             continue
         command_files.append(path.relative_to(skills.BUNDLED_SKILLS_ROOT).as_posix())
         normalized = " ".join(text.split())
-        assert "Only if exit 1" in normalized
-        assert "applicable local rules authorize a commit" in normalized
+        assert "Only if the state is conditionally eligible (exit 1)" in normalized
+        assert "applicable local rules authorize a separate wiki commit" in normalized
         assert "never force-add" in normalized.lower()
 
-    assert command_files == ["wiki-sync/SKILL.md"]
+    assert command_files == [
+        "wiki-reference/references/repository-handoff.md",
+    ]
 
 
 def test_wiki_reference_defines_fail_closed_git_policy():
     reference = (
-        skills.BUNDLED_SKILLS_ROOT / "wiki-reference" / "reference.md"
+        skills.BUNDLED_SKILLS_ROOT
+        / "wiki-reference"
+        / "references"
+        / "repository-handoff.md"
     ).read_text(encoding="utf-8")
     normalized = " ".join(reference.split())
+    normalized_lower = normalized.lower()
 
-    assert "## Repository-aware Git handoff" in reference
-    assert (
-        "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md"
-        in reference
-    )
-    assert "Exit 0 means **local-only**" in reference
-    assert "Exit 1 means **conditionally Git-eligible**" in reference
-    assert "Any other exit" in reference
-    assert "fails closed to the local-only handoff" in normalized
+    assert "# Repository handoff" in reference
+    assert "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in reference
+    assert "| Exit 0 | Local-only |" in reference
+    assert "| Exit 1 | Conditionally Git-eligible |" in reference
+    assert "Any other exit, missing Git/worktree" in reference
+    assert "Fail closed to the local-only handoff" in normalized
     assert "nested `.gitignore`, `.git/info/exclude`" in normalized
-    assert "never stage a partial native snapshot" in normalized
-    assert "never stage or commit the source or adopted input wiki" in normalized
+    assert "never stage a partial native snapshot" in normalized_lower
+    assert "never stage or commit the source or adopted input wiki" in normalized_lower
+
+
+def test_reference_dependency_registry_matches_every_bundled_direct_route():
+    direct_consumers = {
+        skill.skill_id
+        for skill in skills.list_bundled_skills()
+        if skill.skill_id != skills.REFERENCE_SKILL_ID
+        and any(
+            "wiki-reference/" in (skill.path / relative).read_text(encoding="utf-8")
+            for relative in skill.files
+            if relative.endswith(".md")
+        )
+    }
+
+    assert direct_consumers == set(skills.REFERENCE_DEPENDENT_SKILLS)
+    assert direct_consumers == {
+        skill_id
+        for skill_id, dependencies in skills.SKILL_DEPENDENCIES.items()
+        if skills.REFERENCE_SKILL_ID in dependencies
+    }
+    bundled_ids = {skill.skill_id for skill in skills.list_bundled_skills()}
+    assert set(skills.SKILL_DEPENDENCIES) <= bundled_ids
+    assert {
+        dependency
+        for dependencies in skills.SKILL_DEPENDENCIES.values()
+        for dependency in dependencies
+    } <= bundled_ids
+
+
+def test_skill_dependencies_are_package_owned_not_frontmatter_extensions():
+    for skill_id in skills.SKILL_DEPENDENCIES:
+        manifest = (
+            skills.BUNDLED_SKILLS_ROOT / skill_id / skills.SKILL_MANIFEST_NAME
+        ).read_text(encoding="utf-8")
+        frontmatter = manifest.split("---", 2)[1]
+        assert not re.search(
+            r"(?m)^(?:dependencies|dependency|requires):",
+            frontmatter,
+        ), skill_id
 
 
 class TestBundledAgentDocsSkill:
@@ -201,37 +248,59 @@ class TestBundledWikiSyncSkill:
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-sync"
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
         reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        maintenance = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-reference"
+            / "references"
+            / "maintenance.md"
+        ).read_text(encoding="utf-8")
+        handoff = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-reference"
+            / "references"
+            / "repository-handoff.md"
+        ).read_text(encoding="utf-8")
+        normalized_manifest = " ".join(manifest.split())
 
-        # Deterministic pass, validation loop, and conditional commit convention.
+        # The ordinary deterministic/edit/re-anchor loop stays in the entry skill.
         assert "llm-wiki sync --jobs 1" in manifest
         assert "lint --strict" in manifest
-        assert "docs(wiki):" in manifest
-        assert "Only if exit 1" in manifest
-        assert "applicable local rules authorize a commit" in manifest
-        assert "The supervisor owns heavy-gate scheduling" in manifest
-        assert "must not launch a heavy gate unless explicitly assigned" in manifest
-        assert "report unfinished gates as" in manifest
-        assert "inconclusive until capacity is recovered" in manifest
-        # Hook-path markers are reserved, not reused.
-        assert "LLM_WIKI_AUTO_COMMIT" in manifest
-        assert "auto-update [bot]" in manifest
-        # Semantic-only guardrail and unattended-path handoff live in the
-        # bundled reference file.
-        assert "Do not edit by hand" in reference
-        assert "trigger-agent" in reference
-        assert "--allow-external-src" in reference
+        assert "**Edit semantic surfaces only.**" in manifest
+        assert "**Append the semantic log line.**" in manifest
+        assert "The supervisor owns heavy-gate scheduling" in normalized_manifest
+        assert "must not launch a heavy gate unless explicitly assigned" in (
+            normalized_manifest
+        )
+        assert "unfinished gates" in normalized_manifest
+        assert "inconclusive until recovery" in normalized_manifest
+
+        # Specialized validation, automation, and Git policy are direct managed
+        # reference contracts rather than repeated entry-skill mechanics.
+        assert "wiki-reference/references/maintenance.md" in manifest
+        assert "wiki-reference/references/repository-handoff.md" in manifest
+        assert "trigger-agent" in maintenance
+        assert "--allow-external-src" in maintenance
+        assert "docs(wiki):" in handoff
+        assert "LLM_WIKI_AUTO_COMMIT" in handoff
+        assert "auto-update [bot]" in handoff
+        assert "compatibility reference" in reference
+        assert "not an active route" in reference
 
     def test_wiki_sync_skill_documents_external_team_check_contract(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-sync"
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
-        reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
-        combined = f"{manifest}\n{reference}"
+        maintenance = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-reference"
+            / "references"
+            / "maintenance.md"
+        ).read_text(encoding="utf-8")
 
-        assert "team check --src-dir <repo>" in combined
-        assert "team check --src-dir <repo> --allow-external-src" in combined
-        assert (
-            "`--wiki-dir` itself always stays inside the current project root"
-            in combined
+        assert "wiki-reference/references/maintenance.md" in manifest
+        assert "team check --src-dir ." in manifest
+        assert "team check --src-dir <repo> --allow-external-src" in maintenance
+        assert "`--wiki-dir` always remains inside the current project root" in (
+            maintenance
         )
 
     def test_frontmatter_parses_name_and_description(self):
@@ -259,21 +328,39 @@ class TestBundledWikiBootstrapSkill:
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap"
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
         reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
+        handoff = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-reference"
+            / "references"
+            / "repository-handoff.md"
+        ).read_text(encoding="utf-8")
 
-        # Helper preparation, deterministic bootstrap, validation loop, and
-        # conditional commit convention.
+        # Helper preparation, deterministic bootstrap, and validation remain
+        # local; the shared repository handoff is an exact managed route.
         assert "llm-wiki prepare-extractors" in manifest
         assert "--depth full --format json" in manifest
         assert "lint --strict" in manifest
         assert "docs(wiki): bootstrap" in manifest
-        assert "Only when exit 1" in manifest
-        assert "applicable local" in manifest
+        assert "local-only" in manifest
+        assert "force-add" in manifest
+        assert "ignore/exclude" in manifest
+        assert (
+            ".claude/skills/wiki-reference/references/repository-handoff.md"
+            in manifest
+        )
+        assert (
+            ".llm-wiki/skills/wiki-reference/references/repository-handoff.md"
+            in manifest
+        )
+        assert skills.SKILL_DEPENDENCIES["wiki-bootstrap"] == (
+            skills.REFERENCE_SKILL_ID,
+        )
         # Manifest-exists handoff to the incremental workflow.
         assert ".llm-wiki-manifest.json" in manifest
         assert "wiki-sync" in manifest
-        # Hook-path markers are reserved, not reused.
-        assert "LLM_WIKI_AUTO_COMMIT" in manifest
-        assert "auto-update [bot]" in manifest
+        # Hook-path markers remain reserved in the routed policy.
+        assert "LLM_WIKI_AUTO_COMMIT" in handoff
+        assert "auto-update [bot]" in handoff
         # Centrality ranking and the budgeted semantic pass.
         assert "fan_in * 100 + cycle_bonus * 25" in manifest
         assert "dependency_evidence.most_depended_on" in manifest
@@ -299,9 +386,9 @@ class TestBundledWikiBootstrapSkill:
 
     def test_adjacent_skills_never_route_existing_wikis_to_bootstrap_repair(self):
         for skill_id in ("onboarding-guide", "usage-examples", "publish-docs"):
-            manifest = (
-                skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md"
-            ).read_text(encoding="utf-8")
+            manifest = (skills.BUNDLED_SKILLS_ROOT / skill_id / "SKILL.md").read_text(
+                encoding="utf-8"
+            )
             normalized = " ".join(manifest.split())
 
             assert "bootstrap is never an existing-wiki repair path" in normalized
@@ -336,23 +423,25 @@ class TestBundledWikiBootstrapSkill:
         assert ".llm-wiki-surface-index.json" not in combined
         assert "external_agent_docs" in combined
         assert "wiki-semantic-enhance" in combined
-        assert "never stage or commit the source or adopted input wiki" in combined
+        assert "wiki-reference/references/repository-handoff.md" in combined
+        assert "packet-authorized Markdown/result writes" in combined
+        assert skills.SKILL_DEPENDENCIES["wiki-bootstrap"] == (
+            skills.REFERENCE_SKILL_ID,
+        )
 
     def test_infrastructure_ownership_is_consistent_across_authoring_skills(self):
         bootstrap = "\n".join(
             (
-                (
-                    skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md"
-                ).read_text(encoding="utf-8"),
+                (skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "SKILL.md").read_text(
+                    encoding="utf-8"
+                ),
                 (
                     skills.BUNDLED_SKILLS_ROOT / "wiki-bootstrap" / "reference.md"
                 ).read_text(encoding="utf-8"),
             )
         )
         semantic = (
-            skills.BUNDLED_SKILLS_ROOT
-            / "wiki-semantic-enhance"
-            / "reference.md"
+            skills.BUNDLED_SKILLS_ROOT / "wiki-semantic-enhance" / "reference.md"
         ).read_text(encoding="utf-8")
         user_docs = (
             skills.BUNDLED_SKILLS_ROOT / "user-docs-author" / "reference.md"
@@ -413,8 +502,10 @@ class TestBundledWikiSemanticEnhanceSkill:
         assert "Resume open ids" in combined
         assert "Run one heavy gate at a time" in combined
         assert "Semantic budget exhausted" in combined
-        assert (
-            "Never write, stage, or commit the source or adopted input wiki" in combined
+        assert "wiki-reference/references/repository-handoff.md" in combined
+        assert "never write the source or adopted input wiki" in combined
+        assert skills.SKILL_DEPENDENCIES["wiki-semantic-enhance"] == (
+            skills.REFERENCE_SKILL_ID,
         )
 
 
@@ -636,19 +727,34 @@ class TestBundledOnboardingGuideSkill:
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
         reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
         combined = f"{manifest}\n{reference}"
+        resources = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-reference"
+            / "references"
+            / "resources-context.md"
+        ).read_text(encoding="utf-8")
 
         assert "lint --strict" in combined
         assert "llm-wiki ci-check" in combined
         assert "docs(wiki): add navigation guides" in combined
-        assert "Only when exit 1" in combined
-        assert "applicable local rules authorize a commit" in combined
+        assert "local-only" in manifest
+        assert "force-add" in manifest
+        assert "ignore/exclude" in manifest
+        assert (
+            ".claude/skills/wiki-reference/references/repository-handoff.md"
+            in manifest
+        )
+        assert (
+            ".llm-wiki/skills/wiki-reference/references/repository-handoff.md"
+            in manifest
+        )
+        assert skills.SKILL_DEPENDENCIES["onboarding-guide"] == (
+            skills.REFERENCE_SKILL_ID,
+        )
         assert "guides/<persona>-navigation.md" in combined
         assert "# <Persona> navigation guide" in combined
         assert "docs(wiki): add onboarding guides" not in combined
         assert "guides/<persona>-onboarding.md" not in combined
-        # Hook-path markers are reserved, not reused.
-        assert "LLM_WIKI_AUTO_COMMIT" in combined
-        assert "auto-update [bot]" in combined
         # Dogfood-confirmed ordering (2026-07-04): within the final re-link
         # + validate step, sync must run before lint. A new guide page
         # touches no source file, so lint would otherwise report it as
@@ -663,9 +769,19 @@ class TestBundledOnboardingGuideSkill:
         # Links must stay lint-checkable.
         assert "Relative links only" in combined
         assert "llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1" in combined
-        assert "The supervisor schedules context, sync, lint, CI" in combined
-        assert "subagents must not launch them unless explicitly" in combined
-        assert "inconclusive until capacity is recovered" in combined
+        assert "use `--jobs 1` when capacity is unknown" in manifest
+        assert "mark unfinished validation inconclusive" in manifest
+        assert "The supervisor owns the schedule" in resources
+        assert "must not launch a heavy gate unless explicitly assigned" in resources
+        assert "unfinished gates inconclusive until capacity is recovered" in resources
+        assert (
+            ".claude/skills/wiki-reference/references/resources-context.md"
+            in manifest
+        )
+        assert (
+            ".llm-wiki/skills/wiki-reference/references/resources-context.md"
+            in manifest
+        )
         assert "full deep" in combined
         assert "do not make the scan computationally cheap" in combined
 
@@ -783,6 +899,10 @@ class TestBundledImpactAnalysisSkill:
         assert "dependency_neighborhood" in combined
         assert "flow_for_entrypoint" in combined
         assert "pages_for_symbol" in combined
+        assert "query_documentation" in combined
+        assert '"operation":"impact"' in combined
+        assert "allow_full_inventory" in combined
+        assert "targeted-extraction" in combined
         # dependency_neighborhood is MCP-only through this protocol.
         assert "not exposed through" in combined.lower()
         # Shares doc-review's vocabulary rather than inventing a new one.
@@ -832,8 +952,9 @@ class TestBundledImpactAnalysisSkill:
             skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
         ).read_text(encoding="utf-8")
         example = reference[
-            reference.index("```python") + len("```python") :
-            reference.index("```", reference.index("```python") + len("```python"))
+            reference.index("```python") + len("```python") : reference.index(
+                "```", reference.index("```python") + len("```python")
+            )
         ]
 
         assert example.count("build_documentation_query_service(") == 1
@@ -848,18 +969,18 @@ class TestBundledImpactAnalysisSkill:
     @pytest.mark.parametrize(
         ("row", "required"),
         [
-            ("| `ready` + typed graph `ready` |", "analyzer bounds"),
+            ("| Exact identity and typed graph admitted |", "analyzer bounds"),
             (
-                "| `ready` + `typed-graph-extension-not-present` |",
+                "| Exact identity admitted but typed-graph extension unavailable |",
                 "no typed-neighborhood conclusion",
             ),
-            ("| `absent` (`knowledge-projection-not-present`) |", "legacy live"),
-            ("| `degraded`, `unsupported`, invalid, or mixed snapshot |", "no rejected"),
-            ("| Ambiguous exact identity or persisted alias |", "owner choice"),
-            ("| `ready` with `freshness_evaluated: false` |", "snapshot-only"),
+            (
+                "| Exact identity or persisted alias is ambiguous |",
+                "owner choice",
+            ),
         ],
     )
-    def test_impact_analysis_fallback_table_preserves_native_limitations(
+    def test_impact_analysis_graph_supplement_preserves_local_limitations(
         self,
         row,
         required,
@@ -867,15 +988,11 @@ class TestBundledImpactAnalysisSkill:
         reference = (
             skills.BUNDLED_SKILLS_ROOT / "impact-analysis" / "reference.md"
         ).read_text(encoding="utf-8")
-        selected = next(
-            line for line in reference.splitlines() if line.startswith(row)
-        )
+        selected = next(line for line in reference.splitlines() if line.startswith(row))
 
         assert required in selected
-        assert (
-            "Legacy detail can increase the known blast radius, but it cannot "
-            "erase native"
-        ) in reference
+        assert "cannot erase\nan unresolved or external edge" in reference
+        assert "../wiki-reference/references/knowledge-consumption.md" in reference
 
 
 class TestBundledInfraReviewSkill:
@@ -955,8 +1072,7 @@ class TestBundledPublishDocsSkill:
         assert ".llm-wiki-site-selection.json" in combined
         assert "llm-wiki-site-selection.json" in combined
         assert (
-            "cp site/llm-wiki-site-selection.json "
-            "build/llm-wiki-site-selection.json"
+            "cp site/llm-wiki-site-selection.json build/llm-wiki-site-selection.json"
         ) in combined
         assert "_site-http" in combined
         assert "_site-file" in combined
@@ -995,6 +1111,12 @@ class TestBundledUserDocsAuthorSkill:
         manifest = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
         reference = (skill_dir / "reference.md").read_text(encoding="utf-8")
         combined = f"{manifest}\n{reference}"
+        resources = (
+            skills.BUNDLED_SKILLS_ROOT
+            / "wiki-reference"
+            / "references"
+            / "resources-context.md"
+        ).read_text(encoding="utf-8")
 
         assert "deterministic evidence first" in combined
         assert "llm-wiki sync" in combined
@@ -1005,9 +1127,21 @@ class TestBundledUserDocsAuthorSkill:
         assert "--link-mode http" in combined
         assert "--link-mode file" in combined
         assert "llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1" in combined
-        assert "The supervisor schedules" in combined
+        assert "supervisor schedules gates" in combined
         assert "subagents may inspect bounded pages" in combined
         assert "inconclusive until capacity is recovered" in combined
+        assert (
+            ".claude/skills/wiki-reference/references/resources-context.md"
+            in manifest
+        )
+        assert (
+            ".llm-wiki/skills/wiki-reference/references/resources-context.md"
+            in manifest
+        )
+        assert "The supervisor owns the schedule" in resources
+        assert skills.SKILL_DEPENDENCIES["user-docs-author"] == (
+            skills.REFERENCE_SKILL_ID,
+        )
 
     def test_user_docs_author_skill_encodes_semantic_authoring_guardrails(self):
         skill_dir = skills.BUNDLED_SKILLS_ROOT / "user-docs-author"
@@ -1075,9 +1209,7 @@ class TestBundledUsageExamplesSkill:
         assert "alt text" in combined
         assert "caption" in combined
         assert "capture blocker" in combined
-        assert (
-            "a row added to canonical wiki Markdown is a semantic edit" in combined
-        )
+        assert "a row added to canonical wiki Markdown is a semantic edit" in combined
         assert "restart at the step 5 owning sync/re-anchor" in combined
         assert "media_link_broken" in combined
         assert "media_missing_alt_text" in combined
@@ -1144,6 +1276,7 @@ class TestExternalDocumentationSkillChain:
     def test_existing_skills_preserve_managed_defaults_and_add_external_gates(self):
         bootstrap = self._combined("wiki-bootstrap")
         sync = self._combined("wiki-sync")
+        normalized_sync = " ".join(sync.split())
         onboarding = self._combined("onboarding-guide")
 
         assert "Managed knowledge-base behavior remains the default" in bootstrap
@@ -1151,17 +1284,25 @@ class TestExternalDocumentationSkillChain:
         assert "external_agent_docs" in bootstrap
         assert "wiki-semantic-enhance" in bootstrap
 
-        assert "Use the permitted managed-mode handoff" in sync
+        assert "permitted managed-mode handoff" in sync
+        assert "wiki-reference/references/repository-handoff.md" in sync
         assert "local-only handoff" in sync
         assert "external_agent_docs" in sync
-        assert "resume from the recorded wiki snapshot" in sync
-        assert "never stage or commit the source or" in sync
+        assert "resume from the recorded wiki snapshot" in normalized_sync
+        assert "packet-authorized workspace paths" in normalized_sync
+        assert skills.SKILL_DEPENDENCIES["wiki-sync"] == (
+            skills.REFERENCE_SKILL_ID,
+        )
 
         assert "docs(wiki): add navigation guides" in onboarding
         assert "recorded audiences and per-audience intent" in onboarding
         assert "Never re-ask intake on resume" in onboarding
         assert "wiki-only runs" in onboarding.lower()
-        assert "never stage or commit the source or input wiki" in onboarding
+        assert "wiki-reference/references/repository-handoff.md" in onboarding
+        assert "return changed workspace paths and deferrals" in onboarding
+        assert skills.SKILL_DEPENDENCIES["onboarding-guide"] == (
+            skills.REFERENCE_SKILL_ID,
+        )
 
     def test_user_capture_review_and_publish_external_entry_exit_contracts(self):
         author = self._combined("user-docs-author")
@@ -1240,13 +1381,302 @@ class TestSkillExport:
         assert (tmp_path / "out" / "user-docs-author" / "reference.md").is_file()
         assert (tmp_path / "out" / "wiki-semantic-enhance" / "SKILL.md").is_file()
         assert (tmp_path / "out" / "wiki-semantic-enhance" / "reference.md").is_file()
-        assert {op.action for op in report.operations} == {"write"}
+        assert {op.action for op in report.operations} == {"write", "verify"}
 
     def test_export_is_idempotent(self, tmp_path):
         skills.export_skills(tmp_path / "out")
         report = skills.export_skills(tmp_path / "out")
         assert report.ok
-        assert {op.action for op in report.operations} == {"keep"}
+        assert {op.action for op in report.operations} == {"keep", "verify"}
+
+    @pytest.mark.parametrize("skill_id", sorted(skills.REFERENCE_DEPENDENT_SKILLS))
+    def test_selected_reference_consumer_includes_exact_prerequisite(
+        self,
+        tmp_path,
+        skill_id,
+    ):
+        destination = tmp_path / "out"
+
+        report = skills.export_skills(destination, skills=[skill_id])
+
+        assert report.ok
+        assert report.requested_skills == [skill_id]
+        assert report.dependency_skills == [skills.REFERENCE_SKILL_ID]
+        assert report.skills == [skills.REFERENCE_SKILL_ID, skill_id]
+        assert (destination / skill_id / "SKILL.md").is_file()
+        assert {
+            path.relative_to(destination / skills.REFERENCE_SKILL_ID).as_posix()
+            for path in (destination / skills.REFERENCE_SKILL_ID).rglob("*")
+            if path.is_file()
+        } == set(skills.REFERENCE_SKILL_FILES)
+
+    def test_selected_consumer_and_reference_are_nested_and_idempotent(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        selected = ["wiki-sync", "wiki-reference"]
+
+        first = skills.export_skills(destination, skills=selected)
+        second = skills.export_skills(destination, skills=selected)
+
+        assert first.ok and second.ok
+        assert first.requested_skills == second.requested_skills == selected
+        assert first.dependency_skills == second.dependency_skills == []
+        assert first.skills == second.skills == ["wiki-reference", "wiki-sync"]
+        reference = destination / "wiki-reference"
+        assert {
+            path.relative_to(reference).as_posix()
+            for path in reference.rglob("*")
+            if path.is_file()
+        } == set(skills.REFERENCE_SKILL_FILES)
+        verification_index = next(
+            index
+            for index, operation in enumerate(first.operations)
+            if operation.action == "verify"
+        )
+        first_consumer_index = next(
+            index
+            for index, operation in enumerate(first.operations)
+            if "wiki-sync" in Path(operation.path).parts
+        )
+        assert verification_index < first_consumer_index
+        assert {operation.action for operation in second.operations} == {
+            "keep",
+            "verify",
+        }
+
+    def test_auto_included_dependency_is_idempotent(self, tmp_path):
+        destination = tmp_path / "out"
+
+        first = skills.export_skills(destination, skills=["wiki-sync"])
+        second = skills.export_skills(destination, skills=["wiki-sync"])
+
+        assert first.ok and second.ok
+        assert first.requested_skills == second.requested_skills == ["wiki-sync"]
+        assert first.dependency_skills == second.dependency_skills == [
+            "wiki-reference"
+        ]
+        assert first.skills == second.skills == ["wiki-reference", "wiki-sync"]
+        assert {operation.action for operation in second.operations} == {
+            "keep",
+            "verify",
+        }
+
+    def test_selected_consumer_accepts_and_reports_existing_exact_prerequisite(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=["wiki-reference"],
+        ).ok
+
+        report = skills.export_skills(destination, skills=["wiki-sync"])
+
+        assert report.ok
+        assert report.requested_skills == ["wiki-sync"]
+        assert report.dependency_skills == ["wiki-reference"]
+        assert report.skills == ["wiki-reference", "wiki-sync"]
+        verification = [
+            operation
+            for operation in report.operations
+            if operation.action == "verify"
+        ]
+        assert len(verification) == 1
+        assert verification[0].path == str(destination / "wiki-reference")
+        assert verification[0].message == "Required by: wiki-sync"
+
+    def test_selected_consumer_rejects_drifted_existing_prerequisite(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=["wiki-reference"],
+        ).ok
+        topic = destination / "wiki-reference/references/maintenance.md"
+        topic.write_text("local notes\n", encoding="utf-8")
+
+        report = skills.export_skills(destination, skills=["wiki-sync"])
+
+        assert not report.ok
+        assert {issue["category"] for issue in report.issues} >= {
+            "existing_file_differs",
+            "managed_tree_not_exact",
+            "required_skill_unavailable",
+        }
+        assert topic.read_text(encoding="utf-8") == "local notes\n"
+        assert not (destination / "wiki-sync").exists()
+
+    def test_force_refreshes_auto_included_dependency_before_consumer(self, tmp_path):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=["wiki-reference"],
+        ).ok
+        topic = destination / "wiki-reference/references/maintenance.md"
+        topic.write_text("local notes\n", encoding="utf-8")
+
+        report = skills.export_skills(
+            destination,
+            skills=["wiki-sync"],
+            force=True,
+        )
+
+        assert report.ok
+        assert "local notes" not in topic.read_text(encoding="utf-8")
+        verification_index = next(
+            index
+            for index, operation in enumerate(report.operations)
+            if operation.action == "verify"
+        )
+        consumer_index = next(
+            index
+            for index, operation in enumerate(report.operations)
+            if "wiki-sync" in Path(operation.path).parts
+        )
+        assert verification_index < consumer_index
+        assert (destination / "wiki-sync/SKILL.md").is_file()
+
+    @pytest.mark.parametrize(
+        "drift_kind",
+        ("modified", "extra", "conflicting"),
+    )
+    def test_all_skills_stop_before_consumers_when_reference_is_not_exact(
+        self,
+        tmp_path,
+        drift_kind,
+    ):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=[skills.REFERENCE_SKILL_ID],
+        ).ok
+        reference = destination / skills.REFERENCE_SKILL_ID
+        topic = reference / "references/maintenance.md"
+        if drift_kind == "modified":
+            topic.write_text("local notes\n", encoding="utf-8")
+        elif drift_kind == "extra":
+            (reference / "local-notes.md").write_text(
+                "local notes\n",
+                encoding="utf-8",
+            )
+        else:
+            topic.unlink()
+            topic.mkdir()
+            (topic / "user.txt").write_text("preserve\n", encoding="utf-8")
+
+        report = skills.export_skills(destination)
+
+        assert not report.ok
+        assert {issue["category"] for issue in report.issues} >= {
+            "managed_tree_not_exact",
+            "required_skill_unavailable",
+        }
+        assert not any(
+            (destination / skill_id).exists()
+            for skill_id in skills.REFERENCE_DEPENDENT_SKILLS
+        )
+        if drift_kind == "modified":
+            assert topic.read_text(encoding="utf-8") == "local notes\n"
+        elif drift_kind == "extra":
+            assert (reference / "local-notes.md").read_text(encoding="utf-8") == (
+                "local notes\n"
+            )
+        else:
+            assert (topic / "user.txt").read_text(encoding="utf-8") == "preserve\n"
+
+    def test_reversed_selection_stops_before_consumer_when_reference_is_drifted(
+        self,
+        tmp_path,
+    ):
+        destination = tmp_path / "out"
+        assert skills.export_skills(
+            destination,
+            skills=["wiki-reference"],
+        ).ok
+        topic = destination / "wiki-reference/references/maintenance.md"
+        topic.write_text("local notes\n", encoding="utf-8")
+
+        report = skills.export_skills(
+            destination,
+            skills=["wiki-sync", "wiki-reference"],
+        )
+
+        assert not report.ok
+        assert {issue["category"] for issue in report.issues} >= {
+            "existing_file_differs",
+            "managed_tree_not_exact",
+            "required_skill_unavailable",
+        }
+        assert topic.read_text(encoding="utf-8") == "local notes\n"
+        assert not (destination / "wiki-sync").exists()
+        assert not any(
+            "wiki-sync" in Path(operation.path).parts
+            for operation in report.operations
+        )
+
+    def test_incomplete_bundled_reference_fails_before_destination_creation(
+        self,
+        tmp_path,
+    ):
+        bundled = tmp_path / "bundled"
+        shutil.copytree(skills.BUNDLED_SKILLS_ROOT, bundled)
+        (bundled / "wiki-reference/references/governance.md").unlink()
+        destination = tmp_path / "out"
+
+        with pytest.raises(skills.SkillsError, match="package tree is incomplete"):
+            skills.export_skills(
+                destination,
+                skills=["wiki-sync", "wiki-reference"],
+                skills_root=bundled,
+            )
+
+        assert not destination.exists()
+
+    def test_export_accepts_parent_relative_caller_destination(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        _write_custom_skill(root)
+        working = tmp_path / "working"
+        working.mkdir()
+        monkeypatch.chdir(working)
+
+        report = skills.export_skills("../shared", skills_root=root)
+
+        assert report.ok
+        assert (tmp_path / "shared" / "demo" / "SKILL.md").is_file()
+
+    def test_export_rejects_symlink_before_parent_component(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        _write_custom_skill(root)
+        working = tmp_path / "working"
+        working.mkdir()
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        try:
+            (working / "linked").symlink_to(outside, target_is_directory=True)
+        except OSError as exc:  # pragma: no cover - platform policy
+            pytest.skip(f"symlinks unavailable: {exc}")
+        monkeypatch.chdir(working)
+
+        report = skills.export_skills(
+            "linked/../escaped",
+            skills_root=root,
+        )
+
+        assert not report.ok
+        assert not (tmp_path / "escaped").exists()
+        assert any(
+            issue["category"] == "unsafe_or_conflicting_entry"
+            for issue in report.issues
+        )
 
     def test_export_preserves_local_edits_without_force(self, tmp_path):
         skills.export_skills(tmp_path / "out")
@@ -1321,6 +1751,191 @@ class TestSkillExport:
         with pytest.raises(skills.SkillsError, match="Unknown skill 'nope'"):
             skills.export_skills(tmp_path / "out", skills=["nope"])
 
+    def test_transitive_dependencies_expand_in_dependency_first_order(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        for skill_id in ("leaf", "middle", "other", "side", "top"):
+            _write_custom_skill(root, skill_id)
+        monkeypatch.setattr(
+            skills,
+            "SKILL_DEPENDENCIES",
+            {"top": ("middle", "side"), "middle": ("leaf",)},
+        )
+
+        report = skills.export_skills(
+            tmp_path / "out",
+            skills=["top", "other", "top"],
+            skills_root=root,
+        )
+
+        assert report.ok
+        assert report.requested_skills == ["top", "other"]
+        assert report.dependency_skills == ["leaf", "middle", "side"]
+        assert report.skills == ["leaf", "middle", "side", "top", "other"]
+        first_operation = {
+            Path(operation.path).parent.name: index
+            for index, operation in enumerate(report.operations)
+            if Path(operation.path).name == "SKILL.md"
+        }
+        assert first_operation["leaf"] < first_operation["middle"]
+        assert first_operation["middle"] < first_operation["side"]
+        assert first_operation["side"] < first_operation["top"]
+
+    def test_reference_keeps_its_own_dependency_ahead_of_reference_barrier(
+        self, tmp_path, monkeypatch
+    ):
+        dependency_map = dict(skills.SKILL_DEPENDENCIES)
+        dependency_map[skills.REFERENCE_SKILL_ID] = ("attack-surface",)
+        monkeypatch.setattr(skills, "SKILL_DEPENDENCIES", dependency_map)
+
+        report = skills.export_skills(
+            tmp_path / "out",
+            skills=["wiki-sync"],
+        )
+
+        assert report.ok
+        assert report.dependency_skills == ["attack-surface", "wiki-reference"]
+        assert report.skills == ["attack-surface", "wiki-reference", "wiki-sync"]
+        attack_index = next(
+            index
+            for index, operation in enumerate(report.operations)
+            if "attack-surface" in Path(operation.path).parts
+        )
+        verify_index = next(
+            index
+            for index, operation in enumerate(report.operations)
+            if operation.action == "verify"
+        )
+        consumer_index = next(
+            index
+            for index, operation in enumerate(report.operations)
+            if "wiki-sync" in Path(operation.path).parts
+        )
+        assert attack_index < verify_index < consumer_index
+
+    def test_indirect_reference_consumer_uses_exact_reference_barrier(
+        self, tmp_path, monkeypatch
+    ):
+        dependency_map = dict(skills.SKILL_DEPENDENCIES)
+        dependency_map["attack-surface"] = ("dep-vuln-triage",)
+        dependency_map["dep-vuln-triage"] = (skills.REFERENCE_SKILL_ID,)
+        monkeypatch.setattr(skills, "SKILL_DEPENDENCIES", dependency_map)
+
+        report = skills.export_skills(
+            tmp_path / "out",
+            skills=["attack-surface"],
+        )
+
+        assert report.ok
+        assert report.dependency_skills == [
+            "wiki-reference",
+            "dep-vuln-triage",
+        ]
+        assert report.skills == [
+            "wiki-reference",
+            "dep-vuln-triage",
+            "attack-surface",
+        ]
+        verification = [
+            operation
+            for operation in report.operations
+            if operation.action == "verify"
+        ]
+        assert len(verification) == 1
+        assert verification[0].message == (
+            "Required by: attack-surface, dep-vuln-triage"
+        )
+        verify_index = report.operations.index(verification[0])
+        for consumer in ("dep-vuln-triage", "attack-surface"):
+            consumer_index = next(
+                index
+                for index, operation in enumerate(report.operations)
+                if consumer in Path(operation.path).parts
+            )
+            assert verify_index < consumer_index
+
+    def test_dependency_cycle_is_rejected_before_destination_creation(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        for skill_id in ("alpha", "beta", "gamma"):
+            _write_custom_skill(root, skill_id)
+        monkeypatch.setattr(
+            skills,
+            "SKILL_DEPENDENCIES",
+            {"alpha": ("beta",), "beta": ("gamma",), "gamma": ("alpha",)},
+        )
+        destination = tmp_path / "out"
+
+        with pytest.raises(
+            skills.SkillsError,
+            match=r"alpha -> beta -> gamma -> alpha",
+        ):
+            skills.export_skills(
+                destination,
+                skills=["alpha"],
+                skills_root=root,
+            )
+
+        assert not destination.exists()
+
+    def test_missing_bundled_dependency_is_rejected_before_destination_creation(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        _write_custom_skill(root, "consumer")
+        monkeypatch.setattr(
+            skills,
+            "SKILL_DEPENDENCIES",
+            {"consumer": ("missing",)},
+        )
+        destination = tmp_path / "out"
+
+        with pytest.raises(
+            skills.SkillsError,
+            match="'consumer' requires bundled 'missing'",
+        ):
+            skills.export_skills(
+                destination,
+                skills=["consumer"],
+                skills_root=root,
+            )
+
+        assert not destination.exists()
+
+    def test_all_skills_remain_complete_and_dependency_ordered(
+        self, tmp_path, monkeypatch
+    ):
+        root = tmp_path / "bundled"
+        for skill_id in ("a-consumer", "z-dependency"):
+            _write_custom_skill(root, skill_id)
+        monkeypatch.setattr(
+            skills,
+            "SKILL_DEPENDENCIES",
+            {"a-consumer": ("z-dependency",)},
+        )
+
+        report = skills.export_skills(tmp_path / "out", skills_root=root)
+
+        assert report.ok
+        assert report.requested_skills == ["a-consumer", "z-dependency"]
+        assert report.dependency_skills == []
+        assert report.skills == ["z-dependency", "a-consumer"]
+        assert (tmp_path / "out/a-consumer/SKILL.md").is_file()
+        assert (tmp_path / "out/z-dependency/SKILL.md").is_file()
+
+    def test_explicit_reference_selection_remains_single_skill(self, tmp_path):
+        report = skills.export_skills(
+            tmp_path / "out",
+            skills=[skills.REFERENCE_SKILL_ID],
+        )
+
+        assert report.ok
+        assert report.requested_skills == [skills.REFERENCE_SKILL_ID]
+        assert report.dependency_skills == []
+        assert report.skills == [skills.REFERENCE_SKILL_ID]
+
     def test_export_invalid_destination_rejected(self):
         with pytest.raises(skills.SkillsError, match="Invalid destination"):
             skills.export_skills(".")
@@ -1345,6 +1960,17 @@ class TestSkillExport:
 
 
 class TestSkillInstall:
+    def test_install_selected_consumer_includes_reference_dependency(self, tmp_path):
+        report = skills.install_skills(tmp_path, skills=["wiki-sync"])
+
+        assert report.ok
+        assert report.requested_skills == ["wiki-sync"]
+        assert report.dependency_skills == ["wiki-reference"]
+        assert report.skills == ["wiki-reference", "wiki-sync"]
+        target = tmp_path / ".claude" / "skills"
+        assert (target / "wiki-reference" / "SKILL.md").is_file()
+        assert (target / "wiki-sync" / "SKILL.md").is_file()
+
     def test_install_defaults_to_claude_skills_dir(self, tmp_path):
         report = skills.install_skills(tmp_path)
         assert report.ok
@@ -1425,7 +2051,40 @@ class TestSkillsCli:
         assert excinfo.value.code == 1
         assert "outside the project root" in capsys.readouterr().err
 
-    def test_cli_export_selected_skill(self, tmp_project, monkeypatch, capsys):
+    def test_cli_export_selected_skill_with_reference_prerequisite(
+        self, tmp_project, monkeypatch, capsys
+    ):
+        monkeypatch.setattr(
+            "sys.argv",
+            [
+                "llm-wiki",
+                "skills",
+                "export",
+                "--dest",
+                "exported",
+                "--skill",
+                "wiki-sync",
+                "--skill",
+                "wiki-reference",
+                "--format",
+                "json",
+            ],
+        )
+        cli.main()
+        data = json.loads(capsys.readouterr().out)
+        assert data["ok"] is True
+        assert data["requested_skills"] == ["wiki-sync", "wiki-reference"]
+        assert data["dependency_skills"] == []
+        assert data["skills"] == ["wiki-reference", "wiki-sync"]
+        assert any(operation["action"] == "verify" for operation in data["operations"])
+        assert (tmp_project / "exported" / "wiki-sync" / "SKILL.md").is_file()
+        assert (
+            tmp_project / "exported" / "wiki-reference" / "references/maintenance.md"
+        ).is_file()
+
+    def test_cli_auto_includes_selected_consumer_reference_prerequisite(
+        self, tmp_project, monkeypatch, capsys
+    ):
         monkeypatch.setattr(
             "sys.argv",
             [
@@ -1440,11 +2099,37 @@ class TestSkillsCli:
                 "json",
             ],
         )
+
         cli.main()
+
         data = json.loads(capsys.readouterr().out)
         assert data["ok"] is True
-        assert data["skills"] == ["wiki-sync"]
-        assert (tmp_project / "exported" / "wiki-sync" / "SKILL.md").is_file()
+        assert data["requested_skills"] == ["wiki-sync"]
+        assert data["dependency_skills"] == ["wiki-reference"]
+        assert data["skills"] == ["wiki-reference", "wiki-sync"]
+        assert (tmp_project / "exported/wiki-reference/SKILL.md").is_file()
+        assert (tmp_project / "exported/wiki-sync/SKILL.md").is_file()
+
+    def test_cli_text_report_distinguishes_dependency_inclusion(
+        self, tmp_project, monkeypatch, capsys
+    ):
+        monkeypatch.setattr(
+            "sys.argv",
+            [
+                "llm-wiki",
+                "skills",
+                "install",
+                "--skill",
+                "wiki-sync",
+            ],
+        )
+
+        cli.main()
+
+        output = capsys.readouterr().out
+        assert "Requested skills: wiki-sync" in output
+        assert "Dependency-included skills: wiki-reference" in output
+        assert "Skills install: wiki-reference, wiki-sync" in output
 
     def test_cli_help_includes_skills(self, monkeypatch, capsys):
         monkeypatch.setattr("sys.argv", ["llm-wiki", "skills", "--help"])
@@ -1454,3 +2139,12 @@ class TestSkillsCli:
         out = capsys.readouterr().out
         assert "export" in out
         assert "install" in out
+
+        monkeypatch.setattr(
+            "sys.argv", ["llm-wiki", "skills", "install", "--help"]
+        )
+        with pytest.raises(SystemExit) as selection_help:
+            cli.main()
+        assert selection_help.value.code == 0
+        normalized = " ".join(capsys.readouterr().out.split())
+        assert "bundled dependencies are included automatically" in normalized

@@ -1,6 +1,6 @@
 # _SnapshotBuckets
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:396`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:427`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -26,6 +26,7 @@ _Auto-generated from `_SnapshotBuckets` in `src/llm_wiki_cli/services/source_sna
 | `include_tests` | `frozenset[str]` | *required* | — |
 | `source_selection_policy` | `SourceSelectionPolicy \| None` | *required* | — |
 | `selected_regular_paths` | `set[str]` | *required* | — |
+| `expected_gitignore_paths` | `frozenset[str] \| None` | *required* | — |
 
 ## Methods
 
@@ -77,21 +78,23 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [source_snapshot](../modules/source_snapshot.md) | 0 | `compose_candidates`, `dockerfile_candidates`, `files_by_language`, `gitignore_contents`, `gitignore_rules`, `include_tests`, `package_markers`, `selected_regular_paths`, `source_selection_policy`, `unsupported_files_by_language`, `yaml_candidates` |
+| [source_snapshot](../modules/source_snapshot.md) | 0 | `compose_candidates`, `dockerfile_candidates`, `expected_gitignore_paths`, `files_by_language`, `gitignore_contents`, `gitignore_rules`, `include_tests`, `package_markers`, `selected_regular_paths`, `source_selection_policy`, `unsupported_files_by_language`, `yaml_candidates` |
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_source_snapshot` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_collect_source_selection_controls` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_collect_source_tree` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_new_snapshot_buckets` | call | [source_snapshot](../modules/source_snapshot.md) |
-| `_new_snapshot_buckets` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_prune_dirnames` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_generated_javascript_bundle_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_gitignore_rules` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_infrastructure_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
-| `_record_unsupported_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_source_snapshot` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_collect_source_selection_controls` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_collect_source_tree` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_new_snapshot_buckets` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_new_snapshot_buckets` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_prune_dirnames` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_generated_javascript_bundle_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_gitignore_rules` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_infrastructure_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_record_unsupported_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

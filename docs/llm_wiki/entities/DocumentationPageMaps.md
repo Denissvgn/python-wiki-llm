@@ -49,9 +49,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_evaluate_runtime_surface` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `_page_maps` | call | [documentation_native](../modules/documentation_native.md) |
-| `_page_maps` | type_reference | [documentation_native](../modules/documentation_native.md) |
-| `_regenerated_evidence_pages` | type_reference | [documentation_native](../modules/documentation_native.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_evaluate_runtime_surface` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `_page_maps` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_page_maps` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
+| `_regenerated_evidence_pages` | type_reference | [documentation_native](../modules/documentation_native.md) | — |

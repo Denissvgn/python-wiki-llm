@@ -56,6 +56,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_set_knowledge_summary` | call | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_set_knowledge_summary` | call | [lint_service](../modules/lint_service.md) | 1 |

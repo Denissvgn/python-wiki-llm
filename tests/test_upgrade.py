@@ -14,7 +14,12 @@ from llm_wiki_cli.services.schema import (
     CONSTRAINT_START,
     CONSTRAINT_END,
     SCHEMA_FILENAMES,
+    ManagedSchemaBlockState,
+    SchemaRenderProfile,
+    classify_managed_schema_block,
+    decode_managed_document_bytes,
 )
+from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES, reference_skill_state
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
@@ -107,9 +112,16 @@ class TestUpgradeRefreshesSchema:
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
 
-        from llm_wiki_cli.services.schema import build_schema_content
+        from llm_wiki_cli.services.schema import (
+            SchemaRenderProfile,
+            build_schema_content,
+        )
 
-        expected_block = build_schema_content("copilot", "docs/llm_wiki")
+        expected_block = build_schema_content(
+            "copilot",
+            "docs/llm_wiki",
+            render_profile=SchemaRenderProfile.COMPACT,
+        )
 
         upgrade_cmd.run(_make_args())
 
@@ -167,6 +179,77 @@ class TestUpgradePreservesUserContent:
         assert "My custom rule" in updated
         assert "Always use type hints." in updated
         assert updated.count(CONSTRAINT_START) == 1
+
+    def test_full_upgrade_preserves_crlf_and_legacy_user_bytes(self, tmp_path):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+        managed = (
+            f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n"
+        ).encode("ascii")
+        suffix = (
+            b"# --- LLM Wiki Skill: external/rules ---\r\n"
+            b"preserve \x97 bytes and spaces  \r\n"
+            b"# --- End LLM Wiki Skill: external/rules ---\r\n"
+        )
+        Path("AGENTS.md").write_bytes(prefix + managed + suffix)
+
+        upgrade_cmd.run(_make_args())
+
+        committed = Path("AGENTS.md").read_bytes()
+        assert committed.startswith(prefix)
+        assert committed.endswith(suffix)
+        assert b"profile=compact" in committed
+
+    def test_source_cleanup_preserves_every_unmanaged_byte(self, tmp_path):
+        os.chdir(tmp_path)
+        prefix = b"# User \x96 rules\r\n\r\n"
+        managed = (
+            f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n"
+        ).encode("ascii")
+        suffix = b"# User footer \x97  \r\n"
+        Path("AGENTS.md").write_bytes(prefix + managed + suffix)
+
+        receipt = upgrade_cmd._clean_old_schema("generic", "claude")
+
+        assert receipt is not None
+        assert Path("AGENTS.md").read_bytes() == prefix + suffix
+
+    def test_legacy_block_survives_expanded_rollback_and_compact_forward_cycle(
+        self, tmp_path
+    ):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+        legacy = (f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n").encode(
+            "ascii"
+        )
+        suffix = b"# User footer \x97  \r\n"
+        schema = Path("AGENTS.md")
+        schema.write_bytes(prefix + legacy + suffix)
+
+        transitions = (
+            (False, SchemaRenderProfile.EXPANDED_INLINE),
+            (True, SchemaRenderProfile.COMPACT),
+            (False, SchemaRenderProfile.EXPANDED_INLINE),
+            (True, SchemaRenderProfile.COMPACT),
+        )
+        for skills_enabled, expected_profile in transitions:
+            upgrade_cmd.run(_make_args(skills=skills_enabled))
+
+            committed = schema.read_bytes()
+            assert committed.startswith(prefix)
+            assert committed.endswith(suffix)
+            block = classify_managed_schema_block(
+                decode_managed_document_bytes(committed)
+            )
+            assert block.state is ManagedSchemaBlockState.PROFILED
+            assert block.profile is expected_profile
+            assert committed.count(CONSTRAINT_START.encode("ascii")) == 1
+            assert committed.count(CONSTRAINT_END.encode("ascii")) == 1
+            config = read_config("docs/llm_wiki")
+            assert config["reference_skill"] is skills_enabled
+            assert config["rendered_profile"] == expected_profile.value
 
 
 class TestUpgradePreservesWiki:
@@ -449,7 +532,7 @@ class TestUpgradeQualityHints:
 
         content = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
         assert "Agent quality guidelines" in content
-        assert "Surgical Changes" in content
+        assert "Keep edits surgical" in content
 
     def test_no_quality_hints_flag(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
@@ -628,16 +711,28 @@ class TestUpgradeIdempotent:
 
 
 class TestUpgradeReferenceSkill:
-    def test_force_refreshes_modified_copy(self, tmp_path):
+    def test_force_refreshes_modified_nested_file(self, tmp_path, capsys):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         ref.write_text("stale local copy\n", encoding="utf-8")
 
         upgrade_cmd.run(_make_args())
 
         assert ref.read_text(encoding="utf-8") != "stale local copy\n"
-        assert "GHC 9.6.x" in ref.read_text(encoding="utf-8")
+        assert reference_skill_state(agent="copilot") == "unmodified"
+        assert "Refreshed wiki-reference" in capsys.readouterr().out
+
+    def test_restores_missing_nested_file(self, tmp_path):
+        _init_project(tmp_path, agent="copilot")
+        os.chdir(tmp_path)
+        topic = Path(".llm-wiki/skills/wiki-reference/references/governance.md")
+        topic.unlink()
+
+        upgrade_cmd.run(_make_args())
+
+        assert topic.is_file()
+        assert reference_skill_state(agent="copilot") == "unmodified"
 
     def test_installs_when_absent(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
@@ -648,12 +743,17 @@ class TestUpgradeReferenceSkill:
 
         upgrade_cmd.run(_make_args())
 
-        assert Path(".llm-wiki/skills/wiki-reference/reference.md").is_file()
+        skill_dir = Path(".llm-wiki/skills/wiki-reference")
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
 
     def test_no_skills_flag_skips_refresh(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         ref.write_text("local copy\n", encoding="utf-8")
 
         upgrade_cmd.run(_make_args(skills=False))
@@ -683,20 +783,35 @@ class TestUpgradeReferenceSkill:
     def test_switch_migrates_skill_to_new_agent_dir(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        assert Path(".llm-wiki/skills/wiki-reference/reference.md").is_file()
+        old_dir = Path(".llm-wiki/skills/wiki-reference")
+        assert {
+            path.relative_to(old_dir).as_posix()
+            for path in old_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
 
         upgrade_cmd.run(_make_args(agent="claude"))
 
         assert not Path(".llm-wiki/skills/wiki-reference").exists()
-        assert Path(".claude/skills/wiki-reference/reference.md").is_file()
+        new_dir = Path(".claude/skills/wiki-reference")
+        assert {
+            path.relative_to(new_dir).as_posix()
+            for path in new_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
 
     def test_switch_keeps_modified_copy_at_old_location(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-        old_ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        old_ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         old_ref.write_text("local notes\n", encoding="utf-8")
 
         upgrade_cmd.run(_make_args(agent="claude"))
 
         assert old_ref.read_text(encoding="utf-8") == "local notes\n"
-        assert Path(".claude/skills/wiki-reference/reference.md").is_file()
+        new_dir = Path(".claude/skills/wiki-reference")
+        assert {
+            path.relative_to(new_dir).as_posix()
+            for path in new_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)

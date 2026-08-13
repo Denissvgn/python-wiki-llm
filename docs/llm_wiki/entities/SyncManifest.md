@@ -92,17 +92,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_manifest_needs_write` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_manifest_payload` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) |
-| `review_cmd` | import | [review_cmd](../modules/review_cmd.md) |
-| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_manifest_from_inventory` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_surface_initialization_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_governance_moves_for_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_manifest_needs_write` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_manifest_payload` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `review_cmd` | import | [review_cmd](../modules/review_cmd.md) | — |
+| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_manifest_from_inventory` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_surface_initialization_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_governance_moves_for_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 79 logical references; 67 omitted by the 12-row generated summary limit.

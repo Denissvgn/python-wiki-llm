@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from tests import release_artifact_smoke
+
 try:
     import tomllib  # type: ignore[reportMissingImports]
 except ModuleNotFoundError:  # pragma: no cover - Python 3.9/3.10
@@ -120,6 +122,23 @@ def test_package_data_includes_bundled_skills():
     assert "skills/wiki-sync/reference.md" in package_data
     assert "skills/wiki-bootstrap/SKILL.md" in package_data
     assert "skills/wiki-bootstrap/reference.md" in package_data
+    assert "skills/wiki-reference/SKILL.md" in package_data
+    assert "skills/wiki-reference/reference.md" in package_data
+    assert {
+        item
+        for item in package_data
+        if item.startswith("skills/wiki-reference/references/")
+    } == {
+        "skills/wiki-reference/references/context-query.md",
+        "skills/wiki-reference/references/extractors-dependencies.md",
+        "skills/wiki-reference/references/governance.md",
+        "skills/wiki-reference/references/knowledge-consumption.md",
+        "skills/wiki-reference/references/maintenance.md",
+        "skills/wiki-reference/references/publishing.md",
+        "skills/wiki-reference/references/repository-handoff.md",
+        "skills/wiki-reference/references/resources-context.md",
+        "skills/wiki-reference/references/surfaces-naming.md",
+    }
     assert "skills/attack-surface/SKILL.md" in package_data
     assert "skills/attack-surface/reference.md" in package_data
     assert "skills/dep-audit/SKILL.md" in package_data
@@ -146,6 +165,12 @@ def test_package_data_includes_bundled_skills():
     assert "skills/wiki-semantic-enhance/reference.md" in package_data
 
 
+def test_managed_reference_tree_matches_artifact_smoke_contract():
+    root = PROJECT_ROOT / "src" / "llm_wiki_cli" / "skills" / "wiki-reference"
+
+    assert release_artifact_smoke._validate_wiki_reference_tree(root) == 11
+
+
 def test_core_dependencies_do_not_install_model_provider_sdks():
     data = _pyproject()
     dependency_names = {
@@ -168,9 +193,7 @@ def test_core_dependencies_do_not_install_model_provider_sdks():
 def test_package_data_includes_bundled_documentation_hooks_plugin_sample():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
-    assert (
-        "examples/plugins/documentation-hooks/llm-wiki-plugin.json" in package_data
-    )
+    assert "examples/plugins/documentation-hooks/llm-wiki-plugin.json" in package_data
     assert "examples/plugins/documentation-hooks/detectors.py" in package_data
     assert "examples/plugins/documentation-hooks/styles.py" in package_data
 
@@ -178,8 +201,7 @@ def test_package_data_includes_bundled_documentation_hooks_plugin_sample():
 def test_sdist_manifest_includes_source_documentation_hooks_plugin_sample():
     manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     assert (
-        "recursive-include examples/plugins/documentation-hooks *.py *.json"
-        in manifest
+        "recursive-include examples/plugins/documentation-hooks *.py *.json" in manifest
     )
 
 
@@ -195,7 +217,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "1.6.0"
+    assert data["project"]["version"] == "1.7.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():
@@ -237,13 +259,38 @@ def test_readme_current_support_table_mentions_python_3_10_plus():
     assert "| Python | stdlib `ast` | Python 3.9+ |" not in readme
 
 
+def test_readme_describes_entity_reference_tables_as_bounded_presentations():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    normalized = " ".join(readme.split())
+
+    assert "at most 12 logical rows" in normalized
+    assert "report exact coverage and omission counts when truncated" in normalized
+    assert "not an exhaustive line-level call-site record" in normalized
+    assert "generated tables remain the complete authoritative view" not in normalized
+
+
+def test_changelog_describes_diagrams_and_tables_as_independently_bounded():
+    changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    normalized = " ".join(changelog.split())
+
+    assert (
+        "omit excess visual detail independently of separately generated table projections"
+        in normalized
+    )
+    assert "aggregate exact repeated call observations into one logical row" in normalized
+    assert "apply the 12-row presentation bound after grouping" in normalized
+    assert "disclose exact logical coverage when truncated" in normalized
+    assert "retain their line-specific records" in normalized
+    assert "without truncating authoritative tables" not in normalized
+
+
 def test_changelog_1_2_0_documents_python_support_floor():
     changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     assert changelog.count("## [1.2.0] - 2026-07-08") == 1
 
     release_notes = _changelog_section("## [1.2.0]")
     assert "Minimum supported Python is now 3.10" in release_notes
-    assert "CI now tests Python 3.10 and 3.13" in release_notes
+    assert "release automation covers Python 3.10 and 3.13" in release_notes
 
 
 def test_readme_documents_bundled_skills():
@@ -268,6 +315,18 @@ def test_readme_documents_bundled_skills():
         "wiki-sync",
     ]:
         assert f"`{skill_id}`" in readme
+
+
+def test_public_lifecycle_docs_scope_legacy_generic_schema_migration():
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    release_notes = _changelog_section("## [1.7.0]")
+
+    for text in (readme, release_notes):
+        normalized = " ".join(text.split())
+        assert "configured agent's current schema path" in normalized
+        assert "`.agents.md`" in normalized
+        assert "`AGENTS.md`" in normalized
+        assert "user-owned, manually managed content" in normalized
 
 
 def test_readme_documents_autonomous_agent_consumption_paths():
@@ -363,20 +422,19 @@ def test_release_metadata_documents_surfaces_and_platforms():
         assert required in release_metadata
 
 
-def test_readme_release_verification_uses_project_virtualenv():
+def test_readme_development_commands_use_project_virtualenv():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     readme_lines = {line.strip() for line in readme.splitlines()}
 
     for required in [
         '.venv/bin/pip install -e ".[dev]"',
-        ".venv/bin/pytest tests/ -v",
+        '.venv/bin/pip install -e ".[dev,mcp]"',
         ".venv/bin/python -m build",
-        ".venv/bin/pytest -q",
     ]:
         assert required in readme
 
     assert 'pip install -e ".[dev]"' not in readme_lines
-    assert not any(line.startswith("python -m pytest") for line in readme_lines)
+    assert not any("/pytest" in line for line in readme_lines)
 
 
 def test_changelog_1_0_0_documents_public_surfaces():
@@ -419,26 +477,43 @@ def test_default_ci_does_not_install_or_prepare_ghc():
     assert "prepare-extractors --language haskell" not in ci_lower
 
 
-def test_wiki_integrity_uses_the_automatic_locked_routine_helper_plan():
+def test_wiki_integrity_uses_the_automatic_locked_helper_plan():
     workflow = yaml.safe_load(
         (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     )
     job = workflow["jobs"]["wiki-integrity"]
-    setup = next(
+    delegation = next(
         step
         for step in job["steps"]
-        if step.get("name") == "Install the locked routine toolchain"
+        if step.get("uses") == "./integrations/wiki-integrity"
+    )
+    assert delegation["with"] == {
+        "src-dir": ".",
+        "wiki-dir": "docs/llm_wiki",
+    }
+
+    action = yaml.safe_load(
+        (PROJECT_ROOT / "integrations" / "wiki-integrity" / "action.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    steps = action["runs"]["steps"]
+    setup = next(
+        step
+        for step in steps
+        if step.get("name")
+        == "Install the locked TypeScript and JavaScript extractor toolchain"
     )["run"]
     prepare = next(
         step
-        for step in job["steps"]
+        for step in steps
         if step.get("name") == "Prepare the automatically selected extractor helpers"
     )["run"]
 
     assert "--mode routine" in setup
     assert "--mode qualification-go" not in setup
     assert "-I -m llm_wiki_cli.cli prepare-extractors" in prepare
-    assert "--src-dir ." in prepare
+    assert '--src-dir "${INPUT_SRC_DIR}"' in prepare
     assert '--cache-dir "${LLM_WIKI_CACHE_DIR}"' in prepare
     assert "--language" not in prepare
     assert "--source-selection" not in prepare

@@ -1,6 +1,6 @@
 # SurfaceRole
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:43`
+**Location:** `src/llm_wiki_cli/services/wiki_surface.py:55`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [wiki_surface](../modules/wiki_surface.md)
@@ -58,8 +58,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) |
-| `knowledge_model` | import | [knowledge_model](../modules/knowledge_model.md) |
-| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `knowledge_model` | import | [knowledge_model](../modules/knowledge_model.md) | — |
+| `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

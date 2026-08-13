@@ -1,6 +1,6 @@
 # ArtifactIntegrityError
 
-**Location:** `src/llm_wiki_cli/api.py:319`
+**Location:** `src/llm_wiki_cli/api.py:340`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -46,8 +46,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_raise_api_error` | call | [api](../modules/api.md) | 3 |

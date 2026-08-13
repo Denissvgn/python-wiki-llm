@@ -55,26 +55,40 @@ def test_infra_review_contract_bounds_incremental_freshness_and_outcomes():
     assert "<private-endpoint>" in text
 
 
-def test_infra_review_contract_includes_native_and_trusted_plugin_preflight():
+def test_infra_review_routes_native_policy_and_keeps_trusted_plugin_kernel():
     text = _skill_text()
     normalized = " ".join(text.split())
 
     for expected in (
         "`availability`",
-        "`reason`",
-        "`freshness`",
+        "reason",
         "`freshness_evaluated`",
         "`nonsemantic-source-change`",
-        "`absent`",
-        "`degraded`",
-        "`unsupported`",
-        "invalid/mixed",
-        "not true, reviewed, approved, secure, or runtime-current",
+        "`ready` with live `current`",
+        "bounded `found: false`",
         "trusted, unsandboxed code",
     ):
         assert expected in normalized
-    assert "snapshot-only status is not live freshness" in normalized.lower()
-    assert "Do not run `knowledge init`" in normalized
+    assert skills.SKILL_DEPENDENCIES["infra-review"] == (
+        skills.REFERENCE_SKILL_ID,
+    )
+    for root in (".claude/skills", ".llm-wiki/skills"):
+        assert (
+            f"{root}/wiki-reference/references/knowledge-consumption.md" in text
+        )
+
+    common = (
+        skills.BUNDLED_SKILLS_ROOT
+        / skills.REFERENCE_SKILL_ID
+        / "references/knowledge-consumption.md"
+    ).read_text(encoding="utf-8")
+    normalized_common = " ".join(common.split())
+    assert "snapshot-only" in normalized_common
+    assert (
+        "Do not upgrade them to truth, approval, security, or runtime behavior"
+        in normalized_common
+    )
+    assert "Neither mode initializes, repairs, or persists governance" in normalized_common
 
 
 def test_docker_and_compose_page_screen_matches_parser_renderer_boundary():

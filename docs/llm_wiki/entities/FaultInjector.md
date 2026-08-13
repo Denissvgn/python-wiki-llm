@@ -41,7 +41,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_write_durable_atomic` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `save_governance` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_write_durable_atomic` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `save_governance` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

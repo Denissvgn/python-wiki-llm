@@ -63,13 +63,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_bundle_continuity` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_assert_snapshot_unchanged` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_committed_artifact_snapshot` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_committed_artifact_snapshot` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_init_ledger` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_prepare_existing_mutation` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_projected_commit_plan` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_validated_artifact_snapshot` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_bundle_continuity` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_assert_snapshot_unchanged` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_committed_artifact_snapshot` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_committed_artifact_snapshot` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_init_ledger` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_prepare_existing_mutation` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_projected_commit_plan` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `_validated_artifact_snapshot` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |

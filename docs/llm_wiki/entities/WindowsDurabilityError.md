@@ -1,6 +1,6 @@
 # WindowsDurabilityError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:55`
+**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:60`
 **Kind:** Class
 **Bases:** `OSError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -48,8 +48,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `move_windows_path_write_through` | call | [filesystem_guard](../modules/filesystem_guard.md) |
-| `move_windows_path_write_through` | call | [filesystem_guard](../modules/filesystem_guard.md) |
-| `protected_artifacts` | import | [protected_artifacts](../modules/protected_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `move_windows_path_write_through` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
+| `protected_artifacts` | import | [protected_artifacts](../modules/protected_artifacts.md) | — |

@@ -114,17 +114,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| open_windows_private_write_file | WindowsFileGuardError | 542 | `WindowsFileGuardError('Private Windows file creation is unavailable on this platform.')` |
-| open_windows_private_write_file | WinDLL | 547 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| open_windows_private_write_file | _private_windows_security_attributes | 561 | `_private_windows_security_attributes(directory=False)` |
-| _private_windows_security_attributes | WinDLL | 930 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _private_windows_security_attributes | WinDLL | 931 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _private_windows_security_attributes | POINTER | 936 | `ctypes.POINTER(wintypes.LPVOID)` |
-| _private_windows_security_attributes | POINTER | 937 | `ctypes.POINTER(wintypes.DWORD)` |
-| _private_windows_security_attributes | _current_windows_user_sid | 951 | `_current_windows_user_sid(data not statically known)` |
-| _current_windows_user_sid | WinDLL | 979 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _current_windows_user_sid | WinDLL | 980 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _current_windows_user_sid | POINTER | 985 | `ctypes.POINTER(wintypes.HANDLE)` |
+| open_windows_private_write_file | WindowsFileGuardError | 555 | `WindowsFileGuardError('Private Windows file creation is unavailable on this platform.')` |
+| open_windows_private_write_file | WinDLL | 560 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| open_windows_private_write_file | _private_windows_security_attributes | 574 | `_private_windows_security_attributes(directory=False)` |
+| _private_windows_security_attributes | WinDLL | 943 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _private_windows_security_attributes | WinDLL | 944 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _private_windows_security_attributes | POINTER | 949 | `ctypes.POINTER(wintypes.LPVOID)` |
+| _private_windows_security_attributes | POINTER | 950 | `ctypes.POINTER(wintypes.DWORD)` |
+| _private_windows_security_attributes | _current_windows_user_sid | 964 | `_current_windows_user_sid(data not statically known)` |
+| _current_windows_user_sid | WinDLL | 992 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _current_windows_user_sid | WinDLL | 993 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _current_windows_user_sid | POINTER | 998 | `ctypes.POINTER(wintypes.HANDLE)` |
 
 ### Boundary effects
 
@@ -134,14 +134,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `open_windows_private_write_file` | `ctypes.WinDLL` | 547 |
-| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 930 |
-| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 931 |
-| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 936 |
-| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 937 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 979 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 980 |
-| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 985 |
+| external_call | `open_windows_private_write_file` | `ctypes.WinDLL` | 560 |
+| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 943 |
+| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 944 |
+| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 949 |
+| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 950 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 992 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 993 |
+| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 998 |
 | step_limit | `open_windows_private_write_file` | `first 12 steps` | 0 |
 
 ## Behavior

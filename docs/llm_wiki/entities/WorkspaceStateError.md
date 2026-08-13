@@ -1,6 +1,6 @@
 # WorkspaceStateError
 
-**Location:** `src/llm_wiki_cli/api.py:315`
+**Location:** `src/llm_wiki_cli/api.py:336`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -25,20 +25,35 @@ flowchart LR
     n0["WorkspaceStateError (src/llm_wiki_cli/api.py)"]
     n1["LlmWikiApiError (src/llm_wiki_cli/api.py)"]
     n2["_raise_api_error (src/llm_wiki_cli/api.py)"]
-    n3["bootstrap_wiki (src/llm_wiki_cli/api.py)"]
-    n4["build_context (src/llm_wiki_cli/api.py)"]
-    n5["build_documentation_query_service (src/llm_wiki_cli/api.py)"]
+    n3["_raise_required_knowledge_api_error (src/llm_wiki_cli/api.py)"]
+    n4["bootstrap_wiki (src/llm_wiki_cli/api.py)"]
+    n5["build_context (src/llm_wiki_cli/api.py)"]
+    n6["build_documentation_query_service (src/llm_wiki_cli/api.py)"]
+    n7["build_qualified_context (src/llm_wiki_cli/api.py)"]
+    n8["extract_source (src/llm_wiki_cli/api.py)"]
+    n9["list_wiki_pages (src/llm_wiki_cli/api.py)"]
+    n10["reconcile_context_packet (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
+    n7 --> n0
+    n8 --> n0
+    n9 --> n0
+    n10 --> n0
     click n0 "../modules/api.md"
     click n1 "../modules/api.md"
     click n2 "../modules/api.md"
     click n3 "../modules/api.md"
     click n4 "../modules/api.md"
     click n5 "../modules/api.md"
+    click n6 "../modules/api.md"
+    click n7 "../modules/api.md"
+    click n8 "../modules/api.md"
+    click n9 "../modules/api.md"
+    click n10 "../modules/api.md"
 ```
 
 ### Summary
@@ -55,17 +70,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `_raise_api_error` | call | [api](../modules/api.md) |
-| `bootstrap_wiki` | call | [api](../modules/api.md) |
-| `bootstrap_wiki` | call | [api](../modules/api.md) |
-| `build_context` | call | [api](../modules/api.md) |
-| `build_context` | call | [api](../modules/api.md) |
-| `build_documentation_query_service` | call | [api](../modules/api.md) |
-| `build_documentation_query_service` | call | [api](../modules/api.md) |
-| `build_documentation_query_service` | call | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_raise_api_error` | call | [api](../modules/api.md) | 5 |
+| `_raise_required_knowledge_api_error` | call | [api](../modules/api.md) | 1 |
+| `bootstrap_wiki` | call | [api](../modules/api.md) | 2 |
+| `build_context` | call | [api](../modules/api.md) | 3 |
+| `build_documentation_query_service` | call | [api](../modules/api.md) | 3 |
+| `build_qualified_context` | call | [api](../modules/api.md) | 4 |
+| `extract_source` | call | [api](../modules/api.md) | 2 |
+| `list_wiki_pages` | call | [api](../modules/api.md) | 1 |
+| `reconcile_context_packet` | call | [api](../modules/api.md) | 3 |

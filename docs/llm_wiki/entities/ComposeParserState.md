@@ -64,12 +64,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_compose_list_item` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_compose_path_parent` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_parse_compose` | call | [extraction_service](../modules/extraction_service.md) |
-| `_parse_compose_service_line` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_set_compose_service_key` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_start_compose_service` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_start_compose_top_level_section` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_compose_list_item` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_compose_path_parent` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_parse_compose` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_parse_compose_service_line` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_set_compose_service_key` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_start_compose_service` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_start_compose_top_level_section` | type_reference | [extraction_service](../modules/extraction_service.md) | — |

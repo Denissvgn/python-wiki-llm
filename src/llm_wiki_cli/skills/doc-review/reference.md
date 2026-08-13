@@ -1,5 +1,18 @@
 # doc-review reference
 
+## Contents
+
+- [Input modes](#input-modes)
+- [Triage statuses](#triage-statuses)
+- [Managed versus external mutation contract](#managed-versus-external-mutation-contract)
+- [Native human-review handoff](#native-human-review-handoff)
+- [Native lint finding map](#native-lint-finding-map)
+- [Published user-docs finding classes](#published-user-docs-finding-classes)
+- [Safe edit rules](#safe-edit-rules)
+- [Report format](#report-format)
+- [Native-qualified finding evidence](#native-qualified-finding-evidence)
+- [Usage examples handoff](#usage-examples-handoff)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 ## Input modes

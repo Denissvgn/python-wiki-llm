@@ -1,5 +1,19 @@
 # attack-surface reference
 
+## Contents
+
+- [Live extract schema and coverage contract](#live-extract-schema-and-coverage-contract)
+- [Trusted-plugin and inert-evidence preflight](#trusted-plugin-and-inert-evidence-preflight)
+- [Security-model discovery](#security-model-discovery)
+- [Entry-point categories and trust boundaries](#entry-point-categories-and-trust-boundaries)
+- [Boundary effects and data-flow gaps](#boundary-effects-and-data-flow-gaps)
+- [Source-level sink scan](#source-level-sink-scan)
+- [Exposure-report artifact format](#exposure-report-artifact-format)
+- [Security-model coverage matrix](#security-model-coverage-matrix)
+- [Validation expectations](#validation-expectations)
+- [Failure modes and edge cases](#failure-modes-and-edge-cases)
+- [Related workflows](#related-workflows)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 ## Live extract schema and coverage contract
@@ -133,9 +147,22 @@ For each hit inside reachable code, record the file path and line range, then re
 
 ## Exposure-report artifact format
 
-Default path: `reports/attack_surface_<YYYY-MM-DD>.md`. The artifact is agent-owned Markdown; keep it stable and updatable by hand. Required sections: run summary (commands, schema version, emitted-row counts, explicit coverage statement, helper/plugin/unsupported limitations), prioritized exposure inventory, security-model coverage matrix, and follow-ups.
+Suggested repository path: `reports/attack_surface_<YYYY-MM-DD>.md`. Treat this
+path only as a suggestion. Follow the exact-target repository-report preflight
+in [SKILL.md](SKILL.md) before any write; the path never authorizes repository
+creation or publication.
 
-For large runs, capture and name the companion artifacts in the run summary: command log, extraction JSON, review JSON if a review command is used, generated report path, and elapsed time. These names make reruns comparable without rereading long console output.
+The artifact is agent-owned Markdown; keep it stable and updatable by hand.
+Required sections: run summary (commands, schema version, emitted-row counts,
+explicit coverage statement, helper/plugin/unsupported limitations),
+prioritized exposure inventory, security-model coverage matrix, and follow-ups.
+
+For large runs, apply the sibling `SKILL.md` preflight separately to
+every companion command log, extraction JSON, review JSON, and generated
+prompt/log before a repository write. Keep every unproven companion target in
+the approved non-repository scratch location. Name those sensitive local
+artifacts, the generated report path, and elapsed time in the run summary so
+reruns remain comparable without rereading long console output.
 
 Each exposure item uses a stable sequential `AS-NNN` ID:
 
@@ -190,7 +217,9 @@ A successful run has:
 - All data-flow gap counts reported as unknown surface.
 - A sink scan performed for every truncated/step-limited entry point.
 - An explicit closing statement that no vulnerability is claimed or excluded unless one was actually validated in this run.
-- No writes to the target tree other than the report and the explicit `--output` payload.
+- No writes to the target tree. A report or explicit `--output` payload may use
+  a repository path only after its own exact-target ignore proof; otherwise keep
+  it in approved non-repository scratch.
 
 ## Failure modes and edge cases
 

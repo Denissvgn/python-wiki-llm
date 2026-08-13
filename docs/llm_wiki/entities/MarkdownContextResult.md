@@ -1,6 +1,6 @@
 # MarkdownContextResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:53`
+**Location:** `src/llm_wiki_cli/api_types.py:129`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)
@@ -49,6 +49,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_context` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_context` | type_reference | [api](../modules/api.md) | — |

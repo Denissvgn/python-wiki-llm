@@ -63,13 +63,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `check_obsidian_vault` | call | [obsidian](../modules/obsidian.md) |
-| `check_obsidian_vault` | type_reference | [obsidian](../modules/obsidian.md) |
-| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) |
-| `export_obsidian_vault` | type_reference | [obsidian](../modules/obsidian.md) |
-| `install_obsidian_plugin` | call | [obsidian](../modules/obsidian.md) |
-| `install_obsidian_plugin` | type_reference | [obsidian](../modules/obsidian.md) |
-| `render_report_json` | type_reference | [obsidian](../modules/obsidian.md) |
-| `render_report_text` | type_reference | [obsidian](../modules/obsidian.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `check_obsidian_vault` | call | [obsidian](../modules/obsidian.md) | 1 |
+| `check_obsidian_vault` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `export_obsidian_vault` | call | [obsidian](../modules/obsidian.md) | 1 |
+| `export_obsidian_vault` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `install_obsidian_plugin` | call | [obsidian](../modules/obsidian.md) | 1 |
+| `install_obsidian_plugin` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `render_report_json` | type_reference | [obsidian](../modules/obsidian.md) | — |
+| `render_report_text` | type_reference | [obsidian](../modules/obsidian.md) | — |

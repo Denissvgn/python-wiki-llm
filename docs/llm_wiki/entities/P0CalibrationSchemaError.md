@@ -33,6 +33,9 @@ flowchart LR
     n8["_portable_id (src/llm_wiki_cli/services/calibration/controller.py)"]
     n9["_portable_relative_path (src/llm_wiki_cli/services/calibration/controller.py)"]
     n10["_proposal_claim_records (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n11["_read_bound_evidence_file (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n12["_record_p0_calibration_agent_result (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n13["_require_bool (src/llm_wiki_cli/services/calibration/controller.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -43,6 +46,9 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/controller.md"
     click n1 "../modules/controller.md"
     click n2 "../modules/api.md"
@@ -54,6 +60,9 @@ flowchart LR
     click n8 "../modules/controller.md"
     click n9 "../modules/controller.md"
     click n10 "../modules/controller.md"
+    click n11 "../modules/controller.md"
+    click n12 "../modules/controller.md"
+    click n13 "../modules/controller.md"
 ```
 
 ### Summary
@@ -70,17 +79,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_admit_external_broker` | call | [controller](../modules/controller.md) |
-| `_authenticate_external_attestation` | call | [controller](../modules/controller.md) |
-| `_authenticate_external_receipt` | call | [controller](../modules/controller.md) |
-| `_json_round_trip` | call | [controller](../modules/controller.md) |
-| `_json_round_trip` | call | [controller](../modules/controller.md) |
-| `_json_round_trip` | call | [controller](../modules/controller.md) |
-| `_json_round_trip_list` | call | [controller](../modules/controller.md) |
-| `_portable_id` | call | [controller](../modules/controller.md) |
-| `_portable_relative_path` | call | [controller](../modules/controller.md) |
-| `_portable_relative_path` | call | [controller](../modules/controller.md) |
-| `_proposal_claim_records` | call | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_admit_external_broker` | call | [controller](../modules/controller.md) | 1 |
+| `_authenticate_external_attestation` | call | [controller](../modules/controller.md) | 1 |
+| `_authenticate_external_receipt` | call | [controller](../modules/controller.md) | 1 |
+| `_json_round_trip` | call | [controller](../modules/controller.md) | 3 |
+| `_json_round_trip_list` | call | [controller](../modules/controller.md) | 1 |
+| `_portable_id` | call | [controller](../modules/controller.md) | 1 |
+| `_portable_relative_path` | call | [controller](../modules/controller.md) | 2 |
+| `_proposal_claim_records` | call | [controller](../modules/controller.md) | 5 |
+| `_read_bound_evidence_file` | call | [controller](../modules/controller.md) | 1 |
+| `_record_p0_calibration_agent_result` | call | [controller](../modules/controller.md) | 1 |
+| `_require_bool` | call | [controller](../modules/controller.md) | 1 |
+
+> References: showing 12 of 43 logical references; 31 omitted by the 12-row generated summary limit.

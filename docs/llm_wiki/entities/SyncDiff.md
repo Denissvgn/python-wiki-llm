@@ -83,17 +83,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_affected_source_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_refreshed_file_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_deprecate_removed_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_generator_refresh_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_affected_source_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_refreshed_file_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_deprecate_removed_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_generator_refresh_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.

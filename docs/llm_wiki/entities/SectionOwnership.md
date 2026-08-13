@@ -65,10 +65,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_expected_persisted_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `_normalise_section_record` | call | [section_ownership](../modules/section_ownership.md) |
-| `_scoped_hashes` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `_top_level_policy` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `classify_section_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_expected_persisted_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `_normalise_section_record` | call | [section_ownership](../modules/section_ownership.md) | 1 |
+| `_scoped_hashes` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `_top_level_policy` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `classify_section_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) | — |

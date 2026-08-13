@@ -58,11 +58,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_load_inventory_cache_state` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_prepare_inventory_build_context` | call | [extraction_service](../modules/extraction_service.md) |
-| `_record_stale_cache_entry` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_should_save_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `format_cache_stats` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
-| `InventoryCache.__init__` | type_reference | [inventory_cache](../modules/inventory_cache.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_load_inventory_cache_state` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_prepare_inventory_build_context` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_record_stale_cache_entry` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_should_save_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `format_cache_stats` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
+| `InventoryCache.__init__` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |

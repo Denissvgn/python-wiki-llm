@@ -51,7 +51,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_knowledge_counts` | call | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `_knowledge_counts` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_knowledge_counts` | call | [knowledge_consumption](../modules/knowledge_consumption.md) | 1 |
+| `_knowledge_counts` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |

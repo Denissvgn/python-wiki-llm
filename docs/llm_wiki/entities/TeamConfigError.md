@@ -60,17 +60,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `generate_prompt_cmd` | import | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `trigger_cmd` | import | [trigger_cmd](../modules/trigger_cmd.md) |
-| `_ensure_string_list` | call | [team](../modules/team.md) |
-| `_reject_unknown_keys` | call | [team](../modules/team.md) |
-| `_reject_unknown_keys` | call | [team](../modules/team.md) |
-| `load_team_config` | call | [team](../modules/team.md) |
-| `load_team_config` | call | [team](../modules/team.md) |
-| `validate_team_config` | call | [team](../modules/team.md) |
-| `validate_team_config` | call | [team](../modules/team.md) |
-| `validate_team_config` | call | [team](../modules/team.md) |
-| `validate_team_config` | call | [team](../modules/team.md) |
-| `validate_team_config` | call | [team](../modules/team.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `generate_prompt_cmd` | import | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `trigger_cmd` | import | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `_ensure_string_list` | call | [team](../modules/team.md) | 1 |
+| `_reject_unknown_keys` | call | [team](../modules/team.md) | 2 |
+| `load_team_config` | call | [team](../modules/team.md) | 2 |
+| `validate_team_config` | call | [team](../modules/team.md) | 10 |

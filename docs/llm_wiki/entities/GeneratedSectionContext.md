@@ -1,6 +1,6 @@
 # _GeneratedSectionContext
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:645`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:646`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -52,11 +52,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_generated_section_context` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_empty_generated_section_context` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_empty_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_generated_section_context` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_empty_generated_section_context` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_empty_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

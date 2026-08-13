@@ -120,8 +120,9 @@ def test_obsidian_navigation_export_matches_layout(navigation_wiki, monkeypatch)
     assert not (navigation_wiki.absent_mirror_paths & mirror_paths)
 
 
-def test_status_navigation_counts_match_layout(navigation_wiki, capsys):
-    status_cmd.run(_args(wiki_dir=str(navigation_wiki.wiki_dir)))
+def test_status_navigation_counts_match_layout(navigation_wiki, capsys, monkeypatch):
+    monkeypatch.chdir(navigation_wiki.src_dir)
+    status_cmd.run(_args(wiki_dir="docs/llm_wiki"))
 
     counts = _status_counts(capsys.readouterr().out)
 

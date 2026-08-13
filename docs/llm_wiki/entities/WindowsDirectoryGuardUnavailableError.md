@@ -1,6 +1,6 @@
 # _WindowsDirectoryGuardUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:43`
+**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:48`
 **Kind:** Class
 **Bases:** `WindowsDirectoryGuardError`
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -49,7 +49,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_open_windows_directory_guard` | call | [filesystem_guard](../modules/filesystem_guard.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_open_windows_directory_guard` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |

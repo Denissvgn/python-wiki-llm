@@ -1326,13 +1326,13 @@ def test_committed_profile_freezes_intended_product_census():
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 157,
+        "python": 161,
         "typescript": 2,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 159
+    assert len(snapshot.all_source_paths) == 163
     assert snapshot.language_paths("typescript") == [
         "integrations/obsidian/llm-wiki/main.js",
         "integrations/obsidian/llm-wiki/src/main.ts",

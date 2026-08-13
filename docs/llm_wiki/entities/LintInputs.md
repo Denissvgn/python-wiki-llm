@@ -60,11 +60,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_check_team_issues` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_collect_lint_inputs` | call | [lint_service](../modules/lint_service.md) |
-| `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_evaluate_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_load_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_run_report_checks` | type_reference | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_check_team_issues` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_collect_lint_inputs` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_evaluate_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_load_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_run_report_checks` | type_reference | [lint_service](../modules/lint_service.md) | — |

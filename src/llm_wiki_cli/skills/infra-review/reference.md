@@ -1,5 +1,13 @@
 # infra-review reference
 
+## Contents
+
+- [Incremental observation and discovery boundary](#incremental-observation-and-discovery-boundary)
+- [Page-visible fields versus raw-source checks](#page-visible-fields-versus-raw-source-checks)
+- [Checklist by artifact type](#checklist-by-artifact-type)
+- [Report format](#report-format)
+- [Failure modes](#failure-modes)
+
 Supporting detail for [SKILL.md](SKILL.md).
 
 ## Incremental observation and discovery boundary
@@ -156,7 +164,12 @@ permissions can only be assessed from current raw YAML.
 
 ## Report format
 
-`reports/infra_review_<YYYY-MM-DD>.md`:
+Suggested repository path: `reports/infra_review_<YYYY-MM-DD>.md`. Treat this
+path only as a suggestion. Follow the exact-target repository-report preflight
+in [SKILL.md](SKILL.md) before any write; the path never authorizes repository
+creation or publication.
+
+Use this format:
 
 ```markdown
 | ID | Artifact | Issue | Evidence | Severity | Recommendation |

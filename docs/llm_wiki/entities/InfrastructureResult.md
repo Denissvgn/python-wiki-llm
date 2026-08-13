@@ -1,6 +1,6 @@
 # _InfrastructureResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4127`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4151`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -71,15 +71,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_bootstrap_manifest_generation_state` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_infrastructure_type_count` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_runtime_config_count` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_runtime_config_type_counts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_index` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_infrastructure_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_write_bootstrap_infrastructure_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bootstrap_manifest_generation_state` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_infrastructure_type_count` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_runtime_config_count` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_runtime_config_type_counts` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_write_bootstrap_index` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_write_bootstrap_infrastructure_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_write_bootstrap_infrastructure_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

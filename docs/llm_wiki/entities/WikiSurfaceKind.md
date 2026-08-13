@@ -1,6 +1,6 @@
 # WikiSurfaceKind
 
-**Location:** `src/llm_wiki_cli/services/wiki_surface.py:50`
+**Location:** `src/llm_wiki_cli/services/wiki_surface.py:62`
 **Kind:** Class
 **Bases:** —
 **Module:** [wiki_surface](../modules/wiki_surface.md)
@@ -70,13 +70,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_collect_directory_pages` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
-| `_entry_for` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
-| `_matches_directory_path` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
-| `_matches_directory_uri` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
-| `_surface_page` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
-| `iter_directory_kinds` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
-| `iter_page_kinds` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
-| `iter_root_pages` | type_reference | [wiki_surface](../modules/wiki_surface.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_collect_directory_pages` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |
+| `_entry_for` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |
+| `_matches_directory_path` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |
+| `_matches_directory_uri` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |
+| `_surface_page` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |
+| `iter_directory_kinds` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |
+| `iter_page_kinds` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |
+| `iter_root_pages` | type_reference | [wiki_surface](../modules/wiki_surface.md) | — |

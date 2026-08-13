@@ -65,14 +65,14 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `aliases_for_move` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) |
-| `allocate_concept` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `move_allocation` | call | [concept_identity](../modules/concept_identity.md) |
-| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `validate_identity_registry` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `validate_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `aliases_for_move` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `allocate_concept` | call | [concept_identity](../modules/concept_identity.md) | 1 |
+| `allocate_concept` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `find_identity_collisions` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `move_allocation` | call | [concept_identity](../modules/concept_identity.md) | 1 |
+| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `validate_identity_registry` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `validate_governance_ledger` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |

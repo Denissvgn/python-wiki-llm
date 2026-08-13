@@ -1,6 +1,6 @@
 # DoctorGovernance
 
-**Location:** `src/llm_wiki_cli/api_types.py:212`
+**Location:** `src/llm_wiki_cli/api_types.py:348`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

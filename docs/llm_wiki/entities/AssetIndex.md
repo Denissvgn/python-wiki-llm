@@ -46,7 +46,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_asset_index` | call | [wiki_media](../modules/wiki_media.md) |
-| `build_asset_index` | type_reference | [wiki_media](../modules/wiki_media.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_asset_index` | call | [wiki_media](../modules/wiki_media.md) | 1 |
+| `build_asset_index` | type_reference | [wiki_media](../modules/wiki_media.md) | — |

@@ -49,9 +49,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_extraction_job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_collect_inventory_outcomes` | type_reference | [extraction_service](../modules/extraction_service.md) |
-| `_plan_inventory_extractions` | call | [extraction_service](../modules/extraction_service.md) |
-| `_plan_inventory_extractions` | type_reference | [extraction_service](../modules/extraction_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_extraction_job_plan` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_collect_inventory_outcomes` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_plan_inventory_extractions` | call | [extraction_service](../modules/extraction_service.md) | 1 |
+| `_plan_inventory_extractions` | type_reference | [extraction_service](../modules/extraction_service.md) | — |

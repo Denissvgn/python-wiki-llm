@@ -71,12 +71,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_dispatch_container_name` | type_reference | [broker](../modules/broker.md) |
-| `_load_agent_result` | type_reference | [broker](../modules/broker.md) |
-| `build_oci_dispatch_command` | type_reference | [broker](../modules/broker.md) |
-| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) |
-| `OciDispatchReceipt.__post_init__` | call | [broker](../modules/broker.md) |
-| `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) |
-| `dispatch_calibration_agent` | call | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_dispatch_container_name` | type_reference | [broker](../modules/broker.md) | — |
+| `_load_agent_result` | type_reference | [broker](../modules/broker.md) | — |
+| `build_oci_dispatch_command` | type_reference | [broker](../modules/broker.md) | — |
+| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) | — |
+| `OciDispatchReceipt.__post_init__` | call | [broker](../modules/broker.md) | 1 |
+| `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) | — |
+| `dispatch_calibration_agent` | call | [controller](../modules/controller.md) | 1 |

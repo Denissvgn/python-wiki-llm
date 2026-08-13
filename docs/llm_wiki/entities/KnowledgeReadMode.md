@@ -58,9 +58,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_read_mode` | call | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `_read_mode` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `build_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `load_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_read_mode` | call | [knowledge_consumption](../modules/knowledge_consumption.md) | 1 |
+| `_read_mode` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `build_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `load_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |

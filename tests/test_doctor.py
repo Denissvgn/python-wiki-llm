@@ -333,6 +333,31 @@ def test_source_selection_mismatch_is_always_unhealthy(tmp_path: Path) -> None:
     assert strict.unhealthy_reasons == ("source-selection-mismatch",)
 
 
+def test_health_dashboard_does_not_claim_general_integrity_coverage(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "current"
+    root.mkdir()
+    lint = _lint_for_fixture(root, doctor_exit_fixtures()[0])
+    lint.issues.append(
+        lint_service.LintIssue(
+            category="broken_link",
+            message="A general wiki integrity issue remains blocking.",
+            reason_code="broken-link",
+        )
+    )
+
+    report = doctor_service.compose_doctor_report(
+        lint,
+        strict=True,
+        wiki_dir=str(root),
+        src_dir=str(root),
+    )
+
+    assert report.status is doctor_service.DoctorStatus.HEALTHY
+    assert lint.issues[-1].category == "broken_link"
+
+
 def test_degraded_availability_and_expired_review_each_return_exit_one(
     tmp_path: Path,
 ) -> None:

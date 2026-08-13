@@ -55,9 +55,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_create_or_require_empty_root` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_fsync_directory` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `ProtectedArtifactStore._open_windows_lock` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `ProtectedArtifactStore._write_windows` | call | [protected_artifacts](../modules/protected_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_create_or_require_empty_root` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_fsync_directory` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `ProtectedArtifactStore._open_windows_lock` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `ProtectedArtifactStore._write_windows` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |

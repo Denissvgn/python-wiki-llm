@@ -78,9 +78,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) |
-| `_next_actions` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) |
-| `DocumentationRun.from_dict` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) |
-| `_prepare_documentation_run_impl` | call | [prepare](../modules/prepare.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
+| `_next_actions` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) | — |
+| `DocumentationRun.from_dict` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) | — |
+| `_prepare_documentation_run_impl` | call | [prepare](../modules/prepare.md) | 1 |

@@ -1,0 +1,464 @@
+{
+  "schema_version": "schema-context-executable-baselines/v3",
+  "generated_schema": {
+    "wiki_dir": "docs/llm_wiki",
+    "measurement": {
+      "words": "unicode-whitespace-delimited",
+      "characters": "unicode-code-points",
+      "lines": "splitlines",
+      "sha256": "utf-8-bytes"
+    },
+    "compact_target": {
+      "words": {
+        "minimum": 400,
+        "maximum": 650
+      },
+      "characters": {
+        "preferred_maximum": 5000
+      },
+      "other_agent_character_delta": {
+        "maximum": 50
+      },
+      "conditional_additions": {
+        "quality_hints": {
+          "words_maximum": 15,
+          "characters_maximum": 100,
+          "lines_maximum": 4
+        },
+        "issue_reporting": {
+          "words_maximum": 60,
+          "characters_maximum": 480,
+          "lines_maximum": 8
+        }
+      },
+      "all_options": {
+        "words_maximum": 650,
+        "characters_maximum": 5520
+      },
+      "reduction_percent": {
+        "minimum": 75,
+        "maximum": 85
+      }
+    },
+    "variants": {
+      "default": {
+        "quality_hints": true,
+        "issue_reporting": false
+      },
+      "without_quality_hints": {
+        "quality_hints": false,
+        "issue_reporting": false
+      },
+      "with_issue_reporting": {
+        "quality_hints": true,
+        "issue_reporting": true
+      },
+      "without_quality_hints_with_issue_reporting": {
+        "quality_hints": false,
+        "issue_reporting": true
+      }
+    },
+    "agents": {
+      "claude": {
+        "path": "CLAUDE.md",
+        "profiles": {
+          "compact": {
+            "variants": {
+              "default": {
+                "words": 559,
+                "characters": 5016,
+                "lines": 87,
+                "sha256": "0d906f53be2aa830d62c809c4682f522d1067300b972e847b283a01304f8f9a8"
+              },
+              "without_quality_hints": {
+                "words": 546,
+                "characters": 4924,
+                "lines": 83,
+                "sha256": "49cb9086527285c86745688d6db4ce685ed86099ade78c02cd23f59976817217"
+              },
+              "with_issue_reporting": {
+                "words": 617,
+                "characters": 5488,
+                "lines": 95,
+                "sha256": "cac5f240bfb1f9cc416954aa38fc763bfcd45c068533d653883e64f21564a30e"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 604,
+                "characters": 5396,
+                "lines": 91,
+                "sha256": "f12a2b4d29714a4a6b1f391126cc7ba2d078e012f46b56edfc83dba47d5b9330"
+              }
+            }
+          },
+          "expanded_inline": {
+            "variants": {
+              "default": {
+                "words": 3437,
+                "characters": 26620,
+                "lines": 443,
+                "sha256": "f27e8dc842201f372a2e1fad8e40bbe937e8c775b2466ba367c29d5373ae2e23"
+              },
+              "without_quality_hints": {
+                "words": 3384,
+                "characters": 26247,
+                "lines": 437,
+                "sha256": "87026cea113c69dc04051e185d8772215c65e5a6983d6fd240fc4945d59faf3a"
+              },
+              "with_issue_reporting": {
+                "words": 3581,
+                "characters": 27609,
+                "lines": 460,
+                "sha256": "9be0070229a53ec5c829bcbc9b81916a1544d5b2dbce1eb0acb821a97b19dec9"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 3528,
+                "characters": 27236,
+                "lines": 454,
+                "sha256": "c479e016c111efd6a4857a7efda620dd34e0c1452f8928a603ac11f102002e02"
+              }
+            }
+          }
+        }
+      },
+      "cursor": {
+        "path": ".cursorrules",
+        "profiles": {
+          "compact": {
+            "variants": {
+              "default": {
+                "words": 559,
+                "characters": 5026,
+                "lines": 87,
+                "sha256": "bea9b28546ae5a0a516197116661fd34f91fb1ab532750a9e3c68812054d2038"
+              },
+              "without_quality_hints": {
+                "words": 546,
+                "characters": 4934,
+                "lines": 83,
+                "sha256": "f6c2f69bc926c2cb442815cfa28f3b2a2e491ebd5b3b33827709d7fb19a81437"
+              },
+              "with_issue_reporting": {
+                "words": 617,
+                "characters": 5498,
+                "lines": 95,
+                "sha256": "28d74f07520018a277b55809c98b6bf41a1e4a59b4b0fc20a74514ef037af51c"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 604,
+                "characters": 5406,
+                "lines": 91,
+                "sha256": "4b15ec925c954dfc94f6d1122bb53acfbd87448458628a9748232ee3defab088"
+              }
+            }
+          },
+          "expanded_inline": {
+            "variants": {
+              "default": {
+                "words": 3437,
+                "characters": 26652,
+                "lines": 443,
+                "sha256": "648bd801147f2097f7333b31ceb1f8927e679c857cb22ea3251f0aa55a6918d5"
+              },
+              "without_quality_hints": {
+                "words": 3384,
+                "characters": 26279,
+                "lines": 437,
+                "sha256": "f5c04eae88015cf09c8f1a695901c73ebeb6b2bedb1e2f6b7bc60888dfc95087"
+              },
+              "with_issue_reporting": {
+                "words": 3581,
+                "characters": 27641,
+                "lines": 460,
+                "sha256": "ad7f3ca57dafcc04a371ce1f2ad77024727739856845a6525cd6528958bffc91"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 3528,
+                "characters": 27268,
+                "lines": 454,
+                "sha256": "53c00bcf432a0b6720ca470743f194863c8f8bbd7c3065c767ea4381bc61c41d"
+              }
+            }
+          }
+        }
+      },
+      "copilot": {
+        "path": ".github/copilot-instructions.md",
+        "profiles": {
+          "compact": {
+            "variants": {
+              "default": {
+                "words": 558,
+                "characters": 5040,
+                "lines": 87,
+                "sha256": "da6120cb5953b779353b5c7258a87b477b1a29db35ff95ae8941ff533a75a9a4"
+              },
+              "without_quality_hints": {
+                "words": 545,
+                "characters": 4948,
+                "lines": 83,
+                "sha256": "e07833781386724695f454900ec6cf5b63bd642d62ead0f07dc7bd7d5c8c530c"
+              },
+              "with_issue_reporting": {
+                "words": 616,
+                "characters": 5512,
+                "lines": 95,
+                "sha256": "f9902811284be78c877b1cb598704d942d7e761580bca322502d1d6bada08f89"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 603,
+                "characters": 5420,
+                "lines": 91,
+                "sha256": "2f98a431c21428c429136a24c1ada7ff904924e1563828496d907fea05be2392"
+              }
+            }
+          },
+          "expanded_inline": {
+            "variants": {
+              "default": {
+                "words": 3436,
+                "characters": 26666,
+                "lines": 443,
+                "sha256": "fe662b7605f4e1b0768c0bf677e670134fe6edd22eebf60dac958e5bf19a57ce"
+              },
+              "without_quality_hints": {
+                "words": 3383,
+                "characters": 26293,
+                "lines": 437,
+                "sha256": "8f3b1efbf93146b54b4dc2710714a882b499ae3993a7f4117beeb4eb9315d682"
+              },
+              "with_issue_reporting": {
+                "words": 3580,
+                "characters": 27655,
+                "lines": 460,
+                "sha256": "b15f1d09f0dc73ab312fbd62b9ce28d55586a2056085cd20fd759a16f961ba15"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 3527,
+                "characters": 27282,
+                "lines": 454,
+                "sha256": "d767f9052b725db5d90fdad53114bd664af9b98ccf96ac23190efab745ae550d"
+              }
+            }
+          }
+        }
+      },
+      "aider": {
+        "path": ".aider.conf.yml",
+        "profiles": {
+          "compact": {
+            "variants": {
+              "default": {
+                "words": 553,
+                "characters": 4996,
+                "lines": 86,
+                "sha256": "620fff389b55f8faf50b4da5ee3fb9b9f183312265dd6c397eafc5300af63dc1"
+              },
+              "without_quality_hints": {
+                "words": 540,
+                "characters": 4904,
+                "lines": 82,
+                "sha256": "e59e72925166086f8c5d7564c39273d549e3393459cb04662dfb7bda74b75c18"
+              },
+              "with_issue_reporting": {
+                "words": 611,
+                "characters": 5468,
+                "lines": 94,
+                "sha256": "e04befb36bb7ae2192c38d01ca3f6f8c8c72b328e54d64e5a2998a60da273eca"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 598,
+                "characters": 5376,
+                "lines": 90,
+                "sha256": "41638d5a5965ba10aee7d3b3564bef510af3c223d16a0c6b085ebe6472bd535e"
+              }
+            }
+          },
+          "expanded_inline": {
+            "variants": {
+              "default": {
+                "words": 3431,
+                "characters": 26622,
+                "lines": 442,
+                "sha256": "83dfd11a0745f7674c157e1477a2d1da3291d0c9aea37df23bef1b3a12409d43"
+              },
+              "without_quality_hints": {
+                "words": 3378,
+                "characters": 26249,
+                "lines": 436,
+                "sha256": "c06b426136f20d54633bcc5099bd129159d328275b95bf4fb70112676b5aacf1"
+              },
+              "with_issue_reporting": {
+                "words": 3575,
+                "characters": 27611,
+                "lines": 459,
+                "sha256": "1aabd2b807f4f9bd1154096a4cbdcf5477b3fe9e83eeb49a2057f3e547dcec70"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 3522,
+                "characters": 27238,
+                "lines": 453,
+                "sha256": "dea74eb390406911d913eeeac3437ff0adb2c4913215a816b1ea85306584e847"
+              }
+            }
+          }
+        }
+      },
+      "opencode": {
+        "path": ".opencode/instructions.md",
+        "profiles": {
+          "compact": {
+            "variants": {
+              "default": {
+                "words": 553,
+                "characters": 4996,
+                "lines": 86,
+                "sha256": "620fff389b55f8faf50b4da5ee3fb9b9f183312265dd6c397eafc5300af63dc1"
+              },
+              "without_quality_hints": {
+                "words": 540,
+                "characters": 4904,
+                "lines": 82,
+                "sha256": "e59e72925166086f8c5d7564c39273d549e3393459cb04662dfb7bda74b75c18"
+              },
+              "with_issue_reporting": {
+                "words": 611,
+                "characters": 5468,
+                "lines": 94,
+                "sha256": "e04befb36bb7ae2192c38d01ca3f6f8c8c72b328e54d64e5a2998a60da273eca"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 598,
+                "characters": 5376,
+                "lines": 90,
+                "sha256": "41638d5a5965ba10aee7d3b3564bef510af3c223d16a0c6b085ebe6472bd535e"
+              }
+            }
+          },
+          "expanded_inline": {
+            "variants": {
+              "default": {
+                "words": 3431,
+                "characters": 26622,
+                "lines": 442,
+                "sha256": "83dfd11a0745f7674c157e1477a2d1da3291d0c9aea37df23bef1b3a12409d43"
+              },
+              "without_quality_hints": {
+                "words": 3378,
+                "characters": 26249,
+                "lines": 436,
+                "sha256": "c06b426136f20d54633bcc5099bd129159d328275b95bf4fb70112676b5aacf1"
+              },
+              "with_issue_reporting": {
+                "words": 3575,
+                "characters": 27611,
+                "lines": 459,
+                "sha256": "1aabd2b807f4f9bd1154096a4cbdcf5477b3fe9e83eeb49a2057f3e547dcec70"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 3522,
+                "characters": 27238,
+                "lines": 453,
+                "sha256": "dea74eb390406911d913eeeac3437ff0adb2c4913215a816b1ea85306584e847"
+              }
+            }
+          }
+        }
+      },
+      "generic": {
+        "path": "AGENTS.md",
+        "profiles": {
+          "compact": {
+            "variants": {
+              "default": {
+                "words": 553,
+                "characters": 4996,
+                "lines": 86,
+                "sha256": "620fff389b55f8faf50b4da5ee3fb9b9f183312265dd6c397eafc5300af63dc1"
+              },
+              "without_quality_hints": {
+                "words": 540,
+                "characters": 4904,
+                "lines": 82,
+                "sha256": "e59e72925166086f8c5d7564c39273d549e3393459cb04662dfb7bda74b75c18"
+              },
+              "with_issue_reporting": {
+                "words": 611,
+                "characters": 5468,
+                "lines": 94,
+                "sha256": "e04befb36bb7ae2192c38d01ca3f6f8c8c72b328e54d64e5a2998a60da273eca"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 598,
+                "characters": 5376,
+                "lines": 90,
+                "sha256": "41638d5a5965ba10aee7d3b3564bef510af3c223d16a0c6b085ebe6472bd535e"
+              }
+            }
+          },
+          "expanded_inline": {
+            "variants": {
+              "default": {
+                "words": 3431,
+                "characters": 26622,
+                "lines": 442,
+                "sha256": "83dfd11a0745f7674c157e1477a2d1da3291d0c9aea37df23bef1b3a12409d43"
+              },
+              "without_quality_hints": {
+                "words": 3378,
+                "characters": 26249,
+                "lines": 436,
+                "sha256": "c06b426136f20d54633bcc5099bd129159d328275b95bf4fb70112676b5aacf1"
+              },
+              "with_issue_reporting": {
+                "words": 3575,
+                "characters": 27611,
+                "lines": 459,
+                "sha256": "1aabd2b807f4f9bd1154096a4cbdcf5477b3fe9e83eeb49a2057f3e547dcec70"
+              },
+              "without_quality_hints_with_issue_reporting": {
+                "words": 3522,
+                "characters": 27238,
+                "lines": 453,
+                "sha256": "dea74eb390406911d913eeeac3437ff0adb2c4913215a816b1ea85306584e847"
+              }
+            }
+          }
+        }
+      }
+    },
+    "profiles": [
+      "compact",
+      "expanded_inline"
+    ]
+  },
+  "plain_context": {
+    "protocol_version": "llm-wiki-context/v1",
+    "default_prefer_fresh": false,
+    "default_golden": {
+      "path": "tests/fixtures/context-prefer-fresh-off-v1.json",
+      "bytes": 565,
+      "sha256": "494420b90b2b1573002386d1d7933ee3a8f627866016b406a6d663223565c82b"
+    },
+    "preferred_golden": {
+      "path": "tests/fixtures/context-prefer-fresh-on-v1.json",
+      "bytes": 847,
+      "sha256": "387cad7d91c2d37553bd47dffe3c377b0ddd54bc47817ef152b4db4fdfb14169"
+    }
+  },
+  "qualified_context_packet": {
+    "schema_version": "llm-wiki-qualified-context-packet/v1",
+    "context_protocol_version": "llm-wiki-context/v1",
+    "policy_version": "qualified-context-policy-v1",
+    "path_policy_version": "qualified-context-path-policy-v1",
+    "reconciliation_policy": "qualified-context-complete-policy-v1",
+    "assurance_level": "content-integrity",
+    "generator_policy_digest": "sha256:8b43f3182cc438ca18700b893d9b4d989ff2eebf706e823cd433fc2570f29a03",
+    "path_policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
+    "golden": {
+      "path": "tests/fixtures/context-packet-v1.json",
+      "bytes": 2377,
+      "sha256": "4d8a955dd4dda77fe5de05d55832e0b0be210c27ef3625c4a40c2b5136864a81",
+      "packet_id": "sha256:0443bb94a1ffb30c2710b2b87bc795b349da55a51d3f9f0d861df5c344383cbf"
+    }
+  }
+}

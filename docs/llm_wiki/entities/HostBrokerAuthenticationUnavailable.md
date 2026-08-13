@@ -55,10 +55,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `controller` | import | [controller](../modules/controller.md) |
-| `require_process_host_broker_authenticator` | call | [host_broker](../modules/host_broker.md) |
-| `require_process_host_broker_authenticator` | call | [host_broker](../modules/host_broker.md) |
-| `use_calibration_host_broker_authenticator` | call | [host_broker](../modules/host_broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `controller` | import | [controller](../modules/controller.md) | — |
+| `require_process_host_broker_authenticator` | call | [host_broker](../modules/host_broker.md) | 2 |
+| `use_calibration_host_broker_authenticator` | call | [host_broker](../modules/host_broker.md) | 1 |

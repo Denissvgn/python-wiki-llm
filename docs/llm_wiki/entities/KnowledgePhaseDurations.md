@@ -61,11 +61,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_snapshot_result` | call | [knowledge_observability](../modules/knowledge_observability.md) |
-| `_validated_phase_durations` | call | [knowledge_observability](../modules/knowledge_observability.md) |
-| `summarize_knowledge_view` | call | [knowledge_observability](../modules/knowledge_observability.md) |
-| `summarize_knowledge_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) |
-| `_run_report_checks` | call | [lint_service](../modules/lint_service.md) |
-| `_set_knowledge_summary` | type_reference | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_snapshot_result` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
+| `_validated_phase_durations` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
+| `summarize_knowledge_view` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
+| `summarize_knowledge_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `_run_report_checks` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `_set_knowledge_summary` | type_reference | [lint_service](../modules/lint_service.md) | — |

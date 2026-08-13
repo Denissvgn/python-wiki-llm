@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import errno
 import inspect
+import shlex
 import textwrap
 from pathlib import Path
 
@@ -80,6 +81,68 @@ def test_issue_reporting_flags_parse(command, module_name, flag, expected, monke
     cli.main()
 
     assert seen["issue_reporting"] is expected
+
+
+def test_upgrade_cleanup_source_agent_is_explicit_and_bounded(monkeypatch) -> None:
+    seen: dict[str, object] = {}
+    monkeypatch.setattr(
+        cli.upgrade_cmd,
+        "run",
+        lambda args: seen.update(vars(args)),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "llm-wiki",
+            "upgrade",
+            "--agent",
+            "claude",
+            "--cleanup-source-agent",
+            "generic",
+            "--skills",
+        ],
+    )
+
+    cli.main()
+
+    assert seen["agent"] == "claude"
+    assert seen["cleanup_source_agent"] == "generic"
+    assert seen["skills"] is True
+
+
+def test_upgrade_no_skills_parses_expanded_profile_opt_out(monkeypatch) -> None:
+    seen: dict[str, object] = {}
+    monkeypatch.setattr(
+        cli.upgrade_cmd,
+        "run",
+        lambda args: seen.update(vars(args)),
+    )
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "upgrade", "--no-skills"])
+
+    cli.main()
+
+    assert seen["skills"] is False
+
+
+def test_readme_nondefault_rollback_sequence_keeps_one_wiki_dir() -> None:
+    readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")
+    section = readme.split(
+        "For a non-default installation, carry the same existing path", 1
+    )[1]
+    command_block = section.split("```bash", 1)[1].split("```", 1)[0]
+    commands = [line.strip() for line in command_block.splitlines() if line.strip()]
+
+    assert commands == [
+        "llm-wiki upgrade --wiki-dir .wiki --no-skills",
+        "llm-wiki status --wiki-dir .wiki",
+        "llm-wiki upgrade --wiki-dir .wiki --skills",
+    ]
+    parser = cli._build_parser()
+    parsed = [parser.parse_args(shlex.split(command)[1:]) for command in commands]
+    assert [args.command for args in parsed] == ["upgrade", "status", "upgrade"]
+    assert {args.wiki_dir for args in parsed} == {".wiki"}
+    assert parsed[0].skills is False
+    assert parsed[2].skills is True
 
 
 @pytest.mark.parametrize("command", ["init", "upgrade"])

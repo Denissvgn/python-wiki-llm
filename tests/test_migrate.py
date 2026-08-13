@@ -869,7 +869,7 @@ class TestMigrateIntegration:
         output = capsys.readouterr().out
         assert "Lint passed" in output
 
-    def test_existing_m4_surfaces_are_indexed_as_canonical_sections(self, tmp_path):
+    def test_existing_extended_surfaces_are_indexed_as_canonical_sections(self, tmp_path):
         proj = tmp_path / "proj"
         proj.mkdir()
         _write(proj / "models.py", "class User:\n    pass\n")

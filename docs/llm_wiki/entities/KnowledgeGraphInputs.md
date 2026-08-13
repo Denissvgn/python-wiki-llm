@@ -62,10 +62,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_application_knowledge_extensions` | call | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_add_supersession_edges` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_limitations` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `_materialization_state` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
-| `materialize_typed_graph` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_application_knowledge_extensions` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
+| `_add_supersession_edges` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_limitations` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `_materialization_state` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |
+| `materialize_typed_graph` | type_reference | [knowledge_graph](../modules/knowledge_graph.md) | — |

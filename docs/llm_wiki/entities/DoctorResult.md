@@ -1,6 +1,6 @@
 # DoctorResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:238`
+**Location:** `src/llm_wiki_cli/api_types.py:374`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)
@@ -60,6 +60,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `doctor` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `doctor` | type_reference | [api](../modules/api.md) | — |

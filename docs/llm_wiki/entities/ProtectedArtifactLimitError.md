@@ -61,13 +61,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_within_limit` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_read_bounded_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_read_bounded_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_validate_maximum_bytes` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `_validate_optional_root_bytes` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `ProtectedArtifactStore._enforce_root_quota` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `ProtectedArtifactStore._read_windows` | call | [protected_artifacts](../modules/protected_artifacts.md) |
-| `ProtectedArtifactStore._read_windows` | call | [protected_artifacts](../modules/protected_artifacts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_within_limit` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_read_bounded_fd` | call | [protected_artifacts](../modules/protected_artifacts.md) | 2 |
+| `_validate_maximum_bytes` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `_validate_optional_root_bytes` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `ProtectedArtifactStore._enforce_root_quota` | call | [protected_artifacts](../modules/protected_artifacts.md) | 1 |
+| `ProtectedArtifactStore._read_windows` | call | [protected_artifacts](../modules/protected_artifacts.md) | 2 |

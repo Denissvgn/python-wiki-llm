@@ -43,10 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_run_git` | call | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `_run_git` | call | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `_run_git` | call | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `_run_git` | call | [wiki_git_policy](../modules/wiki_git_policy.md) |
-| `_run_git` | type_reference | [wiki_git_policy](../modules/wiki_git_policy.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_run_git` | call | [wiki_git_policy](../modules/wiki_git_policy.md) | 4 |
+| `_run_git` | type_reference | [wiki_git_policy](../modules/wiki_git_policy.md) | — |

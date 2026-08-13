@@ -230,9 +230,7 @@ def _add_doctor_command(subparsers):
     doctor_parser.add_argument(
         "--strict",
         action="store_true",
-        help=(
-            "Classify indeterminate or nonsemantic source drift as unhealthy"
-        ),
+        help=("Classify indeterminate or nonsemantic source drift as unhealthy"),
     )
     _add_helper_cache_argument(doctor_parser)
     _add_include_tests_argument(doctor_parser)
@@ -1513,10 +1511,7 @@ def _add_projection_metadata_arguments(parser, *, public_identity_dest: str):
         "--knowledge-metadata",
         choices=site_cmd.KNOWLEDGE_METADATA_CHOICES,
         default=None,
-        help=(
-            "Opt in to validated native-knowledge front matter "
-            "(currently: summary)"
-        ),
+        help=("Opt in to validated native-knowledge front matter (currently: summary)"),
     )
     parser.add_argument(
         "--knowledge-profile",
@@ -1596,7 +1591,10 @@ def _add_skills_selection_arguments(parser):
         action="append",
         default=None,
         metavar="NAME",
-        help="Skill to include; may be repeated (default: all bundled skills)",
+        help=(
+            "Skill to request; may be repeated and bundled dependencies are "
+            "included automatically (default: all bundled skills)"
+        ),
     )
     parser.add_argument(
         "--force",
@@ -1643,6 +1641,18 @@ def _add_upgrade_command(subparsers):
         choices=AGENT_CHOICES,
         default=None,
         help="Switch to a different agent (default: keep current)",
+    )
+    upgrade_parser.add_argument(
+        "--cleanup-source-agent",
+        choices=AGENT_CHOICES,
+        default=None,
+        help=(
+            "Explicitly authorize cleanup of one source agent's managed schema "
+            "block after the target agent is committed; when managed references "
+            "are enabled and the target verifies current, also remove the source's "
+            "exact current reference (opt-out, modified, and incomplete trees are "
+            "preserved)"
+        ),
     )
     upgrade_parser.add_argument(
         "--force",
@@ -1788,6 +1798,11 @@ def _add_sync_command(subparsers):
         ),
     )
     sync_parser.add_argument(
+        "--no-plugins",
+        action="store_true",
+        help="Disable all project-local plugins during sync",
+    )
+    sync_parser.add_argument(
         "--no-preserve-semantic",
         action="store_true",
         help="Disable preservation of existing semantic wiki descriptions",
@@ -1892,6 +1907,12 @@ def _add_context_command(subparsers):
         "--prefer-fresh",
         action="store_true",
         help="Under budget pressure, prefer CURRENT context within an existing relevance tier",
+    )
+    context_parser.add_argument(
+        "--knowledge-mode",
+        choices=["off", "auto", "required"],
+        default=None,
+        help="Select explicit v2 native knowledge behavior: off, auto, or required",
     )
     _add_source_selection_argument(context_parser)
 
@@ -2044,9 +2065,7 @@ def _add_docs_command(subparsers):
         "--knowledge-public-repository-identity",
         default=None,
         metavar="IDENTITY",
-        help=(
-            "Corroborated configured-public identity for public-portable metadata"
-        ),
+        help=("Corroborated configured-public identity for public-portable metadata"),
     )
     prepare.add_argument(
         "--refresh",

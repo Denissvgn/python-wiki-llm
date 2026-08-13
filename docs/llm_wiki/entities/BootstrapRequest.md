@@ -79,12 +79,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `bootstrap_wiki` | call | [api](../modules/api.md) |
-| `_bootstrap_run_options_from_request` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `_execute_documentation_workspace_refresh` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `execute_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
-| `_prepare_documentation_run_impl` | call | [prepare](../modules/prepare.md) |
-| `_prepare_documentation_run_impl` | call | [prepare](../modules/prepare.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `bootstrap_wiki` | call | [api](../modules/api.md) | 1 |
+| `_bootstrap_run_options_from_request` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_execute_documentation_workspace_refresh` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `execute_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
+| `_prepare_documentation_run_impl` | call | [prepare](../modules/prepare.md) | 2 |

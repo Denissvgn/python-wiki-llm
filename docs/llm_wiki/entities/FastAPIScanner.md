@@ -59,6 +59,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `extract_fastapi_declarations` | call | [fastapi_contracts](../modules/fastapi_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `extract_fastapi_declarations` | call | [fastapi_contracts](../modules/fastapi_contracts.md) | 1 |

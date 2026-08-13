@@ -113,17 +113,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| windows_current_user_sid | WindowsSecurityGuardError | 729 | `WindowsSecurityGuardError('Windows user SID lookup is unavailable on this platform.')` |
-| windows_current_user_sid | _current_windows_user_sid | 732 | `_current_windows_user_sid(data not statically known)` |
-| _current_windows_user_sid | WinDLL | 979 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _current_windows_user_sid | WinDLL | 980 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _current_windows_user_sid | POINTER | 985 | `ctypes.POINTER(wintypes.HANDLE)` |
-| _current_windows_user_sid | POINTER | 994 | `ctypes.POINTER(wintypes.DWORD)` |
-| _current_windows_user_sid | HANDLE | 1001 | `wintypes.HANDLE(data not statically known)` |
-| _current_windows_user_sid | open_process_token | 1002 | `open_process_token(get_current_process(...), 8, ctypes.byref(...))` |
-| _current_windows_user_sid | get_current_process | 1003 | `get_current_process(data not statically known)` |
-| _current_windows_user_sid | byref | 1005 | `ctypes.byref(token)` |
-| _current_windows_user_sid | WinError | 1007 | `ctypes.WinError(ctypes.get_last_error(...))` |
+| windows_current_user_sid | WindowsSecurityGuardError | 742 | `WindowsSecurityGuardError('Windows user SID lookup is unavailable on this platform.')` |
+| windows_current_user_sid | _current_windows_user_sid | 745 | `_current_windows_user_sid(data not statically known)` |
+| _current_windows_user_sid | WinDLL | 992 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _current_windows_user_sid | WinDLL | 993 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _current_windows_user_sid | POINTER | 998 | `ctypes.POINTER(wintypes.HANDLE)` |
+| _current_windows_user_sid | POINTER | 1007 | `ctypes.POINTER(wintypes.DWORD)` |
+| _current_windows_user_sid | HANDLE | 1014 | `wintypes.HANDLE(data not statically known)` |
+| _current_windows_user_sid | open_process_token | 1015 | `open_process_token(get_current_process(...), 8, ctypes.byref(...))` |
+| _current_windows_user_sid | get_current_process | 1016 | `get_current_process(data not statically known)` |
+| _current_windows_user_sid | byref | 1018 | `ctypes.byref(token)` |
+| _current_windows_user_sid | WinError | 1020 | `ctypes.WinError(ctypes.get_last_error(...))` |
 
 ### Boundary effects
 
@@ -133,15 +133,15 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 979 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 980 |
-| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 985 |
-| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 994 |
-| external_call | `_current_windows_user_sid` | `wintypes.HANDLE` | 1001 |
-| unresolved_call | `_current_windows_user_sid` | `open_process_token` | 1002 |
-| unresolved_call | `_current_windows_user_sid` | `get_current_process` | 1003 |
-| external_call | `_current_windows_user_sid` | `ctypes.byref` | 1005 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinError` | 1007 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 992 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 993 |
+| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 998 |
+| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 1007 |
+| external_call | `_current_windows_user_sid` | `wintypes.HANDLE` | 1014 |
+| unresolved_call | `_current_windows_user_sid` | `open_process_token` | 1015 |
+| unresolved_call | `_current_windows_user_sid` | `get_current_process` | 1016 |
+| external_call | `_current_windows_user_sid` | `ctypes.byref` | 1018 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinError` | 1020 |
 | step_limit | `windows_current_user_sid` | `first 12 steps` | 0 |
 
 ## Behavior

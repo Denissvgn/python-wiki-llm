@@ -34,6 +34,10 @@ flowchart LR
     n7["_assert_input_root_path_binding (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
     n8["_assert_safe_workspace_directory (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
     n9["_assert_safe_workspace_file (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
+    n10["_assert_same_input_identity (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
+    n11["_assert_same_workspace_identity (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
+    n12["_assert_stable_input_metadata (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
+    n13["_assert_windows_input_identity (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -43,6 +47,10 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
+    n11 --> n0
+    n12 --> n0
+    n13 --> n0
     click n0 "../modules/documentation_wiki_input.md"
     click n2 "../modules/api.md"
     click n3 "../modules/integrity.md"
@@ -52,6 +60,10 @@ flowchart LR
     click n7 "../modules/documentation_wiki_input.md"
     click n8 "../modules/documentation_wiki_input.md"
     click n9 "../modules/documentation_wiki_input.md"
+    click n10 "../modules/documentation_wiki_input.md"
+    click n11 "../modules/documentation_wiki_input.md"
+    click n12 "../modules/documentation_wiki_input.md"
+    click n13 "../modules/documentation_wiki_input.md"
 ```
 
 ### Summary
@@ -68,17 +80,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `integrity` | import | [integrity](../modules/integrity.md) |
-| `_adopt_validated_wiki_snapshot` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_adopt_validated_wiki_snapshot` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_adopt_validated_wiki_snapshot` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_adopt_validated_wiki_snapshot` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_assert_input_directory` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_assert_input_regular` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_assert_input_root_path_binding` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_assert_safe_workspace_directory` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_assert_safe_workspace_directory` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_assert_safe_workspace_file` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `integrity` | import | [integrity](../modules/integrity.md) | — |
+| `_adopt_validated_wiki_snapshot` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 4 |
+| `_assert_input_directory` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_assert_input_regular` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_assert_input_root_path_binding` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_assert_safe_workspace_directory` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 2 |
+| `_assert_safe_workspace_file` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_assert_same_input_identity` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_assert_same_workspace_identity` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_assert_stable_input_metadata` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_assert_windows_input_identity` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 2 |
+
+> References: showing 12 of 63 logical references; 51 omitted by the 12-row generated summary limit.

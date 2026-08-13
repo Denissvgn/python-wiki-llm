@@ -54,7 +54,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) |
-| `verification_contracts` | import | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `verification_contracts` | import | [verification_contracts](../modules/verification_contracts.md) | — |

@@ -58,11 +58,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_receipt_to_report` | type_reference | [site_export](../modules/site_export.md) |
-| `_check_marker_matches_receipt` | type_reference | [site_export](../modules/site_export.md) |
-| `_check_publication_receipt` | type_reference | [site_export](../modules/site_export.md) |
-| `_load_publication_receipt` | call | [site_export](../modules/site_export.md) |
-| `_load_publication_receipt` | type_reference | [site_export](../modules/site_export.md) |
-| `_selection_mismatch_issues` | type_reference | [site_export](../modules/site_export.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_receipt_to_report` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_check_marker_matches_receipt` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_check_publication_receipt` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_load_publication_receipt` | call | [site_export](../modules/site_export.md) | 1 |
+| `_load_publication_receipt` | type_reference | [site_export](../modules/site_export.md) | — |
+| `_selection_mismatch_issues` | type_reference | [site_export](../modules/site_export.md) | — |

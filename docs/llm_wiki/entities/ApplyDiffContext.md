@@ -28,6 +28,7 @@ _Auto-generated from `_ApplyDiffContext` in `src/llm_wiki_cli/commands/sync_cmd.
 | `current_entity_pages` | `set[str]` | *required* | — |
 | `current_module_pages` | `set[str]` | *required* | — |
 | `preserve_semantic` | `bool` | *required* | — |
+| `include_plugins` | `bool` | `True` | — |
 | `source_selection_policy` | `SourceSelectionPolicy \| None` | `None` | — |
 
 ## Methods
@@ -80,21 +81,23 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `current_entity_pages`, `current_module_pages`, `entity_occurrence_page_cache`, `entity_page_cache`, `generated_sections`, `inventory`, `manifest`, `metadata_only_files`, `module_page_map`, `preserve_semantic`, `relationships`, `source_selection_policy` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `current_entity_pages`, `current_module_pages`, `entity_occurrence_page_cache`, `entity_page_cache`, `generated_sections`, `include_plugins`, `inventory`, `manifest`, `metadata_only_files`, `module_page_map`, `preserve_semantic`, `relationships` |
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_refreshed_file_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_deprecate_removed_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_merge_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_moved_entity_retained_page_names` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_record_unchanged_file_skips` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_refresh_entity_relationship_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_refresh_generated_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_apply_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_refreshed_file_pages` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_apply_diff_context` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_deprecate_removed_files` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_entity_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_merge_module_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_moved_entity_retained_page_names` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_record_unchanged_file_skips` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_refresh_entity_relationship_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_refresh_generated_sections` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

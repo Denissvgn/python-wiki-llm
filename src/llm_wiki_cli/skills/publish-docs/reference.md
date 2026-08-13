@@ -1,6 +1,34 @@
 # publish-docs reference
 
+## Contents
+
+- [Ownership and migration](#ownership-and-migration)
+- [Format/builder pairing](#formatbuilder-pairing)
+- [Immutable publication selection](#immutable-publication-selection)
+- [Optional native-metadata preflight](#optional-native-metadata-preflight)
+- [Commands](#commands)
+- [Distribution modes](#distribution-modes)
+- [Builder detection (fail closed)](#builder-detection-fail-closed)
+- [CI wiring pattern](#ci-wiring-pattern)
+- [Failure modes](#failure-modes)
+- [Usage examples handoff](#usage-examples-handoff)
+- [External documentation workspace](#external-documentation-workspace)
+
 Supporting detail for [SKILL.md](SKILL.md).
+
+## Ownership and migration
+
+`doc-hub` owns multi-wiki source selection, aggregation, hub export, and the
+first mirror check. This skill owns single-wiki publication export, builder
+detection, the real build, built-site validation, and deploy handoff. A hub
+publication starts here only after `doc-hub` returns a successful check plus
+the exact source selector, output path, receipt/marker, format, reference
+profile, distribution mode, and optional knowledge selection. Recheck that
+selection before the builder; do not run `site export --wiki-root` here.
+
+The public CLI is unchanged. Migrate a prior combined workflow by moving only
+its aggregation/export/first-check stage to `doc-hub`; keep its builder,
+built-site check, and separately authorized deploy handoff here.
 
 ## Format/builder pairing
 
@@ -54,23 +82,17 @@ refreshed preparation with `--knowledge-mode off`.
 
 ## Optional native-metadata preflight
 
-Before selecting `--knowledge-metadata summary`, inspect the validated native status for each source, for example:
-
-```bash
-llm-wiki knowledge status --wiki-dir docs/llm_wiki --format json
-```
-
-This command and Site exporter views are snapshot-only. They do not rescan source and therefore cannot establish live freshness. Branch on the reported `availability` and `reason` together, then on `freshness_evaluated`; preserve an unfamiliar reason as a limitation rather than coercing it to ready or absent.
-
-| Availability/state | Publication action |
-|---|---|
-| `ready`, `freshness_evaluated: true`, `current` | Native projection may be selected. `current` means unchanged since observation only; it does not mean true, reviewed, approved, secure, or runtime-current. |
-| `ready`, `freshness_evaluated: true`, `nonsemantic-source-change` | Preserve and disclose this qualified diagnostic; do not rewrite it as fully current or stale. |
-| `ready`, `freshness_evaluated: false` or another unknown freshness state | Treat native freshness as not evaluated. A snapshot projection may be published only with that limitation intact. |
-| `absent` | A caller may explicitly choose the legacy Site export with all knowledge flags omitted. Label the fallback and make no native empty-graph or freshness conclusion. |
-| `degraded`, `unsupported`, invalid, or mixed snapshot | Do not draw a native conclusion or publish native metadata from that state. Stop the enriched path; use a separately authorized, labeled legacy export only if the ordinary surface itself validates. |
-
-Never run `knowledge init` automatically to make publication pass. Initialization is a separate opt-in governance action. Native projection redaction also does not sanitize canonical Markdown or media; public content review remains a separate gate.
+Before selecting `--knowledge-metadata summary`, follow [Qualified knowledge
+consumption](../wiki-reference/references/knowledge-consumption.md) for every
+source and [Publishing
+projections](../wiki-reference/references/publishing.md) for the receipt,
+privacy, content-review, and projection boundary. Those managed topics own the
+availability/freshness table and fallback rules. Preserve their exact reason,
+snapshot-only, bounds, negative-fact, and governance limitations rather than
+restating or relaxing them here.
+Schedule export/check/build through [Resource-aware
+execution](../wiki-reference/references/resources-context.md); unknown capacity
+means one heavy gate at a time and supervisor-owned fan-out.
 
 ## Commands
 
@@ -105,9 +127,7 @@ llm-wiki site check --wiki-dir docs/llm_wiki --out-dir site-file \
   --knowledge-public-repository-identity <identity> \
   --output-format json
 
-# Hub, docusaurus (requires an existing Docusaurus app to receive the output)
-llm-wiki site export --wiki-root sources/code_wikis --out-dir site \
-  --format docusaurus --profile reference --front-matter --output-format json
+# Checked hub handoff from doc-hub, docusaurus (requires an existing app)
 llm-wiki site check --wiki-root sources/code_wikis --out-dir site \
   --format docusaurus --link-mode http --profile reference --output-format json
 # then, from the Docusaurus app root:
@@ -167,7 +187,7 @@ Add export → check → build → built check alongside the existing `ci-check`
 | A built check points at the other distribution mode's directory | The build is not evidence for this selection | Rebuild from the selected mirror into a fresh mode-specific directory, then check it with the matching `--link-mode`. |
 | `mkdocs build --strict` fails | A real MkDocs plugin/theme issue outside `llm-wiki`'s validation scope | Surface the builder's own error; `site check` already covers what `llm-wiki` can validate without the real tool. |
 | Docusaurus build fails with "docs not found" | Exported output wasn't placed into an existing Docusaurus app's `docs/` directory | Confirm the target app structure before exporting; this format is not standalone-buildable. |
-| User expects a deployed site after running this skill | Deploy is a separate, confirmed action (step 4 of the SKILL) | Don't deploy without an explicit ask — hand off the build output and the deploy mechanism instead. |
+| User expects a deployed site after running this skill | Deploy is a separate, confirmed action in the SKILL workflow | Don't deploy without an explicit ask — hand off the build output and the deploy mechanism instead. |
 
 ## Usage examples handoff
 

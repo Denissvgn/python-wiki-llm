@@ -42,6 +42,7 @@ flowchart LR
     n7["_validated_consumed_inputs (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n8["_merge_explicit_consumed_input (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n9["runtime_consumed_inputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n10["SourceSnapshot.to_consumed_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -51,6 +52,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/knowledge_envelope.md"
     click n1 "../modules/documentation_native.md"
     click n2 "../modules/knowledge_envelope.md"
@@ -61,6 +63,7 @@ flowchart LR
     click n7 "../modules/knowledge_generation.md"
     click n8 "../modules/knowledge_orchestration.md"
     click n9 "../modules/knowledge_orchestration.md"
+    click n10 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -71,17 +74,17 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_live_source_snapshot_hash` | call | [documentation_native](../modules/documentation_native.md) |
-| `_live_source_snapshot_hash` | call | [documentation_native](../modules/documentation_native.md) |
-| `_canonical_consumed_input_kind` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_validate_inventory_source_parity` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `consumed_inputs_from_captured_hashes` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `consumed_inputs_from_captured_hashes` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `ConsumedInput.from_bytes` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `hash_source_snapshot` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_validated_consumed_inputs` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) |
-| `_merge_explicit_consumed_input` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `_merge_explicit_consumed_input` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `runtime_consumed_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_live_source_snapshot_hash` | call | [documentation_native](../modules/documentation_native.md) | 2 |
+| `_canonical_consumed_input_kind` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_validate_inventory_source_parity` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `consumed_inputs_from_captured_hashes` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `consumed_inputs_from_captured_hashes` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `ConsumedInput.from_bytes` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `hash_source_snapshot` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_validated_consumed_inputs` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_merge_explicit_consumed_input` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `_merge_explicit_consumed_input` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `runtime_consumed_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `SourceSnapshot.to_consumed_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |

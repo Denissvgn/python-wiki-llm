@@ -1,6 +1,6 @@
 # _ExtractedSyncInventory
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1602`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1612`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -42,7 +42,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_extract_current_inventory` | call | [sync_cmd](../modules/sync_cmd.md) |
-| `_extract_current_inventory` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_extract_current_inventory` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_extract_current_inventory` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

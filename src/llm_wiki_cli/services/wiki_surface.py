@@ -26,6 +26,18 @@ class WikiSurfaceError(ValueError):
     """Raised for invalid wiki surface lookups."""
 
 
+WIKI_SURFACE_PATH_ERROR_CODE = "wiki-surface-path-unsafe"
+
+
+class WikiSurfacePathError(WikiSurfaceError):
+    """Raised when a canonical page path cannot be read inside its wiki root."""
+
+    def __init__(self, message: str, *, relative_path: str) -> None:
+        super().__init__(message)
+        self.code = WIKI_SURFACE_PATH_ERROR_CODE
+        self.relative_path = relative_path
+
+
 class PageKind(str, Enum):
     INDEX = "index"
     LOG = "log"
@@ -282,6 +294,8 @@ def collect_wiki_pages(wiki_dir: Union[str, Path]) -> list[WikiSurfacePage]:
             continue
 
         path = wiki / entry.path_pattern
+        if path.is_symlink():
+            resolve_wiki_page_path(wiki, path)
         if path.is_file():
             page_id = entry.kind.value
             pages.append(_surface_page(wiki, path, entry, page_id))
@@ -296,6 +310,11 @@ def _collect_directory_pages(
     if directory is None:
         return []
     root = wiki / directory
+    if root.is_symlink():
+        raise WikiSurfacePathError(
+            f"canonical wiki page directory must not be a symbolic link: {directory}",
+            relative_path=directory,
+        )
     if not root.is_dir():
         return []
 
@@ -304,6 +323,8 @@ def _collect_directory_pages(
         root.glob("*.md"),
         key=lambda candidate: (candidate.name.casefold(), candidate.name),
     ):
+        if path.is_symlink():
+            resolve_wiki_page_path(wiki, path)
         if not path.is_file() or _is_legacy_path(path, wiki):
             continue
         page_id = path.stem
@@ -320,16 +341,59 @@ def _surface_page(
     page_id: str,
 ) -> WikiSurfacePage:
     relative_path = path.relative_to(wiki).as_posix()
+    resolved_path = resolve_wiki_page_path(wiki, path)
     return WikiSurfacePage(
         kind=entry.kind,
         page_id=page_id,
         label=entry.label,
-        path=path.resolve(),
+        path=resolved_path,
         relative_path=relative_path,
         mcp_uri=mcp_uri(entry.kind, page_id if entry.requires_page_id else None),
         obsidian_mirror_dir=entry.obsidian_mirror_dir,
         role=entry.role,
     )
+
+
+def resolve_wiki_page_path(
+    wiki_dir: Union[str, Path],
+    path: Union[str, Path],
+) -> Path:
+    """Resolve one canonical page while rejecting nested symlinks and escapes."""
+
+    wiki = Path(wiki_dir)
+    candidate = Path(path)
+    try:
+        relative = candidate.relative_to(wiki)
+    except ValueError as exc:
+        raise WikiSurfacePathError(
+            "canonical wiki page path must stay inside the wiki directory",
+            relative_path=candidate.as_posix(),
+        ) from exc
+    relative_path = relative.as_posix()
+    current = wiki
+    for component in relative.parts:
+        current /= component
+        if current.is_symlink():
+            raise WikiSurfacePathError(
+                "canonical wiki page path must not traverse a symbolic link: "
+                f"{relative_path}",
+                relative_path=relative_path,
+            )
+    try:
+        resolved_root = wiki.resolve(strict=True)
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(resolved_root)
+    except FileNotFoundError:
+        raise
+    except (OSError, ValueError) as exc:
+        raise WikiSurfacePathError(
+            "canonical wiki page path must stay inside the wiki directory: "
+            f"{relative_path}",
+            relative_path=relative_path,
+        ) from exc
+    if not resolved.is_file():
+        raise FileNotFoundError(relative_path)
+    return resolved
 
 
 def _entry_for(kind: Union[PageKind, str]) -> WikiSurfaceKind:
@@ -359,8 +423,7 @@ def _matches_directory_path(coordinate: str, entry: WikiSurfaceKind) -> bool:
         return False
     page_id = coordinate[len(prefix) : -len(".md")]
     return bool(
-        is_safe_page_id(page_id)
-        and coordinate == canonical_path(entry.kind, page_id)
+        is_safe_page_id(page_id) and coordinate == canonical_path(entry.kind, page_id)
     )
 
 
@@ -379,10 +442,7 @@ def _matches_directory_uri(coordinate: str, entry: WikiSurfaceKind) -> bool:
         page_id = unquote(encoded_page_id, encoding="utf-8", errors="strict")
     except UnicodeDecodeError:
         return False
-    return bool(
-        is_safe_page_id(page_id)
-        and coordinate == mcp_uri(entry.kind, page_id)
-    )
+    return bool(is_safe_page_id(page_id) and coordinate == mcp_uri(entry.kind, page_id))
 
 
 def _is_legacy_path(path: Path, wiki: Path) -> bool:

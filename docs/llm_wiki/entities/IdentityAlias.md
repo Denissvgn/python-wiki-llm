@@ -66,16 +66,15 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_deduplicated_aliases` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `_sorted_aliases` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `add_identity_alias` | call | [concept_identity](../modules/concept_identity.md) |
-| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `aliases_for_move` | call | [concept_identity](../modules/concept_identity.md) |
-| `aliases_for_move` | call | [concept_identity](../modules/concept_identity.md) |
-| `aliases_for_move` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `allocate_concept` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `find_identity_collisions` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) |
-| `validate_identity_registry` | type_reference | [concept_identity](../modules/concept_identity.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_deduplicated_aliases` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `_sorted_aliases` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `add_identity_alias` | call | [concept_identity](../modules/concept_identity.md) | 1 |
+| `add_identity_alias` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `aliases_for_move` | call | [concept_identity](../modules/concept_identity.md) | 2 |
+| `aliases_for_move` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `allocate_concept` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `find_identity_collisions` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `move_allocation` | type_reference | [concept_identity](../modules/concept_identity.md) | — |
+| `validate_identity_registry` | type_reference | [concept_identity](../modules/concept_identity.md) | — |

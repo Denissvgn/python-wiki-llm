@@ -52,10 +52,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `build_repository_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `build_repository_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `_parse_repository` | call | [knowledge_model](../modules/knowledge_model.md) |
-| `_parse_repository` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
-| `repository_identities_match` | type_reference | [knowledge_model](../modules/knowledge_model.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `build_repository_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `build_repository_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `_parse_repository` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
+| `_parse_repository` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
+| `repository_identities_match` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |

@@ -657,8 +657,10 @@ current native knowledge.
 Preparation exports a versioned, hashed run-local copy of the relevant skills
 under `.llm-wiki-docs/skills/`; it does not install them in the source project.
 `agent-docs` is exported for the host supervisor and describes orchestration,
-intake, trust, resume, and handoff. Stage packets then select only the bounded
-worker skills needed for that stage:
+intake, trust, resume, and handoff. Each stage packet selects the exact
+run-local `wiki-reference` first and resolves its relative policy topics from
+that recorded directory; it then selects only the bounded worker skills needed
+for that stage:
 
 - `wiki-semantic-enhance` grounds/reuses existing prose and completes the
   semantic worklist without touching generated owners;

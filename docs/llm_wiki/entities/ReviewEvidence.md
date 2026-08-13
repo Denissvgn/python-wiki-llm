@@ -54,16 +54,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_parse_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_review_evidence` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_review_evidence` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `add_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `current_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `current_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `current_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `current_review_evidence` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_parse_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
+| `_parse_review_evidence` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
+| `_review_evidence` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `add_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `current_review_evidence` | call | [knowledge_governance](../modules/knowledge_governance.md) | 3 |
+| `current_review_evidence` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

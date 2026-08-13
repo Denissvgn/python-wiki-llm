@@ -94,5 +94,7 @@ flowchart LR
 | `_summary_collection_coverage` | `(observed: int, emitted: int) -> dict` | — | — |
 | `_detailed_summary` | `(summary: Mapping, collection_fields: tuple[str, ...]) -> dict` | — | — |
 | `_unbounded_summary_coverage` | `(observed: int) -> dict` | — | — |
+| `_page_reference_projection` | `(records: Iterable[dict]) -> tuple[list[dict], dict]` | — | Return bounded logical references for generated entity pages. |
+| `build_entity_page_relationship_summaries` | `(inventory: Mapping, call_edges: Optional[Iterable[Mapping]] = None, flows: Optional[Iterable[Mapping]] = None) -> dict` | — | Build the internal relationship projection used by generated pages. |
 | `build_detailed_entity_relationship_summaries` | `(inventory: Mapping, call_edges: Optional[Iterable[Mapping]] = None, flows: Optional[Iterable[Mapping]] = None) -> dict` | — | Build a versioned relationship-summary view with exact omissions. |
 | `build_entity_relationship_summaries` | `(inventory: Mapping, call_edges: Optional[Iterable[Mapping]] = None, flows: Optional[Iterable[Mapping]] = None, *, detailed: bool = False) -> dict` | — | Build bounded class and callable relationship summaries. |

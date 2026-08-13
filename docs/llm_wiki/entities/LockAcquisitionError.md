@@ -48,8 +48,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `trigger_cmd` | import | [trigger_cmd](../modules/trigger_cmd.md) |
-| `WikiLock._acquire_before_deadline` | call | [lockfile](../modules/lockfile.md) |
-| `WikiLock._acquire_before_deadline` | call | [lockfile](../modules/lockfile.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `trigger_cmd` | import | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `WikiLock._acquire_before_deadline` | call | [lockfile](../modules/lockfile.md) | 2 |

@@ -72,14 +72,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| bootstrap_wiki | BootstrapRequest | 551 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection)` |
-| bootstrap_wiki | execute_bootstrap | 570 | `bootstrap_cmd.execute_bootstrap(request)` |
-| bootstrap_wiki | InvalidRequestError | 572 | `InvalidRequestError(str(...))` |
-| bootstrap_wiki | str | 572 | `str(exc)` |
-| bootstrap_wiki | WorkspaceStateError | 574 | `WorkspaceStateError(str(...))` |
-| bootstrap_wiki | str | 574 | `str(exc)` |
-| bootstrap_wiki | WorkspaceStateError | 576 | `WorkspaceStateError(str(...))` |
-| bootstrap_wiki | str | 576 | `str(exc)` |
+| bootstrap_wiki | BootstrapRequest | 651 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection)` |
+| bootstrap_wiki | execute_bootstrap | 670 | `bootstrap_cmd.execute_bootstrap(request)` |
+| bootstrap_wiki | InvalidRequestError | 672 | `InvalidRequestError(str(...))` |
+| bootstrap_wiki | str | 672 | `str(exc)` |
+| bootstrap_wiki | WorkspaceStateError | 674 | `WorkspaceStateError(str(...))` |
+| bootstrap_wiki | str | 674 | `str(exc)` |
+| bootstrap_wiki | WorkspaceStateError | 676 | `WorkspaceStateError(str(...))` |
+| bootstrap_wiki | str | 676 | `str(exc)` |
 
 ### Boundary effects
 
@@ -89,7 +89,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `bootstrap_wiki` | `bootstrap_cmd.execute_bootstrap` | 570 |
+| external_call | `bootstrap_wiki` | `bootstrap_cmd.execute_bootstrap` | 670 |
 
 ## Behavior
 

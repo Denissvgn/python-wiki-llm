@@ -63,7 +63,7 @@ sequenceDiagram
     p15->>p14: DocumentationPolicyError
 ```
 
-> Call sequence diagram shows 30 of 336 interactions; 306 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 338 interactions; 308 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

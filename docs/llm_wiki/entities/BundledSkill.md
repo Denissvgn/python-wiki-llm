@@ -1,6 +1,6 @@
 # BundledSkill
 
-**Location:** `src/llm_wiki_cli/services/skills.py:63`
+**Location:** `src/llm_wiki_cli/services/skills.py:137`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)
@@ -33,19 +33,25 @@ _Auto-generated from `BundledSkill` in `src/llm_wiki_cli/services/skills.py`._
 ```mermaid
 flowchart LR
     n0["BundledSkill (src/llm_wiki_cli/services/skills.py)"]
-    n1["_select_skills (src/llm_wiki_cli/services/skills.py)"]
-    n2["list_bundled_skills (src/llm_wiki_cli/services/skills.py)"]
-    n3["render_skill_list_json (src/llm_wiki_cli/services/skills.py)"]
-    n4["render_skill_list_text (src/llm_wiki_cli/services/skills.py)"]
+    n1["_expected_skill_files (src/llm_wiki_cli/services/skills.py)"]
+    n2["_preflight_reference_requirement (src/llm_wiki_cli/services/skills.py)"]
+    n3["_skill_tree_matches (src/llm_wiki_cli/services/skills.py)"]
+    n4["list_bundled_skills (src/llm_wiki_cli/services/skills.py)"]
+    n5["render_skill_list_json (src/llm_wiki_cli/services/skills.py)"]
+    n6["render_skill_list_text (src/llm_wiki_cli/services/skills.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
+    n6 --> n0
     click n0 "../modules/skills.md"
     click n1 "../modules/skills.md"
     click n2 "../modules/skills.md"
     click n3 "../modules/skills.md"
     click n4 "../modules/skills.md"
+    click n5 "../modules/skills.md"
+    click n6 "../modules/skills.md"
 ```
 
 ### Summary
@@ -56,10 +62,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_select_skills` | type_reference | [skills](../modules/skills.md) |
-| `list_bundled_skills` | call | [skills](../modules/skills.md) |
-| `list_bundled_skills` | type_reference | [skills](../modules/skills.md) |
-| `render_skill_list_json` | type_reference | [skills](../modules/skills.md) |
-| `render_skill_list_text` | type_reference | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_expected_skill_files` | type_reference | [skills](../modules/skills.md) | — |
+| `_preflight_reference_requirement` | type_reference | [skills](../modules/skills.md) | — |
+| `_skill_tree_matches` | type_reference | [skills](../modules/skills.md) | — |
+| `list_bundled_skills` | call | [skills](../modules/skills.md) | 1 |
+| `list_bundled_skills` | type_reference | [skills](../modules/skills.md) | — |
+| `render_skill_list_json` | type_reference | [skills](../modules/skills.md) | — |
+| `render_skill_list_text` | type_reference | [skills](../modules/skills.md) | — |

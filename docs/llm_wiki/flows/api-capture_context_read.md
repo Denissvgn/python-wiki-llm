@@ -46,11 +46,13 @@ sequenceDiagram
     participant p14 as SourceSelectionError
     participant p15 as _override_text
     participant p16 as fspath
-    participant p17 as _selection_path
-    participant p18 as _require_selection_path
     p0-->>p1: isinstance
     p0-->>p2: TypeError
     p0-->>p3: callable
+    p0-->>p2: TypeError
+    p0-->>p1: isinstance
+    p0-->>p2: TypeError
+    p0-->>p1: isinstance
     p0-->>p2: TypeError
     p0-->>p4: validate_source_root
     p0->>p5: validate_path
@@ -74,13 +76,9 @@ sequenceDiagram
     p15-->>p16: fspath
     p15->>p14: SourceSelectionError
     p15-->>p1: isinstance
-    p15->>p14: SourceSelectionError
-    p15->>p17: _selection_path
-    p17->>p18: _require_selection_path
-    p17->>p14: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 1436 interactions; 1406 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1488 interactions; 1458 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -94,61 +92,61 @@ flowchart LR
     s3["3. TypeError"]
     s4["4. callable"]
     s5["5. TypeError"]
-    s6["6. validate_source_root"]
-    s7["7. validate_path"]
-    s8["8. PathValidationError"]
-    s9["9. resolve"]
-    s10["10. cwd"]
-    s11["11. resolve"]
-    s12["12. cwd"]
+    s6["6. isinstance"]
+    s7["7. TypeError"]
+    s8["8. isinstance"]
+    s9["9. TypeError"]
+    s10["10. validate_source_root"]
+    s11["11. validate_path"]
+    s12["12. PathValidationError"]
     s1 -. "isinstance(read_only, bool)" .-> s2
     s1 -. "TypeError('read_only must be a boolean')" .-> s3
     s1 -. "callable(plan_reporter)" .-> s4
     s1 -. "TypeError('plan_reporter must be callable or None')" .-> s5
-    s1 -. "context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)" .-> s6
-    s1 -->|"validate_path(wiki_dir, '--wiki-dir')"| s7
-    s7 -->|"PathValidationError(...)"| s8
-    s7 -. "(Path.cwd() / path).resolve(data not statically known)" .-> s9
-    s7 -. "Path.cwd(data not statically known)" .-> s10
-    s7 -. "Path.cwd().resolve(data not statically known)" .-> s11
-    s7 -. "Path.cwd(data not statically known)" .-> s12
+    s1 -. "isinstance(allow_selection_mismatch, bool)" .-> s6
+    s1 -. "TypeError('allow_selection_mismatch must be a boolean')" .-> s7
+    s1 -. "isinstance(strict_wiki_symlinks, bool)" .-> s8
+    s1 -. "TypeError('strict_wiki_symlinks must be a boolean')" .-> s9
+    s1 -. "context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)" .-> s10
+    s1 -->|"validate_path(wiki_dir, '--wiki-dir')"| s11
+    s11 -->|"PathValidationError(...)"| s12
     click s1 "../modules/context_packet.md"
-    click s7 "../modules/config.md"
-    click s8 "../modules/config.md"
+    click s11 "../modules/config.md"
+    click s12 "../modules/config.md"
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError`, `DocumentationQueryError` | - | `CapturedContextRead(...)` |
+| `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None`, `allow_selection_mismatch: bool` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError`, `wiki_surface` | - | `CapturedContextRead(...)` |
 | `isinstance` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `callable` | - | - | - | - |
 | `TypeError` | - | - | - | - |
+| `isinstance` | - | - | - | - |
+| `TypeError` | - | - | - | - |
+| `isinstance` | - | - | - | - |
+| `TypeError` | - | - | - | - |
 | `validate_source_root` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `resolve` | - | - | - | - |
-| `cwd` | - | - | - | - |
-| `resolve` | - | - | - | - |
-| `cwd` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_context_read | isinstance | 498 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError | 499 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | callable | 500 | `callable(plan_reporter)` |
-| capture_context_read | TypeError | 501 | `TypeError('plan_reporter must be callable or None')` |
-| capture_context_read | validate_source_root | 504 | `context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| capture_context_read | validate_path | 509 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 128 | `PathValidationError(...)` |
-| validate_path | resolve | 131 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 131 | `Path.cwd(data not statically known)` |
-| validate_path | resolve | 132 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | cwd | 132 | `Path.cwd(data not statically known)` |
+| capture_context_read | isinstance | 624 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError | 625 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | callable | 626 | `callable(plan_reporter)` |
+| capture_context_read | TypeError | 627 | `TypeError('plan_reporter must be callable or None')` |
+| capture_context_read | isinstance | 628 | `isinstance(allow_selection_mismatch, bool)` |
+| capture_context_read | TypeError | 629 | `TypeError('allow_selection_mismatch must be a boolean')` |
+| capture_context_read | isinstance | 630 | `isinstance(strict_wiki_symlinks, bool)` |
+| capture_context_read | TypeError | 631 | `TypeError('strict_wiki_symlinks must be a boolean')` |
+| capture_context_read | validate_source_root | 636 | `context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| capture_context_read | validate_path | 641 | `validate_path(wiki_dir, '--wiki-dir')` |
+| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 
 ### Boundary effects
 
@@ -158,15 +156,15 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_context_read` | `isinstance` | 498 |
-| unresolved_call | `capture_context_read` | `TypeError` | 499 |
-| unresolved_call | `capture_context_read` | `callable` | 500 |
-| unresolved_call | `capture_context_read` | `TypeError` | 501 |
-| external_call | `capture_context_read` | `context_service.validate_source_root` | 504 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 131 |
-| external_call | `validate_path` | `Path.cwd` | 131 |
-| external_call | `validate_path` | `Path.cwd().resolve` | 132 |
-| external_call | `validate_path` | `Path.cwd` | 132 |
+| unresolved_call | `capture_context_read` | `isinstance` | 624 |
+| unresolved_call | `capture_context_read` | `TypeError` | 625 |
+| unresolved_call | `capture_context_read` | `callable` | 626 |
+| unresolved_call | `capture_context_read` | `TypeError` | 627 |
+| unresolved_call | `capture_context_read` | `isinstance` | 628 |
+| unresolved_call | `capture_context_read` | `TypeError` | 629 |
+| unresolved_call | `capture_context_read` | `isinstance` | 630 |
+| unresolved_call | `capture_context_read` | `TypeError` | 631 |
+| external_call | `capture_context_read` | `context_service.validate_source_root` | 636 |
 | step_limit | `capture_context_read` | `first 12 steps` | 0 |
 | truncated_flow | `capture_context_read` | `depth limit` | 0 |
 

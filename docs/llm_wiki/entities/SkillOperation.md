@@ -1,6 +1,6 @@
 # SkillOperation
 
-**Location:** `src/llm_wiki_cli/services/skills.py:80`
+**Location:** `src/llm_wiki_cli/services/skills.py:154`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)
@@ -43,9 +43,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
-| `export_skills` | call | [skills](../modules/skills.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `export_skills` | call | [skills](../modules/skills.md) | 5 |

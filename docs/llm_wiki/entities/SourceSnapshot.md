@@ -1,6 +1,6 @@
 # SourceSnapshot
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:113`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:126`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -29,6 +29,10 @@ Filtered source-tree discovery results shared by lint/extract paths.
 | `source_selection_policy` | `SourceSelectionPolicy \| None` | `None` | — |
 | `selected_regular_paths` | `frozenset[str]` | `frozenset()` | — |
 | `gitignore_rules` | `tuple[_GitignoreRule, ...]` | `()` | — |
+| `include_tests` | `frozenset[str]` | `frozenset()` | — |
+| `only_files` | `frozenset[str] \| None` | `None` | — |
+| `captured_file_integrity` | `dict[str, SourceFileIntegrity]` | `field(default_factory=dict)` | — |
+| `captured_gitignore_paths` | `frozenset[str]` | `frozenset()` | — |
 
 ## Methods
 
@@ -96,21 +100,23 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [source_snapshot](../modules/source_snapshot.md) | 12 | `all_source_paths`, `captured_content_hashes`, `captured_input_kinds`, `compose_candidates`, `dockerfile_candidates`, `files_by_language`, `gitignore_fingerprint`, `gitignore_rules`, `package_markers`, `root`, `selected_regular_paths`, `source_selection_policy` |
+| [source_snapshot](../modules/source_snapshot.md) | 12 | `all_source_paths`, `captured_content_hashes`, `captured_file_integrity`, `captured_gitignore_paths`, `captured_input_kinds`, `compose_candidates`, `dockerfile_candidates`, `files_by_language`, `gitignore_fingerprint`, `gitignore_rules`, `include_tests`, `only_files` |
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_build_prompt` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_resolved_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_selected_prompt_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_validated_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `_validated_prompt_snapshot` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_build_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_flow_pages_by_source` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_preflight_review_source_selection` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) |
-| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
-| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_build_prompt` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_resolved_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_selected_prompt_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_validated_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_validated_prompt_snapshot` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_build_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_flow_pages_by_source` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_preflight_review_source_selection` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+
+> References: showing 12 of 144 logical references; 132 omitted by the 12-row generated summary limit.

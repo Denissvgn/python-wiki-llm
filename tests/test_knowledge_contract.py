@@ -1,4 +1,4 @@
-"""Golden-contract and reusable policy fixtures for KNOW-003 and KNOW-004."""
+"""Golden-contract and reusable policy fixtures for native knowledge."""
 
 from __future__ import annotations
 

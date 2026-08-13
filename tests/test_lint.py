@@ -2340,7 +2340,7 @@ class TestLintFlowCoverage:
 
 
 class TestLintDependencyCoverage:
-    """DL-501: architecture-page cycle / reconciliation warnings + staleness."""
+    """Cover architecture-page cycle and reconciliation warnings with staleness."""
 
     def test_no_architecture_pages_produces_no_findings(self, tmp_project):
         wiki = tmp_project / "wiki"

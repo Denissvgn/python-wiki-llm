@@ -1,6 +1,6 @@
 # ContextPacketSourceMutationError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:148`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:244`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -27,9 +27,9 @@ flowchart LR
     n0["ContextPacketSourceMutationError (src/llm_wiki_cli/services/context_packet.py)"]
     n1["ContextPacketError (src/llm_wiki_cli/services/context_packet.py)"]
     n2["_assert_selection_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["_assert_source_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
-    n4["build_qualified_context (src/llm_wiki_cli/services/context_packet.py)"]
-    n5["capture_context_read (src/llm_wiki_cli/services/context_packet.py)"]
+    n3["_assert_source_inputs_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
+    n4["_assert_source_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
+    n5["_assert_wiki_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -57,10 +57,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_selection_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) |
-| `build_qualified_context` | call | [context_packet](../modules/context_packet.md) |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_selection_unchanged` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `_assert_source_inputs_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `_assert_wiki_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |

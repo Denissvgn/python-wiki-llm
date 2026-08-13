@@ -1,6 +1,6 @@
 # WikiLifecycleState
 
-**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:22`
+**Location:** `src/llm_wiki_cli/services/wiki_lifecycle.py:130`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [wiki_lifecycle](../modules/wiki_lifecycle.md)
@@ -65,10 +65,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) |
-| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
-| `classify_wiki_lifecycle` | type_reference | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `bootstrap_runtime` | import | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `ci_installer` | import | [ci_installer](../modules/ci_installer.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `classify_wiki_lifecycle` | type_reference | [wiki_lifecycle](../modules/wiki_lifecycle.md) | — |

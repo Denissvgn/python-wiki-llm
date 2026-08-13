@@ -5,7 +5,7 @@ backend-path = ["."]
 
 [project]
 name = "agent-wiki-cli"
-version = "1.6.0"
+version = "1.7.0"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = "MIT"
@@ -106,6 +106,15 @@ where = ["src"]
     "skills/wiki-bootstrap/reference.md",
     "skills/wiki-reference/SKILL.md",
     "skills/wiki-reference/reference.md",
+    "skills/wiki-reference/references/context-query.md",
+    "skills/wiki-reference/references/extractors-dependencies.md",
+    "skills/wiki-reference/references/governance.md",
+    "skills/wiki-reference/references/knowledge-consumption.md",
+    "skills/wiki-reference/references/maintenance.md",
+    "skills/wiki-reference/references/publishing.md",
+    "skills/wiki-reference/references/repository-handoff.md",
+    "skills/wiki-reference/references/resources-context.md",
+    "skills/wiki-reference/references/surfaces-naming.md",
     "skills/wiki-semantic-enhance/SKILL.md",
     "skills/wiki-semantic-enhance/reference.md",
     "skills/wiki-sync/SKILL.md",

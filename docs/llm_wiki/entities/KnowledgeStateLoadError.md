@@ -65,13 +65,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) |
-| `_knowledge_error_view` | type_reference | [context_service](../modules/context_service.md) |
-| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) |
-| `load_knowledge_state` | call | [knowledge_loader](../modules/knowledge_loader.md) |
-| `load_knowledge_state` | call | [knowledge_loader](../modules/knowledge_loader.md) |
-| `_snapshot_error_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
+| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_knowledge_error_view` | type_reference | [context_service](../modules/context_service.md) | — |
+| `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `load_knowledge_state` | call | [knowledge_loader](../modules/knowledge_loader.md) | 2 |
+| `_snapshot_error_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
+| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |

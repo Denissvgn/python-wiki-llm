@@ -62,12 +62,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `evaluated_envelope_to_payload` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `hash_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `serialize_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) |
-| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `build_evaluated_envelope` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
+| `build_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `evaluated_envelope_to_payload` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `hash_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `serialize_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
+| `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |

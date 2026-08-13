@@ -49,8 +49,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `evaluate_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) |
-| `evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
-| `load_and_evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `evaluate_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |
+| `load_and_evaluate_verification_receipt` | type_reference | [verification_contracts](../modules/verification_contracts.md) | — |

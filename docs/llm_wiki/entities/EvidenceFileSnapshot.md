@@ -54,10 +54,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_read_bound_evidence_file` | type_reference | [controller](../modules/controller.md) |
-| `_read_bound_evidence_file_posix` | type_reference | [controller](../modules/controller.md) |
-| `_read_bound_evidence_file_windows` | type_reference | [controller](../modules/controller.md) |
-| `_snapshot_open_evidence_stream` | call | [controller](../modules/controller.md) |
-| `_snapshot_open_evidence_stream` | type_reference | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_read_bound_evidence_file` | type_reference | [controller](../modules/controller.md) | — |
+| `_read_bound_evidence_file_posix` | type_reference | [controller](../modules/controller.md) | — |
+| `_read_bound_evidence_file_windows` | type_reference | [controller](../modules/controller.md) | — |
+| `_snapshot_open_evidence_stream` | call | [controller](../modules/controller.md) | 1 |
+| `_snapshot_open_evidence_stream` | type_reference | [controller](../modules/controller.md) | — |

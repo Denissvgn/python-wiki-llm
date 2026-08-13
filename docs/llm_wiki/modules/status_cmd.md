@@ -10,13 +10,20 @@ _Auto-generated from `src/llm_wiki_cli/commands/status_cmd.py`._
 
 | Source | Symbols |
 |--------|---------|
-| `..config` | `DEFAULT_WIKI_DIR`, `IDE_AGENTS`, `get_agent_config_path`, `read_config`, `validate_source_root` |
+| `..config` | `AgentConfigInspection`, `AgentConfigState`, `DEFAULT_WIKI_DIR`, `IDE_AGENTS`, `config_requires_manual_recovery`, `inspect_config`, `validate_path`, `validate_source_root` |
 | `..services` | `circuit_breaker` |
+| `..services.io` | `first_unsafe_path_component` |
 | `..services.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
-| `..services.skills` | `reference_skill_state` |
+| `..services.paths` | `display_project_path`, `shell_quote` |
+| `..services.rendering_lifecycle` | `LifecycleStatus`, `ManagedLifecycleState`, `classify_lifecycle_status` |
+| `..services.schema` | `SCHEMA_FILENAMES`, `ManagedSchemaBlock`, `ManagedSchemaBlockState`, `classify_managed_schema_block`, `decode_managed_document_bytes`, `require_safe_schema_path` |
+| `..services.skills` | `ReferenceSkillState`, `ReferenceSkillVerification`, `skills_install_dir`, `verify_reference_skill` |
+| `..services.wiki_lifecycle` | `WikiScaffoldPathError`, `require_safe_wiki_scaffold` |
 | `..services.wiki_surface` | `PageKind`, `canonical_path`, `iter_page_kinds` |
+| `.hook_cmd` | `is_managed_hook_content` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
+| `os` | `os` |
 | `pathlib` | `Path` |
 
 ## Local dependency map
@@ -24,39 +31,23 @@ _Auto-generated from `src/llm_wiki_cli/commands/status_cmd.py`._
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/cli.py"]
+    n0["src"]
     n1["src/llm_wiki_cli/commands/status_cmd.py"]
-    n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/services/circuit_breaker.py"]
-    n4["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n5["src/llm_wiki_cli/services/skills.py"]
-    n6["src/llm_wiki_cli/services/wiki_surface.py"]
     n0 --> n1
-    n0 --> n2
-    n1 --> n2
-    n1 --> n3
-    n1 --> n4
-    n1 --> n5
-    n1 --> n6
-    click n0 "../modules/cli.md"
+    n1 --> n0
     click n1 "../modules/status_cmd.md"
-    click n2 "../modules/config.md"
-    click n3 "../modules/circuit_breaker.md"
-    click n4 "../modules/knowledge_observability.md"
-    click n5 "../modules/skills.md"
-    click n6 "../modules/wiki_surface.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [cli](../modules/cli.md) |
-| Outbound | [config](../modules/config.md) |
-| Outbound | [circuit_breaker](../modules/circuit_breaker.md) |
-| Outbound | [knowledge_observability](../modules/knowledge_observability.md) |
-| Outbound | [skills](../modules/skills.md) |
-| Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Inbound | `src` (1) |
+| Outbound | `src` (11) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -68,4 +59,14 @@ flowchart LR
 | `_architecture_page_count` | `(wiki_path: Path) -> int` | — | — |
 | `_format_counts` | `(counts: object) -> str` | — | — |
 | `_print_knowledge_status` | `(wiki_path: Path, src_dir: str, *, source_selection: str \| Path \| None = None) -> None` | — | — |
+| `_configured_agent` | `(config: AgentConfigInspection) -> str` | — | Return the validated agent value supplied by config inspection. |
+| `_read_managed_schema` | `(path: Path) -> ManagedSchemaBlock` | — | Classify one schema path without allowing read errors to abort status. |
+| `_managed_schema_candidates` | `() -> tuple[tuple[str, Path, ManagedSchemaBlock], ...]` | — | Return actionable current agent schema paths with any managed state. |
+| `_diagnostic_schema_target` | `(config: AgentConfigInspection) -> tuple[str, Path, ManagedSchemaBlock, bool, bool]` | — | Choose live evidence for status without treating it as persisted intent. |
+| `_upgrade_recovery` | `(*, wiki_dir: str, agent: str, enable_reference: bool, cleanup_source_agent: str \| None = None) -> str` | — | — |
+| `_init_recovery` | `(*, wiki_dir: str, agent: str, reference_enabled: bool) -> str` | — | — |
+| `_reference_recovery_prerequisites` | `(reference: ReferenceSkillVerification) -> tuple[str, ...]` | — | Explain what must happen before a reference refresh can converge. |
+| `_recovery_guidance` | `(*, lifecycle: LifecycleStatus, reference: ReferenceSkillVerification, wiki_dir: str, agent: str, reference_enabled: bool, interrupted_switch: bool, malformed_paths: tuple[Path, ...] = (), unsafe_config_path: Path \| None = None, config_problem_reason: str \| None = None, ambiguous_paths: tuple[Path, ...] = (), obsolete_references: tuple[ReferenceSkillVerification, ...] = (), cleanup_source_agent: str \| None = None, ambiguous_agents: tuple[str, ...] = (), unsafe_schema_paths: tuple[tuple[Path, Path], ...] = (), ambiguous_references: tuple[tuple[str, ReferenceSkillVerification], ...] = (), untrusted_pending_agent: str \| None = None, invalid_agent_selection: bool = False, scaffold_error: str \| None = None) -> str` | — | Return a state-aware command that also rerenders the managed block. |
+| `_print_reference_summary` | `(reference: ReferenceSkillVerification, *, skills_dir: Path, reference_enabled: bool, intent_trusted: bool) -> None` | — | — |
+| `_print_managed_lifecycle` | `(*, wiki_dir: str, config: AgentConfigInspection, scaffold_error: str \| None = None) -> None` | — | Report live schema/reference state; persisted fields are evidence only. |
 | `run` | `(args) -> None` | — | — |

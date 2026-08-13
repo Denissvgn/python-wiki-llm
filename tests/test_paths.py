@@ -7,10 +7,23 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.services.paths import (
+    display_project_path,
     normalize_source_path,
     portable_source_root_label,
     shell_quote,
 )
+
+
+def test_display_project_path_is_checkout_relative_and_posix(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    monkeypatch.chdir(project)
+
+    assert display_project_path(project / "custom" / "wiki") == "custom/wiki"
+    assert display_project_path(Path("custom") / "wiki") == "custom/wiki"
 
 
 @pytest.mark.parametrize("value", [None, "", "   ", "``", "`   `", '""', "''"])

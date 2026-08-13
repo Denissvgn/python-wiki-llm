@@ -96,15 +96,15 @@ flowchart LR
 | [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 259 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
 | [SyncResult](../entities/SyncResult.md) | 589 | — | — |
 | [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 627 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 645 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1572 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1595 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1602 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1608 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1614 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1630 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1673 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1695 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 646 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1581 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1605 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1612 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1618 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1624 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1640 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1683 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1705 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -169,8 +169,8 @@ flowchart LR
 | `_refresh_module_dependency_sections` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult) -> None` | — | — |
 | `_refresh_generated_sections` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult) -> None` | — | — |
 | `_apply_diff_page_maps` | `(inventory: dict, src_dir: str, entity_page_cache: dict[tuple[str, str], str] \| None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None, module_page_map: dict[str, str] \| None) -> tuple[dict[tuple[str, str], str], dict[tuple[str, str, int], str], dict[str, str]]` | — | — |
-| `_build_apply_diff_context` | `(*, wiki_dir: Path, src_dir: str, inventory: dict, manifest: SyncManifest, entity_page_cache: dict[tuple[str, str], str], entity_occurrence_page_cache: dict[tuple[str, str, int], str], module_page_map: dict[str, str], relationships: dict, generated_sections: _GeneratedSectionContext \| None, diff: SyncDiff, preserve_semantic: bool, source_selection_policy: SourceSelectionPolicy \| None) -> _ApplyDiffContext` | — | — |
-| `_apply_diff` | `(diff: SyncDiff, wiki_dir: Path, inventory: dict, src_dir: str, manifest: SyncManifest, *, entity_page_cache: dict[tuple[str, str], str] \| None = None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, module_page_map: dict[str, str] \| None = None, generated_sections: _GeneratedSectionContext \| None = None, preserve_semantic: bool = True, source_selection_policy: SourceSelectionPolicy \| None = None) -> SyncResult` | — | Regenerate pages for new/changed files, deprecate pages for removed files. |
+| `_build_apply_diff_context` | `(*, wiki_dir: Path, src_dir: str, inventory: dict, manifest: SyncManifest, entity_page_cache: dict[tuple[str, str], str], entity_occurrence_page_cache: dict[tuple[str, str, int], str], module_page_map: dict[str, str], relationships: dict, generated_sections: _GeneratedSectionContext \| None, diff: SyncDiff, preserve_semantic: bool, include_plugins: bool, source_selection_policy: SourceSelectionPolicy \| None) -> _ApplyDiffContext` | — | — |
+| `_apply_diff` | `(diff: SyncDiff, wiki_dir: Path, inventory: dict, src_dir: str, manifest: SyncManifest, *, entity_page_cache: dict[tuple[str, str], str] \| None = None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, module_page_map: dict[str, str] \| None = None, generated_sections: _GeneratedSectionContext \| None = None, preserve_semantic: bool = True, include_plugins: bool = True, source_selection_policy: SourceSelectionPolicy \| None = None) -> SyncResult` | — | Regenerate pages for new/changed files, deprecate pages for removed files. |
 | `_removed_entity_page_name` | `(wiki_dir: Path, cls_name: str, filepath: str, old_info: dict) -> Optional[str]` | — | Resolve the existing entity page for a class whose source file was removed. |
 | `_selection_pruning_has_changes` | `(prepared: _PreparedSyncRun) -> bool` | — | — |
 | `_applied_sync_has_changes` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun, result: SyncResult) -> bool` | — | Return whether this command mode actually changed public wiki state. |
@@ -204,7 +204,7 @@ flowchart LR
 | `_has_generated_surface_shape` | `(kind: PageKind, markdown: str) -> bool` | — | — |
 | `_has_neutral_generated_behavior` | `(kind: PageKind, markdown: str) -> bool` | — | — |
 | `_apply_surface_page_changes` | `(options: _SyncRunOptions, inventory: dict, page_maps: _SyncPageMaps, surface_plan: _SurfaceInitializationPlan, *, graph_observations: _RuntimeGraphObservations \| None = None, source_snapshot: SourceSnapshot \| None = None, result: SyncResult \| None = None) -> None` | — | — |
-| `_detect_sync_entry_points` | `(inventory: dict, src_dir: str, *, source_snapshot: SourceSnapshot \| None = None) -> _SyncEntryPointAnalysis` | — | — |
+| `_detect_sync_entry_points` | `(inventory: dict, src_dir: str, *, source_snapshot: SourceSnapshot \| None = None, include_plugins: bool = True) -> _SyncEntryPointAnalysis` | — | — |
 | `_selected_sync_flow_entries` | `(options: _SyncRunOptions, surface_plan: _SurfaceInitializationPlan) -> list[dict]` | — | — |
 | `_canonical_sync_surface_flow_targets` | `(options: _SyncRunOptions, entry_points: list[dict], surface_plan: _SurfaceInitializationPlan) -> list[dict]` | — | Select detected metadata for extant and about-to-be-created flow pages. |
 | `_canonical_surface_flow_entries` | `(inventory: Mapping[str, Mapping], entry_points: list[dict], rendering_flows: list[dict], rendering_data_flows: list[dict]) -> list[dict]` | — | Project sync observations into bootstrap's canonical flow metadata. |

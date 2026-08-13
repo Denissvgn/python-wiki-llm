@@ -2,13 +2,14 @@
 
 **Entry point:** `install_ci_workflow` (`api`)
 **Source:** [ci_installer](../modules/ci_installer.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [io](../modules/io.md), [source_selection](../modules/source_selection.md), and 3 more
+**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 4 more
 
 **Complete modules touched:**
 
 - [ci_installer](../modules/ci_installer.md)
 - [config](../modules/config.md)
 - [io](../modules/io.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [source_selection](../modules/source_selection.md)
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
@@ -74,7 +75,7 @@ sequenceDiagram
     p18-->>p22: encode
 ```
 
-> Call sequence diagram shows 30 of 401 interactions; 371 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 410 interactions; 380 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 

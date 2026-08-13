@@ -55,16 +55,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_check_knowledge_lint` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_evaluate_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
-| `_evaluate_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
-| `_evaluate_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
-| `_evaluate_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_load_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
-| `_load_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
-| `_load_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
-| `_load_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) |
-| `_load_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) |
-| `_run_report_checks` | call | [lint_service](../modules/lint_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_check_knowledge_lint` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_evaluate_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) | 3 |
+| `_evaluate_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_load_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) | 4 |
+| `_load_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_run_report_checks` | call | [lint_service](../modules/lint_service.md) | 1 |

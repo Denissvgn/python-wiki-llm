@@ -9,15 +9,21 @@ silently import the checked-out source tree.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import time
+import zipfile
 from pathlib import Path
+from pathlib import PurePosixPath
 from typing import Mapping, Sequence
+from urllib.parse import unquote
 
 
 SCHEMA_VERSION = "agent-wiki-artifact-smoke/v1"
@@ -53,6 +59,27 @@ EXPECTED_SUBCOMMANDS = (
     "uninstall",
     "upgrade",
 )
+EXPECTED_WIKI_REFERENCE_FILES = (
+    "SKILL.md",
+    "reference.md",
+    "references/context-query.md",
+    "references/extractors-dependencies.md",
+    "references/governance.md",
+    "references/knowledge-consumption.md",
+    "references/maintenance.md",
+    "references/publishing.md",
+    "references/repository-handoff.md",
+    "references/resources-context.md",
+    "references/surfaces-naming.md",
+)
+EXPECTED_SKILL_COUNT = 16
+_MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+_URI_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+_INTERNAL_REPORT_BASENAME = re.compile(
+    r"(?:^|[-_.])(?:backlog|"
+    r"closure[-_.]+(?:report|review))(?:[-_.]|$)",
+    re.IGNORECASE,
+)
 
 
 class SmokeError(RuntimeError):
@@ -64,6 +91,7 @@ def _run(
     *,
     cwd: Path,
     expected: int = 0,
+    input_text: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     environment = {
         **os.environ,
@@ -78,6 +106,7 @@ def _run(
         check=False,
         capture_output=True,
         text=True,
+        input=input_text,
         timeout=120,
     )
     if completed.returncode != expected:
@@ -108,6 +137,303 @@ def _tree_hash(root: Path) -> str:
     return digest.hexdigest()
 
 
+def _artifact_member_names(artifact: Path) -> tuple[str, ...]:
+    """Return normalized non-directory members from a release artifact."""
+
+    if artifact.suffix == ".whl":
+        with zipfile.ZipFile(artifact) as archive:
+            members = archive.infolist()
+            names = tuple(item.filename for item in members)
+            files = tuple(item.filename for item in members if not item.is_dir())
+    elif artifact.name.endswith(".tar.gz"):
+        with tarfile.open(artifact, mode="r:gz") as archive:
+            members = archive.getmembers()
+            names = tuple(item.name for item in members)
+            files = tuple(item.name for item in members if not item.isdir())
+    else:
+        raise SmokeError(f"unsupported release artifact: {artifact.name}")
+
+    for name in names:
+        path = PurePosixPath(name)
+        if path.is_absolute() or ".." in path.parts:
+            raise SmokeError(f"artifact contains an unsafe member path: {name}")
+    return files
+
+
+def _validate_artifact_members(artifact: Path) -> int:
+    """Require every managed topic and reject internal report material."""
+
+    names = _artifact_member_names(artifact)
+    internal = [
+        name
+        for name in names
+        if "reports" in {
+            part.casefold() for part in PurePosixPath(name).parts
+        }
+        or _INTERNAL_REPORT_BASENAME.search(PurePosixPath(name).name)
+    ]
+    if internal:
+        raise SmokeError(
+            "release artifact contains internal report material: "
+            + ", ".join(sorted(internal))
+        )
+
+    anchor = ("llm_wiki_cli", "skills", "wiki-reference")
+    actual_topics: list[str] = []
+    for name in names:
+        parts = PurePosixPath(name).parts
+        for index in range(len(parts) - len(anchor) + 1):
+            if parts[index : index + len(anchor)] != anchor:
+                continue
+            relative_parts = parts[index + len(anchor) :]
+            if relative_parts:
+                actual_topics.append(PurePosixPath(*relative_parts).as_posix())
+
+    expected: Counter[str] = Counter(EXPECTED_WIKI_REFERENCE_FILES)
+    actual: Counter[str] = Counter(actual_topics)
+    if actual != expected:
+        missing = sorted((expected - actual).elements())
+        extra = sorted((actual - expected).elements())
+        raise SmokeError(
+            "release artifact managed reference file set mismatch: "
+            f"missing={missing}, extra={extra}"
+        )
+    return len(actual_topics)
+
+
+def _validate_wiki_reference_tree(root: Path) -> int:
+    """Require the exact managed tree and resolve every local Markdown link."""
+
+    if root.is_symlink() or not root.is_dir():
+        raise SmokeError(f"wiki-reference is not a regular directory: {root}")
+    entries = tuple(sorted(root.rglob("*")))
+    if any(path.is_symlink() for path in entries):
+        raise SmokeError("wiki-reference export contains a symbolic link")
+    if any(not path.is_file() and not path.is_dir() for path in entries):
+        raise SmokeError("wiki-reference export contains a non-regular entry")
+    actual_files = {
+        path.relative_to(root).as_posix() for path in entries if path.is_file()
+    }
+    actual_directories = {
+        path.relative_to(root).as_posix() for path in entries if path.is_dir()
+    }
+    expected_files = set(EXPECTED_WIKI_REFERENCE_FILES)
+    if actual_files != expected_files:
+        missing = sorted(expected_files - actual_files)
+        extra = sorted(actual_files - expected_files)
+        raise SmokeError(
+            "wiki-reference exported file set mismatch: "
+            f"missing={missing}, extra={extra}"
+        )
+    if actual_directories != {"references"}:
+        raise SmokeError(
+            "wiki-reference exported directory set mismatch: "
+            f"actual={sorted(actual_directories)}"
+        )
+
+    resolved_root = root.resolve()
+    for markdown in sorted(path for path in entries if path.is_file()):
+        content = markdown.read_text(encoding="utf-8")
+        for match in _MARKDOWN_LINK.finditer(content):
+            raw_target = match.group(1).strip()
+            if raw_target.startswith("<") and raw_target.endswith(">"):
+                raw_target = raw_target[1:-1]
+            target = raw_target.split(maxsplit=1)[0]
+            if (
+                not target
+                or target.startswith("#")
+                or _URI_SCHEME.match(target) is not None
+            ):
+                continue
+            path_text = unquote(target.split("#", 1)[0])
+            if not path_text:
+                continue
+            target_path = markdown.parent / path_text
+            resolved = target_path.resolve()
+            if not resolved.is_relative_to(resolved_root) or not resolved.is_file():
+                relative = markdown.relative_to(root).as_posix()
+                raise SmokeError(
+                    f"unresolved local wiki-reference link in {relative}: {target}"
+                )
+    return len(actual_files)
+
+
+def _project_for_lifecycle(work: Path, name: str) -> Path:
+    project = work / name
+    (project / ".git" / "hooks").mkdir(parents=True)
+    (project / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
+    return project
+
+
+def _require_lifecycle_status(
+    cli: Sequence[str],
+    project: Path,
+    *,
+    lifecycle: str,
+    profile: str,
+    reference_state: str,
+) -> None:
+    status = _run(
+        [
+            *cli,
+            "status",
+            "--src-dir",
+            ".",
+            "--wiki-dir",
+            "docs/llm_wiki",
+        ],
+        cwd=project,
+    ).stdout
+    expected_lines = (
+        f"Managed lifecycle: {lifecycle}",
+        f"Rendered profile: {profile}",
+        f"Reference state: {reference_state}",
+    )
+    missing = [line for line in expected_lines if line not in status]
+    if missing:
+        raise SmokeError(
+            "installed lifecycle status mismatch; missing: " + ", ".join(missing)
+        )
+
+
+def _uninstall_lifecycle(cli: Sequence[str], project: Path) -> None:
+    _run(
+        [*cli, "uninstall", "--wiki-dir", "docs/llm_wiki"],
+        cwd=project,
+        input_text="y\n",
+    )
+    if (project / "AGENTS.md").exists() or (project / "CLAUDE.md").exists():
+        raise SmokeError("installed CLI did not remove its managed schema")
+    if (project / ".git" / ".llm-wiki-agent").exists():
+        raise SmokeError("installed CLI did not remove its managed agent config")
+
+
+def _validate_profile_lifecycle(
+    cli: Sequence[str],
+    work: Path,
+) -> Mapping[str, Sequence[str]]:
+    """Exercise installed compact and expanded lifecycles at both locations."""
+
+    generic = _project_for_lifecycle(work, "lifecycle-generic")
+    _run(
+        [*cli, "init", "--agent", "generic", "--wiki-dir", "docs/llm_wiki"],
+        cwd=generic,
+    )
+    generic_reference = generic / ".llm-wiki" / "skills" / "wiki-reference"
+    if not generic_reference.is_dir():
+        raise SmokeError("generic init did not install the managed reference")
+    _require_lifecycle_status(
+        cli,
+        generic,
+        lifecycle="compact/current",
+        profile="compact",
+        reference_state="current",
+    )
+    _run(
+        [*cli, "upgrade", "--wiki-dir", "docs/llm_wiki", "--no-skills"],
+        cwd=generic,
+    )
+    _require_lifecycle_status(
+        cli,
+        generic,
+        lifecycle="expanded/skills-disabled",
+        profile="expanded_inline",
+        reference_state="current",
+    )
+    _uninstall_lifecycle(cli, generic)
+    if generic_reference.exists():
+        raise SmokeError("generic uninstall retained an exact managed reference")
+
+    claude = _project_for_lifecycle(work, "lifecycle-claude")
+    _run(
+        [
+            *cli,
+            "init",
+            "--agent",
+            "claude",
+            "--wiki-dir",
+            "docs/llm_wiki",
+            "--no-skills",
+        ],
+        cwd=claude,
+    )
+    claude_reference = claude / ".claude" / "skills" / "wiki-reference"
+    if claude_reference.exists():
+        raise SmokeError("Claude opt-out init unexpectedly installed a reference")
+    _require_lifecycle_status(
+        cli,
+        claude,
+        lifecycle="expanded/skills-disabled",
+        profile="expanded_inline",
+        reference_state="absent",
+    )
+    _run(
+        [*cli, "upgrade", "--wiki-dir", "docs/llm_wiki", "--skills"],
+        cwd=claude,
+    )
+    if not claude_reference.is_dir():
+        raise SmokeError("Claude upgrade did not install its managed reference")
+    _require_lifecycle_status(
+        cli,
+        claude,
+        lifecycle="compact/current",
+        profile="compact",
+        reference_state="current",
+    )
+    _uninstall_lifecycle(cli, claude)
+    if claude_reference.exists():
+        raise SmokeError("Claude uninstall retained an exact managed reference")
+
+    return {
+        "generic": ("compact/current", "expanded/skills-disabled", "uninstalled"),
+        "claude": ("expanded/skills-disabled", "compact/current", "uninstalled"),
+    }
+
+
+def _validate_selected_skill_dependencies(
+    cli: Sequence[str],
+    work: Path,
+) -> Mapping[str, Sequence[str]]:
+    """Prove an installed CLI expands one selected workflow prerequisite."""
+
+    destination = work / "selected-skills"
+    report = _json_output(
+        _run(
+            [
+                *cli,
+                "skills",
+                "export",
+                "--dest",
+                str(destination),
+                "--skill",
+                "wiki-sync",
+                "--format",
+                "json",
+            ],
+            cwd=work,
+        ),
+        "selected skill export",
+    )
+    expected = {
+        "requested_skills": ["wiki-sync"],
+        "dependency_skills": ["wiki-reference"],
+        "skills": ["wiki-reference", "wiki-sync"],
+    }
+    for field, value in expected.items():
+        if report.get(field) != value:
+            raise SmokeError(
+                f"installed selected skill report mismatch for {field}: "
+                f"{report.get(field)!r}"
+            )
+    installed = sorted(path.name for path in destination.iterdir() if path.is_dir())
+    if installed != ["wiki-reference", "wiki-sync"]:
+        raise SmokeError(
+            "installed selected skill closure mismatch: " + ", ".join(installed)
+        )
+    _validate_wiki_reference_tree(destination / "wiki-reference")
+    return expected
+
+
 def _absolute_without_symlink_resolution(path: Path) -> Path:
     """Return an absolute command path without dereferencing venv symlinks."""
     return Path(os.path.abspath(path))
@@ -118,7 +444,7 @@ def _write_fixture(root: Path) -> tuple[Path, Path]:
     wiki = root / "wiki"
     source.mkdir(parents=True)
     (source / "pyproject.toml").write_text(
-        "[project]\nname = \"smoke-fixture\"\nversion = \"0.1.0\"\n",
+        '[project]\nname = "smoke-fixture"\nversion = "0.1.0"\n',
         encoding="utf-8",
     )
     package = source / "app"
@@ -231,6 +557,7 @@ def _validate_mcp(mcp_python: Path, work: Path) -> str:
 
 def run_smoke(args: argparse.Namespace) -> int:
     artifact = args.artifact.resolve()
+    artifact_reference_file_count = _validate_artifact_members(artifact)
     # Preserve virtual-environment interpreter paths.  Path.resolve() follows
     # the ``bin/python`` symlink to the base interpreter and silently drops the
     # environment's site-packages isolation.
@@ -355,6 +682,8 @@ def run_smoke(args: argparse.Namespace) -> int:
             "packet",
             "--focus",
             "all",
+            "--knowledge-mode",
+            "auto",
             "--read-only",
             "--output",
             str(packet_path),
@@ -365,8 +694,26 @@ def run_smoke(args: argparse.Namespace) -> int:
     if not isinstance(packet, Mapping):
         raise SmokeError("qualified context packet must be an object")
     packet_schema = packet.get("schema_version")
-    if packet_schema != "llm-wiki-qualified-context-packet/v1":
+    if packet_schema != "llm-wiki-qualified-context-packet/v2":
         raise SmokeError(f"unexpected context packet schema: {packet_schema!r}")
+    response = packet.get("response")
+    knowledge = response.get("knowledge") if isinstance(response, Mapping) else None
+    if not isinstance(knowledge, Mapping):
+        raise SmokeError("qualified context packet omitted knowledge disclosure")
+    selection = knowledge.get("selection")
+    concepts = selection.get("concepts") if isinstance(selection, Mapping) else None
+    if (
+        knowledge.get("status") != "selected"
+        or knowledge.get("availability") != "ready"
+        or knowledge.get("selected") is not True
+        or not isinstance(concepts, list)
+        or not concepts
+    ):
+        raise SmokeError(
+            "compact context route did not select useful bounded native evidence"
+        )
+    if (wiki / ".llm-wiki-governance.json").exists():
+        raise SmokeError("read-only compact context route created governance state")
 
     site = work / "site"
     _run(
@@ -428,8 +775,17 @@ def run_smoke(args: argparse.Namespace) -> int:
     skills = work / "skills"
     _run([*cli, "skills", "export", "--dest", str(skills)], cwd=work)
     skill_count = len(list(skills.glob("*/SKILL.md")))
-    if skill_count != 16:
-        raise SmokeError(f"expected 16 bundled skills, found {skill_count}")
+    if skill_count != EXPECTED_SKILL_COUNT:
+        raise SmokeError(
+            f"expected {EXPECTED_SKILL_COUNT} bundled skills, found {skill_count}"
+        )
+    reference_file_count = _validate_wiki_reference_tree(skills / "wiki-reference")
+    if reference_file_count != artifact_reference_file_count:
+        raise SmokeError(
+            "installed managed reference tree differs from archive qualification"
+        )
+    selected_skill_dependencies = _validate_selected_skill_dependencies(cli, work)
+    lifecycle = _validate_profile_lifecycle(cli, work)
     plugin = work / "plugin"
     _run(
         [
@@ -466,6 +822,10 @@ def run_smoke(args: argparse.Namespace) -> int:
             "site_sha256": _tree_hash(site),
             "obsidian_sha256": _tree_hash(vault),
             "skills": skill_count,
+            "wiki_reference_files": reference_file_count,
+            "artifact_reference_files": artifact_reference_file_count,
+            "selected_skill_dependencies": selected_skill_dependencies,
+            "managed_lifecycle": lifecycle,
             "plugin_sample": "documentation-hooks",
             "default_mcp_sdk": "absent",
             "mcp": mcp_status,

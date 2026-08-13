@@ -53,9 +53,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `__init__` | import | [eval_lite___init__](../modules/eval_lite___init__.md) |
-| `build_evaluation_plan` | call | [planner](../modules/planner.md) |
-| `build_evaluation_plan` | type_reference | [planner](../modules/planner.md) |
-| `materialize_evaluation_plan` | type_reference | [planner](../modules/planner.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `__init__` | import | [eval_lite___init__](../modules/eval_lite___init__.md) | — |
+| `build_evaluation_plan` | call | [planner](../modules/planner.md) | 1 |
+| `build_evaluation_plan` | type_reference | [planner](../modules/planner.md) | — |
+| `materialize_evaluation_plan` | type_reference | [planner](../modules/planner.md) | — |

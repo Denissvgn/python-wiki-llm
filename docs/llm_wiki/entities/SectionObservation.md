@@ -64,11 +64,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_preamble_observation` | call | [section_ownership](../modules/section_ownership.md) |
-| `_preamble_observation` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `observe_page_sections` | call | [section_ownership](../modules/section_ownership.md) |
-| `observe_page_sections` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `section_ownership_extension` | type_reference | [section_ownership](../modules/section_ownership.md) |
-| `serialize_section_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_preamble_observation` | call | [section_ownership](../modules/section_ownership.md) | 1 |
+| `_preamble_observation` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `observe_page_sections` | call | [section_ownership](../modules/section_ownership.md) | 1 |
+| `observe_page_sections` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `section_ownership_extension` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `serialize_section_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) | — |

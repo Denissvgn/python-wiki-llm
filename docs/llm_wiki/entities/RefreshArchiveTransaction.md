@@ -49,7 +49,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `prepare_documentation_run` | call | [prepare](../modules/prepare.md) |
-| `_recover_interrupted_refresh` | call | [refresh](../modules/refresh.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `prepare_documentation_run` | call | [prepare](../modules/prepare.md) | 1 |
+| `_recover_interrupted_refresh` | call | [refresh](../modules/refresh.md) | 1 |

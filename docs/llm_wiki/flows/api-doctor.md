@@ -93,7 +93,7 @@ sequenceDiagram
     p11-->>p13: Path
 ```
 
-> Call sequence diagram shows 30 of 1371 interactions; 1341 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1376 interactions; 1346 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -150,7 +150,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 836 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| doctor | build_doctor_report | 1054 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_doctor_report | isinstance | 124 | `isinstance(strict, bool)` |
 | build_doctor_report | TypeError | 125 | `TypeError('strict must be a boolean')` |
 | build_doctor_report | isinstance | 126 | `isinstance(allow_external_src, bool)` |

@@ -54,14 +54,10 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_default_path_error` | call | [validation](../modules/validation.md) |
-| `_default_path_error` | type_reference | [validation](../modules/validation.md) |
-| `is_canonical_uuid` | call | [validation](../modules/validation.md) |
-| `require_portable_path_component` | call | [validation](../modules/validation.md) |
-| `require_portable_path_component` | call | [validation](../modules/validation.md) |
-| `require_portable_path_component` | call | [validation](../modules/validation.md) |
-| `require_portable_path_component` | call | [validation](../modules/validation.md) |
-| `require_portable_path_component` | call | [validation](../modules/validation.md) |
-| `require_portable_relative_path` | call | [validation](../modules/validation.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_default_path_error` | call | [validation](../modules/validation.md) | 1 |
+| `_default_path_error` | type_reference | [validation](../modules/validation.md) | — |
+| `is_canonical_uuid` | call | [validation](../modules/validation.md) | 1 |
+| `require_portable_path_component` | call | [validation](../modules/validation.md) | 5 |
+| `require_portable_relative_path` | call | [validation](../modules/validation.md) | 1 |

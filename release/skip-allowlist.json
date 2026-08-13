@@ -296,7 +296,7 @@
     },
     {
       "lane": "core-macos-3.14",
-      "node_id": "tests/test_m4_dogfood.py::test_m4_dogfood_bootstrap_sync_and_site_export",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
       "owner_lane": "toolchains",
       "reason": "prepared Go helper cache is required for full-repo dogfood"
     },
@@ -1046,7 +1046,7 @@
     },
     {
       "lane": "core-ubuntu-3.10",
-      "node_id": "tests/test_m4_dogfood.py::test_m4_dogfood_bootstrap_sync_and_site_export",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
       "owner_lane": "toolchains",
       "reason": "prepared Go helper cache is required for full-repo dogfood"
     },
@@ -1838,7 +1838,7 @@
     },
     {
       "lane": "core-windows-3.13",
-      "node_id": "tests/test_m4_dogfood.py::test_m4_dogfood_bootstrap_sync_and_site_export",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
       "owner_lane": "toolchains",
       "reason": "prepared Go helper cache is required for full-repo dogfood"
     },

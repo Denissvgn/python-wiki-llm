@@ -1,4 +1,4 @@
-"""Contract tests for pure, consumer-computed concept freshness (KNOW-201)."""
+"""Contract coverage for pure, consumer-computed concept freshness."""
 
 from __future__ import annotations
 

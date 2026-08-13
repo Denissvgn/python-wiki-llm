@@ -1,6 +1,6 @@
 # CalleesResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:113`
+**Location:** `src/llm_wiki_cli/api_types.py:189`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`
 **Module:** [api_types](../modules/api_types.md)
@@ -49,6 +49,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `callees` | type_reference | [api](../modules/api.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `callees` | type_reference | [api](../modules/api.md) | — |

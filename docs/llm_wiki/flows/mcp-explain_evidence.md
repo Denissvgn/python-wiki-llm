@@ -35,7 +35,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| explain_evidence | explain_evidence | 1018 | `service.explain_evidence(locator_or_exact_route, limit=limit)` |
+| explain_evidence | explain_evidence | 1232 | `service.explain_evidence(locator_or_exact_route, limit=limit)` |
 
 ### Boundary effects
 
@@ -45,7 +45,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `explain_evidence` | `service.explain_evidence` | 1018 |
+| unresolved_call | `explain_evidence` | `service.explain_evidence` | 1232 |
 
 ## Behavior
 

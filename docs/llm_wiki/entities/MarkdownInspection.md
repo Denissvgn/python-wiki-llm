@@ -45,7 +45,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_inspect_markdown` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_inspect_markdown` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_inspect_markdown` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
+| `_inspect_markdown` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |

@@ -105,7 +105,7 @@ sequenceDiagram
     p16-->>p18: read_bytes
 ```
 
-> Call sequence diagram shows 30 of 4417 interactions; 4387 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4452 interactions; 4422 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -13,6 +13,7 @@ guard fails closed instead of falling back to an attribute-only handle.
 from __future__ import annotations
 
 import ctypes
+import hashlib
 import os
 import stat
 import uuid
@@ -34,6 +35,10 @@ _OPEN_EXISTING = 3
 _FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
 _FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
 _ERROR_ACCESS_DENIED = 5
+_EXPECTED_EXISTING_UNSET = object()
+
+GuardedTreeManifestEntry = tuple[str, int, int, int, int, int, str]
+GuardedTreeManifest = tuple[GuardedTreeManifestEntry, ...]
 
 
 class WindowsDirectoryGuardError(OSError):
@@ -319,6 +324,7 @@ def open_windows_readonly_file(
     path: Path,
     *,
     require_restrictive_dacl: bool = False,
+    require_single_link: bool = True,
 ) -> Iterator[tuple[BinaryIO, os.stat_result]]:
     """Open one regular Windows file without following a reparse point.
 
@@ -338,11 +344,17 @@ def open_windows_readonly_file(
         native_handle: int | None = _open_windows_readonly_file_handle(
             Path(path),
             require_restrictive_dacl=True,
+            require_single_link=require_single_link,
         )
-    else:
+    elif require_single_link:
         # Preserve the legacy helper call shape for ordinary read guards and
         # existing embedders that substitute this private boundary in tests.
         native_handle = _open_windows_readonly_file_handle(Path(path))
+    else:
+        native_handle = _open_windows_readonly_file_handle(
+            Path(path),
+            require_single_link=False,
+        )
     descriptor: int | None = None
     stream: BinaryIO | None = None
     try:
@@ -388,6 +400,7 @@ def _open_windows_readonly_file_handle(
     path: Path,
     *,
     require_restrictive_dacl: bool = False,
+    require_single_link: bool = True,
 ) -> int:
     from ctypes import wintypes
 
@@ -462,7 +475,7 @@ def _open_windows_readonly_file_handle(
                 "Guarded Windows input is a directory, device, or reparse point: "
                 f"{path}"
             )
-        if int(information.nNumberOfLinks) != 1:
+        if require_single_link and int(information.nNumberOfLinks) != 1:
             raise WindowsFileGuardError(
                 f"Guarded Windows input has additional hard links: {path}"
             )
@@ -1290,7 +1303,241 @@ def _windows_api_path(path: Path) -> str:
     return "\\\\?\\" + value
 
 
-def atomic_write_private_bytes(path: Path, data: bytes) -> Path:
+def _read_posix_descriptor(descriptor: int) -> bytes:
+    """Read one already-open descriptor from its current offset."""
+
+    chunks: list[bytes] = []
+    while chunk := os.read(descriptor, 1024 * 1024):
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
+def _restore_posix_quarantined_entry(
+    parent_fd: int,
+    quarantine_name: str,
+    target_name: str,
+) -> bool:
+    """Restore a claimed entry without replacing a concurrent target."""
+
+    return _restore_posix_entry_between(
+        parent_fd,
+        quarantine_name,
+        parent_fd,
+        target_name,
+    )
+
+
+def _restore_posix_entry_between(
+    source_fd: int,
+    quarantine_name: str,
+    target_fd: int,
+    target_name: str,
+) -> bool:
+    """Restore a claimed entry across pinned directories without replacement."""
+
+    try:
+        metadata = os.stat(
+            quarantine_name,
+            dir_fd=source_fd,
+            follow_symlinks=False,
+        )
+    except FileNotFoundError:
+        return True
+    if stat.S_ISDIR(metadata.st_mode):
+        placeholder_created = False
+        try:
+            os.mkdir(target_name, 0o700, dir_fd=target_fd)
+            placeholder_created = True
+            os.rename(
+                quarantine_name,
+                target_name,
+                src_dir_fd=source_fd,
+                dst_dir_fd=target_fd,
+            )
+            return True
+        except OSError:
+            if placeholder_created:
+                try:
+                    os.rmdir(target_name, dir_fd=target_fd)
+                except OSError:
+                    pass
+            return False
+    try:
+        os.link(
+            quarantine_name,
+            target_name,
+            src_dir_fd=source_fd,
+            dst_dir_fd=target_fd,
+            follow_symlinks=False,
+        )
+    except OSError:
+        return False
+    os.unlink(quarantine_name, dir_fd=source_fd)
+    return True
+
+
+def _guarded_tree_manifest_posix_fd(
+    directory_fd: int,
+    *,
+    prefix: str = "",
+) -> GuardedTreeManifest:
+    """Inventory one pinned POSIX directory tree without following links."""
+
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    directory = getattr(os, "O_DIRECTORY", None)
+    if nofollow is None or directory is None:
+        raise OSError("This POSIX platform cannot inventory guarded trees.")
+    directory_flags = (
+        os.O_RDONLY | nofollow | directory | getattr(os, "O_CLOEXEC", 0)
+    )
+    entries: list[GuardedTreeManifestEntry] = []
+    for name in sorted(os.listdir(directory_fd)):
+        metadata = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        relative = f"{prefix}/{name}" if prefix else name
+        payload = ""
+        if stat.S_ISLNK(metadata.st_mode):
+            payload = os.readlink(name, dir_fd=directory_fd)
+        elif stat.S_ISREG(metadata.st_mode):
+            descriptor = os.open(
+                name,
+                os.O_RDONLY | nofollow | getattr(os, "O_CLOEXEC", 0),
+                dir_fd=directory_fd,
+            )
+            try:
+                opened = os.fstat(descriptor)
+                if (
+                    opened.st_dev != metadata.st_dev
+                    or opened.st_ino != metadata.st_ino
+                    or not stat.S_ISREG(opened.st_mode)
+                ):
+                    raise OSError(
+                        f"Guarded tree entry changed during inspection: {relative}"
+                    )
+                payload = hashlib.sha256(
+                    _read_posix_descriptor(descriptor)
+                ).hexdigest()
+            finally:
+                os.close(descriptor)
+        elif not stat.S_ISDIR(metadata.st_mode):
+            payload = "special"
+        entries.append(
+            (
+                relative,
+                metadata.st_mode,
+                metadata.st_dev,
+                metadata.st_ino,
+                metadata.st_size,
+                metadata.st_mtime_ns,
+                payload,
+            )
+        )
+        if stat.S_ISDIR(metadata.st_mode):
+            child_fd = os.open(name, directory_flags, dir_fd=directory_fd)
+            try:
+                opened = os.fstat(child_fd)
+                if (opened.st_dev, opened.st_ino) != (
+                    metadata.st_dev,
+                    metadata.st_ino,
+                ):
+                    raise OSError(
+                        f"Guarded tree directory changed during inspection: {relative}"
+                    )
+                entries.extend(
+                    _guarded_tree_manifest_posix_fd(child_fd, prefix=relative)
+                )
+            finally:
+                os.close(child_fd)
+    return tuple(entries)
+
+
+def _guarded_tree_manifest_windows_path(root: Path) -> GuardedTreeManifest:
+    """Inventory a Windows tree while its full directory chain is pinned."""
+
+    entries: list[GuardedTreeManifestEntry] = []
+    for current_root, directory_names, file_names in os.walk(
+        root,
+        topdown=True,
+        followlinks=False,
+    ):
+        directory_names.sort()
+        file_names.sort()
+        current = Path(current_root)
+        for name in (*directory_names, *file_names):
+            candidate = current / name
+            relative = candidate.relative_to(root).as_posix()
+            entries.append(_guarded_tree_entry_windows_path(candidate, relative))
+    return tuple(entries)
+
+
+def _guarded_tree_entry_windows_path(
+    candidate: Path,
+    relative: str,
+) -> GuardedTreeManifestEntry:
+    """Capture one pinned Windows entry with stable leaf identity."""
+
+    metadata = candidate.lstat()
+    identity = windows_object_identity(metadata, context=str(candidate))
+    payload = ""
+    if getattr(metadata, "st_file_attributes", 0) & 0x00000400:
+        payload = os.readlink(candidate)
+    elif stat.S_ISREG(metadata.st_mode):
+        with open_windows_readonly_file(
+            candidate,
+            require_single_link=False,
+        ) as (stream, opened):
+            if windows_object_identity(opened, context=str(candidate)) != identity:
+                raise WindowsFileGuardError(
+                    f"Guarded tree entry changed during inspection: {candidate}"
+                )
+            payload = hashlib.sha256(stream.read()).hexdigest()
+    elif not stat.S_ISDIR(metadata.st_mode):
+        payload = "special"
+    return (
+        relative,
+        metadata.st_mode,
+        identity.device,
+        identity.file_id,
+        metadata.st_size,
+        metadata.st_mtime_ns,
+        payload,
+    )
+
+
+def guarded_tree_manifest(path: Path) -> GuardedTreeManifest:
+    """Return a deterministic manifest from a pinned, no-follow tree root."""
+
+    target = Path(path)
+    if not target.is_absolute():
+        raise OSError(f"Guarded tree path must be absolute: {target}")
+    if os.name == "nt":
+        with guard_windows_directory_chain(
+            Path(target.anchor),
+            target.parts[1:],
+        ):
+            return _guarded_tree_manifest_windows_path(target)
+
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    directory = getattr(os, "O_DIRECTORY", None)
+    if nofollow is None or directory is None:
+        raise OSError("This POSIX platform cannot inventory guarded trees.")
+    flags = os.O_RDONLY | nofollow | directory | getattr(os, "O_CLOEXEC", 0)
+    descriptor = os.open(target.anchor, flags)
+    try:
+        for component in target.parts[1:]:
+            child = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+        return _guarded_tree_manifest_posix_fd(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def atomic_write_private_bytes(
+    path: Path,
+    data: bytes,
+    *,
+    expected_existing: bytes | None | object = _EXPECTED_EXISTING_UNSET,
+) -> Path:
     """Atomically write one private file without following destination paths.
 
     POSIX writes stay descriptor-relative beneath a pinned parent directory.
@@ -1306,13 +1553,681 @@ def atomic_write_private_bytes(path: Path, data: bytes) -> Path:
     if not isinstance(data, bytes):
         raise TypeError("Private atomic output data must be bytes.")
     if os.name == "nt":
-        _atomic_write_private_bytes_windows(target, data)
+        _atomic_write_private_bytes_windows(
+            target,
+            data,
+            expected_existing=expected_existing,
+        )
     else:
-        _atomic_write_private_bytes_posix(target, data)
+        _atomic_write_private_bytes_posix(
+            target,
+            data,
+            expected_existing=expected_existing,
+        )
     return target
 
 
-def _atomic_write_private_bytes_posix(target: Path, data: bytes) -> None:
+def atomic_write_executable_bytes(
+    path: Path,
+    data: bytes,
+    *,
+    expected_existing: bytes | None | object = _EXPECTED_EXISTING_UNSET,
+) -> Path:
+    """Atomically write one executable file beneath a pinned directory chain.
+
+    POSIX replacement and mode assignment are descriptor-relative, so a
+    concurrent parent-directory rebind cannot redirect the write. Windows has
+    no executable mode bit and uses the same guarded replacement as private
+    files.
+    """
+
+    return atomic_write_guarded_bytes(
+        path,
+        data,
+        mode=0o700,
+        require_single_link=False,
+        expected_existing=expected_existing,
+    )
+
+
+def atomic_write_guarded_bytes(
+    path: Path,
+    data: bytes,
+    *,
+    mode: int = 0o600,
+    require_single_link: bool = True,
+    expected_existing: bytes | None | object = _EXPECTED_EXISTING_UNSET,
+) -> Path:
+    """Atomically replace bytes beneath a pinned, no-follow directory chain."""
+
+    target = Path(path)
+    if not target.is_absolute():
+        raise OSError(f"Guarded output path must be absolute: {target}")
+    if target.name in {"", ".", ".."} or target.parent == target:
+        raise OSError(f"Guarded output path has no safe filename: {target}")
+    if not isinstance(data, bytes):
+        raise TypeError("Guarded output data must be bytes.")
+    if os.name == "nt":
+        _atomic_write_guarded_bytes_windows(
+            target,
+            data,
+            expected_existing=expected_existing,
+            require_single_link=require_single_link,
+        )
+    else:
+        _atomic_write_private_bytes_posix(
+            target,
+            data,
+            mode=mode,
+            require_single_link=require_single_link,
+            expected_existing=expected_existing,
+        )
+    return target
+
+
+def ensure_guarded_directory(path: Path, *, mode: int = 0o755) -> Path:
+    """Create one directory chain without following a redirected component."""
+
+    target = Path(path)
+    if not target.is_absolute():
+        raise OSError(f"Guarded directory path must be absolute: {target}")
+    if target == Path(target.anchor):
+        return target
+    if os.name == "nt":
+        with guard_windows_directory_chain(
+            Path(target.anchor),
+            target.parts[1:],
+            create_missing=True,
+        ):
+            return target
+
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    directory = getattr(os, "O_DIRECTORY", None)
+    if nofollow is None or directory is None:
+        raise OSError("This POSIX platform cannot create guarded directories.")
+    flags = os.O_RDONLY | nofollow | directory | getattr(os, "O_CLOEXEC", 0)
+    descriptor = os.open(target.anchor, flags)
+    try:
+        for component in target.parts[1:]:
+            if component in {"", ".", ".."} or Path(component).name != component:
+                raise OSError(f"Unsafe guarded directory component: {component!r}")
+            try:
+                child = os.open(component, flags, dir_fd=descriptor)
+            except FileNotFoundError:
+                os.mkdir(component, mode, dir_fd=descriptor)
+                child = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+    finally:
+        os.close(descriptor)
+    return target
+
+
+def unlink_guarded_bytes(path: Path, *, expected: bytes) -> None:
+    """Unlink one exact regular file without following a rebound parent path."""
+
+    target = Path(path)
+    if not target.is_absolute():
+        raise OSError(f"Guarded unlink path must be absolute: {target}")
+    if not isinstance(expected, bytes):
+        raise TypeError("Guarded unlink expected content must be bytes.")
+    if os.name == "nt":
+        quarantine = target.parent / f".llm-wiki-{uuid.uuid4().hex}.unlink-check"
+        quarantined = False
+        with guard_windows_directory_chain(
+            Path(target.parent.anchor),
+            target.parent.parts[1:],
+        ):
+            try:
+                move_windows_path_write_through(
+                    target,
+                    quarantine,
+                    replace_existing=False,
+                )
+                quarantined = True
+                metadata = quarantine.lstat()
+                if getattr(metadata, "st_file_attributes", 0) & 0x00000400:
+                    raise WindowsFileGuardError(
+                        f"Guarded unlink target is a reparse point: {target}"
+                    )
+                with open_windows_readonly_file(
+                    quarantine,
+                    require_single_link=False,
+                ) as (stream, opened):
+                    if (
+                        not stat.S_ISREG(opened.st_mode)
+                        or stream.read() != expected
+                    ):
+                        raise WindowsFileGuardError(
+                            f"Guarded unlink target changed after preflight: {target}"
+                        )
+                quarantine.unlink()
+                quarantined = False
+            finally:
+                if quarantined:
+                    try:
+                        move_windows_path_write_through(
+                            quarantine,
+                            target,
+                            replace_existing=False,
+                        )
+                    except OSError:
+                        pass
+        return
+
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    directory = getattr(os, "O_DIRECTORY", None)
+    if nofollow is None or directory is None:
+        raise OSError("This POSIX platform cannot provide guarded unlink.")
+    flags = os.O_RDONLY | nofollow | directory | getattr(os, "O_CLOEXEC", 0)
+    parent_fd = os.open(target.anchor, flags)
+    quarantine = f".llm-wiki-{uuid.uuid4().hex}.unlink-check"
+    renamed = False
+    try:
+        for component in target.parent.parts[1:]:
+            child = os.open(component, flags, dir_fd=parent_fd)
+            os.close(parent_fd)
+            parent_fd = child
+        os.rename(
+            target.name,
+            quarantine,
+            src_dir_fd=parent_fd,
+            dst_dir_fd=parent_fd,
+        )
+        renamed = True
+        descriptor = os.open(
+            quarantine,
+            os.O_RDONLY | nofollow | getattr(os, "O_CLOEXEC", 0),
+            dir_fd=parent_fd,
+        )
+        try:
+            metadata = os.fstat(descriptor)
+            if not stat.S_ISREG(metadata.st_mode):
+                raise OSError(f"Guarded unlink target is not a regular file: {target}")
+            chunks: list[bytes] = []
+            while chunk := os.read(descriptor, 1024 * 1024):
+                chunks.append(chunk)
+            if b"".join(chunks) != expected:
+                raise OSError(
+                    f"Guarded unlink target changed after preflight: {target}"
+                )
+        finally:
+            os.close(descriptor)
+        os.unlink(quarantine, dir_fd=parent_fd)
+        renamed = False
+        os.fsync(parent_fd)
+    except BaseException:
+        if renamed:
+            if _restore_posix_quarantined_entry(
+                parent_fd,
+                quarantine,
+                target.name,
+            ):
+                renamed = False
+        raise
+    finally:
+        os.close(parent_fd)
+
+
+def remove_guarded_tree(
+    path: Path,
+    *,
+    expected_identity: tuple[int, int] | None = None,
+    expected_manifest: GuardedTreeManifest | None = None,
+) -> None:
+    """Remove one confirmed directory tree through a private quarantine."""
+
+    target = Path(path)
+    if not target.is_absolute():
+        raise OSError(f"Guarded tree-removal path must be absolute: {target}")
+    if os.name == "nt":
+        quarantine = target.parent / f".llm-wiki-{uuid.uuid4().hex}.tree-check"
+        claimed = quarantine / "tree"
+        quarantined = False
+        expected_by_path = (
+            {entry[0]: entry for entry in expected_manifest}
+            if expected_manifest is not None
+            else None
+        )
+
+        def clear_windows(directory_path: Path, *, prefix: str = "") -> None:
+            with guard_windows_directory_chain(
+                Path(directory_path.anchor),
+                directory_path.parts[1:],
+            ):
+                names = sorted(os.listdir(directory_path))
+                if expected_by_path is not None:
+                    expected_names = sorted(
+                        relative[len(prefix) + 1 :] if prefix else relative
+                        for relative in expected_by_path
+                        if (
+                            (prefix and relative.startswith(f"{prefix}/"))
+                            or (not prefix and "/" not in relative)
+                        )
+                        and "/"
+                        not in (
+                            relative[len(prefix) + 1 :] if prefix else relative
+                        )
+                    )
+                    if names != expected_names:
+                        raise WindowsDirectoryGuardError(
+                            "Guarded tree directory entries changed during removal: "
+                            f"{prefix or '.'}"
+                        )
+                for name in names:
+                    relative = f"{prefix}/{name}" if prefix else name
+                    candidate = directory_path / name
+                    entry_quarantine = (
+                        directory_path
+                        / f".llm-wiki-{uuid.uuid4().hex}.entry-check"
+                    )
+                    create_private_windows_directory(entry_quarantine)
+                    entry_claimed = entry_quarantine / "entry"
+                    entry_moved = False
+                    try:
+                        move_windows_path_write_through(
+                            candidate,
+                            entry_claimed,
+                            replace_existing=False,
+                        )
+                        entry_moved = True
+                        entry = _guarded_tree_entry_windows_path(
+                            entry_claimed,
+                            relative,
+                        )
+                        if expected_by_path is not None and entry != expected_by_path.get(
+                            relative
+                        ):
+                            raise WindowsDirectoryGuardError(
+                                "Guarded tree entry changed during removal: "
+                                f"{relative}"
+                            )
+                        is_reparse = bool(
+                            getattr(
+                                entry_claimed.lstat(),
+                                "st_file_attributes",
+                                0,
+                            )
+                            & 0x00000400
+                        )
+                        if stat.S_ISDIR(entry[1]) and not is_reparse:
+                            clear_windows(entry_claimed, prefix=relative)
+                            current_identity = windows_object_identity(
+                                entry_claimed.lstat(),
+                                context=str(entry_claimed),
+                            )
+                            if (current_identity.device, current_identity.file_id) != (
+                                entry[2],
+                                entry[3],
+                            ):
+                                raise WindowsDirectoryGuardError(
+                                    "Guarded tree directory changed during removal: "
+                                    f"{relative}"
+                                )
+                            entry_claimed.rmdir()
+                        else:
+                            if (
+                                _guarded_tree_entry_windows_path(
+                                    entry_claimed,
+                                    relative,
+                                )
+                                != entry
+                            ):
+                                raise WindowsFileGuardError(
+                                    "Guarded tree entry changed during removal: "
+                                    f"{relative}"
+                                )
+                            entry_claimed.unlink()
+                        entry_moved = False
+                    finally:
+                        if entry_moved:
+                            try:
+                                move_windows_path_write_through(
+                                    entry_claimed,
+                                    candidate,
+                                    replace_existing=False,
+                                )
+                            except OSError:
+                                pass
+                        try:
+                            entry_quarantine.rmdir()
+                        except OSError:
+                            pass
+                    if os.path.lexists(candidate):
+                        raise WindowsDirectoryGuardError(
+                            f"Guarded tree entry appeared during removal: {relative}"
+                        )
+
+        with guard_windows_directory_chain(
+            Path(target.parent.anchor),
+            target.parent.parts[1:],
+        ):
+            create_private_windows_directory(quarantine)
+            try:
+                move_windows_path_write_through(
+                    target,
+                    claimed,
+                    replace_existing=False,
+                )
+                quarantined = True
+                metadata = claimed.lstat()
+                identity = windows_object_identity(metadata, context=str(claimed))
+                if (
+                    getattr(metadata, "st_file_attributes", 0) & 0x00000400
+                    or not stat.S_ISDIR(metadata.st_mode)
+                ):
+                    raise WindowsDirectoryGuardError(
+                        f"Guarded tree-removal target is not a regular directory: {target}"
+                    )
+                if expected_identity is not None and (
+                    identity.device,
+                    identity.file_id,
+                ) != expected_identity:
+                    raise WindowsDirectoryGuardError(
+                        f"Guarded tree-removal target changed after preflight: {target}"
+                    )
+                confirmed_manifest = _guarded_tree_manifest_windows_path(claimed)
+                if (
+                    expected_manifest is not None
+                    and confirmed_manifest != expected_manifest
+                ):
+                    raise WindowsDirectoryGuardError(
+                        f"Guarded tree-removal contents changed after preflight: {target}"
+                    )
+                if any(
+                    stat.S_ISDIR(entry[1]) and entry[2] != identity.device
+                    for entry in confirmed_manifest
+                ):
+                    raise WindowsDirectoryGuardError(
+                        f"Guarded tree removal refuses a nested volume: {target}"
+                    )
+                clear_windows(claimed)
+                current_identity = windows_object_identity(
+                    claimed.lstat(),
+                    context=str(claimed),
+                )
+                if current_identity != identity:
+                    raise WindowsDirectoryGuardError(
+                        f"Guarded tree-removal root changed during removal: {target}"
+                    )
+                claimed.rmdir()
+                quarantined = False
+            finally:
+                if quarantined:
+                    try:
+                        move_windows_path_write_through(
+                            claimed,
+                            target,
+                            replace_existing=False,
+                        )
+                    except OSError:
+                        pass
+                try:
+                    quarantine.rmdir()
+                except OSError:
+                    pass
+        return
+
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    directory = getattr(os, "O_DIRECTORY", None)
+    if nofollow is None or directory is None:
+        raise OSError("This POSIX platform cannot provide guarded tree removal.")
+    flags = os.O_RDONLY | nofollow | directory | getattr(os, "O_CLOEXEC", 0)
+    parent_fd = os.open(target.anchor, flags)
+    quarantine_name = f".llm-wiki-{uuid.uuid4().hex}.tree-check"
+    quarantine_fd: int | None = None
+    root_fd: int | None = None
+    quarantine_created = False
+    quarantined = False
+    expected_by_path = (
+        {entry[0]: entry for entry in expected_manifest}
+        if expected_manifest is not None
+        else None
+    )
+
+    def current_entry(
+        directory_fd: int,
+        name: str,
+        relative: str,
+    ) -> GuardedTreeManifestEntry:
+        metadata = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        payload = ""
+        if stat.S_ISLNK(metadata.st_mode):
+            payload = os.readlink(name, dir_fd=directory_fd)
+        elif stat.S_ISREG(metadata.st_mode):
+            descriptor = os.open(
+                name,
+                os.O_RDONLY | nofollow | getattr(os, "O_CLOEXEC", 0),
+                dir_fd=directory_fd,
+            )
+            try:
+                opened = os.fstat(descriptor)
+                if (opened.st_dev, opened.st_ino) != (
+                    metadata.st_dev,
+                    metadata.st_ino,
+                ):
+                    raise OSError(
+                        f"Guarded tree entry changed during removal: {relative}"
+                    )
+                payload = hashlib.sha256(
+                    _read_posix_descriptor(descriptor)
+                ).hexdigest()
+            finally:
+                os.close(descriptor)
+        elif not stat.S_ISDIR(metadata.st_mode):
+            payload = "special"
+        return (
+            relative,
+            metadata.st_mode,
+            metadata.st_dev,
+            metadata.st_ino,
+            metadata.st_size,
+            metadata.st_mtime_ns,
+            payload,
+        )
+
+    def clear(directory_fd: int, *, root_device: int, prefix: str = "") -> None:
+        names = sorted(os.listdir(directory_fd))
+        if expected_by_path is not None:
+            expected_names = sorted(
+                relative[len(prefix) + 1 :] if prefix else relative
+                for relative in expected_by_path
+                if (
+                    (prefix and relative.startswith(f"{prefix}/"))
+                    or (not prefix and "/" not in relative)
+                )
+                and "/"
+                not in (relative[len(prefix) + 1 :] if prefix else relative)
+            )
+            if names != expected_names:
+                raise OSError(
+                    "Guarded tree directory entries changed during removal: "
+                    f"{prefix or '.'}"
+                )
+        for name in names:
+            relative = f"{prefix}/{name}" if prefix else name
+            entry_quarantine = f".llm-wiki-{uuid.uuid4().hex}.entry-check"
+            os.mkdir(entry_quarantine, 0o700, dir_fd=directory_fd)
+            entry_quarantine_fd = os.open(
+                entry_quarantine,
+                flags,
+                dir_fd=directory_fd,
+            )
+            claimed = False
+            try:
+                os.rename(
+                    name,
+                    "entry",
+                    src_dir_fd=directory_fd,
+                    dst_dir_fd=entry_quarantine_fd,
+                )
+                claimed = True
+                entry = current_entry(entry_quarantine_fd, "entry", relative)
+                if expected_by_path is not None and entry != expected_by_path.get(
+                    relative
+                ):
+                    raise OSError(
+                        f"Guarded tree entry changed during removal: {relative}"
+                    )
+                if stat.S_ISDIR(entry[1]):
+                    if entry[2] != root_device:
+                        raise OSError(
+                            f"Guarded tree removal refuses nested mount: {relative}"
+                        )
+                    child_fd = os.open(
+                        "entry",
+                        flags,
+                        dir_fd=entry_quarantine_fd,
+                    )
+                    try:
+                        opened = os.fstat(child_fd)
+                        if (opened.st_dev, opened.st_ino) != (entry[2], entry[3]):
+                            raise OSError(
+                                "Guarded tree entry changed during removal: "
+                                f"{relative}"
+                            )
+                        clear(
+                            child_fd,
+                            root_device=root_device,
+                            prefix=relative,
+                        )
+                    finally:
+                        os.close(child_fd)
+                    os.rmdir("entry", dir_fd=entry_quarantine_fd)
+                else:
+                    current = current_entry(
+                        entry_quarantine_fd,
+                        "entry",
+                        relative,
+                    )
+                    if current != entry:
+                        raise OSError(
+                            f"Guarded tree entry changed during removal: {relative}"
+                        )
+                    os.unlink("entry", dir_fd=entry_quarantine_fd)
+                claimed = False
+            except BaseException:
+                if claimed:
+                    claimed = not _restore_posix_entry_between(
+                        entry_quarantine_fd,
+                        "entry",
+                        directory_fd,
+                        name,
+                    )
+                raise
+            finally:
+                os.close(entry_quarantine_fd)
+                try:
+                    os.rmdir(entry_quarantine, dir_fd=directory_fd)
+                except OSError:
+                    # A retained claimed entry remains available for recovery.
+                    pass
+            try:
+                os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                pass
+            else:
+                raise OSError(
+                    f"Guarded tree entry appeared during removal: {relative}"
+                )
+
+    try:
+        for component in target.parent.parts[1:]:
+            child = os.open(component, flags, dir_fd=parent_fd)
+            os.close(parent_fd)
+            parent_fd = child
+        os.mkdir(quarantine_name, 0o700, dir_fd=parent_fd)
+        quarantine_created = True
+        quarantine_fd = os.open(quarantine_name, flags, dir_fd=parent_fd)
+        os.rename(
+            target.name,
+            "tree",
+            src_dir_fd=parent_fd,
+            dst_dir_fd=quarantine_fd,
+        )
+        quarantined = True
+        root_fd = os.open("tree", flags, dir_fd=quarantine_fd)
+        root_metadata = os.fstat(root_fd)
+        root_identity = (root_metadata.st_dev, root_metadata.st_ino)
+        if expected_identity is not None and root_identity != expected_identity:
+            raise OSError(
+                f"Guarded tree-removal target changed after preflight: {target}"
+            )
+        confirmed_manifest = _guarded_tree_manifest_posix_fd(root_fd)
+        if expected_manifest is not None and confirmed_manifest != expected_manifest:
+            raise OSError(
+                f"Guarded tree-removal contents changed after preflight: {target}"
+            )
+        if any(
+            stat.S_ISDIR(entry[1]) and entry[2] != root_metadata.st_dev
+            for entry in confirmed_manifest
+        ):
+            raise OSError(f"Guarded tree removal refuses a nested mount: {target}")
+        clear(root_fd, root_device=root_metadata.st_dev)
+        current = os.stat("tree", dir_fd=quarantine_fd, follow_symlinks=False)
+        if (current.st_dev, current.st_ino) != root_identity:
+            raise OSError(f"Guarded tree-removal root changed during removal: {target}")
+        os.rmdir("tree", dir_fd=quarantine_fd)
+        quarantined = False
+        os.close(root_fd)
+        root_fd = None
+        os.close(quarantine_fd)
+        quarantine_fd = None
+        os.rmdir(quarantine_name, dir_fd=parent_fd)
+        quarantine_created = False
+        os.fsync(parent_fd)
+    except BaseException:
+        if quarantined and quarantine_fd is not None:
+            placeholder_created = False
+            try:
+                os.mkdir(target.name, 0o700, dir_fd=parent_fd)
+                placeholder_created = True
+                os.rename(
+                    "tree",
+                    target.name,
+                    src_dir_fd=quarantine_fd,
+                    dst_dir_fd=parent_fd,
+                )
+                quarantined = False
+            except OSError:
+                if placeholder_created:
+                    try:
+                        os.rmdir(target.name, dir_fd=parent_fd)
+                    except OSError:
+                        pass
+            if not quarantined:
+                try:
+                    if root_fd is not None:
+                        os.close(root_fd)
+                    root_fd = None
+                    os.close(quarantine_fd)
+                    quarantine_fd = None
+                    os.rmdir(quarantine_name, dir_fd=parent_fd)
+                    quarantine_created = False
+                except OSError:
+                    pass
+        raise
+    finally:
+        if root_fd is not None:
+            os.close(root_fd)
+        if quarantine_fd is not None:
+            os.close(quarantine_fd)
+        if quarantine_created and not quarantined:
+            try:
+                os.rmdir(quarantine_name, dir_fd=parent_fd)
+            except OSError:
+                pass
+        os.close(parent_fd)
+
+
+def _atomic_write_private_bytes_posix(
+    target: Path,
+    data: bytes,
+    *,
+    mode: int = 0o600,
+    require_single_link: bool = True,
+    expected_existing: bytes | None | object = _EXPECTED_EXISTING_UNSET,
+) -> None:
     nofollow = getattr(os, "O_NOFOLLOW", None)
     directory = getattr(os, "O_DIRECTORY", None)
     if nofollow is None or directory is None:
@@ -1320,8 +2235,11 @@ def _atomic_write_private_bytes_posix(target: Path, data: bytes) -> None:
     directory_flags = os.O_RDONLY | nofollow | directory | getattr(os, "O_CLOEXEC", 0)
     parent_fd = os.open(target.anchor, directory_flags)
     temporary_name = f".llm-wiki-{uuid.uuid4().hex}.private-tmp"
+    quarantine_name = f".llm-wiki-{uuid.uuid4().hex}.replaced"
     temporary_exists = False
+    quarantine_exists = False
     file_fd: int | None = None
+    staged_identity: tuple[int, int] | None = None
     try:
         for component in target.parent.parts[1:]:
             if component in {"", ".", ".."} or Path(component).name != component:
@@ -1341,12 +2259,47 @@ def _atomic_write_private_bytes_posix(target: Path, data: bytes) -> None:
         except FileNotFoundError:
             existing = None
         if existing is not None and (
-            not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1
+            not stat.S_ISREG(existing.st_mode)
+            or (require_single_link and existing.st_nlink != 1)
         ):
             raise OSError(
                 f"Private atomic output target is not a single-link regular file: "
                 f"{target}"
             )
+        if expected_existing is not _EXPECTED_EXISTING_UNSET:
+            if expected_existing is None:
+                if existing is not None:
+                    raise OSError(
+                        f"Guarded output target appeared after preflight: {target}"
+                    )
+            else:
+                if not isinstance(expected_existing, bytes):
+                    raise TypeError("expected_existing must be bytes, None, or omitted")
+                if existing is None:
+                    raise OSError(
+                        f"Guarded output target disappeared after preflight: {target}"
+                    )
+                existing_fd = os.open(
+                    target.name,
+                    os.O_RDONLY | nofollow | getattr(os, "O_CLOEXEC", 0),
+                    dir_fd=parent_fd,
+                )
+                try:
+                    opened = os.fstat(existing_fd)
+                    if (
+                        opened.st_dev != existing.st_dev
+                        or opened.st_ino != existing.st_ino
+                        or not stat.S_ISREG(opened.st_mode)
+                    ):
+                        raise OSError(
+                            f"Guarded output target changed after preflight: {target}"
+                        )
+                    if _read_posix_descriptor(existing_fd) != expected_existing:
+                        raise OSError(
+                            f"Guarded output target changed after preflight: {target}"
+                        )
+                finally:
+                    os.close(existing_fd)
 
         file_fd = os.open(
             temporary_name,
@@ -1367,18 +2320,70 @@ def _atomic_write_private_bytes_posix(target: Path, data: bytes) -> None:
             if written <= 0:
                 raise OSError("Private atomic output write made no progress.")
             view = view[written:]
-        os.fchmod(file_fd, 0o600)
+        os.fchmod(file_fd, mode)
         os.fsync(file_fd)
+        staged = os.fstat(file_fd)
+        staged_identity = (staged.st_dev, staged.st_ino)
         os.close(file_fd)
         file_fd = None
 
-        os.rename(
-            temporary_name,
-            target.name,
-            src_dir_fd=parent_fd,
-            dst_dir_fd=parent_fd,
-        )
-        temporary_exists = False
+        if expected_existing is _EXPECTED_EXISTING_UNSET:
+            os.rename(
+                temporary_name,
+                target.name,
+                src_dir_fd=parent_fd,
+                dst_dir_fd=parent_fd,
+            )
+            temporary_exists = False
+        elif expected_existing is None:
+            # ``link`` supplies portable no-replace commit semantics.  An entry
+            # appearing after preflight is preserved and makes the write fail.
+            os.link(
+                temporary_name,
+                target.name,
+                src_dir_fd=parent_fd,
+                dst_dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+            os.unlink(temporary_name, dir_fd=parent_fd)
+            temporary_exists = False
+        else:
+            # Claim the exact destination entry, then verify the claimed bytes.
+            # This binds the commit to the preflight snapshot instead of doing
+            # a check followed by an unconditional replacing rename.
+            os.rename(
+                target.name,
+                quarantine_name,
+                src_dir_fd=parent_fd,
+                dst_dir_fd=parent_fd,
+            )
+            quarantine_exists = True
+            claimed_fd = os.open(
+                quarantine_name,
+                os.O_RDONLY | nofollow | getattr(os, "O_CLOEXEC", 0),
+                dir_fd=parent_fd,
+            )
+            try:
+                claimed = os.fstat(claimed_fd)
+                if (
+                    not stat.S_ISREG(claimed.st_mode)
+                    or (require_single_link and claimed.st_nlink != 1)
+                    or _read_posix_descriptor(claimed_fd) != expected_existing
+                ):
+                    raise OSError(
+                        f"Guarded output target changed after preflight: {target}"
+                    )
+            finally:
+                os.close(claimed_fd)
+            os.link(
+                temporary_name,
+                target.name,
+                src_dir_fd=parent_fd,
+                dst_dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+            os.unlink(temporary_name, dir_fd=parent_fd)
+            temporary_exists = False
         written = os.stat(
             target.name,
             dir_fd=parent_fd,
@@ -1386,12 +2391,16 @@ def _atomic_write_private_bytes_posix(target: Path, data: bytes) -> None:
         )
         if (
             not stat.S_ISREG(written.st_mode)
-            or written.st_nlink != 1
-            or stat.S_IMODE(written.st_mode) != 0o600
+            or (require_single_link and written.st_nlink != 1)
+            or stat.S_IMODE(written.st_mode) != mode
+            or staged_identity != (written.st_dev, written.st_ino)
         ):
             raise OSError(
                 f"Private atomic output did not retain safe file metadata: {target}"
             )
+        if quarantine_exists:
+            os.unlink(quarantine_name, dir_fd=parent_fd)
+            quarantine_exists = False
         os.fsync(parent_fd)
     finally:
         if file_fd is not None:
@@ -1401,14 +2410,48 @@ def _atomic_write_private_bytes_posix(target: Path, data: bytes) -> None:
                 os.unlink(temporary_name, dir_fd=parent_fd)
             except FileNotFoundError:
                 pass
+        if quarantine_exists:
+            # Restore without replacing an entry created by another actor.  If
+            # the original name is already occupied, retain the claimed bytes
+            # under the quarantine name and fail visibly rather than erase
+            # either version.
+            _restore_posix_quarantined_entry(
+                parent_fd,
+                quarantine_name,
+                target.name,
+            )
         os.close(parent_fd)
 
 
-def _atomic_write_private_bytes_windows(target: Path, data: bytes) -> None:
+def _commit_windows_absent_snapshot(temporary: Path, target: Path) -> None:
+    """Commit a staged file only while the inspected target remains absent."""
+
+    try:
+        move_windows_path_write_through(
+            temporary,
+            target,
+            replace_existing=False,
+        )
+    except FileExistsError as exc:
+        raise OSError(
+            f"Guarded output target appeared after preflight: {target}"
+        ) from exc
+
+
+def _atomic_write_private_bytes_windows(
+    target: Path,
+    data: bytes,
+    *,
+    expected_existing: bytes | None | object = _EXPECTED_EXISTING_UNSET,
+    require_single_link: bool = True,
+) -> None:
     parent = target.parent
     relative_components = parent.parts[1:]
     temporary = parent / f".llm-wiki-{uuid.uuid4().hex}.private-tmp"
+    quarantine = parent / f".llm-wiki-{uuid.uuid4().hex}.replaced"
     temporary_exists = False
+    quarantine_exists = False
+    staged_identity: WindowsObjectIdentity | None = None
     with guard_windows_directory_chain(
         Path(parent.anchor),
         relative_components,
@@ -1418,7 +2461,7 @@ def _atomic_write_private_bytes_windows(target: Path, data: bytes) -> None:
             if (
                 getattr(existing, "st_file_attributes", 0) & 0x00000400
                 or not stat.S_ISREG(existing.st_mode)
-                or existing.st_nlink != 1
+                or (require_single_link and existing.st_nlink != 1)
             ):
                 raise WindowsFileGuardError(
                     "Private atomic output target is not a non-reparse, "
@@ -1431,33 +2474,228 @@ def _atomic_write_private_bytes_windows(target: Path, data: bytes) -> None:
                 stream.write(data)
                 stream.flush()
                 os.fsync(stream.fileno())
-            replace_windows_file_write_through(temporary, target)
-            temporary_exists = False
+                staged_identity = windows_object_identity(
+                    os.fstat(stream.fileno()),
+                    context=str(temporary),
+                )
+
+            if expected_existing is _EXPECTED_EXISTING_UNSET:
+                replace_windows_file_write_through(temporary, target)
+                temporary_exists = False
+            elif expected_existing is None:
+                _commit_windows_absent_snapshot(temporary, target)
+                temporary_exists = False
+            else:
+                if not isinstance(expected_existing, bytes):
+                    raise TypeError("expected_existing must be bytes, None, or omitted")
+                move_windows_path_write_through(
+                    target,
+                    quarantine,
+                    replace_existing=False,
+                )
+                quarantine_exists = True
+                with open_windows_readonly_file(
+                    quarantine,
+                    require_single_link=require_single_link,
+                ) as (stream, metadata):
+                    if (
+                        not stat.S_ISREG(metadata.st_mode)
+                        or (require_single_link and metadata.st_nlink != 1)
+                        or stream.read() != expected_existing
+                    ):
+                        raise WindowsFileGuardError(
+                            f"Guarded output target changed after preflight: {target}"
+                        )
+                move_windows_path_write_through(
+                    temporary,
+                    target,
+                    replace_existing=False,
+                )
+                temporary_exists = False
+
+            written = target.lstat()
+            if (
+                getattr(written, "st_file_attributes", 0) & 0x00000400
+                or not stat.S_ISREG(written.st_mode)
+                or (require_single_link and written.st_nlink != 1)
+                or windows_object_identity(written, context=str(target))
+                != staged_identity
+            ):
+                raise WindowsFileGuardError(
+                    f"Private atomic output changed during commit: {target}"
+                )
             verify_windows_restrictive_dacl(target)
+            if quarantine_exists:
+                quarantine.unlink()
+                quarantine_exists = False
         finally:
             if temporary_exists:
                 try:
                     temporary.unlink()
                 except FileNotFoundError:
                     pass
+            if quarantine_exists:
+                try:
+                    move_windows_path_write_through(
+                        quarantine,
+                        target,
+                        replace_existing=False,
+                    )
+                except OSError:
+                    # A concurrent target is preserved; the claimed private file
+                    # remains at the quarantine path for explicit recovery.
+                    pass
+
+
+def _atomic_write_guarded_bytes_windows(
+    target: Path,
+    data: bytes,
+    *,
+    expected_existing: bytes | None | object = _EXPECTED_EXISTING_UNSET,
+    require_single_link: bool = True,
+) -> None:
+    """Write a public Windows file with inherited ACL and snapshot binding.
+
+    Unlike the private config writer, managed schemas, hooks, and scaffold
+    files inherit their directory's ACL.  The full parent chain remains pinned
+    while no-replace namespace moves bind a supplied preflight snapshot.
+    """
+
+    parent = target.parent
+    relative_components = parent.parts[1:]
+    temporary = parent / f".llm-wiki-{uuid.uuid4().hex}.guarded-tmp"
+    quarantine = parent / f".llm-wiki-{uuid.uuid4().hex}.replaced"
+    temporary_exists = False
+    quarantine_exists = False
+    staged_identity: WindowsObjectIdentity | None = None
+    with guard_windows_directory_chain(
+        Path(parent.anchor),
+        relative_components,
+    ):
+        if os.path.lexists(target):
+            existing = target.lstat()
+            if (
+                getattr(existing, "st_file_attributes", 0) & 0x00000400
+                or not stat.S_ISREG(existing.st_mode)
+                or (require_single_link and existing.st_nlink != 1)
+            ):
+                raise WindowsFileGuardError(
+                    "Guarded Windows output target is not a non-reparse "
+                    f"regular file: {target}"
+                )
+        descriptor = os.open(
+            temporary,
+            os.O_WRONLY
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NOINHERIT", 0),
+            0o600,
+        )
+        temporary_exists = True
+        try:
+            with os.fdopen(descriptor, "wb", closefd=True) as stream:
+                stream.write(data)
+                stream.flush()
+                os.fsync(stream.fileno())
+                staged_identity = windows_object_identity(
+                    os.fstat(stream.fileno()),
+                    context=str(temporary),
+                )
+
+            if expected_existing is _EXPECTED_EXISTING_UNSET:
+                move_windows_path_write_through(
+                    temporary,
+                    target,
+                    replace_existing=True,
+                )
+                temporary_exists = False
+            elif expected_existing is None:
+                _commit_windows_absent_snapshot(temporary, target)
+                temporary_exists = False
+            else:
+                if not isinstance(expected_existing, bytes):
+                    raise TypeError("expected_existing must be bytes, None, or omitted")
+                move_windows_path_write_through(
+                    target,
+                    quarantine,
+                    replace_existing=False,
+                )
+                quarantine_exists = True
+                with open_windows_readonly_file(
+                    quarantine,
+                    require_single_link=require_single_link,
+                ) as (stream, metadata):
+                    if (
+                        not stat.S_ISREG(metadata.st_mode)
+                        or (require_single_link and metadata.st_nlink != 1)
+                        or stream.read() != expected_existing
+                    ):
+                        raise WindowsFileGuardError(
+                            f"Guarded output target changed after preflight: {target}"
+                        )
+                move_windows_path_write_through(
+                    temporary,
+                    target,
+                    replace_existing=False,
+                )
+                temporary_exists = False
+            written = target.lstat()
+            if (
+                getattr(written, "st_file_attributes", 0) & 0x00000400
+                or not stat.S_ISREG(written.st_mode)
+                or (require_single_link and written.st_nlink != 1)
+                or windows_object_identity(written, context=str(target))
+                != staged_identity
+            ):
+                raise WindowsFileGuardError(
+                    f"Guarded Windows output has unsafe metadata: {target}"
+                )
+            if quarantine_exists:
+                quarantine.unlink()
+                quarantine_exists = False
+        finally:
+            if temporary_exists:
+                try:
+                    temporary.unlink()
+                except FileNotFoundError:
+                    pass
+            if quarantine_exists:
+                try:
+                    move_windows_path_write_through(
+                        quarantine,
+                        target,
+                        replace_existing=False,
+                    )
+                except OSError:
+                    # Both entries are retained when another target appeared.
+                    pass
 
 
 __all__ = [
+    "GuardedTreeManifest",
+    "GuardedTreeManifestEntry",
     "WindowsDirectoryGuardError",
     "WindowsDurabilityError",
     "WindowsFileGuardError",
     "WindowsIdentityUnavailableError",
     "WindowsObjectIdentity",
     "WindowsSecurityGuardError",
+    "atomic_write_executable_bytes",
+    "atomic_write_guarded_bytes",
     "atomic_write_private_bytes",
     "create_private_windows_directory",
+    "ensure_guarded_directory",
     "fresh_no_follow_stat",
     "guard_windows_directory_chain",
+    "guarded_tree_manifest",
     "move_windows_path_write_through",
     "open_windows_guarded_lock_file",
     "open_windows_private_write_file",
     "open_windows_readonly_file",
     "replace_windows_file_write_through",
+    "remove_guarded_tree",
+    "unlink_guarded_bytes",
     "verify_windows_restrictive_dacl",
     "windows_current_user_sid",
     "windows_object_identity",

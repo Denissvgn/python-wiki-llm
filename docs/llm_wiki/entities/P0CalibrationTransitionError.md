@@ -28,17 +28,29 @@ flowchart LR
     n3["_admit_local_oci (src/llm_wiki_cli/services/calibration/controller.py)"]
     n4["_commit_transition (src/llm_wiki_cli/services/calibration/controller.py)"]
     n5["_record_p0_calibration_agent_result (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n6["admit_calibration_run (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n7["build_calibration_agent_packet (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n8["dispatch_calibration_agent (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n9["verify_calibration_run (src/llm_wiki_cli/services/calibration/controller.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
+    n7 --> n0
+    n8 --> n0
+    n9 --> n0
     click n0 "../modules/controller.md"
     click n1 "../modules/controller.md"
     click n2 "../modules/api.md"
     click n3 "../modules/controller.md"
     click n4 "../modules/controller.md"
     click n5 "../modules/controller.md"
+    click n6 "../modules/controller.md"
+    click n7 "../modules/controller.md"
+    click n8 "../modules/controller.md"
+    click n9 "../modules/controller.md"
 ```
 
 ### Summary
@@ -55,17 +67,13 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `_admit_local_oci` | call | [controller](../modules/controller.md) |
-| `_commit_transition` | call | [controller](../modules/controller.md) |
-| `_commit_transition` | call | [controller](../modules/controller.md) |
-| `_commit_transition` | call | [controller](../modules/controller.md) |
-| `_commit_transition` | call | [controller](../modules/controller.md) |
-| `_commit_transition` | call | [controller](../modules/controller.md) |
-| `_commit_transition` | call | [controller](../modules/controller.md) |
-| `_record_p0_calibration_agent_result` | call | [controller](../modules/controller.md) |
-| `_record_p0_calibration_agent_result` | call | [controller](../modules/controller.md) |
-| `_record_p0_calibration_agent_result` | call | [controller](../modules/controller.md) |
-| `_record_p0_calibration_agent_result` | call | [controller](../modules/controller.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `_admit_local_oci` | call | [controller](../modules/controller.md) | 1 |
+| `_commit_transition` | call | [controller](../modules/controller.md) | 6 |
+| `_record_p0_calibration_agent_result` | call | [controller](../modules/controller.md) | 5 |
+| `admit_calibration_run` | call | [controller](../modules/controller.md) | 1 |
+| `build_calibration_agent_packet` | call | [controller](../modules/controller.md) | 6 |
+| `dispatch_calibration_agent` | call | [controller](../modules/controller.md) | 6 |
+| `verify_calibration_run` | call | [controller](../modules/controller.md) | 1 |

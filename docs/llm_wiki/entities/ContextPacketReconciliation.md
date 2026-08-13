@@ -1,6 +1,6 @@
 # ContextPacketReconciliation
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:325`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:455`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)
@@ -53,7 +53,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `ContextPacketReconciliation._from_official_read` | type_reference | [context_packet](../modules/context_packet.md) |
-| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `ContextPacketReconciliation._from_official_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |

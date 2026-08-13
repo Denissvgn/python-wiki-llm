@@ -1,6 +1,6 @@
 # _WindowsPathHandleMetadata
 
-**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:78`
+**Location:** `src/llm_wiki_cli/services/filesystem_guard.py:83`
 **Kind:** Class
 **Bases:** —
 **Module:** [filesystem_guard](../modules/filesystem_guard.md)
@@ -45,8 +45,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_assert_windows_path_handle_metadata` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| `_windows_path_handle_metadata` | call | [filesystem_guard](../modules/filesystem_guard.md) |
-| `_windows_path_handle_metadata` | type_reference | [filesystem_guard](../modules/filesystem_guard.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_assert_windows_path_handle_metadata` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `_windows_path_handle_metadata` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
+| `_windows_path_handle_metadata` | type_reference | [filesystem_guard](../modules/filesystem_guard.md) | — |

@@ -58,11 +58,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| migration_guidance | _render_recovery_command | 180 | `_render_recovery_command([...])` |
-| _render_recovery_command | _uses_windows_command_line | 40 | `_uses_windows_command_line(data not statically known)` |
-| _render_recovery_command | list2cmdline | 41 | `subprocess.list2cmdline(arguments)` |
-| _render_recovery_command | join | 42 | `shlex.join(arguments)` |
-| migration_guidance | str | 188 | `str(wiki_dir)` |
+| migration_guidance | _render_recovery_command | 300 | `_render_recovery_command([...])` |
+| _render_recovery_command | _uses_windows_command_line | 148 | `_uses_windows_command_line(data not statically known)` |
+| _render_recovery_command | list2cmdline | 149 | `subprocess.list2cmdline(arguments)` |
+| _render_recovery_command | join | 150 | `shlex.join(arguments)` |
+| migration_guidance | str | 308 | `str(wiki_dir)` |
 
 ### Boundary effects
 
@@ -72,8 +72,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_render_recovery_command` | `subprocess.list2cmdline` | 41 |
-| external_call | `_render_recovery_command` | `shlex.join` | 42 |
+| external_call | `_render_recovery_command` | `subprocess.list2cmdline` | 149 |
+| external_call | `_render_recovery_command` | `shlex.join` | 150 |
 
 ## Behavior
 

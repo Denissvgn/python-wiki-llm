@@ -1,5 +1,17 @@
 # agent-docs reference
 
+## Contents
+
+- [Workspace contract](#workspace-contract)
+- [Prepare command shapes](#prepare-command-shapes)
+- [Stage handoff commands](#stage-handoff-commands)
+- [Protected calibration commands](#protected-calibration-commands)
+- [Stage gates](#stage-gates)
+- [Packet and result discipline](#packet-and-result-discipline)
+- [Host-owned model routing](#host-owned-model-routing)
+- [Intake and live-service rules](#intake-and-live-service-rules)
+- [Failure and resume matrix](#failure-and-resume-matrix)
+
 Use this reference after the main skill establishes an external documentation
 run. All paths below are workspace-relative display paths; runtime absolute paths
 stay private to the host and must not leak into published docs or portable

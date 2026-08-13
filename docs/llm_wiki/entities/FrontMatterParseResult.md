@@ -43,16 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | call | [site_export](../modules/site_export.md) |
-| `_parse_front_matter` | type_reference | [site_export](../modules/site_export.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_parse_front_matter` | call | [site_export](../modules/site_export.md) | 10 |
+| `_parse_front_matter` | type_reference | [site_export](../modules/site_export.md) | — |

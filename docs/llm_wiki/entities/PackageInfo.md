@@ -47,9 +47,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `discover_packages` | call | [packages](../modules/packages.md) |
-| `discover_packages` | call | [packages](../modules/packages.md) |
-| `discover_packages` | type_reference | [packages](../modules/packages.md) |
-| `stamp_inventory_packages` | type_reference | [packages](../modules/packages.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `discover_packages` | call | [packages](../modules/packages.md) | 2 |
+| `discover_packages` | type_reference | [packages](../modules/packages.md) | — |
+| `stamp_inventory_packages` | type_reference | [packages](../modules/packages.md) | — |

@@ -67,17 +67,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `api` | import | [api](../modules/api.md) |
-| `controller` | import | [controller](../modules/controller.md) |
-| `_require_bounded_text` | call | [host_broker](../modules/host_broker.md) |
-| `_require_hash` | call | [host_broker](../modules/host_broker.md) |
-| `HostBrokerAuthenticationProof.__post_init__` | call | [host_broker](../modules/host_broker.md) |
-| `HostBrokerAuthenticationProof.__post_init__` | call | [host_broker](../modules/host_broker.md) |
-| `HostBrokerAuthenticationProof.__post_init__` | call | [host_broker](../modules/host_broker.md) |
-| `HostBrokerAuthenticationProof.__post_init__` | call | [host_broker](../modules/host_broker.md) |
-| `require_attestation_authentication` | call | [host_broker](../modules/host_broker.md) |
-| `require_attestation_authentication` | call | [host_broker](../modules/host_broker.md) |
-| `require_attestation_authentication` | call | [host_broker](../modules/host_broker.md) |
-| `require_receipt_authentication` | call | [host_broker](../modules/host_broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
+| `controller` | import | [controller](../modules/controller.md) | — |
+| `_require_bounded_text` | call | [host_broker](../modules/host_broker.md) | 1 |
+| `_require_hash` | call | [host_broker](../modules/host_broker.md) | 1 |
+| `HostBrokerAuthenticationProof.__post_init__` | call | [host_broker](../modules/host_broker.md) | 4 |
+| `require_attestation_authentication` | call | [host_broker](../modules/host_broker.md) | 3 |
+| `require_receipt_authentication` | call | [host_broker](../modules/host_broker.md) | 3 |

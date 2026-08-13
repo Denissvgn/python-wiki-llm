@@ -53,6 +53,6 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_classify` | type_reference | [doctor_service](../modules/doctor_service.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_classify` | type_reference | [doctor_service](../modules/doctor_service.md) | — |

@@ -1,6 +1,6 @@
 # WikiPage
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:161`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:273`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -53,11 +53,11 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `McpWikiService._iter_pages` | call | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_for` | call | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_for` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_from_uri` | call | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._page_from_uri` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `McpWikiService._read_page_result` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `McpWikiService._iter_pages` | call | [mcp_server](../modules/mcp_server.md) | 1 |
+| `McpWikiService._page_for` | call | [mcp_server](../modules/mcp_server.md) | 1 |
+| `McpWikiService._page_for` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `McpWikiService._page_from_uri` | call | [mcp_server](../modules/mcp_server.md) | 1 |
+| `McpWikiService._page_from_uri` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `McpWikiService._read_page_result` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

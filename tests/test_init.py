@@ -4,8 +4,11 @@ import json
 import types
 from pathlib import Path
 
+import pytest
+
 from llm_wiki_cli.commands import init_cmd
 from llm_wiki_cli.config import read_config, write_config
+from llm_wiki_cli.services.skills import REFERENCE_SKILL_FILES
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 
 
@@ -52,9 +55,10 @@ class TestInitAgentSchemas:
         assert Path("CLAUDE.md").exists()
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "LLM Wiki Maintainer Constraints" in content
-        assert "source of truth for existing page names" in content
-        assert "<module_page_stem>_<ClassName>.md" in content
-        assert "if a COPY/ADD source is ambiguous" in content
+        assert "profile=compact" in content
+        assert ".claude/skills/wiki-reference/references/surfaces-naming.md" in content
+        assert ".claude/skills/wiki-reference/references/maintenance.md" in content
+        assert ".claude/skills/wiki-reference/references/governance.md" in content
 
     def test_cursor_agent(self, tmp_project):
         args = _make_args(agent="cursor")
@@ -72,9 +76,33 @@ class TestInitAgentSchemas:
         assert Path("AGENTS.md").exists()
         assert not Path(".agents.md").exists()
         content = Path("AGENTS.md").read_text(encoding="utf-8")
-        assert "## User docs and usage examples" in content
+        assert "## Managed routes and completion" in content
+        assert "`user-docs-author`" in content
         assert "usage-examples" in content
-        assert "llm-wiki skills export --dest" in content
+        assert ".llm-wiki/skills/wiki-reference/references/context-query.md" in content
+
+    def test_existing_schema_preserves_crlf_and_legacy_user_bytes(
+        self, tmp_project
+    ):
+        from llm_wiki_cli.services.schema import CONSTRAINT_END, CONSTRAINT_START
+
+        prefix = b"# User \x96 rules\r\nkeep trailing spaces  \r\n\r\n"
+        managed = (
+            f"{CONSTRAINT_START}\r\nlegacy body\r\n{CONSTRAINT_END}\r\n"
+        ).encode("ascii")
+        suffix = (
+            b"# --- LLM Wiki Skill: external/rules ---\r\n"
+            b"preserve \x97 bytes and spaces  \r\n"
+            b"# --- End LLM Wiki Skill: external/rules ---\r\n"
+        )
+        Path("AGENTS.md").write_bytes(prefix + managed + suffix)
+
+        init_cmd.run(_make_args(agent="generic"))
+
+        committed = Path("AGENTS.md").read_bytes()
+        assert committed.startswith(prefix)
+        assert committed.endswith(suffix)
+        assert b"profile=compact" in committed
 
     def test_omitted_agent_defaults_to_generic_for_new_project(self, tmp_project):
         init_cmd.run(types.SimpleNamespace(wiki_dir="docs/llm_wiki", no_skills=True))
@@ -128,13 +156,13 @@ class TestInitCustomWikiDir:
 
 
 class TestInitAgentInstallCheck:
-    def test_no_warning_for_schema_only_agents(self, tmp_project, capsys):
+    @pytest.mark.parametrize("agent", ["cursor", "copilot", "generic"])
+    def test_no_warning_for_schema_only_agents(self, tmp_project, capsys, agent):
         """cursor/copilot/generic have no CLI — no warning expected."""
-        for agent in ("cursor", "copilot", "generic"):
-            args = _make_args(agent=agent)
-            init_cmd.run(args)
-            out = capsys.readouterr().out
-            assert "not installed" not in out
+        args = _make_args(agent=agent)
+        init_cmd.run(args)
+        out = capsys.readouterr().out
+        assert "not installed" not in out
 
     def test_warning_when_cli_agent_missing(self, tmp_project, capsys, monkeypatch):
         """If 'claude' binary is absent, manual trigger-agent warning is clear."""
@@ -166,13 +194,13 @@ class TestInitPersistsAgentConfig:
         config = read_config("docs/llm_wiki")
         assert config["agent"] == "claude"
 
-    def test_agent_config_reflects_chosen_agent(self, tmp_project):
+    @pytest.mark.parametrize("agent", ["aider", "cursor", "copilot", "generic"])
+    def test_agent_config_reflects_chosen_agent(self, tmp_project, agent):
         """The config file stores whichever agent was passed."""
-        for agent in ("aider", "cursor", "copilot", "generic"):
-            args = _make_args(agent=agent)
-            init_cmd.run(args)
-            config = read_config("docs/llm_wiki")
-            assert config["agent"] == agent
+        args = _make_args(agent=agent)
+        init_cmd.run(args)
+        config = read_config("docs/llm_wiki")
+        assert config["agent"] == agent
 
     def test_agent_config_custom_wiki_dir(self, tmp_project):
         """Config is written to .git/ regardless of which wiki dir is used."""
@@ -182,9 +210,7 @@ class TestInitPersistsAgentConfig:
         assert config["agent"] == "opencode"
         assert not (Path("my_docs/wiki/.llm-wiki-agent")).exists()
 
-    def test_explicit_profile_is_pinned_in_schema_and_local_config(
-        self, tmp_project
-    ):
+    def test_explicit_profile_is_pinned_in_schema_and_local_config(self, tmp_project):
         profile = Path("config/team selection.json")
         profile.parent.mkdir()
         profile.write_text(
@@ -220,7 +246,7 @@ class TestInitQualityHints:
         init_cmd.run(args)
         content = Path("CLAUDE.md").read_text(encoding="utf-8")
         assert "Agent quality guidelines" in content
-        assert "Surgical Changes" in content
+        assert "Keep edits surgical" in content
 
     def test_no_quality_hints_flag(self, tmp_project):
         args = _make_args(agent="claude", no_quality_hints=True)
@@ -343,15 +369,22 @@ class TestInitReferenceSkill:
         init_cmd.run(_make_args())
 
         skill_dir = Path(".llm-wiki/skills/wiki-reference")
-        assert (skill_dir / "SKILL.md").is_file()
-        assert (skill_dir / "reference.md").is_file()
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
         assert not Path(".claude/skills").exists()
 
     def test_claude_agent_uses_native_skills_dir(self, tmp_project):
         init_cmd.run(_make_args(agent="claude"))
 
         skill_dir = Path(".claude/skills/wiki-reference")
-        assert (skill_dir / "SKILL.md").is_file()
+        assert {
+            path.relative_to(skill_dir).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        } == set(REFERENCE_SKILL_FILES)
         assert not Path(".llm-wiki/skills").exists()
 
     def test_no_skills_flag_skips_install(self, tmp_project):
@@ -361,13 +394,18 @@ class TestInitReferenceSkill:
 
     def test_rerun_preserves_locally_modified_copy(self, tmp_project, capsys):
         init_cmd.run(_make_args())
-        ref = Path(".llm-wiki/skills/wiki-reference/reference.md")
+        ref = Path(".llm-wiki/skills/wiki-reference/references/maintenance.md")
         ref.write_text("local notes\n", encoding="utf-8")
 
         init_cmd.run(_make_args())
 
         assert ref.read_text(encoding="utf-8") == "local notes\n"
-        assert "differ from bundled" in capsys.readouterr().out
+        output = capsys.readouterr().out
+        assert "not an exact bundled copy" in output
+        assert (
+            "skills install --dest .llm-wiki/skills --skill wiki-reference --force"
+            in output
+        )
 
     def test_persists_reference_skill_preference(self, tmp_project):
         init_cmd.run(_make_args())

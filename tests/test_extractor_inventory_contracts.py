@@ -125,7 +125,7 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
     }
 
 
-def test_deep_extract_m4_top_level_fields_are_additive_for_old_clients(
+def test_deep_extract_extended_top_level_fields_are_additive_for_old_clients(
     tmp_path, monkeypatch
 ):
     (tmp_path / "api.py").write_text(
@@ -159,7 +159,7 @@ def test_deep_extract_m4_top_level_fields_are_additive_for_old_clients(
     assert "api.py" in old_client_payload["inventory"]
 
 
-def test_non_deep_extract_keeps_m4_top_level_fields_optional(tmp_path, monkeypatch):
+def test_non_deep_extract_keeps_extended_top_level_fields_optional(tmp_path, monkeypatch):
     (tmp_path / "api.py").write_text(
         '__all__ = ["run"]\n\n\ndef run():\n    return 1\n', encoding="utf-8"
     )

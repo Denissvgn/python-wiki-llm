@@ -51,7 +51,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `execute_oci_admission_probe` | call | [broker](../modules/broker.md) |
-| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `execute_oci_admission_probe` | call | [broker](../modules/broker.md) | 1 |
+| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) | — |

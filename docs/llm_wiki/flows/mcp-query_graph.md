@@ -35,7 +35,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| query_graph | query_graph | 953 | `service.query_graph(query)` |
+| query_graph | query_graph | 1162 | `service.query_graph(query)` |
 
 ### Boundary effects
 
@@ -45,7 +45,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `query_graph` | `service.query_graph` | 953 |
+| unresolved_call | `query_graph` | `service.query_graph` | 1162 |
 
 ## Behavior
 

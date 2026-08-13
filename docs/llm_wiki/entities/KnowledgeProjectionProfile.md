@@ -84,17 +84,19 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `site_cmd` | import | [site_cmd](../modules/site_cmd.md) |
-| `_approved_public_repository_identity` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_initial_omitted_counts` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_bundle` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_concept` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_concept_kind` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_endpoint` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_relation` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_relationship_kind` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_relationships` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_project_review` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) |
-| `_projection_profile` | call | [knowledge_projection](../modules/knowledge_projection.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `site_cmd` | import | [site_cmd](../modules/site_cmd.md) | — |
+| `_approved_public_repository_identity` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_initial_omitted_counts` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_bundle` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_concept` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_concept_kind` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_endpoint` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_relation` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_relationship_kind` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_relationships` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_project_review` | type_reference | [knowledge_projection](../modules/knowledge_projection.md) | — |
+| `_projection_profile` | call | [knowledge_projection](../modules/knowledge_projection.md) | 1 |
+
+> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.

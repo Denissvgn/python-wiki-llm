@@ -43,7 +43,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `prepare_runtime_generation_options` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| `prepare_runtime_generation_options` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `prepare_runtime_generation_options` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `prepare_runtime_generation_options` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

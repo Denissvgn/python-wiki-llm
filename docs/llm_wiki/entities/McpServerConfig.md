@@ -1,6 +1,6 @@
 # McpServerConfig
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:129`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:241`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -52,7 +52,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `create_mcp_server` | type_reference | [mcp_server](../modules/mcp_server.md) |
-| `run_mcp_server` | type_reference | [mcp_server](../modules/mcp_server.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `create_mcp_server` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
+| `run_mcp_server` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

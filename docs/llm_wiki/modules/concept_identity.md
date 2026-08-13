@@ -36,26 +36,31 @@ callers must carry it forward rather than deriving it again after a move.
 flowchart LR
     n0["src/llm_wiki_cli/commands/migrate_cmd.py"]
     n1["src/llm_wiki_cli/services/concept_identity.py"]
-    n2["src/llm_wiki_cli/services/knowledge_governance.py"]
-    n3["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n4["src/llm_wiki_cli/services/mcp_server.py"]
-    n5["src/llm_wiki_cli/services/wiki_surface.py"]
+    n2["src/llm_wiki_cli/services/documentation_query_builder.py"]
+    n3["src/llm_wiki_cli/services/knowledge_governance.py"]
+    n4["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n5["src/llm_wiki_cli/services/mcp_server.py"]
+    n6["src/llm_wiki_cli/services/wiki_surface.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n5
-    n1 --> n5
+    n0 --> n3
+    n0 --> n6
+    n1 --> n6
     n2 --> n1
+    n2 --> n6
     n3 --> n1
-    n3 --> n2
-    n3 --> n5
     n4 --> n1
-    n4 --> n5
+    n4 --> n3
+    n4 --> n6
+    n5 --> n1
+    n5 --> n2
+    n5 --> n6
     click n0 "../modules/migrate_cmd.md"
     click n1 "../modules/concept_identity.md"
-    click n2 "../modules/knowledge_governance.md"
-    click n3 "../modules/knowledge_projection.md"
-    click n4 "../modules/mcp_server.md"
-    click n5 "../modules/wiki_surface.md"
+    click n2 "../modules/documentation_query_builder.md"
+    click n3 "../modules/knowledge_governance.md"
+    click n4 "../modules/knowledge_projection.md"
+    click n5 "../modules/mcp_server.md"
+    click n6 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
@@ -63,6 +68,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [migrate_cmd](../modules/migrate_cmd.md) |
+| Inbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
 | Inbound | [knowledge_governance](../modules/knowledge_governance.md) |
 | Inbound | [knowledge_projection](../modules/knowledge_projection.md) |
 | Inbound | [mcp_server](../modules/mcp_server.md) |

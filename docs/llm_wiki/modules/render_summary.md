@@ -17,7 +17,9 @@ degraded or unhealthy failure threshold.
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
 | `collections.abc` | `Mapping` |
+| `hashlib` | `hashlib` |
 | `json` | `json` |
+| `llm_wiki_cli.services.ci_report` | `validate_doctor_payload` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
@@ -25,7 +27,20 @@ degraded or unhealthy failure threshold.
 ## Local dependency map
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
-*No internal module dependencies detected.*
+```mermaid
+flowchart LR
+    n0["integrations/github-action/render_summary.py"]
+    n1["src/llm_wiki_cli/services/ci_report.py"]
+    n0 --> n1
+    click n0 "../modules/render_summary.md"
+    click n1 "../modules/ci_report.md"
+```
+
+### Internal neighbors
+
+| Direction | Module |
+|---|---|
+| Outbound | [ci_report](../modules/ci_report.md) |
 
 ## Functions
 
@@ -50,8 +65,10 @@ degraded or unhealthy failure threshold.
 | `_validate_verification` | `(value: object) -> None` | — | — |
 | `_strict_json_object` | `(pairs: list[tuple[str, Any]]) -> dict[str, Any]` | — | — |
 | `_reject_nonfinite` | `(value: str) -> None` | — | — |
-| `load_report` | `(path: str \| Path, *, doctor_exit_code: int) -> Mapping[str, Any]` | — | Load and strictly validate the complete doctor v1 contract. |
+| `load_report` | `(path: str \| Path, *, doctor_exit_code: int, expected_strict: bool \| None = None) -> Mapping[str, Any]` | — | Load and strictly validate the complete doctor v1 contract. |
+| `_clip_utf8` | `(value: str, limit: int = CELL_MAX_BYTES) -> str` | — | — |
 | `_cell` | `(value: object) -> str` | — | — |
 | `render_summary` | `(report: Mapping[str, Any]) -> str` | — | Return a compact Markdown table without interpreting human text. |
 | `_append` | `(path: str \| None, content: str) -> None` | — | — |
+| `_write_receipt` | `(path: str \| None, *, report_path: str \| Path, report: Mapping[str, Any], fail_on: str, doctor_exit_code: int, dashboard_exit_code: int) -> None` | — | — |
 | `main` | `() -> int` | — | — |

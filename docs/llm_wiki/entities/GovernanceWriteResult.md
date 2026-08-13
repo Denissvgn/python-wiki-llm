@@ -44,8 +44,7 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `save_governance` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `save_governance` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `save_governance` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `save_governance` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
+| `save_governance` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

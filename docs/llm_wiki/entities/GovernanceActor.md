@@ -56,12 +56,12 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_lifecycle_mutation` | call | [knowledge_cmd](../modules/knowledge_cmd.md) |
-| `_actor` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_actor` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_actor` | call | [knowledge_governance](../modules/knowledge_governance.md) |
-| `_parse_actor` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `add_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
-| `set_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_lifecycle_mutation` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_actor` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_actor` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_parse_actor` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+| `_parse_actor` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `add_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `set_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |

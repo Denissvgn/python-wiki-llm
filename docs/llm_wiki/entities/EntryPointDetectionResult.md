@@ -45,8 +45,8 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_detect_plugin_entries` | type_reference | [entrypoints](../modules/entrypoints.md) |
-| `detect_entry_points` | call | [entrypoints](../modules/entrypoints.md) |
-| `detect_entry_points` | type_reference | [entrypoints](../modules/entrypoints.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_detect_plugin_entries` | type_reference | [entrypoints](../modules/entrypoints.md) | — |
+| `detect_entry_points` | call | [entrypoints](../modules/entrypoints.md) | 1 |
+| `detect_entry_points` | type_reference | [entrypoints](../modules/entrypoints.md) | — |

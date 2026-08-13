@@ -56,9 +56,9 @@ flowchart LR
 
 ### References
 
-| Reference | Kind | Source |
-|---|---|---|
-| `_cleanup_timed_out_container` | type_reference | [broker](../modules/broker.md) |
-| `_execute_container_command` | type_reference | [broker](../modules/broker.md) |
-| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) |
-| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) |
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `_cleanup_timed_out_container` | type_reference | [broker](../modules/broker.md) | — |
+| `_execute_container_command` | type_reference | [broker](../modules/broker.md) | — |
+| `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) | — |
+| `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) | — |
