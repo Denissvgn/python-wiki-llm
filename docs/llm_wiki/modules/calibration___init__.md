@@ -27,7 +27,6 @@ of the implementation modules for source, monkeypatch, and pickle compatibility.
 ## Local dependency map
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
-<!-- Thick arrows (==>) mark edges inside an import cycle. -->
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/calibration/__init__.py"]
@@ -35,17 +34,17 @@ flowchart LR
     n2["src/llm_wiki_cli/services/calibration/contracts.py"]
     n3["src/llm_wiki_cli/services/calibration/controller.py"]
     n4["src/llm_wiki_cli/services/calibration/host_broker.py"]
-    n0 ==> n1
-    n0 ==> n2
-    n0 ==> n3
-    n0 ==> n4
-    n1 ==> n0
-    n2 ==> n0
-    n3 ==> n0
-    n3 ==> n1
-    n3 ==> n2
-    n3 ==> n4
-    n4 ==> n0
+    n0 --> n1
+    n0 --> n2
+    n0 --> n3
+    n0 --> n4
+    n1 --> n0
+    n2 --> n0
+    n3 --> n0
+    n3 --> n1
+    n3 --> n2
+    n3 --> n4
+    n4 --> n0
     click n0 "../modules/calibration___init__.md"
     click n1 "../modules/broker.md"
     click n2 "../modules/calibration_contracts.md"

@@ -2472,6 +2472,63 @@ class TestLintDependencyCoverage:
         ] == []
         assert report.passed
 
+    def test_scanned_file_without_a_module_entry_is_reported(self, tmp_path):
+        """Coverage is measured against the source tree, not the inventory.
+
+        A file the extractor dropped is missing from the inventory *and* the
+        wiki, so comparing those two alone can never notice it.
+        """
+        wiki = tmp_path / "wiki"
+        (wiki / "modules").mkdir(parents=True)
+        (wiki / "modules" / "app.md").write_text(
+            "# app Module\n\n**Path:** `app.py`\n", encoding="utf-8"
+        )
+        (tmp_path / "app.py").write_text("def run():\n    return 1\n", encoding="utf-8")
+        (tmp_path / "empty.py").write_text("", encoding="utf-8")
+
+        snapshot = build_source_snapshot(tmp_path)
+        inventory = {"app.py": {"language": "python", "imports": []}}
+        statuses = {
+            "python": ExtractorStatus(
+                language="python", state="ok", files_found=2
+            )
+        }
+        report = LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+        lint_cmd._check_module_coverage(
+            report, wiki, inventory, snapshot, statuses
+        )
+
+        uncovered = [
+            d.path
+            for d in report.diagnostics
+            if d.category == "uncovered_source_files"
+        ]
+        assert uncovered == ["empty.py"]
+        # Advisory: whether a contentless module deserves a page is a product
+        # decision, so it must not fail the build.
+        assert report.issues == []
+        assert report.passed
+
+    def test_uncovered_check_skips_languages_the_extractor_did_not_run(
+        self, tmp_path
+    ):
+        wiki = tmp_path / "wiki"
+        (wiki / "modules").mkdir(parents=True)
+        (tmp_path / "main.go").write_text("package main\n", encoding="utf-8")
+
+        snapshot = build_source_snapshot(tmp_path)
+        statuses = {
+            "go": ExtractorStatus(
+                language="go", state="skipped", files_found=1, message="no toolchain"
+            )
+        }
+        report = LintReport(wiki_dir=str(wiki), src_dir=str(tmp_path))
+        lint_cmd._check_module_coverage(report, wiki, {}, snapshot, statuses)
+
+        assert [
+            d for d in report.diagnostics if d.category == "uncovered_source_files"
+        ] == []
+
     def test_unused_dependency_is_warning_not_failure(self, tmp_path):
         wiki = tmp_path / "wiki"
         wiki.mkdir()

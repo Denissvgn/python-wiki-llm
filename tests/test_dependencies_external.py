@@ -571,9 +571,42 @@ class TestReconcileDependencies:
             '[project]\nname = "x"\ndependencies = ["requests", "click"]\n',
             encoding="utf-8",
         )
-        report = reconcile_dependencies({}, str(tmp_path))["languages"]["python"]
+        inventory = {"a.py": _file("python")}
+        report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["python"]
         assert report["undeclared"] == []
         assert report["unused"] == ["click", "requests"]
+        assert report["unscanned_scopes"] == []
+
+    def test_manifest_without_scanned_sources_reports_no_unused(self, tmp_path):
+        """Nothing extracted is no evidence, so no package can be called unused."""
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "x"\ndependencies = ["requests", "click"]\n',
+            encoding="utf-8",
+        )
+        report = reconcile_dependencies({}, str(tmp_path))["languages"]["python"]
+        assert report["undeclared"] == []
+        assert report["unused"] == []
+        # Suppressing the verdict is reported, never silent.
+        assert report["unscanned_scopes"] == [""]
+
+    def test_unused_is_scoped_to_manifests_whose_sources_were_scanned(self, tmp_path):
+        """A scanned scope still reports unused; an unscanned sibling does not."""
+        scanned = tmp_path / "scanned"
+        scanned.mkdir()
+        (scanned / "pyproject.toml").write_text(
+            '[project]\nname = "scanned"\ndependencies = ["click"]\n',
+            encoding="utf-8",
+        )
+        vendored = tmp_path / "vendored"
+        vendored.mkdir()
+        (vendored / "pyproject.toml").write_text(
+            '[project]\nname = "vendored"\ndependencies = ["requests"]\n',
+            encoding="utf-8",
+        )
+        inventory = {"scanned/a.py": _file("python")}
+        report = reconcile_dependencies(inventory, str(tmp_path))["languages"]["python"]
+        assert report["unused"] == ["click"]
+        assert report["unscanned_scopes"] == ["vendored"]
 
     def test_extra_dependency_satisfies_import(self, tmp_path):
         (tmp_path / "pyproject.toml").write_text(

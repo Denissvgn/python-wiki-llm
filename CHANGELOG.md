@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-08-15
+
+### Added
+
+- Python import records carry a `scope`: `deferred` for an import inside a
+  function body, `type_checking` for one under a `TYPE_CHECKING` guard
+  (aliased guards included). An import that runs on load omits the field, so
+  inventories from extractors that do not classify imports are unchanged.
+- `build_dependency_graph` returns `import_time_edges` beside `edges`;
+  `detect_cycles` and `topological_order` accept `import_time_only` to select
+  it, and `graph_edges(graph, import_time_only=...)` exposes the same choice.
+- `analyze_dependencies` returns `deferred_cycles` — groups that are cyclic
+  only through imports that never run at load time.
+- Dependency reconciliation reports `unscanned_scopes`: manifest roots whose
+  sources were never extracted.
+- Two `lint` diagnostics: `uncovered_source_files` for a scanned source file
+  with no module entry, and `unscanned_manifest_scopes` for a manifest whose
+  unused-dependency analysis was skipped for want of extracted sources.
+
+### Fixed
+
+- Import cycles and load order counted imports that never execute. A lazy or
+  type-only import was indistinguishable from a real one, so any package that
+  deliberately deferred an import was reported as a cycle with an
+  "indeterminate" load order — penalizing the exact boundary the code had been
+  written to create. Both now use import-time edges only. Fan-in and fan-out
+  still count every resolvable import, since a lazy import is real coupling.
+- Module-level side effects inside a top-level `try`, `with`, or `if` block
+  were missed. They run at import time, so an optional-dependency fallback or
+  a platform branch belongs in load-order analysis; only
+  `if __name__ == "__main__"` and `if TYPE_CHECKING` are skipped. Assignments
+  that mutate external state (`sys.modules[...] = impl`,
+  `logging.root.level = ...`) are recorded as side effects, and a call assigned
+  to an attribute or subscript keeps its target name.
+- A file whose entire body is `sys.modules[__name__] = impl` is recognized as a
+  module alias rather than documented as a module of its own. It has no symbols,
+  and treating it as one shadowed the implementation it redirects to.
+- `lint` measured module coverage against the extracted inventory, so a source
+  file the extractor dropped was absent from both sides of the comparison and
+  could never be detected: "All modules documented" was reported while files in
+  scope had no page. Coverage is now measured against the scanned source tree.
+  Languages whose extractor did not run stay with the unsupported-source checks.
+- A declared dependency was called unused when no source under its manifest had
+  been extracted. A manifest outside project-source discovery — such as the
+  bundled Rust, Go, and TypeScript extractor helpers — or one whose toolchain is
+  unavailable reported every dependency it declared as unused. Absence of
+  imports is no longer treated as evidence of absence, and the skipped roots are
+  reported instead of silently suppressed.
+
 ## [1.7.0] - 2026-08-12
 
 ### Added
@@ -794,7 +843,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.5.0...v1.5.1

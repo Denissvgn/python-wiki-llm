@@ -1,6 +1,6 @@
 # _KnowledgeLintState
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:327`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:328`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)

@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 521 | [Open section](#entities) |
-| Modules | 151 | [Open section](#modules) |
+| Modules | 152 | [Open section](#modules) |
 | Workflows | 12 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 436 | [Open section](#entry-point-flows) |
@@ -626,6 +626,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_verification](modules/knowledge_verification.md) - Read-only machine-verification evaluation for native knowledge sessions.
 - [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`
 - [llm-wiki_main](modules/llm-wiki_main.md) - `integrations/obsidian/llm-wiki/main.js`
+- [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) - LLM Wiki CLI.
 - [lockfile](modules/lockfile.md) - `src/llm_wiki_cli/services/lockfile.py`
 - [markdown_sections](modules/markdown_sections.md) - Deterministic Markdown section parsing and legacy sync splice helpers.
 - [mcp_cmd](modules/mcp_cmd.md) - Run llm-wiki as a local Model Context Protocol server.

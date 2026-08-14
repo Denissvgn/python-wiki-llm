@@ -8,7 +8,11 @@ from pathlib import Path
 
 from ..config import build_gitignore_matcher
 from ..services.imports import build_module_path_resolver
-from .common import discover_source_files
+from .common import (
+    IMPORT_SCOPE_DEFERRED,
+    IMPORT_SCOPE_TYPE_CHECKING,
+    discover_source_files,
+)
 from .fastapi_contracts import extract_fastapi_declarations
 from .python_contracts import (
     class_kind,
@@ -713,11 +717,18 @@ def _extract_data_effects(
 
 
 def _assign_target_name(targets) -> str:
-    """First simple ``Name`` target of an assignment (e.g. ``app`` in
-    ``app = Flask(...)``); empty for tuple/attribute/subscript targets."""
+    """Name an assignment's target: ``app`` in ``app = Flask(...)``.
+
+    Falls back to the rendered attribute or subscript (``registry["default"]``)
+    so a call assigned to external state is labeled the same way a bare
+    assignment to it is. Tuple targets stay empty — no single name describes them.
+    """
     for target in targets:
         if isinstance(target, ast.Name):
             return target.id
+    for target in targets:
+        if isinstance(target, (ast.Attribute, ast.Subscript)):
+            return _annotation_to_str(target)
     return ""
 
 
@@ -741,17 +752,89 @@ def _module_call_record(call: ast.Call, target: str = "") -> dict | None:
     return ordered
 
 
-def _extract_module_calls(tree: ast.Module) -> list[dict]:
-    """Collect module-scope executable calls (import-time side effects).
+def _module_mutation_record(statement: ast.Assign) -> dict | None:
+    """Record an import-time assignment that mutates state outside the module.
 
-    Scans only the module's top-level statements — ``Expr`` calls
-    (``logging.basicConfig(...)``, ``register()``) and ``Assign``/``AnnAssign``
-    whose value is a call (``app = Flask(__name__)``) — in source order. Does not
-    descend into ``def``/``class`` bodies (covered by per-function ``calls``) or
-    into guarded blocks such as ``if __name__ == "__main__":`` (not import-time).
+    ``sys.modules[__name__] = impl`` (the module-alias shim) and
+    ``logging.root.level = DEBUG`` change objects other modules can observe, so
+    they belong in load-order analysis even though no call is made. Assignments
+    to a plain ``Name`` bind module-local state instead and are covered by
+    ``constants``/``__all__``, so they are not side effects.
     """
-    calls: list[dict] = []
+    targets = [
+        target
+        for target in statement.targets
+        if isinstance(target, (ast.Subscript, ast.Attribute))
+    ]
+    if not targets:
+        return None
+    return {
+        "name": _annotation_to_str(statement.value),
+        "target": _annotation_to_str(targets[0]),
+        "line": statement.lineno,
+    }
+
+
+def _is_self_module_alias(statement) -> bool:
+    """Detect ``sys.modules[__name__] = other`` — a module replacing itself."""
+    if not isinstance(statement, ast.Assign):
+        return False
+    for target in statement.targets:
+        if (
+            isinstance(target, ast.Subscript)
+            and isinstance(target.value, ast.Attribute)
+            and target.value.attr == "modules"
+            and isinstance(target.slice, ast.Name)
+            and target.slice.id == "__name__"
+        ):
+            return True
+    return False
+
+
+def module_alias_target(tree: ast.Module) -> str:
+    """Return the module a self-aliasing file redirects to, else ``""``.
+
+    ``sys.modules[__name__] = impl`` makes importing this path yield *impl*
+    itself, so the file is a redirect rather than a module: it has no symbols of
+    its own and its name is another module's name. Callers use this to avoid
+    describing a redirect as though it were a separate unit.
+    """
     for statement in tree.body:
+        if isinstance(statement, ast.Assign) and _is_self_module_alias(statement):
+            return _annotation_to_str(statement.value)
+    return ""
+
+
+def _import_time_body(statement, type_checking_names: set[str]) -> list:
+    """Return the nested statements of *statement* that run at import time.
+
+    ``try``/``with``/``if`` blocks at module scope execute while the module
+    loads — an optional-dependency fallback or a platform branch is import-time
+    work. The two guards that do *not* run are ``if __name__ == "__main__":``
+    (handled as an entry point) and ``if TYPE_CHECKING:`` (never executed),
+    whose ``else:`` branch is still the runtime one.
+    """
+    if isinstance(statement, ast.Try):
+        nested = list(statement.body) + list(statement.orelse)
+        for handler in statement.handlers:
+            nested.extend(handler.body)
+        nested.extend(statement.finalbody)
+        return nested
+    if isinstance(statement, (ast.With, ast.AsyncWith)):
+        return list(statement.body)
+    if isinstance(statement, ast.If):
+        if _is_main_guard(statement.test):
+            return []
+        if _is_type_checking_test(statement.test, type_checking_names):
+            return list(statement.orelse)
+        return list(statement.body) + list(statement.orelse)
+    return []
+
+
+def _collect_module_calls(
+    body, calls: list[dict], type_checking_names: set[str]
+) -> None:
+    for statement in body:
         if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call):
             record = _module_call_record(statement.value)
         elif isinstance(statement, ast.Assign) and isinstance(
@@ -766,10 +849,34 @@ def _extract_module_calls(tree: ast.Module) -> list[dict]:
             and isinstance(statement.target, ast.Name)
         ):
             record = _module_call_record(statement.value, statement.target.id)
+        elif isinstance(statement, ast.Assign):
+            record = _module_mutation_record(statement)
+        elif isinstance(statement, (ast.Try, ast.With, ast.AsyncWith, ast.If)):
+            _collect_module_calls(
+                _import_time_body(statement, type_checking_names),
+                calls,
+                type_checking_names,
+            )
+            continue
         else:
             continue
         if record is not None:
             calls.append(record)
+
+
+def _extract_module_calls(tree: ast.Module) -> list[dict]:
+    """Collect module-scope executable side effects (import-time work).
+
+    Covers ``Expr`` calls (``logging.basicConfig(...)``, ``register()``),
+    ``Assign``/``AnnAssign`` whose value is a call (``app = Flask(__name__)``),
+    and assignments that mutate an external object (``sys.modules[__name__] =
+    impl``). Descends into module-scope ``try``/``with``/``if`` blocks, which do
+    run while the module loads, but not into ``def``/``class`` bodies (covered
+    by per-function ``calls``) nor into the ``if __name__ == "__main__":`` and
+    ``if TYPE_CHECKING:`` guards, which do not.
+    """
+    calls: list[dict] = []
+    _collect_module_calls(tree.body, calls, _collect_type_checking_names(tree))
     return calls
 
 
@@ -891,6 +998,36 @@ def _is_main_guard(test) -> bool:
     )
 
 
+_TYPE_CHECKING_MODULES = frozenset({"typing", "typing_extensions"})
+
+
+def _collect_type_checking_names(tree: ast.Module) -> set[str]:
+    """Names bound to ``typing.TYPE_CHECKING`` anywhere in *tree*.
+
+    ``from typing import TYPE_CHECKING as _TYPE_CHECKING`` is common in modules
+    that keep their public namespace clean, so the alias — not just the bare
+    name — has to be recognized. A name that cannot be traced back to an import
+    is not treated as the guard, which keeps an unknown spelling on the
+    conservative side: its imports stay classified as running at import time.
+    """
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module in _TYPE_CHECKING_MODULES:
+            for alias in node.names:
+                if alias.name == "TYPE_CHECKING":
+                    names.add(alias.asname or alias.name)
+    return names
+
+
+def _is_type_checking_test(test, names: set[str]) -> bool:
+    """Detect an ``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` test."""
+    if isinstance(test, ast.Name):
+        return test.id in names
+    if isinstance(test, ast.Attribute):
+        return test.attr == "TYPE_CHECKING"
+    return False
+
+
 # ── AST visitor ───────────────────────────────────────────────────────
 
 
@@ -914,16 +1051,36 @@ class ComponentVisitor(ast.NodeVisitor):
         self.nested_functions = []  # decorated functions defined inside other defs
         self._class_depth = 0
         self._function_depth = 0
+        self._type_checking_depth = 0
+        self._type_checking_names: set[str] = set()
         self._deep = deep
         self._module_globals = module_globals or set()
         self._module_import_aliases = module_import_aliases or {}
         self._data_effect_observations = data_effect_observations
         self._import_location_observations = import_location_observations
 
+    def _import_scope(self) -> str:
+        """Classify where an import sits, or ``""`` when it runs at import time.
+
+        A ``TYPE_CHECKING`` guard never executes, and a function body executes
+        only when called; neither participates in module load order. A class
+        body *does* run at import time, so ``_class_depth`` is not consulted.
+        """
+        if self._type_checking_depth > 0:
+            return IMPORT_SCOPE_TYPE_CHECKING
+        if self._function_depth > 0:
+            return IMPORT_SCOPE_DEFERRED
+        return ""
+
     def _record_import(
         self, record: dict, node: ast.Import | ast.ImportFrom
     ) -> None:
         """Retain the legacy import shape and optional source-location sidecar."""
+        scope = self._import_scope()
+        if scope:
+            # Omitted at module scope so unclassified records keep the legacy
+            # contract: "no scope key" means "executes at import time".
+            record["scope"] = scope
         import_index = len(self.imports)
         self.imports.append(record)
         if self._import_location_observations is not None:
@@ -1163,8 +1320,13 @@ class ComponentVisitor(ast.NodeVisitor):
             )
         )
 
+    def visit_Module(self, node):
+        """Seed the ``TYPE_CHECKING`` aliases before walking the module body."""
+        self._type_checking_names = _collect_type_checking_names(node)
+        self.generic_visit(node)
+
     def visit_If(self, node):
-        """Detect a module-level ``if __name__ == "__main__"`` entry guard."""
+        """Detect the ``__main__`` entry guard and the ``TYPE_CHECKING`` guard."""
         if (
             self._class_depth == 0
             and self._function_depth == 0
@@ -1173,6 +1335,18 @@ class ComponentVisitor(ast.NodeVisitor):
             self.has_main = True
             if self._deep:
                 self.main_block_calls.extend(_extract_calls(node))
+        if _is_type_checking_test(node.test, self._type_checking_names):
+            # Only the body is type-only; an ``else:`` branch is the runtime one.
+            self.visit(node.test)
+            self._type_checking_depth += 1
+            try:
+                for child in node.body:
+                    self.visit(child)
+            finally:
+                self._type_checking_depth -= 1
+            for child in node.orelse:
+                self.visit(child)
+            return
         self.generic_visit(node)
 
 
@@ -1265,14 +1439,21 @@ def _scan_python_files(
 
         # Include the file if it has classes, public functions, constants,
         # __all__, (in deep mode) private functions or module-level side effects.
-        has_content = (
+        declares_symbols = (
             visitor.classes
             or visitor.functions
             or visitor.constants
             or visitor.has_all
-            or module_calls
             or fastapi_declarations
-            or include_empty
+        )
+        # A file whose whole body redirects itself with
+        # ``sys.modules[__name__] = impl`` is an alias, not a module: at runtime
+        # its name resolves to *impl*. Describing it as a unit of its own would
+        # invent an empty module and, worse, shadow the real one when a symbol
+        # is resolved through the alias path.
+        is_module_alias = bool(module_alias_target(tree)) and not declares_symbols
+        has_content = (
+            declares_symbols or (module_calls and not is_module_alias) or include_empty
         )
         if has_content:
             file_entry: dict[str, object] = {

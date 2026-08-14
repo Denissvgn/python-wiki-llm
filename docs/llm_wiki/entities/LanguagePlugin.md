@@ -1,6 +1,6 @@
 # _LanguagePlugin
 
-**Location:** `src/llm_wiki_cli/services/dependencies.py:752`
+**Location:** `src/llm_wiki_cli/services/dependencies.py:793`
 **Kind:** Class
 **Bases:** —
 **Module:** [services_dependencies](../modules/services_dependencies.md)

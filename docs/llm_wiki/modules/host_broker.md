@@ -29,7 +29,6 @@ authenticator, and the stock CLI remains fail-closed outside that context.
 ## Local dependency map
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
-<!-- Thick arrows (==>) mark edges inside an import cycle. -->
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
@@ -39,12 +38,12 @@ flowchart LR
     n4["src/llm_wiki_cli/services/validation.py"]
     n0 --> n2
     n0 --> n3
-    n1 ==> n2
-    n1 ==> n3
-    n2 ==> n1
-    n2 ==> n3
+    n1 --> n2
+    n1 --> n3
+    n2 --> n1
+    n2 --> n3
     n2 --> n4
-    n3 ==> n1
+    n3 --> n1
     n3 --> n4
     click n0 "../modules/api.md"
     click n1 "../modules/calibration___init__.md"

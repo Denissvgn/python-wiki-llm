@@ -76,9 +76,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (13) |
-| Outbound | `src` (28) |
+| Outbound | `src` (29) |
 
-> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -87,16 +87,16 @@ flowchart LR
 | [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 701 | — | — |
 | [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 979 | — | — |
 | [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 2852 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4083 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4107 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4120 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4127 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4135 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4141 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4151 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4162 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4170 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4177 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4101 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4125 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4138 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4145 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4153 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4159 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4169 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4180 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4188 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4195 | — | — |
 
 ## Functions
 

@@ -14,7 +14,9 @@ flowchart TD
 
 ## Cycles
 
-> Import cycles are legal but complicate load order — review the modules below.
+*No import cycles detected.*
+
+> These groups reach each other only from inside functions or under `TYPE_CHECKING`, so nothing is imported while they load and their order is well defined. They are listed because they are cyclic on paper, not because they need fixing.
 
 - [calibration___init__](modules/calibration___init__.md) ⇄ [broker](modules/broker.md) ⇄ [calibration_contracts](modules/calibration_contracts.md) ⇄ [controller](modules/controller.md) ⇄ [host_broker](modules/host_broker.md) ⇄ [documentation_run___init__](modules/documentation_run___init__.md) ⇄ [documentation_run_contracts](modules/documentation_run_contracts.md) ⇄ [documentation_run_dependencies](modules/documentation_run_dependencies.md) ⇄ [export](modules/export.md) ⇄ [integrity](modules/integrity.md) ⇄ [packet](modules/packet.md) ⇄ [prepare](modules/prepare.md) ⇄ [record](modules/record.md) ⇄ [refresh](modules/refresh.md) ⇄ [documentation_run_schema](modules/documentation_run_schema.md) ⇄ [verify](modules/verify.md) ⇄ [workspace](modules/workspace.md)
 - [context_packet](modules/context_packet.md) ⇄ [context_service](modules/context_service.md) ⇄ [documentation_query_builder](modules/documentation_query_builder.md)
@@ -40,22 +42,23 @@ flowchart TD
 | [extraction_service](modules/extraction_service.md) | 18 | 20 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 17 | 5 |
 | [knowledge_governance](modules/knowledge_governance.md) | 16 | 9 |
-| [plugins](modules/plugins.md) | 16 | 2 |
+| [plugins](modules/plugins.md) | 16 | 3 |
 | [filesystem_guard](modules/filesystem_guard.md) | 15 | 0 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 15 | 14 |
 | [knowledge_observability](modules/knowledge_observability.md) | 14 | 9 |
-| [bootstrap_runtime](modules/bootstrap_runtime.md) | 13 | 28 |
+| [bootstrap_runtime](modules/bootstrap_runtime.md) | 13 | 29 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 13 | 4 |
+| [common](modules/common.md) | 12 | 1 |
 | [wiki_media](modules/wiki_media.md) | 12 | 0 |
-| [common](modules/common.md) | 11 | 1 |
-| [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 23 |
+| [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 24 |
 | [knowledge_graph](modules/knowledge_graph.md) | 11 | 5 |
 | [paths](modules/paths.md) | 11 | 0 |
-| [services_dependencies](modules/services_dependencies.md) | 10 | 5 |
+| [services_dependencies](modules/services_dependencies.md) | 10 | 6 |
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | 10 | 3 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [extraction_jobs](modules/extraction_jobs.md) | 10 | 0 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
+| [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) | 9 | 0 |
 | [skills](modules/skills.md) | 9 | 2 |
 | [documentation_queries](modules/documentation_queries.md) | 8 | 9 |
 | [documentation_query_builder](modules/documentation_query_builder.md) | 8 | 14 |
@@ -63,7 +66,7 @@ flowchart TD
 | [entrypoints](modules/entrypoints.md) | 8 | 4 |
 | [integrity](modules/integrity.md) | 7 | 7 |
 | [imports](modules/imports.md) | 7 | 3 |
-| [inventory_cache](modules/inventory_cache.md) | 7 | 4 |
+| [inventory_cache](modules/inventory_cache.md) | 7 | 5 |
 | [lint_service](modules/lint_service.md) | 7 | 34 |
 | [wiki_lifecycle](modules/wiki_lifecycle.md) | 7 | 8 |
 | [context_service](modules/context_service.md) | 6 | 26 |
@@ -71,7 +74,7 @@ flowchart TD
 | [infrastructure_sync](modules/infrastructure_sync.md) | 6 | 4 |
 | [knowledge_freshness](modules/knowledge_freshness.md) | 6 | 5 |
 | [knowledge_loader](modules/knowledge_loader.md) | 6 | 8 |
-| [knowledge_orchestration](modules/knowledge_orchestration.md) | 6 | 15 |
+| [knowledge_orchestration](modules/knowledge_orchestration.md) | 6 | 16 |
 | [knowledge_verification](modules/knowledge_verification.md) | 6 | 4 |
 | [markdown_sections](modules/markdown_sections.md) | 6 | 1 |
 | [concept_identity](modules/concept_identity.md) | 5 | 1 |
@@ -95,7 +98,7 @@ flowchart TD
 | [host_broker](modules/host_broker.md) | 3 | 2 |
 | [circuit_breaker](modules/circuit_breaker.md) | 3 | 0 |
 | [context_knowledge_contract](modules/context_knowledge_contract.md) | 3 | 1 |
-| [context_packet](modules/context_packet.md) | 3 | 22 |
+| [context_packet](modules/context_packet.md) | 3 | 23 |
 | [doctor_service](modules/doctor_service.md) | 3 | 12 |
 | [documentation_policy](modules/documentation_policy.md) | 3 | 3 |
 | [documentation_run___init__](modules/documentation_run___init__.md) | 3 | 11 |
@@ -131,7 +134,7 @@ flowchart TD
 | [knowledge_cmd](modules/knowledge_cmd.md) | 1 | 11 |
 | [mcp_cmd](modules/mcp_cmd.md) | 1 | 2 |
 | [metrics_cmd](modules/metrics_cmd.md) | 1 | 2 |
-| [migrate_cmd](modules/migrate_cmd.md) | 1 | 18 |
+| [migrate_cmd](modules/migrate_cmd.md) | 1 | 19 |
 | [obsidian_cmd](modules/obsidian_cmd.md) | 1 | 4 |
 | [plugins_cmd](modules/plugins_cmd.md) | 1 | 4 |
 | [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) | 1 | 4 |
@@ -140,7 +143,7 @@ flowchart TD
 | [site_cmd](modules/site_cmd.md) | 1 | 6 |
 | [skills_cmd](modules/skills_cmd.md) | 1 | 2 |
 | [status_cmd](modules/status_cmd.md) | 1 | 11 |
-| [sync_cmd](modules/sync_cmd.md) | 1 | 29 |
+| [sync_cmd](modules/sync_cmd.md) | 1 | 30 |
 | [team_cmd](modules/team_cmd.md) | 1 | 6 |
 | [trigger_cmd](modules/trigger_cmd.md) | 1 | 12 |
 | [uninstall_cmd](modules/uninstall_cmd.md) | 1 | 8 |
@@ -170,7 +173,7 @@ flowchart TD
 | [render_summary](modules/render_summary.md) | 0 | 1 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
-| [cli](modules/cli.md) | 0 | 34 |
+| [cli](modules/cli.md) | 0 | 35 |
 | [eval_lite___init__](modules/eval_lite___init__.md) | 0 | 1 |
 | [detectors](modules/detectors.md) | 0 | 0 |
 | [styles](modules/styles.md) | 0 | 0 |
@@ -185,15 +188,9 @@ flowchart TD
 - **Used:** `mcp`, `pyyaml`, `tomli`, `uvicorn`
 - ⚠️ **Undeclared:** `uvicorn`
 
-### rust
-
-- **Used:** —
-- **Unused (declared, not imported):** `proc_macro2`, `quote`, `serde`, `serde_json`, `syn`
-
 ### typescript
 
 - **Used:** `obsidian`
-- **Unused (declared, not imported):** `ts-morph`
 
 ## Notes
 
@@ -204,22 +201,26 @@ fan-out on `cli` is therefore expected. `validation`, `config`,
 because they centralize boundary rules and shared records rather than product
 orchestration.
 
-The large cyclic groups deserve care when changing import-time behavior. The
-calibration and documentation-run group includes compatibility re-export
-wiring; the context group joins packet construction, context assembly, and
-query building; the knowledge groups join loading, verification, governance,
-and model contracts. Keep new work behind functions or lazy boundaries where
-possible, and do not rely on relative order within a reported cycle.
+Nothing imports a cycle into existence at load time. The groups listed above
+reach each other only from inside function bodies or under `TYPE_CHECKING`,
+which is the boundary each of them was built to have: `calibration` keeps its
+initializer free of implementation imports so the OCI stack loads only when a
+calibration capability is requested, and `documentation_run` crosses into it
+through signature-preserving adapters rather than at module scope. Those lazy
+edges are still real coupling, so they count toward fan-in and fan-out; they
+just impose no ordering constraint. Keep it that way — a module-scope import
+added inside one of these groups would turn it into a genuine cycle.
 
 The optional MCP stack is loaded only when the `mcp` command runs. The direct
 `uvicorn` import belongs to HTTP transport and is supplied transitively by the
 optional MCP dependency set through the SDK's runtime coupling; project
 metadata declares the `mcp` extra rather than `uvicorn` directly, which explains
-the static undeclared-package warning. The Rust crates and TypeScript
-`ts-morph` entries come from packaged extractor-helper manifests; they are tool
-implementation dependencies, not imports by the application modules being
-documented. Extractor plugins are discovered dynamically and may not appear as
-ordinary import edges.
+the static undeclared-package warning. The bundled Rust, Go, and TypeScript
+extractor helpers ship their own manifests but are excluded from project-source
+discovery, so no language section here can judge their declared crates and
+packages; `llm-wiki lint` reports those manifest scopes as skipped rather than
+guessing that their dependencies are unused. Extractor plugins are discovered
+dynamically and may not appear as ordinary import edges.
 
 This page is a static projection. Conditional imports, runtime plugin loading,
 and generated JavaScript bundle wiring can change effective dependencies. For

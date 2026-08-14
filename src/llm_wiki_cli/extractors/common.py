@@ -36,6 +36,23 @@ LANGUAGE_EXTENSIONS: dict[str, tuple[str, ...]] = {
 INCLUDE_TEST_LANGUAGES = frozenset({"go"})
 MAX_ONLY_FILES_ARG_CHARS = 60_000
 
+# Import-record ``scope`` values.  An import record without a ``scope`` key
+# executes when the module is imported, which keeps older inventories and
+# extractors that do not classify imports on the historical contract.  The two
+# values below mark imports that never run at import time, so consumers that
+# model load order (cycle detection, topological order) can exclude them while
+# consumers that model coupling (fan-in/fan-out, impact analysis) keep them.
+IMPORT_SCOPE_DEFERRED = "deferred"  # inside a function body; runs only when called
+IMPORT_SCOPE_TYPE_CHECKING = "type_checking"  # under `if TYPE_CHECKING:`; never runs
+NON_IMPORT_TIME_SCOPES = frozenset({IMPORT_SCOPE_DEFERRED, IMPORT_SCOPE_TYPE_CHECKING})
+
+
+def executes_at_import(import_record: object) -> bool:
+    """Return whether an inventory import record runs when its module loads."""
+    if not isinstance(import_record, dict):
+        return True
+    return import_record.get("scope") not in NON_IMPORT_TIME_SCOPES
+
 # These are project-source identities, relative to the owned ``llm_wiki_cli``
 # package root.  Package markers and nested .gitignore files intentionally do
 # not appear here: they remain snapshot inputs even though these implementation

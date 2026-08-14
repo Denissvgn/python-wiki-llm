@@ -84,7 +84,7 @@ sequenceDiagram
     p10-->>p19: resolve_source_selection
 ```
 
-> Call sequence diagram shows 30 of 2082 interactions; 2052 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2111 interactions; 2081 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

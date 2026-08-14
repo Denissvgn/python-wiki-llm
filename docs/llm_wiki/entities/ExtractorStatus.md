@@ -38,6 +38,8 @@ flowchart LR
     n6["_save_inventory_cache (src/llm_wiki_cli/services/extraction_service.py)"]
     n7["_selected_extractor_plugin_components (src/llm_wiki_cli/services/extraction_service.py)"]
     n8["InventoryResult.failed (src/llm_wiki_cli/services/extraction_service.py)"]
+    n9["_check_module_coverage (src/llm_wiki_cli/services/lint_service.py)"]
+    n10["_extracted_source_files (src/llm_wiki_cli/services/lint_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -46,6 +48,8 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
+    n10 --> n0
     click n0 "../modules/extraction_service.md"
     click n1 "../modules/extraction_service.md"
     click n2 "../modules/extraction_service.md"
@@ -55,6 +59,8 @@ flowchart LR
     click n6 "../modules/extraction_service.md"
     click n7 "../modules/extraction_service.md"
     click n8 "../modules/extraction_service.md"
+    click n9 "../modules/lint_service.md"
+    click n10 "../modules/lint_service.md"
 ```
 
 ### Summary
@@ -76,3 +82,5 @@ flowchart LR
 | `_save_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `_selected_extractor_plugin_components` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `InventoryResult.failed` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `_check_module_coverage` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_extracted_source_files` | type_reference | [lint_service](../modules/lint_service.md) | — |

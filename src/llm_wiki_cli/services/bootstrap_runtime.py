@@ -3076,9 +3076,15 @@ def _generate_dependencies_md(
     thickened), import **Cycles**, a **Fan-in / Fan-out** table, **External
     dependencies** grouped by language, and semantic ``## Notes``.
     Deterministic; degrades cleanly with no cycles or no external deps.
+
+    **Cycles** reports only groups that are cyclic while they load. Groups joined
+    solely by deferred or ``TYPE_CHECKING`` imports follow, called out as the
+    non-problem they are, so a project is not told to fix the lazy boundary it
+    deliberately built.
     """
     page_map = module_page_map or {}
     cycles = analysis["cycles"]
+    deferred_cycles = analysis.get("deferred_cycles", [])
     metrics = analysis["metrics"]
 
     lines = [
@@ -3137,6 +3143,18 @@ def _generate_dependencies_md(
             lines.append(f"- {joined}")
     else:
         lines.append("*No import cycles detected.*")
+    if deferred_cycles:
+        lines.append("")
+        lines.append(
+            "> These groups reach each other only from inside functions or under "
+            "`TYPE_CHECKING`, so nothing is imported while they load and their "
+            "order is well defined. They are listed because they are cyclic on "
+            "paper, not because they need fixing."
+        )
+        lines.append("")
+        for cycle in deferred_cycles:
+            joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in cycle)
+            lines.append(f"- {joined}")
     lines.append("")
 
     lines.append("## Fan-in / Fan-out")

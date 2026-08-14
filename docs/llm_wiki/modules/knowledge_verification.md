@@ -28,7 +28,6 @@ checker, and returns the same coordinate-keyed summaries to every consumer.
 ## Local dependency map
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
-<!-- Thick arrows (==>) mark edges inside an import cycle. -->
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/api.py"]
@@ -57,9 +56,9 @@ flowchart LR
     n3 --> n2
     n3 --> n4
     n3 --> n7
-    n4 ==> n7
+    n4 --> n7
     n6 --> n5
-    n7 ==> n4
+    n7 --> n4
     n7 --> n5
     n7 --> n6
     n7 --> n9

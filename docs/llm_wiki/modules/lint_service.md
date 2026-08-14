@@ -23,7 +23,7 @@ requirements without changing the underlying issue model.
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT` |
 | `.entrypoints` | `build_flow`, `get_entry_points`, `javascript_flow_limitations`, `read_console_scripts` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_from_args`, `print_extraction_job_plan` |
-| `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `resolve_call_edges` |
+| `.extraction_service` | `ExtractorStatus`, `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `resolve_call_edges` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
 | `.inventory_cache` | `InventoryCacheOptions`, `InventoryCacheStats`, `format_cache_stats` |
@@ -87,13 +87,13 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LintProfiler](../entities/LintProfiler.md) | 181 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 219 | — | — |
-| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 230 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 268 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 308 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 315 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 327 | — | — |
+| [_LintProfiler](../entities/LintProfiler.md) | 182 | — | — |
+| [LintIssue](../entities/LintIssue.md) | 220 | — | — |
+| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 231 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
+| [LintReport](../entities/LintReport.md) | 269 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 309 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 316 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 328 | — | — |
 
 ## Functions
 
@@ -136,7 +136,8 @@ flowchart LR
 | `_check_generated_diagrams` | `(report: LintReport, wiki_path: Path, page_index: _WikiPageIndex) -> None` | — | — |
 | `_check_orphan_pages` | `(report: LintReport, wiki_path: Path, page_index: _WikiPageIndex) -> None` | — | — |
 | `_check_entity_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict) -> None` | — | — |
-| `_check_module_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict) -> None` | — | — |
+| `_extracted_source_files` | `(source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus]) -> set[str]` | — | Project-source files whose language the extractor actually ran on. |
+| `_check_module_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus]) -> None` | — | — |
 | `_check_workflow_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, page_index: _WikiPageIndex) -> None` | — | — |
 | `_check_flow_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, src_dir: str, *, include_plugins: bool = True, source_plugins_only: bool = False, source_snapshot: SourceSnapshot \| None = None) -> None` | — | Flag user-flow pages whose entry point no longer exists in the code. |
 | `_check_data_flow_diagnostics` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, src_dir: str, *, include_plugins: bool = True, source_plugins_only: bool = False, source_snapshot: SourceSnapshot \| None = None) -> None` | — | — |
