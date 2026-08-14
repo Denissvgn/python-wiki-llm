@@ -115,6 +115,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `sync` now re-establishes legacy module and entity evidence only after
+  successful managed-page regeneration, preserving reviewed prose and providing
+  one-time recovery for wikis stranded by earlier generator upgrades.
 - Windows lifecycle operations now recognize CRLF-managed hooks, report guarded
   filesystem collisions consistently, and safely remove verified hardlinked
   paths without weakening linked-file protections for writes.

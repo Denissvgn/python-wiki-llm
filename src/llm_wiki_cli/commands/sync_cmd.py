@@ -140,6 +140,7 @@ from ..services.source_snapshot import (
 )
 from ..services.sync_manifest import (
     EVIDENCE_NOT_RECORDED,
+    LEGACY_EVIDENCE_UNAVAILABLE,
     MANIFEST_FILENAME,
     MANIFEST_REPAIR_UNAVAILABLE,
     MANIFEST_STATE_UNAVAILABLE,
@@ -593,6 +594,7 @@ class SyncResult:
     skipped: int = 0
     deprecated: int = 0
     preserved_semantic: int = 0
+    regenerated_evidence_page_paths: set[str] = field(default_factory=set)
 
 
 def _record_page_write_state(result: SyncResult | None, state: str) -> None:
@@ -910,7 +912,8 @@ def _apply_entity_page(
     old_generated_semantics: dict,
     entity_page_name: str,
 ) -> None:
-    entity_path = ctx.wiki_dir / "entities" / f"{entity_page_name}.md"
+    relative_path = canonical_path(PageKind.ENTITIES, entity_page_name)
+    entity_path = ctx.wiki_dir / relative_path
     rename = diff.renamed_entity_pages.get((cls["name"], filepath))
     _move_renamed_entity_page(ctx.wiki_dir, rename, ctx.current_entity_pages)
 
@@ -957,6 +960,7 @@ def _apply_entity_page(
         write_state,
         metadata_only=filepath in ctx.metadata_only_files,
     )
+    result.regenerated_evidence_page_paths.add(relative_path)
 
 
 def _apply_module_page(
@@ -969,7 +973,8 @@ def _apply_module_page(
     old_generated_semantics: dict,
     file_entity_page_map: dict[str, str],
 ) -> None:
-    module_path = ctx.wiki_dir / "modules" / f"{mod_page_name}.md"
+    relative_path = canonical_path(PageKind.MODULES, mod_page_name)
+    module_path = ctx.wiki_dir / relative_path
     _move_renamed_module_page(
         ctx.wiki_dir,
         diff.renamed_module_pages.get(filepath),
@@ -1016,6 +1021,7 @@ def _apply_module_page(
         write_state,
         metadata_only=filepath in ctx.metadata_only_files,
     )
+    result.regenerated_evidence_page_paths.add(relative_path)
 
 
 def _apply_refreshed_file_pages(
@@ -2478,14 +2484,15 @@ def _mark_pending_repair_sources_changed(
     inventory: Mapping[str, Mapping],
     diff: "SyncDiff",
 ) -> None:
-    """Force one trusted regeneration after a provenance-only repair."""
+    """Force one trusted regeneration for recoverable unknown evidence."""
 
     pending_live = {
         mapping.source_path
         for page_path, baseline in manifest.evidence_baselines.items()
         if (
             not baseline.is_known
-            and baseline.unknown_reason == MANIFEST_REPAIR_UNAVAILABLE
+            and baseline.unknown_reason
+            in {LEGACY_EVIDENCE_UNAVAILABLE, MANIFEST_REPAIR_UNAVAILABLE}
             and (mapping := manifest.page_source_mappings.get(page_path)) is not None
             and mapping.source_path in inventory
         )
@@ -4190,6 +4197,9 @@ def _finalize_prepared_sync(
                 else EVIDENCE_NOT_RECORDED
             ),
             force_unknown_evidence=(prepared.seed_manifest or prepared.repair_only),
+            regenerated_evidence_page_paths=frozenset(
+                result.regenerated_evidence_page_paths
+            ),
             extractor_registry=prepared.inventory_result.extractor_registry,
             plugin_extractor_components=(prepared.inventory_result.plugin_components),
             plugin_components=(prepared.inventory_result.producer_plugin_components),
