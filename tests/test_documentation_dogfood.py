@@ -12,6 +12,8 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, site_cmd, sync_cmd
+from llm_wiki_cli.commands.bootstrap_cmd import execute_bootstrap
+from llm_wiki_cli.services.bootstrap_service import BootstrapRequest
 from llm_wiki_cli.services.diagrams import (
     GENERATED_DIAGRAM_CHAR_LIMIT,
     GENERATED_DIAGRAM_LINE_LIMIT,
@@ -19,6 +21,7 @@ from llm_wiki_cli.services.diagrams import (
 )
 from llm_wiki_cli.services.extractor_helpers import (
     get_prepared_binary,
+    get_prepared_typescript_root,
     resolve_helper_cache_root,
 )
 from llm_wiki_cli.services.inventory_cache import ENV_CACHE_DIR
@@ -32,6 +35,9 @@ _MERMAID_NODE_DECLARATION_RE = re.compile(
 _LEGACY_RAW_DOTTED_LABEL_RE = re.compile(
     r'^\s*[A-Za-z][A-Za-z0-9_]*\s+-\.\s+(?!")[^\r\n]+\s+\.->\s+'
     r"[A-Za-z][A-Za-z0-9_]*\s*$"
+)
+_MULTILANGUAGE_HELPER_SKIP_REASON = (
+    "prepared multi-language helper cache is required for documentation dogfood"
 )
 
 
@@ -85,6 +91,62 @@ def _file_hashes(root: Path) -> dict[str, str]:
             continue
         hashes[rel] = hashlib.sha256(path.read_bytes()).hexdigest()
     return hashes
+
+
+def _tree_bytes(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+def _prepared_multilanguage_cache(repo_root: Path) -> Path | None:
+    helper_root = resolve_helper_cache_root(repo_root)
+    if helper_root is None:
+        return None
+    cache_base = helper_root.parent
+    if get_prepared_typescript_root(repo_root, str(cache_base)) is None:
+        return None
+    if any(
+        get_prepared_binary(language, repo_root, str(cache_base)) is None
+        for language in ("go", "rust", "haskell")
+    ):
+        return None
+    return cache_base
+
+
+def _write_multilanguage_fixture(root: Path) -> None:
+    sources = {
+        "app.py": (
+            '"""Small Python application."""\n\n'
+            "def python_entry(value: str) -> str:\n"
+            "    return value.strip()\n"
+        ),
+        "frontend.ts": (
+            "export function typescriptEntry(value: string): string {\n"
+            "  return value.trim();\n"
+            "}\n"
+        ),
+        "main.go": (
+            "package main\n\n"
+            "func GoEntry(value string) string {\n"
+            "\treturn value\n"
+            "}\n"
+        ),
+        "lib.rs": (
+            "pub fn rust_entry(value: &str) -> &str {\n"
+            "    value.trim()\n"
+            "}\n"
+        ),
+        "Main.hs": (
+            "module Main where\n\n"
+            "haskellEntry :: String -> String\n"
+            "haskellEntry value = value\n"
+        ),
+    }
+    for relative, content in sources.items():
+        (root / relative).write_text(content, encoding="utf-8")
 
 
 def test_copy_repo_excludes_generated_wiki_and_internal_report_state(
@@ -162,16 +224,13 @@ def _mermaid_body_measurements(
     return measurements, legacy_raw_dotted_labels
 
 
-def test_documentation_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypatch, capsys):
+def test_documentation_dogfood_bootstrap_site_and_source_immutability(
+    tmp_path, monkeypatch, capsys
+):
     repo_root = Path(__file__).resolve().parents[1]
-    helper_root = resolve_helper_cache_root(repo_root)
-    if helper_root is None:
-        pytest.skip("prepared Go helper cache is required for full-repo dogfood")
-    helper_cache_base = helper_root.parent
-    if not get_prepared_binary("go", repo_root, str(helper_cache_base)):
-        pytest.skip("prepared Go helper cache is required for full-repo dogfood")
-    if not get_prepared_binary("rust", repo_root, str(helper_cache_base)):
-        pytest.skip("prepared Rust helper cache is required for full-repo dogfood")
+    helper_cache_base = _prepared_multilanguage_cache(repo_root)
+    if helper_cache_base is None:
+        pytest.skip(_MULTILANGUAGE_HELPER_SKIP_REASON)
     source = tmp_path / "python-wiki-llm"
     _copy_repo(repo_root, source)
     before = _file_hashes(source)
@@ -198,21 +257,6 @@ def test_documentation_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypa
     assert bootstrap_summary["schema_version"] == "llm-wiki-bootstrap-summary/v1"
     assert bootstrap_summary["flows"] > 0
     assert bootstrap_summary["dependencies"]["pages_created"] == 2
-
-    sync_cmd.run(
-        _ns(
-            src_dir=".",
-            wiki_dir="docs/llm_wiki",
-            no_cache=True,
-            rebuild_cache=False,
-            cache_stats=False,
-            cache_dir=None,
-            jobs=1,
-            force=False,
-            no_preserve_semantic=False,
-        )
-    )
-    capsys.readouterr()
 
     site_cmd.run(
         _ns(
@@ -299,3 +343,57 @@ def test_documentation_dogfood_bootstrap_sync_and_site_export(tmp_path, monkeypa
         for path in (wiki_dir / "modules").glob("*.md")
     )
     assert _file_hashes(source) == before
+
+
+def test_documentation_dogfood_multilanguage_no_cache_convergence(
+    tmp_path, monkeypatch
+):
+    repo_root = Path(__file__).resolve().parents[1]
+    helper_cache_base = _prepared_multilanguage_cache(repo_root)
+    if helper_cache_base is None:
+        pytest.skip(_MULTILANGUAGE_HELPER_SKIP_REASON)
+
+    workspace = tmp_path / "multilanguage"
+    source = workspace / "source"
+    workspace.mkdir()
+    source.mkdir()
+    _write_multilanguage_fixture(source)
+    wiki_dir = workspace / "wiki"
+    monkeypatch.setenv(ENV_CACHE_DIR, str(helper_cache_base))
+    monkeypatch.chdir(workspace)
+
+    result = execute_bootstrap(
+        BootstrapRequest(
+            source_root=source,
+            wiki_root=wiki_dir,
+            helper_cache_dir=str(helper_cache_base),
+            trust_source_plugins=False,
+        )
+    )
+    assert result.schema_version == "llm-wiki-bootstrap-summary/v1"
+    before_sync = _tree_bytes(wiki_dir)
+
+    sync_cmd.run(
+        _ns(
+            src_dir="source",
+            wiki_dir="wiki",
+            no_cache=True,
+            rebuild_cache=False,
+            cache_stats=False,
+            cache_dir=None,
+            helper_cache_dir=str(helper_cache_base),
+            jobs=1,
+            force=False,
+            no_preserve_semantic=False,
+            no_plugins=True,
+        )
+    )
+
+    after_sync = _tree_bytes(wiki_dir)
+    assert after_sync == before_sync
+    module_pages = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((wiki_dir / "modules").glob("*.md"))
+    )
+    for relative in ("app.py", "frontend.ts", "main.go", "lib.rs", "Main.hs"):
+        assert f"`{relative}`" in module_pages

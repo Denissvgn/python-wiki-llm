@@ -8,6 +8,18 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_site_and_source_immutability",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_multilanguage_no_cache_convergence",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_documentation_input_recheck.py::test_fingerprint_rejects_windows_input_junction",
       "owner_lane": "security-windows-2025",
       "reason": "Windows junction semantics only"
@@ -71,6 +83,72 @@
       "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_exact_manifest_tree_removal",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_removes_only_requested_hardlink",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_restores_hardlink_after_content_mismatch",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_post_plan_tree_addition_is_preserved",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_tree_symlink_is_unlinked_without_traversing_target",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
     },
     {
       "lane": "core-macos-3.14",
@@ -256,37 +334,37 @@
       "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
       "owner_lane": "toolchains",
-      "reason": "GHC is not available"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_rejects_outside_root_only_files",
       "owner_lane": "toolchains",
-      "reason": "GHC is not available"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_reports_parse_errors_without_stdout",
       "owner_lane": "toolchains",
-      "reason": "GHC is not available"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
       "owner_lane": "toolchains",
-      "reason": "GHC is not available"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_code_blocks_are_extracted",
       "owner_lane": "toolchains",
-      "reason": "GHC is not available"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
       "owner_lane": "toolchains",
-      "reason": "GHC is not available"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-macos-3.14",
@@ -296,13 +374,7 @@
     },
     {
       "lane": "core-macos-3.14",
-      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
-      "owner_lane": "toolchains",
-      "reason": "prepared Go helper cache is required for full-repo dogfood"
-    },
-    {
-      "lane": "core-macos-3.14",
-      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "node_id": "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
     },
@@ -311,12 +383,6 @@
       "node_id": "tests/test_migrate.py::TestMigrateIntegration::test_typescript_absolute_page_names_migrate_to_relative_names",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not available"
-    },
-    {
-      "lane": "core-macos-3.14",
-      "node_id": "tests/test_multilanguage_wiki.py::test_migrate_reconciles_legacy_go_page_with_rust_name_collision",
-      "owner_lane": "toolchains",
-      "reason": "Go and Rust toolchains are not both available"
     },
     {
       "lane": "core-macos-3.14",
@@ -749,6 +815,18 @@
       "node_id": "tests/test_documentation_calibration_oci_integration.py::test_real_docker_probe_and_worker_are_isolated",
       "owner_lane": "oci",
       "reason": "Set LLM_WIKI_RUN_OCI_INTEGRATION=1 only in the dedicated OCI lane."
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_site_and_source_immutability",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_multilanguage_no_cache_convergence",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -824,6 +902,72 @@
     },
     {
       "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_exact_manifest_tree_removal",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_removes_only_requested_hardlink",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_guarded_unlink_restores_hardlink_after_content_mismatch",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_post_plan_tree_addition_is_preserved",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_private_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_absent_snapshot_collision_preserves_target_and_cleans_stage",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_create_and_snapshot_replace",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_public_guarded_mismatch_preserves_current_bytes",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_filesystem_guard_windows.py::test_tree_symlink_is_unlinked_without_traversing_target",
+      "owner_lane": "core-windows-3.13",
+      "reason": "native Windows contracts"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_go_extract.py::TestGoExtractor::test_deep_cross_file_method",
       "owner_lane": "toolchains",
       "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
@@ -1006,37 +1150,37 @@
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_rejects_outside_root_only_files",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_reports_parse_errors_without_stdout",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_code_blocks_are_extracted",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -1046,13 +1190,7 @@
     },
     {
       "lane": "core-ubuntu-3.10",
-      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
-      "owner_lane": "toolchains",
-      "reason": "prepared Go helper cache is required for full-repo dogfood"
-    },
-    {
-      "lane": "core-ubuntu-3.10",
-      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "node_id": "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
     },
@@ -1501,6 +1639,30 @@
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
     },
     {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_uninstall.py::TestUninstallRemovesHooks::test_remove_wiki_rejects_case_aliases_of_protected_roots[.claude/skills-.CLAUDE/SKILLS]",
+      "owner_lane": "core-windows-3.13",
+      "reason": "filesystem is case-sensitive; no case alias exists"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_uninstall.py::TestUninstallRemovesHooks::test_remove_wiki_rejects_case_aliases_of_protected_roots[.git-.GIT]",
+      "owner_lane": "core-windows-3.13",
+      "reason": "filesystem is case-sensitive; no case alias exists"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_uninstall.py::TestUninstallRemovesHooks::test_remove_wiki_rejects_case_aliases_of_protected_roots[.llm-wiki/skills-.LLM-WIKI/SKILLS]",
+      "owner_lane": "core-windows-3.13",
+      "reason": "filesystem is case-sensitive; no case alias exists"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::test_root_owned_platform_alias_preserves_install_and_export",
+      "owner_lane": "core-macos-3.14",
+      "reason": "root-owned /var alias contract is macOS-only"
+    },
+    {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_allows_parent_relative_same_owner_symlink",
       "owner_lane": "security-ubuntu-24.04",
@@ -1574,6 +1736,18 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_site_and_source_immutability",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_multilanguage_no_cache_convergence",
+      "owner_lane": "toolchains",
+      "reason": "prepared multi-language helper cache is required for documentation dogfood"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_documentation_wiki_input.py::test_descriptor_copy_rejects_parent_swap_between_inspection_and_open",
       "owner_lane": "product-ubuntu-24.04",
       "reason": "descriptor-relative no-follow directory opens unavailable"
@@ -1613,6 +1787,54 @@
       "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_summary_keeps_module_only_javascript_inventory",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_absent_target_appearing_at_commit_is_preserved",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_directory_claim_is_restored_without_overwrite",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_expected_file_change_at_claim_is_preserved",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_post_link_replacement_fails_identity_check[absent]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_post_link_replacement_fails_identity_check[present]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_tree_addition_after_manifest_check_is_not_deleted",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_tree_addition_at_claim_aborts_and_restores",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_filesystem_guard.py::test_unlink_restore_never_replaces_concurrent_target",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX descriptor contracts"
     },
     {
       "lane": "core-windows-3.13",
@@ -1798,37 +2020,37 @@
       "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_rejects_outside_root_only_files",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_reports_parse_errors_without_stdout",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_code_blocks_are_extracted",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
       "owner_lane": "toolchains",
-      "reason": "Haskell helper build failed with best-effort ghc 9.14.1: Parser.hs:37:31: error: [GHC-61689]\n    Module \u2018GHC.Parser.Annotation\u2019 does not export \u2018SrcSpanAnn'\u2019.\n    Suggested fix:\n      Perhaps use one of these:\n        \u2018SrcSpanAnnA\u2019, \u2018SrcSpanAnnC\u2019, \u2018SrcSpanAnnL\u2019\n   |\n37 | import GHC.Parser.Annotation (SrcSpanAnn', getLocA)\n   |                               ^^^^^^^^^^^"
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
     {
       "lane": "core-windows-3.13",
@@ -1838,13 +2060,7 @@
     },
     {
       "lane": "core-windows-3.13",
-      "node_id": "tests/test_documentation_dogfood.py::test_documentation_dogfood_bootstrap_sync_and_site_export",
-      "owner_lane": "toolchains",
-      "reason": "prepared Go helper cache is required for full-repo dogfood"
-    },
-    {
-      "lane": "core-windows-3.13",
-      "node_id": "tests/test_mcp.py::TestMcpCli::test_optional_sdk_registration_when_installed",
+      "node_id": "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
     },
@@ -1913,6 +2129,18 @@
       "node_id": "tests/test_protected_artifacts.py::test_posix_store_enforces_owner_only_modes_on_every_open",
       "owner_lane": "security-ubuntu-24.04",
       "reason": "POSIX ownership and modes"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_provisioning_failures.py::test_fifo_schema_is_rejected_by_stat_without_opening",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "FIFOs are unavailable on this platform"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_provisioning_failures.py::test_init_revalidates_schema_after_reference_provision[fifo]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "FIFOs are unavailable on this platform"
     },
     {
       "lane": "core-windows-3.13",
@@ -2084,6 +2312,12 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_status.py::TestStatusHooks::test_exact_managed_hook_without_execute_bit_is_reported_broken",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "Windows does not expose a POSIX hook execute-bit contract"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_ts_extract.py::TestExtractorRegistryIntegration::test_extract_command_merges_both_languages",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
@@ -2327,6 +2561,12 @@
       "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_tsconfig_walk_up",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::test_root_owned_platform_alias_preserves_install_and_export",
+      "owner_lane": "core-macos-3.14",
+      "reason": "root-owned /var alias contract is macOS-only"
     }
   ],
   "schema_version": "agent-wiki-release-skip-allowlist/v1"

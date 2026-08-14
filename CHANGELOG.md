@@ -105,9 +105,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The repository's full-integrity workflow now delegates to the reusable action
   and uses a measured 15-minute timeout while retaining single-worker source
   evaluation.
+- The context-health GitHub Action now rejects invalid evidence identifiers and
+  policy switches before provisioning its Python environment, while retaining
+  the same public inputs and validation errors.
+- Release qualification now reuses a successful candidate-bound Windows core
+  execution for identical security and product checks through separately
+  labeled, digest-bound evidence. Ubuntu remains the canonical coverage lane,
+  while complete Ubuntu, Windows, and macOS verification is retained.
 
 ### Fixed
 
+- `sync` now re-establishes legacy module and entity evidence only after
+  successful managed-page regeneration, preserving reviewed prose and providing
+  one-time recovery for wikis stranded by earlier generator upgrades.
 - Windows lifecycle operations now recognize CRLF-managed hooks, report guarded
   filesystem collisions consistently, and safely remove verified hardlinked
   paths without weakening linked-file protections for writes.

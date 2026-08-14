@@ -86,6 +86,15 @@ class SmokeError(RuntimeError):
     """Installed artifact behavior failed a release smoke assertion."""
 
 
+def _isolated_utf8_python_command(
+    executable: str | Path,
+    *arguments: str,
+) -> list[str]:
+    """Return an isolated Python command with a deterministic text encoding."""
+
+    return [str(executable), "-X", "utf8", "-I", *arguments]
+
+
 def _run(
     command: Sequence[str],
     *,
@@ -105,7 +114,8 @@ def _run(
         env=environment,
         check=False,
         capture_output=True,
-        text=True,
+        encoding="utf-8",
+        errors="strict",
         input=input_text,
         timeout=120,
     )
@@ -475,15 +485,14 @@ def _json_output(completed: subprocess.CompletedProcess[str], name: str) -> Mapp
 
 def _validate_installation(python: Path, work: Path) -> str:
     completed = _run(
-        [
-            str(python),
-            "-I",
+        _isolated_utf8_python_command(
+            python,
             "-c",
             (
                 "import pathlib, llm_wiki_cli; "
                 "print(pathlib.Path(llm_wiki_cli.__file__).resolve())"
             ),
-        ],
+        ),
         cwd=work,
     )
     module_path = Path(completed.stdout.strip()).resolve()
@@ -496,21 +505,19 @@ def _validate_installation(python: Path, work: Path) -> str:
 
 def _validate_mcp(mcp_python: Path, work: Path) -> str:
     _run(
-        [
-            str(mcp_python),
-            "-I",
+        _isolated_utf8_python_command(
+            mcp_python,
             "-c",
             (
                 "import mcp; "
                 "from llm_wiki_cli.services import mcp_server; "
                 "assert mcp is not None and mcp_server is not None"
             ),
-        ],
+        ),
         cwd=work,
     )
-    command = [
-        str(mcp_python),
-        "-I",
+    command = _isolated_utf8_python_command(
+        mcp_python,
         "-m",
         "llm_wiki_cli.cli",
         "mcp",
@@ -520,7 +527,7 @@ def _validate_mcp(mcp_python: Path, work: Path) -> str:
         str(work / "wiki"),
         "--transport",
         "stdio",
-    ]
+    )
     environment = {
         **os.environ,
         "PYTHONUTF8": "1",
@@ -535,7 +542,8 @@ def _validate_mcp(mcp_python: Path, work: Path) -> str:
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
+        encoding="utf-8",
+        errors="strict",
     )
     time.sleep(2)
     if process.poll() is not None:
@@ -571,7 +579,12 @@ def run_smoke(args: argparse.Namespace) -> int:
 
     module_suffix = _validate_installation(python, work)
     version_text = _run(
-        [str(python), "-I", "-m", "llm_wiki_cli.cli", "--version"],
+        _isolated_utf8_python_command(
+            python,
+            "-m",
+            "llm_wiki_cli.cli",
+            "--version",
+        ),
         cwd=work,
     ).stdout.strip()
     if version_text != f"llm-wiki {args.expected_version}":
@@ -581,28 +594,33 @@ def run_smoke(args: argparse.Namespace) -> int:
         )
     for command in EXPECTED_SUBCOMMANDS:
         _run(
-            [str(python), "-I", "-m", "llm_wiki_cli.cli", command, "--help"],
+            _isolated_utf8_python_command(
+                python,
+                "-m",
+                "llm_wiki_cli.cli",
+                command,
+                "--help",
+            ),
             cwd=work,
         )
 
     # The default artifact environment must prove MCP remains an optional extra.
     default_mcp = _run(
-        [
-            str(python),
-            "-I",
+        _isolated_utf8_python_command(
+            python,
             "-c",
             (
                 "import importlib.util; "
                 "raise SystemExit(0 if importlib.util.find_spec('mcp') is None else 1)"
             ),
-        ],
+        ),
         cwd=work,
     )
     if default_mcp.returncode:
         raise SmokeError("default installation unexpectedly includes the MCP SDK")
 
     source, wiki = _write_fixture(work)
-    cli = [str(python), "-I", "-m", "llm_wiki_cli.cli"]
+    cli = _isolated_utf8_python_command(python, "-m", "llm_wiki_cli.cli")
     _run(
         [
             *cli,

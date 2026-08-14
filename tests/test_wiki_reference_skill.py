@@ -1,6 +1,7 @@
 """Tests for the bundled wiki-reference topics and their provisioning."""
 
 import shutil
+import sys
 from pathlib import Path
 
 import pytest
@@ -287,19 +288,17 @@ class TestReferenceSkillProvisioning:
     def test_state_absent_before_install(self, tmp_path):
         assert reference_skill_state(tmp_path) == "absent"
 
+    @pytest.mark.skipif(
+        sys.platform != "darwin",
+        reason="root-owned /var alias contract is macOS-only",
+    )
     def test_root_owned_platform_alias_preserves_install_and_export(
-        self, tmp_path
+        self, tmp_path: Path
     ):
         alias_root = Path("/var")
-        if (
-            not alias_root.is_symlink()
-            or getattr(alias_root.lstat(), "st_uid", None) != 0
-        ):
-            pytest.skip("no root-owned /var platform alias")
-        try:
-            relative = tmp_path.resolve().relative_to(alias_root.resolve())
-        except ValueError:
-            pytest.skip("temporary directory is not below the /var alias target")
+        assert alias_root.is_symlink()
+        assert getattr(alias_root.lstat(), "st_uid", None) == 0
+        relative = tmp_path.resolve().relative_to(alias_root.resolve())
 
         aliased_tmp = alias_root / relative
         project = aliased_tmp / "alias-project"

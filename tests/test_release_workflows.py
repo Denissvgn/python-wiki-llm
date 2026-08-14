@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tarfile
@@ -19,6 +21,23 @@ ROOT = Path(__file__).parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 WIKI_CI_WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
 REMOTE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+
+
+def _test_definitions(relative_path: str) -> set[tuple[str | None, str]]:
+    tree = ast.parse((ROOT / relative_path).read_text(encoding="utf-8"))
+    definitions: set[tuple[str | None, str]] = set()
+    function_types = (ast.FunctionDef, ast.AsyncFunctionDef)
+    for node in tree.body:
+        if isinstance(node, function_types) and node.name.startswith("test_"):
+            definitions.add((None, node.name))
+        elif isinstance(node, ast.ClassDef):
+            definitions.update(
+                (node.name, member.name)
+                for member in node.body
+                if isinstance(member, function_types)
+                and member.name.startswith("test_")
+            )
+    return definitions
 
 
 def _yaml(name: str) -> dict:
@@ -148,8 +167,15 @@ def test_action_selftest_uses_step_scoped_runner_temp_and_negative_cases() -> No
     )
     text = (WORKFLOWS / "action-selftest.yml").read_text(encoding="utf-8")
     assert "Reject an invalid strict input" in text
+    assert "Reject an invalid evidence ID" in text
     assert "Reject an invalid failure threshold" in text
-    assert text.count('test "${STEP_OUTCOME}" = "failure"') == 2
+    assert text.count('test "${STEP_OUTCOME}" = "failure"') == 3
+    triggers = workflow.get("on", workflow.get(True))
+    assert triggers["push"]["branches"] == ["main"]
+    assert triggers["push"]["paths"] == triggers["pull_request"]["paths"]
+    assert workflow["concurrency"]["cancel-in-progress"] == (
+        "${{ github.event_name == 'pull_request' }}"
+    )
 
 
 def test_ci_pins_the_package_build_tool() -> None:
@@ -159,9 +185,9 @@ def test_ci_pins_the_package_build_tool() -> None:
         for step in workflow["jobs"]["test"]["steps"]
         if step.get("name") == "Check package builds"
     )
-    assert 'python -m pip install --no-cache-dir "build==1.5.0"' in package_build[
-        "run"
-    ]
+    assert package_build["if"] == "${{ matrix.package }}"
+    assert 'python -m pip install "build==1.5.0"' in package_build["run"]
+    assert "--no-cache-dir" not in package_build["run"]
 
 
 def _wiki_integrity_job() -> tuple[dict, dict]:
@@ -496,13 +522,17 @@ def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:
     assert "for number in" not in verify_text
     assert "workflow-run-verification.json" in verify_text
     assert "bundle-verification.json" in verify_text
-    tag_step = next(
+    bundle_verifiers = [
         step
         for step in verify_steps
-        if step.get("name") == "Require the release tag only for a real publication"
-    )
-    assert tag_step["if"] == "${{ inputs.publish }}"
-    assert "--require-tag" in tag_step["run"]
+        if "verify-bundle" in str(step.get("run", ""))
+    ]
+    assert len(bundle_verifiers) == 1
+    verifier = bundle_verifiers[0]
+    assert verifier["id"] == "verify"
+    assert 'if [[ "${PUBLISH_REQUESTED}" == "true" ]]' in verifier["run"]
+    assert 'tag_requirement=(--require-tag)' in verifier["run"]
+    assert '"${tag_requirement[@]}"' in verifier["run"]
 
     publish = workflow["jobs"]["publish"]
     assert publish["environment"]["name"] == "pypi"
@@ -982,8 +1012,8 @@ def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
     assert "--junit evidence/toolchains.xml" in command
     assert "--lane toolchains" in command
     assert "--allowlist candidate/release/skip-allowlist.json" in command
-    assert "--minimum-collected 488" in command
-    assert "--minimum-passed 488" in command
+    assert "--minimum-collected 489" in command
+    assert "--minimum-passed 489" in command
     assert "--output evidence/result-toolchains.json" in command
     assert "--discovery" not in command
     assert "DISCOVERY_MODE" not in str(verifier)
@@ -1010,17 +1040,50 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     ci = _yaml("ci.yml")
     ci_matrix = ci["jobs"]["test"]["strategy"]["matrix"]["include"]
     assert ci_matrix == [
-        {"os": "ubuntu-24.04", "python-version": "3.10"},
-        {"os": "windows-2025", "python-version": "3.13"},
-        {"os": "macos-15", "python-version": "3.14"},
+        {
+            "lane": "core-ubuntu-3.10",
+            "os": "ubuntu-24.04",
+            "python-version": "3.10",
+            "coverage": True,
+            "package": True,
+        },
+        {
+            "lane": "core-windows-3.13",
+            "os": "windows-2025",
+            "python-version": "3.13",
+            "coverage": False,
+            "package": False,
+        },
+        {
+            "lane": "core-macos-3.14",
+            "os": "macos-15",
+            "python-version": "3.14",
+            "coverage": False,
+            "package": False,
+        },
     ]
 
     qualification = _yaml("release-qualification.yml")
     core = qualification["jobs"]["core"]
     assert core["strategy"]["matrix"]["include"] == [
-        {"lane": "core-ubuntu-3.10", "os": "ubuntu-24.04", "python": "3.10"},
-        {"lane": "core-windows-3.13", "os": "windows-2025", "python": "3.13"},
-        {"lane": "core-macos-3.14", "os": "macos-15", "python": "3.14"},
+        {
+            "lane": "core-ubuntu-3.10",
+            "os": "ubuntu-24.04",
+            "python": "3.10",
+            "coverage": True,
+        },
+        {
+            "lane": "core-windows-3.13",
+            "os": "windows-2025",
+            "python": "3.13",
+            "coverage": False,
+        },
+        {
+            "lane": "core-macos-3.14",
+            "os": "macos-15",
+            "python": "3.14",
+            "coverage": False,
+        },
     ]
     core_text = "\n".join(str(step) for step in core["steps"])
     assert 'python -m pip install --no-cache-dir "./candidate[dev]"' in core_text
@@ -1059,9 +1122,511 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
     core_suite = next(
         step
         for step in core["steps"]
-        if step.get("name") == "Run strict core suite and coverage"
+        if step.get("name") == "Run strict core suite with canonical coverage"
     )
     assert core_suite["env"]["LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE"] == (
         "${{ github.workspace }}/incoming/source/candidate-source.tar"
     )
     assert "--cov-report=\"xml:../evidence/" in core_suite["run"]
+    assert core_suite["if"] == "${{ matrix.coverage && !inputs.discovery-mode }}"
+    uninstrumented = _named_step(
+        core, "Run strict core suite without coverage instrumentation"
+    )
+    assert uninstrumented["if"] == (
+        "${{ !matrix.coverage || inputs.discovery-mode }}"
+    )
+    assert "--cov" not in uninstrumented["run"]
+
+
+def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> None:
+    workflow = _yaml("ci.yml")
+    assert workflow["concurrency"] == {
+        "group": (
+            "${{ github.workflow }}-${{ "
+            "github.event.pull_request.number || github.ref }}"
+        ),
+        "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
+    }
+    job = workflow["jobs"]["test"]
+    assert job["name"] == (
+        "test (${{ matrix.os }}, ${{ matrix.python-version }})"
+    )
+    setup = next(
+        step
+        for step in job["steps"]
+        if str(step.get("uses", "")).startswith("actions/setup-python@")
+    )
+    assert setup["with"]["cache"] == "pip"
+    assert setup["with"]["cache-dependency-path"] == "pyproject.toml"
+    install = _named_step(job, "Install dependencies")
+    assert "--no-cache-dir" not in install["run"]
+
+    coverage = _named_step(job, "Run strict suite with coverage")
+    plain = _named_step(job, "Run strict suite")
+    assert coverage["if"] == "${{ matrix.coverage }}"
+    assert plain["if"] == "${{ !matrix.coverage }}"
+    for step in (coverage, plain):
+        command = step["run"]
+        for flag in (
+            "--strict-config",
+            "--strict-markers",
+            "-W error",
+            "-o xfail_strict=true",
+            "--junitxml=",
+        ):
+            assert flag in command
+    assert "--cov-fail-under=87" in coverage["run"]
+    assert "--cov" not in plain["run"]
+
+    verifier = _named_step(job, "Enforce exact skips and minimum inventory")
+    for required in (
+        "verify-junit",
+        '--lane "${{ matrix.lane }}"',
+        "--minimum-collected 5322",
+        "--minimum-passed 5070",
+    ):
+        assert required in verifier["run"]
+    package = _named_step(job, "Check package builds")
+    assert package["if"] == "${{ matrix.package }}"
+    assert "verify_installed_knowledge_schema.py" in package["run"]
+    diagnostics = _named_step(job, "Upload failed lane diagnostics")
+    assert diagnostics["if"] == "failure()"
+
+    for job_name in ("test", "mcp-sdk", "p0-oci-integration"):
+        cached_job = workflow["jobs"][job_name]
+        cached_setup = next(
+            step
+            for step in cached_job["steps"]
+            if str(step.get("uses", "")).startswith("actions/setup-python@")
+        )
+        assert cached_setup["with"]["cache"] == "pip"
+        assert cached_setup["with"]["cache-dependency-path"] == (
+            "pyproject.toml"
+        )
+        assert "--no-cache-dir" not in "\n".join(
+            str(step.get("run", "")) for step in cached_job["steps"]
+        )
+
+    mcp = workflow["jobs"]["mcp-sdk"]
+    assert mcp["strategy"]["matrix"]["include"] == [
+        {"lane": "mcp-3.10", "python-version": "3.10"},
+        {"lane": "mcp-3.13", "python-version": "3.13"},
+    ]
+    mcp_command = _named_step(
+        mcp, "Run MCP SDK registration contract"
+    )["run"]
+    assert "tests/test_mcp_sdk.py" in mcp_command
+    assert "tests/test_mcp.py" not in mcp_command
+    mcp_verifier = _named_step(
+        mcp, "Enforce the single MCP SDK registration contract"
+    )["run"]
+    assert "--minimum-collected 1" in mcp_verifier
+    assert "--minimum-passed 1" in mcp_verifier
+
+
+def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> None:
+    workflow = _yaml("release-qualification.yml")
+    assert workflow["concurrency"] == {
+        "group": (
+            "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
+            "${{ inputs.discovery-mode }}"
+        ),
+        "cancel-in-progress": True,
+    }
+    jobs = workflow["jobs"]
+    for job_name in (
+        "slow",
+        "security-behavior",
+        "product",
+        "mcp",
+        "toolchains",
+        "oci",
+        "static",
+        "action",
+        "build",
+        "reproducible",
+        "artifact-smoke",
+        "smoke-parity",
+        "bundle",
+    ):
+        assert jobs[job_name]["if"] == "${{ !inputs.discovery-mode }}"
+    assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
+    assert jobs["decision"]["if"] == (
+        "${{ always() && !inputs.discovery-mode }}"
+    )
+
+    discovery = jobs["discovery-allowlist"]
+    assert "inputs.discovery-mode" in discovery["if"]
+    assert "needs.core.result == 'failure'" in discovery["if"]
+    evidence_download = next(
+        step
+        for step in discovery["steps"]
+        if step.get("with", {}).get("pattern") == "evidence-core-*"
+    )
+    assert evidence_download["continue-on-error"] is True
+    reconcile = _named_step(
+        discovery, "Reconcile observed tuples with reviewed ownership"
+    )["run"]
+    assert "--baseline candidate/release/skip-allowlist.json" in reconcile
+    assert reconcile.count("--expected-lane") == 3
+    assert "--diagnostic skip-discovery-diagnostic.json" in reconcile
+    upload = _named_step(
+        discovery, "Upload non-qualifying skip diagnostics for owner review"
+    )
+    assert "skip-discovery-diagnostic.json" in upload["with"]["path"]
+    assert "discovered-skip-allowlist.json" in upload["with"]["path"]
+
+
+def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
+    workflow = _yaml("release-qualification.yml")
+    jobs = workflow["jobs"]
+    assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == [
+        "ubuntu-24.04",
+        "macos-15",
+    ]
+    assert jobs["product"]["strategy"]["matrix"]["os"] == [
+        "ubuntu-24.04"
+    ]
+
+    core = jobs["core"]
+    security_projection = _named_step(
+        core, "Project Windows core evidence for RD-04"
+    )
+    product_projection = _named_step(
+        core, "Project Windows core evidence for RD-05"
+    )
+    expected_selectors = {
+        "security-windows-2025": {
+            "tests/test_lockfile.py",
+            "tests/test_circuit_breaker.py",
+            "tests/test_redaction.py",
+            "tests/test_metrics.py",
+            "tests/test_config.py",
+            "tests/test_io.py",
+            "tests/test_protected_artifacts.py",
+            "tests/test_documentation_adversarial.py",
+            "tests/test_documentation_control_integrity.py",
+            "tests/test_documentation_input_recheck.py",
+            "tests/test_documentation_native_lifecycle.py",
+            "tests/test_resource_diagnostics.py",
+            "tests/test_api_exception_taxonomy.py",
+        },
+        "product-windows-2025": {
+            "tests/test_knowledge_*.py",
+            "tests/test_documentation_*.py",
+            "tests/test_doctor.py",
+            "tests/test_context_packet.py",
+            "tests/test_eval_lite.py",
+            "tests/test_github_action.py",
+            "tests/test_site_*.py",
+            "tests/test_obsidian.py",
+        },
+    }
+    for target, step in (
+        ("security-windows-2025", security_projection),
+        ("product-windows-2025", product_projection),
+    ):
+        command = step["run"]
+        assert step["if"] == (
+            "${{ !inputs.discovery-mode && "
+            "matrix.lane == 'core-windows-3.13' }}"
+        )
+        assert "project-junit" in command
+        assert "--identity incoming/source/identity.json" in command
+        assert "--source-junit evidence/core-windows-3.13.xml" in command
+        assert "--source-lane core-windows-3.13" in command
+        assert f"--target-lane {target}" in command
+        assert "--projected-junit" in command
+        assert "--receipt" in command
+        tokens = shlex.split(command)
+        selectors = {
+            tokens[index + 1]
+            for index, token in enumerate(tokens)
+            if token == "--selector"
+        }
+        assert selectors == expected_selectors[target]
+
+    for gate in ("04", "05"):
+        upload = _named_step(
+            core, f"Upload projected Windows RD-{gate} evidence"
+        )
+        assert upload["with"]["name"] == (
+            f"evidence-rd-{gate}-windows-2025"
+        )
+        assert "-projection.json" in upload["with"]["path"]
+
+    core_upload = _named_step(core, "Upload lane evidence")
+    assert "evidence/${{ matrix.lane }}.xml" in core_upload["with"]["path"]
+    assert "evidence/result-${{ matrix.lane }}.json" in core_upload["with"]["path"]
+    assert "-projection.json" not in core_upload["with"]["path"]
+
+    owner_command = _named_step(
+        jobs["owner-lanes"],
+        "Verify reviewed owners against hosted lane results",
+    )["run"]
+    assert (
+        '--owner-result "security-windows-2025=${{ needs.core.result }}"'
+        in owner_command
+    )
+    assert (
+        '--owner-result "product-windows-2025=${{ needs.core.result }}"'
+        in owner_command
+    )
+    bundle_command = _named_step(
+        jobs["bundle"], "Build versioned release bundle"
+    )["run"]
+    assert (
+        '--evidence "RD-04:windows=incoming/gates/'
+        'evidence-rd-04-windows-2025"' in bundle_command
+    )
+    assert (
+        '--evidence "RD-05:windows=incoming/gates/'
+        'evidence-rd-05-windows-2025"' in bundle_command
+    )
+
+
+def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
+    workflow = _yaml("release-qualification.yml")
+    mcp = workflow["jobs"]["mcp"]
+    mcp_command = _named_step(mcp, "Run MCP contract")["run"]
+    assert "tests/test_mcp_sdk.py" in mcp_command
+    assert "tests/test_mcp.py" not in mcp_command
+    mcp_verifier = _named_step(
+        mcp, "Enforce the dedicated MCP SDK contract"
+    )["run"]
+    assert "--minimum-collected 1" in mcp_verifier
+    assert "--minimum-passed 1" in mcp_verifier
+
+    build = workflow["jobs"]["build"]
+    assert build["strategy"]["matrix"]["include"] == [
+        {"copy": "a", "validate": True},
+        {"copy": "b", "validate": False},
+    ]
+    build_command = _named_step(
+        build, "Build both independent distributions"
+    )["run"]
+    assert "python -m build" in build_command
+    assert "twine check" not in build_command
+    validation = _named_step(build, "Validate the first independent build")
+    assert validation["if"] == "${{ matrix.validate }}"
+    assert "twine check" in validation["run"]
+    assert "verify_installed_knowledge_schema.py" in validation["run"]
+
+
+def test_committed_skip_contract_nodes_resolve_to_test_definitions() -> None:
+    payload = json.loads(
+        (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")
+    )
+    definitions_by_path: dict[str, set[tuple[str | None, str]]] = {}
+    unresolved: list[str] = []
+    for entry in payload["entries"]:
+        node_id = entry["node_id"]
+        components = node_id.split("::")
+        assert len(components) in {2, 3}, node_id
+        relative_path = components[0]
+        definitions = definitions_by_path.get(relative_path)
+        if definitions is None:
+            definitions = _test_definitions(relative_path)
+            definitions_by_path[relative_path] = definitions
+        owner = components[1] if len(components) == 3 else None
+        test_name = components[-1].split("[", 1)[0]
+        if (owner, test_name) not in definitions:
+            unresolved.append(node_id)
+
+    assert unresolved == []
+
+
+def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -> None:
+    payload = json.loads(
+        (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")
+    )
+    entries = payload["entries"]
+    assert entries == sorted(
+        entries,
+        key=lambda item: (
+            item["lane"],
+            item["node_id"],
+            item["reason"],
+            item["owner_lane"],
+        ),
+    )
+
+    windows_native = [
+        entry
+        for entry in entries
+        if entry["node_id"].startswith(
+            "tests/test_filesystem_guard_windows.py::"
+        )
+    ]
+    assert len(windows_native) == 22
+    assert {entry["lane"] for entry in windows_native} == {
+        "core-ubuntu-3.10",
+        "core-macos-3.14",
+    }
+    assert {entry["owner_lane"] for entry in windows_native} == {
+        "core-windows-3.13"
+    }
+    assert {entry["reason"] for entry in windows_native} == {
+        "native Windows contracts"
+    }
+
+    posix = [
+        entry
+        for entry in entries
+        if entry["node_id"].startswith("tests/test_filesystem_guard.py::")
+    ]
+    assert len(posix) == 8
+    assert {entry["lane"] for entry in posix} == {"core-windows-3.13"}
+    assert {entry["owner_lane"] for entry in posix} == {
+        "core-ubuntu-3.10"
+    }
+    assert any("[absent]" in entry["node_id"] for entry in posix)
+    assert any("[present]" in entry["node_id"] for entry in posix)
+
+    dogfood = [
+        entry
+        for entry in entries
+        if entry["node_id"].startswith(
+            "tests/test_documentation_dogfood.py::"
+        )
+    ]
+    assert len(dogfood) == 6
+    assert {entry["reason"] for entry in dogfood} == {
+        "prepared multi-language helper cache is required for documentation dogfood"
+    }
+    assert all("bootstrap_sync_and_site_export" not in entry["node_id"] for entry in entries)
+    assert sum(
+        entry["node_id"]
+        == "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed"
+        for entry in entries
+    ) == 3
+
+    haskell = [
+        entry
+        for entry in entries
+        if entry["node_id"].startswith("tests/test_haskell_extract.py::")
+    ]
+    assert len(haskell) == 18
+    assert {entry["lane"] for entry in haskell} == {
+        "core-macos-3.14",
+        "core-ubuntu-3.10",
+        "core-windows-3.13",
+    }
+    assert {entry["owner_lane"] for entry in haskell} == {"toolchains"}
+    assert {entry["reason"] for entry in haskell} == {
+        "Prepared Haskell helper not available — "
+        "Haskell extractor integration tests skipped"
+    }
+
+    multilanguage = [
+        entry
+        for entry in entries
+        if entry["node_id"]
+        == (
+            "tests/test_multilanguage_wiki.py::"
+            "test_migrate_reconciles_legacy_go_page_with_rust_name_collision"
+        )
+    ]
+    assert not multilanguage
+
+    case_aliases = [
+        entry
+        for entry in entries
+        if entry["node_id"].startswith(
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots["
+        )
+    ]
+    assert {
+        (entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+        for entry in case_aliases
+    } == {
+        (
+            "core-ubuntu-3.10",
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots["
+            ".claude/skills-.CLAUDE/SKILLS]",
+            "core-windows-3.13",
+            "filesystem is case-sensitive; no case alias exists",
+        ),
+        (
+            "core-ubuntu-3.10",
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots[.git-.GIT]",
+            "core-windows-3.13",
+            "filesystem is case-sensitive; no case alias exists",
+        ),
+        (
+            "core-ubuntu-3.10",
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots["
+            ".llm-wiki/skills-.LLM-WIKI/SKILLS]",
+            "core-windows-3.13",
+            "filesystem is case-sensitive; no case alias exists",
+        ),
+    }
+
+    platform_alias = [
+        entry
+        for entry in entries
+        if entry["node_id"]
+        == (
+            "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::"
+            "test_root_owned_platform_alias_preserves_install_and_export"
+        )
+    ]
+    assert {
+        (entry["lane"], entry["owner_lane"], entry["reason"])
+        for entry in platform_alias
+    } == {
+        (
+            "core-ubuntu-3.10",
+            "core-macos-3.14",
+            "root-owned /var alias contract is macOS-only",
+        ),
+        (
+            "core-windows-3.13",
+            "core-macos-3.14",
+            "root-owned /var alias contract is macOS-only",
+        ),
+    }
+
+    windows_posix = [
+        entry
+        for entry in entries
+        if entry["node_id"]
+        in {
+            "tests/test_provisioning_failures.py::"
+            "test_fifo_schema_is_rejected_by_stat_without_opening",
+            "tests/test_provisioning_failures.py::"
+            "test_init_revalidates_schema_after_reference_provision[fifo]",
+            "tests/test_status.py::TestStatusHooks::"
+            "test_exact_managed_hook_without_execute_bit_is_reported_broken",
+        }
+    ]
+    assert {
+        (entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+        for entry in windows_posix
+    } == {
+        (
+            "core-windows-3.13",
+            "tests/test_provisioning_failures.py::"
+            "test_fifo_schema_is_rejected_by_stat_without_opening",
+            "core-ubuntu-3.10",
+            "FIFOs are unavailable on this platform",
+        ),
+        (
+            "core-windows-3.13",
+            "tests/test_provisioning_failures.py::"
+            "test_init_revalidates_schema_after_reference_provision[fifo]",
+            "core-ubuntu-3.10",
+            "FIFOs are unavailable on this platform",
+        ),
+        (
+            "core-windows-3.13",
+            "tests/test_status.py::TestStatusHooks::"
+            "test_exact_managed_hook_without_execute_bit_is_reported_broken",
+            "core-ubuntu-3.10",
+            "Windows does not expose a POSIX hook execute-bit contract",
+        ),
+    }

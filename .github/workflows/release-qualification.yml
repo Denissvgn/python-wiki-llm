@@ -16,6 +16,11 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}
+  cancel-in-progress: true
+
 env:
   CI: "1"
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -155,12 +160,15 @@ jobs:
           - lane: core-ubuntu-3.10
             os: ubuntu-24.04
             python: "3.10"
+            coverage: true
           - lane: core-windows-3.13
             os: windows-2025
             python: "3.13"
+            coverage: false
           - lane: core-macos-3.14
             os: macos-15
             python: "3.14"
+            coverage: false
     defaults:
       run:
         shell: bash
@@ -209,7 +217,8 @@ jobs:
       - name: Install the frozen source non-editably
         run: python -m pip install --no-cache-dir "./candidate[dev]"
 
-      - name: Run strict core suite and coverage
+      - name: Run strict core suite with canonical coverage
+        if: ${{ matrix.coverage && !inputs.discovery-mode }}
         env:
           LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/source/candidate-source.tar
         working-directory: candidate
@@ -224,6 +233,20 @@ jobs:
           --cov=llm_wiki_cli
           --cov-report="xml:../evidence/coverage-${{ matrix.lane }}.xml"
           --cov-fail-under=87
+
+      - name: Run strict core suite without coverage instrumentation
+        if: ${{ !matrix.coverage || inputs.discovery-mode }}
+        env:
+          LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/source/candidate-source.tar
+        working-directory: candidate
+        run: >-
+          python -m pytest tests -q
+          -p no:cacheprovider
+          --strict-config
+          --strict-markers
+          -W error
+          -o xfail_strict=true
+          --junitxml="../evidence/${{ matrix.lane }}.xml"
 
       - name: Enforce exact skip tuples and minimum inventory
         env:
@@ -242,12 +265,80 @@ jobs:
             --output "evidence/result-${{ matrix.lane }}.json" \
             "${discovery[@]}"
 
+      - name: Project Windows core evidence for RD-04
+        if: ${{ !inputs.discovery-mode && matrix.lane == 'core-windows-3.13' }}
+        run: >-
+          python -I incoming/tools/release/qualification.py project-junit
+          --identity incoming/source/identity.json
+          --source-junit evidence/core-windows-3.13.xml
+          --source-lane core-windows-3.13
+          --target-lane security-windows-2025
+          --selector tests/test_lockfile.py
+          --selector tests/test_circuit_breaker.py
+          --selector tests/test_redaction.py
+          --selector tests/test_metrics.py
+          --selector tests/test_config.py
+          --selector tests/test_io.py
+          --selector tests/test_protected_artifacts.py
+          --selector tests/test_documentation_adversarial.py
+          --selector tests/test_documentation_control_integrity.py
+          --selector tests/test_documentation_input_recheck.py
+          --selector tests/test_documentation_native_lifecycle.py
+          --selector tests/test_resource_diagnostics.py
+          --selector tests/test_api_exception_taxonomy.py
+          --projected-junit evidence/security-windows-2025.xml
+          --receipt evidence/security-windows-2025-projection.json
+
+      - name: Project Windows core evidence for RD-05
+        if: ${{ !inputs.discovery-mode && matrix.lane == 'core-windows-3.13' }}
+        run: >-
+          python -I incoming/tools/release/qualification.py project-junit
+          --identity incoming/source/identity.json
+          --source-junit evidence/core-windows-3.13.xml
+          --source-lane core-windows-3.13
+          --target-lane product-windows-2025
+          --selector 'tests/test_knowledge_*.py'
+          --selector 'tests/test_documentation_*.py'
+          --selector tests/test_doctor.py
+          --selector tests/test_context_packet.py
+          --selector tests/test_eval_lite.py
+          --selector tests/test_github_action.py
+          --selector 'tests/test_site_*.py'
+          --selector tests/test_obsidian.py
+          --projected-junit evidence/product-windows-2025.xml
+          --receipt evidence/product-windows-2025-projection.json
+
+      - name: Upload projected Windows RD-04 evidence
+        if: ${{ !inputs.discovery-mode && matrix.lane == 'core-windows-3.13' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-04-windows-2025
+          path: |
+            evidence/security-windows-2025.xml
+            evidence/security-windows-2025-projection.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload projected Windows RD-05 evidence
+        if: ${{ !inputs.discovery-mode && matrix.lane == 'core-windows-3.13' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-05-windows-2025
+          path: |
+            evidence/product-windows-2025.xml
+            evidence/product-windows-2025-projection.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Upload lane evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: evidence-${{ matrix.lane }}
-          path: evidence/
+          path: |
+            evidence/${{ matrix.lane }}.xml
+            evidence/result-${{ matrix.lane }}.json
+            evidence/coverage-${{ matrix.lane }}.xml
           if-no-files-found: error
           retention-days: 14
 
@@ -258,11 +349,17 @@ jobs:
           exit 1
 
   discovery-allowlist:
-    name: Generate non-qualifying skip allowlist
-    if: ${{ always() && inputs.discovery-mode && needs.freeze.result == 'success' }}
+    name: Reconcile core skip diagnostics
+    if: >-
+      ${{ always() && needs.freeze.result == 'success' &&
+          (inputs.discovery-mode || needs.core.result == 'failure') }}
     needs: [freeze, core]
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: qualification-harnesses
@@ -279,32 +376,47 @@ jobs:
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
         with:
           pattern: evidence-core-*
           path: incoming/evidence
-      - name: Generate review-required tuples from all core lanes
+      - name: Extract the committed skip baseline
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar
+          --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+      - name: Reconcile observed tuples with reviewed ownership
         run: |
-          ubuntu="$(find incoming/evidence -name 'core-ubuntu-3.10.xml' -print -quit)"
-          windows="$(find incoming/evidence -name 'core-windows-3.13.xml' -print -quit)"
-          macos="$(find incoming/evidence -name 'core-macos-3.14.xml' -print -quit)"
-          test -f "${ubuntu}"
-          test -f "${windows}"
-          test -f "${macos}"
+          mkdir -p incoming/evidence
+          results=()
+          for lane in core-ubuntu-3.10 core-windows-3.13 core-macos-3.14; do
+            junit="$(find incoming/evidence -name "${lane}.xml" -print -quit)"
+            if [[ -n "${junit}" ]]; then
+              results+=(--result "${lane}=${junit}")
+            fi
+          done
           python -I incoming/tools/release/qualification.py discover-allowlist \
-            --result "core-ubuntu-3.10=${ubuntu}" \
-            --result "core-windows-3.13=${windows}" \
-            --result "core-macos-3.14=${macos}" \
-            --output discovered-skip-allowlist.json
-      - name: Upload non-qualifying allowlist for owner review
+            "${results[@]}" \
+            --baseline candidate/release/skip-allowlist.json \
+            --expected-lane core-ubuntu-3.10 \
+            --expected-lane core-windows-3.13 \
+            --expected-lane core-macos-3.14 \
+            --output discovered-skip-allowlist.json \
+            --diagnostic skip-discovery-diagnostic.json
+      - name: Upload non-qualifying skip diagnostics for owner review
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: discovered-skip-allowlist
-          path: discovered-skip-allowlist.json
+          path: |
+            skip-discovery-diagnostic.json
+            discovered-skip-allowlist.json
           if-no-files-found: error
           retention-days: 14
 
   slow:
     name: RD-03 slow, scale, bounds, and determinism
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ubuntu-24.04
     steps:
@@ -374,12 +486,13 @@ jobs:
 
   security-behavior:
     name: RD-04 security behavior (${{ matrix.os }})
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025, macos-15]
+        os: [ubuntu-24.04, macos-15]
     defaults:
       run:
         shell: bash
@@ -448,12 +561,13 @@ jobs:
 
   product:
     name: RD-05 product vectors (${{ matrix.os }})
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025]
+        os: [ubuntu-24.04]
     defaults:
       run:
         shell: bash
@@ -518,6 +632,7 @@ jobs:
 
   mcp:
     name: RD-06 MCP SDK (Python ${{ matrix.python }})
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
@@ -562,11 +677,20 @@ jobs:
           LLM_WIKI_REQUIRE_MCP_SDK: "1"
         working-directory: candidate
         run: >-
-          python -m pytest tests/test_mcp.py -q
+          python -m pytest tests/test_mcp_sdk.py -q
           -p no:cacheprovider --strict-config --strict-markers
           -W error
           -o xfail_strict=true
           --junitxml="../evidence/mcp-${{ matrix.python }}.xml"
+      - name: Enforce the dedicated MCP SDK contract
+        run: >-
+          python -I incoming/tools/release/qualification.py verify-junit
+          --junit "evidence/mcp-${{ matrix.python }}.xml"
+          --lane "mcp-${{ matrix.python }}"
+          --allowlist candidate/release/skip-allowlist.json
+          --minimum-collected 1
+          --minimum-passed 1
+          --output "evidence/result-mcp-${{ matrix.python }}.json"
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -578,6 +702,7 @@ jobs:
 
   toolchains:
     name: RD-07 prepared extractor toolchains
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -762,15 +887,16 @@ jobs:
           tests/test_lint.py
           tests/test_documentation_dogfood.py
           -p no:cacheprovider --strict-config --strict-markers
-          -W error -o xfail_strict=true --junitxml=../evidence/toolchains.xml
+          -W error -o xfail_strict=true --durations=20
+          --junitxml=../evidence/toolchains.xml
       - name: Enforce complete toolchain owner evidence
         run: >-
           python -I incoming/tools/release/qualification.py verify-junit
           --junit evidence/toolchains.xml
           --lane toolchains
           --allowlist candidate/release/skip-allowlist.json
-          --minimum-collected 488
-          --minimum-passed 488
+          --minimum-collected 489
+          --minimum-passed 489
           --output evidence/result-toolchains.json
       - name: Audit exact helper dependency trees
         run: |
@@ -821,6 +947,7 @@ jobs:
 
   oci:
     name: RD-08 real OCI isolation
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -942,6 +1069,7 @@ jobs:
 
   static:
     name: RD-09 static and dependency security
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ubuntu-24.04
     steps:
@@ -1034,6 +1162,7 @@ jobs:
 
   action:
     name: RD-10 hosted composite Action
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -1374,12 +1503,17 @@ jobs:
 
   build:
     name: RD-11 independent build ${{ matrix.copy }}
+    if: ${{ !inputs.discovery-mode }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        copy: [a, b]
+        include:
+          - copy: a
+            validate: true
+          - copy: b
+            validate: false
     env:
       SOURCE_DATE_EPOCH: ${{ needs.freeze.outputs.commit-epoch }}
     steps:
@@ -1417,11 +1551,14 @@ jobs:
         run: >-
           python -m pip install --require-hashes --no-cache-dir
           -r candidate/release/requirements.txt
-      - name: Build and validate both distributions
+      - name: Build both independent distributions
         run: |
           mkdir dist
           python -m build --no-isolation --sdist --wheel \
             --outdir dist candidate
+      - name: Validate the first independent build
+        if: ${{ matrix.validate }}
+        run: |
           twine check dist/*
           python candidate/tests/verify_installed_knowledge_schema.py dist
       - name: Upload independent build
@@ -1435,6 +1572,7 @@ jobs:
 
   reproducible:
     name: RD-11 compare independent build bytes
+    if: ${{ !inputs.discovery-mode }}
     needs: [freeze, build]
     runs-on: ubuntu-24.04
     steps:
@@ -1478,6 +1616,7 @@ jobs:
 
   artifact-smoke:
     name: RD-12 artifact-only ${{ matrix.kind }} smoke
+    if: ${{ !inputs.discovery-mode }}
     needs: [freeze, reproducible]
     runs-on: ubuntu-24.04
     strategy:
@@ -1544,6 +1683,7 @@ jobs:
 
   smoke-parity:
     name: RD-12 wheel/sdist parity
+    if: ${{ !inputs.discovery-mode }}
     needs: [freeze, artifact-smoke]
     runs-on: ubuntu-24.04
     steps:
@@ -1650,13 +1790,13 @@ jobs:
             --owner-junit "determinism=incoming/owner-evidence/evidence-rd-03/determinism.xml" \
             --owner-result "security-ubuntu-24.04=${{ needs.security-behavior.result }}" \
             --owner-junit "security-ubuntu-24.04=incoming/owner-evidence/evidence-rd-04-ubuntu-24.04/security-ubuntu-24.04.xml" \
-            --owner-result "security-windows-2025=${{ needs.security-behavior.result }}" \
+            --owner-result "security-windows-2025=${{ needs.core.result }}" \
             --owner-junit "security-windows-2025=incoming/owner-evidence/evidence-rd-04-windows-2025/security-windows-2025.xml" \
             --owner-result "security-macos-15=${{ needs.security-behavior.result }}" \
             --owner-junit "security-macos-15=incoming/owner-evidence/evidence-rd-04-macos-15/security-macos-15.xml" \
             --owner-result "product-ubuntu-24.04=${{ needs.product.result }}" \
             --owner-junit "product-ubuntu-24.04=incoming/owner-evidence/evidence-rd-05-ubuntu-24.04/product-ubuntu-24.04.xml" \
-            --owner-result "product-windows-2025=${{ needs.product.result }}" \
+            --owner-result "product-windows-2025=${{ needs.core.result }}" \
             --owner-junit "product-windows-2025=incoming/owner-evidence/evidence-rd-05-windows-2025/product-windows-2025.xml" \
             --owner-result "mcp-3.10=${{ needs.mcp.result }}" \
             --owner-junit "mcp-3.10=incoming/owner-evidence/evidence-rd-06-3.10/mcp-3.10.xml" \
@@ -1677,6 +1817,7 @@ jobs:
 
   bundle:
     name: Assemble immutable qualified release
+    if: ${{ !inputs.discovery-mode }}
     needs:
       - freeze
       - core
@@ -1826,7 +1967,7 @@ jobs:
 
   decision:
     name: Aggregate RD-00 through RD-13
-    if: always()
+    if: ${{ always() && !inputs.discovery-mode }}
     needs:
       - freeze
       - core

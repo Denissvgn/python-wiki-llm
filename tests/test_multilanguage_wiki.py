@@ -2,51 +2,12 @@
 
 from __future__ import annotations
 
-import hashlib
-import shutil
-import subprocess
-import tempfile
 import textwrap
 import types
 from pathlib import Path
 
-import pytest
-
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, migrate_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
-from llm_wiki_cli.services.extractor_helpers import (
-    prepare_helper,
-    resolve_helper_cache_root,
-)
-
-
-def _command_available(*cmd: str) -> bool:
-    if shutil.which(cmd[0]) is None:
-        return False
-    try:
-        subprocess.run(
-            list(cmd),
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=10,
-        )
-        return True
-    except (
-        subprocess.CalledProcessError,
-        subprocess.TimeoutExpired,
-        FileNotFoundError,
-    ):
-        return False
-
-
-GO_READY = _command_available("go", "version")
-RUST_READY = _command_available("cargo", "--version")
-
-skip_no_go_rust = pytest.mark.skipif(
-    not (GO_READY and RUST_READY),
-    reason="Go and Rust toolchains are not both available",
-)
 
 
 def _make_args(**kwargs):
@@ -74,23 +35,6 @@ def _make_wiki(proj: Path) -> Path:
     _write(wiki / "index.md", "# Old Index\n")
     _write(wiki / "log.md", "# Log\n")
     return wiki
-
-
-def _short_cache_base(tmp_path: Path) -> Path:
-    digest = hashlib.sha1(str(tmp_path).encode("utf-8")).hexdigest()[:8]
-    return Path(tempfile.gettempdir()) / f"lww{digest}"
-
-
-def _prepare_helpers_or_fail(
-    proj: Path, languages: list[str], cache_base: Path, monkeypatch
-) -> None:
-    (proj / ".git").mkdir(exist_ok=True)
-    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(cache_base))
-    cache_root = resolve_helper_cache_root(proj)
-    assert cache_root is not None
-    for language in languages:
-        result = prepare_helper(language, cache_root)
-        assert result.status in {"prepared", "already_current"}, result.message
 
 
 def test_bootstrap_python_plus_haskell_inventory_without_haskell_toolchain(
@@ -227,7 +171,6 @@ def test_bootstrap_multilanguage_collision_pages_lint_passes(
     assert "Lint passed" in output
 
 
-@skip_no_go_rust
 def test_migrate_reconciles_legacy_go_page_with_rust_name_collision(
     tmp_path, monkeypatch, capsys
 ):
@@ -235,11 +178,31 @@ def test_migrate_reconciles_legacy_go_page_with_rust_name_collision(
     proj.mkdir()
     _write(proj / "go" / "api" / "client.go", "package api\n\ntype Client struct{}\n")
     _write(proj / "rust" / "native" / "client.rs", "pub struct Client;\n")
-    _prepare_helpers_or_fail(
-        proj,
-        ["go", "rust"],
-        _short_cache_base(tmp_path),
-        monkeypatch,
+    inventory_result = InventoryResult(
+        {
+            "go/api/client.go": {
+                "language": "go",
+                "classes": [{"name": "Client", "kind": "struct", "line": 3}],
+                "functions": [],
+                "imports": [],
+            },
+            "rust/native/client.rs": {
+                "language": "rust",
+                "classes": [{"name": "Client", "kind": "struct", "line": 1}],
+                "functions": [],
+                "imports": [],
+            },
+        },
+        {
+            language: ExtractorStatus(language, "ok", 1)
+            for language in ("go", "rust")
+        },
+    )
+    monkeypatch.setattr(
+        migrate_cmd, "get_inventory_result", lambda *args, **kwargs: inventory_result
+    )
+    monkeypatch.setattr(
+        lint_cmd, "get_inventory_result", lambda *args, **kwargs: inventory_result
     )
     wiki = _make_wiki(proj)
     _write(

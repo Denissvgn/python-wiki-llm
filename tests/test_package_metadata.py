@@ -246,9 +246,27 @@ def test_project_requires_python_3_10_or_newer():
 def test_ci_pairs_selected_python_versions_with_one_os_each():
     assert _ci_test_matrix() == {
         "include": [
-            {"os": "ubuntu-24.04", "python-version": "3.10"},
-            {"os": "windows-2025", "python-version": "3.13"},
-            {"os": "macos-15", "python-version": "3.14"},
+            {
+                "lane": "core-ubuntu-3.10",
+                "os": "ubuntu-24.04",
+                "python-version": "3.10",
+                "coverage": True,
+                "package": True,
+            },
+            {
+                "lane": "core-windows-3.13",
+                "os": "windows-2025",
+                "python-version": "3.13",
+                "coverage": False,
+                "package": False,
+            },
+            {
+                "lane": "core-macos-3.14",
+                "os": "macos-15",
+                "python-version": "3.14",
+                "coverage": False,
+                "package": False,
+            },
         ]
     }
 

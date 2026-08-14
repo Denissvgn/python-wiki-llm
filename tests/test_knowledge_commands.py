@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
+from llm_wiki_cli.services import knowledge_orchestration, lint_service
 from llm_wiki_cli.services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     CommitStage,
@@ -42,6 +43,7 @@ from llm_wiki_cli.services.knowledge_orchestration import (
     build_runtime_knowledge_plan,
 )
 from llm_wiki_cli.services.sync_manifest import (
+    LEGACY_EVIDENCE_UNAVAILABLE,
     MANIFEST_FILENAME,
     MANIFEST_REPAIR_UNAVAILABLE,
     MANIFEST_STATE_UNAVAILABLE,
@@ -162,6 +164,126 @@ def _artifact_bytes(wiki_dir):
             KNOWLEDGE_INDEX_FILENAME,
             MANIFEST_FILENAME,
         )
+    }
+
+
+def _replace_level_two_section(content: str, heading: str, body: str) -> str:
+    trailing_newline = "\n" if content.endswith("\n") else ""
+    lines = content.splitlines()
+    target = f"## {heading}"
+    for index, line in enumerate(lines):
+        if line.strip() != target:
+            continue
+        start = index + 1
+        while start < len(lines) and lines[start] == "":
+            start += 1
+        end = start
+        while end < len(lines) and not lines[end].startswith("## "):
+            end += 1
+        return (
+            "\n".join(lines[: index + 1] + ["", body, ""] + lines[end:])
+            + trailing_newline
+        )
+    raise AssertionError(f"missing section: {heading}")
+
+
+def _write_reviewed_description(path: Path, description: str) -> None:
+    updated = _replace_level_two_section(
+        path.read_text(encoding="utf-8"),
+        "Description",
+        description,
+    )
+    path.write_text(updated, encoding="utf-8")
+
+
+def _strict_report(project: Path, wiki_dir: Path):
+    return lint_service.build_report(
+        wiki_dir,
+        str(project),
+        strict=True,
+        parallel_jobs=1,
+    )
+
+
+def _strict_evidence_issues(project: Path, wiki_dir: Path):
+    return [
+        issue
+        for issue in _strict_report(project, wiki_dir).issues
+        if issue.category == "knowledge_evidence"
+    ]
+
+
+def _assert_known_model_evidence(wiki_dir: Path) -> None:
+    loaded = load_knowledge_state(wiki_dir)
+    assert loaded.status is KnowledgeLoadState.VALID
+    assert loaded.manifest_basis is not None
+    source_hash = loaded.manifest_basis.sources["models.py"]["hash"]
+    for page_path in ("entities/User.md", "modules/models.md"):
+        baseline = loaded.manifest_basis.evidence_baselines[page_path]
+        assert baseline.is_known
+        assert baseline.basis is not None
+        assert baseline.basis.source_content_hash == source_hash
+
+
+def _downgrade_manifest_to_v4(wiki_dir: Path) -> None:
+    manifest_path = wiki_dir / MANIFEST_FILENAME
+    current = json.loads(manifest_path.read_text(encoding="utf-8"))
+    legacy = {
+        "version": 4,
+        "sources": current["sources"],
+        "surfaces": current["surfaces"],
+        "generation_inputs": current["generation_inputs"],
+    }
+    manifest_path.write_text(
+        json.dumps(legacy, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (wiki_dir / KNOWLEDGE_INDEX_FILENAME).unlink()
+
+
+def _prepare_stranded_legacy_evidence(
+    project: Path,
+    wiki_dir: Path,
+    monkeypatch,
+    *,
+    producer_version: str,
+) -> None:
+    """Commit the valid state produced by the historical sync omission."""
+
+    _downgrade_manifest_to_v4(wiki_dir)
+    monkeypatch.setattr(sync_cmd, "__version__", producer_version)
+    monkeypatch.setattr(bootstrap_cmd, "__version__", producer_version)
+    monkeypatch.setattr(
+        knowledge_orchestration,
+        "__version__",
+        producer_version,
+    )
+    runtime_inputs = sync_cmd.RuntimeKnowledgeInputs
+
+    def omit_regenerated_evidence(*args, **kwargs):
+        kwargs["regenerated_evidence_page_paths"] = frozenset()
+        return runtime_inputs(*args, **kwargs)
+
+    with monkeypatch.context() as historical_sync:
+        historical_sync.setattr(
+            sync_cmd,
+            "RuntimeKnowledgeInputs",
+            omit_regenerated_evidence,
+        )
+        sync_cmd.run(_sync_args(project, wiki_dir, force=True))
+
+    loaded = load_knowledge_state(wiki_dir)
+    assert loaded.status is KnowledgeLoadState.VALID
+    assert loaded.knowledge is not None
+    assert loaded.manifest_basis is not None
+    assert loaded.knowledge.bundle.producer.tool.version == producer_version
+    assert {
+        page_path: baseline.unknown_reason
+        for page_path, baseline in loaded.manifest_basis.evidence_baselines.items()
+        if not baseline.is_known
+    } == {
+        "entities/User.md": LEGACY_EVIDENCE_UNAVAILABLE,
+        "modules/models.md": LEGACY_EVIDENCE_UNAVAILABLE,
     }
 
 
@@ -392,6 +514,173 @@ def test_immediate_noop_sync_preserves_all_committed_artifact_bytes(
     assert "Surface index: unchanged" in output
     assert "Knowledge index: unchanged" in output
     assert "Manifest: unchanged" in output
+
+
+def test_generator_transition_promotes_legacy_evidence_after_byte_equal_render(
+    knowledge_command_project,
+    monkeypatch,
+    capsys,
+):
+    project, wiki_dir = knowledge_command_project
+    capsys.readouterr()
+    _prepare_stranded_legacy_evidence(
+        project,
+        wiki_dir,
+        monkeypatch,
+        producer_version="1.5.1",
+    )
+    capsys.readouterr()
+
+    entity_path = wiki_dir / "entities" / "User.md"
+    module_path = wiki_dir / "modules" / "models.md"
+    before_pages = {
+        "entities/User.md": entity_path.read_bytes(),
+        "modules/models.md": module_path.read_bytes(),
+    }
+
+    upgraded_version = "9.8.7"
+    monkeypatch.setattr(sync_cmd, "__version__", upgraded_version)
+    monkeypatch.setattr(bootstrap_cmd, "__version__", upgraded_version)
+    monkeypatch.setattr(
+        knowledge_orchestration,
+        "__version__",
+        upgraded_version,
+    )
+
+    sync_cmd.run(_sync_args(project, wiki_dir))
+
+    output = capsys.readouterr().out
+    assert "SKIP entity (unchanged): User" in output
+    assert "SKIP module (unchanged): models" in output
+    assert entity_path.read_bytes() == before_pages["entities/User.md"]
+    assert module_path.read_bytes() == before_pages["modules/models.md"]
+    _assert_known_model_evidence(wiki_dir)
+    loaded = load_knowledge_state(wiki_dir)
+    assert loaded.knowledge is not None
+    assert loaded.knowledge.bundle.producer.tool.version == upgraded_version
+    assert _strict_report(project, wiki_dir).issues == []
+
+    converged_artifacts = _artifact_bytes(wiki_dir)
+    converged_markdown = _markdown_tree_bytes(wiki_dir)
+    capsys.readouterr()
+    sync_cmd.run(_sync_args(project, wiki_dir))
+
+    assert "Wiki is up to date." in capsys.readouterr().out
+    assert _artifact_bytes(wiki_dir) == converged_artifacts
+    assert _markdown_tree_bytes(wiki_dir) == converged_markdown
+    _assert_known_model_evidence(wiki_dir)
+
+
+def test_same_version_sync_repairs_stranded_legacy_evidence_once(
+    knowledge_command_project,
+    monkeypatch,
+    capsys,
+):
+    project, wiki_dir = knowledge_command_project
+    capsys.readouterr()
+    current_version = "9.8.7"
+    _prepare_stranded_legacy_evidence(
+        project,
+        wiki_dir,
+        monkeypatch,
+        producer_version=current_version,
+    )
+    capsys.readouterr()
+
+    before_issues = _strict_evidence_issues(project, wiki_dir)
+    assert len(before_issues) == 2
+    assert {
+        issue.path for issue in before_issues
+    } == {"entities/User.md", "modules/models.md"}
+    assert all(
+        "[reason=promised-evidence-unknown]" in issue.message
+        for issue in before_issues
+    )
+
+    entity_path = wiki_dir / "entities" / "User.md"
+    module_path = wiki_dir / "modules" / "models.md"
+    entity_description = "Reviewed entity prose survives targeted evidence repair."
+    module_description = "Reviewed module prose survives targeted evidence repair."
+    _write_reviewed_description(entity_path, entity_description)
+    _write_reviewed_description(module_path, module_description)
+    capsys.readouterr()
+
+    sync_cmd.run(_sync_args(project, wiki_dir))
+
+    output = capsys.readouterr().out
+    assert "Wiki is up to date." not in output
+    assert "Preserved semantic fields: 2" in output
+    assert entity_description in entity_path.read_text(encoding="utf-8")
+    assert module_description in module_path.read_text(encoding="utf-8")
+    _assert_known_model_evidence(wiki_dir)
+    loaded = load_knowledge_state(wiki_dir)
+    assert loaded.knowledge is not None
+    assert loaded.knowledge.bundle.producer.tool.version == current_version
+    assert _strict_report(project, wiki_dir).issues == []
+
+    converged_artifacts = _artifact_bytes(wiki_dir)
+    converged_markdown = _markdown_tree_bytes(wiki_dir)
+    capsys.readouterr()
+    sync_cmd.run(_sync_args(project, wiki_dir))
+
+    assert "Wiki is up to date." in capsys.readouterr().out
+    assert _artifact_bytes(wiki_dir) == converged_artifacts
+    assert _markdown_tree_bytes(wiki_dir) == converged_markdown
+    _assert_known_model_evidence(wiki_dir)
+
+
+def test_stranded_evidence_repair_failure_cannot_partially_promote(
+    knowledge_command_project,
+    monkeypatch,
+    capsys,
+):
+    project, wiki_dir = knowledge_command_project
+    capsys.readouterr()
+    _prepare_stranded_legacy_evidence(
+        project,
+        wiki_dir,
+        monkeypatch,
+        producer_version="9.8.7",
+    )
+    capsys.readouterr()
+    before_artifacts = _artifact_bytes(wiki_dir)
+    before_markdown = _markdown_tree_bytes(wiki_dir)
+    sentinel = RuntimeError("injected module regeneration failure")
+
+    with monkeypatch.context() as failed_render:
+        failed_render.setattr(
+            sync_cmd,
+            "_apply_module_page",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(sentinel),
+        )
+        with pytest.raises(RuntimeError) as exc_info:
+            sync_cmd.run(_sync_args(project, wiki_dir))
+
+    assert exc_info.value is sentinel
+    assert "SKIP entity (unchanged): User" in capsys.readouterr().out
+    assert _artifact_bytes(wiki_dir) == before_artifacts
+    assert _markdown_tree_bytes(wiki_dir) == before_markdown
+    failed = load_knowledge_state(wiki_dir)
+    assert failed.status is KnowledgeLoadState.VALID
+    assert failed.manifest_basis is not None
+    assert all(
+        not failed.manifest_basis.evidence_baselines[page_path].is_known
+        and failed.manifest_basis.evidence_baselines[page_path].unknown_reason
+        == LEGACY_EVIDENCE_UNAVAILABLE
+        for page_path in ("entities/User.md", "modules/models.md")
+    )
+    failure_issues = _strict_evidence_issues(project, wiki_dir)
+    assert len(failure_issues) == 2
+    assert all(
+        "[reason=promised-evidence-unknown]" in issue.message
+        for issue in failure_issues
+    )
+
+    capsys.readouterr()
+    sync_cmd.run(_sync_args(project, wiki_dir))
+
+    _assert_known_model_evidence(wiki_dir)
+    assert _strict_report(project, wiki_dir).issues == []
 
 
 def test_bootstrap_rejection_preserves_evidence_and_sync_regenerates(
@@ -688,6 +977,12 @@ def test_manifest_reseed_unknown_survives_following_noop_sync(
         not baseline.is_known and baseline.unknown_reason == MANIFEST_STATE_UNAVAILABLE
         for baseline in seeded.manifest_basis.evidence_baselines.values()
     )
+    seeded_issues = _strict_evidence_issues(project, wiki_dir)
+    assert len(seeded_issues) == 2
+    assert all(
+        "[reason=promised-evidence-unknown]" in issue.message
+        for issue in seeded_issues
+    )
     first_artifacts = _artifact_bytes(wiki_dir)
     capsys.readouterr()
 
@@ -706,6 +1001,16 @@ def test_manifest_reseed_unknown_survives_following_noop_sync(
         for directory in ("modules", "entities")
         for path in (wiki_dir / directory).glob("*.md")
     } == before_pages
+    output = capsys.readouterr().out
+    assert "Wiki is up to date." in output
+    assert "SKIP entity (unchanged)" not in output
+    assert "SKIP module (unchanged)" not in output
+    preserved_issues = _strict_evidence_issues(project, wiki_dir)
+    assert len(preserved_issues) == 2
+    assert all(
+        "[reason=promised-evidence-unknown]" in issue.message
+        for issue in preserved_issues
+    )
 
 
 def test_bootstrap_overwrite_rejection_preserves_reseeded_unknown_evidence(

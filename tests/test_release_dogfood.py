@@ -217,7 +217,11 @@ def test_installed_lifecycle_harness_covers_both_profiles_and_locations(
     tmp_path: Path,
 ) -> None:
     result = release_artifact_smoke._validate_profile_lifecycle(
-        [sys.executable, "-I", "-m", "llm_wiki_cli.cli"],
+        release_artifact_smoke._isolated_utf8_python_command(
+            sys.executable,
+            "-m",
+            "llm_wiki_cli.cli",
+        ),
         tmp_path,
     )
 
@@ -240,7 +244,11 @@ def test_installed_skill_harness_covers_transitive_reference_dependency(
     tmp_path: Path,
 ) -> None:
     result = release_artifact_smoke._validate_selected_skill_dependencies(
-        [sys.executable, "-I", "-m", "llm_wiki_cli.cli"],
+        release_artifact_smoke._isolated_utf8_python_command(
+            sys.executable,
+            "-m",
+            "llm_wiki_cli.cli",
+        ),
         tmp_path,
     )
 
@@ -250,6 +258,37 @@ def test_installed_skill_harness_covers_transitive_reference_dependency(
         "skills": ["wiki-reference", "wiki-sync"],
     }
     assert not tuple(tmp_path.rglob(".gitignore"))
+
+
+def test_isolated_smoke_python_uses_utf8_and_captures_unicode(
+    tmp_path: Path,
+) -> None:
+    command = release_artifact_smoke._isolated_utf8_python_command(
+        sys.executable,
+        "-c",
+        (
+            "import json, sys; "
+            "print(json.dumps({"
+            "'isolated': sys.flags.isolated, "
+            "'utf8_mode': sys.flags.utf8_mode, "
+            "'text': '—'"
+            "}, ensure_ascii=False))"
+        ),
+    )
+
+    completed = release_artifact_smoke._run(command, cwd=tmp_path)
+
+    assert json.loads(completed.stdout) == {
+        "isolated": 1,
+        "utf8_mode": 1,
+        "text": "—",
+    }
+
+
+def test_artifact_smoke_isolated_commands_use_shared_utf8_builder() -> None:
+    source = Path(release_artifact_smoke.__file__).read_text(encoding="utf-8")
+
+    assert source.count('"-I"') == 1
 
 
 def test_ready_without_governance_selects_useful_native_evidence_read_only(

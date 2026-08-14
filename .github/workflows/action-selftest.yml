@@ -2,6 +2,7 @@ name: Context health action
 
 on:
   push:
+    branches: [main]
     paths:
       - .github/scripts/setup-llm-wiki-ci-toolchains.sh
       - integrations/github-action/**
@@ -22,6 +23,10 @@ on:
       - pyproject.toml
       - .github/workflows/action-selftest.yml
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
@@ -37,6 +42,8 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Build repository-owned wiki fixture
         env:
@@ -86,6 +93,24 @@ jobs:
         if: always()
         env:
           STEP_OUTCOME: ${{ steps.invalid-strict.outcome }}
+        run: |
+          test "${STEP_OUTCOME}" = "failure"
+
+      - name: "Expected failure: Reject an invalid evidence ID"
+        id: invalid-evidence-id
+        continue-on-error: true
+        uses: ./integrations/github-action
+        with:
+          wiki-dir: .action-selftest/wiki
+          src-dir: tests/fixtures/context-health-action/source
+          strict: "true"
+          fail-on: unhealthy
+          evidence-id: Invalid/evidence
+
+      - name: Assert invalid evidence ID failed closed
+        if: always()
+        env:
+          STEP_OUTCOME: ${{ steps.invalid-evidence-id.outcome }}
         run: |
           test "${STEP_OUTCOME}" = "failure"
 

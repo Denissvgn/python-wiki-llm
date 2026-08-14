@@ -1,6 +1,6 @@
 # SyncResult
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:589`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:590`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -21,6 +21,7 @@ _Auto-generated from `SyncResult` in `src/llm_wiki_cli/commands/sync_cmd.py`._
 | `skipped` | `int` | `0` | — |
 | `deprecated` | `int` | `0` | — |
 | `preserved_semantic` | `int` | `0` | — |
+| `regenerated_evidence_page_paths` | `set[str]` | `field(default_factory=set)` | — |
 
 ## Methods
 
@@ -69,7 +70,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `created`, `deprecated`, `metadata_only`, `preserved_semantic`, `skipped`, `updated` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `created`, `deprecated`, `metadata_only`, `preserved_semantic`, `regenerated_evidence_page_paths`, `skipped`, `updated` |
 
 ### References
 

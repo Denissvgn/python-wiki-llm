@@ -2790,9 +2790,21 @@ class TestSemanticPreservation:
         assert "New source description." not in human_edited.text
 
     def test_line_number_shift_preserves_entity_semantics(
-        self, bootstrapped_project, capsys
+        self, bootstrapped_project, monkeypatch, capsys
     ):
         proj, wiki_dir = bootstrapped_project
+        receipts = []
+        real_finalize = sync_cmd.finalize_runtime_knowledge
+
+        def capture_regenerated_paths(inputs, **kwargs):
+            receipts.append(inputs.regenerated_evidence_page_paths)
+            return real_finalize(inputs, **kwargs)
+
+        monkeypatch.setattr(
+            sync_cmd,
+            "finalize_runtime_knowledge",
+            capture_regenerated_paths,
+        )
         entity_path = wiki_dir / "entities" / "User.md"
         content = entity_path.read_text(encoding="utf-8")
         content = self._replace_section_body(
@@ -2826,6 +2838,9 @@ class TestSemanticPreservation:
         assert "**Location:** `models.py:2`" in entity_content
         assert "Human-written semantic description." in entity_content
         assert "Human-curated display name." in entity_content
+        assert receipts == [
+            frozenset({"entities/User.md", "modules/models.md"})
+        ]
 
     def test_line_number_shift_preserves_module_semantics(
         self, bootstrapped_project, capsys
@@ -2976,7 +2991,9 @@ class TestNewFile:
         manifest = SyncManifest.load(wiki_dir)
         assert any(k.endswith("auth.py") for k in manifest.sources)
 
-    def test_new_entity_name_collision_renames_existing_pages(self, tmp_path, capsys):
+    def test_new_entity_name_collision_renames_existing_pages(
+        self, tmp_path, monkeypatch, capsys
+    ):
         proj = tmp_path / "project"
         proj.mkdir()
         (proj / "backend" / "app" / "schemas").mkdir(parents=True)
@@ -2994,6 +3011,18 @@ class TestNewFile:
         os.chdir(proj)
         try:
             bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki_dir)))
+            receipts = []
+            real_finalize = sync_cmd.finalize_runtime_knowledge
+
+            def capture_regenerated_paths(inputs, **kwargs):
+                receipts.append(inputs.regenerated_evidence_page_paths)
+                return real_finalize(inputs, **kwargs)
+
+            monkeypatch.setattr(
+                sync_cmd,
+                "finalize_runtime_knowledge",
+                capture_regenerated_paths,
+            )
 
             assert (wiki_dir / "entities" / "GanttResponse.md").exists()
             assert (wiki_dir / "entities" / "SuggestedSubtask.md").exists()
@@ -3037,6 +3066,23 @@ class TestNewFile:
             assert "entities/types_gantt_GanttResponse.md" in index
             assert "modules/schemas_gantt.md" in index
             assert "modules/types_gantt.md" in index
+            assert len(receipts) == 1
+            assert {
+                "entities/schemas_gantt_GanttResponse.md",
+                "entities/types_gantt_GanttResponse.md",
+                "entities/schemas_task_SuggestedSubtask.md",
+                "entities/types_task_SuggestedSubtask.md",
+                "modules/schemas_gantt.md",
+                "modules/types_gantt.md",
+                "modules/schemas_task.md",
+                "modules/types_task.md",
+            } <= receipts[0]
+            assert {
+                "entities/GanttResponse.md",
+                "entities/SuggestedSubtask.md",
+                "modules/gantt.md",
+                "modules/task.md",
+            }.isdisjoint(receipts[0])
 
             report = lint_cmd.build_report(wiki_dir, ".", strict=True)
             assert report.passed, report.by_category()
