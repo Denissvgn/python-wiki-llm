@@ -1459,3 +1459,133 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
         == "tests/test_mcp_sdk.py::test_optional_sdk_registration_when_installed"
         for entry in entries
     ) == 3
+
+    haskell = [
+        entry
+        for entry in entries
+        if entry["node_id"].startswith("tests/test_haskell_extract.py::")
+    ]
+    assert len(haskell) == 18
+    assert {entry["lane"] for entry in haskell} == {
+        "core-macos-3.14",
+        "core-ubuntu-3.10",
+        "core-windows-3.13",
+    }
+    assert {entry["owner_lane"] for entry in haskell} == {"toolchains"}
+    assert {entry["reason"] for entry in haskell} == {
+        "Prepared Haskell helper not available — "
+        "Haskell extractor integration tests skipped"
+    }
+
+    multilanguage = [
+        entry
+        for entry in entries
+        if entry["node_id"]
+        == (
+            "tests/test_multilanguage_wiki.py::"
+            "test_migrate_reconciles_legacy_go_page_with_rust_name_collision"
+        )
+    ]
+    assert not multilanguage
+
+    case_aliases = [
+        entry
+        for entry in entries
+        if entry["node_id"].startswith(
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots["
+        )
+    ]
+    assert {
+        (entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+        for entry in case_aliases
+    } == {
+        (
+            "core-ubuntu-3.10",
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots["
+            ".claude/skills-.CLAUDE/SKILLS]",
+            "core-windows-3.13",
+            "filesystem is case-sensitive; no case alias exists",
+        ),
+        (
+            "core-ubuntu-3.10",
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots[.git-.GIT]",
+            "core-windows-3.13",
+            "filesystem is case-sensitive; no case alias exists",
+        ),
+        (
+            "core-ubuntu-3.10",
+            "tests/test_uninstall.py::TestUninstallRemovesHooks::"
+            "test_remove_wiki_rejects_case_aliases_of_protected_roots["
+            ".llm-wiki/skills-.LLM-WIKI/SKILLS]",
+            "core-windows-3.13",
+            "filesystem is case-sensitive; no case alias exists",
+        ),
+    }
+
+    platform_alias = [
+        entry
+        for entry in entries
+        if entry["node_id"]
+        == (
+            "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::"
+            "test_root_owned_platform_alias_preserves_install_and_export"
+        )
+    ]
+    assert {
+        (entry["lane"], entry["owner_lane"], entry["reason"])
+        for entry in platform_alias
+    } == {
+        (
+            "core-ubuntu-3.10",
+            "core-macos-3.14",
+            "root-owned /var alias contract is macOS-only",
+        ),
+        (
+            "core-windows-3.13",
+            "core-macos-3.14",
+            "root-owned /var alias contract is macOS-only",
+        ),
+    }
+
+    windows_posix = [
+        entry
+        for entry in entries
+        if entry["node_id"]
+        in {
+            "tests/test_provisioning_failures.py::"
+            "test_fifo_schema_is_rejected_by_stat_without_opening",
+            "tests/test_provisioning_failures.py::"
+            "test_init_revalidates_schema_after_reference_provision[fifo]",
+            "tests/test_status.py::TestStatusCommand::"
+            "test_exact_managed_hook_without_execute_bit_is_reported_broken",
+        }
+    ]
+    assert {
+        (entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+        for entry in windows_posix
+    } == {
+        (
+            "core-windows-3.13",
+            "tests/test_provisioning_failures.py::"
+            "test_fifo_schema_is_rejected_by_stat_without_opening",
+            "core-ubuntu-3.10",
+            "FIFOs are unavailable on this platform",
+        ),
+        (
+            "core-windows-3.13",
+            "tests/test_provisioning_failures.py::"
+            "test_init_revalidates_schema_after_reference_provision[fifo]",
+            "core-ubuntu-3.10",
+            "FIFOs are unavailable on this platform",
+        ),
+        (
+            "core-windows-3.13",
+            "tests/test_status.py::TestStatusCommand::"
+            "test_exact_managed_hook_without_execute_bit_is_reported_broken",
+            "core-ubuntu-3.10",
+            "Windows does not expose a POSIX hook execute-bit contract",
+        ),
+    }

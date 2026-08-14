@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 import inspect
 import json
-import shutil
 import subprocess
 import textwrap
 from pathlib import Path
@@ -18,13 +17,7 @@ from llm_wiki_cli.extractors.haskell_extractor import (
     HaskellExtractionRequest,
     HaskellExtractor,
 )
-from llm_wiki_cli.services.extractor_helpers import (
-    SUPPORTED_GHC_MAJOR,
-    SUPPORTED_GHC_MINOR,
-    _ghc_support_error,
-    _ghc_version,
-    _parse_ghc_version,
-)
+from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
 
 
@@ -32,65 +25,18 @@ PROJECT_ROOT = Path(__file__).parents[1]
 HASKELL_SCRIPTS_DIR = (
     PROJECT_ROOT / "src" / "llm_wiki_cli" / "extractors" / "haskell_scripts"
 )
+HASKELL_HELPER_SKIP_REASON = (
+    "Prepared Haskell helper not available — "
+    "Haskell extractor integration tests skipped"
+)
 
 
 @pytest.fixture(scope="session")
-def haskell_helper(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    ghc = shutil.which("ghc")
-    if ghc is None:
-        pytest.skip("GHC is not available")
-
-    toolchain, version_error = _ghc_version(ghc)
-    if toolchain is None:
-        pytest.skip(f"GHC is not usable: {version_error}")
-    support_error = _ghc_support_error(toolchain)
-    if support_error is not None:
-        pytest.skip(support_error)
-    ghc_version = _parse_ghc_version(toolchain)
-    assert ghc_version is not None
-
-    build_root = tmp_path_factory.mktemp("haskell-helper")
-    binary = build_root / "llm-wiki-haskell-extractor"
-    output_dir = build_root / "build"
-    try:
-        subprocess.run(
-            [
-                ghc,
-                "-Wall",
-                "-Werror",
-                "-package",
-                "ghc",
-                "-outputdir",
-                str(output_dir),
-                f"-i{HASKELL_SCRIPTS_DIR}",
-                "-o",
-                str(binary),
-                str(HASKELL_SCRIPTS_DIR / "Main.hs"),
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=180,
-            cwd=str(HASKELL_SCRIPTS_DIR),
-        )
-    except subprocess.CalledProcessError as exc:
-        stderr = exc.stderr.strip() or exc.stdout.strip() or str(exc)
-        major, minor, _patch = ghc_version
-        if major == SUPPORTED_GHC_MAJOR and minor == SUPPORTED_GHC_MINOR:
-            raise AssertionError(
-                f"Supported {toolchain} failed to build Haskell helper:\n{stderr}"
-            ) from exc
-        pytest.skip(
-            f"Haskell helper build failed with best-effort {toolchain}: {stderr}"
-        )
-    except subprocess.TimeoutExpired as exc:
-        major, minor, _patch = ghc_version
-        if major == SUPPORTED_GHC_MAJOR and minor == SUPPORTED_GHC_MINOR:
-            raise AssertionError(
-                f"Supported {toolchain} timed out building Haskell helper"
-            ) from exc
-        pytest.skip(f"Haskell helper build timed out with best-effort {toolchain}")
-    return binary
+def haskell_helper() -> Path:
+    helper = get_prepared_binary("haskell", PROJECT_ROOT)
+    if helper is None:
+        pytest.skip(HASKELL_HELPER_SKIP_REASON)
+    return helper
 
 
 def _write_haskell(root: Path, rel_path: str, content: str) -> Path:
