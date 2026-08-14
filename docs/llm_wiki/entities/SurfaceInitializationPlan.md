@@ -1,6 +1,6 @@
 # _SurfaceInitializationPlan
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1640`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1646`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

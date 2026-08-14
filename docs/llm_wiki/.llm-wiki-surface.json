@@ -31970,17 +31970,9 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 4474,
+              "line": 4484,
               "step": "run",
               "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2293,
-              "step": "_sync_run_options_from_args",
-              "step_index": 2,
               "target": "print"
             },
             {
@@ -31998,36 +31990,44 @@
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2311,
+              "step": "_sync_run_options_from_args",
+              "step_index": 2,
+              "target": "print"
             }
           ],
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2272,
+              "line": 2278,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2273,
+              "line": 2279,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2274,
+              "line": 2280,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2275,
+              "line": 2281,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 264,
+              "line": 265,
               "step": "_cache_options_from_args",
               "target": "getattr"
             },
@@ -32095,7 +32095,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 5528,
+          "step_count": 5529,
           "truncated": true
         }
       },
@@ -51985,5 +51985,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:736f708770028c5058b7ff734a8dd8b6e66f990c59cf608c1df0e5e0b08f57bb"
+  "source_hash": "sha256:049b9902636dacbe958d26691bad1ec13a9a02059bf547da4380071f54765740"
 }
