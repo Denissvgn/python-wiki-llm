@@ -213,6 +213,45 @@ def _ready_ci_payload() -> dict:
     return payload
 
 
+def _set_nested(mapping: dict, path: str, value: object) -> None:
+    """Replace one field in a JSON-shaped test payload."""
+
+    parts = path.split(".")
+    cursor = mapping
+    for part in parts[:-1]:
+        nested = cursor[part]
+        assert isinstance(nested, dict)
+        cursor = nested
+    cursor[parts[-1]] = value
+
+
+def _summary_arguments(**overrides: object) -> dict[str, object]:
+    arguments: dict[str, object] = {
+        "result": "PASS",
+        "cli_exit": 0,
+        "json_state": "available (validated llm-wiki-ci-check/v1)",
+        "markdown_state": "available",
+        "tree_state": "clean",
+        "status_records": [],
+        "status_count": 0,
+        "status_limit": 20,
+        "max_lines": 40,
+        "max_bytes": 8192,
+    }
+    arguments.update(overrides)
+    return arguments
+
+
+def _render_summary(
+    report: dict | None,
+    **overrides: object,
+) -> bytes:
+    return ci_report.render_ci_summary(
+        report,
+        **_summary_arguments(**overrides),  # pyright: ignore[reportArgumentType]
+    )
+
+
 def test_ci_validator_binds_summary_and_health_to_one_evaluation() -> None:
     payload = _ready_ci_payload()
     payload["knowledge_health"]["freshness"]["disclosure"] = (
@@ -1038,3 +1077,810 @@ def test_ci_check_metrics_failures_preserve_validation_failure(
     payload = json.loads(capsys.readouterr().out)
     assert payload["ok"] is False
     assert Path("report.md").exists()
+
+
+def test_ci_report_builder_rejects_non_lint_reports() -> None:
+    with pytest.raises(TypeError, match="report must be a LintReport"):
+        ci_report.build_ci_check_payload({})  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    ("value", "message"),
+    [
+        ([], "report must be an object"),
+        ({}, "report.diagnostics is required"),
+    ],
+)
+def test_ci_report_validator_rejects_incomplete_envelopes(
+    value: object,
+    message: str,
+) -> None:
+    with pytest.raises(ci_report.CiCheckReportError, match=message):
+        ci_report.validate_ci_check_payload(value, cli_exit=0)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "message"),
+    [
+        ("schema_version", "future", "schema_version must be"),
+        ("wiki_dir", " ", "wiki_dir must be a non-empty string"),
+        ("strict", False, "strict must be true"),
+        ("knowledge_drift_gate", True, "knowledge_drift_gate must be false"),
+        (
+            "knowledge_drift_report",
+            "false",
+            "knowledge_drift_report must be a boolean",
+        ),
+        ("issue_count", -1, "issue_count must be a non-negative integer"),
+        ("issues", {}, "issues must be an array"),
+        ("knowledge_health.status", "future", "status is unsupported"),
+        (
+            "knowledge_health.verification_receipt.passed",
+            "yes",
+            "passed must be a boolean",
+        ),
+    ],
+)
+def test_ci_report_validator_rejects_invalid_scalar_contracts(
+    path: str,
+    value: object,
+    message: str,
+) -> None:
+    payload = _ready_ci_payload()
+    _set_nested(payload, path, value)
+
+    with pytest.raises(ci_report.CiCheckReportError, match=message):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_report_validator_rejects_unknown_top_level_fields() -> None:
+    payload = _ready_ci_payload()
+    payload["extension"] = True
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="report contains an unsupported field",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_report_validator_checks_optional_finding_fields() -> None:
+    payload = _ready_ci_payload()
+    payload.update(ok=False, issue_count=1)
+    payload["issues"] = [
+        {
+            "category": "broken_links",
+            "message": "broken",
+            "severity": "error",
+            "path": "wiki/index.md",
+            "target": "missing.md",
+            "reason_code": 7,
+        }
+    ]
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match=r"issues\[0\]\.reason_code must be a non-empty string",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=1)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        (
+            {"requested_jobs": 0, "resolved_jobs": 0},
+            "requested_jobs must be greater than zero",
+        ),
+        (
+            {"requested_jobs": 2, "resolved_jobs": 1},
+            "requested_jobs must equal resolved_jobs",
+        ),
+        (
+            {"parallel_plan_ids": ["b", "a"], "eligible_parallel_plans": 2},
+            "parallel_plan_ids must be unique and sorted",
+        ),
+        (
+            {"parallel_plan_ids": ["a"], "eligible_parallel_plans": 0},
+            "eligible_parallel_plans must equal the parallel plan count",
+        ),
+        (
+            {
+                "parallel_plan_ids": ["a"],
+                "sequential_plan_ids": ["a"],
+                "eligible_parallel_plans": 1,
+                "effective_workers": 1,
+            },
+            "plan identifiers must be disjoint",
+        ),
+        (
+            {
+                "requested_jobs": "auto",
+                "resolved_jobs": 2,
+                "parallel_plan_ids": ["a", "b"],
+                "eligible_parallel_plans": 2,
+                "effective_workers": 1,
+            },
+            "effective_workers does not match",
+        ),
+        (
+            {"sequential_plan_ids": ["a"], "effective_workers": 0},
+            "effective_workers does not match",
+        ),
+    ],
+)
+def test_ci_report_validator_enforces_extraction_plan_consistency(
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    payload = _ready_ci_payload()
+    jobs = payload["execution"]["extractor_jobs"]
+    assert isinstance(jobs, dict)
+    jobs.update(changes)
+
+    with pytest.raises(ci_report.CiCheckReportError, match=message):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_report_validator_accepts_auto_parallel_execution() -> None:
+    payload = _ready_ci_payload()
+    payload["execution"]["extractor_jobs"] = {
+        "requested_jobs": "auto",
+        "resolved_jobs": 4,
+        "eligible_parallel_plans": 2,
+        "effective_workers": 2,
+        "parallel_plan_ids": ["go", "rust"],
+        "sequential_plan_ids": ["python"],
+        "cache_elided_plan_ids": ["typescript"],
+    }
+
+    assert ci_report.validate_ci_check_payload(payload, cli_exit=0) is payload
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (
+            lambda summary, _health: summary.update(availability="future"),
+            "knowledge_summary is inconsistent",
+        ),
+        (
+            lambda summary, _health: summary.update(freshness="wrong"),
+            "knowledge_summary.freshness is inconsistent",
+        ),
+        (
+            lambda summary, _health: summary.update(concepts_total=7),
+            "concepts_by_kind does not match concepts_total",
+        ),
+        (
+            lambda summary, _health: summary.update(freshness_by_state={}),
+            "freshness_by_state does not match freshness_counts",
+        ),
+        (
+            lambda _summary, health: health["availability"].update(state="degraded"),
+            "availability does not match report.knowledge_health",
+        ),
+        (
+            lambda _summary, health: health["availability"].update(reason="other"),
+            "reason does not match report.knowledge_health",
+        ),
+        (
+            lambda _summary, health: health["freshness"].update(evaluated=False),
+            "freshness_evaluated does not match report.knowledge_health",
+        ),
+        (
+            lambda _summary, health: health["freshness"].update(
+                disclosure="other"
+            ),
+            "freshness does not match report.knowledge_health",
+        ),
+        (
+            lambda _summary, health: health["freshness"].update(concepts=7),
+            "concepts_evaluated does not match report.knowledge_health",
+        ),
+        (
+            lambda _summary, health: health["freshness"].update(
+                counts_by_state=None
+            ),
+            "freshness_counts does not match report.knowledge_health",
+        ),
+    ],
+)
+def test_knowledge_summary_validator_binds_every_health_projection(
+    mutate,
+    message: str,
+) -> None:
+    payload = _ready_ci_payload()
+    summary = deepcopy(payload["knowledge_summary"])
+    health = deepcopy(payload["knowledge_health"])
+    assert isinstance(summary, dict)
+    assert isinstance(health, dict)
+    mutate(summary, health)
+
+    with pytest.raises(ci_report.CiCheckReportError, match=message):
+        ci_report._validate_knowledge_summary(summary, health=health)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected"),
+    [
+        (
+            {
+                "strict": False,
+                "source_selection_mismatch": True,
+                "availability_state": "absent",
+                "freshness_evaluated": False,
+                "snapshot_state": "not-available",
+                "governance_state": "not-present",
+                "expired_reviews": 0,
+                "drift_state": "not-evaluated",
+                "verification_state": "absent",
+            },
+            ("unhealthy", [], ["source-selection-mismatch"]),
+        ),
+        (
+            {
+                "strict": False,
+                "source_selection_mismatch": True,
+                "availability_state": "unsupported",
+                "freshness_evaluated": False,
+                "snapshot_state": "not-available",
+                "governance_state": "invalid",
+                "expired_reviews": 2,
+                "drift_state": "stale-confirmed",
+                "verification_state": "invalid",
+            },
+            (
+                "unhealthy",
+                ["freshness-unevaluated", "expired-reviews"],
+                [
+                    "source-selection-mismatch",
+                    "knowledge-unsupported",
+                    "invalid-governance",
+                    "stale-confirmed",
+                    "verification-invalid",
+                ],
+            ),
+        ),
+        (
+            {
+                "strict": False,
+                "source_selection_mismatch": False,
+                "availability_state": "degraded",
+                "freshness_evaluated": True,
+                "snapshot_state": "invalid",
+                "governance_state": "not-present",
+                "expired_reviews": 0,
+                "drift_state": "indeterminate",
+                "verification_state": "absent",
+            },
+            ("degraded", ["knowledge-degraded", "freshness-indeterminate"], []),
+        ),
+        (
+            {
+                "strict": True,
+                "source_selection_mismatch": False,
+                "availability_state": "ready",
+                "freshness_evaluated": True,
+                "snapshot_state": "valid",
+                "governance_state": "valid",
+                "expired_reviews": 0,
+                "drift_state": "nonsemantic-change",
+                "verification_state": "valid",
+            },
+            ("unhealthy", [], ["nonsemantic-source-change"]),
+        ),
+    ],
+)
+def test_doctor_classification_covers_closed_health_states(
+    kwargs: dict[str, object],
+    expected: tuple[str, list[str], list[str]],
+) -> None:
+    assert ci_report._expected_health_classification(**kwargs) == expected  # type: ignore[arg-type]
+
+
+def test_standalone_doctor_contract_allows_additive_fields_only_when_requested() -> None:
+    health = deepcopy(_ready_ci_payload()["knowledge_health"])
+    health["extension"] = {"future": True}
+    health["availability"]["extension"] = "value"
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="knowledge_health contains an unsupported field",
+    ):
+        ci_report.validate_doctor_payload(health, expected_strict=False)
+
+    assert (
+        ci_report.validate_doctor_payload(
+            health,
+            expected_strict=False,
+            allow_additive=True,
+        )
+        is health
+    )
+
+
+def test_standalone_doctor_contract_reports_missing_nested_fields() -> None:
+    health = deepcopy(_ready_ci_payload()["knowledge_health"])
+    del health["availability"]["reason"]
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="knowledge_health.availability.reason is required",
+    ):
+        ci_report.validate_doctor_payload(health, expected_strict=False)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        (
+            {"knowledge_health.schema_version": "future"},
+            "knowledge_health.schema_version must be",
+        ),
+        (
+            {"knowledge_health.exit_code": 1},
+            "exit_code does not match status",
+        ),
+        (
+            {"knowledge_health.strict": True},
+            "strict does not match the requested mode",
+        ),
+        (
+            {"knowledge_health.wiki_dir": "other"},
+            "wiki_dir does not match report.wiki_dir",
+        ),
+        (
+            {"knowledge_health.src_dir": "source"},
+            "src_dir does not match report.src_dir",
+        ),
+        (
+            {"knowledge_health.availability.usable": False},
+            "availability.usable does not match state",
+        ),
+        (
+            {"knowledge_health.freshness.counts_by_state": None},
+            "freshness.counts_by_state does not match evaluated",
+        ),
+        (
+            {"knowledge_health.freshness.concepts": 7},
+            "freshness.concepts does not match counts",
+        ),
+        (
+            {
+                "knowledge_health.snapshot_parity.issue_count": 2,
+                "knowledge_health.snapshot_parity.reasons": ["same", "same"],
+            },
+            "snapshot_parity.reasons must be unique and sorted",
+        ),
+        (
+            {"knowledge_health.snapshot_parity.issue_count": 1},
+            "snapshot_parity issue count and reasons must agree",
+        ),
+        (
+            {"knowledge_health.governance.state": "invalid"},
+            "governance.state does not match issue_count",
+        ),
+        (
+            {
+                "knowledge_health.governance.state": "invalid",
+                "knowledge_health.governance.ledger": "invalid",
+                "knowledge_health.governance.projection": "invalid",
+                "knowledge_health.governance.issue_count": 1,
+            },
+            "governance issue count and reasons must agree",
+        ),
+        (
+            {
+                "knowledge_health.governance.state": "invalid",
+                "knowledge_health.governance.ledger": "valid",
+                "knowledge_health.governance.projection": "valid",
+                "knowledge_health.governance.issue_count": 1,
+                "knowledge_health.governance.reasons": ["invalid-ledger"],
+            },
+            "governance component states do not match state",
+        ),
+        (
+            {
+                "knowledge_health.governance.state": "valid",
+                "knowledge_health.governance.ledger": "not-present",
+                "knowledge_health.governance.projection": "not-present",
+            },
+            "governance valid state has no valid component",
+        ),
+        (
+            {
+                "knowledge_health.governance.ledger": "valid",
+                "knowledge_health.governance.projection": "not-present",
+            },
+            "governance not-present state is inconsistent",
+        ),
+        (
+            {"knowledge_health.drift.state": "not-evaluated"},
+            "drift.counts_by_state does not match state",
+        ),
+        (
+            {"knowledge_health.drift.counts_by_state.current": 2},
+            "drift.counts_by_state does not match freshness",
+        ),
+        (
+            {"knowledge_health.drift.confirmed_stale": 1},
+            "drift.confirmed_stale does not match counts",
+        ),
+        (
+            {"knowledge_health.drift.state": "indeterminate"},
+            "drift.state does not match its counts",
+        ),
+        (
+            {
+                "knowledge_health.drift.state": "indeterminate",
+                "knowledge_health.drift.indeterminate": 2,
+                "knowledge_health.drift.diagnostic_count": 1,
+                "knowledge_health.drift.reasons": ["basis-incompatible"],
+            },
+            "drift diagnostic subsets exceed total",
+        ),
+        (
+            {
+                "knowledge_health.drift.state": "indeterminate",
+                "knowledge_health.drift.indeterminate": 1,
+                "knowledge_health.drift.diagnostic_count": 1,
+            },
+            "drift diagnostic count and reasons must agree",
+        ),
+        (
+            {
+                "knowledge_health.verification_receipt.recorded_result": "passed",
+                "knowledge_health.verification_receipt.passed": True,
+            },
+            "unrecorded state must not carry a result",
+        ),
+        (
+            {
+                "knowledge_health.verification_receipt.state": "invalid",
+                "knowledge_health.verification_receipt.recorded_result": "passed",
+            },
+            "result fields disagree",
+        ),
+        (
+            {
+                "knowledge_health.verification_receipt.state": "invalid",
+                "knowledge_health.verification_receipt.recorded_result": "passed",
+                "knowledge_health.verification_receipt.passed": False,
+            },
+            "recorded result disagrees",
+        ),
+        (
+            {
+                "knowledge_health.verification_receipt.state": "invalid",
+                "knowledge_health.verification_receipt.recorded_result": "failed",
+                "knowledge_health.verification_receipt.passed": True,
+            },
+            "recorded result disagrees",
+        ),
+        (
+            {"knowledge_health.verification_receipt.state": "failed"},
+            "failed state is inconsistent",
+        ),
+        (
+            {"knowledge_health.verification_receipt.state": "valid"},
+            "valid state is inconsistent",
+        ),
+        (
+            {
+                "knowledge_health.verification_receipt.state": "stale",
+                "knowledge_health.verification_receipt.recorded_result": "passed",
+                "knowledge_health.verification_receipt.passed": True,
+            },
+            "stale state is inconsistent",
+        ),
+        (
+            {"knowledge_health.availability.state": "degraded"},
+            "snapshot_parity.state does not match availability",
+        ),
+        (
+            {"knowledge_health.degraded_reasons": ["unexpected"]},
+            "degraded_reasons do not match its sections",
+        ),
+        (
+            {"knowledge_health.unhealthy_reasons": ["unexpected"]},
+            "unhealthy_reasons do not match its sections",
+        ),
+    ],
+)
+def test_ci_report_validator_rejects_incoherent_doctor_sections(
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    payload = _ready_ci_payload()
+    for path, value in changes.items():
+        _set_nested(payload, path, value)
+
+    with pytest.raises(ci_report.CiCheckReportError, match=message):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_doctor_validator_rejects_evaluated_absent_knowledge() -> None:
+    payload = ci_report.build_ci_check_payload(
+        LintReport(wiki_dir="missing-wiki", src_dir=".", strict=True)
+    )
+    health = payload["knowledge_health"]
+    assert isinstance(health, dict)
+    freshness = health["freshness"]
+    drift = health["drift"]
+    assert isinstance(freshness, dict)
+    assert isinstance(drift, dict)
+    freshness.update(
+        evaluated=True,
+        concepts=0,
+        counts_by_state={state: 0 for state in ci_report._FRESHNESS_STATES},
+    )
+    drift.update(
+        state="current",
+        counts_by_state={state: 0 for state in ci_report._FRESHNESS_STATES},
+    )
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="unavailable knowledge has evaluated freshness",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_doctor_validator_rejects_absent_section_contradictions() -> None:
+    payload = ci_report.build_ci_check_payload(
+        LintReport(wiki_dir="missing-wiki", src_dir=".", strict=True)
+    )
+    health = payload["knowledge_health"]
+    assert isinstance(health, dict)
+    governance = health["governance"]
+    assert isinstance(governance, dict)
+    governance.update(
+        state="valid",
+        ledger="valid",
+        projection="not-present",
+    )
+
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="absent availability contradicts its sections",
+    ):
+        ci_report.validate_ci_check_payload(payload, cli_exit=0)
+
+
+def test_ci_report_strict_loader_accepts_only_regular_canonical_json(
+    tmp_path: Path,
+) -> None:
+    payload = _ready_ci_payload()
+    report_path = tmp_path / "report.json"
+    report_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert ci_report.load_ci_check_payload(report_path, cli_exit=0) == payload
+
+    invalid_path = tmp_path / "not-a-file"
+    invalid_path.mkdir()
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="report path must be a regular file",
+    ):
+        ci_report.load_ci_check_payload(invalid_path, cli_exit=0)
+
+    invalid_utf8 = tmp_path / "invalid-utf8.json"
+    invalid_utf8.write_bytes(b"\xff")
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="report is not strict UTF-8 JSON",
+    ):
+        ci_report.load_ci_check_payload(invalid_utf8, cli_exit=0)
+
+    malformed = tmp_path / "malformed.json"
+    malformed.write_text("{", encoding="utf-8")
+    with pytest.raises(
+        ci_report.CiCheckReportError,
+        match="report is not strict UTF-8 JSON",
+    ):
+        ci_report.load_ci_check_payload(malformed, cli_exit=0)
+
+
+@pytest.mark.parametrize(
+    ("raw", "message"),
+    [
+        ('{"duplicate": 1, "duplicate": 2}', "duplicate object key"),
+        ('{"value": NaN}', "non-finite JSON number"),
+    ],
+)
+def test_ci_report_strict_loader_rejects_ambiguous_json(
+    tmp_path: Path,
+    raw: str,
+    message: str,
+) -> None:
+    report_path = tmp_path / "report.json"
+    report_path.write_text(raw, encoding="utf-8")
+
+    with pytest.raises(ci_report.CiCheckReportError, match=message):
+        ci_report.load_ci_check_payload(report_path, cli_exit=0)
+
+
+def test_ci_summary_renders_validated_health_and_bounded_dirty_paths() -> None:
+    payload = _ready_ci_payload()
+    summary = _render_summary(payload).decode("utf-8")
+
+    assert "- Result: **PASS**" in summary
+    assert "- Knowledge health: `healthy`" in summary
+    assert "- Freshness: `evaluated (6 concepts)`" in summary
+    assert "- Snapshot / governance: `valid` / `not-present`" in summary
+    assert "- Drift: `current` (confirmed=0, indeterminate=0)" in summary
+
+    long_record = ("a" * 236 + "€" * 3).encode()
+    failure = _render_summary(
+        None,
+        result="FAIL",
+        cli_exit=1,
+        json_state="unavailable (no output)",
+        markdown_state="unavailable",
+        tree_state="dirty (3 status records)",
+        status_records=[b"M path`with-mark\xff", long_record, b"third"],
+        status_count=3,
+        status_limit=2,
+    ).decode("utf-8")
+
+    assert "Original `ci-check` exit: `1`" in failure
+    assert "Knowledge health: `unavailable`" in failure
+    assert r"path\x60with-mark\xff" in failure
+    assert "... 1 additional status records omitted" in failure
+    assert "a" * 100 in failure
+
+
+@pytest.mark.parametrize(
+    ("report", "changes", "message"),
+    [
+        (None, {"result": "NOPE"}, "result must be PASS or FAIL"),
+        (None, {"cli_exit": True}, "cli_exit must be a non-negative integer"),
+        (None, {"json_state": "unknown"}, "json_state is unsupported"),
+        (None, {"markdown_state": "missing"}, "markdown_state is unsupported"),
+        (
+            None,
+            {"tree_state": "dirty (1 status records)"},
+            "tree_state does not match status_count",
+        ),
+        (
+            None,
+            {
+                "tree_state": "unavailable",
+                "status_count": 1,
+                "status_records": [b"M file"],
+            },
+            "unavailable tree state must not carry records",
+        ),
+        (None, {"status_limit": 21}, "status_limit exceeds the frozen bound"),
+        (None, {"max_lines": 41}, "summary bounds exceed the frozen limits"),
+        (
+            None,
+            {"status_count": 1, "tree_state": "dirty (1 status records)"},
+            "status_count does not match the status records",
+        ),
+        (
+            "ready",
+            {"cli_exit": 0, "result": "FAIL"},
+            "validated report and JSON evidence state disagree",
+        ),
+        (None, {"result": "PASS"}, "result does not match the validated evidence"),
+        (None, {"max_lines": 1}, "bounded summary invariant failed"),
+    ],
+)
+def test_ci_summary_rejects_incoherent_or_unbounded_evidence(
+    report: str | None,
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    resolved_report = _ready_ci_payload() if report == "ready" else None
+    defaults = {
+        "result": "FAIL",
+        "cli_exit": 1,
+        "json_state": "unavailable (no output)",
+        "markdown_state": "unavailable",
+        "tree_state": "clean",
+    }
+    defaults.update(changes)
+
+    with pytest.raises(ci_report.CiCheckReportError, match=message):
+        _render_summary(resolved_report, **defaults)
+
+
+def test_ci_report_internal_cli_validates_and_renders_summary(tmp_path: Path) -> None:
+    payload = _ready_ci_payload()
+    report_path = tmp_path / "report.json"
+    report_path.write_text(json.dumps(payload), encoding="utf-8")
+    status_path = tmp_path / "status"
+    status_path.write_bytes(b"")
+    output_path = tmp_path / "summary.md"
+
+    assert (
+        ci_report.main(
+            [
+                "validate",
+                "--report",
+                str(report_path),
+                "--cli-exit",
+                "0",
+            ]
+        )
+        == 0
+    )
+    assert (
+        ci_report.main(
+            [
+                "render-summary",
+                "--report",
+                str(report_path),
+                "--cli-exit",
+                "0",
+                "--result",
+                "PASS",
+                "--json-state",
+                "available (validated llm-wiki-ci-check/v1)",
+                "--markdown-state",
+                "available",
+                "--tree-state",
+                "clean",
+                "--status-path",
+                str(status_path),
+                "--status-count",
+                "0",
+                "--status-limit",
+                "20",
+                "--max-lines",
+                "40",
+                "--max-bytes",
+                "8192",
+                "--output",
+                str(output_path),
+            ]
+        )
+        == 0
+    )
+    assert "Result: **PASS**" in output_path.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("unsafe_target", ["status", "output"])
+def test_ci_report_internal_cli_rejects_unsafe_paths(
+    tmp_path: Path,
+    unsafe_target: str,
+) -> None:
+    status_path = tmp_path / "status"
+    if unsafe_target == "output":
+        status_path.write_bytes(b"")
+    output_path = (
+        tmp_path / "missing-parent" / "summary.md"
+        if unsafe_target == "output"
+        else tmp_path / "summary.md"
+    )
+
+    with pytest.raises(SystemExit, match=f"{unsafe_target} path"):
+        ci_report.main(
+            [
+                "render-summary",
+                "--cli-exit",
+                "1",
+                "--result",
+                "FAIL",
+                "--json-state",
+                "unavailable (no output)",
+                "--markdown-state",
+                "unavailable",
+                "--tree-state",
+                "clean" if unsafe_target == "output" else "unavailable",
+                "--status-path",
+                str(status_path),
+                "--status-count",
+                "0",
+                "--status-limit",
+                "20",
+                "--max-lines",
+                "40",
+                "--max-bytes",
+                "8192",
+                "--output",
+                str(output_path),
+            ]
+        )
