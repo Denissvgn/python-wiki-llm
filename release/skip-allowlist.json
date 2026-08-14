@@ -2312,7 +2312,7 @@
     },
     {
       "lane": "core-windows-3.13",
-      "node_id": "tests/test_status.py::TestStatusCommand::test_exact_managed_hook_without_execute_bit_is_reported_broken",
+      "node_id": "tests/test_status.py::TestStatusHooks::test_exact_managed_hook_without_execute_bit_is_reported_broken",
       "owner_lane": "core-ubuntu-3.10",
       "reason": "Windows does not expose a POSIX hook execute-bit contract"
     },

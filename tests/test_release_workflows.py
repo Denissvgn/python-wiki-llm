@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -20,6 +21,23 @@ ROOT = Path(__file__).parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 WIKI_CI_WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
 REMOTE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+
+
+def _test_definitions(relative_path: str) -> set[tuple[str | None, str]]:
+    tree = ast.parse((ROOT / relative_path).read_text(encoding="utf-8"))
+    definitions: set[tuple[str | None, str]] = set()
+    function_types = (ast.FunctionDef, ast.AsyncFunctionDef)
+    for node in tree.body:
+        if isinstance(node, function_types) and node.name.startswith("test_"):
+            definitions.add((None, node.name))
+        elif isinstance(node, ast.ClassDef):
+            definitions.update(
+                (node.name, member.name)
+                for member in node.body
+                if isinstance(member, function_types)
+                and member.name.startswith("test_")
+            )
+    return definitions
 
 
 def _yaml(name: str) -> dict:
@@ -1395,6 +1413,29 @@ def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
     assert "verify_installed_knowledge_schema.py" in validation["run"]
 
 
+def test_committed_skip_contract_nodes_resolve_to_test_definitions() -> None:
+    payload = json.loads(
+        (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")
+    )
+    definitions_by_path: dict[str, set[tuple[str | None, str]]] = {}
+    unresolved: list[str] = []
+    for entry in payload["entries"]:
+        node_id = entry["node_id"]
+        components = node_id.split("::")
+        assert len(components) in {2, 3}, node_id
+        relative_path = components[0]
+        definitions = definitions_by_path.get(relative_path)
+        if definitions is None:
+            definitions = _test_definitions(relative_path)
+            definitions_by_path[relative_path] = definitions
+        owner = components[1] if len(components) == 3 else None
+        test_name = components[-1].split("[", 1)[0]
+        if (owner, test_name) not in definitions:
+            unresolved.append(node_id)
+
+    assert unresolved == []
+
+
 def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -> None:
     payload = json.loads(
         (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")
@@ -1559,7 +1600,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
             "test_fifo_schema_is_rejected_by_stat_without_opening",
             "tests/test_provisioning_failures.py::"
             "test_init_revalidates_schema_after_reference_provision[fifo]",
-            "tests/test_status.py::TestStatusCommand::"
+            "tests/test_status.py::TestStatusHooks::"
             "test_exact_managed_hook_without_execute_bit_is_reported_broken",
         }
     ]
@@ -1583,7 +1624,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
         ),
         (
             "core-windows-3.13",
-            "tests/test_status.py::TestStatusCommand::"
+            "tests/test_status.py::TestStatusHooks::"
             "test_exact_managed_hook_without_execute_bit_is_reported_broken",
             "core-ubuntu-3.10",
             "Windows does not expose a POSIX hook execute-bit contract",
