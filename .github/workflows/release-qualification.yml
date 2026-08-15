@@ -70,13 +70,24 @@ jobs:
           WORKFLOW_PREFIX: ${{ github.repository }}/.github/workflows/release-qualification.yml@
         run: |
           set -euo pipefail
-          test "${WORKFLOW_EVENT}" = "workflow_dispatch"
-          test "${WORKFLOW_SHA}" = "${CANDIDATE_SHA}"
+          refuse() {
+            echo "release qualification refused to start: $1" >&2
+            exit 1
+          }
+          if [ "${WORKFLOW_EVENT}" != "workflow_dispatch" ]; then
+            refuse "event is ${WORKFLOW_EVENT}; qualification runs only from workflow_dispatch"
+          fi
+          # The definition that qualifies a candidate must come from the
+          # candidate itself, so a commit can never be qualified by workflow
+          # code it does not contain. GitHub reads this file from the tip of the
+          # dispatched branch, so that tip has to be the candidate commit.
+          if [ "${WORKFLOW_SHA}" != "${CANDIDATE_SHA}" ]; then
+            refuse "this workflow definition came from ${WORKFLOW_SHA} but candidate-sha is ${CANDIDATE_SHA}. Re-dispatch from a branch whose tip is exactly ${CANDIDATE_SHA}, or pass that branch tip as candidate-sha"
+          fi
           case "${WORKFLOW_REF}" in
             "${WORKFLOW_PREFIX}"refs/heads/*) ;;
             *)
-              echo "qualification workflow must run from a full branch ref" >&2
-              exit 1
+              refuse "must run from a full branch ref, got ${WORKFLOW_REF}"
               ;;
           esac
           git check-ref-format "${WORKFLOW_REF#"${WORKFLOW_PREFIX}"}"
