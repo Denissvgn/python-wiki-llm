@@ -96,7 +96,7 @@ sequenceDiagram
     p10->>p5: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 2584 interactions; 2554 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2608 interactions; 2578 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -162,35 +162,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path | 2988 | `Path(args.wiki_dir)` |
-| run | getattr | 2989 | `getattr(args, 'src_dir', '.')` |
-| run | bool | 2990 | `bool(getattr(...))` |
-| run | getattr | 2991 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool | 2993 | `bool(...)` |
-| run | getattr | 2993 | `getattr(args, 'strict', False)` |
-| run | bool | 2994 | `bool(getattr(...))` |
-| run | getattr | 2994 | `getattr(args, 'profile', False)` |
-| run | bool | 2995 | `bool(getattr(...))` |
-| run | getattr | 2995 | `getattr(args, 'cache_stats', False)` |
-| run | bool | 2996 | `bool(getattr(...))` |
+| run | Path | 3056 | `Path(args.wiki_dir)` |
+| run | getattr | 3057 | `getattr(args, 'src_dir', '.')` |
+| run | bool | 3058 | `bool(getattr(...))` |
+| run | getattr | 3059 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool | 3061 | `bool(...)` |
+| run | getattr | 3061 | `getattr(args, 'strict', False)` |
+| run | bool | 3062 | `bool(getattr(...))` |
+| run | getattr | 3062 | `getattr(args, 'profile', False)` |
+| run | bool | 3063 | `bool(getattr(...))` |
+| run | getattr | 3063 | `getattr(args, 'cache_stats', False)` |
+| run | bool | 3064 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3033 |
-| output | `print` | `run` | 3036 |
-| output | `print` | `run` | 3044 |
+| output | `print` | `run` | 3101 |
+| output | `print` | `run` | 3104 |
+| output | `print` | `run` | 3112 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 2989 |
-| unresolved_call | `run` | `getattr` | 2991 |
-| unresolved_call | `run` | `getattr` | 2993 |
-| unresolved_call | `run` | `getattr` | 2994 |
-| unresolved_call | `run` | `getattr` | 2995 |
+| unresolved_call | `run` | `getattr` | 3057 |
+| unresolved_call | `run` | `getattr` | 3059 |
+| unresolved_call | `run` | `getattr` | 3061 |
+| unresolved_call | `run` | `getattr` | 3062 |
+| unresolved_call | `run` | `getattr` | 3063 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

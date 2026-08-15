@@ -1,6 +1,6 @@
 # _LintProfiler
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:181`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:182`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)

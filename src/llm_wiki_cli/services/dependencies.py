@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Callable, Mapping, Optional
 
 from ..config import is_agent_worktree_path
+from ..extractors.common import executes_at_import
 from .dependency_versions import build_dependency_version_details
 from .imports import build_module_path_resolver
 from .source_snapshot import SourceSnapshot, build_source_snapshot
@@ -135,13 +136,19 @@ def build_dependency_graph(
     ``(from_file, to_file)`` edges (self-edges excluded, de-duplicated); imports
     that resolve to no internal file land in ``unresolved``.
 
-    Returns ``{"edges": [(from_file, to_file), ...], "nodes": [...],
-    "unresolved": [{"file", "module", "name"}, ...]}`` with every list stably
-    ordered. A supported code-language inventory entry that has no ``imports``
-    field still appears as an isolated node. Entries that explicitly provide an
-    ``imports`` field retain the legacy node contract regardless of language;
-    unknown, untyped, and non-mapping entries without that field contribute no
-    nodes or edges and never raise.
+    Returns ``{"edges": [(from_file, to_file), ...], "import_time_edges": [...],
+    "nodes": [...], "unresolved": [{"file", "module", "name"}, ...]}`` with every
+    list stably ordered. ``edges`` is every resolvable import, which is the
+    coupling view used for fan-in/fan-out and impact analysis;
+    ``import_time_edges`` is the subset that actually runs when a module loads,
+    which is the view load order and cycle detection need. An import record with
+    no ``scope`` counts as import-time, so inventories from extractors that do
+    not classify imports keep the historical behavior of the two being equal.
+    A supported code-language inventory entry that has no ``imports`` field still
+    appears as an isolated node. Entries that explicitly provide an ``imports``
+    field retain the legacy node contract regardless of language; unknown,
+    untyped, and non-mapping entries without that field contribute no nodes or
+    edges and never raise.
     """
     resolver = build_module_path_resolver(
         inventory,
@@ -151,6 +158,7 @@ def build_dependency_graph(
     symbol_index = _build_symbol_file_index(inventory)
 
     edges: set[tuple[str, str]] = set()
+    import_time_edges: set[tuple[str, str]] = set()
     unresolved: list[dict] = []
     nodes: set[str] = set()
 
@@ -184,6 +192,8 @@ def build_dependency_graph(
             for target in targets:
                 if target != filepath:
                     edges.add((filepath, target))
+                    if executes_at_import(imp):
+                        import_time_edges.add((filepath, target))
 
     for source, target in edges:
         nodes.add(source)
@@ -191,6 +201,7 @@ def build_dependency_graph(
 
     return {
         "edges": sorted(edges),
+        "import_time_edges": sorted(import_time_edges),
         "nodes": sorted(nodes),
         "unresolved": sorted(
             unresolved, key=lambda u: (u["file"], u["module"], u["name"])
@@ -468,12 +479,26 @@ def build_external_dependency_observations(analysis: Mapping) -> list[dict]:
 # Cycle detection
 
 
-def _build_adjacency(graph: dict) -> tuple[dict[str, list[str]], set[str], set[str]]:
+def graph_edges(graph: Mapping, *, import_time_only: bool = False) -> list:
+    """Return a graph's edge list, optionally restricted to import-time edges.
+
+    A graph built before imports carried a scope has no ``import_time_edges``
+    key; it falls back to ``edges`` so every caller keeps working and no edge is
+    silently dropped just because the producer could not classify it.
+    """
+    if import_time_only and "import_time_edges" in graph:
+        return graph["import_time_edges"]
+    return graph.get("edges", [])
+
+
+def _build_adjacency(
+    graph: dict, *, import_time_only: bool = False
+) -> tuple[dict[str, list[str]], set[str], set[str]]:
     """Return ``(adjacency, nodes, self_loops)`` from a dependency graph."""
     nodes: set[str] = set(graph.get("nodes", []))
     adjacency: defaultdict[str, set[str]] = defaultdict(set)
     self_loops: set[str] = set()
-    for source, target in graph.get("edges", []):
+    for source, target in graph_edges(graph, import_time_only=import_time_only):
         nodes.add(source)
         nodes.add(target)
         if source == target:
@@ -483,7 +508,7 @@ def _build_adjacency(graph: dict) -> tuple[dict[str, list[str]], set[str], set[s
     return ({k: sorted(v) for k, v in adjacency.items()}, nodes, self_loops)
 
 
-def detect_cycles(graph: dict) -> list[list[str]]:
+def detect_cycles(graph: dict, *, import_time_only: bool = False) -> list[list[str]]:
     """Return the import cycles in *graph* as sorted node lists.
 
     Computes strongly-connected components (iterative Tarjan, so deep graphs
@@ -491,8 +516,16 @@ def detect_cycles(graph: dict) -> list[list[str]]:
     explicit self-loop, as a cycle. Each cycle is a sorted node list and the
     list of cycles is itself deterministically ordered; an acyclic graph returns
     ``[]``.
+
+    With *import_time_only*, deferred and ``TYPE_CHECKING`` imports are excluded,
+    which is what a load-order cycle means: a group whose members cannot be
+    ordered because each already needs the others while it is still loading. A
+    package that reaches a sibling only from inside a function, or only under a
+    typing guard, has no such constraint and is not a cycle.
     """
-    adjacency, nodes, self_loops = _build_adjacency(graph)
+    adjacency, nodes, self_loops = _build_adjacency(
+        graph, import_time_only=import_time_only
+    )
 
     indices: dict[str, int] = {}
     lowlink: dict[str, int] = {}
@@ -582,7 +615,7 @@ def dependency_metrics(graph: dict) -> dict:
 
 
 def _condense(
-    graph: dict,
+    graph: dict, *, import_time_only: bool = False
 ) -> tuple[dict[str, str], dict[str, list[str]], list[list[str]]]:
     """Condense the graph's strongly-connected components into super-nodes.
 
@@ -592,13 +625,15 @@ def _condense(
     multi-module SCCs whose internal load order is indeterminate.
     """
     nodes: set[str] = set(graph.get("nodes", []))
-    for source, target in graph.get("edges", []):
+    for source, target in graph_edges(graph, import_time_only=import_time_only):
         nodes.add(source)
         nodes.add(target)
 
     node_to_component: dict[str, str] = {}
     components: dict[str, list[str]] = {}
-    for cycle in detect_cycles(graph):  # SCCs (size > 1) and explicit self-loops
+    for cycle in detect_cycles(  # SCCs (size > 1) and explicit self-loops
+        graph, import_time_only=import_time_only
+    ):
         representative = cycle[0]  # cycles are sorted, so this is the smallest
         components[representative] = list(cycle)
         for node in cycle:
@@ -613,7 +648,7 @@ def _condense(
     return node_to_component, components, cycle_groups
 
 
-def topological_order(graph: dict) -> dict:
+def topological_order(graph: dict, *, import_time_only: bool = False) -> dict:
     """Order modules so each loads after the internal modules it imports.
 
     Strongly-connected components (import cycles) are condensed into single
@@ -624,13 +659,19 @@ def topological_order(graph: dict) -> dict:
     [[files...]]}`` where each cyclic group is surfaced (its members listed
     sorted and adjacent) rather than silently dropped, since their relative load
     order is indeterminate. Deterministic; isolated modules still appear.
+
+    *import_time_only* restricts the ordering to imports that run while a module
+    loads, which is the only constraint a load order expresses; deferred and
+    ``TYPE_CHECKING`` imports impose none.
     """
-    node_to_component, components, cycle_groups = _condense(graph)
+    node_to_component, components, cycle_groups = _condense(
+        graph, import_time_only=import_time_only
+    )
 
     # Condensed dependency edges: for importer→imported, the imported
     # component must load before the importer component.
     adjacency: defaultdict[str, set[str]] = defaultdict(set)
-    for importer, imported in graph.get("edges", []):
+    for importer, imported in graph_edges(graph, import_time_only=import_time_only):
         src, dst = node_to_component[imported], node_to_component[importer]
         if src != dst:
             adjacency[src].add(dst)
@@ -2337,9 +2378,21 @@ def _scope_label(scope: Optional[_ManifestScope]) -> str | None:
     return scope.root
 
 
+def _scope_was_scanned(scope: _ManifestScope, scanned_files: frozenset[str]) -> bool:
+    """Whether any extracted source file for this language sits under *scope*.
+
+    "Declared but not imported" is only meaningful when the importing code was
+    actually read. A manifest whose sources were never extracted — excluded from
+    project-source discovery, or skipped because its toolchain is not installed —
+    would otherwise report every one of its declared dependencies as unused.
+    """
+    return any(_path_under_scope(path, scope.root) for path in scanned_files)
+
+
 def _reconcile_scoped_language(
     used_packages: dict[str, list[str]],
     manifest: Optional[_Manifest],
+    scanned_files: frozenset[str] = frozenset(),
 ) -> dict:
     if manifest is None:
         return {
@@ -2353,6 +2406,7 @@ def _reconcile_scoped_language(
                 for package, files in sorted(used_packages.items())
             ],
             "unused_details": [],
+            "unscanned_scopes": [],
         }
 
     nearest_cache: dict[str, Optional[_ManifestScope]] = {}
@@ -2376,7 +2430,12 @@ def _reconcile_scoped_language(
 
     unused: set[str] = set()
     unused_scopes: defaultdict[str, set[str | None]] = defaultdict(set)
+    unscanned_scopes: set[str] = set()
     for scope in manifest.scopes:
+        if not _scope_was_scanned(scope, scanned_files):
+            if scope.required:
+                unscanned_scopes.add(scope.root)
+            continue
         for package in scope.required:
             files = used_packages.get(package, [])
             if not any(nearest(filepath) == scope for filepath in files):
@@ -2415,6 +2474,7 @@ def _reconcile_scoped_language(
             }
             for package in sorted(unused)
         ],
+        "unscanned_scopes": sorted(unscanned_scopes),
     }
 
 
@@ -2842,6 +2902,23 @@ def _unresolved_path_aliases_by_language(
     }
 
 
+def _scanned_files_by_language_key(inventory: dict) -> dict[str, frozenset[str]]:
+    """Group extracted file paths by the reconciler's canonical language key.
+
+    Keyed the same way manifests are (``typescript`` covers JavaScript), so a
+    scope can be tested against the files that were actually read for it.
+    """
+    grouped: defaultdict[str, set[str]] = defaultdict(set)
+    for filepath, data in inventory.items():
+        if not isinstance(data, Mapping):
+            continue
+        language = data.get("language")
+        plugin = _PLUGIN_BY_LANGUAGE.get(language) if isinstance(language, str) else None
+        if plugin is not None:
+            grouped[plugin.key].add(filepath)
+    return {key: frozenset(paths) for key, paths in grouped.items()}
+
+
 def reconcile_dependencies(
     inventory: dict,
     project_root: str = ".",
@@ -2856,8 +2933,13 @@ def reconcile_dependencies(
     used`` (extras/dev/build dependencies are never "unused"). Returns
     ``{"languages": {language: {"used", "required", "optional", "undeclared",
     "unused"}}, "summary": {...}}``; ``used`` maps each package to its importing
-    files. Tolerant of a missing manifest (all used → undeclared) or missing
-    imports (all required → unused); never raises.
+    files. Tolerant of a missing manifest (all used → undeclared); never raises.
+
+    A manifest whose sources were never extracted yields no "unused" verdicts —
+    absence of imports there is absence of evidence, not evidence of absence. It
+    happens whenever a manifest sits outside project-source discovery or its
+    toolchain is unavailable, and the skipped manifest roots are reported in
+    ``unscanned_scopes`` so the suppression is visible rather than silent.
     """
     if graph is None:
         graph = build_dependency_graph(
@@ -2878,12 +2960,15 @@ def reconcile_dependencies(
         source_snapshot,
     )
 
+    scanned_by_key = _scanned_files_by_language_key(inventory)
+
     languages: dict[str, dict] = {}
     for key in sorted(set(used) | set(manifests) | set(path_aliases)):
         used_packages = used.get(key, {})
+        scanned_files = scanned_by_key.get(key, frozenset())
         if key in {"go", "haskell", "python", "typescript"}:
             languages[key] = _reconcile_scoped_language(
-                used_packages, manifests.get(key)
+                used_packages, manifests.get(key), scanned_files
             )
             languages[key]["path_aliases"] = path_aliases.get(key, {})
             _attach_versions(languages[key], versions_by_language.get(key, {}))
@@ -2892,13 +2977,17 @@ def reconcile_dependencies(
         manifest = manifests.get(key)
         required = manifest.required if manifest else frozenset()
         optional = manifest.optional if manifest else frozenset()
+        # An unscoped language carries a single implicit scope at the manifest
+        # root, so "nothing scanned" is the whole language rather than one root.
+        scanned_language = bool(scanned_files)
         languages[key] = {
             "used": used_packages,
             "required": sorted(required),
             "optional": sorted(optional),
             "undeclared": sorted(used_names - required - optional),
-            "unused": sorted(required - used_names),
+            "unused": sorted(required - used_names) if scanned_language else [],
             "path_aliases": path_aliases.get(key, {}),
+            "unscanned_scopes": [] if scanned_language or not required else [""],
         }
         _attach_versions(languages[key], versions_by_language.get(key, {}))
 
@@ -2934,19 +3023,34 @@ def analyze_dependencies(
     external reconciliation, then pairs it with module-level side effects. The
     page generators, ``sync`` regeneration, and the ``extract`` block all consume
     this one bundle so the graph is never rebuilt per consumer. Returns
-    ``{"graph", "cycles", "metrics", "load_order", "side_effects",
-    "reconciliation"}``; deterministic and never raises on slim inventories.
+    ``{"graph", "cycles", "deferred_cycles", "metrics", "load_order",
+    "side_effects", "reconciliation"}``; deterministic and never raises on slim
+    inventories.
+
+    ``cycles`` and ``load_order`` describe module load: they use only imports
+    that run at import time, so a group joined solely by lazy or
+    ``TYPE_CHECKING`` imports is not reported as a cycle whose order is
+    indeterminate — it has a valid order. Those groups are kept separately in
+    ``deferred_cycles`` so the information is surfaced rather than dropped.
+    ``metrics`` stays on the full edge set, since fan-in/fan-out measures
+    coupling and a lazy import is still a real dependency.
     """
     graph = build_dependency_graph(
         inventory,
         project_root,
         source_snapshot=source_snapshot,
     )
+    cycles = detect_cycles(graph, import_time_only=True)
+    import_time_groups = {tuple(cycle) for cycle in cycles}
+    deferred_cycles = [
+        cycle for cycle in detect_cycles(graph) if tuple(cycle) not in import_time_groups
+    ]
     return {
         "graph": graph,
-        "cycles": detect_cycles(graph),
+        "cycles": cycles,
+        "deferred_cycles": deferred_cycles,
         "metrics": dependency_metrics(graph),
-        "load_order": topological_order(graph),
+        "load_order": topological_order(graph, import_time_only=True),
         "side_effects": detect_side_effects(inventory),
         "reconciliation": reconcile_dependencies(
             inventory,

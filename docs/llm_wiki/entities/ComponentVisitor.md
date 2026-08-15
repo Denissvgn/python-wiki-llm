@@ -1,6 +1,6 @@
 # ComponentVisitor
 
-**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:897`
+**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1034`
 **Kind:** Class
 **Bases:** `ast.NodeVisitor`
 **Module:** [python_extractor](../modules/python_extractor.md)
@@ -18,6 +18,7 @@ _Auto-generated from `ComponentVisitor` in `src/llm_wiki_cli/extractors/python_e
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__init__` | `(deep: bool = False, module_globals: set[str] \| None = None, module_import_aliases: dict[str, str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None)` | — | — |
+| `_import_scope` | `() -> str` | — | Classify where an import sits, or ``""`` when it runs at import time. |
 | `_record_import` | `(record: dict, node: ast.Import \| ast.ImportFrom) -> None` | — | Retain the legacy import shape and optional source-location sidecar. |
 | `visit_Import` | `(node)` | — | — |
 | `visit_ImportFrom` | `(node)` | — | — |
@@ -27,7 +28,8 @@ _Auto-generated from `ComponentVisitor` in `src/llm_wiki_cli/extractors/python_e
 | `visit_Assign` | `(node)` | — | Detect module-level UPPER_CASE constants and ``__all__``. |
 | `visit_AnnAssign` | `(node)` | — | Detect explicit PEP 613 module-level type aliases. |
 | `visit_TypeAlias` | `(node)` | — | Detect PEP 695 aliases when the running Python parser supports them. |
-| `visit_If` | `(node)` | — | Detect a module-level ``if __name__ == "__main__"`` entry guard. |
+| `visit_Module` | `(node)` | — | Seed the ``TYPE_CHECKING`` aliases before walking the module body. |
+| `visit_If` | `(node)` | — | Detect the ``__main__`` entry guard and the ``TYPE_CHECKING`` guard. |
 
 ## Relationships
 
@@ -50,7 +52,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [python_extractor](../modules/python_extractor.md) | 11 | — |
+| [python_extractor](../modules/python_extractor.md) | 13 | — |
 
 ### Structure
 

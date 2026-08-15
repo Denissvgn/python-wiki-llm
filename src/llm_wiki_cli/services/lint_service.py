@@ -133,6 +133,7 @@ from .bootstrap_runtime import (
     build_module_page_map,
 )
 from .extraction_service import (
+    ExtractorStatus,
     InventoryResult,
     get_call_graph,
     get_docker_inventory,
@@ -1260,14 +1261,53 @@ def _check_entity_coverage(
             )
 
 
+def _extracted_source_files(
+    source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus]
+) -> set[str]:
+    """Project-source files whose language the extractor actually ran on.
+
+    A language whose extractor was skipped or failed is left out: its files are
+    reported by the unsupported-source and extractor-failure checks instead, so
+    they must not also surface as missing wiki coverage.
+    """
+    extracted: set[str] = set()
+    for language, status in statuses.items():
+        if status.state != "ok":
+            continue
+        for source_file in source_snapshot.files_by_language.get(language, ()):
+            extracted.add(source_file.rel_path)
+    return extracted
+
+
 def _check_module_coverage(
-    report: LintReport, wiki_path: Path, deep_inventory: dict
+    report: LintReport,
+    wiki_path: Path,
+    deep_inventory: dict,
+    source_snapshot: SourceSnapshot,
+    statuses: Mapping[str, ExtractorStatus],
 ) -> None:
     documented_modules = _collect_documented_modules(wiki_path)
     code_modules = _inventory_code_modules(deep_inventory)
 
     undoc_mods = code_modules - documented_modules
     stale_mods = documented_modules - code_modules
+
+    # Comparing the wiki against the inventory alone cannot detect a source file
+    # the extractor dropped, because such a file is absent from both sides. The
+    # source snapshot is the independent list of what was in scope, so the gap
+    # between "scanned" and "in the inventory" is measured against it instead.
+    uncovered = sorted(
+        _extracted_source_files(source_snapshot, statuses) - set(deep_inventory)
+    )
+    for rel_path in uncovered:
+        _diagnose(
+            report,
+            "uncovered_source_files",
+            "Scanned source file produced no module entry, so it has no wiki "
+            f"page: {rel_path}",
+            path=rel_path,
+            target=rel_path,
+        )
 
     if undoc_mods:
         for name in sorted(undoc_mods):
@@ -1539,6 +1579,16 @@ def _check_dependency_coverage(
                 f"Unused {language} dependency "
                 f"(declared, not imported): {package}{suffix}",
                 target=package,
+            )
+        for scope_root in data.get("unscanned_scopes", []) or []:
+            scope = _format_dependency_scope(scope_root or None)
+            _diagnose(
+                report,
+                "unscanned_manifest_scopes",
+                f"Skipped unused-dependency analysis for the {language} manifest "
+                f"scope {scope}: it declares dependencies but no source file "
+                "under it was extracted",
+                target=scope_root or language,
             )
         for module, files in sorted((data.get("path_aliases") or {}).items()):
             locations = ", ".join(files)
@@ -2353,7 +2403,13 @@ def _run_report_checks(
     with _profile_phase(profiler, "entities"):
         _check_entity_coverage(report, wiki_path, inputs.deep_inventory)
     with _profile_phase(profiler, "modules"):
-        _check_module_coverage(report, wiki_path, inputs.deep_inventory)
+        _check_module_coverage(
+            report,
+            wiki_path,
+            inputs.deep_inventory,
+            inputs.source_snapshot,
+            inputs.inventory_result.statuses,
+        )
     with _profile_phase(profiler, "workflows"):
         _check_workflow_coverage(
             report, wiki_path, inputs.deep_inventory, inputs.page_index
@@ -2830,6 +2886,18 @@ def render_text(report: LintReport) -> str:
         "unused_dependencies",
         "No unused dependencies.",
         "Found {count} unused dependency(ies).",
+        only_if_present=True,
+    )
+    emit_group(
+        "unscanned_manifest_scopes",
+        "No unscanned manifest scopes.",
+        "Skipped unused-dependency analysis for {count} manifest scope(s).",
+        only_if_present=True,
+    )
+    emit_group(
+        "uncovered_source_files",
+        "No uncovered source files.",
+        "Found {count} scanned source file(s) with no module entry.",
         only_if_present=True,
     )
     emit_group(

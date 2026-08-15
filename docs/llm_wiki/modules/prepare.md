@@ -23,7 +23,6 @@ Documentation-run prepare services.
 ## Local dependency map
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
-<!-- Thick arrows (==>) mark edges inside an import cycle. -->
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
@@ -36,39 +35,39 @@ flowchart LR
     n7["src/llm_wiki_cli/services/documentation_run/schema.py"]
     n8["src/llm_wiki_cli/services/documentation_run/workspace.py"]
     n9["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n1 ==> n2
-    n1 ==> n3
-    n1 ==> n4
-    n1 ==> n5
-    n1 ==> n6
-    n1 ==> n7
-    n1 ==> n8
-    n2 ==> n3
-    n2 ==> n7
+    n1 --> n2
+    n1 --> n3
+    n1 --> n4
+    n1 --> n5
+    n1 --> n6
+    n1 --> n7
+    n1 --> n8
+    n2 --> n3
+    n2 --> n7
     n3 --> n9
-    n4 ==> n2
-    n4 ==> n3
-    n4 ==> n7
-    n4 ==> n8
+    n4 --> n2
+    n4 --> n3
+    n4 --> n7
+    n4 --> n8
     n4 --> n9
     n5 --> n0
-    n5 ==> n2
-    n5 ==> n3
-    n5 ==> n4
-    n5 ==> n6
-    n5 ==> n7
-    n5 ==> n8
+    n5 --> n2
+    n5 --> n3
+    n5 --> n4
+    n5 --> n6
+    n5 --> n7
+    n5 --> n8
     n5 --> n9
-    n6 ==> n2
-    n6 ==> n3
-    n6 ==> n4
-    n6 ==> n7
-    n6 ==> n8
-    n7 ==> n2
-    n7 ==> n3
-    n8 ==> n2
-    n8 ==> n3
-    n8 ==> n7
+    n6 --> n2
+    n6 --> n3
+    n6 --> n4
+    n6 --> n7
+    n6 --> n8
+    n7 --> n2
+    n7 --> n3
+    n8 --> n2
+    n8 --> n3
+    n8 --> n7
     click n0 "../modules/bootstrap_runtime.md"
     click n1 "../modules/documentation_run___init__.md"
     click n2 "../modules/documentation_run_contracts.md"

@@ -86,7 +86,7 @@ sequenceDiagram
     p12-->>p10: isinstance
 ```
 
-> Call sequence diagram shows 30 of 1666 interactions; 1636 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1669 interactions; 1639 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

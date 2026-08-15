@@ -26,6 +26,11 @@ def _mod(*imports):
     return {"imports": list(imports)}
 
 
+def _lazy(module, name=None, scope="deferred"):
+    """An import record that does not run when its module loads."""
+    return {**_imp(module, name), "scope": scope}
+
+
 # ── Dependency graph construction ─────────────────────────────────────
 
 
@@ -207,6 +212,7 @@ class TestBuildDependencyGraph:
 
         assert graph == {
             "edges": [],
+            "import_time_edges": [],
             "nodes": ["bundle/main.js"],
             "unresolved": [],
         }
@@ -219,6 +225,7 @@ class TestBuildDependencyGraph:
         # Entirely empty entries must not raise and must not appear as nodes.
         assert build_dependency_graph({"a.py": {}}) == {
             "edges": [],
+            "import_time_edges": [],
             "nodes": [],
             "unresolved": [],
         }
@@ -253,6 +260,13 @@ class TestBuildDependencyObservations:
 
         assert legacy == {
             "edges": [
+                ("app.py", "one/shared.py"),
+                ("app.py", "pkg/target.py"),
+                ("app.py", "two/shared.py"),
+            ],
+            # Unclassified import records execute at import time, so the two
+            # edge views coincide for inventories without a ``scope``.
+            "import_time_edges": [
                 ("app.py", "one/shared.py"),
                 ("app.py", "pkg/target.py"),
                 ("app.py", "two/shared.py"),
@@ -449,6 +463,81 @@ class TestBuildDependencyObservations:
 
 
 # ── Cycle detection ───────────────────────────────────────────────────
+
+
+class TestImportTimeEdges:
+    """Only imports that run at module load constrain load order."""
+
+    def test_deferred_and_type_checking_imports_are_edges_but_not_import_time(self):
+        inventory = {
+            "a.py": _mod(_imp("b"), _lazy("c"), _lazy("d", scope="type_checking")),
+            "b.py": _mod(),
+            "c.py": _mod(),
+            "d.py": _mod(),
+        }
+        graph = build_dependency_graph(inventory)
+        # Coupling keeps every resolvable import: a lazy import is still a
+        # dependency for fan-in/fan-out and impact analysis.
+        assert graph["edges"] == [("a.py", "b.py"), ("a.py", "c.py"), ("a.py", "d.py")]
+        assert graph["import_time_edges"] == [("a.py", "b.py")]
+
+    def test_unclassified_records_stay_import_time(self):
+        graph = build_dependency_graph({"a.py": _mod(_imp("b")), "b.py": _mod()})
+        assert graph["import_time_edges"] == graph["edges"]
+
+    def test_cycle_closed_only_by_a_deferred_import_is_not_a_cycle(self):
+        graph = build_dependency_graph(
+            {
+                "a.py": _mod(_imp("b")),
+                "b.py": _mod(_lazy("a")),
+            }
+        )
+        assert detect_cycles(graph, import_time_only=True) == []
+        # The lazy coupling is still visible in the default view.
+        assert detect_cycles(graph) == [["a.py", "b.py"]]
+
+    def test_cycle_closed_only_by_a_type_checking_import_is_not_a_cycle(self):
+        graph = build_dependency_graph(
+            {
+                "a.py": _mod(_imp("b")),
+                "b.py": _mod(_lazy("a", scope="type_checking")),
+            }
+        )
+        assert detect_cycles(graph, import_time_only=True) == []
+
+    def test_real_import_time_cycle_is_still_reported(self):
+        graph = build_dependency_graph(
+            {
+                "a.py": _mod(_imp("b")),
+                "b.py": _mod(_imp("a")),
+            }
+        )
+        assert detect_cycles(graph, import_time_only=True) == [["a.py", "b.py"]]
+
+    def test_load_order_ignores_deferred_edges(self):
+        graph = build_dependency_graph(
+            {
+                "a.py": _mod(_imp("b")),
+                "b.py": _mod(_lazy("a")),
+            }
+        )
+        result = topological_order(graph, import_time_only=True)
+        assert result["cycle_groups"] == []
+        # b has no import-time dependency, so it loads before its importer.
+        assert result["order"] == ["b.py", "a.py"]
+
+    def test_bundle_separates_real_cycles_from_deferred_ones(self, tmp_path):
+        inventory = {
+            "pkg/a.py": _pymod(_imp("pkg.b", "B")),
+            "pkg/b.py": _pymod(_lazy("pkg.a", "A")),
+        }
+        bundle = analyze_dependencies(inventory, str(tmp_path))
+        assert bundle["cycles"] == []
+        assert bundle["deferred_cycles"] == [["pkg/a.py", "pkg/b.py"]]
+        assert bundle["load_order"]["cycle_groups"] == []
+        # Coupling metrics are unchanged by the load-order distinction.
+        assert bundle["metrics"]["metrics"]["pkg/a.py"]["fan_out"] == 1
+        assert bundle["metrics"]["metrics"]["pkg/b.py"]["fan_out"] == 1
 
 
 class TestDetectCycles:
@@ -778,6 +867,7 @@ class TestAnalyzeDependencies:
         assert set(bundle) == {
             "graph",
             "cycles",
+            "deferred_cycles",
             "metrics",
             "load_order",
             "side_effects",

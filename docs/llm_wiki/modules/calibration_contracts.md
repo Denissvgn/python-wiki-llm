@@ -36,7 +36,6 @@ responsibilities outside the core package.
 ## Local dependency map
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
-<!-- Thick arrows (==>) mark edges inside an import cycle. -->
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/calibration/__init__.py"]
@@ -47,18 +46,18 @@ flowchart LR
     n5["src/llm_wiki_cli/services/validation.py"]
     n6["src/llm_wiki_cli/services/wiki_surface.py"]
     n7["src/llm_wiki_cli/services/wiki_surface_index.py"]
-    n0 ==> n1
-    n0 ==> n2
-    n1 ==> n0
+    n0 --> n1
+    n0 --> n2
+    n1 --> n0
     n1 --> n3
     n1 --> n5
     n1 --> n6
     n1 --> n7
-    n2 ==> n0
-    n2 ==> n1
+    n2 --> n0
+    n2 --> n1
     n2 --> n3
     n2 --> n5
-    n4 ==> n1
+    n4 --> n1
     n4 --> n3
     n4 --> n5
     n4 --> n7

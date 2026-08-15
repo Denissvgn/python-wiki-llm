@@ -10,6 +10,11 @@ thickened), import **Cycles**, a **Fan-in / Fan-out** table, **External
 dependencies** grouped by language, and semantic ``## Notes``.
 Deterministic; degrades cleanly with no cycles or no external deps.
 
+**Cycles** reports only groups that are cyclic while they load. Groups joined
+solely by deferred or ``TYPE_CHECKING`` imports follow, called out as the
+non-problem they are, so a project is not told to fix the lazy boundary it
+deliberately built.
+
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->

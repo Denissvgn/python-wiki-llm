@@ -38,6 +38,7 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `is_agent_worktree_path` |
+| `..extractors.common` | `executes_at_import` |
 | `.dependency_versions` | `build_dependency_version_details` |
 | `.imports` | `build_module_path_resolver` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
@@ -74,7 +75,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (10) |
-| Outbound | `src` (5) |
+| Outbound | `src` (6) |
 
 ### External packages
 
@@ -82,15 +83,15 @@ flowchart LR
 |---|---:|---:|
 | python | 1 | 0 |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ManifestScope](../entities/ManifestScope.md) | 716 | — | A scoped dependency manifest rooted at a project-relative directory. |
-| [_Manifest](../entities/Manifest.md) | 730 | — | A language's declared dependencies, parsed from its manifest. |
-| [_LanguagePlugin](../entities/LanguagePlugin.md) | 752 | — | A manifest parser + import classifier for one language family. |
+| [_ManifestScope](../entities/ManifestScope.md) | 757 | — | A scoped dependency manifest rooted at a project-relative directory. |
+| [_Manifest](../entities/Manifest.md) | 771 | — | A language's declared dependencies, parsed from its manifest. |
+| [_LanguagePlugin](../entities/LanguagePlugin.md) | 793 | — | A manifest parser + import classifier for one language family. |
 
 ## Functions
 
@@ -106,11 +107,12 @@ flowchart LR
 | `_import_location_index` | `(import_observations: Mapping \| None) -> tuple[dict[tuple[str, int], Mapping], bool]` | — | Validate an extractor sidecar without turning bad metadata into evidence. |
 | `build_dependency_observations` | `(inventory: dict, project_root: str \| Path \| None = None, *, source_snapshot: SourceSnapshot \| None = None, import_observations: Mapping \| None = None) -> dict` | — | Return lossless, versioned import-resolution observations. |
 | `build_external_dependency_observations` | `(analysis: Mapping) -> list[dict]` | — | Lift an existing reconciliation report into source/package observations. |
-| `_build_adjacency` | `(graph: dict) -> tuple[dict[str, list[str]], set[str], set[str]]` | — | Return ``(adjacency, nodes, self_loops)`` from a dependency graph. |
-| `detect_cycles` | `(graph: dict) -> list[list[str]]` | — | Return the import cycles in *graph* as sorted node lists. |
+| `graph_edges` | `(graph: Mapping, *, import_time_only: bool = False) -> list` | — | Return a graph's edge list, optionally restricted to import-time edges. |
+| `_build_adjacency` | `(graph: dict, *, import_time_only: bool = False) -> tuple[dict[str, list[str]], set[str], set[str]]` | — | Return ``(adjacency, nodes, self_loops)`` from a dependency graph. |
+| `detect_cycles` | `(graph: dict, *, import_time_only: bool = False) -> list[list[str]]` | — | Return the import cycles in *graph* as sorted node lists. |
 | `dependency_metrics` | `(graph: dict) -> dict` | — | Compute per-module fan-in/fan-out counts and a most-depended ranking. |
-| `_condense` | `(graph: dict) -> tuple[dict[str, str], dict[str, list[str]], list[list[str]]]` | — | Condense the graph's strongly-connected components into super-nodes. |
-| `topological_order` | `(graph: dict) -> dict` | — | Order modules so each loads after the internal modules it imports. |
+| `_condense` | `(graph: dict, *, import_time_only: bool = False) -> tuple[dict[str, str], dict[str, list[str]], list[list[str]]]` | — | Condense the graph's strongly-connected components into super-nodes. |
+| `topological_order` | `(graph: dict, *, import_time_only: bool = False) -> dict` | — | Order modules so each loads after the internal modules it imports. |
 | `_factory_kind` | `(name: str) -> str` | — | Classify a function name as a ``"factory"``, ``"wiring"`` helper, or ``""``. |
 | `detect_side_effects` | `(inventory: dict) -> dict` | — | List import-time side effects and factory/wiring functions per module. |
 | `_python_stdlib` | `() -> frozenset[str]` | — | — |
@@ -174,7 +176,8 @@ flowchart LR
 | `_path_under_scope` | `(filepath: str, scope_root: str) -> bool` | — | — |
 | `_nearest_manifest_scope` | `(manifest: Optional[_Manifest], filepath: str) -> Optional[_ManifestScope]` | — | — |
 | `_scope_label` | `(scope: Optional[_ManifestScope]) -> str \| None` | — | — |
-| `_reconcile_scoped_language` | `(used_packages: dict[str, list[str]], manifest: Optional[_Manifest]) -> dict` | — | — |
+| `_scope_was_scanned` | `(scope: _ManifestScope, scanned_files: frozenset[str]) -> bool` | — | Whether any extracted source file for this language sits under *scope*. |
+| `_reconcile_scoped_language` | `(used_packages: dict[str, list[str]], manifest: Optional[_Manifest], scanned_files: frozenset[str] = frozenset()) -> dict` | — | — |
 | `_python_internal_distribution_uses` | `(inventory: dict, _graph: dict, manifest: Optional[_Manifest]) -> dict[str, list[str]]` | — | — |
 | `_merge_used_packages` | `(used: dict[str, dict[str, list[str]]], language: str, additions: dict[str, list[str]]) -> None` | — | — |
 | `_version_record` | `(version: str, resolved_from: str) -> dict[str, str]` | — | — |
@@ -194,6 +197,7 @@ flowchart LR
 | `_lockfile_versions` | `(project_root: Path, source_snapshot: SourceSnapshot \| None = None) -> dict[str, dict[str, dict[str, str]]]` | — | — |
 | `_attach_versions` | `(report: dict, versions: dict[str, dict[str, str]]) -> None` | — | — |
 | `_unresolved_path_aliases_by_language` | `(inventory: dict, graph: dict) -> dict[str, dict]` | — | — |
+| `_scanned_files_by_language_key` | `(inventory: dict) -> dict[str, frozenset[str]]` | — | Group extracted file paths by the reconciler's canonical language key. |
 | `reconcile_dependencies` | `(inventory: dict, project_root: str = '.', *, graph: Optional[dict] = None, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Reconcile used external imports against declared dependencies per language. |
 | `analyze_dependencies` | `(inventory: dict, project_root: str = '.', *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Run the full dependency analysis once, sharing the internal graph. |
 | `top_level_package` | `(filepath: str) -> str` | — | Return the top-level package of *filepath* (its first path component). |

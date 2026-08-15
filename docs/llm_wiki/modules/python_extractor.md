@@ -12,7 +12,7 @@ Python AST extractor for agent-wiki-cli.
 |--------|---------|
 | `..config` | `build_gitignore_matcher` |
 | `..services.imports` | `build_module_path_resolver` |
-| `.common` | `discover_source_files` |
+| `.common` | `IMPORT_SCOPE_DEFERRED`, `IMPORT_SCOPE_TYPE_CHECKING`, `discover_source_files` |
 | `.fastapi_contracts` | `extract_fastapi_declarations` |
 | `.python_contracts` | `class_kind`, `explicit_type_alias`, `expression_to_str`, `extract_class_attributes`, `extract_enum_attributes`, `extract_model_config`, `extract_parameters`, `extract_validator`, `finalize_inventory_model_kinds`, `finalize_model_kinds`, `inferred_type_alias`, `is_pydantic_model`, `type_alias_record` |
 | `__future__` | `annotations` |
@@ -67,9 +67,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 493 | `ast.NodeVisitor` | — |
-| [ComponentVisitor](../entities/ComponentVisitor.md) | 897 | `ast.NodeVisitor` | — |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1347 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 497 | `ast.NodeVisitor` | — |
+| [ComponentVisitor](../entities/ComponentVisitor.md) | 1034 | `ast.NodeVisitor` | — |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1528 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 
@@ -102,13 +102,20 @@ flowchart LR
 | `_attribute_read_name` | `(node: ast.Attribute) -> str` | — | — |
 | `_write_record` | `(target, global_declarations: set[str]) -> dict \| None` | — | — |
 | `_extract_data_effects` | `(node, params: list[dict], module_globals: set[str], module_import_aliases: dict[str, str], return_annotation: str, *, coverage: dict[str, dict] \| None = None) -> dict` | — | — |
-| `_assign_target_name` | `(targets) -> str` | — | First simple ``Name`` target of an assignment (e.g. ``app`` in |
+| `_assign_target_name` | `(targets) -> str` | — | Name an assignment's target: ``app`` in ``app = Flask(...)``. |
 | `_module_call_record` | `(call: ast.Call, target: str = '') -> dict \| None` | — | Build a module-level side-effect record, optionally with its bound name. |
-| `_extract_module_calls` | `(tree: ast.Module) -> list[dict]` | — | Collect module-scope executable calls (import-time side effects). |
+| `_module_mutation_record` | `(statement: ast.Assign) -> dict \| None` | — | Record an import-time assignment that mutates state outside the module. |
+| `_is_self_module_alias` | `(statement) -> bool` | — | Detect ``sys.modules[__name__] = other`` — a module replacing itself. |
+| `module_alias_target` | `(tree: ast.Module) -> str` | — | Return the module a self-aliasing file redirects to, else ``""``. |
+| `_import_time_body` | `(statement, type_checking_names: set[str]) -> list` | — | Return the nested statements of *statement* that run at import time. |
+| `_collect_module_calls` | `(body, calls: list[dict], type_checking_names: set[str]) -> None` | — | — |
+| `_extract_module_calls` | `(tree: ast.Module) -> list[dict]` | — | Collect module-scope executable side effects (import-time work). |
 | `_extract_function_info` | `(node, deep: bool = False, module_globals: set[str] \| None = None, module_import_aliases: dict[str, str] \| None = None, *, omit_method_receiver: bool = False, data_effect_observations: list[dict] \| None = None, observation_symbol: str \| None = None) -> dict` | — | Extract full function/method info from a FunctionDef or AsyncFunctionDef. |
 | `_extract_class_attributes` | `(node, module_import_aliases: dict[str, str] \| None = None) -> list[dict]` | — | Extract annotated attributes from a class body (Pydantic fields, dataclass fields, etc.). |
 | `_string_list` | `(node) -> list[str]` | — | Return the string constants of a ``List``/``Tuple`` literal (else empty). |
 | `_safe_name_or_attribute` | `(node) -> dict \| None` | — | — |
 | `_safe_constant_value` | `(node) -> dict \| None` | — | Summarize small static constant values without executing user code. |
 | `_is_main_guard` | `(test) -> bool` | — | Detect an ``if __name__ == "__main__"`` test node. |
+| `_collect_type_checking_names` | `(tree: ast.Module) -> set[str]` | — | Names bound to ``typing.TYPE_CHECKING`` anywhere in *tree*. |
+| `_is_type_checking_test` | `(test, names: set[str]) -> bool` | — | Detect an ``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` test. |
 | `_scan_python_files` | `(src_dir: str, deep: bool = False, only_files: list[str] \| None = None, include_empty: bool = False, source_files: list[str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None) -> dict` | — | Scan Python files under *src_dir* and return a raw inventory dict. |

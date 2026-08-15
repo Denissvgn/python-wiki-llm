@@ -5,14 +5,14 @@
         {
           "configuration_hash": "sha256:7109dd992fe5fb5a692c53ba340dc344741cb77cd71082fbf28e97d69e802dc7",
           "id": "llm-wiki/extractor/python",
-          "version": "1.7.0"
+          "version": "1.8.0"
         }
       ],
       "plugins": [],
       "tool": {
         "configuration_hash": "sha256:a80e5eb5cfa0c29d9c66529b073c46169c3869f4ccfa3852bb44b5a88e6bd950",
         "id": "agent-wiki-cli",
-        "version": "1.7.0"
+        "version": "1.8.0"
       }
     },
     "repository": {

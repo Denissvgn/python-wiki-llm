@@ -29,80 +29,23 @@ Persistent inventory cache used by lint and CI validation.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/ci_check_cmd.py"]
-    n1["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/extractors/common.py"]
-    n4["src/llm_wiki_cli/services/documentation_native.py"]
-    n5["src/llm_wiki_cli/services/documentation_run/integrity.py"]
-    n6["src/llm_wiki_cli/services/extraction_service.py"]
-    n7["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n8["src/llm_wiki_cli/services/inventory_cache.py"]
-    n9["src/llm_wiki_cli/services/lint_service.py"]
-    n10["src/llm_wiki_cli/services/plugins.py"]
-    n11["src/llm_wiki_cli/services/source_snapshot.py"]
-    n0 --> n2
-    n0 --> n8
-    n0 --> n9
-    n1 --> n2
-    n1 --> n6
-    n1 --> n8
-    n1 --> n10
-    n1 --> n11
-    n3 --> n2
-    n4 --> n6
-    n4 --> n8
-    n4 --> n11
-    n5 --> n8
-    n5 --> n9
-    n6 --> n2
-    n6 --> n3
-    n6 --> n8
-    n6 --> n10
-    n6 --> n11
-    n7 --> n8
-    n8 --> n2
-    n8 --> n3
-    n8 --> n10
-    n8 --> n11
-    n9 --> n2
-    n9 --> n3
-    n9 --> n6
-    n9 --> n8
-    n9 --> n10
-    n9 --> n11
-    n10 --> n2
-    n11 --> n2
-    n11 --> n3
-    click n0 "../modules/ci_check_cmd.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/config.md"
-    click n3 "../modules/common.md"
-    click n4 "../modules/documentation_native.md"
-    click n5 "../modules/integrity.md"
-    click n6 "../modules/extraction_service.md"
-    click n7 "../modules/extractor_helpers.md"
-    click n8 "../modules/inventory_cache.md"
-    click n9 "../modules/lint_service.md"
-    click n10 "../modules/plugins.md"
-    click n11 "../modules/source_snapshot.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/inventory_cache.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/inventory_cache.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [ci_check_cmd](../modules/ci_check_cmd.md) |
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Inbound | [documentation_native](../modules/documentation_native.md) |
-| Inbound | [integrity](../modules/integrity.md) |
-| Inbound | [extraction_service](../modules/extraction_service.md) |
-| Inbound | [extractor_helpers](../modules/extractor_helpers.md) |
-| Inbound | [lint_service](../modules/lint_service.md) |
-| Outbound | [config](../modules/config.md) |
-| Outbound | [common](../modules/common.md) |
-| Outbound | [plugins](../modules/plugins.md) |
-| Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Inbound | `src` (7) |
+| Outbound | `src` (5) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

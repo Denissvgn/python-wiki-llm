@@ -7,155 +7,156 @@ Topological module load / startup order and import-time side effects.
 <!-- Dependency-first order: each module loads after the internal modules it imports. -->
 1. [llm-wiki_main](modules/llm-wiki_main.md)
 2. [src_main](modules/src_main.md)
-3. [api_types](modules/api_types.md)
-4. [detectors](modules/detectors.md)
-5. [styles](modules/styles.md)
-6. [extractors___init__](modules/extractors___init__.md)
-7. [fastapi_contracts](modules/fastapi_contracts.md)
-8. [python_contracts](modules/python_contracts.md)
-9. [bootstrap_service](modules/bootstrap_service.md)
-10. [circuit_breaker](modules/circuit_breaker.md)
-11. [services_contracts](modules/services_contracts.md)
-12. [context_knowledge_contract](modules/context_knowledge_contract.md)
-13. [extraction_jobs](modules/extraction_jobs.md)
-14. [filesystem_guard](modules/filesystem_guard.md)
-15. [lockfile](modules/lockfile.md)
-16. [paths](modules/paths.md)
-17. [redaction](modules/redaction.md)
-18. [resource_diagnostics](modules/resource_diagnostics.md)
-19. [secure_file](modules/secure_file.md)
-20. [validation](modules/validation.md)
-21. [data_flow](modules/data_flow.md)
-22. [documentation_model_policy](modules/documentation_model_policy.md)
-23. [documentation_review](modules/documentation_review.md)
-24. [knowledge_evidence](modules/knowledge_evidence.md)
-25. [io](modules/io.md)
-26. [config](modules/config.md)
-27. [common](modules/common.md)
-28. [markdown_sections](modules/markdown_sections.md)
-29. [plugins](modules/plugins.md)
-30. [diagrams](modules/diagrams.md)
-31. [plugin_samples](modules/plugin_samples.md)
-32. [protected_artifacts](modules/protected_artifacts.md)
-33. [skills](modules/skills.md)
-34. [skills_cmd](modules/skills_cmd.md)
-35. [services_schema](modules/services_schema.md)
-36. [install_cmd](modules/install_cmd.md)
-37. [plugins_cmd](modules/plugins_cmd.md)
-38. [instruction_ownership](modules/instruction_ownership.md)
-39. [rendering_lifecycle](modules/rendering_lifecycle.md)
-40. [source_selection](modules/source_selection.md)
-41. [hook_cmd](modules/hook_cmd.md)
-42. [versioning](modules/versioning.md)
-43. [bump_cmd](modules/bump_cmd.md)
-44. [release_cmd](modules/release_cmd.md)
-45. [wiki_git_policy](modules/wiki_git_policy.md)
-46. [wiki_media](modules/wiki_media.md)
-47. [site_html_check](modules/site_html_check.md)
-48. [wiki_scaffold](modules/wiki_scaffold.md)
-49. [wiki_surface](modules/wiki_surface.md)
-50. [concept_identity](modules/concept_identity.md)
-51. [knowledge_graph](modules/knowledge_graph.md)
-52. [section_ownership](modules/section_ownership.md)
-53. [knowledge_envelope](modules/knowledge_envelope.md)
-54. [knowledge_governance](modules/knowledge_governance.md)
-55. [knowledge_model](modules/knowledge_model.md)
-56. [knowledge_freshness](modules/knowledge_freshness.md)
-57. [knowledge_links](modules/knowledge_links.md)
-58. [source_snapshot](modules/source_snapshot.md)
-59. [dependency_versions](modules/dependency_versions.md)
-60. [documentation_policy](modules/documentation_policy.md)
-61. [imports](modules/imports.md)
-62. [python_extractor](modules/python_extractor.md)
-63. [api_contracts](modules/api_contracts.md)
-64. [services_dependencies](modules/services_dependencies.md)
-65. [entrypoints](modules/entrypoints.md)
-66. [infrastructure_inventory](modules/infrastructure_inventory.md)
-67. [infrastructure_sync](modules/infrastructure_sync.md)
-68. [inventory_cache](modules/inventory_cache.md)
-69. [extractor_helpers](modules/extractor_helpers.md)
-70. [prepare_extractors_cmd](modules/prepare_extractors_cmd.md)
-71. [go_extractor](modules/go_extractor.md)
-72. [haskell_extractor](modules/haskell_extractor.md)
-73. [rust_extractor](modules/rust_extractor.md)
-74. [ts_extractor](modules/ts_extractor.md)
-75. [module_maps](modules/module_maps.md)
-76. [packages](modules/packages.md)
-77. [extraction_service](modules/extraction_service.md)
-78. [relationships](modules/relationships.md)
-79. [sync_manifest](modules/sync_manifest.md)
-80. [verification_contracts](modules/verification_contracts.md)
-81. [wiki_lifecycle](modules/wiki_lifecycle.md)
-82. [init_cmd](modules/init_cmd.md)
-83. [upgrade_cmd](modules/upgrade_cmd.md)
-84. [ci_installer](modules/ci_installer.md)
-85. [install_ci_cmd](modules/install_ci_cmd.md)
-86. [uninstall_cmd](modules/uninstall_cmd.md)
-87. [wiki_surface_index](modules/wiki_surface_index.md)
-88. [documentation_worklist](modules/documentation_worklist.md)
-89. [knowledge_index](modules/knowledge_index.md)
-90. [knowledge_artifacts](modules/knowledge_artifacts.md)
-91. [knowledge_generation](modules/knowledge_generation.md)
-92. [knowledge_loader](modules/knowledge_loader.md)
-93. [knowledge_consumption](modules/knowledge_consumption.md)
-94. [knowledge_verification](modules/knowledge_verification.md)
-95. [knowledge_observability](modules/knowledge_observability.md)
-96. [knowledge_cmd](modules/knowledge_cmd.md)
-97. [status_cmd](modules/status_cmd.md)
-98. [documentation_queries](modules/documentation_queries.md)
-99. [documentation_claim_evidence](modules/documentation_claim_evidence.md)
-100. [knowledge_orchestration](modules/knowledge_orchestration.md)
-101. [bootstrap_runtime](modules/bootstrap_runtime.md)
-102. [migrate_cmd](modules/migrate_cmd.md)
-103. [review_cmd](modules/review_cmd.md)
-104. [context_packet](modules/context_packet.md)
-105. [context_service](modules/context_service.md)
-106. [documentation_query_builder](modules/documentation_query_builder.md)
-107. [planner](modules/planner.md)
-108. [eval_lite___init__](modules/eval_lite___init__.md)
-109. [documentation_native](modules/documentation_native.md)
-110. [documentation_wiki_input](modules/documentation_wiki_input.md)
-111. [knowledge_projection](modules/knowledge_projection.md)
-112. [obsidian](modules/obsidian.md)
-113. [obsidian_cmd](modules/obsidian_cmd.md)
-114. [site_export](modules/site_export.md)
-115. [site_cmd](modules/site_cmd.md)
-116. [sync_analysis](modules/sync_analysis.md)
-117. [sync_cmd](modules/sync_cmd.md)
-118. [team](modules/team.md)
-119. [team_cmd](modules/team_cmd.md)
-120. [lint_service](modules/lint_service.md)
-121. [metrics](modules/metrics.md)
-122. [generate_prompt_cmd](modules/generate_prompt_cmd.md)
-123. [metrics_cmd](modules/metrics_cmd.md)
-124. [trigger_cmd](modules/trigger_cmd.md)
-125. [calibration___init__](modules/calibration___init__.md)
-126. [broker](modules/broker.md)
-127. [calibration_contracts](modules/calibration_contracts.md)
-128. [controller](modules/controller.md)
-129. [host_broker](modules/host_broker.md)
-130. [documentation_run___init__](modules/documentation_run___init__.md)
-131. [documentation_run_contracts](modules/documentation_run_contracts.md)
-132. [documentation_run_dependencies](modules/documentation_run_dependencies.md)
-133. [export](modules/export.md)
-134. [integrity](modules/integrity.md)
-135. [packet](modules/packet.md)
-136. [prepare](modules/prepare.md)
-137. [record](modules/record.md)
-138. [refresh](modules/refresh.md)
-139. [documentation_run_schema](modules/documentation_run_schema.md)
-140. [verify](modules/verify.md)
-141. [workspace](modules/workspace.md)
-142. [docs_cmd](modules/docs_cmd.md)
-143. [doctor_service](modules/doctor_service.md)
-144. [api](modules/api.md)
-145. [doctor_cmd](modules/doctor_cmd.md)
-146. [ci_report](modules/ci_report.md)
-147. [render_summary](modules/render_summary.md)
-148. [ci_check_cmd](modules/ci_check_cmd.md)
-149. [mcp_server](modules/mcp_server.md)
-150. [mcp_cmd](modules/mcp_cmd.md)
-151. [cli](modules/cli.md)
+3. [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md)
+4. [api_types](modules/api_types.md)
+5. [detectors](modules/detectors.md)
+6. [styles](modules/styles.md)
+7. [extractors___init__](modules/extractors___init__.md)
+8. [fastapi_contracts](modules/fastapi_contracts.md)
+9. [python_contracts](modules/python_contracts.md)
+10. [bootstrap_service](modules/bootstrap_service.md)
+11. [calibration___init__](modules/calibration___init__.md)
+12. [circuit_breaker](modules/circuit_breaker.md)
+13. [services_contracts](modules/services_contracts.md)
+14. [context_knowledge_contract](modules/context_knowledge_contract.md)
+15. [extraction_jobs](modules/extraction_jobs.md)
+16. [filesystem_guard](modules/filesystem_guard.md)
+17. [lockfile](modules/lockfile.md)
+18. [paths](modules/paths.md)
+19. [redaction](modules/redaction.md)
+20. [resource_diagnostics](modules/resource_diagnostics.md)
+21. [secure_file](modules/secure_file.md)
+22. [validation](modules/validation.md)
+23. [planner](modules/planner.md)
+24. [eval_lite___init__](modules/eval_lite___init__.md)
+25. [broker](modules/broker.md)
+26. [host_broker](modules/host_broker.md)
+27. [data_flow](modules/data_flow.md)
+28. [documentation_model_policy](modules/documentation_model_policy.md)
+29. [documentation_review](modules/documentation_review.md)
+30. [knowledge_evidence](modules/knowledge_evidence.md)
+31. [io](modules/io.md)
+32. [config](modules/config.md)
+33. [mcp_cmd](modules/mcp_cmd.md)
+34. [common](modules/common.md)
+35. [imports](modules/imports.md)
+36. [python_extractor](modules/python_extractor.md)
+37. [markdown_sections](modules/markdown_sections.md)
+38. [packages](modules/packages.md)
+39. [plugins](modules/plugins.md)
+40. [diagrams](modules/diagrams.md)
+41. [plugin_samples](modules/plugin_samples.md)
+42. [protected_artifacts](modules/protected_artifacts.md)
+43. [relationships](modules/relationships.md)
+44. [services_schema](modules/services_schema.md)
+45. [install_cmd](modules/install_cmd.md)
+46. [plugins_cmd](modules/plugins_cmd.md)
+47. [skills](modules/skills.md)
+48. [skills_cmd](modules/skills_cmd.md)
+49. [instruction_ownership](modules/instruction_ownership.md)
+50. [rendering_lifecycle](modules/rendering_lifecycle.md)
+51. [source_selection](modules/source_selection.md)
+52. [hook_cmd](modules/hook_cmd.md)
+53. [documentation_policy](modules/documentation_policy.md)
+54. [source_snapshot](modules/source_snapshot.md)
+55. [api_contracts](modules/api_contracts.md)
+56. [dependency_versions](modules/dependency_versions.md)
+57. [services_dependencies](modules/services_dependencies.md)
+58. [entrypoints](modules/entrypoints.md)
+59. [infrastructure_inventory](modules/infrastructure_inventory.md)
+60. [infrastructure_sync](modules/infrastructure_sync.md)
+61. [inventory_cache](modules/inventory_cache.md)
+62. [extractor_helpers](modules/extractor_helpers.md)
+63. [prepare_extractors_cmd](modules/prepare_extractors_cmd.md)
+64. [go_extractor](modules/go_extractor.md)
+65. [haskell_extractor](modules/haskell_extractor.md)
+66. [rust_extractor](modules/rust_extractor.md)
+67. [ts_extractor](modules/ts_extractor.md)
+68. [extraction_service](modules/extraction_service.md)
+69. [module_maps](modules/module_maps.md)
+70. [sync_manifest](modules/sync_manifest.md)
+71. [team](modules/team.md)
+72. [team_cmd](modules/team_cmd.md)
+73. [versioning](modules/versioning.md)
+74. [bump_cmd](modules/bump_cmd.md)
+75. [release_cmd](modules/release_cmd.md)
+76. [wiki_git_policy](modules/wiki_git_policy.md)
+77. [wiki_media](modules/wiki_media.md)
+78. [site_html_check](modules/site_html_check.md)
+79. [wiki_scaffold](modules/wiki_scaffold.md)
+80. [wiki_surface](modules/wiki_surface.md)
+81. [concept_identity](modules/concept_identity.md)
+82. [knowledge_graph](modules/knowledge_graph.md)
+83. [knowledge_model](modules/knowledge_model.md)
+84. [knowledge_envelope](modules/knowledge_envelope.md)
+85. [knowledge_freshness](modules/knowledge_freshness.md)
+86. [knowledge_governance](modules/knowledge_governance.md)
+87. [knowledge_links](modules/knowledge_links.md)
+88. [section_ownership](modules/section_ownership.md)
+89. [verification_contracts](modules/verification_contracts.md)
+90. [wiki_lifecycle](modules/wiki_lifecycle.md)
+91. [init_cmd](modules/init_cmd.md)
+92. [upgrade_cmd](modules/upgrade_cmd.md)
+93. [ci_installer](modules/ci_installer.md)
+94. [install_ci_cmd](modules/install_ci_cmd.md)
+95. [uninstall_cmd](modules/uninstall_cmd.md)
+96. [wiki_surface_index](modules/wiki_surface_index.md)
+97. [calibration_contracts](modules/calibration_contracts.md)
+98. [documentation_worklist](modules/documentation_worklist.md)
+99. [knowledge_index](modules/knowledge_index.md)
+100. [knowledge_artifacts](modules/knowledge_artifacts.md)
+101. [knowledge_generation](modules/knowledge_generation.md)
+102. [knowledge_loader](modules/knowledge_loader.md)
+103. [knowledge_consumption](modules/knowledge_consumption.md)
+104. [knowledge_observability](modules/knowledge_observability.md)
+105. [knowledge_cmd](modules/knowledge_cmd.md)
+106. [status_cmd](modules/status_cmd.md)
+107. [documentation_queries](modules/documentation_queries.md)
+108. [documentation_claim_evidence](modules/documentation_claim_evidence.md)
+109. [documentation_wiki_input](modules/documentation_wiki_input.md)
+110. [knowledge_orchestration](modules/knowledge_orchestration.md)
+111. [bootstrap_runtime](modules/bootstrap_runtime.md)
+112. [migrate_cmd](modules/migrate_cmd.md)
+113. [review_cmd](modules/review_cmd.md)
+114. [documentation_native](modules/documentation_native.md)
+115. [knowledge_projection](modules/knowledge_projection.md)
+116. [knowledge_verification](modules/knowledge_verification.md)
+117. [documentation_query_builder](modules/documentation_query_builder.md)
+118. [context_service](modules/context_service.md)
+119. [context_packet](modules/context_packet.md)
+120. [documentation_run_dependencies](modules/documentation_run_dependencies.md)
+121. [documentation_run_contracts](modules/documentation_run_contracts.md)
+122. [documentation_run_schema](modules/documentation_run_schema.md)
+123. [workspace](modules/workspace.md)
+124. [integrity](modules/integrity.md)
+125. [packet](modules/packet.md)
+126. [refresh](modules/refresh.md)
+127. [prepare](modules/prepare.md)
+128. [record](modules/record.md)
+129. [verify](modules/verify.md)
+130. [export](modules/export.md)
+131. [documentation_run___init__](modules/documentation_run___init__.md)
+132. [docs_cmd](modules/docs_cmd.md)
+133. [controller](modules/controller.md)
+134. [lint_service](modules/lint_service.md)
+135. [doctor_service](modules/doctor_service.md)
+136. [api](modules/api.md)
+137. [doctor_cmd](modules/doctor_cmd.md)
+138. [ci_report](modules/ci_report.md)
+139. [render_summary](modules/render_summary.md)
+140. [mcp_server](modules/mcp_server.md)
+141. [metrics](modules/metrics.md)
+142. [ci_check_cmd](modules/ci_check_cmd.md)
+143. [generate_prompt_cmd](modules/generate_prompt_cmd.md)
+144. [metrics_cmd](modules/metrics_cmd.md)
+145. [trigger_cmd](modules/trigger_cmd.md)
+146. [obsidian](modules/obsidian.md)
+147. [obsidian_cmd](modules/obsidian_cmd.md)
+148. [site_export](modules/site_export.md)
+149. [site_cmd](modules/site_cmd.md)
+150. [sync_analysis](modules/sync_analysis.md)
+151. [sync_cmd](modules/sync_cmd.md)
+152. [cli](modules/cli.md)
 
 ## Module-level side effects
 
@@ -163,6 +164,7 @@ Topological module load / startup order and import-time side effects.
 |--------|-------------------|
 | [render_summary](modules/render_summary.md) | `FRESHNESS_STATES = frozenset`, `AVAILABILITY_STATES = frozenset`, `SNAPSHOT_STATES = frozenset`, `GOVERNANCE_STATES = frozenset`, `GOVERNANCE_LEDGER_STATES = frozenset`, `GOVERNANCE_PROJECTION_STATES = frozenset`, `DRIFT_STATES = frozenset`, `VERIFICATION_STATES = frozenset`, `RECORDED_RESULTS = frozenset`, `REPORT_FIELDS = frozenset`, `AVAILABILITY_FIELDS = frozenset`, `FRESHNESS_FIELDS = frozenset`, `SNAPSHOT_FIELDS = frozenset`, `GOVERNANCE_FIELDS = frozenset`, `DRIFT_FIELDS = frozenset`, `VERIFICATION_FIELDS = frozenset` |
 | [llm-wiki_main](modules/llm-wiki_main.md) | `__export`, `module.exports = __toCommonJS`, `import_obsidian = require`, `import_child_process = require` |
+| [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) | `__version__ = version` |
 | [api](modules/api.md) | `_CALIBRATION_CONTROLLER_TYPE_EXPORTS = frozenset`, `_CALIBRATION_HOST_TYPE_EXPORTS = frozenset`, `_CALIBRATION_CONTROLLER_MODULES = frozenset`, `_CALIBRATION_HOST_MODULES = frozenset`, `_WIKI_INPUT_ARTIFACT_CATEGORIES = frozenset`, `_WIKI_INPUT_WORKSPACE_CATEGORIES = frozenset`, `_P = ParamSpec`, `_R = TypeVar`, `_QUALIFIED_GRAPH_KIND_RE = re.compile`, `adopt_documentation_wiki_snapshot = _api_boundary`, `fingerprint_documentation_wiki_input = _api_boundary`, `prepare_documentation_run = _api_boundary`, `get_documentation_run_status = _api_boundary`, `build_documentation_agent_packet = _api_boundary`, `record_documentation_agent_result = _api_boundary`, `verify_documentation_run = _api_boundary`, `select_documentation_model = _api_boundary`, `validate_documentation_model_selection = _api_boundary`, `setattr`, `prepare_p0_calibration_run = _deprecated_api_alias`, `admit_p0_calibration_run = _deprecated_api_alias`, `get_p0_calibration_run_status = _deprecated_api_alias`, `build_p0_calibration_agent_packet = _deprecated_api_alias`, `dispatch_p0_calibration_agent = _deprecated_api_alias`, `record_p0_calibration_agent_result = _deprecated_api_alias`, `verify_p0_calibration_run = _deprecated_api_alias`, `use_p0_calibration_host_broker_authenticator = _deprecated_api_alias` |
 | [docs_cmd](modules/docs_cmd.md) | `KNOWLEDGE_MODE_CHOICES = tuple` |
 | [hook_cmd](modules/hook_cmd.md) | `_EXPECTED_HOOK_UNSET = object` |
@@ -175,17 +177,18 @@ Topological module load / startup order and import-time side effects.
 | [trigger_cmd](modules/trigger_cmd.md) | `GIT_DIR = Path` |
 | [config](modules/config.md) | `_CONFIG_EXPECTATION_UNSET = object`, `_RENDER_STATE_FIELDS = frozenset`, `_PENDING_CLEANUP_FIELDS = frozenset`, `_RENDER_PROFILES = frozenset`, `_RENDER_REASONS = frozenset`, `_OPAQUE_CONFIG_REASONS = frozenset` |
 | [planner](modules/planner.md) | `_CONTENT_ADDRESS_RE = re.compile`, `_CAPABILITY_RE = re.compile`, `_MISSING = object`, `_TASK_FIELDS = frozenset`, `_ORACLE_FIELDS = frozenset` |
-| [common](modules/common.md) | `_HASH_TOKEN_SPLIT_RE = re.compile`, `INCLUDE_TEST_LANGUAGES = frozenset`, `_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `_WINDOWS_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `BUNDLED_HELPER_IMPLEMENTATION_PATHS = frozenset` |
+| [common](modules/common.md) | `_HASH_TOKEN_SPLIT_RE = re.compile`, `INCLUDE_TEST_LANGUAGES = frozenset`, `NON_IMPORT_TIME_SCOPES = frozenset`, `_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `_WINDOWS_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `BUNDLED_HELPER_IMPLEMENTATION_PATHS = frozenset` |
+| [python_extractor](modules/python_extractor.md) | `_TYPE_CHECKING_MODULES = frozenset` |
 | [api_contracts](modules/api_contracts.md) | `_STATUS_REF_RE = re.compile`, `_PATH_PARAMETER_RE = re.compile`, `_SAFE_ID_RE = re.compile`, `_NONE_ANNOTATION_RE = re.compile`, `_UNKNOWN = object` |
 | [bootstrap_runtime](modules/bootstrap_runtime.md) | `_SOURCE_DOC_LINK_RE = re.compile`, `_FLOWCHART_NODE_LINE = re.compile` |
 | [broker](modules/broker.md) | `SUPPORTED_OCI_RUNTIMES = frozenset`, `SUPPORTED_AGENT_ROLES = frozenset`, `_SLUG_RE = re.compile`, `_IDEMPOTENCY_RE = re.compile`, `_PUBLIC_RECIPIENT_RE = re.compile`, `_CONTAINER_NAME_RE = re.compile`, `_IMAGE_RE = re.compile`, `_NUMERIC_USER_RE = re.compile`, `_HEX_32_RE = re.compile`, `_CONTROL_RE = re.compile`, `_RECEIPT_STATUSES = frozenset`, `_CLEANUP_STATUSES = frozenset`, `_restore_legacy_definition_modules` |
 | [calibration_contracts](modules/calibration_contracts.md) | `_CALIBRATION_PRIORITIES = frozenset`, `_SOURCE_PROVENANCE = frozenset`, `_CONFIDENCE_VALUES = frozenset`, `_MUTATION_HTTP_METHODS = frozenset`, `_restore_legacy_definition_modules` |
 | [controller](modules/controller.md) | `CALIBRATION_TERMINAL_STATES = frozenset`, `ADMISSION_PROFILES = frozenset`, `_PORTABLE_ID_RE = re.compile`, `_EXTERNAL_DISPATCH_FAILURE_REASONS = frozenset`, `_DOCUMENT_SUFFIXES = frozenset`, `_ROOT_DOCUMENT_NAMES = frozenset`, `_PROJECT_MANIFEST_NAMES = frozenset`, `_ALLOWED_ROOT_FILES = frozenset`, `_ALLOWED_ROOT_DIRS = frozenset`, `_FILE_URI_RE = re.compile`, `_WINDOWS_ABSOLUTE_PATH_RE = re.compile`, `_POSIX_ABSOLUTE_PATH_RE = re.compile`, `admit_p0_calibration_run = _deprecated_calibration_alias`, `build_p0_calibration_agent_packet = _deprecated_calibration_alias`, `dispatch_p0_calibration_agent = _deprecated_calibration_alias`, `get_p0_calibration_run_status = _deprecated_calibration_alias`, `prepare_p0_calibration_run = _deprecated_calibration_alias`, `record_p0_calibration_agent_result = _deprecated_calibration_alias`, `verify_p0_calibration_run = _deprecated_calibration_alias`, `_restore_legacy_definition_modules` |
-| [host_broker](modules/host_broker.md) | `_HOST_BROKER_AUTHENTICATOR = ContextVar`, `_restore_legacy_definition_modules` |
+| [host_broker](modules/host_broker.md) | `_HOST_BROKER_AUTHENTICATOR = ContextVar`, `use_p0_calibration_host_broker_authenticator.__name__ = 'use_p0_calibration_host_broker_authenticator'`, `use_p0_calibration_host_broker_authenticator.__qualname__ = 'use_p0_calibration_host_broker_authenticator'`, `_restore_legacy_definition_modules` |
 | [ci_installer](modules/ci_installer.md) | `MANAGED_WORKFLOW_PATH = Path`, `_ACTION_REF_RE = re.compile`, `_MANAGED_HEADER_RE = re.compile` |
 | [ci_report](modules/ci_report.md) | `_CI_REQUIRED_FIELDS = frozenset`, `_CI_OPTIONAL_FIELDS = frozenset`, `_KNOWLEDGE_SUMMARY_FIELDS = frozenset`, `_LINT_ISSUE_REQUIRED_FIELDS = frozenset`, `_LINT_ISSUE_OPTIONAL_FIELDS = frozenset`, `_EXTRACTOR_JOB_FIELDS = frozenset`, `_DOCTOR_FIELDS = frozenset`, `_AVAILABILITY_FIELDS = frozenset`, `_FRESHNESS_FIELDS = frozenset`, `_SNAPSHOT_FIELDS = frozenset`, `_GOVERNANCE_FIELDS = frozenset`, `_DRIFT_FIELDS = frozenset`, `_VERIFICATION_FIELDS = frozenset`, `_FRESHNESS_STATES = frozenset`, `_AVAILABILITY_STATES = frozenset`, `_SNAPSHOT_STATES = frozenset`, `_GOVERNANCE_STATES = frozenset`, `_GOVERNANCE_LEDGER_STATES = frozenset`, `_GOVERNANCE_PROJECTION_STATES = frozenset`, `_DRIFT_STATES = frozenset`, `_VERIFICATION_STATES = frozenset`, `_RECORDED_RESULTS = frozenset`, `_JSON_EVIDENCE_STATES = frozenset`, `_REASON_RE = re.compile` |
 | [concept_identity](modules/concept_identity.md) | `_BUNDLE_ID_RE = re.compile`, `_QUALIFIED_KIND_RE = re.compile`, `_NATURAL_KEY_PREFIX_RE = re.compile`, `_NATURAL_KEY_PAYLOAD_RE = re.compile`, `_PERCENT_ESCAPE_RE = re.compile`, `_INVALID_PERCENT_RE = re.compile`, `_WINDOWS_ABSOLUTE_RE = re.compile`, `_URI_SCHEME_RE = re.compile`, `_COLLISION_CODE_RE = re.compile`, `_COLLISION_COORDINATE_TYPE_RE = re.compile`, `_UID_RE = re.compile`, `_RecordT = TypeVar` |
-| [context_knowledge_contract](modules/context_knowledge_contract.md) | `_LIFECYCLE_FIELDS = frozenset`, `_EVIDENCE_FIELDS = frozenset`, `_LIFECYCLE_EVIDENCE_FIELDS = frozenset`, `_CONTRACT_FIELDS = frozenset`, `_CANONICAL_CONTRACT = deepcopy`, `_CANONICAL_CONTRACT_JSON = json.dumps`, `validate_context_knowledge_contract` |
+| [context_knowledge_contract](modules/context_knowledge_contract.md) | `_LIFECYCLE_FIELDS = frozenset`, `_EVIDENCE_FIELDS = frozenset`, `_LIFECYCLE_EVIDENCE_FIELDS = frozenset`, `_CONTRACT_FIELDS = frozenset`, `_CONTRACT['lifecycle_evidence_matrix'] = [{'lifecycle_state': lifecycle['state'], 'evidence_state': evidence['state'], 'rendered_profile': lifecycle['rendered_profile'], 'read_only_knowledge': evidence['read_only_knowledge'], 'fallback_evidence': list(evidence['fallback_evidence']), 'mutation_permission': 'none', 'signals': _combined_signals(lifecycle, evidence), 'recovery_routes': _combined_recovery_routes(lifecycle, evidence)} for lifecycle in _CONTRACT['lifecycle_matrix'] for evidence in _CONTRACT['evidence_matrix']]`, `_CANONICAL_CONTRACT = deepcopy`, `_CANONICAL_CONTRACT_JSON = json.dumps`, `validate_context_knowledge_contract` |
 | [context_packet](modules/context_packet.md) | `_LIMITATION_RE = re.compile`, `_COVERAGE_LIMITATION_RE = re.compile`, `_PORTABLE_URI_RE = re.compile`, `_RFC3986_URI_RE = re.compile`, `_WINDOWS_ABSOLUTE_RE = re.compile`, `_STRUCTURAL_PATH_FIELDS = frozenset`, `_PUBLIC_URI_FIELDS = frozenset`, `_RECONCILIATION_FACETS = frozenset`, `_RECONCILIATION_FACET_FIELDS = frozenset`, `_PACKET_TOP_LEVEL_FIELDS = frozenset`, `_LEGACY_PACKET_CONTRACT = _PacketWireContract`, `_KNOWLEDGE_PACKET_CONTRACT = _PacketWireContract`, `_PACKET_CONTRACT_BY_SCHEMA = MappingProxyType` |
 | [context_service](modules/context_service.md) | `_QUALIFIED_RELATIONSHIP_KIND_RE = re.compile` |
 | [data_flow](modules/data_flow.md) | `_COMMON_STATIC_CALLS = frozenset` |
@@ -199,7 +202,7 @@ Topological module load / startup order and import-time side effects.
 | [documentation_queries](modules/documentation_queries.md) | `_QUALIFIED_NAME_RE = re.compile`, `_WINDOWS_ABSOLUTE_RE = re.compile`, `_CONTEXT_COVERAGE_LIMITATION_RE = re.compile`, `_QUERY_PRESENTATION_TEXT_FIELDS = frozenset`, `_KNOWLEDGE_SELECTION_REJECTING_FINDINGS = frozenset`, `_QueryParameters = ParamSpec` |
 | [documentation_query_builder](modules/documentation_query_builder.md) | `_UNSET_LIVE_SELECTION_INPUTS = object`, `_UNSET_DIFF_HEADER = object` |
 | [documentation_review](modules/documentation_review.md) | `SUPPORTED_REVIEW_SOURCES = frozenset`, `SUPPORTED_FINDING_SEVERITIES = frozenset`, `SUPPORTED_FINDING_STATUSES = frozenset`, `TERMINAL_FINDING_STATUSES = frozenset`, `SUPPORTED_PACKET_ROLES = frozenset`, `SUPPORTED_LEDGER_STATES = frozenset`, `_CATEGORY_RE = re.compile`, `_FINDING_FIELDS = frozenset`, `_PACKET_FIELDS = frozenset`, `_RECONCILIATION_FIELDS = frozenset`, `_LEDGER_FIELDS = frozenset`, `_PACKET_COLLECTION_FIELDS = frozenset` |
-| [documentation_run___init__](modules/documentation_run___init__.md) | `__annotations__ = dict`, `_conditional_annotations = getattr`, `_MISSING = object`, `_HISTORICAL_CLASS_FIRSTLINENO = dict`, `_COMPATIBILITY_NAMES = tuple`, `_COMPATIBILITY_OWNERS = dict`, `_DELETED_COMPATIBILITY_OWNERS = dict` |
+| [documentation_run___init__](modules/documentation_run___init__.md) | `__annotations__ = dict`, `_conditional_annotations = getattr`, `__conditional_annotations__ = set`, `_MISSING = object`, `_HISTORICAL_CLASS_FIRSTLINENO = dict`, `_COMPATIBILITY_NAMES = tuple`, `_COMPATIBILITY_OWNERS = dict`, `_DELETED_COMPATIBILITY_OWNERS = dict`, `_sys.modules[__name__].__class__ = _CompatibilityModule` |
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | `SUPPORTED_RUN_STATES = frozenset`, `SUPPORTED_BASELINE_STRATEGIES = frozenset`, `SUPPORTED_AGENT_STAGES = frozenset`, `SUPPORTED_AGENT_RESULT_STATUSES = frozenset`, `_AGENT_RESULT_FIELDS = frozenset`, `_IMPORTED_PAGE_EDIT_FIELDS = frozenset`, `_AGENT_FINDING_FIELDS = frozenset`, `_AGENT_FINDING_STATUSES = frozenset`, `_AGENT_FINDING_SEVERITIES = frozenset`, `SUPPORTED_FRESHNESS_POLICIES = frozenset`, `SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES = frozenset`, `_NATIVE_ARTIFACT_PATHS = frozenset`, `_PACKET_FORBIDDEN_FIELDS = frozenset`, `_PACKET_FORBIDDEN_KEY_SUFFIXES = frozenset` |
 | [documentation_wiki_input](modules/documentation_wiki_input.md) | `SUPPORTED_MANIFEST_VERSIONS = frozenset`, `FRESHNESS_POLICIES = frozenset`, `_HASH_RE = re.compile`, `_OPENAPI_GENERATION_INPUT_FIELDS = frozenset`, `_SUPPORTED_GENERATION_INPUTS = frozenset`, `_GENERATED_MARKER_RE = re.compile`, `_WINDOWS_RESERVED_NAMES = frozenset`, `_WINDOWS_FORBIDDEN_CHARS = frozenset`, `_CANONICAL_ROOT_FILES = frozenset`, `_CANONICAL_MARKDOWN_DIRS = frozenset`, `_REJECTED_DIRECTORY_NAMES = frozenset`, `_REJECTED_FILE_NAMES = frozenset` |
 | [documentation_worklist](modules/documentation_worklist.md) | `IMPORTED_PAGE_CLASSIFICATIONS = frozenset`, `GROUNDING_STATUSES = frozenset`, `WORK_ITEM_STATUSES = frozenset`, `_USER_PROFILE_DEFERRED_CATEGORIES = frozenset`, `_USER_PROFILE_INDEX_CATEGORIES = frozenset`, `_PRIMARY_FLOW_CATEGORIES = frozenset`, `_MARKDOWN_COMMENT_RE = re.compile`, `_MARKDOWN_LINK_RE = re.compile`, `_HEADING_RE = re.compile`, `_SOURCE_PATH_RE = re.compile` |
@@ -257,16 +260,6 @@ Topological module load / startup order and import-time side effects.
 | `create_private_windows_directory` | factory | [filesystem_guard](modules/filesystem_guard.md) |
 | `create_mcp_server` | factory | [mcp_server](modules/mcp_server.md) |
 
-## Indeterminate (cyclic) groups
-
-> These modules form import cycles, so their relative load order is indeterminate.
-
-- [calibration___init__](modules/calibration___init__.md) ⇄ [broker](modules/broker.md) ⇄ [calibration_contracts](modules/calibration_contracts.md) ⇄ [controller](modules/controller.md) ⇄ [host_broker](modules/host_broker.md) ⇄ [documentation_run___init__](modules/documentation_run___init__.md) ⇄ [documentation_run_contracts](modules/documentation_run_contracts.md) ⇄ [documentation_run_dependencies](modules/documentation_run_dependencies.md) ⇄ [export](modules/export.md) ⇄ [integrity](modules/integrity.md) ⇄ [packet](modules/packet.md) ⇄ [prepare](modules/prepare.md) ⇄ [record](modules/record.md) ⇄ [refresh](modules/refresh.md) ⇄ [documentation_run_schema](modules/documentation_run_schema.md) ⇄ [verify](modules/verify.md) ⇄ [workspace](modules/workspace.md)
-- [context_packet](modules/context_packet.md) ⇄ [context_service](modules/context_service.md) ⇄ [documentation_query_builder](modules/documentation_query_builder.md)
-- [knowledge_consumption](modules/knowledge_consumption.md) ⇄ [knowledge_verification](modules/knowledge_verification.md)
-- [knowledge_envelope](modules/knowledge_envelope.md) ⇄ [knowledge_governance](modules/knowledge_governance.md) ⇄ [knowledge_model](modules/knowledge_model.md)
-- [lint_service](modules/lint_service.md) ⇄ [metrics](modules/metrics.md)
-
 ## Notes
 
 The packaged console entry point calls `llm_wiki_cli.cli:main`; the numbered
@@ -282,9 +275,13 @@ TypeScript source, while `llm-wiki_main` is its compiled CommonJS bundle; their
 positions do not describe an application startup sequence. The
 `render_summary` integration is a standalone GitHub runner script.
 
-Relative order inside each cyclic group is indeterminate. Avoid adding
-observable import-time work there; prefer explicit constructors and command
-entry points. Runtime plugin discovery, conditional compatibility imports, and
-lazy transports can introduce edges that this static projection cannot show.
-Use [dependencies](dependencies.md) for fan-in, fan-out, package reconciliation,
-and the complete cycle list.
+Every module has a determinate position: no group imports itself into a cycle
+while loading, so this order is complete rather than partial. The ordering
+counts only imports that execute on load — imports written inside a function or
+under `TYPE_CHECKING` constrain nothing, which is why the calibration and
+documentation-run packages sort normally despite referring to each other. Avoid
+adding observable import-time work; prefer explicit constructors and command
+entry points. Runtime plugin discovery and lazy transports can still introduce
+edges that this static projection cannot show. Use
+[dependencies](dependencies.md) for fan-in, fan-out, package reconciliation, and
+the groups that are cyclic only through deferred imports.

@@ -4,7 +4,15 @@
 **Source:** [cli](../modules/cli.md)
 **Modules touched:** [cli](../modules/cli.md), [resource_diagnostics](../modules/resource_diagnostics.md)
 
-**Related modules:** [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), [resource_diagnostics](../modules/resource_diagnostics.md), [services_contracts](../modules/services_contracts.md)
+**Related modules:** [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md), [resource_diagnostics](../modules/resource_diagnostics.md), and 1 more
+
+**Complete related modules:**
+
+- [config](../modules/config.md)
+- [extraction_jobs](../modules/extraction_jobs.md)
+- [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
+- [resource_diagnostics](../modules/resource_diagnostics.md)
+- [services_contracts](../modules/services_contracts.md)
 
 ## Call sequence
 

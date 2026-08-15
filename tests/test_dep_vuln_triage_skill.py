@@ -56,7 +56,10 @@ dev = ["pytest>=8"]
         encoding="utf-8",
     )
 
-    dependencies = _public_dependencies(tmp_path, {})
+    # A scanned source file is what makes "declared but never imported" a
+    # supportable claim; with nothing extracted the reconciler withholds it.
+    inventory = {"app.py": {"language": "python", "imports": []}}
+    dependencies = _public_dependencies(tmp_path, inventory)
     python = dependencies["external"]["python"]
 
     assert python == {

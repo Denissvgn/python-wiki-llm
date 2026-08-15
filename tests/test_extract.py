@@ -1551,6 +1551,127 @@ class TestGetInventory:
         assert "Path" in import_names
         assert "os" in import_names
 
+    def test_import_scope_marks_imports_that_never_run_at_import_time(
+        self, tmp_path
+    ):
+        (tmp_path / "main.py").write_text(
+            textwrap.dedent("""\
+            from typing import TYPE_CHECKING
+            import os
+
+            if TYPE_CHECKING:
+                from .types import Payload
+
+            class Holder:
+                pass
+
+            def run():
+                from .heavy import compute
+                return compute
+        """)
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+        scopes = {
+            imp["name"]: imp.get("scope")
+            for imp in list(inventory.values())[0]["imports"]
+        }
+        assert scopes["os"] is None  # module scope: omitted, runs on load
+        assert scopes["Payload"] == "type_checking"
+        assert scopes["compute"] == "deferred"
+
+    def test_import_scope_recognizes_an_aliased_type_checking_guard(self, tmp_path):
+        (tmp_path / "main.py").write_text(
+            textwrap.dedent("""\
+            from typing import TYPE_CHECKING as _TYPE_CHECKING
+
+            if _TYPE_CHECKING:
+                from .types import Payload
+            else:
+                from .runtime import Payload as RuntimePayload
+
+            VALUE = 1
+        """)
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+        # Both branches import a symbol named ``Payload``, so key by module.
+        scopes = {
+            imp["module"]: imp.get("scope")
+            for imp in list(inventory.values())[0]["imports"]
+        }
+        assert scopes[".types"] == "type_checking"
+        # The else: branch is the one that actually executes.
+        assert scopes[".runtime"] is None
+
+    def test_module_alias_file_is_not_a_module_of_its_own(self, tmp_path):
+        """``sys.modules[__name__] = impl`` is a redirect, not a unit.
+
+        Treating it as a module would invent an empty page and, worse, shadow
+        the real implementation when a symbol is resolved through the alias.
+        """
+        (tmp_path / "shim.py").write_text(
+            textwrap.dedent('''\
+            """Compatibility adapter."""
+
+            import sys as _sys
+
+            from . import real as _service
+
+            _sys.modules[__name__] = _service
+        ''')
+        )
+        (tmp_path / "real.py").write_text("def run():\n    return 1\n")
+        inventory = get_inventory(str(tmp_path), deep=True)
+        assert "shim.py" not in inventory
+        assert "real.py" in inventory
+
+    def test_import_time_mutation_of_external_state_is_a_side_effect(self, tmp_path):
+        (tmp_path / "main.py").write_text(
+            textwrap.dedent("""\
+            import logging
+
+            REGISTRY = {}
+
+            logging.root.level = 10
+            REGISTRY["default"] = object()
+
+            def run():
+                return REGISTRY
+        """)
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+        calls = inventory["main.py"]["module_calls"]
+        assert ("logging.root.level", "10") in [
+            (c.get("target"), c.get("name")) for c in calls
+        ]
+        assert ("REGISTRY['default']", "object") in [
+            (c.get("target"), c.get("name")) for c in calls
+        ]
+
+    def test_import_time_calls_inside_guarded_blocks_are_collected(self, tmp_path):
+        (tmp_path / "main.py").write_text(
+            textwrap.dedent("""\
+            import sys
+            from typing import TYPE_CHECKING
+
+            try:
+                backend = load_fast()
+            except ImportError:
+                backend = load_slow()
+
+            if sys.platform == "win32":
+                configure_windows()
+
+            if TYPE_CHECKING:
+                never_runs()
+
+            if __name__ == "__main__":
+                also_never_runs()
+        """)
+        )
+        inventory = get_inventory(str(tmp_path), deep=True)
+        names = [call["name"] for call in inventory["main.py"]["module_calls"]]
+        assert names == ["load_fast", "load_slow", "configure_windows"]
+
     def test_python_import_locations_use_additive_versioned_sidecar(self, tmp_path):
         (tmp_path / "main.py").write_text(
             textwrap.dedent("""\
@@ -1581,6 +1702,8 @@ class TestGetInventory:
                 "module": "nested.module",
                 "name": "nested",
                 "type": "import",
+                # Inside a function body, so it does not run at import time.
+                "scope": "deferred",
             },
         ]
         assert all("line" not in item for item in inventory["main.py"]["imports"])

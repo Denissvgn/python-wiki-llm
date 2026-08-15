@@ -1,6 +1,6 @@
 # _BootstrapRunState
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4107`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4125`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
