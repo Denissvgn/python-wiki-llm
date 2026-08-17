@@ -29,6 +29,7 @@ from ..services.extractor_helpers import (
     ENV_EXTRACTOR_TIMEOUT,
     extractor_timeout_seconds,
     get_prepared_typescript_root,
+    missing_helper_message,
 )
 
 _TS_SCRIPTS_DIR = Path(__file__).parent / "ts_scripts"
@@ -52,6 +53,7 @@ class TypeScriptExtractor:
         only_files: list[str] | None = None,
         deep: bool = False,
         source_files: list[str] | None = None,
+        helper_cache_dir: str | None = None,
     ) -> dict:
         """Scan *src_dir* for TypeScript files and return an inventory dict.
 
@@ -78,7 +80,7 @@ class TypeScriptExtractor:
         if not source_files:
             return {}
 
-        helper_root = self._toolchain_root(src_dir)
+        helper_root = self._toolchain_root(src_dir, helper_cache_dir)
         if helper_root is None:
             return {}
 
@@ -112,7 +114,9 @@ class TypeScriptExtractor:
             )
         return source_files
 
-    def _toolchain_root(self, src_dir: str) -> Path | None:
+    def _toolchain_root(
+        self, src_dir: str, helper_cache_dir: str | None = None
+    ) -> Path | None:
         if not shutil.which("node"):
             self.last_error = (
                 "node not found. Install Node.js (https://nodejs.org) "
@@ -121,13 +125,12 @@ class TypeScriptExtractor:
             print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
             return None
 
-        helper_root = get_prepared_typescript_root(
-            src_dir
-        ) or get_prepared_typescript_root()
+        helper_root = get_prepared_typescript_root(src_dir, helper_cache_dir)
+        if helper_root is None and helper_cache_dir is None:
+            helper_root = get_prepared_typescript_root()
         if helper_root is None:
-            self.last_error = (
-                "TypeScript extractor dependencies are not prepared. "
-                "Run `llm-wiki prepare-extractors --language typescript` before lint/extract."
+            self.last_error = missing_helper_message(
+                "typescript", src_dir, helper_cache_dir
             )
             print(f"llm-wiki TypeScript extractor: {self.last_error}", file=sys.stderr)
             return None

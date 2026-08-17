@@ -722,6 +722,42 @@ class TestTypeScriptExtractorWrapper:
         assert inv == {}
         mock_run.assert_not_called()
 
+    def test_explicit_helper_cache_dir_is_forwarded(self, tmp_path):
+        _make_ts(tmp_path, "app.ts", "export class App {}")
+        helper_cache = str(tmp_path / "helpers")
+        seen = {}
+
+        def fake_root(src_dir, cache_dir=None):
+            seen["src_dir"] = src_dir
+            seen["cache_dir"] = cache_dir
+            return BUNDLED_TS_SCRIPTS
+
+        result = subprocess.CompletedProcess(
+            args=["node"],
+            returncode=0,
+            stdout='{"app.ts": {"classes": [], "functions": []}}',
+            stderr="",
+        )
+        with patch(
+            "llm_wiki_cli.extractors.ts_extractor.shutil.which", return_value="node"
+        ):
+            with patch(
+                "llm_wiki_cli.extractors.ts_extractor.get_prepared_typescript_root",
+                side_effect=fake_root,
+            ):
+                with patch(
+                    "llm_wiki_cli.extractors.ts_extractor.subprocess.run",
+                    return_value=result,
+                ):
+                    inv = TypeScriptExtractor().extract(
+                        str(tmp_path),
+                        helper_cache_dir=helper_cache,
+                    )
+
+        assert inv["app.ts"]["language"] == "typescript"
+        assert seen["src_dir"] == str(tmp_path)
+        assert seen["cache_dir"] == helper_cache
+
     def test_normalization_filters_checkout_helper_but_not_unrelated_suffix(
         self, tmp_path
     ):
