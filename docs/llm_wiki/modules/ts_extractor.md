@@ -19,7 +19,7 @@ Requirements
 
 | Source | Symbols |
 |--------|---------|
-| `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_typescript_root` |
+| `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_typescript_root`, `missing_helper_message` |
 | `.common` | `TYPESCRIPT_FAMILY_EXTENSIONS`, `chunk_source_files_for_cli`, `discover_source_files`, `filter_bundled_inventory`, `inventory_language_for_path` |
 | `__future__` | `annotations` |
 | `json` | `json` |
@@ -54,4 +54,4 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TypeScriptExtractor](../entities/TypeScriptExtractor.md) | 37 | — | Extractor for TypeScript source files using a Node.js/ts-morph subprocess. |
+| [TypeScriptExtractor](../entities/TypeScriptExtractor.md) | 38 | — | Extractor for TypeScript source files using a Node.js/ts-morph subprocess. |

@@ -54,7 +54,7 @@ the summary can present knowledge health without a duplicate source scan. The
 top-level `ok` value, blocking issue count, and original `ci-check` exit remain
 authoritative.
 
-### Scheduled convergence observation
+### Manual convergence observation
 
 `.github/workflows/llm-wiki-convergence.yml` runs one real, plugin-disabled
 sync from an exact credential-free checkout of this repository's default
@@ -62,8 +62,8 @@ branch. It requires clean pre-sync state and treats any post-sync wiki change
 or unrelated worktree change as a failure. The fixed artifact records complete
 pre/post wiki status, full post-sync status, the tracked wiki diff, the sync
 log, and a versioned hash receipt; only a bounded preview reaches the job
-summary. This scheduled/manual observation never uses `--dry-run` or `--force`
-and never replaces the separate blocking integrity gate.
+summary. This manually dispatched observation never uses `--dry-run` or
+`--force` and never replaces the separate blocking integrity gate.
 
 ### Strict doctor dashboard
 
@@ -89,10 +89,10 @@ directories.
 Its artifact contains only the doctor JSON, dashboard receipt, extractor plan,
 and helper-preparation log. A validated `evidence-id` keeps repeated action
 invocations in one job separate; unsafe identifiers or occupied paths fail
-before artifact upload. The repository's scheduled/manual dashboard workflow
-is read-only and has no pull-request or push trigger. Protected branches should
-require the exact `LLM Wiki integrity` context from the full gate, never this
-diagnostic workflow.
+before artifact upload. The repository's manually dispatched dashboard
+workflow is read-only and has no scheduled, pull-request, or push trigger.
+Protected branches should require the exact `LLM Wiki integrity` context from
+the full gate, never this diagnostic workflow.
 
 The selected source snapshot includes both action descriptors, but the current
 infrastructure classifiers do not model GitHub composite-action descriptors.

@@ -1,4 +1,4 @@
-"""Static safety contracts for scheduled LLM Wiki convergence."""
+"""Static safety contracts for manually dispatched LLM Wiki convergence."""
 
 from __future__ import annotations
 
@@ -75,12 +75,11 @@ def _convergence_wrapper_mode() -> int:
     return WRAPPER_PATH.stat().st_mode
 
 
-def test_convergence_is_a_read_only_scheduled_and_manual_workflow() -> None:
+def test_convergence_is_a_read_only_manual_workflow() -> None:
     workflow = _workflow()
     triggers = workflow.get("on", workflow.get(True))
-    assert set(triggers) == {"schedule", "workflow_dispatch"}
-    assert triggers["schedule"] == [{"cron": "17 3 * * 1"}]
-    assert triggers["workflow_dispatch"] is None
+    assert workflow["name"] == "LLM Wiki convergence observation"
+    assert triggers == {"workflow_dispatch": None}
     assert workflow["permissions"] == {"contents": "read"}
 
     assert set(workflow["jobs"]) == {"convergence"}

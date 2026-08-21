@@ -156,38 +156,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 2183 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 2184 | `getattr(args, 'changed', False)` |
-| run | getattr | 2185 | `getattr(args, 'summary', False)` |
-| run | getattr | 2186 | `getattr(args, 'deep', False)` |
-| run | getattr | 2187 | `getattr(args, 'paths', None)` |
-| run | getattr | 2188 | `getattr(args, 'package', None)` |
-| run | getattr | 2189 | `getattr(args, 'include_empty', False)` |
-| run | getattr | 2190 | `getattr(args, 'output', None)` |
-| run | getattr | 2191 | `getattr(args, 'read_only', False)` |
-| run | getattr | 2192 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr | 2193 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr | 2186 | `getattr(args, 'src_dir', '.')` |
+| run | getattr | 2187 | `getattr(args, 'changed', False)` |
+| run | getattr | 2188 | `getattr(args, 'summary', False)` |
+| run | getattr | 2189 | `getattr(args, 'deep', False)` |
+| run | getattr | 2190 | `getattr(args, 'paths', None)` |
+| run | getattr | 2191 | `getattr(args, 'package', None)` |
+| run | getattr | 2192 | `getattr(args, 'include_empty', False)` |
+| run | getattr | 2193 | `getattr(args, 'output', None)` |
+| run | getattr | 2194 | `getattr(args, 'read_only', False)` |
+| run | getattr | 2195 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr | 2196 | `getattr(args, 'helper_cache_dir', None)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 2199 |
-| output | `print` | `run` | 2203 |
-| output | `print` | `run` | 2205 |
-| output | `print` | `run` | 2207 |
-| output | `print` | `run` | 2233 |
-| output | `print` | `run` | 2235 |
-| output | `print` | `run` | 2240 |
-| output | `print` | `run` | 2244 |
+| output | `print` | `run` | 2202 |
+| output | `print` | `run` | 2206 |
+| output | `print` | `run` | 2208 |
+| output | `print` | `run` | 2210 |
+| output | `print` | `run` | 2236 |
+| output | `print` | `run` | 2238 |
+| output | `print` | `run` | 2243 |
+| output | `print` | `run` | 2247 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 2183 |
-| unresolved_call | `run` | `getattr` | 2184 |
-| unresolved_call | `run` | `getattr` | 2185 |
 | unresolved_call | `run` | `getattr` | 2186 |
 | unresolved_call | `run` | `getattr` | 2187 |
 | unresolved_call | `run` | `getattr` | 2188 |
@@ -196,6 +193,9 @@ flowchart LR
 | unresolved_call | `run` | `getattr` | 2191 |
 | unresolved_call | `run` | `getattr` | 2192 |
 | unresolved_call | `run` | `getattr` | 2193 |
+| unresolved_call | `run` | `getattr` | 2194 |
+| unresolved_call | `run` | `getattr` | 2195 |
+| unresolved_call | `run` | `getattr` | 2196 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

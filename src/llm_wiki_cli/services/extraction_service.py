@@ -1083,12 +1083,15 @@ def _build_builtin_extraction_kwargs(
                 helper_cache_dir=_inventory_helper_cache_dir(context.request),
             ),
         }
-    return {
+    kwargs = {
         "src_dir": src_dir,
         "only_files": context.request.only_files,
         "deep": context.request.deep,
         "source_files": fresh_source_files,
     }
+    if language == "typescript":
+        kwargs["helper_cache_dir"] = _inventory_helper_cache_dir(context.request)
+    return kwargs
 
 
 def _inventory_helper_cache_dir(request: InventoryRequest) -> str | None:

@@ -1004,6 +1004,58 @@ class TestGetInventory:
         assert requests["rust"].helper_cache_dir == str(tmp_path / "helper-cache")
         assert sorted(result.inventory) == ["lib.rs", "main.go"]
 
+    def test_builtin_typescript_extractor_receives_explicit_helper_cache_dir(
+        self, tmp_path, monkeypatch
+    ):
+        (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
+        seen = {}
+
+        class FakeTypeScriptExtractor:
+            last_error = None
+
+            def extract(
+                self,
+                src_dir,
+                only_files=None,
+                deep=False,
+                source_files=None,
+                helper_cache_dir=None,
+            ):
+                seen["helper_cache_dir"] = helper_cache_dir
+                seen["source_files"] = source_files
+                return {
+                    "app.ts": {
+                        "classes": [],
+                        "functions": [],
+                        "language": "typescript",
+                    }
+                }
+
+        monkeypatch.setattr(
+            extract_cmd,
+            "get_extractor_registry",
+            lambda: {"typescript": extract_cmd.EXTRACTOR_REGISTRY["typescript"]},
+        )
+        monkeypatch.setattr(
+            extract_cmd,
+            "_load_extractor",
+            lambda _entry_point: FakeTypeScriptExtractor(),
+        )
+
+        result = extract_cmd.get_inventory_result(
+            str(tmp_path),
+            deep=True,
+            cache_options=InventoryCacheOptions(
+                enabled=True,
+                cache_dir=str(tmp_path / "inventory-cache"),
+            ),
+            helper_cache_dir=str(tmp_path / "helper-cache"),
+        )
+
+        assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
+        assert seen["source_files"] == ["app.ts"]
+        assert sorted(result.inventory) == ["app.ts"]
+
     def test_parallel_jobs_run_fresh_builtin_extractors_concurrently(
         self, tmp_path, monkeypatch
     ):
@@ -3671,6 +3723,7 @@ class TestUnsupportedSources:
                 only_files=None,
                 deep=False,
                 source_files=None,
+                helper_cache_dir=None,
             ):
                 assert source_files is not None
                 return {
@@ -3715,6 +3768,7 @@ class TestUnsupportedSources:
                 only_files=None,
                 deep=False,
                 source_files=None,
+                helper_cache_dir=None,
             ):
                 assert source_files is not None
                 return {
@@ -4473,7 +4527,14 @@ class TestInventoryCache:
         class FakeTypeScriptExtractor:
             last_error = None
 
-            def extract(self, src_dir, only_files=None, deep=False, source_files=None):
+            def extract(
+                self,
+                src_dir,
+                only_files=None,
+                deep=False,
+                source_files=None,
+                helper_cache_dir=None,
+            ):
                 return {
                     "app.ts": {
                         "language": "typescript",

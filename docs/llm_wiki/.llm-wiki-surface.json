@@ -29333,7 +29333,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2199,
+              "line": 2202,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29341,7 +29341,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2203,
+              "line": 2206,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29349,7 +29349,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2205,
+              "line": 2208,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29357,7 +29357,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2207,
+              "line": 2210,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29365,7 +29365,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2233,
+              "line": 2236,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29373,7 +29373,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2235,
+              "line": 2238,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29381,7 +29381,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2240,
+              "line": 2243,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29389,31 +29389,13 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2244,
+              "line": 2247,
               "step": "run",
               "step_index": 1,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "unresolved_call",
-              "line": 2183,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 2184,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 2185,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "unresolved_call",
               "line": 2186,
@@ -29459,6 +29441,24 @@
             {
               "kind": "unresolved_call",
               "line": 2193,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 2194,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 2195,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 2196,
               "step": "run",
               "target": "getattr"
             },
@@ -52000,5 +52000,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:7622c9aa4e9f5bb7f113ce5c60fa7a82ac0ef5ff6026796f1978583c967eeb1b"
+  "source_hash": "sha256:479a2d61f48be8ae2558425d1f85177965fee1b6b67c3c30f13eb83b26d10bba"
 }

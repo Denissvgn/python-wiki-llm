@@ -494,10 +494,10 @@ Installation does not bootstrap or synchronize the wiki, change branch
 protection, install hooks, push commits, or add repository secrets. Those
 remain explicit maintainer actions.
 
-### Scheduled convergence observation
+### Manual convergence observation
 
 `.github/workflows/llm-wiki-convergence.yml` provides a separately named
-scheduled and manual convergence check for this repository. From an exact,
+manually dispatched convergence check for this repository. From an exact,
 credential-free checkout of the default branch, it prepares the selected locked
 helpers and runs one real `llm-wiki sync` with project-local plugins disabled.
 The run starts only from a clean worktree, never uses `--dry-run` or `--force`,
@@ -606,11 +606,11 @@ The action reserves isolated runner-temporary cache, toolchain, and evidence
 paths and uploads only the JSON
 report, a hash-bound dashboard receipt, the extractor plan, and the preparation
 log. Human disclosure text is escaped and the job summary has fixed size and
-line bounds. This repository also provides a separately named scheduled and
-manual dashboard workflow; it has read-only permissions and no pull-request or
-push trigger. Branch protection should continue to require the exact
-`LLM Wiki integrity` context produced by the full gate, not this diagnostic
-dashboard.
+line bounds. This repository also provides a separately named, manually
+dispatched dashboard workflow; it has read-only permissions and no scheduled,
+pull-request, or push trigger. Branch protection should continue to require the
+exact `LLM Wiki integrity` context produced by the full gate, not this
+diagnostic dashboard.
 
 Omit `source-selection` to use default discovery. Set it to the same
 source-root-relative non-default profile used by local maintenance commands

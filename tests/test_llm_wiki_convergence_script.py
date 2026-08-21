@@ -1,4 +1,4 @@
-"""Behavioral contracts for the scheduled real-sync convergence wrapper."""
+"""Behavioral contracts for the real-sync convergence wrapper."""
 
 from __future__ import annotations
 

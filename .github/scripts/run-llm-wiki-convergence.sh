@@ -454,7 +454,7 @@ status_path = pathlib.Path(sys.argv[11])
 worktree_matches_scoped = sys.argv[12] == "true"
 
 lines = [
-    "## LLM Wiki scheduled convergence",
+    "## LLM Wiki convergence observation",
     f"- Result: **{decision}**",
     f"- Real sync started: `{'yes' if sync_started else 'no'}`",
     f"- Sync exit: `{sync_exit if sync_started else 'not-run'}`",

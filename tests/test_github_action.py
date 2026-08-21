@@ -443,15 +443,14 @@ def test_action_is_diagnostic_and_does_not_duplicate_integrity_validation() -> N
     assert combined.count(" llm_wiki_cli.cli doctor") == 1
 
 
-def test_scheduled_dashboard_workflow_is_separate_and_read_only() -> None:
+def test_manual_dashboard_workflow_is_separate_and_read_only() -> None:
     workflow = _yaml(DASHBOARD_WORKFLOW_PATH)
     triggers = workflow[True]
     job = workflow["jobs"]["dashboard"]
     steps = job["steps"]
 
     assert workflow["name"] == "LLM Wiki strict doctor dashboard"
-    assert set(triggers) == {"schedule", "workflow_dispatch"}
-    assert triggers["schedule"] == [{"cron": "23 5 * * 3"}]
+    assert triggers == {"workflow_dispatch": None}
     assert workflow["permissions"] == {"contents": "read"}
     assert job["permissions"] == {"contents": "read"}
     assert job["runs-on"] == "ubuntu-24.04"
