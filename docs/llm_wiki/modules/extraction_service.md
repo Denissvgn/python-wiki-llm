@@ -85,7 +85,7 @@ flowchart LR
 | [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 250 | — | — |
 | [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 261 | — | — |
 | [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 280 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 2944 | — | — |
+| [_ComposeParserState](../entities/ComposeParserState.md) | 2947 | — | — |
 
 ## Functions
 
