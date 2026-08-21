@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The repository convergence and strict doctor dashboard workflows now require
+  explicit manual dispatch; their weekly schedules were removed to avoid
+  redundant checks on unchanged default-branch commits.
+
 ### Fixed
 
-- TypeScript extraction now honors `--helper-cache-dir`. Scheduled
-  `prepare-extractors` then `sync` used an explicit helper cache, but the
-  TypeScript extractor still looked only in the default `.git` location and
-  failed as unprepared.
+- TypeScript extraction now honors `--helper-cache-dir`. The convergence and
+  dashboard workflows prepared an explicit helper cache, but the TypeScript
+  extractor still looked only in the default `.git` location and failed as
+  unprepared.
 
 ## [1.8.0] - 2026-08-15
 

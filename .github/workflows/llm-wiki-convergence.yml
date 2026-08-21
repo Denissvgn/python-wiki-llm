@@ -1,4 +1,4 @@
-name: LLM Wiki scheduled convergence
+name: LLM Wiki convergence observation
 
 on:
   workflow_dispatch:
@@ -35,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           case "${RUN_EVENT}" in
-            schedule|workflow_dispatch) ;;
+            workflow_dispatch) ;;
             *) printf 'Unsupported event: %s\n' "${RUN_EVENT}" >&2; exit 1 ;;
           esac
           git check-ref-format --branch "${DEFAULT_BRANCH}" >/dev/null
