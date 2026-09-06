@@ -457,8 +457,8 @@
     "golden": {
       "path": "tests/fixtures/context-packet-v1.json",
       "bytes": 2377,
-      "sha256": "a745c1191271d29a263fa0182721c034d1830880ecd371173d98cabf717418bd",
-      "packet_id": "sha256:84ee1d4ad31fd5c4b7ac63c6b3ef0c68b9b60b89c21edf61ad9bd44305312036"
+      "sha256": "24f15d8046c3b4594978d7a9d70da803613d40e165542113015768c8cbe09ef7",
+      "packet_id": "sha256:5ea63fa3b5e3946979d0e8d300fe20a75e4f32ebf47448c184eead4f1c034937"
     }
   }
 }
