@@ -937,8 +937,24 @@ def test_load_rejects_excessively_nested_json_without_recursion_escape(
     path = tmp_path / GOVERNANCE_FILENAME
     path.write_bytes(b"[" * 100_000 + b"0" + b"]" * 100_000)
 
-    with pytest.raises(GovernanceError, match="valid UTF-8 JSON"):
+    # Decoders that can parse this depth reject the root array during validation.
+    with pytest.raises(GovernanceError, match="valid UTF-8 JSON|must be an object"):
         load_governance(tmp_path)
+
+
+def test_load_wraps_json_decoder_recursion_error(tmp_path: Path, monkeypatch):
+    (tmp_path / GOVERNANCE_FILENAME).write_bytes(b"{}")
+    decoder_error = RecursionError("JSON nesting limit reached")
+
+    def fail_decode(*args, **kwargs):
+        raise decoder_error
+
+    monkeypatch.setattr(governance.json, "loads", fail_decode)
+
+    with pytest.raises(GovernanceError, match="valid UTF-8 JSON") as error:
+        load_governance(tmp_path)
+
+    assert error.value.__cause__ is decoder_error
 
 
 def test_load_uses_the_ledger_byte_bound_before_json_parsing(

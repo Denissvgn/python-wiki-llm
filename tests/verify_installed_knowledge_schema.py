@@ -8,6 +8,7 @@ import sys
 import tempfile
 import tarfile
 import zipfile
+from email.parser import BytesParser
 from pathlib import Path
 
 _PROBE = r"""
@@ -65,6 +66,18 @@ def _validate_member_names(names: set[str]) -> None:
 def _verify_contents(wheel: Path, sdist: Path) -> None:
     with zipfile.ZipFile(wheel) as archive:
         wheel_names = set(archive.namelist())
+        metadata_paths = {
+            name
+            for name in wheel_names
+            if len(Path(name).parts) == 2 and name.endswith(".dist-info/METADATA")
+        }
+        if len(metadata_paths) != 1:
+            raise RuntimeError("wheel must contain exactly one package metadata file")
+        metadata = BytesParser().parsebytes(archive.read(metadata_paths.pop()))
+        versions = metadata.get_all("Version", [])
+        if len(versions) != 1 or not versions[0].strip():
+            raise RuntimeError("wheel metadata must contain exactly one version")
+        version = versions[0].strip()
     _validate_member_names(wheel_names)
     missing_helpers = _REQUIRED_HELPERS - wheel_names
     if missing_helpers:
@@ -81,7 +94,7 @@ def _verify_contents(wheel: Path, sdist: Path) -> None:
         raw_sdist_names = {member.name for member in archive.getmembers()}
     _validate_member_names(raw_sdist_names)
     roots = {Path(name).parts[0] for name in raw_sdist_names if Path(name).parts}
-    if roots != {"agent_wiki_cli-1.8.0"}:
+    if roots != {f"agent_wiki_cli-{version}"}:
         raise RuntimeError(f"sdist has an unexpected root: {sorted(roots)}")
     sdist_names = {
         Path(*Path(name).parts[1:]).as_posix()

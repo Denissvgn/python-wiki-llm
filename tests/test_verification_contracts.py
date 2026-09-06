@@ -357,14 +357,31 @@ def test_receipt_loader_rejects_oversized_input(tmp_path):
         load_verification_receipt(tmp_path)
 
 
-def test_receipt_decoder_wraps_excessive_json_nesting():
+def test_receipt_decoder_rejects_excessively_nested_root_array():
     content = (
         ("[" * 100_000) + "0" + ("]" * 100_000)
     ).encode("utf-8")
     assert len(content) < MAX_RECEIPT_BYTES
 
-    with pytest.raises(VerificationReceiptError, match="valid JSON"):
+    # Decoders that can parse this depth reject the root array during validation.
+    with pytest.raises(
+        VerificationReceiptError, match="valid JSON|must be an object"
+    ):
         deserialize_verification_receipt(content)
+
+
+def test_receipt_decoder_wraps_recursion_error(monkeypatch):
+    decoder_error = RecursionError("JSON nesting limit reached")
+
+    def fail_decode(*args, **kwargs):
+        raise decoder_error
+
+    monkeypatch.setattr(verification.json, "loads", fail_decode)
+
+    with pytest.raises(VerificationReceiptError, match="valid JSON") as error:
+        deserialize_verification_receipt(b"{}")
+
+    assert error.value.__cause__ is decoder_error
 
 
 def test_receipt_read_and_write_reject_symlinked_ancestor(
