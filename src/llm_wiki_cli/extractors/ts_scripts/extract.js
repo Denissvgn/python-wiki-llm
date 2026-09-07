@@ -253,7 +253,12 @@ function extractFunctionInfo(fn, name, docNode = null, line = null) {
 }
 
 function extractProperty(prop) {
-  const info = { name: prop.getName(), type: "" };
+  const info = {
+    name: prop.getName(),
+    type: "",
+    // A union with undefined does not make a property optional.
+    optional: prop.hasQuestionToken?.() ?? false,
+  };
   const typeNode = prop.getTypeNode?.();
   if (typeNode) info.type = typeToStr(typeNode);
   const initializer = prop.getInitializer?.();

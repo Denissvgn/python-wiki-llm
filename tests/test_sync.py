@@ -2708,6 +2708,30 @@ class TestChangedFile:
 class TestSemanticPreservation:
     """sync preserves manually enriched descriptions while refreshing metadata."""
 
+    def test_optionality_column_upgrade_preserves_legacy_descriptions(self):
+        entity = {
+            "name": "EvidenceSignals",
+            "attributes": [
+                {"name": "events_incomplete", "type": "boolean", "default": ""},
+            ],
+        }
+        old_generated = bootstrap_cmd._generate_entity_md(entity, "types.ts", {})
+        existing = old_generated.replace(
+            "_Auto-generated from `EvidenceSignals` in `types.ts`._",
+            "Human-curated evidence contract.",
+        ).replace(
+            "| `events_incomplete` | `boolean` | *required* | — |",
+            "| `events_incomplete` | `boolean` | *required* | Omission means unavailable. |",
+        )
+        entity["attributes"][0]["optional"] = True
+        generated = bootstrap_cmd._generate_entity_md(entity, "types.ts", {})
+        merged = sync_cmd._merge_entity_semantics(existing, generated).text
+        assert "Human-curated evidence contract." in merged
+        assert (
+            "| `events_incomplete` | `boolean` | No | — | Omission means unavailable. |"
+            in merged
+        )
+
     @staticmethod
     def _replace_section_body(content: str, heading: str, body: str) -> str:
         lines = content.splitlines()

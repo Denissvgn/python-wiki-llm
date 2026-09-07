@@ -674,6 +674,12 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_optional_properties_bootstrap_and_incremental_sync",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_single_file_with_class",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
@@ -1497,6 +1503,12 @@
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_respects_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_optional_properties_bootstrap_and_incremental_sync",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
     },
@@ -2421,6 +2433,12 @@
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_only_files_respects_node_modules",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractor::test_optional_properties_bootstrap_and_incremental_sync",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
     },

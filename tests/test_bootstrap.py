@@ -1003,6 +1003,64 @@ class TestBootstrapCollisions:
 
 
 class TestBootstrapEntityPages:
+    def test_explicit_optionality_is_independent_of_defaults(self):
+        content = bootstrap_cmd._generate_entity_md(
+            {
+                "name": "Contract",
+                "attributes": [
+                    {
+                        "name": "required",
+                        "type": "number | undefined",
+                        "default": "",
+                        "optional": False,
+                    },
+                    {
+                        "name": "optional",
+                        "type": "number",
+                        "default": "",
+                        "optional": True,
+                    },
+                    {
+                        "name": "initialized",
+                        "type": "number",
+                        "default": "0",
+                        "optional": False,
+                    },
+                    {
+                        "name": "optional_initialized",
+                        "type": "number",
+                        "default": "1",
+                        "optional": True,
+                    },
+                    {"name": "unknown", "type": "number", "default": ""},
+                ],
+            },
+            "types.ts",
+            {},
+        )
+        assert "| Name | Type | Required | Default | Description |" in content
+        assert r"| `required` | `number \| undefined` | Yes | — | — |" in content
+        assert "| `optional` | `number` | No | — | — |" in content
+        assert "| `initialized` | `number` | Yes | `0` | — |" in content
+        assert "| `optional_initialized` | `number` | No | `1` | — |" in content
+        assert "| `unknown` | `number` | — | — | — |" in content
+
+    def test_legacy_attributes_keep_existing_format(self):
+        content = bootstrap_cmd._generate_entity_md(
+            {
+                "name": "Legacy",
+                "attributes": [
+                    {"name": "required", "type": "str", "default": ""},
+                    {"name": "initialized", "type": "int", "default": "0"},
+                ],
+            },
+            "legacy.py",
+            {},
+        )
+        assert "| Name | Type | Default | Description |" in content
+        assert "| `required` | `str` | *required* | — |" in content
+        assert "| `initialized` | `int` | `0` | — |" in content
+
     def test_creates_entity_per_class(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         args = _make_args(src_dir=".", wiki_dir=str(wiki_dir))

@@ -98,6 +98,7 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "classes[].attributes[].line",
         "classes[].attributes[].literal_values",
         "classes[].attributes[].nullable",
+        "classes[].attributes[].optional",
         "classes[].attributes[].required",
         "classes[].attributes[].serialization_alias",
         "classes[].attributes[].unknowns",

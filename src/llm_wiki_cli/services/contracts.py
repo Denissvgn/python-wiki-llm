@@ -25,6 +25,9 @@ values preserve declaration separators, while class/attribute records may add
 enum members, type-alias targets, normalized Pydantic field state, model
 configuration, and validator metadata. Extraction remains syntax-only and
 consumers must tolerate these optional records being absent.
+Deep TypeScript property records add an ``optional`` boolean for the explicit
+question token. Names, types, and defaults retain their existing meanings;
+neither a union with ``undefined`` nor an initializer determines optionality.
 Deep Python inventory may additionally expose per-file ``frameworks.fastapi``
 declarations and the payload may expose top-level ``api_contracts`` assembled
 from static syntax or an authoritative source-contained OpenAPI export. These
@@ -214,6 +217,7 @@ EXTRACT_ADDITIVE_FIELDS = {
     "classes[].attributes[].line",
     "classes[].attributes[].literal_values",
     "classes[].attributes[].nullable",
+    "classes[].attributes[].optional",
     "classes[].attributes[].required",
     "classes[].attributes[].serialization_alias",
     "classes[].attributes[].unknowns",
