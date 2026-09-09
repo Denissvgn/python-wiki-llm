@@ -1028,6 +1028,38 @@ def collect_runtime_repository_evidence(
     )
 
 
+def runtime_graph_analyzer_limitations(
+    *,
+    deep: bool = True,
+    data_flow_enabled: bool,
+    dependency_analysis: Mapping | None,
+    excluded_dependency_tests: int = 0,
+) -> dict[str, tuple[str, ...]]:
+    """Describe the same analysis boundaries for bootstrap and sync graphs."""
+    if not deep:
+        return {
+            analyzer: ("deep-analysis-disabled",)
+            for analyzer in (
+                "calls",
+                "dependencies",
+                "entrypoints",
+                "flows",
+                "data-flows",
+                "external-dependencies",
+            )
+        }
+    limitations: dict[str, tuple[str, ...]] = {}
+    if not data_flow_enabled:
+        limitations["data-flows"] = ("data-flow-analysis-disabled",)
+    if dependency_analysis is None:
+        limitations["external-dependencies"] = ("dependency-analysis-not-evaluated",)
+    elif excluded_dependency_tests:
+        limitations["external-dependencies"] = (
+            "dependency-analysis-excludes-test-sources",
+        )
+    return limitations
+
+
 def runtime_generation_options(
     *,
     surfaces: Mapping[str, Mapping[str, Any]],

@@ -522,3 +522,23 @@ Append-only chronological log.
 - Pages deprecated: 0
 - Semantic fields preserved: 22
 - Moved entities: none
+
+## 2026-09-09
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.0.1`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:6cf96f1adacca6ed251eca8cda9a09bde8ba9342fc26b7c910956017983c9a7e`
+- Pages created: 1
+- Pages updated: 57
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1092
+- Pages deprecated: 0
+- Semantic fields preserved: 22
+- Moved entities: none
+- Flow pages initialized: 1 (api=1)
+- Workflow pages created: 0
+- Dependency pages initialized: 0
+- Surface policy updated: no

@@ -1,6 +1,6 @@
 # _FlowResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4159`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4162`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -21,6 +21,7 @@ _Auto-generated from `_FlowResult` in `src/llm_wiki_cli/services/bootstrap_runti
 | `entrypoint_observations` | `dict` | `field(default_factory=dict)` | — |
 | `flows` | `list[dict]` | `field(default_factory=list)` | — |
 | `data_flows` | `list[dict]` | `field(default_factory=list)` | — |
+| `detected_entries` | `list[dict]` | `field(default_factory=list)` | — |
 
 ## Methods
 
@@ -54,7 +55,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `created`, `data_flow_summary`, `data_flows`, `entries`, `entrypoint_observations`, `flows` |
+| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `created`, `data_flow_summary`, `data_flows`, `detected_entries`, `entries`, `entrypoint_observations`, `flows` |
 
 ### References
 
@@ -63,6 +64,6 @@ flowchart LR
 | `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
-| `_write_bootstrap_flow_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_write_bootstrap_flow_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 3 |
 | `_write_bootstrap_flow_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_write_bootstrap_index` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

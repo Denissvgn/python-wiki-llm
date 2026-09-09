@@ -119,34 +119,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_api_contracts | load_openapi_document | 1818 | `load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)` |
-| load_openapi_document | _resolve_openapi_path | 1258 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
-| _resolve_openapi_path | resolve | 1186 | `Path(source_root).resolve(data not statically known)` |
-| _resolve_openapi_path | Path | 1186 | `Path(source_root)` |
-| _resolve_openapi_path | expanduser | 1187 | `Path(path).expanduser(data not statically known)` |
-| _resolve_openapi_path | Path | 1187 | `Path(path)` |
-| _resolve_openapi_path | is_absolute | 1188 | `candidate.is_absolute(data not statically known)` |
-| _resolve_openapi_path | as_posix | 1191 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
-| _resolve_openapi_path | relative_to | 1191 | `Path(os.path.abspath(candidate)).relative_to(root)` |
-| _resolve_openapi_path | Path | 1191 | `Path(os.path.abspath(...))` |
-| _resolve_openapi_path | abspath | 1191 | `os.path.abspath(candidate)` |
+| build_api_contracts | load_openapi_document | 1819 | `load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)` |
+| load_openapi_document | _resolve_openapi_path | 1259 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
+| _resolve_openapi_path | resolve | 1187 | `Path(source_root).resolve(data not statically known)` |
+| _resolve_openapi_path | Path | 1187 | `Path(source_root)` |
+| _resolve_openapi_path | expanduser | 1188 | `Path(path).expanduser(data not statically known)` |
+| _resolve_openapi_path | Path | 1188 | `Path(path)` |
+| _resolve_openapi_path | is_absolute | 1189 | `candidate.is_absolute(data not statically known)` |
+| _resolve_openapi_path | as_posix | 1192 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
+| _resolve_openapi_path | relative_to | 1192 | `Path(os.path.abspath(candidate)).relative_to(root)` |
+| _resolve_openapi_path | Path | 1192 | `Path(os.path.abspath(...))` |
+| _resolve_openapi_path | abspath | 1192 | `os.path.abspath(candidate)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `resolved.read_bytes` | `load_openapi_document` | 1265 |
+| filesystem_read | `resolved.read_bytes` | `load_openapi_document` | 1266 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_resolve_openapi_path` | `Path(source_root).resolve` | 1186 |
-| unresolved_call | `_resolve_openapi_path` | `Path(path).expanduser` | 1187 |
-| unresolved_call | `_resolve_openapi_path` | `candidate.is_absolute` | 1188 |
-| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to(root).as_posix` | 1191 |
-| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to` | 1191 |
-| external_call | `_resolve_openapi_path` | `os.path.abspath` | 1191 |
+| unresolved_call | `_resolve_openapi_path` | `Path(source_root).resolve` | 1187 |
+| unresolved_call | `_resolve_openapi_path` | `Path(path).expanduser` | 1188 |
+| unresolved_call | `_resolve_openapi_path` | `candidate.is_absolute` | 1189 |
+| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to(root).as_posix` | 1192 |
+| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to` | 1192 |
+| external_call | `_resolve_openapi_path` | `os.path.abspath` | 1192 |
 | step_limit | `build_api_contracts` | `first 12 steps` | 0 |
 | truncated_flow | `build_api_contracts` | `depth limit` | 0 |
 

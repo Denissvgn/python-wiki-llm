@@ -45,7 +45,7 @@ flowchart TD
 | [knowledge_governance](modules/knowledge_governance.md) | 17 | 9 |
 | [plugins](modules/plugins.md) | 16 | 3 |
 | [filesystem_guard](modules/filesystem_guard.md) | 15 | 0 |
-| [bootstrap_runtime](modules/bootstrap_runtime.md) | 14 | 29 |
+| [bootstrap_runtime](modules/bootstrap_runtime.md) | 14 | 30 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 14 | 5 |
 | [knowledge_observability](modules/knowledge_observability.md) | 14 | 9 |
 | [progress](modules/progress.md) | 14 | 1 |
@@ -84,13 +84,13 @@ flowchart TD
 | [extractor_helpers](modules/extractor_helpers.md) | 5 | 1 |
 | [immutable](modules/immutable.md) | 5 | 0 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
+| [knowledge_reuse](modules/knowledge_reuse.md) | 5 | 12 |
 | [legacy_hooks](modules/legacy_hooks.md) | 5 | 4 |
 | [metrics](modules/metrics.md) | 5 | 9 |
 | [verification_contracts](modules/verification_contracts.md) | 5 | 5 |
 | [api_contracts](modules/api_contracts.md) | 4 | 4 |
 | [calibration___init__](modules/calibration___init__.md) | 4 | 4 |
 | [documentation_wiki_input](modules/documentation_wiki_input.md) | 4 | 13 |
-| [knowledge_reuse](modules/knowledge_reuse.md) | 4 | 12 |
 | [redaction](modules/redaction.md) | 4 | 0 |
 | [rendering_lifecycle](modules/rendering_lifecycle.md) | 4 | 2 |
 | [section_ownership](modules/section_ownership.md) | 4 | 5 |

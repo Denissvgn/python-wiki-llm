@@ -1,6 +1,6 @@
 # _BootstrapGenerationResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4195`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4199`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -26,6 +26,7 @@ _Auto-generated from `_BootstrapGenerationResult` in `src/llm_wiki_cli/services/
 | `dependency_observations` | `dict` | `field(default_factory=dict)` | — |
 | `external_dependencies` | `list[dict]` | `field(default_factory=list)` | — |
 | `graph_analyzer_limitations` | `dict[str, tuple[str, ...]]` | `field(default_factory=dict)` | — |
+| `reuse_observations_hash` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -53,7 +54,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `api_contract`, `call_observations`, `cross_reference_count`, `dependency`, `dependency_observations`, `entity`, `external_dependencies`, `flow`, `graph_analyzer_limitations`, `infrastructure`, `workflow` |
+| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `api_contract`, `call_observations`, `cross_reference_count`, `dependency`, `dependency_observations`, `entity`, `external_dependencies`, `flow`, `graph_analyzer_limitations`, `infrastructure`, `reuse_observations_hash`, `workflow` |
 
 ### References
 

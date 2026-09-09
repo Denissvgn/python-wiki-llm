@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import sys
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, replace
 from pathlib import Path
 
@@ -147,6 +147,24 @@ def validate_reuse_artifact_parity(knowledge, manifest) -> None:
     }
     if any(value[field] != commitment for field, commitment in expected.items()):
         raise ValueError("knowledge reuse does not match its committed artifact inputs")
+
+
+def observation_inputs_hash(
+    *,
+    entrypoint_observations: Mapping,
+    entry_points: Sequence[Mapping],
+    api_contracts: Mapping,
+    dependency_analysis: Mapping | None,
+) -> str:
+    """Commit the same raw detector inputs for bootstrap and sync."""
+    return hash_json(
+        {
+            "entrypoints": entrypoint_observations,
+            "entries": entry_points,
+            "api_contracts": api_contracts,
+            "dependencies": dependency_analysis,
+        }
+    )
 
 
 def build_reuse_input_basis(

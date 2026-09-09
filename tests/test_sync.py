@@ -570,8 +570,6 @@ class TestSyncSurfaceIndex:
             )
         )
 
-        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
-
         artifact_paths = (
             "index.md",
             SURFACE_INDEX_FILENAME,

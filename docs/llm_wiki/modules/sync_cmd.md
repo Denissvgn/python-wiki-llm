@@ -24,7 +24,7 @@ Workflow:
 | `..` | `__version__` |
 | `..config` | `validate_path`, `validate_source_root` |
 | `..services` | `knowledge_reuse` |
-| `..services.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `load_openapi_document`, `render_api_contracts_markdown` |
+| `..services.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `load_openapi_document`, `render_api_contracts_markdown` |
 | `..services.bootstrap_runtime` | `_build_entity_relationship_summary_map`, `_build_relationships`, `_generate_dependencies_md`, `_generate_entity_md`, `_generate_flow_md`, `_generate_index_md`, `_generate_load_order_md`, `_generate_module_md`, `_generate_workflow_md`, `_generate_infrastructure_md`, `_generated_diagram_style`, `_module_name_from_path`, `_page_name_for_module`, `_source_snapshot_log_lines`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
 | `..services.data_flow` | `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `..services.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations` |
@@ -37,9 +37,9 @@ Workflow:
 | `..services.io` | `read_md`, `write_md` |
 | `..services.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
 | `..services.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
-| `..services.knowledge_evidence` | `hash_file`, `hash_json`, `is_valid_sha256`, `semantic_hash_for_file` |
+| `..services.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
 | `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
-| `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
+| `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
 | `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines` |
 | `..services.module_maps` | `build_module_dependency_maps` |
 | `..services.paths` | `is_test_source_path`, `portable_source_root_label` |
@@ -95,20 +95,20 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 264 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 268 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 592 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 631 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 650 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1589 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1614 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1621 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1627 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1633 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1649 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1692 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1716 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1722 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 266 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 270 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 594 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 633 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 652 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1591 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1616 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1623 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1629 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1635 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1651 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1694 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1718 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1724 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 

@@ -10,7 +10,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Modules | 159 | [Open section](#modules) |
 | Workflows | 15 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 435 | [Open section](#entry-point-flows) |
+| Entry-point flows | 436 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -909,6 +909,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-knowledge_index_to_payload-knowledge_model](flows/api-knowledge_index_to_payload-knowledge_model.md) - entry: `knowledge_index_to_payload`
 - [api-knowledge_status_payload](flows/api-knowledge_status_payload.md) - entry: `knowledge_status_payload`
 - [api-lifecycle_state_by_uid](flows/api-lifecycle_state_by_uid.md) - entry: `lifecycle_state_by_uid`
+- [api-link_entry_point_flows](flows/api-link_entry_point_flows.md) - entry: `link_entry_point_flows`
 - [api-list_concept_sections](flows/api-list_concept_sections.md) - entry: `list_concept_sections`
 - [api-list_wiki_pages](flows/api-list_wiki_pages.md) - entry: `list_wiki_pages`
 - [api-load_and_evaluate_verification_receipt](flows/api-load_and_evaluate_verification_receipt.md) - entry: `load_and_evaluate_verification_receipt`

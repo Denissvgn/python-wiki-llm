@@ -1,6 +1,6 @@
 # _GeneratedSectionContext
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:650`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:652`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

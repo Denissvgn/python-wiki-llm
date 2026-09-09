@@ -19,7 +19,8 @@ application and never resolves remote OpenAPI references.
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
-| `collections.abc` | `Mapping`, `Sequence` |
+| `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
+| `copy` | `deepcopy` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `os` | `os` |
@@ -104,7 +105,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ApiContractError](../entities/ApiContractError.md) | 72 | `ValueError` | Raised when an API-contract input cannot be consumed safely. |
+| [ApiContractError](../entities/ApiContractError.md) | 73 | `ValueError` | Raised when an API-contract input cannot be consumed safely. |
 
 ## Functions
 
@@ -159,6 +160,7 @@ flowchart LR
 | `_attach_static_parameter_names` | `(openapi_operation: dict[str, Any], static_operation: Mapping[str, Any]) -> None` | — | — |
 | `_reconcile_openapi` | `(static: Mapping[str, Any], loaded: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `build_api_contracts` | `(inventory: Mapping[str, Mapping[str, Any]], *, openapi_file: str \| Path \| None = None, source_root: str \| Path = '.', source_snapshot: SourceSnapshot \| None = None) -> dict[str, Any]` | — | Build static contracts or reconcile them with authoritative OpenAPI. |
+| `link_entry_point_flows` | `(contracts: Mapping[str, object], entry_points: Iterable[Mapping[str, object]]) -> dict` | — | Attach stable flow ids to operations with statically linked handlers. |
 | `attach_routes_to_entry_points` | `(entry_points: Sequence[Mapping[str, Any]], contracts: Mapping[str, Any]) -> list[dict[str, Any]]` | — | Keep one HTTP flow per handler while attaching all resolved routes. |
 | `_md_text` | `(value: Any) -> str` | — | — |
 | `_md_code` | `(value: Any) -> str` | — | — |

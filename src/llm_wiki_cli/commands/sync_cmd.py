@@ -35,6 +35,7 @@ from ..services.api_contracts import (
     ApiContractError,
     attach_routes_to_entry_points,
     build_api_contracts,
+    link_entry_point_flows,
     load_openapi_document,
     render_api_contracts_markdown,
 )
@@ -86,7 +87,7 @@ from ..services.knowledge_artifacts import (
 )
 from ..services.knowledge_envelope import RepositoryEvidence, build_repository_record
 from ..services import knowledge_reuse
-from ..services.knowledge_evidence import hash_file, hash_json
+from ..services.knowledge_evidence import hash_file
 from ..services.knowledge_evidence import (
     is_valid_sha256,
 )
@@ -106,6 +107,7 @@ from ..services.knowledge_orchestration import (
     committed_runtime_provenance,
     finalize_runtime_knowledge,
     runtime_generation_options,
+    runtime_graph_analyzer_limitations,
     runtime_generation_options_hash,
     runtime_source_snapshot_hash,
 )
@@ -2262,27 +2264,7 @@ def _linked_api_contracts(
     contracts: Mapping[str, object], entry_points: Iterable[Mapping[str, object]]
 ) -> dict:
     """Attach stable flow ids to operations with statically linked handlers."""
-    linked = deepcopy(dict(contracts))
-    flow_ids: dict[tuple[str, str], str] = {}
-    for entry in entry_points:
-        if entry.get("category") != "http" or not entry.get("id"):
-            continue
-        symbol = str(entry.get("symbol") or "").rsplit(".", 1)[-1]
-        flow_ids[(str(entry.get("file") or ""), symbol)] = str(entry["id"])
-    operations = linked.get("operations")
-    if not isinstance(operations, list):
-        operations = []
-    for operation in operations:
-        if not isinstance(operation, dict):
-            continue
-        handler = operation.get("handler")
-        if not isinstance(handler, Mapping):
-            continue
-        symbol = str(handler.get("symbol") or "").rsplit(".", 1)[-1]
-        flow_id = flow_ids.get((str(handler.get("file") or ""), symbol))
-        if flow_id:
-            operation["flow_id"] = flow_id
-    return linked
+    return link_entry_point_flows(contracts, entry_points)
 
 
 def _sync_run_options_from_args(args) -> _SyncRunOptions:
@@ -3253,15 +3235,11 @@ def _build_sync_graph_observations(
             if data_flow_enabled
             else []
         )
-    limitations: dict[str, tuple[str, ...]] = {}
-    if not data_flow_enabled:
-        limitations["data-flows"] = ("data-flow-analysis-disabled",)
-    if dependency_analysis is None:
-        limitations["external-dependencies"] = ("dependency-analysis-not-evaluated",)
-    elif surface_plan.excluded_dependency_tests:
-        limitations["external-dependencies"] = (
-            "dependency-analysis-excludes-test-sources",
-        )
+    limitations = runtime_graph_analyzer_limitations(
+        data_flow_enabled=data_flow_enabled,
+        dependency_analysis=dependency_analysis,
+        excluded_dependency_tests=surface_plan.excluded_dependency_tests,
+    )
     return _RuntimeGraphObservations(
         resolved_call_edges=call_edges,
         call_observations=call_observations,
@@ -3699,11 +3677,12 @@ def _prepare_sync_run(
             "is pending; "
             "run a normal `llm-wiki sync` first"
         )
-    reuse_observations_hash = hash_json({
-        "entrypoints": entrypoint_analysis.observations,
-        "entries": entries, "api_contracts": contracts,
-        "dependencies": surface_plan.dependency_analysis,
-    })
+    reuse_observations_hash = knowledge_reuse.observation_inputs_hash(
+        entrypoint_observations=entrypoint_analysis.observations,
+        entry_points=entries,
+        api_contracts=contracts,
+        dependency_analysis=surface_plan.dependency_analysis,
+    )
     repository_evidence = collect_runtime_repository_evidence(
         options.src_dir,
         options.wiki_dir,
@@ -3764,11 +3743,12 @@ def _prepare_sync_run(
             graph_plan = surface_plan
     # Initialization can replace the requested surface plan with the effective
     # ordinary-generation plan. Commit that same observation basis in both modes.
-    reuse_observations_hash = hash_json({
-        "entrypoints": entrypoint_analysis.observations,
-        "entries": entries, "api_contracts": contracts,
-        "dependencies": graph_plan.dependency_analysis,
-    })
+    reuse_observations_hash = knowledge_reuse.observation_inputs_hash(
+        entrypoint_observations=entrypoint_analysis.observations,
+        entry_points=entries,
+        api_contracts=contracts,
+        dependency_analysis=graph_plan.dependency_analysis,
+    )
     graph_observations = _build_sync_graph_observations(
         graph_options,
         inventory,
