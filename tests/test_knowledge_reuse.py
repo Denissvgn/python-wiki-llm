@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -12,6 +13,7 @@ from unittest.mock import patch
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
+from llm_wiki_cli.services.bootstrap_service import BootstrapRequest
 from llm_wiki_cli.services import (
     knowledge_artifacts,
     knowledge_generation,
@@ -43,8 +45,8 @@ def artifact_bytes(wiki="wiki"):
     return {name: (Path(wiki) / name).read_bytes() for name in ARTIFACTS}
 
 
-@pytest.fixture
-def synced(tmp_path, monkeypatch, capsys):
+@pytest.fixture(params=("cli", "api"))
+def synced(tmp_path, monkeypatch, capsys, request):
     monkeypatch.chdir(tmp_path)
     subprocess.run(
         ["git", "init", "-q", str(tmp_path)], check=True, capture_output=True
@@ -62,22 +64,139 @@ def synced(tmp_path, monkeypatch, capsys):
         encoding="utf-8",
     )
     Path("src/Dockerfile").write_text("FROM python:3.10\n", encoding="utf-8")
-    bootstrap_cmd.run(
-        SimpleNamespace(
-            src_dir="src",
-            wiki_dir="wiki",
-            depth="full",
-            overwrite=False,
-            source_adapter=True,
-            skip_workflows=False,
+    if request.param == "cli":
+        bootstrap_cmd.run(
+            SimpleNamespace(
+                src_dir="src",
+                wiki_dir="wiki",
+                depth="full",
+                overwrite=False,
+                source_adapter=True,
+                skip_workflows=False,
+            )
         )
-    )
-    sync()
+    else:
+        bootstrap_cmd.execute_bootstrap(
+            BootstrapRequest(
+                source_root=tmp_path / "src",
+                wiki_root=tmp_path / "wiki",
+                source_adapter=True,
+            )
+        )
     knowledge = load_knowledge_state("wiki").knowledge
     assert knowledge is not None
-    assert knowledge_reuse.REUSE_EXTENSION_KEY in knowledge.extensions
     capsys.readouterr()
     return tmp_path
+
+
+@pytest.mark.parametrize("mode", ("default", "no_cache", "rebuild_knowledge"))
+def test_first_sync_preserves_bootstrap_artifacts(synced, mode):
+    before = artifact_bytes()
+    sync(no_cache=mode == "no_cache", rebuild_knowledge=mode == "rebuild_knowledge")
+    assert artifact_bytes() == before
+    loaded = load_knowledge_state("wiki")
+    assert loaded.knowledge is not None
+    assert loaded.manifest_basis is not None
+    commitment = loaded.knowledge.extensions[knowledge_reuse.REUSE_EXTENSION_KEY]
+    assert (
+        commitment
+        == loaded.manifest_basis.generation_inputs[knowledge_reuse.REUSE_INPUT_KEY]
+    )
+
+
+@pytest.mark.parametrize(
+    "profile",
+    (
+        "default",
+        "no_flows",
+        "no_dependencies",
+        "no_data_flow",
+        "api_contracts",
+        "api_without_flows",
+        "source_selection",
+        "include_tests",
+    ),
+)
+def test_first_sync_respects_bootstrap_surface_and_source_policies(
+    tmp_path, monkeypatch, profile
+):
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "src"
+    source.mkdir()
+    (source / "app.py").write_text(
+        "from fastapi import FastAPI\napp = FastAPI()\n"
+        "@app.get('/ping')\ndef ping() -> str:\n    return 'pong'\n",
+        encoding="utf-8",
+    )
+    (source / "test_app.py").write_text(
+        "from app import ping\ndef test_ping():\n    assert ping() == 'pong'\n",
+        encoding="utf-8",
+    )
+    request = BootstrapRequest(source_root=source, wiki_root=tmp_path / "wiki")
+    if profile == "no_flows":
+        request = replace(request, skip_flows=True)
+    elif profile == "no_dependencies":
+        request = replace(request, skip_dependencies=True)
+    elif profile == "no_data_flow":
+        request = replace(request, skip_data_flow=True)
+    elif profile in {"api_contracts", "api_without_flows"}:
+        request = replace(
+            request, api_contracts=True, skip_flows=profile == "api_without_flows"
+        )
+    elif profile == "source_selection":
+        (source / "selection.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "llm-wiki-source-selection/v1",
+                    "include": ["app.py"],
+                    "exclude": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        request = replace(request, source_selection="selection.json")
+    elif profile == "include_tests":
+        request = replace(request, include_tests=("go",))
+    bootstrap_cmd.execute_bootstrap(request)
+    before = {
+        path: (path.read_bytes(), path.stat().st_mtime_ns)
+        for path in Path("wiki").rglob("*")
+        if path.is_file()
+    }
+    for no_cache, rebuild_knowledge in ((False, False), (True, False), (True, True)):
+        sync(
+            no_cache=no_cache,
+            rebuild_knowledge=rebuild_knowledge,
+            no_plugins=True,
+            source_selection=request.source_selection,
+            include_tests=request.include_tests,
+        )
+        after = {
+            path: (path.read_bytes(), path.stat().st_mtime_ns)
+            for path in Path("wiki").rglob("*")
+            if path.is_file()
+        }
+        assert after == before
+        assert load_knowledge_state("wiki").knowledge is not None
+
+
+def test_shallow_bootstrap_does_not_authorize_knowledge_reuse(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "src"
+    source.mkdir()
+    (source / "app.py").write_text("class Item:\n    pass\n", encoding="utf-8")
+    bootstrap_cmd.execute_bootstrap(
+        BootstrapRequest(
+            source_root=source, wiki_root=tmp_path / "wiki", depth="shallow"
+        )
+    )
+    loaded = load_knowledge_state("wiki")
+    assert loaded.knowledge is not None
+    assert loaded.manifest_basis is not None
+    assert knowledge_reuse.REUSE_EXTENSION_KEY not in loaded.knowledge.extensions
+    assert (
+        knowledge_reuse.REUSE_INPUT_KEY not in loaded.manifest_basis.generation_inputs
+    )
 
 
 @pytest.mark.parametrize(

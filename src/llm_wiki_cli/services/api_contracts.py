@@ -11,7 +11,8 @@ import json
 import os
 import re
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -1829,6 +1830,33 @@ def build_api_contracts(
     return _reconcile_openapi(static, loaded)
 
 
+def link_entry_point_flows(
+    contracts: Mapping[str, object], entry_points: Iterable[Mapping[str, object]]
+) -> dict:
+    """Attach stable flow ids to operations with statically linked handlers."""
+    linked = deepcopy(dict(contracts))
+    flow_ids: dict[tuple[str, str], str] = {}
+    for entry in entry_points:
+        if entry.get("category") != "http" or not entry.get("id"):
+            continue
+        symbol = str(entry.get("symbol") or "").rsplit(".", 1)[-1]
+        flow_ids[(str(entry.get("file") or ""), symbol)] = str(entry["id"])
+    operations = linked.get("operations")
+    if not isinstance(operations, list):
+        operations = []
+    for operation in operations:
+        if not isinstance(operation, dict):
+            continue
+        handler = operation.get("handler")
+        if not isinstance(handler, Mapping):
+            continue
+        symbol = str(handler.get("symbol") or "").rsplit(".", 1)[-1]
+        flow_id = flow_ids.get((str(handler.get("file") or ""), symbol))
+        if flow_id:
+            operation["flow_id"] = flow_id
+    return linked
+
+
 def attach_routes_to_entry_points(
     entry_points: Sequence[Mapping[str, Any]], contracts: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
@@ -2177,6 +2205,7 @@ __all__ = [
     "attach_routes_to_entry_points",
     "build_api_contracts",
     "build_static_api_contracts",
+    "link_entry_point_flows",
     "load_openapi_document",
     "render_api_contracts_markdown",
     "render_flow_api_contract_section",

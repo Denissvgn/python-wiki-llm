@@ -695,6 +695,13 @@ older or partial layout. The retained `--overwrite` compatibility option always
 fails; neither that option nor a request phrased as “re-bootstrap” authorizes
 replacement.
 
+With built-in extractors and complete source evidence, full bootstrap records
+validated knowledge and matching reuse metadata with the generated pages. The
+first `sync` preserves those artifacts when the source, wiki content, and
+generation settings are unchanged. This also holds with
+`sync --no-cache` and `sync --rebuild-knowledge`. Optional flow, dependency, and
+API-contract pages retain the scope selected during bootstrap.
+
 `bootstrap` writes entity, module, workflow, flow, infrastructure, index, log,
 dependency architecture, and manifest files. User-flow pages under `flows/` are
 generated from detected entry points with a call sequence, generated static

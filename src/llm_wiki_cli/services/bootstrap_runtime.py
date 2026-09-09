@@ -19,10 +19,12 @@ from ..config import (
     validate_path,
     validate_source_root,
 )
+from . import knowledge_reuse
 from .api_contracts import (
     ApiContractError,
     attach_routes_to_entry_points,
     build_api_contracts,
+    link_entry_point_flows,
     render_api_contracts_markdown,
     render_flow_api_contract_section,
 )
@@ -98,6 +100,7 @@ from .knowledge_orchestration import (
     finalize_runtime_knowledge,
     persist_runtime_generation_policy,
     runtime_generation_options,
+    runtime_graph_analyzer_limitations,
     runtime_source_snapshot_hash,
 )
 from .markdown_sections import (
@@ -4163,6 +4166,7 @@ class _FlowResult:
     entrypoint_observations: dict = field(default_factory=dict)
     flows: list[dict] = field(default_factory=list)
     data_flows: list[dict] = field(default_factory=list)
+    detected_entries: list[dict] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -4206,6 +4210,7 @@ class _BootstrapGenerationResult:
     graph_analyzer_limitations: dict[str, tuple[str, ...]] = field(
         default_factory=dict
     )
+    reuse_observations_hash: str | None = None
 
 
 def _data_flow_summary(
@@ -4750,20 +4755,23 @@ def _write_bootstrap_workflow_pages(
 def _build_bootstrap_api_contracts(
     state: _BootstrapRunState, inventory: dict
 ) -> dict | None:
-    if not state.options.api_contracts:
+    if not state.options.deep:
         return None
-    _emit_bootstrap(state, "Assembling API contracts...", flush=True)
+    # Static contracts also supply route observations when the optional page is off.
+    if state.options.api_contracts:
+        _emit_bootstrap(state, "Assembling API contracts...", flush=True)
     contracts = build_api_contracts(
         inventory,
         openapi_file=state.options.openapi_file,
         source_root=state.options.src_dir_for_scan,
         source_snapshot=state.source_snapshot,
     )
-    _emit_bootstrap(
-        state,
-        f"Assembled API contracts: {len(contracts.get('operations', []))} operation(s).",
-        flush=True,
-    )
+    if state.options.api_contracts:
+        _emit_bootstrap(
+            state,
+            f"Assembled API contracts: {len(contracts.get('operations', []))} operation(s).",
+            flush=True,
+        )
     return contracts
 
 
@@ -4825,10 +4833,11 @@ def _write_bootstrap_flow_pages(
     data_flows: list[dict] = []
     flows_created = 0
     data_flow_summary = _data_flow_summary(generated=False)
-    if not state.options.deep or state.options.skip_flows:
+    if not state.options.deep:
         return _FlowResult(flow_entries, flows_created, data_flow_summary)
 
-    _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
+    if not state.options.skip_flows:
+        _emit_bootstrap(state, "Generating user-flow pages...", flush=True)
     console_scripts = read_console_scripts(
         state.options.src_dir_for_scan,
         source_snapshot=state.source_snapshot,
@@ -4838,7 +4847,9 @@ def _write_bootstrap_flow_pages(
         console_scripts=console_scripts,
         root=state.options.src_dir_for_scan,
         fallback_root=_bootstrap_plugin_roots(state)[1],
-        include_plugins=state.options.trust_source_plugins,
+        include_plugins=(
+            state.options.trust_source_plugins and not state.options.skip_flows
+        ),
         include_warnings=True,
     )
     _emit_bootstrap_warnings(
@@ -4852,10 +4863,14 @@ def _write_bootstrap_flow_pages(
         ),
         api_contracts or {},
     )
-    for entry_point in entry_points:
-        for operation in _api_operations_for_entry_point(api_contracts, entry_point):
-            if isinstance(operation, dict):
-                operation["flow_id"] = entry_point["id"]
+    if state.options.skip_flows:
+        return _FlowResult(
+            flow_entries,
+            flows_created,
+            data_flow_summary,
+            entrypoint_observations=entrypoint_observations,
+            detected_entries=entry_points,
+        )
     edges: list[dict]
     if not entry_points:
         edges = []
@@ -4922,7 +4937,7 @@ def _write_bootstrap_flow_pages(
                 if data_flow is not None
                 else None,
                 api_contract_operations=_api_operations_for_entry_point(
-                    api_contracts, entry_point
+                    api_contracts if state.options.api_contracts else None, entry_point
                 ),
             )
             if flow_path.exists():
@@ -4983,6 +4998,7 @@ def _write_bootstrap_flow_pages(
         entrypoint_observations,
         flows,
         data_flows,
+        detected_entries=entry_points,
     )
 
 
@@ -5582,6 +5598,29 @@ def _finalize_bootstrap_artifacts(
     )
     _emit_bootstrap(state, "Writing generated knowledge artifacts...", flush=True)
     _emit_bootstrap(state, "Writing sync manifest...", flush=True)
+    repository_evidence = collect_runtime_repository_evidence(
+        state.options.src_dir_for_scan,
+        state.options.wiki_dir,
+        source_snapshot=state.source_snapshot,
+    )
+    generation_options = runtime_generation_options(
+        surfaces=surfaces,
+        generation_inputs=generation_inputs,
+        include_tests=state.options.include_tests,
+        preserve_semantic=True,
+    )
+    reuse_basis = knowledge_reuse.build_reuse_input_basis(
+        state.options.wiki_dir,
+        inventory_result,
+        state.source_snapshot,
+        generation_inputs,
+        generation_options,
+        repository_evidence,
+        include_plugins=state.options.trust_source_plugins,
+        manifest=previous_manifest,
+        inventory_complete=state.options.deep,
+        observation_inputs_hash=result.reuse_observations_hash,
+    )
     committed = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
             target_wiki_dir=state.options.wiki_dir,
@@ -5590,11 +5629,8 @@ def _finalize_bootstrap_artifacts(
             source_snapshot=state.source_snapshot,
             module_page_map=page_maps.module_page_map,
             entity_occurrence_page_map=(page_maps.entity_occurrence_page_name_cache),
-            repository_evidence=collect_runtime_repository_evidence(
-                state.options.src_dir_for_scan,
-                state.options.wiki_dir,
-                source_snapshot=state.source_snapshot,
-            ),
+            repository_evidence=repository_evidence,
+            reuse_input_basis=reuse_basis,
             inventory_complete=state.options.deep,
             previous_manifest=previous_manifest,
             manifest_surfaces=surfaces,
@@ -5613,12 +5649,7 @@ def _finalize_bootstrap_artifacts(
             plugin_components=inventory_result.producer_plugin_components,
             plugin_lock_path=inventory_result.plugin_lock_path,
             plugin_lock_hash=inventory_result.plugin_lock_hash,
-            generation_options=runtime_generation_options(
-                surfaces=surfaces,
-                generation_inputs=generation_inputs,
-                include_tests=state.options.include_tests,
-                preserve_semantic=True,
-            ),
+            generation_options=generation_options,
             generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS,
             generation_option_allowlist=tuple(RUNTIME_GENERATION_OPTION_DEFAULTS),
             call_edges=result.call_observations,
@@ -5750,29 +5781,13 @@ def _generate_bootstrap_content(
         if dependency_analysis is not None
         else []
     )
-    graph_analyzer_limitations: dict[str, tuple[str, ...]] = {}
-    if not state.options.deep:
-        for analyzer in (
-            "calls",
-            "dependencies",
-            "entrypoints",
-            "flows",
-            "data-flows",
-            "external-dependencies",
-        ):
-            graph_analyzer_limitations[analyzer] = (
-                "deep-analysis-disabled",
-            )
-    elif dependency_analysis is None:
-        graph_analyzer_limitations["external-dependencies"] = (
-            "dependency-analysis-disabled",
-        )
-    if state.options.deep and state.options.skip_flows:
-        graph_analyzer_limitations["entrypoints"] = ("flow-analysis-disabled",)
-        graph_analyzer_limitations["flows"] = ("flow-analysis-disabled",)
-        graph_analyzer_limitations["data-flows"] = ("flow-analysis-disabled",)
-    elif state.options.deep and state.options.skip_data_flow:
-        graph_analyzer_limitations["data-flows"] = ("data-flow-analysis-disabled",)
+    graph_analyzer_limitations = runtime_graph_analyzer_limitations(
+        deep=state.options.deep,
+        data_flow_enabled=(
+            not state.options.skip_flows and not state.options.skip_data_flow
+        ),
+        dependency_analysis=dependency_analysis,
+    )
     module_dependency_maps = (
         build_module_dependency_maps(dependency_analysis)
         if dependency_analysis is not None
@@ -5802,8 +5817,10 @@ def _generate_bootstrap_content(
         api_contracts=api_contracts,
         data_effect_observations=data_effect_observations,
     )
+    if api_contracts is not None:
+        api_contracts = link_entry_point_flows(api_contracts, flow_result.detected_entries)
     api_contract_result = _write_bootstrap_api_contract_page(
-        state, api_contracts, page_maps
+        state, api_contracts if state.options.api_contracts else None, page_maps
     )
     infrastructure_result = _write_bootstrap_infrastructure_pages(
         state, page_maps.module_page_map
@@ -5826,6 +5843,14 @@ def _generate_bootstrap_content(
         dependency_observations=dependency_observations,
         external_dependencies=external_dependencies,
         graph_analyzer_limitations=graph_analyzer_limitations,
+        reuse_observations_hash=knowledge_reuse.observation_inputs_hash(
+            entrypoint_observations=flow_result.entrypoint_observations,
+            entry_points=flow_result.detected_entries,
+            api_contracts=api_contracts or {},
+            dependency_analysis=dependency_analysis,
+        )
+        if state.options.deep
+        else None,
     )
 
 

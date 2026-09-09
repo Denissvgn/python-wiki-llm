@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-09-09
+
+### Fixed
+
+- Full bootstrap records the same validated knowledge-reuse inputs as sync,
+  preserving generated artifacts on the first unchanged sync, including
+  `--no-cache` and `--rebuild-knowledge` runs.
+- Bootstrap and sync consistently apply optional flow, dependency, and
+  API-contract settings to generated pages and knowledge observations.
+
 ## [2.0.0] - 2026-09-09
 
 ### Added
@@ -901,7 +911,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.1...v2.0.0
 [1.8.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.7.0...v1.8.0
