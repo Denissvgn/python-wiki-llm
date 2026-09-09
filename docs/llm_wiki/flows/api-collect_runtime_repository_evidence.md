@@ -133,39 +133,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| collect_runtime_repository_evidence | resolve | 935 | `Path(source_root).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path | 935 | `Path(source_root)` |
-| collect_runtime_repository_evidence | resolve | 936 | `Path(target_wiki_dir).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path | 936 | `Path(target_wiki_dir)` |
-| collect_runtime_repository_evidence | isinstance | 941 | `isinstance(source_snapshot, SourceSnapshot)` |
-| collect_runtime_repository_evidence | TypeError | 942 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
-| collect_runtime_repository_evidence | resolve | 943 | `source_snapshot.root.resolve(data not statically known)` |
-| collect_runtime_repository_evidence | ValueError | 944 | `ValueError('source_snapshot root must match source_root')` |
-| collect_runtime_repository_evidence | add | 952 | `selected_paths.add(...)` |
-| collect_runtime_repository_evidence | update | 953 | `selected_paths.update(...)` |
-| collect_runtime_repository_evidence | items | 955 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
+| collect_runtime_repository_evidence | resolve | 939 | `Path(source_root).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path | 939 | `Path(source_root)` |
+| collect_runtime_repository_evidence | resolve | 940 | `Path(target_wiki_dir).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path | 940 | `Path(target_wiki_dir)` |
+| collect_runtime_repository_evidence | isinstance | 945 | `isinstance(source_snapshot, SourceSnapshot)` |
+| collect_runtime_repository_evidence | TypeError | 946 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
+| collect_runtime_repository_evidence | resolve | 947 | `source_snapshot.root.resolve(data not statically known)` |
+| collect_runtime_repository_evidence | ValueError | 948 | `ValueError('source_snapshot root must match source_root')` |
+| collect_runtime_repository_evidence | add | 956 | `selected_paths.add(...)` |
+| collect_runtime_repository_evidence | update | 957 | `selected_paths.update(...)` |
+| collect_runtime_repository_evidence | items | 959 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 952 |
-| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 953 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 968 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 970 |
-| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 976 |
+| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 956 |
+| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 957 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 972 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 974 |
+| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 980 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 935 |
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 936 |
-| unresolved_call | `collect_runtime_repository_evidence` | `isinstance` | 941 |
-| unresolved_call | `collect_runtime_repository_evidence` | `TypeError` | 942 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 943 |
-| unresolved_call | `collect_runtime_repository_evidence` | `ValueError` | 944 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 955 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 939 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 940 |
+| unresolved_call | `collect_runtime_repository_evidence` | `isinstance` | 945 |
+| unresolved_call | `collect_runtime_repository_evidence` | `TypeError` | 946 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 947 |
+| unresolved_call | `collect_runtime_repository_evidence` | `ValueError` | 948 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 959 |
 | step_limit | `collect_runtime_repository_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `collect_runtime_repository_evidence` | `depth limit` | 0 |
 

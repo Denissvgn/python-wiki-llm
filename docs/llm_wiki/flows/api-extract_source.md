@@ -103,31 +103,31 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| extract_source | build_extract_payload | 695 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| extract_source | _caused_by | 708 | `_caused_by(exc, OSError)` |
-| _caused_by | set | 481 | `set(data not statically known)` |
-| _caused_by | id | 482 | `id(current)` |
-| _caused_by | isinstance | 483 | `isinstance(current, expected)` |
-| _caused_by | add | 485 | `seen.add(id(...))` |
-| _caused_by | id | 485 | `id(current)` |
-| extract_source | WorkspaceStateError | 709 | `WorkspaceStateError(str(...), code='workspace-state-error', details={...})` |
-| extract_source | str | 710 | `str(exc)` |
-| extract_source | _path_error_field | 712 | `_path_error_field(str(...))` |
-| extract_source | str | 712 | `str(exc)` |
+| extract_source | build_extract_payload | 704 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
+| extract_source | _caused_by | 717 | `_caused_by(exc, OSError)` |
+| _caused_by | set | 490 | `set(data not statically known)` |
+| _caused_by | id | 491 | `id(current)` |
+| _caused_by | isinstance | 492 | `isinstance(current, expected)` |
+| _caused_by | add | 494 | `seen.add(id(...))` |
+| _caused_by | id | 494 | `id(current)` |
+| extract_source | WorkspaceStateError | 718 | `WorkspaceStateError(str(...), code='workspace-state-error', details={...})` |
+| extract_source | str | 719 | `str(exc)` |
+| extract_source | _path_error_field | 721 | `_path_error_field(str(...))` |
+| extract_source | str | 721 | `str(exc)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `_caused_by` | 485 |
+| mutation | `seen.add` | `_caused_by` | 494 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `extract_source` | `extract_cmd.build_extract_payload` | 695 |
-| unresolved_call | `_caused_by` | `id` | 482 |
-| unresolved_call | `_caused_by` | `isinstance` | 483 |
+| external_call | `extract_source` | `extract_cmd.build_extract_payload` | 704 |
+| unresolved_call | `_caused_by` | `id` | 491 |
+| unresolved_call | `_caused_by` | `isinstance` | 492 |
 | step_limit | `extract_source` | `first 12 steps` | 0 |
 
 ## Behavior

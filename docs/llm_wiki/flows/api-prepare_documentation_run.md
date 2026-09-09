@@ -112,7 +112,7 @@ sequenceDiagram
     p11-->>p12: Path
 ```
 
-> Call sequence diagram shows 30 of 4456 interactions; 4426 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4458 interactions; 4428 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

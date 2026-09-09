@@ -172,40 +172,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 3403 | `getattr(args, 'request', None)` |
-| run | _run_protocol | 3404 | `_run_protocol(args)` |
-| _run_protocol | getattr | 3292 | `getattr(args, 'output', None)` |
-| _run_protocol | _read_protocol_request | 3295 | `_read_protocol_request(args.request)` |
-| _read_protocol_request | read | 1011 | `sys.stdin.read(data not statically known)` |
-| _read_protocol_request | read_text | 1013 | `Path(source).read_text(encoding='utf-8')` |
-| _read_protocol_request | Path | 1013 | `Path(source)` |
-| _read_protocol_request | ProtocolRequestError | 1016 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | loads | 1019 | `json.loads(raw)` |
-| _read_protocol_request | ProtocolRequestError | 1021 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | _validate_protocol_request | 1023 | `_validate_protocol_request(data)` |
+| run | getattr | 3445 | `getattr(args, 'request', None)` |
+| run | _run_protocol | 3446 | `_run_protocol(args)` |
+| _run_protocol | getattr | 3334 | `getattr(args, 'output', None)` |
+| _run_protocol | _read_protocol_request | 3337 | `_read_protocol_request(args.request)` |
+| _read_protocol_request | read | 1053 | `sys.stdin.read(data not statically known)` |
+| _read_protocol_request | read_text | 1055 | `Path(source).read_text(encoding='utf-8')` |
+| _read_protocol_request | Path | 1055 | `Path(source)` |
+| _read_protocol_request | ProtocolRequestError | 1058 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | loads | 1061 | `json.loads(raw)` |
+| _read_protocol_request | ProtocolRequestError | 1063 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | _validate_protocol_request | 1065 | `_validate_protocol_request(data)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3420 |
-| output | `print` | `run` | 3423 |
-| output | `print` | `run` | 3457 |
-| output | `print` | `run` | 3460 |
-| output | `print` | `run` | 3467 |
-| output | `print` | `run` | 3469 |
-| output | `print` | `run` | 3478 |
-| output | `print` | `run` | 3480 |
+| output | `print` | `run` | 3462 |
+| output | `print` | `run` | 3465 |
+| output | `print` | `run` | 3499 |
+| output | `print` | `run` | 3502 |
+| output | `print` | `run` | 3509 |
+| output | `print` | `run` | 3511 |
+| output | `print` | `run` | 3520 |
+| output | `print` | `run` | 3522 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 3403 |
-| unresolved_call | `_run_protocol` | `getattr` | 3292 |
-| external_call | `_read_protocol_request` | `sys.stdin.read` | 1011 |
-| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1013 |
-| external_call | `_read_protocol_request` | `json.loads` | 1019 |
+| unresolved_call | `run` | `getattr` | 3445 |
+| unresolved_call | `_run_protocol` | `getattr` | 3334 |
+| external_call | `_read_protocol_request` | `sys.stdin.read` | 1053 |
+| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1055 |
+| external_call | `_read_protocol_request` | `json.loads` | 1061 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

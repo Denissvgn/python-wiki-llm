@@ -72,7 +72,7 @@ sequenceDiagram
     p16-->>p12: S_ISLNK
 ```
 
-> Call sequence diagram shows 30 of 1419 interactions; 1389 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1422 interactions; 1392 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -154,7 +154,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 1054 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| doctor | build_doctor_report | 1114 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_doctor_report | isinstance | 124 | `isinstance(strict, bool)` |
 | build_doctor_report | TypeError | 125 | `TypeError('strict must be a boolean')` |
 | build_doctor_report | isinstance | 126 | `isinstance(allow_external_src, bool)` |

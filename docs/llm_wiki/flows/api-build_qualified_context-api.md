@@ -118,17 +118,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalize_optional_knowledge_mode | 835 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance | 360 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | join | 361 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr | 361 | `repr(item)` |
-| _normalize_optional_knowledge_mode | InvalidRequestError | 362 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast | 367 | `cast(KnowledgeMode, value)` |
-| build_qualified_context | InvalidRequestError | 839 | `InvalidRequestError('knowledge_mode cannot be supplied both as an API parameter and in the packet request', code='invalid-request', details={...})` |
-| build_qualified_context | get | 845 | `request.get('protocol')` |
-| build_qualified_context | isinstance | 847 | `isinstance(supplied_protocol, str)` |
-| build_qualified_context | InvalidRequestError | 854 | `InvalidRequestError('protocol is not supported', code='invalid-request', details={...})` |
-| build_qualified_context | build_qualified_context | 877 | `context_packet_service.build_qualified_context(src_dir, wiki_dir, packet_request, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
+| build_qualified_context | _normalize_optional_knowledge_mode | 895 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| _normalize_optional_knowledge_mode | isinstance | 369 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | join | 370 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr | 370 | `repr(item)` |
+| _normalize_optional_knowledge_mode | InvalidRequestError | 371 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| _normalize_optional_knowledge_mode | cast | 376 | `cast(KnowledgeMode, value)` |
+| build_qualified_context | InvalidRequestError | 899 | `InvalidRequestError('knowledge_mode cannot be supplied both as an API parameter and in the packet request', code='invalid-request', details={...})` |
+| build_qualified_context | get | 905 | `request.get('protocol')` |
+| build_qualified_context | isinstance | 907 | `isinstance(supplied_protocol, str)` |
+| build_qualified_context | InvalidRequestError | 914 | `InvalidRequestError('protocol is not supported', code='invalid-request', details={...})` |
+| build_qualified_context | build_qualified_context | 937 | `context_packet_service.build_qualified_context(src_dir, wiki_dir, packet_request, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
 
 ### Boundary effects
 
@@ -138,12 +138,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_optional_knowledge_mode` | `isinstance` | 360 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 361 |
-| external_call | `_normalize_optional_knowledge_mode` | `cast` | 367 |
-| unresolved_call | `build_qualified_context` | `request.get` | 845 |
-| unresolved_call | `build_qualified_context` | `isinstance` | 847 |
-| external_call | `build_qualified_context` | `context_packet_service.build_qualified_context` | 877 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `isinstance` | 369 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 370 |
+| external_call | `_normalize_optional_knowledge_mode` | `cast` | 376 |
+| unresolved_call | `build_qualified_context` | `request.get` | 905 |
+| unresolved_call | `build_qualified_context` | `isinstance` | 907 |
+| external_call | `build_qualified_context` | `context_packet_service.build_qualified_context` | 937 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
 
 ## Behavior

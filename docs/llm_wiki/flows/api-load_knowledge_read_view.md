@@ -86,7 +86,7 @@ sequenceDiagram
     p21->>p18: KnowledgeArtifactError
 ```
 
-> Call sequence diagram shows 30 of 1141 interactions; 1111 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1142 interactions; 1112 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -86,7 +86,7 @@ sequenceDiagram
     p18->>p22: _unique_json_object
 ```
 
-> Call sequence diagram shows 30 of 653 interactions; 623 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 654 interactions; 624 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

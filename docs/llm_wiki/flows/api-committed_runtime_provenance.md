@@ -140,8 +140,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_runtime_provenance | _previous_committed_artifacts | 717 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 688 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| committed_runtime_provenance | _previous_committed_artifacts | 719 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 690 | `capture_committed_knowledge(wiki_dir, manifest)` |
 | capture_committed_knowledge | resolve | 226 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path | 226 | `Path(wiki_dir)` |
 | capture_committed_knowledge | read_bytes | 230 | `(root / name).read_bytes(data not statically known)` |

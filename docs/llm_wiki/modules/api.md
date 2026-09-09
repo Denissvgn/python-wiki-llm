@@ -44,7 +44,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `re` | `re` |
-| `typing` | `TYPE_CHECKING`, `Any`, `NoReturn`, `ParamSpec`, `TypeVar`, `cast` |
+| `typing` | `TYPE_CHECKING`, `Any`, `NoReturn`, `ParamSpec`, `TypeVar`, `cast`, `Literal`, `overload` |
 | `warnings` | `warnings` |
 
 ## Local dependency map
@@ -74,11 +74,11 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 236 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 317 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 332 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 336 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 340 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 245 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 326 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 341 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 345 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 349 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
 
 ## Functions
 
@@ -100,6 +100,9 @@ flowchart LR
 | `_api_boundary` | `(function: Callable[_P, _R]) -> Callable[_P, _R]` | — | Wrap a synchronous public callable in the stable exception taxonomy. |
 | `bootstrap_wiki` | `(source_root: str, wiki_root: str, *, depth: str = 'full', skip_workflows: bool = False, skip_flows: bool = False, skip_data_flow: bool = False, skip_dependencies: bool = False, api_contracts: bool = False, openapi_file: str \| None = None, dependency_graph_detail: str = 'auto', overwrite: bool = False, helper_cache_dir: str \| None = None, include_tests: list[str] \| None = None, trust_source_plugins: bool = False, source_selection: str \| Path \| None = None) -> BootstrapResult` | `@_api_boundary` | Build a first-use deterministic wiki through the typed service boundary. |
 | `extract_source` | `(src_dir: str = '.', *, changed: bool = False, summary: bool = False, deep: bool = False, paths: list[str] \| None = None, package: str \| None = None, include_empty: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> ExtractSourceResult` | `@_api_boundary` | Return the stable ``llm-wiki extract`` JSON payload as a dict. |
+| `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: Literal['json'] = 'json', focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> ContextPayload` | `@overload` | — |
+| `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: Literal['markdown'], focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> MarkdownContextResult` | `@overload` | — |
+| `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str, focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> ContextPayload \| MarkdownContextResult` | `@overload` | — |
 | `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str = 'json', focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> ContextPayload \| MarkdownContextResult` | `@_api_boundary` | Return a supported context payload without depending on CLI internals. |
 | `build_qualified_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> QualifiedContextPacket` | `@_api_boundary` | Build a canonical in-memory qualified-context packet. |
 | `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | `@_api_boundary` | Validate canonical packet bytes without claiming live currentness. |

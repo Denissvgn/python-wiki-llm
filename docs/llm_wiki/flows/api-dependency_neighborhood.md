@@ -141,11 +141,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| dependency_neighborhood | _normalize_query_input | 1393 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback | 1137 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1139 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str | 1140 | `str(exc)` |
-| dependency_neighborhood | normalize_supplied_paths | 1393 | `normalize_supplied_paths((...))` |
+| dependency_neighborhood | _normalize_query_input | 1453 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback | 1197 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1199 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str | 1200 | `str(exc)` |
+| dependency_neighborhood | normalize_supplied_paths | 1453 | `normalize_supplied_paths((...))` |
 | normalize_supplied_paths | _portable_supplied_path | 135 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 113 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 116 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
@@ -161,7 +161,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1137 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1197 |
 | unresolved_call | `require_portable_relative_path` | `isinstance` | 170 |
 | step_limit | `dependency_neighborhood` | `first 12 steps` | 0 |
 | truncated_flow | `dependency_neighborhood` | `depth limit` | 0 |

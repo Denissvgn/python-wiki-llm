@@ -117,38 +117,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _arguments | 1451 | `_arguments(argv)` |
-| _arguments | ArgumentParser | 1425 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | add_subparsers | 1426 | `parser.add_subparsers(dest='action', required=True)` |
-| _arguments | add_parser | 1427 | `commands.add_parser('validate')` |
-| _arguments | add_argument | 1428 | `validate.add_argument('--report', required=True)` |
-| _arguments | add_argument | 1429 | `validate.add_argument('--cli-exit', required=True, type=int)` |
-| _arguments | add_argument | 1430 | `validate.add_argument('--schema', choices=(...))` |
-| _arguments | add_parser | 1432 | `commands.add_parser('render-summary')` |
-| _arguments | add_argument | 1433 | `summary.add_argument('--report')` |
-| _arguments | add_argument | 1434 | `summary.add_argument('--cli-exit', required=True, type=int)` |
-| _arguments | add_argument | 1435 | `summary.add_argument('--result', choices=(...), required=True)` |
+| main | _arguments | 1450 | `_arguments(argv)` |
+| _arguments | ArgumentParser | 1424 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | add_subparsers | 1425 | `parser.add_subparsers(dest='action', required=True)` |
+| _arguments | add_parser | 1426 | `commands.add_parser('validate')` |
+| _arguments | add_argument | 1427 | `validate.add_argument('--report', required=True)` |
+| _arguments | add_argument | 1428 | `validate.add_argument('--cli-exit', required=True, type=int)` |
+| _arguments | add_argument | 1429 | `validate.add_argument('--schema', choices=(...))` |
+| _arguments | add_parser | 1431 | `commands.add_parser('render-summary')` |
+| _arguments | add_argument | 1432 | `summary.add_argument('--report')` |
+| _arguments | add_argument | 1433 | `summary.add_argument('--cli-exit', required=True, type=int)` |
+| _arguments | add_argument | 1434 | `summary.add_argument('--result', choices=(...), required=True)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `output.write_bytes` | `main` | 1489 |
+| filesystem_write | `output.write_bytes` | `main` | 1488 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_arguments` | `argparse.ArgumentParser` | 1425 |
-| unresolved_call | `_arguments` | `parser.add_subparsers` | 1426 |
-| unresolved_call | `_arguments` | `commands.add_parser` | 1427 |
+| external_call | `_arguments` | `argparse.ArgumentParser` | 1424 |
+| unresolved_call | `_arguments` | `parser.add_subparsers` | 1425 |
+| unresolved_call | `_arguments` | `commands.add_parser` | 1426 |
+| unresolved_call | `_arguments` | `validate.add_argument` | 1427 |
 | unresolved_call | `_arguments` | `validate.add_argument` | 1428 |
 | unresolved_call | `_arguments` | `validate.add_argument` | 1429 |
-| unresolved_call | `_arguments` | `validate.add_argument` | 1430 |
-| unresolved_call | `_arguments` | `commands.add_parser` | 1432 |
+| unresolved_call | `_arguments` | `commands.add_parser` | 1431 |
+| unresolved_call | `_arguments` | `summary.add_argument` | 1432 |
 | unresolved_call | `_arguments` | `summary.add_argument` | 1433 |
 | unresolved_call | `_arguments` | `summary.add_argument` | 1434 |
-| unresolved_call | `_arguments` | `summary.add_argument` | 1435 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

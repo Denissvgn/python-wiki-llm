@@ -60,7 +60,7 @@ sequenceDiagram
     p1-->>p18: is_symlink
 ```
 
-> Call sequence diagram shows 30 of 246 interactions; 216 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 247 interactions; 217 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

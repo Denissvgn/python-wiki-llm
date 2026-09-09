@@ -199,4 +199,4 @@ flowchart LR
 | `_collect_compose_section_name` | `(names: list[str], stripped: str, indent: int) -> None` | — | — |
 | `_parse_compose` | `(text: str) -> dict` | — | Parse a docker-compose YAML file using line-based parsing (no PyYAML). |
 | `_looks_like_compose` | `(text: str) -> bool` | — | Return True if the file content appears to be a docker-compose file. |
-| `get_docker_inventory` | `(src_dir: str, *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |
+| `get_docker_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |

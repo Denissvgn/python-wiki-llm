@@ -122,17 +122,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_live_evaluation | isinstance | 532 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
-| build_runtime_live_evaluation | TypeError | 533 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
-| build_runtime_live_evaluation | isinstance | 534 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
-| build_runtime_live_evaluation | TypeError | 535 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
-| build_runtime_live_evaluation | isinstance | 536 | `isinstance(inputs.manifest, SyncManifest)` |
-| build_runtime_live_evaluation | TypeError | 537 | `TypeError('inputs.manifest must be a SyncManifest')` |
-| build_runtime_live_evaluation | isinstance | 538 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
-| build_runtime_live_evaluation | TypeError | 539 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
-| build_runtime_live_evaluation | isinstance | 540 | `isinstance(inputs.inventory, Mapping)` |
-| build_runtime_live_evaluation | TypeError | 541 | `TypeError('inputs.inventory must be a mapping')` |
-| build_runtime_live_evaluation | isinstance | 542 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
+| build_runtime_live_evaluation | isinstance | 534 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
+| build_runtime_live_evaluation | TypeError | 535 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
+| build_runtime_live_evaluation | isinstance | 536 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
+| build_runtime_live_evaluation | TypeError | 537 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
+| build_runtime_live_evaluation | isinstance | 538 | `isinstance(inputs.manifest, SyncManifest)` |
+| build_runtime_live_evaluation | TypeError | 539 | `TypeError('inputs.manifest must be a SyncManifest')` |
+| build_runtime_live_evaluation | isinstance | 540 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
+| build_runtime_live_evaluation | TypeError | 541 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
+| build_runtime_live_evaluation | isinstance | 542 | `isinstance(inputs.inventory, Mapping)` |
+| build_runtime_live_evaluation | TypeError | 543 | `TypeError('inputs.inventory must be a mapping')` |
+| build_runtime_live_evaluation | isinstance | 544 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
 
 ### Boundary effects
 
@@ -142,8 +142,6 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 532 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 533 |
 | unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 534 |
 | unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 535 |
 | unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 536 |
@@ -153,6 +151,8 @@ flowchart LR
 | unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 540 |
 | unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 541 |
 | unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 542 |
+| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 543 |
+| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 544 |
 | step_limit | `build_runtime_live_evaluation` | `first 12 steps` | 0 |
 
 ## Behavior
