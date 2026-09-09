@@ -88,6 +88,7 @@ def test_bundle_passed_receipt_is_attached_once_and_shared(tmp_path):
     assert attached.machine_verification.valid is True
     assert attached.machine_verification.recorded_result == "passed"
     assert attached.machine_verification.passed is True
+    assert attached.knowledge is not None
     assert len(summaries) == len(attached.knowledge.concepts)
     assert {
         summary["recorded_result"] for summary in summaries.values()

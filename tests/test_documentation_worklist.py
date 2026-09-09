@@ -142,13 +142,15 @@ def test_worklist_has_stable_ids_order_and_explicit_p2_deferral(tmp_path):
         (item.work_id, item.priority, item.canonical_path) for item in first.items
     ] == [(item.work_id, item.priority, item.canonical_path) for item in second.items]
     assert [item.priority for item in first.items] == sorted(
-        [item.priority for item in first.items], key={"P0": 0, "P1": 1, "P2": 2}.get
+        [item.priority for item in first.items],
+        key={"P0": 0, "P1": 1, "P2": 2}.__getitem__,
     )
     pages = _by_path(first)
     assert pages["modules/core.md"].priority == "P1"
     assert pages["modules/leaf.md"].priority == "P2"
     assert pages["modules/leaf.md"].status == "deferred"
     assert pages["modules/leaf.md"].deferred is True
+    assert pages["modules/leaf.md"].deferral_reason is not None
     assert (
         "configured central semantic P1 budget"
         in pages["modules/leaf.md"].deferral_reason
@@ -158,6 +160,7 @@ def test_worklist_has_stable_ids_order_and_explicit_p2_deferral(tmp_path):
     )
     assert unsupported_item.priority == "P2"
     assert unsupported_item.status == "deferred"
+    assert unsupported_item.deferral_reason is not None
     assert "completeness remain unknown" in unsupported_item.deferral_reason
     assert first.to_dict()["schema_version"] == DOCUMENTATION_WORKLIST_SCHEMA_VERSION
 
@@ -386,6 +389,7 @@ def test_only_boundary_workflows_are_p0_and_api_symbols_remain_explicit_p2(
     ordinary_api = pages["flows/api-helper.md"]
     assert ordinary_api.priority == "P2"
     assert ordinary_api.status == "deferred"
+    assert ordinary_api.deferral_reason is not None
     assert "ordinary reference/API symbol" in ordinary_api.deferral_reason
     assert pages["flows/api-boundary-call.md"].priority == "P0"
     assert pages["flows/cli-run.md"].priority == "P0"

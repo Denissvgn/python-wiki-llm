@@ -1536,7 +1536,7 @@ def test_nonregular_target_schema_is_rejected_before_mutation(
 def test_fifo_schema_is_rejected_by_stat_without_opening(tmp_project) -> None:
     if not hasattr(os, "mkfifo"):
         pytest.skip("FIFOs are unavailable on this platform")
-    os.mkfifo("AGENTS.md")
+    getattr(os, "mkfifo")("AGENTS.md")
 
     with pytest.raises(SystemExit) as caught:
         init_cmd.run(_init_args(agent="generic"))
@@ -1561,7 +1561,7 @@ def test_init_revalidates_schema_after_reference_provision(
         if replacement == "directory":
             Path("AGENTS.md").mkdir()
         else:
-            os.mkfifo("AGENTS.md")
+            getattr(os, "mkfifo")("AGENTS.md")
         return result
 
     monkeypatch.setattr(init_cmd, "provision_reference_skill", provision_then_replace)

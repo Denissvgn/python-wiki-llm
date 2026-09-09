@@ -664,9 +664,12 @@ def test_direct_context_mismatch_never_indexes_or_ranks_rejected_projection(
     )
 
     assert service_calls == 1
+    assert "knowledge" in auto
     assert auto["knowledge"]["status"] == "fallback"
     assert auto["knowledge"]["reason"] == "knowledge-basis-incompatible"
+    assert "ranking_policy" in auto
     assert auto["ranking_policy"]["reason"] == "knowledge-unavailable"
+    assert "knowledge" in off
     assert off["knowledge"]["status"] == "disabled"
 
 

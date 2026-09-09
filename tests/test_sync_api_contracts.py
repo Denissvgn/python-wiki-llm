@@ -224,6 +224,7 @@ def test_openapi_file_persists_and_generates_authoritative_page(
 
     manifest = SyncManifest.load(wiki)
     openapi = manifest.generation_inputs["openapi"]
+    assert isinstance(openapi, dict)
     assert openapi["path"] == "contracts/openapi.yaml"
     assert openapi["format"] == "yaml"
     assert str(openapi["sha256"]).startswith("sha256:")
@@ -242,6 +243,7 @@ def test_spec_only_change_bypasses_clean_source_return_and_updates_page(
     project, wiki = api_project
     spec = _initialize_openapi(project, wiki)
     before_manifest = SyncManifest.load(wiki)
+    assert isinstance(before_manifest.generation_inputs["openapi"], dict)
     before_hash = before_manifest.generation_inputs["openapi"]["sha256"]
     capsys.readouterr()
 
@@ -250,6 +252,7 @@ def test_spec_only_change_bypasses_clean_source_return_and_updates_page(
 
     after_manifest = SyncManifest.load(wiki)
     assert after_manifest.sources == before_manifest.sources
+    assert isinstance(after_manifest.generation_inputs["openapi"], dict)
     assert after_manifest.generation_inputs["openapi"]["sha256"] != before_hash
     assert "Revised contract summary" in (wiki / "api-contracts.md").read_text(
         encoding="utf-8"

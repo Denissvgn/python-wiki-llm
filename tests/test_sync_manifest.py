@@ -848,6 +848,7 @@ def test_partial_artifact_hash_commitment_is_rejected(missing_field):
         )
         .to_payload()
     )
+    assert isinstance(payload["artifact_hashes"], dict)
     del payload["artifact_hashes"][missing_field]
 
     with pytest.raises(SyncManifestError) as exc_info:
@@ -875,6 +876,7 @@ def test_malformed_artifact_hash_is_rejected(invalid_hash):
         )
         .to_payload()
     )
+    assert isinstance(payload["artifact_hashes"], dict)
     payload["artifact_hashes"]["knowledge_index_hash"] = invalid_hash
 
     with pytest.raises(SyncManifestError) as exc_info:

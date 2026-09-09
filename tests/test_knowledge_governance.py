@@ -456,6 +456,7 @@ def test_review_validity_reports_each_live_expiry_dimension():
     uid = next(iter(ledger.concepts))
     evidence = current_review_evidence(source_knowledge.concepts[0])
     assert evidence is not None
+    assert scope_hash is not None
     reviewed = add_review_event(
         ledger,
         uid,
@@ -531,6 +532,7 @@ def test_review_requires_a_human_actor_and_semantic_section():
     evidence = ReviewEvidence(mode="no-source")
 
     with pytest.raises(GovernanceError, match="must be 'human'"):
+        assert scope_hash is not None
         add_review_event(
             ledger,
             uid,
@@ -558,6 +560,7 @@ def test_review_authoring_rejects_a_section_owned_by_another_concept():
         GovernanceError,
         match="must belong to the reviewed concept",
     ):
+        assert scope_hash is not None
         add_review_event(
             ledger,
             uid,
@@ -778,6 +781,7 @@ def test_projection_binds_uid_lifecycle_reviews_hash_and_event_truncation():
         actor=HUMAN,
         authored_at="2026-07-27T12:01:00Z",
     )
+    assert scope_hash is not None
     reviewed = add_review_event(
         deprecated,
         uid,
@@ -875,6 +879,7 @@ def test_json_schema_recognizes_the_reserved_governance_projection():
         "does not match" in error.message
         for error in validator.iter_errors(payload)
     )
+    assert isinstance(validator.schema, dict)
     assert (
         validator.schema["$defs"]["governanceConceptSummary"]["properties"][
             "aliases"

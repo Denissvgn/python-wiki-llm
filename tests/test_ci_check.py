@@ -296,6 +296,7 @@ def test_ci_validator_rejects_absent_health_with_evaluated_sections() -> None:
         LintReport(wiki_dir="missing-wiki", src_dir=".", strict=True)
     )
     forged = deepcopy(payload)
+    assert isinstance(forged["knowledge_health"], dict)
     forged["knowledge_health"]["snapshot_parity"]["state"] = "mixed"
 
     with pytest.raises(

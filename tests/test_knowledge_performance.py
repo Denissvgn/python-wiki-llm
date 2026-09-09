@@ -296,6 +296,7 @@ def test_one_freshness_evaluation_and_zero_query_method_io(
     service = _service(knowledge_view=view)
 
     assert evaluations == [(loaded.validated_artifacts, live)]
+    assert loaded.validated_artifacts is not None
     assert loaded.validated_artifacts.knowledge is loaded.knowledge
 
     def forbidden_io(*_args, **_kwargs):
@@ -404,7 +405,7 @@ class _RelationshipProbe:
         raise AssertionError("neighbor lookup must not scan every relationship")
 
 
-def test_exact_lookup_is_indexed_and_neighbor_work_is_local(stress_views):
+def test_exact_lookup_is_indexed_and_neighbor_work_is_local(stress_views, monkeypatch):
     ordered_view, _shuffled_view = stress_views
     service = DocumentationGraphQueryService({}, knowledge_view=ordered_view)
     assert len(service.concept_by_locator) == _STRESS_CONCEPT_COUNT
@@ -419,7 +420,7 @@ def test_exact_lookup_is_indexed_and_neighbor_work_is_local(stress_views):
     assert concept_probe.item_calls == 2
 
     relationship_probe = _RelationshipProbe(service._knowledge_relationships)
-    service._knowledge_relationships = relationship_probe
+    monkeypatch.setattr(service, "_knowledge_relationships", relationship_probe)
     neighbors = service.related_concepts(_STRESS_PERIPHERAL_LOCATOR)
 
     assert neighbors["total"] == 3

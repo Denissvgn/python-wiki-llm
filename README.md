@@ -84,6 +84,12 @@ inventory, context payloads, registry-backed page metadata, and graph queries
 through `extract_source(...)`, `build_context(...)`, `list_wiki_pages(...)`, and
 `query_documentation(...)` plus the dedicated query wrappers. It also exposes
 canonical packets through `build_qualified_context(...)`.
+
+`build_context(...)` returns a `ContextPayload` by default or with `format="json"`,
+and a `MarkdownContextResult` with `format="markdown"`. Type hints expose the
+corresponding fields when the format is a literal; a runtime-selected format
+retains the union of both result types.
+
 `llm-wiki obsidian export` mirrors the canonical Markdown wiki for Obsidian,
 and `llm-wiki site export|check` mirrors and validates plain, MkDocs-compatible,
 or Docusaurus-compatible Markdown output without invoking external builders.

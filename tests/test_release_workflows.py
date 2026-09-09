@@ -171,6 +171,7 @@ def test_action_selftest_uses_step_scoped_runner_temp_and_negative_cases() -> No
     assert "Reject an invalid failure threshold" in text
     assert text.count('test "${STEP_OUTCOME}" = "failure"') == 3
     triggers = workflow.get("on", workflow.get(True))
+    assert triggers is not None
     assert triggers["push"]["branches"] == ["main"]
     assert triggers["push"]["paths"] == triggers["pull_request"]["paths"]
     assert workflow["concurrency"]["cancel-in-progress"] == (
@@ -485,7 +486,9 @@ def test_readme_documents_the_repository_wiki_maintenance_contract() -> None:
 
 def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:
     workflow = _yaml("publish.yml")
-    dispatch = workflow.get("on", workflow.get(True))["workflow_dispatch"]
+    triggers = workflow.get("on", workflow.get(True))
+    assert isinstance(triggers, dict)
+    dispatch = triggers["workflow_dispatch"]
     assert dispatch["inputs"]["publish"]["default"] is False
     assert dispatch["inputs"]["qualification-ref"]["required"] is True
     verify_job = workflow["jobs"]["verify"]

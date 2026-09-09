@@ -26,10 +26,10 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePath, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ModuleNotFoundError:  # pragma: no cover - only freeze reads TOML
-    tomllib = None  # type: ignore[assignment]
+else:  # pragma: no cover - only freeze reads TOML
+    tomllib = None
 
 
 IDENTITY_SCHEMA = "agent-wiki-release-identity/v1"
@@ -281,7 +281,8 @@ def freeze_source(args: argparse.Namespace) -> int:
     for existing in _run(["git", "tag", "--list", "v*"], cwd=root).stdout.splitlines():
         match = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", existing)
         if match:
-            released_versions.append(tuple(int(value) for value in match.groups()))
+            major, minor, patch = match.groups()
+            released_versions.append((int(major), int(minor), int(patch)))
     if args.mode == "candidate" and released_versions:
         if candidate_version <= max(released_versions):
             raise QualificationError(

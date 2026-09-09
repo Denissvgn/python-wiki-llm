@@ -865,7 +865,7 @@ def _write_descriptor_bound_workspace_text(
 ) -> None:
     """Atomically replace a file relative to a pinned, no-follow parent fd."""
 
-    parent_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    parent_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY") | getattr(os, "O_NOFOLLOW")
     try:
         parent_fd = os.open(target.parent, parent_flags)
     except OSError as exc:
@@ -892,7 +892,7 @@ def _write_descriptor_bound_workspace_text(
         )
         _assert_relative_write_target_regular(parent_fd, target.name)
 
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW")
         temp_fd = os.open(temp_name, flags, 0o600, dir_fd=parent_fd)
         temp_created = True
         normalized = text.replace("\r\n", "\n").replace("\r", "\n")

@@ -7,6 +7,7 @@ import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -17,11 +18,12 @@ from llm_wiki_cli.services.contracts import (
 )
 from llm_wiki_cli.services.documentation_run import (
     DocumentationAgentResult,
-    DocumentationIntegrityError,
     DocumentationIntakeBrief,
+    DocumentationIntegrityError,
     DocumentationRun,
     DocumentationSchemaError,
     DocumentationTransitionError,
+    _record_review_ledger_iteration,
     build_documentation_agent_packet,
     export_documentation_run,
     get_documentation_run_status,
@@ -29,7 +31,6 @@ from llm_wiki_cli.services.documentation_run import (
     prepare_documentation_run,
     record_documentation_agent_result,
     transition_documentation_run,
-    _record_review_ledger_iteration,
 )
 
 
@@ -1198,7 +1199,7 @@ def test_authorized_builder_captures_only_bounded_output_tails(tmp_path):
 
     evidence = documentation_run_service._run_authorized_builder(
         workspace,
-        run,
+        cast(DocumentationRun, run),
         build=True,
         builder_command=[sys.executable, "-c", builder_code],
     )
@@ -1408,7 +1409,7 @@ def test_first_review_ledger_preserves_prior_finding_until_identity_matches(tmp_
 
     first = _record_review_ledger_iteration(
         workspace,
-        run,
+        cast(DocumentationRun, run),
         review_result=mismatched,
         review_result_path=review_result_path,
     )
@@ -1442,7 +1443,7 @@ def test_first_review_ledger_preserves_prior_finding_until_identity_matches(tmp_
 
     second = _record_review_ledger_iteration(
         workspace,
-        run,
+        cast(DocumentationRun, run),
         review_result=matching,
         review_result_path=review_result_path,
     )

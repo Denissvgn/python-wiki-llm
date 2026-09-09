@@ -41,6 +41,9 @@ if _typing.TYPE_CHECKING:
         SUPPORTED_DOCUMENTATION_KNOWLEDGE_MODES,
         SUPPORTED_FRESHNESS_POLICIES,
         workspace_paths,
+        __version__ as __version__,
+        _MAX_BUILDER_LOG_BYTES as _MAX_BUILDER_LOG_BYTES,
+        _RefreshArchiveTransaction as _RefreshArchiveTransaction,
     )
     from .prepare import (
         prepare_documentation_run,
@@ -50,16 +53,22 @@ if _typing.TYPE_CHECKING:
     )
     from .record import (
         record_documentation_agent_result,
+        _record_review_ledger_iteration as _record_review_ledger_iteration,
     )
     from .verify import (
         verify_documentation_run,
+        _load_documentation_knowledge_projection as _load_documentation_knowledge_projection,
     )
     from .export import (
         export_documentation_run,
+        _run_authorized_builder as _run_authorized_builder,
     )
     from .integrity import (
         capture_generated_ownership,
         compare_generated_ownership,
+        _export_documentation_skills as _export_documentation_skills,
+        _hash_exported_skill as _hash_exported_skill,
+        _hash_skill_tree as _hash_skill_tree,
     )
     from .workspace import (
         documentation_run_path,
@@ -67,9 +76,24 @@ if _typing.TYPE_CHECKING:
         load_documentation_run,
         save_documentation_run,
         transition_documentation_run,
+        _write_json as _write_json,
+        _write_workspace_text as _write_workspace_text,
+        _supports_descriptor_bound_workspace_writes as _supports_descriptor_bound_workspace_writes,
+        _fsync_directory_after_replace as _fsync_directory_after_replace,
     )
     from .refresh import (
         source_identity,
+        _archive_owned_run as _archive_owned_run,
+    )
+
+    from .dependencies import (
+        os as os,
+        refresh_documentation_native_projection as refresh_documentation_native_projection,
+    )
+    from .schema import (
+        _validate_documentation_projection_policy as _validate_documentation_projection_policy,
+        _portable_path as _portable_path,
+        _portable_path_tuple as _portable_path_tuple,
     )
 
 del _typing

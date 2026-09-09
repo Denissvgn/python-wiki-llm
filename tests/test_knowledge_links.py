@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -932,11 +933,11 @@ def test_rejects_invalid_page_registry_inputs_with_field_specific_errors() -> No
         ...,
     ] = (
         (
-            lambda: collect_link_observations("not-pages", {}),
+            lambda: collect_link_observations(cast(Any, "not-pages"), {}),
             "pages",
         ),
         (
-            lambda: collect_link_observations([object()], {}),
+            lambda: collect_link_observations([cast(Any, object())], {}),
             "pages[0]",
         ),
         (
@@ -996,7 +997,7 @@ def test_requires_exact_page_content_parity_and_markdown_strings() -> None:
         (
             lambda: collect_link_observations(
                 (source,),
-                {source.relative_path: b"not Markdown"},
+                {source.relative_path: cast(Any, b"not Markdown")},
             ),
             f"content_by_page.{source.relative_path}",
         ),
@@ -1005,13 +1006,13 @@ def test_requires_exact_page_content_parity_and_markdown_strings() -> None:
                 (source,),
                 {
                     source.relative_path: "",
-                    7: "",
+                    cast(Any, 7): "",
                 },
             ),
             "content_by_page",
         ),
         (
-            lambda: collect_link_observations((source,), []),
+            lambda: collect_link_observations((source,), cast(Any, [])),
             "content_by_page",
         ),
     )
@@ -1037,7 +1038,7 @@ def test_requires_an_evaluated_set_of_safe_canonical_asset_paths() -> None:
             lambda: collect_link_observations(
                 (source,),
                 content,
-                existing_asset_paths=["assets/diagram.svg"],
+                existing_asset_paths=cast(Any, ["assets/diagram.svg"]),
             ),
             "existing_asset_paths",
         ),
@@ -1045,7 +1046,7 @@ def test_requires_an_evaluated_set_of_safe_canonical_asset_paths() -> None:
             lambda: collect_link_observations(
                 (source,),
                 content,
-                existing_asset_paths={7},
+                existing_asset_paths={cast(Any, 7)},
             ),
             "existing_asset_paths",
         ),

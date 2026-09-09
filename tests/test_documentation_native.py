@@ -390,7 +390,7 @@ def test_native_control_broadening_rejects_before_new_source_hash(
     ignore.write_text("", encoding="utf-8")
     real_hash = source_snapshot_module._sha256_file
 
-    def guarded_hash(path: Path) -> str:
+    def guarded_hash(path: Path) -> str | None:
         if path == secret:
             pytest.fail("newly admitted source must not be hashed before rejection")
         return real_hash(path)

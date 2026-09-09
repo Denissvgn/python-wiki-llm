@@ -244,6 +244,7 @@ def _materialize_case(root: Path, case: CompatibilityCase):
         fixture, plan = _base_plan(root)
         assert projection.surface_bytes == plan.surface_index.content
         assert projection.knowledge_bytes is None
+        assert projection.surface_bytes is not None
         (root / SURFACE_INDEX_FILENAME).write_bytes(projection.surface_bytes)
         (root / MANIFEST_FILENAME).write_bytes(
             formatted_json_bytes({"version": 4, "sources": {}})

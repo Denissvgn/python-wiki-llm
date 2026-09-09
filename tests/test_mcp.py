@@ -8,7 +8,7 @@ import json
 import sys
 import types
 from pathlib import Path
-from typing import get_type_hints
+from typing import Any, Callable, cast, get_type_hints
 
 import pytest
 
@@ -19,6 +19,8 @@ from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.config import write_config
 from llm_wiki_cli.services import (
     context_packet as context_packet_service,
+)
+from llm_wiki_cli.services import (
     knowledge_consumption,
     mcp_server,
 )
@@ -36,6 +38,7 @@ from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
 from llm_wiki_cli.services.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
+from llm_wiki_cli.services.mcp_server import McpWikiService
 from llm_wiki_cli.services.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
@@ -1917,13 +1920,13 @@ class TestMcpWikiService:
             )
         elif live_policy == "invalid":
 
-            def evaluated_options(**_kwargs):
+            def invalid_options(**_kwargs):
                 raise ValueError("invalid runtime generation policy")
 
             monkeypatch.setattr(
                 context_cmd,
                 "runtime_generation_options",
-                evaluated_options,
+                invalid_options,
             )
 
         service = mcp_server.McpWikiService(
@@ -2415,7 +2418,7 @@ class TestMcpWikiService:
 class RecordingMcpServer:
     def __init__(self):
         self.tool_names: list[str] = []
-        self.tool_functions: dict[str, object] = {}
+        self.tool_functions: dict[str, Callable[..., Any]] = {}
         self.resource_uris: list[str] = []
 
     def tool(self):
@@ -2500,7 +2503,7 @@ def test_registered_section_tool_forwards_filter_and_limit():
             return expected
 
     server = RecordingMcpServer()
-    mcp_server._register_mcp_tools(server, RecordingService())
+    mcp_server._register_mcp_tools(server, cast(McpWikiService, RecordingService()))
 
     result = server.tool_functions["list_concept_sections"](
         "llm-wiki://entities/User",
@@ -2527,7 +2530,7 @@ def test_registered_check_wiki_tool_forwards_native_drift_report_mode():
             return expected
 
     server = RecordingMcpServer()
-    mcp_server._register_mcp_tools(server, RecordingService())
+    mcp_server._register_mcp_tools(server, cast(McpWikiService, RecordingService()))
 
     result = server.tool_functions["check_wiki"](
         strict=True,
@@ -2566,7 +2569,7 @@ def test_registered_context_packet_tool_forwards_revalidation_and_policy():
             return expected
 
     server = RecordingMcpServer()
-    mcp_server._register_mcp_tools(server, RecordingService())
+    mcp_server._register_mcp_tools(server, cast(McpWikiService, RecordingService()))
 
     result = server.tool_functions["get_context_packet"](
         budget_tokens=2048,

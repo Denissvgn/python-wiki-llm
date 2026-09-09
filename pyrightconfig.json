@@ -1,6 +1,11 @@
 {
   "include": [
     "src",
+    "tests",
+    "examples",
+    "release",
+    "release_build_backend.py",
+    ".github/scripts/llm-wiki-helper-cache.py",
     "integrations/github-action/render_summary.py"
   ],
   "extraPaths": ["src"],

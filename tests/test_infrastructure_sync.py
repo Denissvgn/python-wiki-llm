@@ -761,9 +761,11 @@ def test_infrastructure_plan_prunes_deselected_state_without_tombstones(
     assert set(plan.current_sources) == {"selected/compose.yml"}
     assert set(plan.deselected_records) == {"excluded/Dockerfile"}
     assert plan.removed_sources == ()
+    assert isinstance(plan.next_state["sources"], dict)
     assert set(plan.next_state["sources"]) == {"selected/compose.yml"}
     assert plan.next_state["tombstones"] == {}
     assert plan.has_deselection_changes
+    assert isinstance(plan.deselection_only_state["sources"], dict)
     assert set(plan.deselection_only_state["sources"]) == {
         "selected/compose.yml"
     }
@@ -821,7 +823,9 @@ def test_deselection_only_state_does_not_advance_selected_source_changes(
 
     prior_record = broad_plan.current_sources["selected/Dockerfile"]
     assert plan.current_sources["selected/Dockerfile"] != prior_record
+    assert isinstance(plan.next_state["sources"], dict)
     assert plan.next_state["sources"]["selected/Dockerfile"] != prior_record
+    assert isinstance(plan.deselection_only_state["sources"], dict)
     assert (
         plan.deselection_only_state["sources"]["selected/Dockerfile"]
         == prior_record
@@ -851,6 +855,7 @@ def test_deselected_page_remains_when_a_current_source_owns_it(tmp_path: Path) -
     broad_plan = build_infrastructure_sync_plan(broad_snapshot, broad_inventory)
     generation_inputs = with_infrastructure_generation_input({}, broad_plan)
     shared_page = broad_plan.current_sources["selected/Dockerfile"]["page_path"]
+    assert isinstance(generation_inputs["infrastructure"], dict)
     generation_inputs["infrastructure"]["sources"]["excluded/compose.yml"][
         "page_path"
     ] = shared_page

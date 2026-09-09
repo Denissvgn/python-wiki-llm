@@ -146,9 +146,9 @@ def test_init_dry_run_writes_nothing_and_real_init_is_idempotent(
     loaded = load_governance(tmp_path)
     assert first_output["changed"] is True
     assert loaded.ledger.bundle_id == "kb_command_fixture"
-    assert len(loaded.ledger.concepts) == len(
-        load_knowledge_state(tmp_path).knowledge.concepts
-    )
+    knowledge = load_knowledge_state(tmp_path).knowledge
+    assert knowledge is not None
+    assert len(loaded.ledger.concepts) == len(knowledge.concepts)
 
     _run(
         [
@@ -207,6 +207,7 @@ def test_lifecycle_mutation_refreshes_projection_and_dry_run_is_read_only(
     ledger = load_governance(tmp_path).ledger
     assert current_lifecycle(ledger, uid)[0] is Lifecycle.ACTIVE
     knowledge = load_knowledge_state(tmp_path).knowledge
+    assert knowledge is not None
     projected = next(
         concept
         for concept in knowledge.concepts
@@ -260,6 +261,7 @@ def test_lifecycle_mutation_refreshes_projection_and_dry_run_is_read_only(
         Lifecycle.SUPERSEDED
     )
     superseded = load_knowledge_state(tmp_path).knowledge
+    assert superseded is not None
     graph = superseded.extensions["llm-wiki/typed-graph-v1"]
     assert any(
         edge["kind"] == "supersedes"
@@ -347,6 +349,7 @@ def test_alias_refreshes_projection_and_move_can_stage_until_sync(
     )
     capsys.readouterr()
     projected = load_knowledge_state(tmp_path).knowledge
+    assert projected is not None
     concept = next(item for item in projected.concepts if item.locator == allocation.locator)
     assert {
         (alias["type"], alias["value"])
@@ -401,6 +404,7 @@ def test_review_and_explicit_verification_write_separate_artifacts(
     capsys.readouterr()
     state = load_knowledge_state(tmp_path)
     knowledge = state.knowledge
+    assert knowledge is not None
     sections = knowledge.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]
     page = next(
         page
@@ -482,6 +486,7 @@ def test_review_rejects_another_concepts_section_without_writing(
     capsys.readouterr()
     state = load_knowledge_state(tmp_path)
     knowledge = state.knowledge
+    assert knowledge is not None
     sections = knowledge.extensions[SECTION_OWNERSHIP_EXTENSION_KEY]["pages"]
     user_page = next(
         page

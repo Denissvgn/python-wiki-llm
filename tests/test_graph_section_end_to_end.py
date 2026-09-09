@@ -358,6 +358,7 @@ def test_bootstrap_sync_query_context_and_mcp_share_graph_and_section_state(
         wiki_dir=str(wiki_dir),
         read_only=True,
     )
+    assert "surface" in context
     context_page = next(
         page
         for page in context["surface"]["pages"]

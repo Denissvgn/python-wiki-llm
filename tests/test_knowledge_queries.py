@@ -1310,6 +1310,7 @@ def test_ambiguous_markdown_target_remains_an_observation_not_a_concept_edge(
     assert result["related_concepts"] == []
     assert result["relationships"][0]["resolution"] == "ambiguous"
     assert result["relationships"][0]["related_concept"] is None
+    assert unresolved.target.normalized_target is not None
     assert result["unresolved_targets"] == [
         {
             "kind": "links_to",

@@ -73,10 +73,9 @@ def synced(tmp_path, monkeypatch, capsys):
         )
     )
     sync()
-    assert (
-        knowledge_reuse.REUSE_EXTENSION_KEY
-        in load_knowledge_state("wiki").knowledge.extensions
-    )
+    knowledge = load_knowledge_state("wiki").knowledge
+    assert knowledge is not None
+    assert knowledge_reuse.REUSE_EXTENSION_KEY in knowledge.extensions
     capsys.readouterr()
     return tmp_path
 
@@ -215,6 +214,7 @@ def test_change_during_reuse_check_aborts_without_rebuilding(
 
 def test_reuse_manifest_state_must_validate_its_schema(synced):
     manifest = SyncManifest.load(Path("wiki"))
+    assert isinstance(manifest.generation_inputs["knowledge_reuse"], dict)
     manifest.generation_inputs["knowledge_reuse"]["schema_version"] = "future"
     with pytest.raises(ValueError, match="reuse"):
         manifest.to_payload()
@@ -237,7 +237,6 @@ def test_governed_generation_keeps_using_full_builder(synced):
     ) as build:
         sync()
     assert build.call_count >= 1
-    assert (
-        knowledge_reuse.REUSE_EXTENSION_KEY
-        not in load_knowledge_state("wiki").knowledge.extensions
-    )
+    knowledge = load_knowledge_state("wiki").knowledge
+    assert knowledge is not None
+    assert knowledge_reuse.REUSE_EXTENSION_KEY not in knowledge.extensions

@@ -8,6 +8,7 @@ import re
 import textwrap
 import types
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -25,6 +26,7 @@ from llm_wiki_cli.commands.sync_cmd import (
     SyncManifest,
     _compute_diff,
     _hash_file,
+    _SyncRunOptions,
 )
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import knowledge_orchestration, plugins
@@ -36,18 +38,18 @@ from llm_wiki_cli.services.diagrams import (
 )
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME, InventoryCacheStats
+from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from llm_wiki_cli.services.knowledge_evidence import (
+    is_valid_sha256,
+    semantic_hash_for_file,
+)
 from llm_wiki_cli.services.knowledge_governance import (
     current_review_evidence,
     evaluate_review_event,
     load_governance,
     review_scope_hash,
 )
-from llm_wiki_cli.services.knowledge_evidence import (
-    is_valid_sha256,
-    semantic_hash_for_file,
-)
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.sync_manifest import (
@@ -1667,6 +1669,7 @@ class TestSourceSelectionNarrowing:
         monkeypatch.chdir(project)
         bootstrap_cmd.run(_make_bootstrap_args(src_dir=".", wiki_dir=str(wiki)))
         broad = SyncManifest.load(wiki)
+        assert isinstance(broad.generation_inputs["infrastructure"], dict)
         infrastructure_page = (
             wiki
             / broad.generation_inputs["infrastructure"]["sources"][
@@ -1695,6 +1698,7 @@ class TestSourceSelectionNarrowing:
         assert not (wiki / "entities" / "Drop.md").exists()
         assert not infrastructure_page.exists()
         infrastructure = narrowed.generation_inputs["infrastructure"]
+        assert isinstance(infrastructure, dict)
         assert "selected/docker-compose.drop.yml" not in infrastructure["sources"]
         assert "selected/docker-compose.drop.yml" not in infrastructure["tombstones"]
         assert "selected/drop.py" not in (wiki / SURFACE_INDEX_FILENAME).read_text(
@@ -1812,7 +1816,7 @@ class TestSourceSelectionNarrowing:
             match="operation source snapshot",
         ):
             sync_cmd._build_generated_section_context(
-                options,
+                cast(_SyncRunOptions, options),
                 {},
                 call_edges=[],
             )
@@ -1821,7 +1825,7 @@ class TestSourceSelectionNarrowing:
             match="operation source snapshot",
         ):
             sync_cmd._regenerate_dependency_pages(
-                options,
+                cast(_SyncRunOptions, options),
                 {},
                 {},
                 target_pages=("dependencies",),
@@ -1842,7 +1846,7 @@ class TestSourceSelectionNarrowing:
         )
 
         context = sync_cmd._build_generated_section_context(
-            options,
+            cast(_SyncRunOptions, options),
             {},
             call_edges=[],
             source_snapshot=snapshot,
@@ -1886,6 +1890,7 @@ class TestSourceSelectionNarrowing:
         assert set(broad.sources) == {"outside/drop.py", "selected/keep.py"}
         assert (wiki_dir / "modules" / "drop.md").is_file()
         assert (wiki_dir / "entities" / "Drop.md").is_file()
+        assert isinstance(broad.generation_inputs["infrastructure"], dict)
         deselected_infrastructure_page = (
             wiki_dir
             / broad.generation_inputs["infrastructure"]["sources"][
@@ -1927,6 +1932,7 @@ class TestSourceSelectionNarrowing:
         assert not (wiki_dir / "entities" / "Drop.md").exists()
         assert not deselected_infrastructure_page.exists()
         infrastructure_state = narrowed.generation_inputs["infrastructure"]
+        assert isinstance(infrastructure_state, dict)
         assert set(infrastructure_state["sources"]) == {"selected/Dockerfile"}
         assert infrastructure_state["tombstones"] == {}
         assert "Source selection pruning: 1 source(s)" in first_output
@@ -1952,6 +1958,7 @@ class TestSourceSelectionNarrowing:
         if mode == "repair":
             converged = SyncManifest.load(wiki_dir)
             assert set(converged.sources) == {"selected/keep.py"}
+            assert isinstance(converged.generation_inputs["infrastructure"], dict)
             assert set(converged.generation_inputs["infrastructure"]["sources"]) == {
                 "selected/Dockerfile"
             }

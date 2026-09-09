@@ -3240,7 +3240,7 @@ def _looks_like_compose(text: str) -> bool:
 
 
 def get_docker_inventory(
-    src_dir: str, *, source_snapshot: SourceSnapshot | None = None
+    src_dir: str | Path, *, source_snapshot: SourceSnapshot | None = None
 ) -> dict:
     """Discover and parse Dockerfiles and Compose files in the source tree.
 

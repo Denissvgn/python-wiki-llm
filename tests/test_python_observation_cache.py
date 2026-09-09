@@ -57,6 +57,7 @@ def test_warm_sidecars_elide_python_and_keep_exact_observations(source_case):
     parsed.clear()
     warm = extract(src, cache)
     assert parsed == []
+    assert warm.cache_stats is not None
     assert warm.cache_stats.hits == 2
     assert "python" in warm.extraction_job_plan.cache_elided_plan_ids
     assert semantic_payload(warm) == semantic_payload(first)
@@ -126,6 +127,7 @@ def test_bad_sidecar_reextracts_only_its_owner(source_case, corruption):
     parsed.clear()
     actual = extract(src, cache)
     assert parsed == ["a.py"]
+    assert actual.cache_stats is not None
     assert actual.cache_stats.hits == 1
     assert semantic_payload(actual) == semantic_payload(expected)
 

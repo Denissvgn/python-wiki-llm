@@ -454,7 +454,7 @@ class TestValidatePath:
             assert callable(observed["owner_check"])
         elif hasattr(os, "geteuid"):
             assert 0 in observed["trusted"]
-            assert os.geteuid() in observed["trusted"]
+            assert getattr(os, "geteuid")() in observed["trusted"]
             assert observed["owner_check"] is None
         else:
             assert observed["trusted"] == set()
@@ -477,7 +477,7 @@ class TestValidatePath:
             pytest.skip("Directory symlinks are unavailable to this test account.")
         os.chdir(project)
         original_lstat = Path.lstat
-        hostile_uid = os.geteuid() + 1
+        hostile_uid = getattr(os, "geteuid")() + 1
         if hostile_uid == 0:
             hostile_uid = 1
 

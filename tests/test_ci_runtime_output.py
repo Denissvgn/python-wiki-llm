@@ -28,6 +28,7 @@ def invoke(capsys, **overrides):
         code = exc.code
     else:
         code = 0
+    assert isinstance(code, int)
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     ci_report.validate_ci_check_payload(payload, cli_exit=code)
@@ -186,7 +187,9 @@ def test_v2_rejects_inconsistent_runtime_data(path, value):
     changed = deepcopy(payload)
     target = changed
     for part in path[:-1]:
-        target = target[part]
+        child = target[part]
+        assert isinstance(child, dict)
+        target = child
     target[path[-1]] = value
     with pytest.raises(ci_report.CiCheckReportError):
         ci_report.validate_ci_check_payload(changed, cli_exit=0)

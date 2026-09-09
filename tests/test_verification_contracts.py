@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from types import MappingProxyType
+from typing import Any, cast
 
 import pytest
 
+from llm_wiki_cli.services import verification_contracts as verification
 from llm_wiki_cli.services.knowledge_evidence import sha256_bytes
 from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
-from llm_wiki_cli.services import verification_contracts as verification
 from llm_wiki_cli.services.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
     INTERNAL_LINKS_CHECKER_ID,
@@ -102,7 +103,10 @@ def test_registry_is_static_application_owned_and_exact():
         for contract in registry.values()
     )
     with pytest.raises(TypeError):
-        registry["document-selected"] = registry[ARTIFACT_INTEGRITY_CHECKER_ID]
+        # Bypass static write restrictions to exercise runtime immutability.
+        cast(Any, registry)["document-selected"] = registry[
+            ARTIFACT_INTEGRITY_CHECKER_ID
+        ]
 
 
 def test_unknown_checker_fails_closed():

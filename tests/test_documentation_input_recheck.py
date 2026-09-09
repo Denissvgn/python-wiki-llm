@@ -10,6 +10,7 @@ import pytest
 
 from llm_wiki_cli.services import documentation_run as documentation_run_service
 from llm_wiki_cli.services.documentation_run import (
+    DocumentationRun,
     DocumentationRunError,
     prepare_documentation_run,
     verify_documentation_run,
@@ -42,7 +43,7 @@ def _write_nontrivial_input(tmp_path: Path) -> Path:
 def _prepare(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-) -> tuple[Path, Path, object]:
+) -> tuple[Path, Path, DocumentationRun]:
     wiki = _write_nontrivial_input(tmp_path)
     workspace = tmp_path / "documentation workspace"
     monkeypatch.setattr(

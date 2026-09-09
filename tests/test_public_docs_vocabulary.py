@@ -17,8 +17,10 @@ from pathlib import Path, PurePosixPath
 from typing import Iterable, Iterator, Mapping
 from urllib.parse import unquote, urlsplit
 
-from markdown_it import MarkdownIt
 import pytest
+from markdown_it import MarkdownIt
+from markdown_it.renderer import RendererHTML
+from markdown_it.token import Token
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -689,8 +691,9 @@ def _html_destinations(source: str) -> tuple[tuple[int, str], ...]:
 
 
 def _render_inline(
-    children: Iterable[object],
+    children: Iterable[Token],
 ) -> tuple[str, tuple[str, ...], tuple[str, ...]]:
+    assert isinstance(MARKDOWN.renderer, RendererHTML)
     rendered_html = MARKDOWN.renderer.renderInline(
         tuple(children),
         MARKDOWN.options,
@@ -862,6 +865,7 @@ def _markdown_link_destinations(text: str) -> Iterator[tuple[int, str]]:
                 else None
             )
             if attribute and (destination := child.attrGet(attribute)):
+                assert isinstance(destination, str)
                 destinations.setdefault(destination, line)
             elif child.type == "html_inline":
                 for _, destination in _html_destinations(child.content):

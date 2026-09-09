@@ -143,7 +143,9 @@ def test_broken_sink_does_not_fail_the_operation():
 def test_worker_stops_and_worker_start_failure_is_nonfatal(monkeypatch):
     progress = Progress("lint", mode="always", stream=Stream())
     with progress.run():
+        assert progress._thread is not None
         assert progress._thread.is_alive()
+    assert progress._thread is not None
     assert not progress._thread.is_alive()
     monkeypatch.setattr(
         threading.Thread,

@@ -6,6 +6,7 @@ import json
 import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -180,8 +181,8 @@ def test_enriched_existing_outputs_dry_run_plan_every_write_without_mutation(
         path for path in vault_before if path.startswith(f"{obsidian.MIRROR_ROOT}/")
     }
 
-    site_calls: list[dict[str, object]] = []
-    obsidian_calls: list[dict[str, object]] = []
+    site_calls: list[dict[str, Any]] = []
+    obsidian_calls: list[dict[str, Any]] = []
     real_site_export = site_cmd.export_site_mirror
     real_obsidian_export = obsidian_cmd.export_obsidian_vault
 

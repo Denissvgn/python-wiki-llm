@@ -456,6 +456,7 @@ def test_repeated_surface_initialization_preserves_deferred_state_and_converges(
     flow_page = wiki_dir / "flows" / "api-publish.md"
     workflow_page = wiki_dir / "workflows" / "publish.md"
     manifest = SyncManifest.load(wiki_dir)
+    assert isinstance(manifest.generation_inputs["infrastructure"], dict)
     infrastructure_record = manifest.generation_inputs["infrastructure"]["sources"][
         "Dockerfile"
     ]

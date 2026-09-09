@@ -66,6 +66,7 @@ def test_implicit_cache_failure_disables_persistence_and_warns(tmp_path, monkeyp
         cache_options=InventoryCacheOptions(enabled=True, warning=warnings.append),
     )
     assert "app.py" in result.inventory
+    assert result.cache_stats is not None
     assert result.cache_stats.enabled is False
     assert result.cache_stats.status == "disabled"
     assert result.cache_stats.failure_stage == "preflight"
@@ -90,6 +91,7 @@ def test_cache_parent_save_failure_is_visible_without_stats(
     assert options.stats_enabled is False
     cache = InventoryCache(tmp_path, options)
     cache.save({}, {"old.py": {}})
+    assert cache.path is not None
     previous = cache.path.read_bytes()
     monkeypatch.setattr(Path, "mkdir", denied)
     cache.save({}, {"new.py": {}})

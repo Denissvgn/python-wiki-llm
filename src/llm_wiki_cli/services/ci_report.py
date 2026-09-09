@@ -205,15 +205,14 @@ def build_ci_check_payload(
     ).to_payload()
     if report_schema == "v2":
         check_exit = 0 if report.passed else 1
+        effective_exit = check_exit if command_exit_code is None else command_exit_code
         payload.update(
             schema_version=CI_CHECK_V2_SCHEMA_VERSION,
             check_exit_code=check_exit,
-            command_exit_code=check_exit
-            if command_exit_code is None
-            else command_exit_code,
+            command_exit_code=effective_exit,
             runtime=runtime,
         )
-        _validate_ci_v2(payload, cli_exit=payload["command_exit_code"])
+        _validate_ci_v2(payload, cli_exit=effective_exit)
     return payload
 
 

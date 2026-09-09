@@ -349,7 +349,10 @@ class InventoryCache:
         destination = options.destination
         path = destination.path if destination is not None else None
         enabled = bool(
-            options.enabled and path is not None and destination.status != "failed"
+            options.enabled
+            and destination is not None
+            and path is not None
+            and destination.status != "failed"
         )
         self.path = path
         self.options = options

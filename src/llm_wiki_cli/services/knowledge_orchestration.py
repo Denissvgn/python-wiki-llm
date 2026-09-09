@@ -359,14 +359,16 @@ def build_runtime_knowledge_plan(
 
     if not isinstance(inputs, RuntimeKnowledgeInputs):
         raise TypeError("inputs must be a RuntimeKnowledgeInputs")
-    if inputs.committed_state is None:
+    committed_state = inputs.committed_state
+    if committed_state is None:
+        committed_state = capture_committed_knowledge(
+            inputs.target_wiki_dir, inputs.previous_manifest
+        )
         inputs = replace(
             inputs,
-            committed_state=capture_committed_knowledge(
-                inputs.target_wiki_dir, inputs.previous_manifest
-            ),
+            committed_state=committed_state,
         )
-    inputs.committed_state.require_for(inputs.target_wiki_dir)
+    committed_state.require_for(inputs.target_wiki_dir)
     governance = _prepared_runtime_governance(inputs)
     source_hashes = inputs.source_snapshot.hashes_for(inputs.inventory)
     (
@@ -768,14 +770,16 @@ def finalize_runtime_knowledge(
 
     if not isinstance(inputs, RuntimeKnowledgeInputs):
         raise TypeError("inputs must be a RuntimeKnowledgeInputs")
-    if inputs.committed_state is None:
+    committed_state = inputs.committed_state
+    if committed_state is None:
+        committed_state = capture_committed_knowledge(
+            inputs.target_wiki_dir, inputs.previous_manifest
+        )
         inputs = replace(
             inputs,
-            committed_state=capture_committed_knowledge(
-                inputs.target_wiki_dir, inputs.previous_manifest
-            ),
+            committed_state=committed_state,
         )
-    inputs.committed_state.require_for(inputs.target_wiki_dir)
+    committed_state.require_for(inputs.target_wiki_dir)
     root = Path(inputs.target_wiki_dir)
     marker_hash = (
         getattr(inputs.previous_manifest.artifact_hashes, "governance_hash", None)
@@ -854,7 +858,7 @@ def finalize_runtime_knowledge(
         assert effective is not None
         prepared_inputs = replace(inputs, governance=effective)
         plan = build_runtime_knowledge_plan(prepared_inputs)
-        inputs.committed_state.assert_current()
+        committed_state.assert_current()
         save_governance(
             root,
             effective,

@@ -429,6 +429,7 @@ def test_impact_result_paths_obey_limit_without_truncating_input_echo_or_cost(
     assert result["query"]["paths"] == ["a.py", "b.py"]
     assert result["cost"]["supplied_paths"] == 2
     assert [match["path"] for match in result["matches"]] == ["a.py"]
+    assert "impacted_paths" in result
     assert result["impacted_paths"] == ["a.py"]
     assert result["bounds"]["matches"] == {
         "total": 2,
@@ -504,7 +505,9 @@ def test_final_documentation_query_envelope_caps_combined_component_bytes():
     assert result["schema_version"] == api.DOCUMENTATION_QUERY_SCHEMA_VERSION
     assert result["operation"] == "symbol"
     assert result["cost"]["scope"] == "snapshot-index-only"
+    assert "pages" in result
     assert result["pages"][0]["canonical_path"] == "modules/run.md"
+    assert "callers" in result
     assert result["callers"][0]["source_path"] == "src/caller.py"
     assert result["bounds"]["result_bytes"]["returned"] == len(encoded)
 

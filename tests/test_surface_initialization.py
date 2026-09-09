@@ -742,7 +742,9 @@ def test_surface_guard_uses_page_count_and_ratio(tmp_path):
         requested_surfaces=frozenset({"flows"}),
     )
 
-    assert "30% safety limit" in sync_cmd._large_surface_message(plan, wiki)
+    message = sync_cmd._large_surface_message(plan, wiki)
+    assert message is not None
+    assert "30% safety limit" in message
 
 
 @pytest.mark.parametrize(

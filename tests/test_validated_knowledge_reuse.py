@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
+from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
@@ -15,10 +16,10 @@ from llm_wiki_cli.services import (
     knowledge_index,
     knowledge_orchestration,
 )
+from llm_wiki_cli.services.immutable import FrozenDict
 from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.sync_manifest import SyncManifest
-from llm_wiki_cli.services.immutable import FrozenDict
 from tests.test_knowledge_generation import _runtime_input_case
 from tests.test_knowledge_loader import _committed_state
 
@@ -32,6 +33,7 @@ def test_artifact_validation_parses_model_once_and_keeps_canonical_bytes(tmp_pat
     ) as parse:
         loaded = load_knowledge_state(tmp_path)
     assert parse.call_count == 1
+    assert loaded.validated_artifacts is not None
     surface, knowledge = knowledge_artifacts.validated_artifact_bytes(
         loaded.validated_artifacts
     )
@@ -52,6 +54,7 @@ def test_loaded_freshness_reuses_model_but_public_inputs_still_validate(tmp_path
         full = knowledge_freshness.evaluate_knowledge_freshness(loaded.knowledge)
         assert parse.call_count == 1
     assert fast.freshness == full
+    assert loaded.knowledge is not None
     untrusted = replace(
         loaded, knowledge=replace(loaded.knowledge, schema_version="invalid")
     )
@@ -62,13 +65,17 @@ def test_loaded_freshness_reuses_model_but_public_inputs_still_validate(tmp_path
 def test_nested_model_and_surface_mutations_are_rejected(tmp_path):
     _committed_state(tmp_path)
     loaded = load_knowledge_state(tmp_path)
+    assert loaded.knowledge is not None
+    assert loaded.surface is not None
     with pytest.raises(TypeError, match="immutable"):
-        loaded.knowledge.extensions["example.invalid/changed"] = True
+        # Bypass static write restrictions to exercise runtime immutability.
+        cast(Any, loaded.knowledge.extensions)["example.invalid/changed"] = True
     with pytest.raises(TypeError, match="immutable"):
         loaded.surface["pages"].append({})
     with pytest.raises(TypeError, match="immutable"):
         loaded.surface["pages"][0]["title"] = "changed"
     detached = deepcopy(loaded.surface)
+    assert detached is not None
     detached["pages"][0]["title"] = "changed"
     assert detached != loaded.surface
 
@@ -76,6 +83,7 @@ def test_nested_model_and_surface_mutations_are_rejected(tmp_path):
 def test_replaced_and_manual_artifact_objects_have_no_validation_authority(tmp_path):
     _committed_state(tmp_path)
     issued = load_knowledge_state(tmp_path).validated_artifacts
+    assert issued is not None
     for forged in (
         replace(issued),
         replace(issued, knowledge_index_hash="sha256:forged"),
@@ -157,6 +165,7 @@ def test_runtime_commit_rechecks_captured_state_after_planning(tmp_path, monkeyp
 def test_public_serialization_still_rejects_manually_invalid_model(tmp_path):
     _committed_state(tmp_path)
     model = load_knowledge_state(tmp_path).knowledge
+    assert model is not None
     changed = replace(model, schema_version="future")
     with pytest.raises(ValueError):
         knowledge_index.serialize_knowledge_index(changed)

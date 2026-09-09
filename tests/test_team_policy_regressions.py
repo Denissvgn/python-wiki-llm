@@ -102,6 +102,7 @@ def test_required_path_symlink_escape_is_one_config_error(tmp_path, kind):
     issues = check(config, wiki)
     assert len(issues) == 1
     assert issues[0]["category"] == "team_config"
+    assert issues[0]["message"] is not None
     assert "escapes" in issues[0]["message"]
 
 
@@ -120,6 +121,7 @@ def test_required_path_inspection_error_precedes_page_reads(tmp_path, monkeypatc
     issues = check(config, tmp_path)
     assert len(issues) == 1
     assert issues[0]["category"] == "team_config"
+    assert issues[0]["message"] is not None
     assert "inspect" in issues[0]["message"]
 
 
@@ -177,7 +179,9 @@ def test_wiki_identity_rejected_before_extraction_and_page_reads(
         issues = team.build_team_issues("other", ".", {}, [])
     assert len(issues) == 1
     assert issues[0]["category"] == "team_config"
-    assert "identity mismatch" in issues[0]["message"]
+    message = issues[0]["message"]
+    assert isinstance(message, str)
+    assert "identity mismatch" in message
 
 
 def test_equivalent_wiki_identity_and_project_root(tmp_path, monkeypatch):
@@ -187,6 +191,7 @@ def test_equivalent_wiki_identity_and_project_root(tmp_path, monkeypatch):
     team.write_default_team_config("docs/wiki", root=project)
     policy = team.resolve_team_policy("./docs/wiki/", root=project)
     assert policy.root == project
+    assert policy.config is not None
     assert policy.config["wiki_dir"] == "docs/wiki"
     assert (
         team.resolve_team_policy(project / "docs/wiki", root=project).config
@@ -227,6 +232,7 @@ def test_resolved_policy_is_immutable(tmp_path, monkeypatch):
     write_policy(minimal_config())
     policy = team.resolve_team_policy("wiki")
     with pytest.raises(TypeError, match="immutable"):
+        assert policy.config is not None
         policy.config["wiki_dir"] = "other"
 
 
@@ -246,7 +252,9 @@ def test_one_log_obligation(tmp_path, explicit, require_log, present):
     assert len(issues) == expected
     if issues:
         assert issues[0]["path"] == "log.md"
-        assert ("architectural log" in issues[0]["message"]) is require_log
+        message = issues[0]["message"]
+        assert message is not None
+        assert ("architectural log" in message) is require_log
 
 
 def test_duplicate_required_entries_do_not_hide_independent_sections(tmp_path):

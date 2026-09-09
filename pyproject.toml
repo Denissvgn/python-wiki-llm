@@ -34,6 +34,8 @@ dev = [
     "jsonschema>=4.18",
     "markdown-it-py>=4.0,<5",
     "setuptools==83.0.0",
+    # Analyze Python 3.10 fallback imports from newer development interpreters.
+    "tomli>=2",
 ]
 # TypeScript extraction requires Node.js + npm at runtime (no Python deps).
 # Prepare the locked dependency cache with `llm-wiki prepare-extractors`.

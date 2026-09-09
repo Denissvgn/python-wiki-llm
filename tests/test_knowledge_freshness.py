@@ -944,6 +944,7 @@ def test_source_mapping_and_observation_scope_changes_are_incompatible(knowledge
     assert recorded_basis.extractor_ref is not None
     assert recorded_basis.concept_observation_hash is not None
     changed_path = "src/moved_accounts.py"
+    assert recorded_basis.source_content_hash is not None
     moved_basis = ConceptObservationBasis(
         scope=recorded_basis.scope.value,
         source_path=changed_path,

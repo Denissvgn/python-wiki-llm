@@ -270,7 +270,7 @@ def test_darwin_native_non_empty_extended_acl_is_rejected(tmp_path: Path):
         [
             "/bin/chmod",
             "+a",
-            f"user:{target.owner()} allow read",
+            f"user:{getattr(target, 'owner')()} allow read",
             os.fspath(target),
         ],
         check=True,
@@ -278,7 +278,7 @@ def test_darwin_native_non_empty_extended_acl_is_rejected(tmp_path: Path):
         text=True,
     )
 
-    descriptor = os.open(target, os.O_RDONLY | os.O_NOFOLLOW)
+    descriptor = os.open(target, os.O_RDONLY | getattr(os, "O_NOFOLLOW"))
     try:
         assert protected_artifacts._darwin_extended_acl_entry_count(descriptor) == 1
         with pytest.raises(ProtectedArtifactIntegrityError, match="extended ACL"):
@@ -877,7 +877,7 @@ def test_first_controller_lock_creation_retries_transient_enoent(
         pass
 
     assert len(lock_open_flags) == 2
-    assert all(flags & os.O_NOFOLLOW for flags in lock_open_flags)
+    assert all(flags & getattr(os, "O_NOFOLLOW") for flags in lock_open_flags)
     assert all(flags & os.O_EXCL for flags in lock_open_flags)
 
 
