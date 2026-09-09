@@ -37,6 +37,7 @@ from llm_wiki_cli.services.knowledge_observability import (
 )
 from llm_wiki_cli.services.knowledge_orchestration import (
     RUNTIME_GENERATION_INPUT_KEY,
+    runtime_generation_options,
 )
 from llm_wiki_cli.services.lint_service import _LintProfiler
 from llm_wiki_cli.services.source_snapshot import SourceSnapshot
@@ -639,9 +640,15 @@ def test_only_freshness_diagnostics_gain_structured_reason_and_hint():
     assert "hint" not in diagnostics[1]
 
 
-def test_report_mode_reports_invalid_live_generation_policy_without_blocking(
+@pytest.mark.parametrize(
+    "mutate_committed_manifest",
+    (False, True),
+    ids=("live_policy", "committed_manifest"),
+)
+def test_report_mode_distinguishes_invalid_live_policy_from_committed_tampering(
     tmp_path,
     monkeypatch,
+    mutate_committed_manifest,
 ):
     source = tmp_path / "app.py"
     source.write_text("class User:\n    pass\n", encoding="utf-8")
@@ -656,13 +663,26 @@ def test_report_mode_reports_invalid_live_generation_policy_without_blocking(
         )
     )
     wiki = tmp_path / "docs" / "llm_wiki"
-    manifest = SyncManifest.load(wiki)
-    manifest.generation_inputs[RUNTIME_GENERATION_INPUT_KEY] = {
+    invalid_policy = {
         "data_flow_enabled": True,
         "dependency_graph_detail": "unsupported",
         "workflows_enabled": True,
     }
-    manifest.save(wiki)
+    if mutate_committed_manifest:
+        manifest = SyncManifest.load(wiki)
+        manifest.generation_inputs[RUNTIME_GENERATION_INPUT_KEY] = invalid_policy
+        manifest.save(wiki)
+    else:
+        def invalid_live_options(**kwargs):
+            kwargs["generation_inputs"] = {
+                **kwargs["generation_inputs"],
+                RUNTIME_GENERATION_INPUT_KEY: invalid_policy,
+            }
+            return runtime_generation_options(**kwargs)
+
+        monkeypatch.setattr(
+            lint_cmd, "runtime_generation_options", invalid_live_options
+        )
 
     report = lint_cmd.build_report(
         wiki,
@@ -676,6 +696,15 @@ def test_report_mode_reports_invalid_live_generation_policy_without_blocking(
         for diagnostic in report.diagnostics
         if "[reason=live-evaluation-invalid]" in diagnostic.message
     ]
+    if mutate_committed_manifest:
+        assert not report.passed
+        assert any(
+            issue.target == "manifest.generation_inputs.knowledge_reuse"
+            and "knowledge reuse" in issue.message
+            for issue in report.issues
+        )
+        assert findings == []
+        return
     assert report.passed
     assert len(findings) == 1
     assert findings[0].category == "knowledge_freshness"
