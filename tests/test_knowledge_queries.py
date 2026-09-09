@@ -624,7 +624,7 @@ def test_query_projects_every_live_freshness_outcome_and_reason(tmp_path):
         knowledge.bundle.producer,
         tool=replace(
             knowledge.bundle.producer.tool,
-            version="2.0.0",
+            version=f"{knowledge.bundle.producer.tool.version}-changed",
         ),
     )
     cases = (
