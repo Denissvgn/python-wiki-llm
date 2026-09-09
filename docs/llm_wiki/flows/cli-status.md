@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [status_cmd](../modules/status_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [hook_cmd](../modules/hook_cmd.md), and 25 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [hook_cmd](../modules/hook_cmd.md), and 26 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [config](../modules/config.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [hook_cmd](../modules/hook_cmd.md)
+- [immutable](../modules/immutable.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -20,8 +21,8 @@
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
-- [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [paths](../modules/paths.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -93,7 +94,7 @@ sequenceDiagram
     p12-->>p19: S_ISLNK
 ```
 
-> Call sequence diagram shows 30 of 1637 interactions; 1607 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1631 interactions; 1601 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

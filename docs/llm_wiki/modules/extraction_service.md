@@ -18,6 +18,7 @@ and explicit extractor status, cache, plugin, and source-snapshot metadata.
 | `..extractors.common` | `LANGUAGE_EXTENSIONS`, `filter_bundled_source_inventory`, `inventory_language_for_path`, `normalize_include_tests` |
 | `..extractors.go_extractor` | `GoExtractionRequest` |
 | `..extractors.haskell_extractor` | `HaskellExtractionRequest` |
+| `..extractors.python_contracts` | `finalize_inventory_model_kinds` |
 | `..extractors.python_extractor` | `ComponentVisitor` |
 | `..extractors.rust_extractor` | `RustExtractionRequest` |
 | `.api_contracts` | `attach_routes_to_entry_points`, `build_api_contracts` |
@@ -31,6 +32,8 @@ and explicit extractor status, cache, plugin, and source-snapshot metadata.
 | `.io` | `write_text_output` |
 | `.packages` | `discover_packages`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
+| `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
+| `.python_observations` | `data_effect_sidecar`, `import_sidecar`, `partition_sidecars`, `valid_cached_sidecars` |
 | `.resource_diagnostics` | `format_resource_failure` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary` |
@@ -67,25 +70,25 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (18) |
-| Outbound | `src` (20) |
+| Inbound | `src` (19) |
+| Outbound | `src` (23) |
 
-> All 38 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 127 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 135 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 160 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 192 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 212 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 237 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 250 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 261 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 280 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 2947 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 135 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 143 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 168 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 200 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 220 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 245 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 258 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 269 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 289 | — | — |
+| [_ComposeParserState](../entities/ComposeParserState.md) | 3019 | — | — |
 
 ## Functions
 
@@ -97,13 +100,13 @@ flowchart LR
 | `_load_plugin_extractor` | `(entry_point: str, plugin_root: str)` | — | — |
 | `_extractor_failure_message` | `(result: InventoryResult) -> str` | — | — |
 | `print_inventory_failures` | `(result: InventoryResult, *, file = None) -> None` | — | Print extractor failures in a consistent form. |
-| `_run_extraction_plan` | `(plan: _ExtractionPlan, *, fresh_instance: bool = False) -> _ExtractionOutcome` | — | — |
+| `_run_extraction_plan` | `(plan: _ExtractionPlan, *, fresh_instance: bool = False) -> _ExtractionOutcome` | `@observed_phase('extractor')` | — |
 | `_merge_language_inventory` | `(target: dict, source_order: list[str], *sources: dict) -> None` | — | — |
 | `_coerce_inventory_request` | `(request, legacy_args: tuple, legacy_kwargs: dict) -> InventoryRequest` | — | — |
 | `get_inventory_result` | `(request = _MISSING_INVENTORY_REQUEST, *legacy_args, **legacy_kwargs) -> InventoryResult` | — | Scan source files across all registered languages and return inventory. |
 | `_build_inventory_result` | `(request: InventoryRequest) -> InventoryResult` | — | — |
 | `_completed_inventory_result` | `(context: _InventoryBuildContext, *, inventory: dict, statuses: dict[str, ExtractorStatus], extraction_job_plan: ExtractionJobPlan, selected_plugin_components: tuple[dict, ...], producer_plugin_components: tuple[dict, ...], evaluated_source_snapshot: SourceSnapshot, outcomes_by_language: dict[str, _ExtractionOutcome]) -> InventoryResult` | — | — |
-| `_python_extraction_sidecars` | `(outcomes_by_language: dict[str, _ExtractionOutcome]) -> dict` | — | — |
+| `_python_extraction_sidecars` | `(context: _InventoryBuildContext, outcomes_by_language: dict[str, _ExtractionOutcome]) -> dict` | `@observed_phase('sidecar_observations')` | — |
 | `_inventory_plugin_state` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus], inventory: dict) -> tuple[tuple[dict, ...], tuple[dict, ...], SourceSnapshot]` | — | — |
 | `_selected_extractor_plugin_components` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus]) -> tuple[dict, ...]` | — | — |
 | `_snapshot_with_plugin_inventory_paths` | `(snapshot: SourceSnapshot, inventory: dict, components: tuple[dict, ...]) -> SourceSnapshot` | — | — |

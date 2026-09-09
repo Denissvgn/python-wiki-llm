@@ -18,6 +18,7 @@ different tree.
 | `..config` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text`, `is_agent_worktree_path` |
 | `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `LANGUAGE_EXTENSIONS`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
 | `.knowledge_envelope` | `ConsumedInput` |
+| `.progress` | `observed_phase` |
 | `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
@@ -49,19 +50,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (33) |
-| Outbound | `src` (5) |
+| Outbound | `src` (6) |
 
-> All 38 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 92 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
-| [SourceFile](../entities/SourceFile.md) | 102 | — | A source-tree file discovered relative to a snapshot root. |
-| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 114 | — | Filesystem identity used for cheap between-stage mutation checks. |
-| [SourceSnapshot](../entities/SourceSnapshot.md) | 126 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 427 | — | — |
+| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 94 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
+| [SourceFile](../entities/SourceFile.md) | 104 | — | A source-tree file discovered relative to a snapshot root. |
+| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 116 | — | Filesystem identity used for cheap between-stage mutation checks. |
+| [SourceSnapshot](../entities/SourceSnapshot.md) | 128 | — | Filtered source-tree discovery results shared by lint/extract paths. |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 429 | — | — |
 
 ## Functions
 
@@ -113,7 +114,7 @@ flowchart LR
 | `_format_unsupported_language_count` | `(language: str, data: dict[str, object]) -> str` | — | — |
 | `_policies_match` | `(left: SourceSelectionPolicy, right: SourceSelectionPolicy) -> bool` | — | — |
 | `_resolve_snapshot_selection` | `(root: Path, *, source_selection: str \| Path \| None, selection_policy: SourceSelectionPolicy \| None) -> SourceSelectionPolicy \| None` | — | — |
-| `build_source_snapshot` | `(src_dir: str \| Path, only_files: Iterable[str] \| None = None, include_tests: Iterable[str] \| None = None, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, expected_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_EXPECTED_SELECTION_INPUTS) -> SourceSnapshot` | — | Build a deterministic source-tree snapshot rooted at *src_dir*. |
+| `build_source_snapshot` | `(src_dir: str \| Path, only_files: Iterable[str] \| None = None, include_tests: Iterable[str] \| None = None, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, expected_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_EXPECTED_SELECTION_INPUTS) -> SourceSnapshot` | `@observed_phase('source_snapshot')` | Build a deterministic source-tree snapshot rooted at *src_dir*. |
 | `_hash_extra_inventory_path` | `(root: Path, path: str, *, policy: SourceSelectionPolicy \| None, selected_regular_paths: set[str]) -> str \| None` | — | Hash one extractor-owned path without admitting a newly selected path. |
 | `source_snapshot_inputs_match_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Cheaply verify that every already captured input retains its identity. |
 | `source_snapshot_matches_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Return whether *snapshot* still matches the selected source tree. |

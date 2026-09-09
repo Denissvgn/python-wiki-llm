@@ -2,7 +2,7 @@
 
 **Entry point:** `serialize_evaluated_envelope` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 4 more
+**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 5 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 
@@ -56,6 +57,7 @@ sequenceDiagram
     p11-->>p4: isinstance
     p11-->>p5: TypeError
     p11->>p12: _emit_extensions
+    p12-->>p4: isinstance
     p12->>p13: _parse_extensions
     p13->>p14: _object
     p13-->>p15: sorted
@@ -70,10 +72,9 @@ sequenceDiagram
     p20->>p12: _emit_extensions
     p20->>p21: _wire_enum
     p21-->>p4: isinstance
-    p20->>p12: _emit_extensions
 ```
 
-> Call sequence diagram shows 30 of 269 interactions; 239 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 273 interactions; 243 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -137,33 +138,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_evaluated_envelope | formatted_json_text | 1164 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
+| serialize_evaluated_envelope | formatted_json_text | 1167 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
 | formatted_json_text | dumps | 177 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
-| serialize_evaluated_envelope | evaluated_envelope_to_payload | 1164 | `evaluated_envelope_to_payload(envelope)` |
-| evaluated_envelope_to_payload | isinstance | 1138 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError | 1139 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1141 | `KnowledgeEnvelopeError('schema_version', ...)` |
-| evaluated_envelope_to_payload | _validated_bundle_payload | 1145 | `_validated_bundle_payload(envelope.bundle)` |
-| _validated_bundle_payload | dict | 1927 | `dict(bundle.snapshot.extensions)` |
-| _validated_bundle_payload | pop | 1928 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
-| _validated_bundle_payload | replace | 1929 | `replace(bundle, snapshot=replace(...))` |
-| _validated_bundle_payload | replace | 1931 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
+| serialize_evaluated_envelope | evaluated_envelope_to_payload | 1167 | `evaluated_envelope_to_payload(envelope)` |
+| evaluated_envelope_to_payload | isinstance | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| evaluated_envelope_to_payload | _validated_bundle_payload | 1148 | `_validated_bundle_payload(envelope.bundle)` |
+| _validated_bundle_payload | dict | 1942 | `dict(bundle.snapshot.extensions)` |
+| _validated_bundle_payload | pop | 1943 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
+| _validated_bundle_payload | replace | 1944 | `replace(bundle, snapshot=replace(...))` |
+| _validated_bundle_payload | replace | 1946 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1928 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1943 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `formatted_json_text` | `json.dumps` | 177 |
-| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1138 |
-| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1139 |
-| external_call | `_validated_bundle_payload` | `replace` | 1929 |
-| external_call | `_validated_bundle_payload` | `replace` | 1931 |
+| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
+| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
+| external_call | `_validated_bundle_payload` | `replace` | 1944 |
+| external_call | `_validated_bundle_payload` | `replace` | 1946 |
 | step_limit | `serialize_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_evaluated_envelope` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # KnowledgeCommitResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:144`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:203`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -40,7 +40,9 @@ flowchart LR
     n4["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n5["src/llm_wiki_cli/services/documentation_native.py"]
     n6["commit_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n7["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n9["unchanged_commit_result (src/llm_wiki_cli/services/knowledge_reuse.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -48,6 +50,8 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
+    n9 --> n0
     click n0 "../modules/knowledge_artifacts.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -56,6 +60,8 @@ flowchart LR
     click n5 "../modules/documentation_native.md"
     click n6 "../modules/knowledge_artifacts.md"
     click n7 "../modules/knowledge_orchestration.md"
+    click n8 "../modules/knowledge_orchestration.md"
+    click n9 "../modules/knowledge_reuse.md"
 ```
 
 ### Summary
@@ -75,4 +81,6 @@ flowchart LR
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `commit_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `commit_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `_commit_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `finalize_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
+| `unchanged_commit_result` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 1 |

@@ -112,17 +112,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_generation_options | isinstance | 825 | `isinstance(values, Mapping)` |
-| hash_generation_options | KnowledgeEnvelopeError | 826 | `KnowledgeEnvelopeError('generation_options', 'must be an object')` |
-| hash_generation_options | isinstance | 827 | `isinstance(defaults, Mapping)` |
-| hash_generation_options | KnowledgeEnvelopeError | 828 | `KnowledgeEnvelopeError('generation_option_defaults', 'must be an object')` |
-| hash_generation_options | _normalized_allowlist | 832 | `_normalized_allowlist(allowlist)` |
-| _normalized_allowlist | isinstance | 1656 | `isinstance(value, (...))` |
-| _normalized_allowlist | KnowledgeEnvelopeError | 1657 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names, not scalar text or bytes')` |
-| _normalized_allowlist | tuple | 1662 | `tuple(value)` |
-| _normalized_allowlist | KnowledgeEnvelopeError | 1664 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names')` |
-| _normalized_allowlist | any | 1668 | `any(...)` |
-| _normalized_allowlist | isinstance | 1668 | `isinstance(item, str)` |
+| hash_generation_options | isinstance | 827 | `isinstance(values, Mapping)` |
+| hash_generation_options | KnowledgeEnvelopeError | 828 | `KnowledgeEnvelopeError('generation_options', 'must be an object')` |
+| hash_generation_options | isinstance | 829 | `isinstance(defaults, Mapping)` |
+| hash_generation_options | KnowledgeEnvelopeError | 830 | `KnowledgeEnvelopeError('generation_option_defaults', 'must be an object')` |
+| hash_generation_options | _normalized_allowlist | 834 | `_normalized_allowlist(allowlist)` |
+| _normalized_allowlist | isinstance | 1671 | `isinstance(value, (...))` |
+| _normalized_allowlist | KnowledgeEnvelopeError | 1672 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names, not scalar text or bytes')` |
+| _normalized_allowlist | tuple | 1677 | `tuple(value)` |
+| _normalized_allowlist | KnowledgeEnvelopeError | 1679 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names')` |
+| _normalized_allowlist | any | 1683 | `any(...)` |
+| _normalized_allowlist | isinstance | 1683 | `isinstance(item, str)` |
 
 ### Boundary effects
 
@@ -132,11 +132,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_generation_options` | `isinstance` | 825 |
 | unresolved_call | `hash_generation_options` | `isinstance` | 827 |
-| unresolved_call | `_normalized_allowlist` | `isinstance` | 1656 |
-| unresolved_call | `_normalized_allowlist` | `any` | 1668 |
-| unresolved_call | `_normalized_allowlist` | `isinstance` | 1668 |
+| unresolved_call | `hash_generation_options` | `isinstance` | 829 |
+| unresolved_call | `_normalized_allowlist` | `isinstance` | 1671 |
+| unresolved_call | `_normalized_allowlist` | `any` | 1683 |
+| unresolved_call | `_normalized_allowlist` | `isinstance` | 1683 |
 | step_limit | `hash_generation_options` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -16,7 +16,7 @@ and its process exit remain authoritative over the nested health dashboard.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `CI_CHECK_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION` |
+| `.contracts` | `CI_CHECK_SCHEMA_VERSION`, `CI_CHECK_V2_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION` |
 | `.doctor_service` | `compose_doctor_report` |
 | `.knowledge_observability` | `KnowledgeAggregateSummary` |
 | `.lint_service` | `LintReport`, `report_to_dict` |
@@ -75,13 +75,13 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [CiCheckReportError](../entities/CiCheckReportError.md) | 173 | `ValueError` | A field-specific failure in the versioned CI report contract. |
+| [CiCheckReportError](../entities/CiCheckReportError.md) | 179 | `ValueError` | A field-specific failure in the versioned CI report contract. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `build_ci_check_payload` | `(report: LintReport) -> dict[str, object]` | — | Compose CI v1 and doctor v1 from one already evaluated lint report. |
+| `build_ci_check_payload` | `(report: LintReport, *, report_schema: str = 'v1', runtime: Mapping[str, object] \| None = None, command_exit_code: int \| None = None) -> dict[str, object]` | — | Compose versioned CI and doctor results from one evaluated lint report. |
 | `_strict_json_object` | `(pairs: list[tuple[str, Any]]) -> dict[str, Any]` | — | — |
 | `_reject_nonfinite` | `(value: str) -> None` | — | — |
 | `_object` | `(value: object, field: str) -> Mapping[str, Any]` | — | — |
@@ -108,7 +108,8 @@ flowchart LR
 | `_expected_health_classification` | `(*, strict: bool, source_selection_mismatch: bool, availability_state: str, freshness_evaluated: bool, snapshot_state: str, governance_state: str, expired_reviews: int, drift_state: str, verification_state: str) -> tuple[str, list[str], list[str]]` | — | — |
 | `_validate_doctor` | `(value: object, *, wiki_dir: str, src_dir: str, source_selection_mismatch: bool \| None, expected_strict: bool, allow_additive: bool = False) -> Mapping[str, Any]` | — | — |
 | `validate_doctor_payload` | `(value: object, *, expected_strict: bool, source_selection_mismatch: bool \| None = None, allow_additive: bool = False) -> Mapping[str, Any]` | — | Validate doctor v1 structure, semantics, and overall classification. |
-| `validate_ci_check_payload` | `(value: object, *, cli_exit: int) -> Mapping[str, Any]` | — | Validate the complete CI v1 contract and its captured process exit. |
+| `_validate_ci_v2` | `(value: object, *, cli_exit: int) -> Mapping[str, Any]` | — | — |
+| `validate_ci_check_payload` | `(value: object, *, cli_exit: int) -> Mapping[str, Any]` | — | Validate CI v1/v2 and distinguish check and required-output failures. |
 | `load_ci_check_payload` | `(path: str \| Path, *, cli_exit: int) -> Mapping[str, Any]` | — | Read strict UTF-8 JSON and validate the complete CI v1 contract. |
 | `_clip_utf8` | `(value: str, limit: int = 240) -> str` | — | — |
 | `render_ci_summary` | `(report: Mapping[str, Any] \| None, *, result: str, cli_exit: int, json_state: str, markdown_state: str, tree_state: str, status_records: Sequence[bytes], status_count: int, status_limit: int, max_lines: int, max_bytes: int) -> bytes` | — | Render fixed-state integrity and health evidence within strict bounds. |

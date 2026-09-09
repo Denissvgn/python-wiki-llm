@@ -148,34 +148,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_typed_graph | dumps | 499 | `json.dumps(validate_typed_graph(...), ensure_ascii=False, indent=2, sort_keys=True)` |
-| serialize_typed_graph | validate_typed_graph | 500 | `validate_typed_graph(payload, concept_kinds=concept_kinds)` |
-| validate_typed_graph | _object | 407 | `_object(payload, 'typed_graph')` |
-| _object | require_mapping | 2282 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| serialize_typed_graph | dumps | 500 | `json.dumps(validate_typed_graph(...), ensure_ascii=False, indent=2, sort_keys=True)` |
+| serialize_typed_graph | validate_typed_graph | 501 | `validate_typed_graph(payload, concept_kinds=concept_kinds)` |
+| validate_typed_graph | _object | 408 | `_object(payload, 'typed_graph')` |
+| _object | require_mapping | 2283 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
 | require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance | 731 | `isinstance(key, str)` |
 | require_mapping | encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2284 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2286 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2288 | `dict(selected)` |
-| validate_typed_graph | _only_fields | 408 | `_only_fields(graph, 'typed_graph', {...}, required={...})` |
+| _object | KnowledgeGraphError | 2285 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2287 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | dict | 2289 | `dict(selected)` |
+| validate_typed_graph | _only_fields | 409 | `_only_fields(graph, 'typed_graph', {...}, required={...})` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen_analyzers.add` | `validate_typed_graph` | 453 |
-| mutation | `coverage.append` | `validate_typed_graph` | 454 |
-| mutation | `seen_keys.add` | `validate_typed_graph` | 478 |
-| mutation | `edges.append` | `validate_typed_graph` | 479 |
-| mutation | `edges.sort` | `validate_typed_graph` | 480 |
-| mutation | `coverage.sort` | `validate_typed_graph` | 481 |
+| mutation | `seen_analyzers.add` | `validate_typed_graph` | 454 |
+| mutation | `coverage.append` | `validate_typed_graph` | 455 |
+| mutation | `seen_keys.add` | `validate_typed_graph` | 479 |
+| mutation | `edges.append` | `validate_typed_graph` | 480 |
+| mutation | `edges.sort` | `validate_typed_graph` | 481 |
+| mutation | `coverage.sort` | `validate_typed_graph` | 482 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `serialize_typed_graph` | `json.dumps` | 499 |
+| external_call | `serialize_typed_graph` | `json.dumps` | 500 |
 | unresolved_call | `require_mapping` | `isinstance` | 727 |
 | unresolved_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |

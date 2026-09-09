@@ -25,9 +25,13 @@ and safe for applications whose imports have startup side effects.
 flowchart LR
     n0["src/llm_wiki_cli/extractors/python_contracts.py"]
     n1["src/llm_wiki_cli/extractors/python_extractor.py"]
+    n2["src/llm_wiki_cli/services/extraction_service.py"]
     n1 --> n0
+    n2 --> n0
+    n2 --> n1
     click n0 "../modules/python_contracts.md"
     click n1 "../modules/python_extractor.md"
+    click n2 "../modules/extraction_service.md"
 ```
 
 ### Internal neighbors
@@ -35,6 +39,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [python_extractor](../modules/python_extractor.md) |
+| Inbound | [extraction_service](../modules/extraction_service.md) |
 
 ## Functions
 

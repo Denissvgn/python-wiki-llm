@@ -27,6 +27,8 @@ filesystem reads are the target-state comparisons performed by
 | `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `serialize_knowledge_index` |
 | `.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
 | `.knowledge_model` | `ProducerRecord`, `concept_kind_for_page_kind` |
+| `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `bind_reuse_commitment` |
+| `.progress` | `observed_phase` |
 | `.section_ownership` | `observe_page_sections`, `section_ownership_extension` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_REPAIR_UNAVAILABLE`, `PRODUCER_BASIS_INCOMPATIBLE`, `TOMBSTONE_UNKNOWN_PROVENANCE`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `SyncManifest`, `SyncManifestError` |
 | `.wiki_surface` | `PageKind`, `WikiSurfacePage` |
@@ -56,16 +58,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (13) |
+| Outbound | `src` (15) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 85 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
-| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 95 | — | Complete already-evaluated inputs for one generated artifact set. |
+| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 87 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
+| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 97 | — | Complete already-evaluated inputs for one generated artifact set. |
 
 ## Functions
 
@@ -89,7 +91,7 @@ flowchart LR
 | `_validated_page_maps` | `(inventory: Mapping[str, Mapping[str, Any]], module_value: object, occurrence_value: object) -> tuple[dict[str, str], dict[tuple[str, str], str], dict[tuple[str, str, int], str]]` | — | — |
 | `_raise_page_map_parity` | `(field: str, expected: set[Any], actual: set[Any]) -> None` | — | — |
 | `_exact_source_mapping` | `(inventory: Mapping[str, object], value: object, field: str, value_type: type) -> dict[str, Any]` | — | — |
-| `_build_evidence_baselines` | `(inventory: Mapping[str, Mapping[str, Any]], source_hashes: Mapping[str, str], module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str], extractor_refs: Mapping[str, str], completeness: Mapping[str, bool]) -> dict[str, ConceptObservationBasis]` | — | — |
+| `_build_evidence_baselines` | `(inventory: Mapping[str, Mapping[str, Any]], source_hashes: Mapping[str, str], module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str], extractor_refs: Mapping[str, str], completeness: Mapping[str, bool]) -> dict[str, ConceptObservationBasis]` | `@observed_phase('evidence_baselines')` | — |
 | `_surface_index_bytes` | `(exact_bytes: object, payload: object) -> bytes` | — | — |
 | `_next_manifest_mapping` | `(supplied: Mapping[str, Any] \| None, previous: Mapping[str, Any]) -> Mapping[str, Any]` | — | — |
 | `_structural_page_paths` | `(pages: Sequence[WikiSurfacePage]) -> tuple[str, ...]` | — | — |

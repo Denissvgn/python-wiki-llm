@@ -1,6 +1,6 @@
 # KnowledgeFreshnessReport
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:203`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:204`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -30,14 +30,20 @@ flowchart LR
     n0["KnowledgeFreshnessReport (src/llm_wiki_cli/services/knowledge_freshness.py)"]
     n1["src/llm_wiki_cli/services/documentation_native.py"]
     n2["_knowledge_counts (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n3["evaluate_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n3["_evaluate_model_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n4["evaluate_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n5["evaluate_validated_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
+    n5 --> n0
     click n0 "../modules/knowledge_freshness.md"
     click n1 "../modules/documentation_native.md"
     click n2 "../modules/knowledge_consumption.md"
     click n3 "../modules/knowledge_freshness.md"
+    click n4 "../modules/knowledge_freshness.md"
+    click n5 "../modules/knowledge_freshness.md"
 ```
 
 ### Summary
@@ -52,5 +58,7 @@ flowchart LR
 |---|---|---|---:|
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `_knowledge_counts` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
-| `evaluate_knowledge_freshness` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_evaluate_model_freshness` | call | [knowledge_freshness](../modules/knowledge_freshness.md) | 1 |
+| `_evaluate_model_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `evaluate_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `evaluate_validated_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |

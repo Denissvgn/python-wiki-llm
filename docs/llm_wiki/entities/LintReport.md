@@ -1,6 +1,6 @@
 # LintReport
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:269`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:279`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)
@@ -105,4 +105,4 @@ flowchart LR
 | `_add_extractor_failures` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_add_missing_wiki` | type_reference | [lint_service](../modules/lint_service.md) | — |
 
-> References: showing 12 of 50 logical references; 38 omitted by the 12-row generated summary limit.
+> References: showing 12 of 51 logical references; 39 omitted by the 12-row generated summary limit.

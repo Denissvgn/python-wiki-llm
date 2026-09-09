@@ -2,11 +2,12 @@
 
 **Entry point:** `load_knowledge_state` (`api`)
 **Source:** [knowledge_loader](../modules/knowledge_loader.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 12 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), and 14 more
 
 **Complete modules touched:**
 
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -15,12 +16,13 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
-- [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [markdown_sections](../modules/markdown_sections.md)
+- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
-- [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
@@ -82,7 +84,7 @@ sequenceDiagram
     p16-->>p1: isinstance
 ```
 
-> Call sequence diagram shows 30 of 1105 interactions; 1075 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1222 interactions; 1192 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -146,34 +148,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_state | isinstance | 105 | `isinstance(policy, KnowledgeMismatchPolicy)` |
-| load_knowledge_state | KnowledgeMismatchPolicy | 106 | `KnowledgeMismatchPolicy(policy)` |
-| load_knowledge_state | ValueError | 109 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
-| load_knowledge_state | ValueError | 111 | `ValueError('rebuild policy requires rebuild_callback')` |
-| load_knowledge_state | callable | 112 | `callable(rebuild_callback)` |
-| load_knowledge_state | TypeError | 113 | `TypeError('rebuild_callback must be callable')` |
-| load_knowledge_state | Path | 115 | `Path(wiki_dir)` |
-| load_knowledge_state | _load_once | 116 | `_load_once(root, markdown_pages=markdown_pages)` |
-| _load_once | _read_artifact | 149 | `_read_artifact(root, SURFACE_INDEX_FILENAME)` |
-| _read_artifact | is_symlink | 475 | `path.is_symlink(data not statically known)` |
-| _read_artifact | KnowledgeLoadIssue | 476 | `KnowledgeLoadIssue(code='artifact-not-regular', artifact_path=filename, message='artifact must be a regular file, not a symbolic link')` |
+| load_knowledge_state | isinstance | 112 | `isinstance(policy, KnowledgeMismatchPolicy)` |
+| load_knowledge_state | KnowledgeMismatchPolicy | 113 | `KnowledgeMismatchPolicy(policy)` |
+| load_knowledge_state | ValueError | 116 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
+| load_knowledge_state | ValueError | 118 | `ValueError('rebuild policy requires rebuild_callback')` |
+| load_knowledge_state | callable | 119 | `callable(rebuild_callback)` |
+| load_knowledge_state | TypeError | 120 | `TypeError('rebuild_callback must be callable')` |
+| load_knowledge_state | Path | 122 | `Path(wiki_dir)` |
+| load_knowledge_state | _load_once | 123 | `_load_once(root, markdown_pages=markdown_pages)` |
+| _load_once | _read_artifact | 156 | `_read_artifact(root, SURFACE_INDEX_FILENAME)` |
+| _read_artifact | is_symlink | 483 | `path.is_symlink(data not statically known)` |
+| _read_artifact | KnowledgeLoadIssue | 484 | `KnowledgeLoadIssue(code='artifact-not-regular', artifact_path=filename, message='artifact must be a regular file, not a symbolic link')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `_read_artifact` | 496 |
+| filesystem_read | `path.read_bytes` | `_read_artifact` | 504 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `load_knowledge_state` | `isinstance` | 105 |
-| unresolved_call | `load_knowledge_state` | `ValueError` | 109 |
-| unresolved_call | `load_knowledge_state` | `ValueError` | 111 |
-| unresolved_call | `load_knowledge_state` | `callable` | 112 |
-| unresolved_call | `load_knowledge_state` | `TypeError` | 113 |
-| unresolved_call | `_read_artifact` | `path.is_symlink` | 475 |
+| unresolved_call | `load_knowledge_state` | `isinstance` | 112 |
+| unresolved_call | `load_knowledge_state` | `ValueError` | 116 |
+| unresolved_call | `load_knowledge_state` | `ValueError` | 118 |
+| unresolved_call | `load_knowledge_state` | `callable` | 119 |
+| unresolved_call | `load_knowledge_state` | `TypeError` | 120 |
+| unresolved_call | `_read_artifact` | `path.is_symlink` | 483 |
 | step_limit | `load_knowledge_state` | `first 12 steps` | 0 |
 | truncated_flow | `load_knowledge_state` | `depth limit` | 0 |
 

@@ -17,11 +17,13 @@ link observations from the generation run being committed.
 | Source | Symbols |
 |--------|---------|
 | `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `.immutable` | `freeze` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION`, `EvaluatedEnvelope`, `KnowledgeEnvelopeError`, `evaluated_envelope_to_payload`, `hash_markdown_snapshot` |
 | `.knowledge_evidence` | `ConceptObservationBasis`, `canonical_json_text`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `.knowledge_links` | `LinkObservation`, `LinkSyntax`, `is_valid_external_link_uri`, `is_valid_link_locator_target` |
-| `.knowledge_model` | `Actor`, `ActorKind`, `BundleRecord`, `ConceptFacets`, `ConceptKind`, `ConceptRecord`, `DocumentRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `Lifecycle`, `ObservationScope`, `Origin`, `RelationshipEvidence`, `RelationshipKind`, `RelationshipLocation`, `RelationshipRecord`, `RelationshipTarget`, `Resolution`, `SemanticFacet`, `StructuralFacet`, `TargetClass`, `Verification`, `concept_kind_for_page_kind`, `parse_knowledge_index`, `knowledge_index_to_payload`, `serialize_knowledge_index` |
+| `.knowledge_model` | `Actor`, `ActorKind`, `BundleRecord`, `ConceptFacets`, `ConceptKind`, `ConceptRecord`, `DocumentRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `Lifecycle`, `ObservationScope`, `Origin`, `RelationshipEvidence`, `RelationshipKind`, `RelationshipLocation`, `RelationshipRecord`, `RelationshipTarget`, `Resolution`, `SemanticFacet`, `StructuralFacet`, `TargetClass`, `Verification`, `concept_kind_for_page_kind`, `parse_knowledge_index`, `_knowledge_index_to_payload_unchecked` |
+| `.progress` | `observed_phase`, `record_counts` |
 | `.sync_manifest` | `ManifestEvidenceBaseline`, `ManifestPageSource`, `ManifestTombstone` |
 | `.validation` | `contains_control_character`, `require_exact_fields`, `require_repository_relative_path` |
 | `.wiki_media` | `MarkdownLinkTarget`, `contains_uri_authority_userinfo`, `is_assets_path`, `iter_markdown_link_targets`, `iter_mermaid_click_targets`, `local_link_path`, `mask_fenced_code_blocks`, `media_type_for_path`, `normalize_markdown_link_target` |
@@ -55,9 +57,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (11) |
+| Outbound | `src` (13) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -78,7 +80,10 @@ flowchart LR
 | `build_knowledge_index` | `(inputs: KnowledgeIndexInputs) -> KnowledgeIndex` | — | Build one deterministic v1 knowledge index without performing I/O. |
 | `validate_knowledge_index` | `(value: KnowledgeIndex \| object, *, inputs: KnowledgeIndexInputs \| None = None) -> KnowledgeIndex` | — | Validate a model or decoded payload against the knowledge-index contract. |
 | `knowledge_index_to_payload` | `(value: KnowledgeIndex \| object) -> dict[str, Any]` | — | Validate and return the canonical JSON-compatible builder payload. |
-| `serialize_knowledge_index` | `(value: KnowledgeIndex \| object) -> str` | — | Validate and serialize deterministically with one trailing newline. |
+| `_model_to_payload` | `(model: KnowledgeIndex) -> dict[str, Any]` | — | Project model fields without a second parser pass; callers validate inputs. |
+| `_validated_index_serialization` | `(value: object) -> tuple[KnowledgeIndex, bytes]` | — | Validate untrusted input once and return its model and canonical bytes. |
+| `_serialize_payload` | `(payload: dict[str, Any]) -> str` | — | — |
+| `serialize_knowledge_index` | `(value: KnowledgeIndex \| object) -> str` | `@observed_phase('knowledge_serialization')` | Validate and serialize deterministically with one trailing newline. |
 | `_validate_and_join_inputs` | `(inputs: KnowledgeIndexInputs) -> _BuildContext` | — | — |
 | `_validated_bundle` | `(envelope: object)` | — | — |
 | `_validated_pages` | `(value: object) -> tuple[tuple[WikiSurfacePage, ...], dict[str, WikiSurfacePage]]` | — | — |

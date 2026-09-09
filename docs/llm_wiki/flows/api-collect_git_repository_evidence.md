@@ -60,7 +60,7 @@ sequenceDiagram
     p15-->>p18: resolve
 ```
 
-> Call sequence diagram shows 30 of 164 interactions; 134 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 165 interactions; 135 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -123,31 +123,31 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| collect_git_repository_evidence | Path | 309 | `Path(root)` |
-| collect_git_repository_evidence | _run_git | 310 | `_run_git(checkout, 'rev-parse', '--is-inside-work-tree')` |
-| _run_git | _run_git_result | 1185 | `_run_git_result(root, ...)` |
-| _run_git_result | items | 1199 | `os.environ.items(data not statically known)` |
-| _run_git_result | startswith | 1199 | `key.startswith('GIT_')` |
-| _run_git_result | run | 1206 | `subprocess.run([...], capture_output=True, text=True, encoding='utf-8', errors='strict', env=git_environment, timeout=15, check=False)` |
-| _run_git_result | str | 1207 | `str(root)` |
-| _run_git_result | _GitCommandResult | 1222 | `_GitCommandResult(available=False, returncode=None)` |
-| _run_git_result | strip | 1223 | `result.stdout.strip(data not statically known)` |
-| _run_git_result | _GitCommandResult | 1224 | `_GitCommandResult(available=True, returncode=result.returncode, output=output)` |
-| collect_git_repository_evidence | RepositoryEvidence | 312 | `RepositoryEvidence(data not statically known)` |
+| collect_git_repository_evidence | Path | 311 | `Path(root)` |
+| collect_git_repository_evidence | _run_git | 312 | `_run_git(checkout, 'rev-parse', '--is-inside-work-tree')` |
+| _run_git | _run_git_result | 1188 | `_run_git_result(root, ...)` |
+| _run_git_result | items | 1202 | `os.environ.items(data not statically known)` |
+| _run_git_result | startswith | 1202 | `key.startswith('GIT_')` |
+| _run_git_result | run | 1209 | `subprocess.run([...], capture_output=True, text=True, encoding='utf-8', errors='strict', env=git_environment, timeout=15, check=False)` |
+| _run_git_result | str | 1210 | `str(root)` |
+| _run_git_result | _GitCommandResult | 1225 | `_GitCommandResult(available=False, returncode=None)` |
+| _run_git_result | strip | 1226 | `result.stdout.strip(data not statically known)` |
+| _run_git_result | _GitCommandResult | 1227 | `_GitCommandResult(available=True, returncode=result.returncode, output=output)` |
+| collect_git_repository_evidence | RepositoryEvidence | 314 | `RepositoryEvidence(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| process | `subprocess.run` | `_run_git_result` | 1206 |
+| process | `subprocess.run` | `_run_git_result` | 1209 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_run_git_result` | `os.environ.items` | 1199 |
-| unresolved_call | `_run_git_result` | `key.startswith` | 1199 |
-| unresolved_call | `_run_git_result` | `result.stdout.strip` | 1223 |
+| external_call | `_run_git_result` | `os.environ.items` | 1202 |
+| unresolved_call | `_run_git_result` | `key.startswith` | 1202 |
+| unresolved_call | `_run_git_result` | `result.stdout.strip` | 1226 |
 | step_limit | `collect_git_repository_evidence` | `first 12 steps` | 0 |
 
 ## Behavior

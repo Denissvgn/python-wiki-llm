@@ -1,6 +1,6 @@
 # _SurfaceInitializationPlan
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1646`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1649`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -110,4 +110,4 @@ flowchart LR
 | `_print_dry_run_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_print_surface_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.
+> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.

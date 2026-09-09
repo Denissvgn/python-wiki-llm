@@ -1,6 +1,6 @@
 # _RuntimeGraphObservations
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1630`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1633`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

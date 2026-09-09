@@ -32,64 +32,69 @@ parser result.  It contains no timestamps, absolute paths, or source literals.
 flowchart LR
     n0["src/llm_wiki_cli/commands/sync_cmd.py"]
     n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/infrastructure_inventory.py"]
-    n3["src/llm_wiki_cli/services/infrastructure_sync.py"]
-    n4["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n6["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n7["src/llm_wiki_cli/services/knowledge_orchestration.py"]
-    n8["src/llm_wiki_cli/services/lint_service.py"]
-    n9["src/llm_wiki_cli/services/source_snapshot.py"]
-    n10["src/llm_wiki_cli/services/validation.py"]
+    n2["src/llm_wiki_cli/services/canonical_pages.py"]
+    n3["src/llm_wiki_cli/services/infrastructure_inventory.py"]
+    n4["src/llm_wiki_cli/services/infrastructure_sync.py"]
+    n5["src/llm_wiki_cli/services/knowledge_artifacts.py"]
+    n6["src/llm_wiki_cli/services/knowledge_evidence.py"]
+    n7["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n8["src/llm_wiki_cli/services/knowledge_orchestration.py"]
+    n9["src/llm_wiki_cli/services/lint_service.py"]
+    n10["src/llm_wiki_cli/services/source_snapshot.py"]
+    n11["src/llm_wiki_cli/services/validation.py"]
     n0 --> n1
-    n0 --> n2
     n0 --> n3
     n0 --> n4
     n0 --> n5
-    n0 --> n7
-    n0 --> n9
-    n1 --> n2
+    n0 --> n6
+    n0 --> n8
+    n0 --> n10
+    n0 --> n11
     n1 --> n3
     n1 --> n4
-    n1 --> n7
-    n1 --> n9
+    n1 --> n5
+    n1 --> n8
     n1 --> n10
-    n2 --> n9
-    n3 --> n2
-    n3 --> n5
-    n3 --> n9
+    n1 --> n11
+    n2 --> n1
+    n2 --> n4
     n3 --> n10
     n4 --> n3
-    n4 --> n5
+    n4 --> n6
     n4 --> n10
-    n5 --> n10
-    n6 --> n3
-    n6 --> n4
-    n6 --> n5
-    n7 --> n3
+    n4 --> n11
+    n5 --> n4
+    n5 --> n6
+    n5 --> n11
+    n6 --> n11
     n7 --> n4
     n7 --> n5
     n7 --> n6
-    n7 --> n9
-    n8 --> n1
-    n8 --> n2
-    n8 --> n3
     n8 --> n4
+    n8 --> n5
+    n8 --> n6
     n8 --> n7
-    n8 --> n9
     n8 --> n10
+    n9 --> n1
+    n9 --> n3
+    n9 --> n4
+    n9 --> n5
+    n9 --> n8
     n9 --> n10
+    n9 --> n11
+    n10 --> n11
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/infrastructure_inventory.md"
-    click n3 "../modules/infrastructure_sync.md"
-    click n4 "../modules/knowledge_artifacts.md"
-    click n5 "../modules/knowledge_evidence.md"
-    click n6 "../modules/knowledge_generation.md"
-    click n7 "../modules/knowledge_orchestration.md"
-    click n8 "../modules/lint_service.md"
-    click n9 "../modules/source_snapshot.md"
-    click n10 "../modules/validation.md"
+    click n2 "../modules/canonical_pages.md"
+    click n3 "../modules/infrastructure_inventory.md"
+    click n4 "../modules/infrastructure_sync.md"
+    click n5 "../modules/knowledge_artifacts.md"
+    click n6 "../modules/knowledge_evidence.md"
+    click n7 "../modules/knowledge_generation.md"
+    click n8 "../modules/knowledge_orchestration.md"
+    click n9 "../modules/lint_service.md"
+    click n10 "../modules/source_snapshot.md"
+    click n11 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -98,6 +103,7 @@ flowchart LR
 |---|---|
 | Inbound | [sync_cmd](../modules/sync_cmd.md) |
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
+| Inbound | [canonical_pages](../modules/canonical_pages.md) |
 | Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Inbound | [knowledge_generation](../modules/knowledge_generation.md) |
 | Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |

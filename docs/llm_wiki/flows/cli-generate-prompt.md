@@ -82,7 +82,7 @@ sequenceDiagram
     p16-->>p18: POINTER
 ```
 
-> Call sequence diagram shows 30 of 1040 interactions; 1010 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1067 interactions; 1037 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

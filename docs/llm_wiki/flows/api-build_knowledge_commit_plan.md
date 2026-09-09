@@ -2,11 +2,11 @@
 
 **Entry point:** `build_knowledge_commit_plan` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 11 more
+**Modules touched:** [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 13 more
 
 **Complete modules touched:**
 
-- [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -16,6 +16,8 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -74,7 +76,7 @@ sequenceDiagram
     p12-->>p15: enumerate
 ```
 
-> Call sequence diagram shows 30 of 1464 interactions; 1434 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 837 interactions; 807 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -122,7 +124,7 @@ flowchart LR
 |---|---|---|---|---|
 | `build_knowledge_commit_plan` | `wiki_dir: str \| Path`, `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest` | `SyncManifest`, `SURFACE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MANIFEST_FILENAME` | - | `KnowledgeCommitPlan(...)` |
 | `Path` | - | - | - | - |
-| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest` | `KNOWLEDGE_SCHEMA_VERSION`, `_KNOWLEDGE_SCHEMA_VERSION_RE`, `ConceptKind`, `KnowledgeGraphError`, `TYPED_GRAPH_EXTENSION_KEY`, `INVENTORY_HASH_EXTENSION`, `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` | - | `ValidatedKnowledgeArtifacts(...)` |
+| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest` | `KNOWLEDGE_SCHEMA_VERSION`, `_KNOWLEDGE_SCHEMA_VERSION_RE`, `ConceptKind`, `KnowledgeGraphError`, `TYPED_GRAPH_EXTENSION_KEY`, `INVENTORY_HASH_EXTENSION`, `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` | - | `validated` |
 | `validate_surface_index_bytes` | `surface_index_bytes: bytes` | - | - | `surface_payload` |
 | `_decode_json_object` | `content: bytes`, `field: str` | `KnowledgeArtifactError`, `Mapping` | - | `value` |
 | `isinstance` | - | - | - | - |
@@ -137,17 +139,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_commit_plan | Path | 344 | `Path(wiki_dir)` |
-| build_knowledge_commit_plan | validate_knowledge_artifacts | 345 | `validate_knowledge_artifacts(surface_index_bytes=surface_index_bytes, knowledge_index_bytes=knowledge_index_bytes, manifest=manifest)` |
-| validate_knowledge_artifacts | validate_surface_index_bytes | 205 | `validate_surface_index_bytes(surface_index_bytes)` |
-| validate_surface_index_bytes | _decode_json_object | 174 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance | 502 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 503 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | decode | 505 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 507 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | loads | 509 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 511 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 530 | `KnowledgeArtifactError(field, ...)` |
+| build_knowledge_commit_plan | Path | 415 | `Path(wiki_dir)` |
+| build_knowledge_commit_plan | validate_knowledge_artifacts | 416 | `validate_knowledge_artifacts(surface_index_bytes=surface_index_bytes, knowledge_index_bytes=knowledge_index_bytes, manifest=manifest)` |
+| validate_knowledge_artifacts | validate_surface_index_bytes | 265 | `validate_surface_index_bytes(surface_index_bytes)` |
+| validate_surface_index_bytes | _decode_json_object | 233 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance | 574 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 575 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | decode | 577 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 579 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | loads | 581 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 583 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 602 | `KnowledgeArtifactError(field, ...)` |
 
 ### Boundary effects
 
@@ -157,9 +159,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_decode_json_object` | `isinstance` | 502 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 505 |
-| external_call | `_decode_json_object` | `json.loads` | 509 |
+| unresolved_call | `_decode_json_object` | `isinstance` | 574 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 577 |
+| external_call | `_decode_json_object` | `json.loads` | 581 |
 | step_limit | `build_knowledge_commit_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_commit_plan` | `depth limit` | 0 |
 

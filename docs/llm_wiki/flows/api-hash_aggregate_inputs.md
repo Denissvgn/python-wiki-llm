@@ -101,16 +101,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_aggregate_inputs | isinstance | 870 | `isinstance(inputs, (...))` |
-| hash_aggregate_inputs | KnowledgeEnvelopeError | 871 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an ordered iterable of contributor records')` |
-| hash_aggregate_inputs | list | 876 | `list(inputs)` |
-| hash_aggregate_inputs | KnowledgeEnvelopeError | 878 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an iterable of finite canonical JSON values')` |
-| hash_aggregate_inputs | _hash_structured | 882 | `_hash_structured(AGGREGATE_INPUT_DOMAIN, {...}, 'aggregate_inputs')` |
-| _hash_structured | values | 1589 | `payload.values(data not statically known)` |
-| _hash_structured | _validate_json_tree | 1590 | `_validate_json_tree(value, field_name)` |
-| _validate_json_tree | set | 1611 | `set(data not statically known)` |
-| _validate_json_tree | walk | 1652 | `walk(value, field_name)` |
-| _hash_structured | sha256_bytes | 1591 | `sha256_bytes(canonical_json_bytes(...))` |
+| hash_aggregate_inputs | isinstance | 872 | `isinstance(inputs, (...))` |
+| hash_aggregate_inputs | KnowledgeEnvelopeError | 873 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an ordered iterable of contributor records')` |
+| hash_aggregate_inputs | list | 878 | `list(inputs)` |
+| hash_aggregate_inputs | KnowledgeEnvelopeError | 880 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an iterable of finite canonical JSON values')` |
+| hash_aggregate_inputs | _hash_structured | 884 | `_hash_structured(AGGREGATE_INPUT_DOMAIN, {...}, 'aggregate_inputs')` |
+| _hash_structured | values | 1604 | `payload.values(data not statically known)` |
+| _hash_structured | _validate_json_tree | 1605 | `_validate_json_tree(value, field_name)` |
+| _validate_json_tree | set | 1626 | `set(data not statically known)` |
+| _validate_json_tree | walk | 1667 | `walk(value, field_name)` |
+| _hash_structured | sha256_bytes | 1606 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_bytes | hexdigest | 197 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 
 ### Boundary effects
@@ -121,9 +121,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_aggregate_inputs` | `isinstance` | 870 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1589 |
-| unresolved_call | `_validate_json_tree` | `walk` | 1652 |
+| unresolved_call | `hash_aggregate_inputs` | `isinstance` | 872 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1604 |
+| unresolved_call | `_validate_json_tree` | `walk` | 1667 |
 | external_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 197 |
 | step_limit | `hash_aggregate_inputs` | `first 12 steps` | 0 |
 

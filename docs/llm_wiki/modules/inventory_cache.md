@@ -13,10 +13,13 @@ Persistent inventory cache used by lint and CI validation.
 | `..` | `__version__` |
 | `..config` | `AGENT_WORKTREE_DIR_PATTERNS`, `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
+| `.io` | `write_json_atomic` |
 | `.plugins` | `lock_path`, `plugin_store` |
+| `.progress` | `observed_phase` |
+| `.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `WarningSink`, `prepare_destination`, `stderr_warning`, `warn` |
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot` |
 | `__future__` | `annotations` |
-| `dataclasses` | `asdict`, `dataclass` |
+| `dataclasses` | `asdict`, `dataclass`, `field`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `os` | `os` |
@@ -43,17 +46,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (5) |
+| Outbound | `src` (8) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [InventoryCacheOptions](../entities/InventoryCacheOptions.md) | 32 | — | Runtime cache controls for inventory-producing commands. |
-| [InventoryCacheStats](../entities/InventoryCacheStats.md) | 42 | — | — |
-| [InventoryCache](../entities/InventoryCache.md) | 280 | — | JSON-backed cache for per-file built-in inventory entries. |
+| [InventoryCacheOptions](../entities/InventoryCacheOptions.md) | 42 | — | Runtime cache controls for inventory-producing commands. |
+| [InventoryCacheStats](../entities/InventoryCacheStats.md) | 56 | — | — |
+| [InventoryCache](../entities/InventoryCache.md) | 344 | — | JSON-backed cache for per-file built-in inventory entries. |
 
 ## Functions
 
@@ -74,5 +77,7 @@ flowchart LR
 | `_resolve_gitdir_file` | `(git_file: Path) -> Path \| None` | — | — |
 | `_nearest_git_dir` | `(start: Path) -> Path \| None` | — | — |
 | `resolve_inventory_cache_path` | `(src_dir: str \| Path, cache_dir: str \| None = None, *, env: dict[str, str] \| None = None) -> Path \| None` | — | Resolve the cache file path for a source tree and optional override. |
+| `cache_options_from_args` | `(args) -> InventoryCacheOptions` | — | — |
+| `prepare_cache_options` | `(src_dir: str \| Path, options: InventoryCacheOptions \| None) -> InventoryCacheOptions \| None` | — | — |
 | `is_valid_cache_entry` | `(entry: Any, source_file: SourceFile, file_hash: str) -> bool` | — | — |
 | `make_cache_entry` | `(source_file: SourceFile, file_hash: str, inventory_entry: dict) -> dict` | — | — |

@@ -1,6 +1,6 @@
 # KnowledgeGraphInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:131`
+**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:133`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)

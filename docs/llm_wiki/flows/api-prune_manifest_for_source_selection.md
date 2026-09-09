@@ -108,32 +108,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prune_manifest_for_source_selection | isinstance | 1605 | `isinstance(manifest, SyncManifest)` |
-| prune_manifest_for_source_selection | SyncManifestError | 1606 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1608 | `SourceSelectionPruneResult(manifest, (...), (...))` |
-| prune_manifest_for_source_selection | SyncManifestError | 1617 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
-| prune_manifest_for_source_selection | set | 1629 | `set(manifest.sources)` |
-| prune_manifest_for_source_selection | update | 1630 | `source_paths.update(...)` |
-| prune_manifest_for_source_selection | values | 1631 | `manifest.page_source_mappings.values(data not statically known)` |
-| prune_manifest_for_source_selection | tuple | 1633 | `tuple(sorted(...))` |
-| prune_manifest_for_source_selection | sorted | 1634 | `sorted(...)` |
-| prune_manifest_for_source_selection | is_selected | 1634 | `is_selected(path)` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1637 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | isinstance | 1614 | `isinstance(manifest, SyncManifest)` |
+| prune_manifest_for_source_selection | SyncManifestError | 1615 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1617 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | SyncManifestError | 1626 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
+| prune_manifest_for_source_selection | set | 1638 | `set(manifest.sources)` |
+| prune_manifest_for_source_selection | update | 1639 | `source_paths.update(...)` |
+| prune_manifest_for_source_selection | values | 1640 | `manifest.page_source_mappings.values(data not statically known)` |
+| prune_manifest_for_source_selection | tuple | 1642 | `tuple(sorted(...))` |
+| prune_manifest_for_source_selection | sorted | 1643 | `sorted(...)` |
+| prune_manifest_for_source_selection | is_selected | 1643 | `is_selected(path)` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1646 | `SourceSelectionPruneResult(manifest, (...), (...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1630 |
+| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1639 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `prune_manifest_for_source_selection` | `isinstance` | 1605 |
-| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1631 |
-| unresolved_call | `prune_manifest_for_source_selection` | `sorted` | 1634 |
-| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1634 |
+| unresolved_call | `prune_manifest_for_source_selection` | `isinstance` | 1614 |
+| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1640 |
+| unresolved_call | `prune_manifest_for_source_selection` | `sorted` | 1643 |
+| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1643 |
 | step_limit | `prune_manifest_for_source_selection` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -11,16 +11,17 @@ Authoritative validation and fallback boundary for generated knowledge state.
 | Source | Symbols |
 |--------|---------|
 | `.io` | `read_md` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeArtifactError`, `validate_knowledge_artifacts`, `validate_surface_index_bytes` |
+| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeArtifactError`, `ValidatedKnowledgeArtifacts`, `validate_knowledge_artifacts`, `validate_surface_index_bytes` |
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `hash_markdown_snapshot` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `validate_governance_projection` |
 | `.knowledge_model` | `KnowledgeIndex`, `KnowledgeLoadState` |
+| `.progress` | `observed_phase` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `.wiki_surface` | `WikiSurfacePathError`, `collect_wiki_pages` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |
-| `dataclasses` | `dataclass`, `replace` |
+| `dataclasses` | `dataclass`, `field`, `replace` |
 | `enum` | `Enum` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
@@ -44,24 +45,24 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (6) |
-| Outbound | `src` (8) |
+| Outbound | `src` (9) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeMismatchPolicy](../entities/KnowledgeMismatchPolicy.md) | Enum | 36 | `str`, `Enum` | Caller-selected behavior when a present artifact set is not valid. |
-| [KnowledgeLoadIssue](../entities/KnowledgeLoadIssue.md) | Class | 45 | — | One stable, path-safe artifact load diagnostic. |
-| [KnowledgeLoadResult](../entities/KnowledgeLoadResult.md) | Class | 55 | — | Validated knowledge state or an explicit compatibility fallback. |
-| [KnowledgeStateLoadError](../entities/KnowledgeStateLoadError.md) | Class | 67 | `ValueError` | Raised by reject/rebuild policy when no valid state can be returned. |
+| [KnowledgeMismatchPolicy](../entities/KnowledgeMismatchPolicy.md) | Enum | 39 | `str`, `Enum` | Caller-selected behavior when a present artifact set is not valid. |
+| [KnowledgeLoadIssue](../entities/KnowledgeLoadIssue.md) | Class | 48 | — | One stable, path-safe artifact load diagnostic. |
+| [KnowledgeLoadResult](../entities/KnowledgeLoadResult.md) | Class | 58 | — | Validated knowledge state or an explicit compatibility fallback. |
+| [KnowledgeStateLoadError](../entities/KnowledgeStateLoadError.md) | Class | 73 | `ValueError` | Raised by reject/rebuild policy when no valid state can be returned. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `load_knowledge_state` | `(wiki_dir: str \| Path, *, policy: KnowledgeMismatchPolicy \| str = KnowledgeMismatchPolicy.REJECT, rebuild_callback: RebuildCallback \| None = None, markdown_pages: Mapping[str, str \| bytes] \| None = None) -> KnowledgeLoadResult` | — | Load one coherent surface/knowledge/manifest state. |
+| `load_knowledge_state` | `(wiki_dir: str \| Path, *, policy: KnowledgeMismatchPolicy \| str = KnowledgeMismatchPolicy.REJECT, rebuild_callback: RebuildCallback \| None = None, markdown_pages: Mapping[str, str \| bytes] \| None = None) -> KnowledgeLoadResult` | `@observed_phase('knowledge_load')` | Load one coherent surface/knowledge/manifest state. |
 | `_load_once` | `(root: Path, *, markdown_pages: Mapping[str, str \| bytes] \| None) -> tuple[KnowledgeLoadResult, bool]` | — | — |
 | `_read_artifact` | `(root: Path, filename: str, *, absent_is_issue: bool = True) -> tuple[bytes \| None, KnowledgeLoadIssue \| None]` | — | — |
 | `_load_manifest` | `(root: Path) -> tuple[SyncManifest \| None, KnowledgeLoadIssue \| None]` | — | — |

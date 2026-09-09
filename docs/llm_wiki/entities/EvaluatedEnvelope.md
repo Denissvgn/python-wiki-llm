@@ -1,6 +1,6 @@
 # EvaluatedEnvelope
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:265`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:267`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -39,12 +39,14 @@ flowchart LR
     n4["hash_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n5["serialize_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n6["src/llm_wiki_cli/services/knowledge_index.py"]
+    n7["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/knowledge_envelope.md"
     click n1 "../modules/knowledge_artifacts.md"
     click n2 "../modules/knowledge_envelope.md"
@@ -52,6 +54,7 @@ flowchart LR
     click n4 "../modules/knowledge_envelope.md"
     click n5 "../modules/knowledge_envelope.md"
     click n6 "../modules/knowledge_index.md"
+    click n7 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -71,3 +74,4 @@ flowchart LR
 | `hash_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `serialize_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_stabilize_revision_only_noop` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |

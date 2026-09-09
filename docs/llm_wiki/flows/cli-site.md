@@ -81,7 +81,7 @@ sequenceDiagram
     p12->>p13: SiteExportError
 ```
 
-> Call sequence diagram shows 30 of 2452 interactions; 2422 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2442 interactions; 2412 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

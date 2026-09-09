@@ -2,7 +2,7 @@
 
 **Entry point:** `query_documentation` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 15 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 14 more
 
 **Complete modules touched:**
 
@@ -19,7 +19,6 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
-- [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -83,7 +82,7 @@ sequenceDiagram
     p19->>p15: DocumentationQueryError
 ```
 
-> Call sequence diagram shows 30 of 1039 interactions; 1009 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1029 interactions; 999 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

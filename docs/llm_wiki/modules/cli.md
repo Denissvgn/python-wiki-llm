@@ -20,7 +20,9 @@ startup does not require their runtime packages.
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
 | `.services.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG` |
 | `.services.extraction_jobs` | `ExtractionJobsAction` |
+| `.services.progress` | `Progress` |
 | `.services.resource_diagnostics` | `resource_failure_hint` |
+| `.services.runtime_output` | `RuntimeOutputError` |
 | `argparse` | `argparse` |
 | `os` | `os` |
 | `sys` | `sys` |
@@ -42,9 +44,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (35) |
+| Outbound | `src` (37) |
 
-> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 37 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -62,6 +64,7 @@ flowchart LR
 | `_add_doctor_command` | `(subparsers)` | — | — |
 | `_add_init_command` | `(subparsers)` | — | — |
 | `_add_extract_command` | `(subparsers)` | — | — |
+| `_add_progress_arguments` | `(parser)` | — | — |
 | `_add_lint_command` | `(subparsers)` | — | — |
 | `_add_prepare_extractors_command` | `(subparsers)` | — | — |
 | `_add_ci_check_command` | `(subparsers)` | — | — |

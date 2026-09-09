@@ -2,11 +2,12 @@
 
 **Entry point:** `project_knowledge` (`api`)
 **Source:** [knowledge_projection](../modules/knowledge_projection.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 13 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 13 more
 
 **Complete modules touched:**
 
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -14,13 +15,13 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
-- [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_projection](../modules/knowledge_projection.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
-- [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
@@ -48,7 +49,6 @@ sequenceDiagram
     participant p17 as fullmatch
     participant p18 as KnowledgeModelError
     participant p19 as _child
-    participant p20 as _normalize_json_value
     p0->>p1: _projection_profile
     p1-->>p2: isinstance
     p1->>p3: KnowledgeProjectionProfile
@@ -72,16 +72,16 @@ sequenceDiagram
     p12-->>p2: isinstance
     p12-->>p7: TypeError
     p12->>p13: _emit_extensions
+    p13-->>p2: isinstance
     p13->>p14: _parse_extensions
     p14->>p15: _object
     p14-->>p16: sorted
     p14-->>p17: fullmatch
     p14->>p18: KnowledgeModelError
     p14->>p19: _child
-    p14->>p20: _normalize_json_value
 ```
 
-> Call sequence diagram shows 30 of 1633 interactions; 1603 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1606 interactions; 1576 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

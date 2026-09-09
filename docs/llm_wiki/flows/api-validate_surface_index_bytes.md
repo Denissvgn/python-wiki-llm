@@ -118,17 +118,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_surface_index_bytes | _decode_json_object | 174 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance | 502 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 503 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | decode | 505 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 507 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | loads | 509 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 511 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 530 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 512 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 536 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | isinstance | 515 | `isinstance(exc, KnowledgeArtifactError)` |
+| validate_surface_index_bytes | _decode_json_object | 233 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance | 574 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 575 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | decode | 577 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 579 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | loads | 581 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 583 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 602 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 584 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 608 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | isinstance | 587 | `isinstance(exc, KnowledgeArtifactError)` |
 
 ### Boundary effects
 
@@ -138,10 +138,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_decode_json_object` | `isinstance` | 502 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 505 |
-| external_call | `_decode_json_object` | `json.loads` | 509 |
-| unresolved_call | `_decode_json_object` | `isinstance` | 515 |
+| unresolved_call | `_decode_json_object` | `isinstance` | 574 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 577 |
+| external_call | `_decode_json_object` | `json.loads` | 581 |
+| unresolved_call | `_decode_json_object` | `isinstance` | 587 |
 | step_limit | `validate_surface_index_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `validate_surface_index_bytes` | `depth limit` | 0 |
 

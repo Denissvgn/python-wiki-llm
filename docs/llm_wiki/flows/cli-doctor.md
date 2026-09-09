@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 30 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 34 more
 
 **Complete modules touched:**
 
@@ -16,9 +16,11 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -31,6 +33,8 @@
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -94,7 +98,7 @@ sequenceDiagram
     p11-->>p13: Path
 ```
 
-> Call sequence diagram shows 30 of 1429 interactions; 1399 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1449 interactions; 1419 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

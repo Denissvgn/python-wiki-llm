@@ -147,28 +147,28 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_typed_graph | _object | 407 | `_object(payload, 'typed_graph')` |
-| _object | require_mapping | 2282 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| validate_typed_graph | _object | 408 | `_object(payload, 'typed_graph')` |
+| _object | require_mapping | 2283 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
 | require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance | 731 | `isinstance(key, str)` |
 | require_mapping | encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2284 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2286 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2288 | `dict(selected)` |
-| validate_typed_graph | _only_fields | 408 | `_only_fields(graph, 'typed_graph', {...}, required={...})` |
-| _only_fields | require_exact_fields | 2305 | `require_shared_exact_fields(value, allowed=allowed, required=required, mapping_error=KnowledgeGraphError(...), missing_error=..., unknown_error=..., unknown_first=True)` |
+| _object | KnowledgeGraphError | 2285 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2287 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | dict | 2289 | `dict(selected)` |
+| validate_typed_graph | _only_fields | 409 | `_only_fields(graph, 'typed_graph', {...}, required={...})` |
+| _only_fields | require_exact_fields | 2306 | `require_shared_exact_fields(value, allowed=allowed, required=required, mapping_error=KnowledgeGraphError(...), missing_error=..., unknown_error=..., unknown_first=True)` |
 | require_exact_fields | isinstance | 1205 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen_analyzers.add` | `validate_typed_graph` | 453 |
-| mutation | `coverage.append` | `validate_typed_graph` | 454 |
-| mutation | `seen_keys.add` | `validate_typed_graph` | 478 |
-| mutation | `edges.append` | `validate_typed_graph` | 479 |
-| mutation | `edges.sort` | `validate_typed_graph` | 480 |
-| mutation | `coverage.sort` | `validate_typed_graph` | 481 |
+| mutation | `seen_analyzers.add` | `validate_typed_graph` | 454 |
+| mutation | `coverage.append` | `validate_typed_graph` | 455 |
+| mutation | `seen_keys.add` | `validate_typed_graph` | 479 |
+| mutation | `edges.append` | `validate_typed_graph` | 480 |
+| mutation | `edges.sort` | `validate_typed_graph` | 481 |
+| mutation | `coverage.sort` | `validate_typed_graph` | 482 |
 
 ### Static analysis gaps
 

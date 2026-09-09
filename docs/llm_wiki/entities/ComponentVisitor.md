@@ -1,6 +1,6 @@
 # ComponentVisitor
 
-**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1034`
+**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1037`
 **Kind:** Class
 **Bases:** `ast.NodeVisitor`
 **Module:** [python_extractor](../modules/python_extractor.md)

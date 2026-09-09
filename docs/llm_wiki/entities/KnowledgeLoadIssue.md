@@ -1,6 +1,6 @@
 # KnowledgeLoadIssue
 
-**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:45`
+**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:48`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_loader](../modules/knowledge_loader.md)

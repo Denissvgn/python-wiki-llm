@@ -16,14 +16,17 @@ validated reader must reject any orphan or mixed projection set.
 | Source | Symbols |
 |--------|---------|
 | `.contracts` | `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `.immutable` | `freeze` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
 | `.io` | `write_bytes_atomic` |
 | `.knowledge_envelope` | `EvaluatedEnvelope`, `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `governance_hash_from_knowledge` |
 | `.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
-| `.knowledge_index` | `serialize_knowledge_index`, `validate_knowledge_index` |
+| `.knowledge_index` | `_validated_index_serialization` |
 | `.knowledge_model` | `ConceptKind`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `Origin` |
+| `.knowledge_reuse` | `validate_reuse_artifact_parity` |
+| `.progress` | `observed_phase` |
 | `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
@@ -32,7 +35,7 @@ validated reader must reject any orphan or mixed projection set.
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Callable`, `Mapping` |
-| `dataclasses` | `dataclass` |
+| `dataclasses` | `dataclass`, `field` |
 | `enum` | `Enum` |
 | `json` | `json` |
 | `pathlib` | `Path` |
@@ -57,31 +60,34 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (15) |
-| Outbound | `src` (14) |
+| Inbound | `src` (18) |
+| Outbound | `src` (17) |
 
-> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 34 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 71 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
-| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 81 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
-| [CommitStage](../entities/CommitStage.md) | Enum | 89 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
-| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 98 | — | One exact-byte action in a knowledge artifact commit. |
-| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 110 | — | Validated canonical projections and their exact-byte commitments. |
-| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 122 | — | A fully validated, immutable three-artifact commit plan. |
-| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 144 | — | Outcome of a real or dry-run commit. |
+| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 74 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
+| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 84 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
+| [CommitStage](../entities/CommitStage.md) | Enum | 92 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
+| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 101 | — | One exact-byte action in a knowledge artifact commit. |
+| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 113 | — | Validated canonical projections and their exact-byte commitments. |
+| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 128 | — | — |
+| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 181 | — | A fully validated, immutable three-artifact commit plan. |
+| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 203 | — | Outcome of a real or dry-run commit. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `require_validated_artifacts` | `(value: object) -> ValidatedKnowledgeArtifacts` | — | Require the immutable values issued by the complete artifact validator. |
+| `validated_artifact_bytes` | `(value: ValidatedKnowledgeArtifacts) -> tuple[bytes, bytes]` | — | Read captured canonical bytes without serializing or reparsing models. |
 | `validate_surface_index_bytes` | `(surface_index_bytes: bytes) -> Mapping[str, Any]` | — | Parse and strictly validate canonical surface-index v1 bytes. |
-| `validate_knowledge_artifacts` | `(*, surface_index_bytes: bytes, knowledge_index_bytes: bytes, manifest: SyncManifest) -> ValidatedKnowledgeArtifacts` | — | Validate canonical projections, cross-artifact parity, and manifest basis. |
+| `validate_knowledge_artifacts` | `(*, surface_index_bytes: bytes, knowledge_index_bytes: bytes, manifest: SyncManifest) -> ValidatedKnowledgeArtifacts` | `@observed_phase('knowledge_validation')` | Validate canonical projections, cross-artifact parity, and manifest basis. |
 | `build_knowledge_commit_plan` | `(wiki_dir: str \| Path, *, surface_index_bytes: bytes, knowledge_index_bytes: bytes, manifest: SyncManifest) -> KnowledgeCommitPlan` | — | Validate and plan one manifest-last knowledge artifact commit. |
-| `commit_knowledge_artifacts` | `(plan: KnowledgeCommitPlan, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | — | Apply *plan* in projection/projection/manifest order. |
+| `commit_knowledge_artifacts` | `(plan: KnowledgeCommitPlan, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | `@observed_phase('artifact_commit')` | Apply *plan* in projection/projection/manifest order. |
 | `_planned_write` | `(path: Path, relative_path: str, content: bytes, *, force_replace: bool = False) -> PlannedArtifactWrite` | — | — |
 | `_apply_write` | `(artifact: PlannedArtifactWrite, stage: CommitStage, fault_injector: FaultInjector \| None) -> None` | — | — |
 | `_verify_persisted` | `(artifact: PlannedArtifactWrite) -> None` | — | — |

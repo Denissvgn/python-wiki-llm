@@ -2,7 +2,7 @@
 
 **Entry point:** `refresh_documentation_native_projection` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 38 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 44 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -35,10 +36,15 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [markdown_sections](../modules/markdown_sections.md)
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
@@ -105,7 +111,7 @@ sequenceDiagram
     p16-->>p18: read_bytes
 ```
 
-> Call sequence diagram shows 30 of 4452 interactions; 4422 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4618 interactions; 4588 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

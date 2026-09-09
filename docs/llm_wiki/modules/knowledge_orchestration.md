@@ -20,14 +20,16 @@ extraction of its own.
 | `..config` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS` |
 | `..extractors.common` | `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `is_bundled_helper_implementation_path` |
 | `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
+| `.immutable` | `freeze` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_EXTRACTOR_REF`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `current_infrastructure_bases`, `infrastructure_evidence_by_page` |
-| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `FaultInjector`, `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `KnowledgeCommitResult`, `ValidatedKnowledgeArtifacts`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts` |
-| `.knowledge_envelope` | `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs` |
+| `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `FaultInjector`, `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `KnowledgeCommitResult`, `ValidatedKnowledgeArtifacts`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts`, `require_validated_artifacts`, `validated_artifact_bytes`, `_decode_json_object` |
+| `.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `ConsumedInputKind`, `ProducerComponentInput`, `RepositoryEvidence`, `build_producer_record`, `collect_git_repository_evidence`, `hash_generation_options`, `hash_source_snapshot`, `plugin_producer_inputs` |
 | `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `.knowledge_freshness` | `LiveKnowledgeEvaluation` |
 | `.knowledge_generation` | `KnowledgeGenerationError`, `KnowledgeGenerationInputs`, `build_knowledge_generation_plan` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `governance_bundle_id_from_knowledge`, `governance_lock`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
 | `.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind` |
+| `.progress` | `observed_phase` |
 | `.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_FILENAME`, `SyncManifest` |
@@ -57,24 +59,26 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (6) |
-| Outbound | `src` (16) |
+| Inbound | `src` (7) |
+| Outbound | `src` (18) |
 
-> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 126 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 172 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 181 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 202 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 131 | — | Evaluated command state needed to plan one three-artifact commit. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 177 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 270 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 279 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 300 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `capture_committed_knowledge` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None) -> CommittedKnowledgeState` | `@observed_phase('prior_artifacts')` | — |
 | `prepare_runtime_generation_options` | `(generation_options: Mapping[str, Any], *, generation_option_defaults: Mapping[str, Any], generation_option_allowlist: Sequence[str], inventory_complete: bool) -> PreparedRuntimeGenerationOptions` | — | Add the evaluated inventory mode to one generation-options projection. |
 | `_runtime_manifest_generation_inputs` | `(inputs: RuntimeKnowledgeInputs) -> Mapping[str, object]` | — | — |
 | `_infrastructure_extractor_component` | `() -> ProducerComponentInput` | — | — |
@@ -82,10 +86,11 @@ flowchart LR
 | `_stabilize_revision_only_noop` | `(runtime_inputs: RuntimeKnowledgeInputs, plan_inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | Keep a validated artifact set stable across an output-only Git commit. |
 | `build_runtime_live_evaluation` | `(inputs: RuntimeLiveEvaluationInputs) -> LiveKnowledgeEvaluation` | — | Adapt one existing inventory/snapshot run to the freshness boundary. |
 | `_runtime_live_concept_bases` | `(knowledge: KnowledgeIndex, manifest: SyncManifest, inventory: Mapping[str, Mapping[str, Any]], source_hashes: Mapping[str, str], extractor_ref_by_source: Mapping[str, str], *, infrastructure_bases_by_source: Mapping[str, ConceptObservationBasis], inventory_complete: bool) -> dict[str, ConceptObservationBasis]` | — | — |
-| `_previous_committed_artifacts` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None) -> ValidatedKnowledgeArtifacts \| None` | — | Return the validated prior artifact set without consulting Markdown. |
-| `committed_governance_bundle_id` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None) -> str \| None` | — | Return a bundle ID only from an intact manifest-committed projection. |
-| `committed_runtime_provenance` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None) -> CommittedRuntimeProvenance \| None` | — | Return source and generator identity from an intact committed projection. |
-| `_previous_committed_producer` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None) -> ProducerRecord \| None` | — | Return producer evidence only from the prior committed artifact set. |
+| `_previous_committed_artifacts` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> ValidatedKnowledgeArtifacts \| None` | — | — |
+| `committed_governance_bundle_id` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> str \| None` | — | Return a bundle ID only from an intact manifest-committed projection. |
+| `committed_runtime_provenance` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> CommittedRuntimeProvenance \| None` | — | Return source and generator identity from an intact committed projection. |
+| `_previous_committed_producer` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> ProducerRecord \| None` | — | Return producer evidence only from the prior committed artifact set. |
+| `_commit_runtime_knowledge` | `(inputs: RuntimeKnowledgeInputs, plan: KnowledgeCommitPlan, *, dry_run: bool, fault_injector: FaultInjector \| None) -> KnowledgeCommitResult` | — | — |
 | `finalize_runtime_knowledge` | `(inputs: RuntimeKnowledgeInputs, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | — | Plan and commit one generated artifact set through the shared protocol. |
 | `_prepared_runtime_governance` | `(inputs: RuntimeKnowledgeInputs) -> GovernanceLedger \| None` | — | Load/reconcile governance without writing or inventing recovery state. |
 | `collect_runtime_repository_evidence` | `(source_root: str \| Path, target_wiki_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> RepositoryEvidence` | — | Collect Git evidence for the evaluated source-selection boundary. |

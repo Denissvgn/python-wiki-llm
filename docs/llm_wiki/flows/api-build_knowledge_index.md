@@ -2,7 +2,7 @@
 
 **Entry point:** `build_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), and 5 more
+**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), and 6 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [progress](../modules/progress.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -75,7 +76,7 @@ sequenceDiagram
     p6->>p22: is_valid_sha256
 ```
 
-> Call sequence diagram shows 30 of 590 interactions; 560 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 599 interactions; 569 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -151,35 +152,35 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_knowledge_index | _validate_and_join_inputs | 218 | `_validate_and_join_inputs(inputs)` |
-| _validate_and_join_inputs | isinstance | 286 | `isinstance(inputs, KnowledgeIndexInputs)` |
-| _validate_and_join_inputs | TypeError | 287 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
-| _validate_and_join_inputs | _validated_bundle | 288 | `_validated_bundle(inputs.envelope)` |
-| _validated_bundle | isinstance | 387 | `isinstance(envelope, EvaluatedEnvelope)` |
-| _validated_bundle | KnowledgeIndexBuildError | 388 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
-| _validated_bundle | evaluated_envelope_to_payload | 393 | `evaluated_envelope_to_payload(envelope)` |
-| evaluated_envelope_to_payload | isinstance | 1138 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError | 1139 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1141 | `KnowledgeEnvelopeError('schema_version', ...)` |
-| evaluated_envelope_to_payload | _validated_bundle_payload | 1145 | `_validated_bundle_payload(envelope.bundle)` |
+| _validate_and_join_inputs | isinstance | 321 | `isinstance(inputs, KnowledgeIndexInputs)` |
+| _validate_and_join_inputs | TypeError | 322 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
+| _validate_and_join_inputs | _validated_bundle | 323 | `_validated_bundle(inputs.envelope)` |
+| _validated_bundle | isinstance | 422 | `isinstance(envelope, EvaluatedEnvelope)` |
+| _validated_bundle | KnowledgeIndexBuildError | 423 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
+| _validated_bundle | evaluated_envelope_to_payload | 428 | `evaluated_envelope_to_payload(envelope)` |
+| evaluated_envelope_to_payload | isinstance | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| evaluated_envelope_to_payload | _validated_bundle_payload | 1148 | `_validated_bundle_payload(envelope.bundle)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `relationships.extend` | `build_knowledge_index` | 225 |
-| mutation | `joined.append` | `_validate_and_join_inputs` | 345 |
-| mutation | `joined.sort` | `_validate_and_join_inputs` | 366 |
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1928 |
+| mutation | `joined.append` | `_validate_and_join_inputs` | 380 |
+| mutation | `joined.sort` | `_validate_and_join_inputs` | 401 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1943 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_validate_and_join_inputs` | `isinstance` | 286 |
-| unresolved_call | `_validate_and_join_inputs` | `TypeError` | 287 |
-| unresolved_call | `_validated_bundle` | `isinstance` | 387 |
-| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1138 |
-| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1139 |
+| unresolved_call | `_validate_and_join_inputs` | `isinstance` | 321 |
+| unresolved_call | `_validate_and_join_inputs` | `TypeError` | 322 |
+| unresolved_call | `_validated_bundle` | `isinstance` | 422 |
+| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
+| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
 | step_limit | `build_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_index` | `depth limit` | 0 |
 

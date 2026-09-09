@@ -26,7 +26,7 @@ requirements without changing the underlying issue model.
 | `.extraction_service` | `ExtractorStatus`, `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `resolve_call_edges` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
-| `.inventory_cache` | `InventoryCacheOptions`, `InventoryCacheStats`, `format_cache_stats` |
+| `.inventory_cache` | `InventoryCacheOptions`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
 | `.io` | `read_md` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability`, `build_knowledge_read_view` |
@@ -38,11 +38,12 @@ requirements without changing the underlying issue model.
 | `.knowledge_verification` | `attach_machine_verification_read_view` |
 | `.metrics` | `record_validation_event` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
+| `.progress` | `phase` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `format_unsupported_source_summary`, `unsupported_source_label`, `unsupported_source_summary` |
 | `.sync_analysis` | `compute_sync_diff` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
-| `.team` | `build_team_issues` |
+| `.team` | `TeamConfigError`, `TeamPolicyContext`, `build_team_issues`, `resolve_team_policy`, `team_config_issue` |
 | `.validation` | `path_is_in_top_level_directory` |
 | `.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME`, `VerificationResult`, `load_verification_receipt` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance`, `sync_guidance` |
@@ -79,21 +80,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (34) |
+| Outbound | `src` (35) |
 
-> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LintProfiler](../entities/LintProfiler.md) | 182 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 220 | — | — |
-| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 231 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 269 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 309 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 316 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 328 | — | — |
+| [_LintProfiler](../entities/LintProfiler.md) | 191 | — | — |
+| [LintIssue](../entities/LintIssue.md) | 230 | — | — |
+| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 241 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
+| [LintReport](../entities/LintReport.md) | 279 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 319 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 326 | — | — |
+| [_LintPreflight](../entities/LintPreflight.md) | 340 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 347 | — | — |
 
 ## Functions
 
@@ -122,7 +124,7 @@ flowchart LR
 | `_check_required_structure` | `(report: LintReport, wiki_dir: Path) -> None` | — | — |
 | `_check_sync_manifest` | `(report: LintReport, wiki_dir: Path, src_dir: str, inventory: dict \| None = None, *, source_snapshot: SourceSnapshot \| None = None, proven_nonsemantic_paths: frozenset[str] = frozenset()) -> None` | — | — |
 | `_check_source_selection_identity` | `(report: LintReport, wiki_dir: Path, source_snapshot: SourceSnapshot) -> None` | — | Always verify the live/committed selection boundary. |
-| `_collect_lint_inputs` | `(report: LintReport, wiki_path: Path, src_dir: str, profiler: _LintProfiler \| None, cache_options: InventoryCacheOptions \| None, parallel_jobs: int, helper_cache_dir: str \| None, include_tests: Iterable[str] \| None, job_request: ExtractionJobRequest \| None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None, include_plugins: bool, source_plugins_only: bool, source_selection: str \| Path \| None, expected_selection_inputs: Mapping[str, object] \| None) -> _LintInputs \| None` | — | — |
+| `_collect_lint_inputs` | `(report: LintReport, wiki_path: Path, src_dir: str, profiler: _LintProfiler \| None, cache_options: InventoryCacheOptions \| None, parallel_jobs: int, helper_cache_dir: str \| None, include_tests: Iterable[str] \| None, job_request: ExtractionJobRequest \| None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None, include_plugins: bool, source_plugins_only: bool, source_selection: str \| Path \| None, expected_selection_inputs: Mapping[str, object] \| None, *, team_policy: TeamPolicyContext \| None = None, manifest: SyncManifest \| None = None) -> _LintInputs \| None` | — | — |
 | `_check_unsupported_source_diagnostics` | `(report: LintReport, unsupported_sources: dict[str, dict[str, object]]) -> None` | — | — |
 | `_build_page_index` | `(wiki_path: Path) -> _WikiPageIndex` | — | — |
 | `_check_broken_links` | `(report: LintReport, wiki_path: Path, page_index: _WikiPageIndex) -> None` | — | — |
@@ -165,9 +167,10 @@ flowchart LR
 | `_proven_nonsemantic_source_paths` | `(view: KnowledgeReadView \| None) -> frozenset[str]` | — | — |
 | `_run_report_checks` | `(report: LintReport, wiki_path: Path, src_dir: str, strict: bool, profiler: _LintProfiler \| None, inputs: _LintInputs, media_size_warn_bytes: int, include_plugins: bool, source_plugins_only: bool) -> None` | — | — |
 | `_add_source_selection_mismatch` | `(report: LintReport, message: str) -> None` | — | — |
-| `_preflight_lint_source_selection` | `(report: LintReport, wiki_path: Path, src_dir: str, source_selection: str \| Path \| None) -> tuple[bool, dict[str, object] \| None]` | — | — |
+| `_preflight_lint_source_selection` | `(report: LintReport, wiki_path: Path, src_dir: str, source_selection: str \| Path \| None) -> tuple[bool, dict[str, object] \| None, SyncManifest \| None]` | — | — |
 | `_new_lint_report` | `(wiki_path: Path, src_dir: str, effective_strict: bool, knowledge_drift_report: bool) -> LintReport` | — | — |
 | `_add_missing_wiki` | `(report: LintReport, wiki_path: Path) -> None` | — | — |
+| `_preflight_lint_inputs` | `(report: LintReport, wiki_path: Path, src_dir: str, source_selection: str \| Path \| None) -> _LintPreflight \| None` | — | — |
 | `build_report` | `(wiki_dir: str \| Path, src_dir: str = '.', *, strict: bool = False, knowledge_drift_report: bool = False, profiler: _LintProfiler \| None = None, cache_options: InventoryCacheOptions \| None = None, parallel_jobs: int = 1, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None) -> LintReport` | — | Build a structured lint report without rendering or exiting. |
 | `_lint_issue_payload` | `(issue: LintIssue) -> dict[str, object]` | — | — |
 | `report_to_dict` | `(report: LintReport, *, include_execution: bool = False) -> dict` | — | — |

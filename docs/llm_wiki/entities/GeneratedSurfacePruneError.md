@@ -1,6 +1,6 @@
 # GeneratedSurfacePruneError
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:256`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:264`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_cmd](../modules/sync_cmd.md)

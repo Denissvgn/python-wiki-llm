@@ -1,6 +1,6 @@
 # KnowledgeArtifactError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:71`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:74`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -95,4 +95,4 @@ flowchart LR
 | `_validate_surface_asset_counts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 6 |
 | `_validate_surface_assets` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 6 |
 
-> References: showing 12 of 29 logical references; 17 omitted by the 12-row generated summary limit.
+> References: showing 12 of 30 logical references; 18 omitted by the 12-row generated summary limit.

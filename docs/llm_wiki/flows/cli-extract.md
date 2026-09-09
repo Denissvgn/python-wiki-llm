@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [extraction_service](../modules/extraction_service.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 15 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 18 more
 
 **Complete modules touched:**
 
@@ -20,6 +20,9 @@
 - [io](../modules/io.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
@@ -75,7 +78,7 @@ sequenceDiagram
     p7->>p8: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 2557 interactions; 2527 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2606 interactions; 2576 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -156,46 +159,46 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 2186 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 2187 | `getattr(args, 'changed', False)` |
-| run | getattr | 2188 | `getattr(args, 'summary', False)` |
-| run | getattr | 2189 | `getattr(args, 'deep', False)` |
-| run | getattr | 2190 | `getattr(args, 'paths', None)` |
-| run | getattr | 2191 | `getattr(args, 'package', None)` |
-| run | getattr | 2192 | `getattr(args, 'include_empty', False)` |
-| run | getattr | 2193 | `getattr(args, 'output', None)` |
-| run | getattr | 2194 | `getattr(args, 'read_only', False)` |
-| run | getattr | 2195 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr | 2196 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr | 2258 | `getattr(args, 'src_dir', '.')` |
+| run | getattr | 2259 | `getattr(args, 'changed', False)` |
+| run | getattr | 2260 | `getattr(args, 'summary', False)` |
+| run | getattr | 2261 | `getattr(args, 'deep', False)` |
+| run | getattr | 2262 | `getattr(args, 'paths', None)` |
+| run | getattr | 2263 | `getattr(args, 'package', None)` |
+| run | getattr | 2264 | `getattr(args, 'include_empty', False)` |
+| run | getattr | 2265 | `getattr(args, 'output', None)` |
+| run | getattr | 2266 | `getattr(args, 'read_only', False)` |
+| run | getattr | 2267 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr | 2268 | `getattr(args, 'helper_cache_dir', None)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 2202 |
-| output | `print` | `run` | 2206 |
-| output | `print` | `run` | 2208 |
-| output | `print` | `run` | 2210 |
-| output | `print` | `run` | 2236 |
-| output | `print` | `run` | 2238 |
-| output | `print` | `run` | 2243 |
-| output | `print` | `run` | 2247 |
+| output | `print` | `run` | 2274 |
+| output | `print` | `run` | 2278 |
+| output | `print` | `run` | 2280 |
+| output | `print` | `run` | 2282 |
+| output | `print` | `run` | 2308 |
+| output | `print` | `run` | 2310 |
+| output | `print` | `run` | 2315 |
+| output | `print` | `run` | 2319 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 2186 |
-| unresolved_call | `run` | `getattr` | 2187 |
-| unresolved_call | `run` | `getattr` | 2188 |
-| unresolved_call | `run` | `getattr` | 2189 |
-| unresolved_call | `run` | `getattr` | 2190 |
-| unresolved_call | `run` | `getattr` | 2191 |
-| unresolved_call | `run` | `getattr` | 2192 |
-| unresolved_call | `run` | `getattr` | 2193 |
-| unresolved_call | `run` | `getattr` | 2194 |
-| unresolved_call | `run` | `getattr` | 2195 |
-| unresolved_call | `run` | `getattr` | 2196 |
+| unresolved_call | `run` | `getattr` | 2258 |
+| unresolved_call | `run` | `getattr` | 2259 |
+| unresolved_call | `run` | `getattr` | 2260 |
+| unresolved_call | `run` | `getattr` | 2261 |
+| unresolved_call | `run` | `getattr` | 2262 |
+| unresolved_call | `run` | `getattr` | 2263 |
+| unresolved_call | `run` | `getattr` | 2264 |
+| unresolved_call | `run` | `getattr` | 2265 |
+| unresolved_call | `run` | `getattr` | 2266 |
+| unresolved_call | `run` | `getattr` | 2267 |
+| unresolved_call | `run` | `getattr` | 2268 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [metrics_cmd](../modules/metrics_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 15 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 19 more
 
 **Complete modules touched:**
 
@@ -14,6 +14,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
@@ -22,6 +23,9 @@
 - [metrics_cmd](../modules/metrics_cmd.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [validation](../modules/validation.md)
@@ -81,7 +85,7 @@ sequenceDiagram
     p16-->>p17: WinDLL
 ```
 
-> Call sequence diagram shows 30 of 842 interactions; 812 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 852 interactions; 822 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

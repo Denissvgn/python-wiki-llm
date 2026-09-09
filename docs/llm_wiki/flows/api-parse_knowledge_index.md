@@ -2,7 +2,7 @@
 
 **Entry point:** `parse_knowledge_index` (`api`)
 **Source:** [knowledge_model](../modules/knowledge_model.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 7 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 8 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
@@ -71,7 +72,7 @@ sequenceDiagram
     p15->>p7: KnowledgeModelError
 ```
 
-> Call sequence diagram shows 30 of 1999 interactions; 1969 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2010 interactions; 1980 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -134,16 +135,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
-| _record | _object | 1571 | `_object(value, ...)` |
-| _object | dict | 1657 | `dict(require_mapping(...))` |
-| _object | require_mapping | 1658 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
+| _record | _object | 1581 | `_object(value, ...)` |
+| _object | dict | 1667 | `dict(require_mapping(...))` |
+| _object | require_mapping | 1668 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
 | require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance | 731 | `isinstance(key, str)` |
 | require_mapping | encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeModelError | 1660 | `KnowledgeModelError(path, 'must be an object')` |
-| _object | KnowledgeModelError | 1662 | `KnowledgeModelError(path, 'object keys must be strings')` |
-| _object | KnowledgeModelError | 1666 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
-| _record | sorted | 1573 | `sorted(...)` |
+| _object | KnowledgeModelError | 1670 | `KnowledgeModelError(path, 'must be an object')` |
+| _object | KnowledgeModelError | 1672 | `KnowledgeModelError(path, 'object keys must be strings')` |
+| _object | KnowledgeModelError | 1676 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
+| _record | sorted | 1583 | `sorted(...)` |
 
 ### Boundary effects
 
@@ -156,7 +157,7 @@ flowchart LR
 | unresolved_call | `require_mapping` | `isinstance` | 727 |
 | unresolved_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |
-| unresolved_call | `_record` | `sorted` | 1573 |
+| unresolved_call | `_record` | `sorted` | 1583 |
 | step_limit | `parse_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `parse_knowledge_index` | `depth limit` | 0 |
 

@@ -2,11 +2,12 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [lint_service](../modules/lint_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 35 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 41 more
 
 **Complete modules touched:**
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_pages](../modules/canonical_pages.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
@@ -15,6 +16,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -36,6 +38,10 @@
 - [metrics](../modules/metrics.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
+- [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -96,7 +102,7 @@ sequenceDiagram
     p10->>p5: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 2608 interactions; 2578 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2611 interactions; 2581 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -162,35 +168,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path | 3056 | `Path(args.wiki_dir)` |
-| run | getattr | 3057 | `getattr(args, 'src_dir', '.')` |
-| run | bool | 3058 | `bool(getattr(...))` |
-| run | getattr | 3059 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool | 3061 | `bool(...)` |
-| run | getattr | 3061 | `getattr(args, 'strict', False)` |
-| run | bool | 3062 | `bool(getattr(...))` |
-| run | getattr | 3062 | `getattr(args, 'profile', False)` |
-| run | bool | 3063 | `bool(getattr(...))` |
-| run | getattr | 3063 | `getattr(args, 'cache_stats', False)` |
-| run | bool | 3064 | `bool(getattr(...))` |
+| run | Path | 3103 | `Path(args.wiki_dir)` |
+| run | getattr | 3104 | `getattr(args, 'src_dir', '.')` |
+| run | bool | 3105 | `bool(getattr(...))` |
+| run | getattr | 3105 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool | 3106 | `bool(...)` |
+| run | getattr | 3106 | `getattr(args, 'strict', False)` |
+| run | bool | 3107 | `bool(getattr(...))` |
+| run | getattr | 3107 | `getattr(args, 'profile', False)` |
+| run | bool | 3108 | `bool(getattr(...))` |
+| run | getattr | 3108 | `getattr(args, 'cache_stats', False)` |
+| run | bool | 3109 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3101 |
-| output | `print` | `run` | 3104 |
-| output | `print` | `run` | 3112 |
+| output | `print` | `run` | 3141 |
+| output | `print` | `run` | 3144 |
+| output | `print` | `run` | 3152 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 3057 |
-| unresolved_call | `run` | `getattr` | 3059 |
-| unresolved_call | `run` | `getattr` | 3061 |
-| unresolved_call | `run` | `getattr` | 3062 |
-| unresolved_call | `run` | `getattr` | 3063 |
+| unresolved_call | `run` | `getattr` | 3104 |
+| unresolved_call | `run` | `getattr` | 3105 |
+| unresolved_call | `run` | `getattr` | 3106 |
+| unresolved_call | `run` | `getattr` | 3107 |
+| unresolved_call | `run` | `getattr` | 3108 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
