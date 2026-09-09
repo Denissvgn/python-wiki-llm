@@ -1,7 +1,7 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:c200cfc0e4f82922aafc692df61d2a04f6e093c770bbb36e716bad4c0d9b8983",
-    "knowledge_index_hash": "sha256:284be1c0daac0e19d90b0d7a9b106f11b9dd18e7a3dc02c8ac7c5c96bbc9076d",
+    "evaluated_envelope_hash": "sha256:71ab3132ee1811dadb2ca14e4f2a7d4c7508ffa959805099a03d93ea8792fd2f",
+    "knowledge_index_hash": "sha256:0dedba3043be96a691cb62d9b2876e8b80cc660d952e44a92baa0a1c6b62a07c",
     "surface_index_hash": "sha256:f1528b94b604a8babb018a5c0a672564976fd6b1471d13f2307f13d261a4fbc2"
   },
   "evidence_baselines": {
@@ -6958,14 +6958,14 @@
     "knowledge_reuse": {
       "assets_hash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
       "generation_options_hash": "sha256:963c315eb4f1d2b1fb73b2343d545b0268798643b4c9f247f8c3633bcff03442",
-      "implementation_hash": "sha256:e0af66f90ca467ebb7625124b614a6a3f88ff57f2ab9908bae9ab94abb4e3c09",
+      "implementation_hash": "sha256:7a5dd73c766c8c71fae49c6d532488418dbbeda7068254bed1d8e34b7c629eee",
       "inventory_hash": "sha256:48c9319b8189eed09ece2e5790220821db6f7d286e5ebe1304d1e41ab764a4a9",
       "lifecycle_hash": "sha256:b88f8e05f803713b0df9f087962b4880852a6ba10899a6e249069953ebd54b52",
-      "markdown_snapshot_hash": "sha256:44460cdcc097b17f77cbf481c07097a8e1a90aa125a5c0be02b20420bd6cda9e",
+      "markdown_snapshot_hash": "sha256:3f72bacbd6389d25615241726235af7e8a7f3e7790ff72270961a9e90683b60b",
       "observation_inputs_hash": "sha256:b20575ee36acd091d118d31d5347b61f500bb815d98b7066c98f9d81467caeda",
       "repository_hash": "sha256:2077323ceb2fca4f1d6724fca822b6d87e1aa6d21ae0e46e777ff6c6cff29253",
       "schema_version": "llm-wiki-knowledge-reuse/v1",
-      "source_snapshot_hash": "sha256:5de6ca8e2a412d11a4573279a320a6b576cfc340fd34ca9ff5459953683dab12"
+      "source_snapshot_hash": "sha256:c8fd1aa583b7c28a861f947e6cc89bc8b9aed36bc419a7f5b700befe42b886a2"
     },
     "llm-wiki/generation-options/v1": {
       "data_flow_enabled": true,
