@@ -41,10 +41,13 @@ from ..services.skills import (
     ReferenceSkillState,
     verify_reference_skill,
 )
-from .hook_cmd import is_managed_hook_content
-
-# Hooks that install-hook may have written
-HOOK_NAMES = ["post-commit", "pre-commit", "pre-push"]
+from ..services.legacy_hooks import (
+    HOOK_NAMES as HOOK_NAMES,
+    LegacyHookError,
+    LegacyHookInspection as _HookInspection,
+    inspect_legacy_hooks,
+    remove_legacy_hooks,
+)
 
 # Local runtime artifacts created by init/hooks/trigger-agent.
 RUNTIME_ARTIFACTS = [
@@ -57,17 +60,6 @@ RUNTIME_ARTIFACTS = [
 
 class UnsafeUninstallPathError(ValueError):
     """Raised when an uninstall-owned path could escape the project tree."""
-
-
-@dataclass(frozen=True)
-class _HookInspection:
-    """Immutable hook ownership evidence collected before mutation."""
-
-    name: str
-    path: Path
-    content: str
-    content_bytes: bytes
-    owned: bool
 
 
 @dataclass(frozen=True)
@@ -168,65 +160,14 @@ def _confirm(prompt: str) -> bool:
     return answer in ("y", "yes")
 
 
-def _require_safe_hook_path(path: Path) -> Path:
-    """Reject a hook path containing a symlink, reparse, or traversal."""
-
-    unsafe = first_unsafe_path_component(path)
-    if unsafe is not None:
-        raise UnsafeUninstallPathError(
-            "hook path contains unsafe component: "
-            f"{display_project_path(unsafe)}"
-        )
-    return path
-
-
 def _preflight_hooks() -> tuple[_HookInspection, ...]:
-    """Inspect every known hook without following an unsafe path."""
-
-    hooks_dir = Path(".git/hooks")
-    _require_safe_hook_path(hooks_dir)
-
-    if not hooks_dir.exists():
-        return ()
-    if not hooks_dir.is_dir():
-        raise UnsafeUninstallPathError(
-            "hook directory is not a regular directory: "
-            f"{display_project_path(hooks_dir)}"
-        )
-
-    inspections: list[_HookInspection] = []
-    for name in HOOK_NAMES:
-        hook_path = _require_safe_hook_path(hooks_dir / name)
-        if not hook_path.exists() and not hook_path.is_symlink():
-            continue
-        if not hook_path.is_file():
-            raise UnsafeUninstallPathError(
-                "hook path is not a regular file: "
-                f"{display_project_path(hook_path)}"
-            )
-        try:
-            content_bytes = hook_path.read_bytes()
-            content = content_bytes.decode("utf-8")
-        except (OSError, UnicodeError) as exc:
-            raise UnsafeUninstallPathError(
-                "hook path cannot be verified safely: "
-                f"{display_project_path(hook_path)}"
-            ) from exc
-        inspections.append(
-            _HookInspection(
-                name=name,
-                path=hook_path,
-                content=content,
-                content_bytes=content_bytes,
-                owned=is_managed_hook_content(name, content),
-            )
-        )
-    return tuple(inspections)
+    try:
+        return inspect_legacy_hooks()
+    except (LegacyHookError, OSError) as exc:
+        raise UnsafeUninstallPathError(str(exc)) from exc
 
 
 def _validate_hook_plan(plan: tuple[_HookInspection, ...]) -> None:
-    """Ensure hook ownership evidence is still current before unlinking."""
-
     if _preflight_hooks() != plan:
         raise UnsafeUninstallPathError(
             "managed hook candidates changed after uninstall preflight"
@@ -238,40 +179,10 @@ def _remove_hooks(
     *,
     plan: tuple[_HookInspection, ...] | None = None,
 ) -> int:
-    """Remove llm-wiki hooks, but only from one safe ownership snapshot."""
-
-    inspections = _preflight_hooks() if plan is None else plan
-    removed = 0
-    if not dry_run:
-        _validate_hook_plan(inspections)
-
-    for inspection in inspections:
-        if not inspection.owned:
-            print(
-                f"  SKIP hook {inspection.name} "
-                "(not ours — contains custom user content)"
-            )
-            continue
-
-        if dry_run:
-            print(f"  WOULD REMOVE hook: {display_project_path(inspection.path)}")
-        else:
-            absolute = (
-                inspection.path
-                if inspection.path.is_absolute()
-                else Path.cwd().resolve() / inspection.path
-            )
-            try:
-                unlink_guarded_bytes(absolute, expected=inspection.content_bytes)
-            except OSError as exc:
-                raise UnsafeUninstallPathError(
-                    "managed hook changed during guarded removal: "
-                    f"{display_project_path(inspection.path)}"
-                ) from exc
-            print(f"  REMOVED hook: {display_project_path(inspection.path)}")
-        removed += 1
-
-    return removed
+    try:
+        return remove_legacy_hooks(plan=plan, dry_run=dry_run)
+    except (LegacyHookError, OSError) as exc:
+        raise UnsafeUninstallPathError(str(exc)) from exc
 
 
 def _preflight_agent_schemas() -> tuple[_SchemaCleanup, ...]:

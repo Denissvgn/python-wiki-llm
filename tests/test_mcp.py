@@ -1571,7 +1571,9 @@ class TestMcpWikiService:
         _write_wiki(tmp_project)
         hooks = tmp_project / ".git" / "hooks"
         hooks.mkdir(parents=True, exist_ok=True)
-        (hooks / "post-commit").write_text("# LLM Wiki hook\n", encoding="utf-8")
+        (hooks / "post-commit").write_text(
+            "#!/bin/sh\n# LLM Wiki old hook\n", encoding="utf-8"
+        )
         service = mcp_server.McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
 
         result = service.get_status()

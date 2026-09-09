@@ -1,10 +1,10 @@
 """llm-wiki upgrade — refresh all framework-managed artifacts in place.
 
-Replaces the uninstall → init → install-hook cycle with a single idempotent
+Replaces the uninstall → init cycle with a single idempotent
 command that:
-1. Replaces the agent constraint block with the latest version
-2. Ensures wiki directory structure is complete
-3. Reinstalls git hooks
+1. Removes unmodified legacy LLM Wiki Git hooks
+2. Replaces the agent constraint block with the latest version
+3. Ensures wiki directory structure is complete
 4. Optionally switches agents
 """
 
@@ -79,15 +79,10 @@ from ..services.wiki_lifecycle import (
     require_safe_wiki_scaffold,
 )
 
-# Re-use hook builders from hook_cmd to avoid duplication
-from .hook_cmd import (
-    _build_ide_post_commit,
-    _build_validation_pre_commit,
-    _install_hook,
-    is_managed_hook_content,
-    require_hook_installable,
-    require_safe_hook_arguments,
-    require_safe_hook_paths,
+from ..services.legacy_hooks import (
+    LegacyHookError,
+    inspect_legacy_hooks,
+    remove_legacy_hooks,
 )
 
 
@@ -586,50 +581,6 @@ def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
     )
 
 
-def _upgrade_hooks(
-    agent: str,
-    wiki_dir: str,
-    *,
-    force: bool = False,
-    source_selection: str | Path | None = None,
-    post_commit_before: bytes | None,
-    validation_before: bytes | None,
-    refresh_validation: bool,
-) -> None:
-    """Reinstall git hooks for the resolved agent."""
-    git_dir = Path(".git")
-    if not git_dir.exists():
-        print("  Skipped hooks (no .git directory)")
-        return
-
-    require_safe_hook_paths()
-    hooks_dir = git_dir / "hooks"
-    ensure_guarded_directory(Path.cwd().resolve() / hooks_dir)
-
-    _install_hook(
-        hooks_dir,
-        "post-commit",
-        _build_ide_post_commit(
-            wiki_dir,
-            source_selection=source_selection,
-        ),
-        force=force,
-        expected_existing=post_commit_before,
-    )
-    if refresh_validation:
-        _install_hook(
-            hooks_dir,
-            "pre-commit",
-            _build_validation_pre_commit(
-                wiki_dir,
-                source_selection=source_selection,
-            ),
-            force=True,
-            expected_existing=validation_before,
-        )
-    print(f"  Hooks: prompt-generation mode ({agent})")
-
-
 def run(args):
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(wiki_dir, "--wiki-dir")
@@ -639,6 +590,18 @@ def run(args):
     except (WikiScaffoldPathError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
+
+    # Hook retirement is independent of agent preferences and schema recovery.
+    # Complete it before a legacy/missing agent configuration can block refresh.
+    print("Legacy Git Hook Cleanup:")
+    try:
+        removed_hooks = remove_legacy_hooks(plan=inspect_legacy_hooks())
+    except (LegacyHookError, OSError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    print(
+        f"  Removed {removed_hooks} legacy LLM Wiki hook(s); hook installation is retired."
+    )
 
     # Resolve every preference from one config snapshot. Invalid state is never
     # allowed to select a target agent implicitly.
@@ -711,11 +674,6 @@ def run(args):
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
     source_selection = selection_policy.path if selection_policy is not None else None
-    try:
-        require_safe_hook_arguments(wiki_dir, source_selection)
-    except ValueError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
-        raise SystemExit(2) from exc
 
     agent = _resolve_agent(args, wiki_dir, config_inspection)
     target_filename = SCHEMA_FILENAMES.get(agent)
@@ -744,27 +702,6 @@ def run(args):
     except (ManagedSchemaBlockError, ManagedSchemaPathError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
-    try:
-        require_safe_hook_paths()
-    except ValueError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
-        raise SystemExit(2) from exc
-    hooks_dir = Path(".git/hooks")
-    post_commit_before = require_hook_installable(
-        hooks_dir,
-        "post-commit",
-        force=bool(getattr(args, "force", False)),
-    )
-    validation_path = hooks_dir / "pre-commit"
-    if validation_path.exists():
-        validation_before = validation_path.read_bytes()
-        refresh_validation = is_managed_hook_content(
-            "pre-commit",
-            validation_before.decode("utf-8", errors="replace"),
-        )
-    else:
-        validation_before = None
-        refresh_validation = False
     stored_agent = stored.get("agent")
     old_agent = (
         str(stored_agent)
@@ -981,19 +918,7 @@ def run(args):
     else:
         print(f"  All directories present in {wiki_dir}/")
 
-    # 3. Git hooks
-    print("\n3. Git Hooks:")
-    _upgrade_hooks(
-        agent,
-        wiki_dir,
-        force=getattr(args, "force", False),
-        source_selection=source_selection,
-        post_commit_before=post_commit_before,
-        validation_before=validation_before,
-        refresh_validation=refresh_validation,
-    )
-
-    # 4. Persist only after the target reference/schema/plugin composition is
+    # Persist only after the target reference/schema/plugin composition is
     # usable. Unknown compatible config fields survive the merge.
     config: dict[str, object] = dict(stored)
     config.update(
@@ -1060,7 +985,7 @@ def run(args):
         require_target_reference=require_target_reference,
     )
 
-    # 5. Destructive source cleanup is deliberately last. A failed reference
+    # Destructive source cleanup is deliberately last. A failed reference
     # refresh keeps the old procedural path even though the target has a safe
     # expanded fallback. Opt-out may clean the obsolete schema but keeps refs.
     source_cleanup_incomplete = False

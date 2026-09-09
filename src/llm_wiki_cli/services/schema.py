@@ -115,8 +115,8 @@ def _sync_instructions(source_selection: str | Path | None, skills_dir: str) -> 
     return f"""\
 
 ## How to sync the wiki in this agent session
-Generated hooks create a prompt file for human review instead of starting an
-agent automatically on commit. You are responsible for keeping the wiki current:
+Wiki maintenance uses explicit commands in this session. LLM Wiki does not
+install Git hooks; `llm-wiki upgrade` removes unmodified legacy hooks.
 
 1. **After every code change in this session** that adds, removes, or modifies a
    class, function, module, or cross-module flow, run the full sync-then-lint

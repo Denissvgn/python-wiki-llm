@@ -196,9 +196,8 @@ missing ledger is restored, not regenerated or reinitialized.
 - Plain `sync` has no lock. An authorized unattended application uses
   `llm-wiki trigger-agent` with its timeout, diff/prompt bounds, lock, and
   circuit breaker instead of recreating that control loop. `--force` does not
-  bypass the lock or breaker. Repository delivery policy still applies, and
-  only a separately authorized, conditionally Git-eligible automation path may
-  set `LLM_WIKI_AUTO_COMMIT=1` to avoid a post-commit retrigger.
+  bypass the lock or breaker. Repository delivery policy still applies.
+  LLM Wiki does not install Git hooks; repository updates remain explicit.
 - `wiki-sync` may provide a richer changed-page worklist, optional-surface
   initialization, and automation diagnostics when it is separately installed.
   The complete correctness-critical loop is the procedure above and does not

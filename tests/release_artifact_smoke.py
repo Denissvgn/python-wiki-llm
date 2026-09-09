@@ -39,7 +39,6 @@ EXPECTED_SUBCOMMANDS = (
     "init",
     "install",
     "install-ci",
-    "install-hook",
     "knowledge",
     "lint",
     "mcp",

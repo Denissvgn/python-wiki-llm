@@ -90,7 +90,7 @@ Group every extracted entry point into one of these rows and say who can reach i
 | `mcp` | MCP tools/resources | Local agent clients over the MCP transport; treat tool arguments as untrusted agent-controlled input. |
 | `http` | Framework routes and detected HTTP handlers/servers | Remote or local network clients; request paths, headers, bodies, and connection state cross a network trust boundary. An HTTP-only fixture still enters the worklist. |
 | `process` | Console-script entry points | Anything that can spawn the process: shells, hooks, CI. |
-| hooks | Managed git hooks | Repo contributors — every commit triggers the hook path. |
+| legacy hook cleanup | Ownership checks and guarded deletion during `upgrade` | Repository-local Git metadata; customized and unrelated scripts are preserved. |
 | plugins | Plugin install and component loading | Local code-loading boundary; installed plugin files execute in-process. |
 
 ## Boundary effects and data-flow gaps
@@ -176,7 +176,7 @@ Each exposure item uses a stable sequential `AS-NNN` ID:
   - Executes the selected agent with `subprocess.run` and a timeout at lines 259-272.
 - Existing controls:
   - CLI-agent allowlist; lock and circuit breaker; prompt byte guard.
-- Security-model alignment: matches "Headless agent execution from post-commit hooks".
+- Security-model alignment: matches "Manual CLI agent execution".
 - Conclusion: highest-value manual review surface; the bounded flow walk underreports the subprocess sink, so source evidence is authoritative.
 ```
 
@@ -185,7 +185,7 @@ Required fields for every item: extracted flow (or "not surfaced" with the reaso
 Two classification rules are mandatory:
 
 - **Prompt/log artifacts are always sensitive.** Generated prompt files and background logs built from diffs and source inventory go in the report as sensitive local artifacts even when the extract shows only `output` boundaries.
-- **Adjacent surfaces stay distinct.** Do not merge surfaces that share a feature but differ in effect — for example, a hook that only generates a prompt file versus a manual command that executes an agent subprocess. Merging them overstates one path and understates the other.
+- **Adjacent surfaces stay distinct.** Do not merge surfaces that share a feature but differ in effect — for example, a command that only generates a prompt file versus a manual command that executes an agent subprocess. Merging them overstates one path and understates the other.
 
 ## Security-model coverage matrix
 

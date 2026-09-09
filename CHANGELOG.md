@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Git hook installation is retired. `upgrade` removes unmodified legacy LLM
+  Wiki hooks before refreshing agent instructions; customized and unrelated
+  hooks remain untouched. Maintenance and prompt generation use explicit
+  commands.
 - Knowledge readers reuse immutable validated models and captured artifact
   bytes. Sync can reuse an unchanged validated snapshot after recording its
   generation inputs.

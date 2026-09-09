@@ -3,7 +3,7 @@
 LLM Wiki CLI builds and maintains a repo-local architectural wiki for coding
 agents. It scans source code into a compact structural inventory, generates
 Markdown pages under a wiki directory, validates those pages against the live
-codebase, and prepares or triggers wiki-sync prompts after commits. It can also
+codebase, and prepares wiki-sync prompts on demand. It can also
 prepare an isolated, agent-driven documentation workspace from source or an
 existing LLM-enriched wiki without installing instructions in the target; see
 [Standalone documentation workspaces](docs/standalone-documentation.md).
@@ -181,7 +181,7 @@ llm-wiki lint --src-dir /path/to/repo --wiki-dir docs/llm_wiki \
 
 When using a non-default profile, carry the same `--source-selection` argument
 through helper preparation, bootstrap, sync, lint, CI, context, review, MCP,
-and other source-reading wiki operations. Generated hooks and agent
+and other source-reading wiki operations. Explicit command recipes and agent
 instructions preserve the resolved path.
 A managed wiki records the profile and its applicable selection-control inputs;
 if either changes, read consumers fail with sync guidance until an authorized
@@ -294,14 +294,15 @@ version output is malformed or older than 9.6.
 
 | Agent | Schema file | Sync mode |
 |---|---|---|
-| `claude` | `CLAUDE.md` | prompt hook; optional manual CLI trigger |
-| `aider` | `.aider.conf.yml` | prompt hook; optional manual CLI trigger |
-| `opencode` | `.opencode/instructions.md` | prompt hook; optional manual CLI trigger |
-| `copilot` | `.github/copilot-instructions.md` | IDE prompt |
-| `cursor` | `.cursorrules` | IDE prompt |
-| `generic` | `AGENTS.md` | IDE prompt |
+| `claude` | `CLAUDE.md` | explicit sync; optional manual CLI trigger |
+| `aider` | `.aider.conf.yml` | explicit sync; optional manual CLI trigger |
+| `opencode` | `.opencode/instructions.md` | explicit sync; optional manual CLI trigger |
+| `copilot` | `.github/copilot-instructions.md` | explicit sync or reviewed IDE prompt |
+| `cursor` | `.cursorrules` | explicit sync or reviewed IDE prompt |
+| `generic` | `AGENTS.md` | explicit sync or reviewed IDE prompt |
 
-Installed hooks generate a reviewed prompt file for all agents. The explicit
+Use explicit `sync` and `lint` commands with any agent. `generate-prompt`
+creates a prompt for review when needed. LLM Wiki does not install Git hooks. The explicit
 `trigger-agent` command can still delegate to a CLI agent; for Claude, this uses
 `claude -p` and leaves permission decisions to Claude's normal permission model.
 Run manual CLI triggers only in repositories and execution environments you
@@ -378,28 +379,15 @@ Generate the initial wiki from an existing codebase:
 llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 ```
 
-Install the full read-only GitHub Actions integrity gate from an immutable
-released commit:
+After relevant source changes, update and validate the wiki explicitly:
 
 ```bash
-llm-wiki install-ci --action-ref "$RELEASE_COMMIT_SHA"
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
+llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki --jobs 1
 ```
 
-`RELEASE_COMMIT_SHA` must be the complete 40-character commit published for the
-release. Branch names, tags, and abbreviated SHAs are rejected so a project
-cannot silently change the code that validates its wiki.
-
-Validate the wiki:
-
-```bash
-llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
-```
-
-Install a post-commit hook:
-
-```bash
-llm-wiki install-hook
-```
+Git commits do not trigger library-managed maintenance. An optional read-only
+GitHub Actions gate is described under [Automation](#automation).
 
 `init` writes the selected agent and instruction preferences to
 `.git/.llm-wiki-agent` when the project is a Git repo. Outside Git, it falls
@@ -515,10 +503,31 @@ worktree status, tracked wiki diff, sync log, and a versioned hash receipt. Its
 job summary contains only a bounded preview. This observation complements but
 never replaces the blocking `ci-check` integrity gate.
 
-`llm-wiki install-hook` installs a `post-commit` hook that generates
-`.git/llm-wiki-prompt.txt` with `llm-wiki generate-prompt` and prints a reminder
-to paste that prompt into your agent chat. Generated hooks never launch CLI
-agents automatically.
+### Git hook retirement
+
+Git hook installation has been removed. After updating the package, run the
+workspace upgrade from each repository that used LLM Wiki:
+
+```bash
+pip install --upgrade agent-wiki-cli
+llm-wiki upgrade
+```
+
+`upgrade` automatically removes recognized, unmodified LLM Wiki `post-commit`,
+`pre-commit`, and `pre-push` hooks, including older background-agent and version
+bump hooks. Cleanup runs before agent instruction refresh and does not require
+an agent preference. If instruction refresh then needs configuration repair,
+the hook cleanup remains complete. Repeating the upgrade is safe.
+
+Cleanup covers the repository's Git hooks directory, the shared Git directory
+of a linked worktree, and a repository-local `core.hooksPath`. Customized hooks,
+unrelated hooks, and external/global hook directories remain user-managed.
+Unsafe or unreadable hook paths stop cleanup with an error; changed files are
+rechecked before removal. Package installation itself does not discover or
+modify arbitrary repositories. Read-only commands do not remove hooks.
+
+For a reviewed prompt, run `llm-wiki generate-prompt` explicitly. The retired
+`install-hook` command is no longer available.
 
 For advanced trusted workflows, `trigger-agent` remains available as an explicit
 manual command:
@@ -555,18 +564,6 @@ automation runner should wait briefly for another sync to release the lock.
 The circuit breaker permits one automatic recovery attempt after 3600 seconds
 by default; set `LLM_WIKI_BREAKER_TTL_SECONDS` to another non-negative duration,
 or to `0` to require `--reset-breaker`.
-
-Optional strict pre-commit validation:
-
-```bash
-llm-wiki install-hook --enable-validation
-```
-
-Use `--force` when you intentionally want to replace an existing unrelated hook:
-
-```bash
-llm-wiki install-hook --force
-```
 
 ### Strict doctor dashboard
 
@@ -1987,9 +1984,7 @@ When managed references remain enabled, `llm-wiki upgrade` refreshes the
 generated agent constraints and the CLI-owned `wiki-reference` policy as one
 exact nested tree. This is the deliberate force-refresh path for expected
 regular files: a locally edited or missing managed topic is restored even when
-the command does not include `--force`. The upgrade command's `--force` flag is
-separate and authorizes replacement of an unrelated post-commit hook. `init`
-and ordinary `skills install`/`skills export` keep differing regular files
+the command does not include `--force`. `init` and ordinary `skills install`/`skills export` keep differing regular files
 unless their own force behavior is requested. Unexpected, conflicting, or
 unsafe entries are always preserved and reported; inspect and back them up,
 then move them aside if intended before retrying the reference refresh.
@@ -2124,7 +2119,6 @@ Refresh framework-managed artifacts in place.
 llm-wiki upgrade
 llm-wiki upgrade --agent copilot
 llm-wiki upgrade --wiki-dir .wiki
-llm-wiki upgrade --force
 llm-wiki upgrade --no-skills
 llm-wiki upgrade --skills
 llm-wiki upgrade --agent claude --cleanup-source-agent generic
@@ -2133,8 +2127,10 @@ llm-wiki upgrade --issue-reporting
 llm-wiki upgrade --no-issue-reporting
 ```
 
-`upgrade` refreshes agent instruction blocks, wiki directories, hooks, plugin
-skill blocks, and persisted local config. The issue-reporting pair explicitly
+`upgrade` removes unmodified legacy Git hooks and refreshes agent instruction
+blocks, wiki directories, plugin skill blocks, and persisted local config. The
+legacy `--force` flag remains accepted for compatibility and has no effect on
+hook ownership; customized hooks are preserved. The issue-reporting pair explicitly
 enables or disables the local agent guidance; without either flag, `upgrade`
 preserves the stored preference. Configurations created before this preference
 existed default to disabled. For older wiki layouts, `upgrade`

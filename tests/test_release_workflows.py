@@ -1604,7 +1604,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
             "tests/test_provisioning_failures.py::"
             "test_init_revalidates_schema_after_reference_provision[fifo]",
             "tests/test_status.py::TestStatusHooks::"
-            "test_exact_managed_hook_without_execute_bit_is_reported_broken",
+            "test_exact_managed_hook_without_execute_bit_still_needs_cleanup",
         }
     ]
     assert {
@@ -1628,7 +1628,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
         (
             "core-windows-3.13",
             "tests/test_status.py::TestStatusHooks::"
-            "test_exact_managed_hook_without_execute_bit_is_reported_broken",
+            "test_exact_managed_hook_without_execute_bit_still_needs_cleanup",
             "core-ubuntu-3.10",
             "Windows does not expose a POSIX hook execute-bit contract",
         ),

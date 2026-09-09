@@ -7,7 +7,6 @@ from .commands import (
     docs_cmd,
     doctor_cmd,
     generate_prompt_cmd,
-    hook_cmd,
     install_ci_cmd,
     init_cmd,
     install_cmd,
@@ -124,7 +123,6 @@ _COMMAND_MODULES = {
     "lint": lint_cmd,
     "prepare-extractors": prepare_extractors_cmd,
     "ci-check": ci_check_cmd,
-    "install-hook": hook_cmd,
     "install-ci": install_ci_cmd,
     "install": install_cmd,
     "knowledge": knowledge_cmd,
@@ -176,7 +174,6 @@ def _register_commands(subparsers):
     _add_lint_command(subparsers)
     _add_prepare_extractors_command(subparsers)
     _add_ci_check_command(subparsers)
-    _add_install_hook_command(subparsers)
     _add_install_ci_command(subparsers)
     _add_install_command(subparsers)
     _add_knowledge_command(subparsers)
@@ -535,34 +532,6 @@ def _add_ci_check_command(subparsers):
     _add_include_tests_argument(ci_parser)
     _add_source_selection_argument(ci_parser)
     _add_jobs_argument(ci_parser)
-
-
-def _add_install_hook_command(subparsers):
-    hook_parser = subparsers.add_parser(
-        "install-hook", help="Install prompt-generation git hooks for wiki sync"
-    )
-    hook_parser.add_argument(
-        "--wiki-dir",
-        default=DEFAULT_WIKI_DIR,
-        help="Wiki directory to read agent config from (default: docs/llm_wiki)",
-    )
-    hook_parser.add_argument(
-        "--agent",
-        choices=AGENT_CHOICES,
-        default=None,
-        help="Agent preference to display after installing the prompt hook",
-    )
-    hook_parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Replace an existing unrelated post-commit hook",
-    )
-    hook_parser.add_argument(
-        "--enable-validation",
-        action="store_true",
-        help="Also install a pre-commit hook that runs `llm-wiki lint --strict`",
-    )
-    _add_source_selection_argument(hook_parser)
 
 
 def _add_install_ci_command(subparsers):
@@ -1151,7 +1120,7 @@ def _add_bump_command(subparsers):
     bump_parser.add_argument(
         "--stage",
         action="store_true",
-        help="Git-add the version file after bumping (for use in hooks)",
+        help="Stage the version file after bumping",
     )
 
 
@@ -1277,7 +1246,7 @@ def _add_uninstall_command(subparsers):
 
 def _add_status_command(subparsers):
     status_parser = subparsers.add_parser(
-        "status", help="Show LLM Wiki status (agent, hooks, breaker, pages)"
+        "status", help="Show LLM Wiki status (agent, wiki, legacy cleanup)"
     )
     status_parser.add_argument(
         "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory path"
@@ -1671,14 +1640,14 @@ def _add_release_command(subparsers):
     release_parser.add_argument(
         "--stage",
         action="store_true",
-        help="Git-add CHANGELOG.md after stamping (for use in hooks)",
+        help="Stage CHANGELOG.md after stamping",
     )
 
 
 def _add_upgrade_command(subparsers):
     upgrade_parser = subparsers.add_parser(
         "upgrade",
-        help="Refresh all framework-managed artifacts (schema, hooks, dirs) in place",
+        help="Refresh managed instructions and wiki structure; remove legacy Git hooks",
     )
     upgrade_parser.add_argument(
         "--wiki-dir",
@@ -1706,7 +1675,7 @@ def _add_upgrade_command(subparsers):
     upgrade_parser.add_argument(
         "--force",
         action="store_true",
-        help="Replace an existing unrelated post-commit hook",
+        help=argparse.SUPPRESS,
     )
     upgrade_hints = upgrade_parser.add_mutually_exclusive_group()
     upgrade_hints.add_argument(

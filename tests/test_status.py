@@ -409,7 +409,7 @@ class TestStatusHooks:
         os.name == "nt",
         reason="Windows does not expose a POSIX hook execute-bit contract",
     )
-    def test_exact_managed_hook_without_execute_bit_is_reported_broken(
+    def test_exact_managed_hook_without_execute_bit_still_needs_cleanup(
         self, tmp_project, capsys
     ):
         from llm_wiki_cli.commands import hook_cmd
@@ -426,8 +426,9 @@ class TestStatusHooks:
         status_cmd.run(_make_args())
 
         output = capsys.readouterr().out
-        assert "non-executable: post-commit" in output
-        assert "install-hook --force" in output
+        assert "retired (remaining: post-commit)" in output
+        assert "llm-wiki upgrade" in output
+        assert "install-hook" not in output
 
     def test_does_not_claim_signature_substring_hook_is_managed(
         self, tmp_project, capsys
@@ -444,7 +445,7 @@ class TestStatusHooks:
         status_cmd.run(_make_args(wiki_dir=str(wiki)))
 
         out = capsys.readouterr().out
-        assert "Hooks:           none installed" in out
+        assert "Hooks:           retired (none installed)" in out
 
     def test_rejects_wiki_symlink_outside_project_before_reading(
         self,
