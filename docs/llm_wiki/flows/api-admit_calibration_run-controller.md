@@ -74,7 +74,7 @@ sequenceDiagram
     p21-->>p14: tuple
 ```
 
-> Call sequence diagram shows 30 of 1681 interactions; 1651 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1683 interactions; 1653 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

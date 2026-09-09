@@ -15,12 +15,14 @@ startup does not require their runtime packages.
 | Source | Symbols |
 |--------|---------|
 | `.` | `__version__` |
-| `.commands` | `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `hook_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `release_cmd`, `review_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
+| `.commands` | `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `release_cmd`, `review_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
 | `.config` | `AGENT_CHOICES`, `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
 | `.services.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG` |
 | `.services.extraction_jobs` | `ExtractionJobsAction` |
+| `.services.progress` | `Progress` |
 | `.services.resource_diagnostics` | `resource_failure_hint` |
+| `.services.runtime_output` | `RuntimeOutputError` |
 | `argparse` | `argparse` |
 | `os` | `os` |
 | `sys` | `sys` |
@@ -42,9 +44,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (35) |
+| Outbound | `src` (36) |
 
-> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -62,10 +64,10 @@ flowchart LR
 | `_add_doctor_command` | `(subparsers)` | — | — |
 | `_add_init_command` | `(subparsers)` | — | — |
 | `_add_extract_command` | `(subparsers)` | — | — |
+| `_add_progress_arguments` | `(parser)` | — | — |
 | `_add_lint_command` | `(subparsers)` | — | — |
 | `_add_prepare_extractors_command` | `(subparsers)` | — | — |
 | `_add_ci_check_command` | `(subparsers)` | — | — |
-| `_add_install_hook_command` | `(subparsers)` | — | — |
 | `_add_install_ci_command` | `(subparsers)` | — | — |
 | `_add_install_command` | `(subparsers)` | — | — |
 | `_add_knowledge_wiki_argument` | `(parser)` | — | — |

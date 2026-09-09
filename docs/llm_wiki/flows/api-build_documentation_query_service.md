@@ -136,12 +136,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_documentation_query_service | normalize_documentation_query_limit | 1076 | `normalize_documentation_query_limit(limit)` |
+| build_documentation_query_service | normalize_documentation_query_limit | 1136 | `normalize_documentation_query_limit(limit)` |
 | normalize_documentation_query_limit | isinstance | 52 | `isinstance(value, bool)` |
 | normalize_documentation_query_limit | isinstance | 52 | `isinstance(value, int)` |
 | normalize_documentation_query_limit | DocumentationQueryError | 53 | `DocumentationQueryError('limit must be a positive integer.')` |
 | normalize_documentation_query_limit | min | 54 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
-| build_documentation_query_service | validate_source_root | 1077 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| build_documentation_query_service | validate_source_root | 1137 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |

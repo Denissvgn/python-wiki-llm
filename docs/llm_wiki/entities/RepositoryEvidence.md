@@ -1,6 +1,6 @@
 # RepositoryEvidence
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:233`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:235`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -33,24 +33,27 @@ Already collected local VCS evidence; raw remotes are never serialized.
 flowchart LR
     n0["RepositoryEvidence (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n1["src/llm_wiki_cli/commands/migrate_cmd.py"]
-    n2["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n3["build_repository_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n4["collect_git_repository_evidence (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n5["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n6["collect_runtime_repository_evidence (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n2["_sync_reuse_input_basis (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n3["_try_sync_knowledge_reuse (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n4["build_repository_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n5["collect_git_repository_evidence (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n6["src/llm_wiki_cli/services/knowledge_generation.py"]
+    n7["collect_runtime_repository_evidence (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/knowledge_envelope.md"
     click n1 "../modules/migrate_cmd.md"
     click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/knowledge_envelope.md"
+    click n3 "../modules/sync_cmd.md"
     click n4 "../modules/knowledge_envelope.md"
-    click n5 "../modules/knowledge_generation.md"
-    click n6 "../modules/knowledge_orchestration.md"
+    click n5 "../modules/knowledge_envelope.md"
+    click n6 "../modules/knowledge_generation.md"
+    click n7 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -64,7 +67,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_sync_reuse_input_basis` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_try_sync_knowledge_reuse` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `build_repository_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `build_repository_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `collect_git_repository_evidence` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 2 |

@@ -1536,7 +1536,7 @@ def test_nonregular_target_schema_is_rejected_before_mutation(
 def test_fifo_schema_is_rejected_by_stat_without_opening(tmp_project) -> None:
     if not hasattr(os, "mkfifo"):
         pytest.skip("FIFOs are unavailable on this platform")
-    os.mkfifo("AGENTS.md")
+    getattr(os, "mkfifo")("AGENTS.md")
 
     with pytest.raises(SystemExit) as caught:
         init_cmd.run(_init_args(agent="generic"))
@@ -1561,7 +1561,7 @@ def test_init_revalidates_schema_after_reference_provision(
         if replacement == "directory":
             Path("AGENTS.md").mkdir()
         else:
-            os.mkfifo("AGENTS.md")
+            getattr(os, "mkfifo")("AGENTS.md")
         return result
 
     monkeypatch.setattr(init_cmd, "provision_reference_skill", provision_then_replace)
@@ -1638,23 +1638,22 @@ def test_status_reports_unverifiable_hook_without_crashing(
         hook.parent.mkdir(parents=True, exist_ok=True)
         hook.write_bytes(b"\xff" if hook_shape == "invalid-utf8" else b"hook")
     if hook_shape == "unreadable":
-        original_read_text = Path.read_text
+        original_read_bytes = Path.read_bytes
 
         def fail_hook_read(path, *args, **kwargs):
-            if path == hook:
+            if path.absolute() == hook.absolute():
                 raise PermissionError("injected unreadable hook")
-            return original_read_text(path, *args, **kwargs)
+            return original_read_bytes(path, *args, **kwargs)
 
-        monkeypatch.setattr(Path, "read_text", fail_hook_read)
+        monkeypatch.setattr(Path, "read_bytes", fail_hook_read)
     monkeypatch.setattr(status_cmd, "_print_knowledge_status", lambda *_a, **_k: None)
 
     status_cmd.run(_status_args())
 
     output = capsys.readouterr().out
-    assert (
-        "Hooks:           unavailable (non-regular, unreadable, or "
-        "non-executable: post-commit)" in output
-    )
+    assert "Hooks:           unavailable" in output
+    assert "post-commit" in output
+    assert "llm-wiki upgrade" in output
 
 
 @pytest.mark.parametrize("breaker_shape", ["symlink", "directory", "unreadable"])
@@ -1979,14 +1978,12 @@ def test_opaque_invalid_config_quarantines_reference_only_transaction(
 
 
 @pytest.mark.parametrize("agent", ["generic", "claude"])
-def test_upgrade_custom_post_commit_collision_fails_before_mutation(
+def test_upgrade_preserves_custom_post_commit_and_continues(
     tmp_project,
     capsys,
     agent: str,
 ) -> None:
     _initialize_current("generic")
-    before_schema = Path("AGENTS.md").read_bytes()
-    before_config = get_agent_config_path(WIKI_DIR).read_bytes()
     custom_hook = Path(".git/hooks/post-commit")
     custom_hook.parent.mkdir(parents=True, exist_ok=True)
     custom_hook.write_text("#!/bin/sh\necho custom\n", encoding="utf-8")
@@ -1996,42 +1993,31 @@ def test_upgrade_custom_post_commit_collision_fails_before_mutation(
         assert not target_schema.exists()
         assert not target_reference.exists()
 
-    with pytest.raises(SystemExit) as caught:
-        upgrade_cmd.run(_upgrade_args(agent=agent, force=False))
-
-    assert caught.value.code == 1
-    assert "Use --force to replace it intentionally" in capsys.readouterr().err
-    assert Path("AGENTS.md").read_bytes() == before_schema
-    assert get_agent_config_path(WIKI_DIR).read_bytes() == before_config
+    upgrade_cmd.run(_upgrade_args(agent=agent, force=False))
+    assert "SKIP hook post-commit" in capsys.readouterr().out
+    assert read_config(WIKI_DIR)["agent"] == agent
     assert custom_hook.read_text(encoding="utf-8") == "#!/bin/sh\necho custom\n"
     if agent == "claude":
-        assert not target_schema.exists()
-        assert not target_reference.exists()
+        assert target_schema.exists()
+        assert target_reference.exists()
 
 
-def test_upgrade_preserves_edited_managed_hook_before_switch_mutation(
+def test_upgrade_preserves_edited_managed_hook_and_continues_switch(
     tmp_project,
     capsys,
 ) -> None:
     from llm_wiki_cli.commands import hook_cmd
 
     _initialize_current("generic")
-    before_schema = Path("AGENTS.md").read_bytes()
-    before_config = get_agent_config_path(WIKI_DIR).read_bytes()
     hook = Path(".git/hooks/post-commit")
     edited = hook_cmd._build_ide_post_commit(WIKI_DIR) + "echo user-tail\n"
     hook.write_text(edited, encoding="utf-8")
 
-    with pytest.raises(SystemExit) as caught:
-        upgrade_cmd.run(_upgrade_args(agent="claude", force=False))
-
-    assert caught.value.code == 1
-    assert "Use --force to replace it intentionally" in capsys.readouterr().err
+    upgrade_cmd.run(_upgrade_args(agent="claude", force=False))
+    assert "SKIP hook post-commit" in capsys.readouterr().out
     assert hook.read_text(encoding="utf-8") == edited
-    assert Path("AGENTS.md").read_bytes() == before_schema
-    assert get_agent_config_path(WIKI_DIR).read_bytes() == before_config
-    assert not Path("CLAUDE.md").exists()
-    assert not (skills_install_dir("claude") / REFERENCE_SKILL_ID).exists()
+    assert Path("CLAUDE.md").exists()
+    assert (skills_install_dir("claude") / REFERENCE_SKILL_ID).exists()
 
 
 def test_invalid_future_agent_without_live_evidence_is_not_guessed(

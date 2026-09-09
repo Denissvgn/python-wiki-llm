@@ -215,7 +215,7 @@ def _network_probe(canary: Mapping[str, Any]) -> dict[str, Any]:
 def _engine_socket_probe(targets: list[str]) -> dict[str, Any]:
     connected_targets: list[str] = []
     for target in targets:
-        candidate = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        candidate = socket.socket(getattr(socket, "AF_UNIX"), socket.SOCK_STREAM)
         candidate.settimeout(0.5)
         try:
             candidate.connect(target)
@@ -245,7 +245,7 @@ def _output_write_bound_probe(result_path: str, limit_bytes: int) -> dict[str, A
     result = Path(result_path)
     oversize_succeeded = False
     oversize_denied = False
-    previous_handler = signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
+    previous_handler = signal.signal(getattr(signal, "SIGXFSZ"), signal.SIG_IGN)
     try:
         try:
             with result.open("r+b", buffering=0) as stream:
@@ -255,7 +255,7 @@ def _output_write_bound_probe(result_path: str, limit_bytes: int) -> dict[str, A
         else:
             oversize_succeeded = True
     finally:
-        signal.signal(signal.SIGXFSZ, previous_handler)
+        signal.signal(getattr(signal, "SIGXFSZ"), previous_handler)
 
     try:
         observed_size = result.stat().st_size

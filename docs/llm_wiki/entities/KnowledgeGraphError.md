@@ -1,6 +1,6 @@
 # KnowledgeGraphError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:109`
+**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:111`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)

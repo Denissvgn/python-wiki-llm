@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .progress import observed_phase, current_progress, with_progress, record_counts
+
 import hashlib
 import importlib
 import json
@@ -59,6 +61,12 @@ from .entrypoints import (
 from .entrypoints import get_entry_points as get_entry_points  # noqa: F401
 from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from .imports import build_module_path_resolver
+from .python_observations import (
+    data_effect_sidecar,
+    import_sidecar,
+    partition_sidecars,
+    valid_cached_sidecars,
+)
 from .inventory_cache import (
     InventoryCache,
     InventoryCacheOptions,
@@ -274,6 +282,7 @@ class _InventoryBuildContext:
     plugin_lock_path: str | None
     plugin_lock_hash: str | None
     plugin_root: str | Path
+    python_sidecars: dict[str, dict] = field(default_factory=dict)
 
 
 @dataclass
@@ -283,6 +292,7 @@ class _InventoryPlanningResult:
     cached_by_language: dict[str, dict]
 
 
+@observed_phase("extractor")
 def _run_extraction_plan(
     plan: _ExtractionPlan, *, fresh_instance: bool = False
 ) -> _ExtractionOutcome:
@@ -509,6 +519,11 @@ def _completed_inventory_result(
     evaluated_source_snapshot: SourceSnapshot,
     outcomes_by_language: dict[str, _ExtractionOutcome],
 ) -> InventoryResult:
+    record_counts(inventory_files=len(inventory))
+    if context.cache is not None:
+        record_counts(
+            cache_hits=context.cache.stats.hits, cache_misses=context.cache.stats.misses
+        )
     return InventoryResult(
         inventory=inventory,
         statuses=statuses,
@@ -524,15 +539,17 @@ def _completed_inventory_result(
             context.plugin_lock_hash if producer_plugin_components else None
         ),
         source_snapshot=evaluated_source_snapshot,
-        **_python_extraction_sidecars(outcomes_by_language),
+        **_python_extraction_sidecars(context, outcomes_by_language),
     )
 
 
+@observed_phase("sidecar_observations")
 def _python_extraction_sidecars(
+    context: _InventoryBuildContext,
     outcomes_by_language: dict[str, _ExtractionOutcome],
 ) -> dict:
     outcome = outcomes_by_language.get("python")
-    return {
+    result = {
         "data_effect_observations": (
             outcome.data_effect_observations if outcome is not None else None
         ),
@@ -540,6 +557,30 @@ def _python_extraction_sidecars(
             outcome.import_observations if outcome is not None else None
         ),
     }
+    if (
+        context.registry.get("python") != EXTRACTOR_REGISTRY["python"]
+        or not context.source_snapshot.language_paths("python")
+        or (outcome is not None and outcome.state != "ok")
+    ):
+        return result
+    paths = context.source_snapshot.language_paths("python")
+    if context.request.capture_data_effect_observations and all(
+        "data_effects" in context.python_sidecars.get(path, {}) for path in paths
+    ):
+        result["data_effect_observations"] = data_effect_sidecar(
+            deepcopy(record)
+            for sidecars in context.python_sidecars.values()
+            for record in sidecars.get("data_effects", {}).get("callables", [])
+        )
+    if context.request.capture_import_observations and all(
+        "imports" in context.python_sidecars.get(path, {}) for path in paths
+    ):
+        result["import_observations"] = import_sidecar(
+            deepcopy(record)
+            for sidecars in context.python_sidecars.values()
+            for record in sidecars.get("imports", {}).get("observations", [])
+        )
+    return result
 
 
 def _inventory_plugin_state(
@@ -642,6 +683,11 @@ def _build_extraction_job_plan(
 def _prepare_inventory_build_context(
     request: InventoryRequest,
 ) -> _InventoryBuildContext:
+    cache = (
+        InventoryCache(request.src_dir, request.cache_options)
+        if request.cache_options is not None
+        else None
+    )
     source_snapshot = _source_snapshot_for_inventory_request(request)
     project_plugins_enabled = runtime_project_plugins_enabled(
         source_snapshot.root,
@@ -660,16 +706,14 @@ def _prepare_inventory_build_context(
                 request.src_dir
             )
             registry = get_extractor_registry()
-            parallel_safe_plugin_entry_points = (
-                parallel_safe_extractor_entry_points()
-            )
+            parallel_safe_plugin_entry_points = parallel_safe_extractor_entry_points()
         else:
-            plugin_components, plugin_root = (
-                _configured_runtime_plugin_components(request.src_dir)
+            plugin_components, plugin_root = _configured_runtime_plugin_components(
+                request.src_dir
             )
             registry = get_extractor_registry(root=plugin_root)
-            parallel_safe_plugin_entry_points = (
-                parallel_safe_extractor_entry_points(root=plugin_root)
+            parallel_safe_plugin_entry_points = parallel_safe_extractor_entry_points(
+                root=plugin_root
             )
         plugin_lock_path, plugin_lock_hash = _captured_plugin_lock(
             request.src_dir,
@@ -682,11 +726,6 @@ def _prepare_inventory_build_context(
         plugin_lock_path = None
         plugin_lock_hash = None
         parallel_safe_plugin_entry_points = set()
-    cache = (
-        InventoryCache(request.src_dir, request.cache_options)
-        if request.cache_options is not None
-        else None
-    )
     source_file_by_path = _source_files_by_path(source_snapshot)
     cache_key, cache_files, source_hashes = _load_inventory_cache_state(
         request, source_snapshot, registry, cache, source_file_by_path
@@ -905,18 +944,8 @@ def _plan_language_extraction(
         language
     )
     cached_by_language.setdefault(language, {})
-    capture_python_sidecars = (
-        (
-            context.request.capture_data_effect_observations
-            or context.request.capture_import_observations
-        )
-        and language == "python"
-        and is_builtin
-    )
     fresh_source_files = (
-        list(source_files or [])
-        if capture_python_sidecars
-        else _fresh_inventory_source_files(
+        _fresh_inventory_source_files(
             context, language, source_files, cached_by_language
         )
         if _can_use_inventory_cache(context, is_builtin)
@@ -983,7 +1012,16 @@ def _fresh_inventory_source_files(
             cache.stats.misses += 1
             fresh_source_files.append(rel_path)
             continue
-        if is_valid_cache_entry(cached_entry, source_file, file_hash):
+        if is_valid_cache_entry(cached_entry, source_file, file_hash) and (
+            language != "python"
+            or valid_cached_sidecars(
+                cached_entry.get("python_observations"),
+                rel_path,
+                cached_entry["inventory"],
+                effects=context.request.capture_data_effect_observations,
+                imports=context.request.capture_import_observations,
+            )
+        ):
             cache.stats.hits += 1
             _record_cached_inventory_entry(
                 context, cached_by_language, language, rel_path, cached_entry
@@ -1006,6 +1044,11 @@ def _record_cached_inventory_entry(
     if raw_inventory:
         cached_by_language[language][rel_path] = deepcopy(raw_inventory)
     context.updated_cache_files[rel_path] = cached_entry
+    if language == "python":
+        sidecars = cached_entry.get("python_observations")
+        context.python_sidecars[rel_path] = (
+            deepcopy(sidecars) if isinstance(sidecars, dict) else {}
+        )
 
 
 def _record_stale_cache_entry(
@@ -1037,6 +1080,8 @@ def _build_extraction_kwargs(
         kwargs = _build_builtin_extraction_kwargs(context, language, fresh_source_files)
     if language == "python":
         kwargs["include_empty"] = context.request.include_empty
+        if is_builtin:
+            kwargs["defer_inventory_model_kinds"] = True
         if is_builtin and context.request.capture_data_effect_observations:
             kwargs["capture_data_effect_observations"] = (
                 context.request.capture_data_effect_observations
@@ -1120,11 +1165,14 @@ def _run_parallel_safe_inventory_plans(
     outcomes_by_language: dict[str, _ExtractionOutcome],
 ) -> None:
     if parallel_jobs > 1 and len(parallel_safe_plans) > 1:
+        progress = current_progress()
         max_workers = min(parallel_jobs, len(parallel_safe_plans))
         try:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 for outcome in executor.map(
-                    lambda plan: _run_extraction_plan(plan, fresh_instance=True),
+                    lambda plan: with_progress(
+                        progress, _run_extraction_plan, plan, fresh_instance=True
+                    ),
                     parallel_safe_plans,
                 ):
                     outcomes_by_language[outcome.language] = outcome
@@ -1160,6 +1208,14 @@ def _collect_inventory_outcomes(
             )
             continue
         extracted_by_language[plan.language] = outcome.extracted
+        if plan.language == "python" and plan.is_builtin:
+            context.python_sidecars.update(
+                partition_sidecars(
+                    outcome.data_effect_observations,
+                    outcome.import_observations,
+                    plan.fresh_source_files,
+                )
+            )
         _update_inventory_cache_entries(context, plan, outcome.extracted)
         planning.status_by_language[plan.language] = ExtractorStatus(
             plan.language, "ok", outcome.files_found
@@ -1187,6 +1243,10 @@ def _update_inventory_cache_entries(
         context.updated_cache_files[rel_path] = make_cache_entry(
             source_file, file_hash, raw_entry
         )
+        if plan.language == "python":
+            context.updated_cache_files[rel_path]["python_observations"] = deepcopy(
+                context.python_sidecars.get(rel_path, {})
+            )
 
 
 def _merge_inventory_results(
@@ -1205,6 +1265,18 @@ def _merge_inventory_results(
     packages = discover_packages(
         str(context.request.src_dir), source_snapshot=context.source_snapshot
     )
+    if context.registry.get("python") == EXTRACTOR_REGISTRY["python"]:
+        from ..extractors.python_contracts import finalize_inventory_model_kinds
+
+        python_inventory = {
+            path: entry
+            for path, entry in inventory.items()
+            if entry.get("language") == "python"
+        }
+        resolver = build_module_path_resolver(python_inventory)
+        finalize_inventory_model_kinds(
+            python_inventory, module_candidates=resolver.candidates
+        )
     stamp_inventory_packages(inventory, packages)
     return inventory
 
@@ -3168,7 +3240,7 @@ def _looks_like_compose(text: str) -> bool:
 
 
 def get_docker_inventory(
-    src_dir: str, *, source_snapshot: SourceSnapshot | None = None
+    src_dir: str | Path, *, source_snapshot: SourceSnapshot | None = None
 ) -> dict:
     """Discover and parse Dockerfiles and Compose files in the source tree.
 

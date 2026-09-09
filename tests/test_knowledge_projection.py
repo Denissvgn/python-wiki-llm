@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 from dataclasses import replace
+from typing import Any, cast
 
 import pytest
 
@@ -28,7 +29,6 @@ from llm_wiki_cli.services.knowledge_freshness import (
 from llm_wiki_cli.services.knowledge_generation import (
     build_knowledge_generation_plan,
 )
-from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
 from llm_wiki_cli.services.knowledge_governance import (
     GovernanceActor,
     GovernanceLedger,
@@ -37,6 +37,7 @@ from llm_wiki_cli.services.knowledge_governance import (
     reconcile_concepts,
     set_lifecycle,
 )
+from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult
 from llm_wiki_cli.services.knowledge_model import (
     ComputedFreshness,
     KnowledgeLoadState,
@@ -190,6 +191,7 @@ def test_public_projection_is_allowlist_only_and_deterministic(tmp_path):
     view = _view_for_model(tmp_path, model)
 
     first_projection = project_knowledge(view)
+    assert view.knowledge is not None
     second_projection = project_knowledge(
         replace(
             view,
@@ -450,6 +452,7 @@ def test_projection_discloses_snapshot_and_live_evaluation_scope(tmp_path):
         for concept in evaluated_without_live.concepts.values()
     )
 
+    assert snapshot.knowledge is not None
     live = replace(
         snapshot,
         freshness=evaluate_knowledge_freshness(
@@ -789,6 +792,7 @@ def test_typed_relationship_projection_matches_native_query_order_and_bounds(
         limit=20,
     )
 
+    assert view.knowledge is not None
     for concept in view.knowledge.concepts:
         path = concept.document.canonical_path
         projected = projection.concepts[path]["relationships"]
@@ -978,7 +982,8 @@ def test_projection_detaches_and_deeply_freezes_nested_payloads(tmp_path):
 
     assert serialize_knowledge_projection(frozen) == before
     with pytest.raises(TypeError):
-        frozen.bundle["bundle_id"] = "kb_mutated"
+        # Bypass static write restrictions to exercise runtime immutability.
+        cast(Any, frozen.bundle)["bundle_id"] = "kb_mutated"
     with pytest.raises(TypeError):
         frozen.concepts[path]["identity"]["uid"] = "unknown"
     with pytest.raises(AttributeError):

@@ -14,6 +14,8 @@ Workflow:
 
 from __future__ import annotations
 
+from ..services.progress import observed_phase, record_counts
+
 import os
 import json
 import re
@@ -61,6 +63,8 @@ from ..services.extraction_jobs import (
 )
 from ..services.inventory_cache import (
     InventoryCacheOptions,
+    cache_options_from_args,
+    prepare_cache_options,
     InventoryCacheStats,
     format_cache_stats,
 )
@@ -80,8 +84,9 @@ from ..services.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
 )
-from ..services.knowledge_envelope import RepositoryEvidence
-from ..services.knowledge_evidence import hash_file
+from ..services.knowledge_envelope import RepositoryEvidence, build_repository_record
+from ..services import knowledge_reuse
+from ..services.knowledge_evidence import hash_file, hash_json
 from ..services.knowledge_evidence import (
     is_valid_sha256,
 )
@@ -94,6 +99,8 @@ from ..services.knowledge_governance import (
 from ..services.knowledge_orchestration import (
     RUNTIME_GENERATION_OPTION_DEFAULTS,
     RuntimeKnowledgeInputs,
+    CommittedKnowledgeState,
+    capture_committed_knowledge,
     collect_runtime_repository_evidence,
     committed_governance_bundle_id,
     committed_runtime_provenance,
@@ -135,6 +142,7 @@ from ..services.source_selection import (
 from ..services.source_snapshot import (
     SourceSnapshot,
     build_source_snapshot,
+    source_snapshot_matches_current_files,
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
@@ -262,13 +270,7 @@ class SyncRuntimeRefreshError(ValueError):
 
 
 def _cache_options_from_args(args) -> InventoryCacheOptions:
-    cache_stats = bool(getattr(args, "cache_stats", False))
-    return InventoryCacheOptions(
-        enabled=not bool(getattr(args, "no_cache", False)),
-        rebuild=bool(getattr(args, "rebuild_cache", False)),
-        cache_dir=getattr(args, "cache_dir", None),
-        stats_enabled=cache_stats,
-    )
+    return cache_options_from_args(args)
 
 
 def _print_cache_stats(stats: InventoryCacheStats | None, *, enabled: bool) -> None:
@@ -1605,6 +1607,7 @@ class _SyncRunOptions:
     openapi_file: str | None
     clear_openapi_file: bool
     source_selection: str | Path | None
+    rebuild_knowledge: bool = False
 
 
 @dataclass(frozen=True)
@@ -1705,6 +1708,14 @@ class _PreparedSyncRun:
     generator_refresh_required: bool
     runtime_basis_refresh: bool
     log_missing: bool
+    committed_state: CommittedKnowledgeState | None = None
+    reuse_observations_hash: str | None = None
+
+
+@dataclass(frozen=True)
+class _ReusedSync:
+    artifacts: KnowledgeCommitResult
+    cache_stats: InventoryCacheStats | None
 
 
 @dataclass(frozen=True)
@@ -2325,6 +2336,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         src_dir=src_dir,
         wiki_dir=wiki_dir,
         allow_external_src=allow_external_src,
+        rebuild_knowledge=bool(getattr(args, "rebuild_knowledge", False)),
         cache_options=cache_options,
         cache_stats_enabled=cache_stats_enabled,
         parallel_jobs=parallel_jobs,
@@ -2427,6 +2439,7 @@ def _extract_current_inventory(
     )
 
 
+@observed_phase("page_maps")
 def _prepare_sync_page_maps(inventory: dict) -> _SyncPageMaps:
     print("Preparing sync page maps...", flush=True)
     module_page_map = build_module_page_map(inventory)
@@ -2438,6 +2451,7 @@ def _prepare_sync_page_maps(inventory: dict) -> _SyncPageMaps:
         entity_page_cache=build_entity_page_map(inventory),
         entity_occurrence_page_cache=entity_occurrence_page_cache,
     )
+    record_counts(mapped_pages=len(module_page_map) + len(entity_occurrence_page_cache))
     print("Prepared sync page maps.", flush=True)
     return page_maps
 
@@ -2549,6 +2563,7 @@ def _exit_if_large_unforced_diff(
     sys.exit(1)
 
 
+@observed_phase("page_application")
 def _apply_sync_changes(
     options: _SyncRunOptions,
     manifest: "SyncManifest",
@@ -3390,18 +3405,155 @@ def _with_planned_infrastructure_deselection_state(
     )
 
 
-def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
+def _sync_reuse_input_basis(
+    options: _SyncRunOptions,
+    manifest: SyncManifest,
+    inventory_result: InventoryResult,
+    source_snapshot: SourceSnapshot,
+    surface_plan: _SurfaceInitializationPlan,
+    repository_evidence: RepositoryEvidence,
+    observation_inputs_hash: str | None = None,
+) -> dict[str, object] | None:
+    generation_options = runtime_generation_options(
+        surfaces=surface_plan.surfaces,
+        generation_inputs=surface_plan.generation_inputs,
+        include_tests=options.include_tests,
+        preserve_semantic=options.preserve_semantic,
+    )
+    return knowledge_reuse.build_reuse_input_basis(
+        options.wiki_dir,
+        inventory_result,
+        source_snapshot,
+        surface_plan.generation_inputs,
+        generation_options,
+        repository_evidence,
+        include_plugins=options.include_plugins,
+        manifest=manifest,
+        observation_inputs_hash=observation_inputs_hash,
+    )
+
+
+@observed_phase("knowledge_reuse")
+def _try_sync_knowledge_reuse(
+    options: _SyncRunOptions,
+    manifest: SyncManifest,
+    inventory_result: InventoryResult,
+    source_snapshot: SourceSnapshot,
+    surface_plan: _SurfaceInitializationPlan,
+    repository_evidence: RepositoryEvidence,
+    committed_state: CommittedKnowledgeState,
+    observation_inputs_hash: str | None = None,
+) -> _ReusedSync | None:
+    artifacts = committed_state.artifacts
+    if artifacts is None:
+        return None
+    commitment = artifacts.knowledge.extensions.get(knowledge_reuse.REUSE_EXTENSION_KEY)
+    if commitment is None:
+        return None
+    if any(not basis.is_known for basis in manifest.evidence_baselines.values()) or any(
+        tombstone.last_valid_basis is None for tombstone in manifest.tombstones.values()
+    ):
+        return None
+    current_record = build_repository_record(evidence=repository_evidence)
+    prior_record = artifacts.knowledge.bundle.repository
+    if current_record.evaluated_revision != prior_record.evaluated_revision and (
+        current_record.evaluated_revision == "unknown"
+        or prior_record.evaluated_revision == "unknown"
+    ):
+        return None
+    basis = _sync_reuse_input_basis(
+        options,
+        manifest,
+        inventory_result,
+        source_snapshot,
+        surface_plan,
+        repository_evidence,
+        observation_inputs_hash,
+    )
+    if (
+        basis is None
+        or knowledge_reuse.bind_reuse_commitment(basis, manifest) != commitment
+    ):
+        return None
+    # Recheck additions, exact source bytes, explicit OpenAPI, and live wiki input
+    # before returning without any builder/serialization/artifact write.
+    if not source_snapshot_matches_current_files(source_snapshot):
+        raise SyncRuntimeRefreshError(
+            "source inputs changed while checking knowledge reuse"
+        )
+    openapi = surface_plan.generation_inputs.get("openapi")
+    if isinstance(openapi, Mapping):
+        from ..services.validation import resolve_portable_workspace_path
+
+        path = resolve_portable_workspace_path(
+            source_snapshot.root,
+            str(openapi["path"]),
+            path_error=SyncRuntimeRefreshError(
+                "invalid OpenAPI path during knowledge reuse"
+            ),
+            escape_error=SyncRuntimeRefreshError(
+                "OpenAPI path escaped during knowledge reuse"
+            ),
+        )
+        if hash_file(path) != openapi["sha256"]:
+            raise SyncRuntimeRefreshError(
+                "OpenAPI input changed while checking knowledge reuse"
+            )
+    if knowledge_reuse.wiki_input_hashes(options.wiki_dir) != (
+        basis["markdown_snapshot_hash"],
+        basis["assets_hash"],
+    ):
+        raise SyncRuntimeRefreshError(
+            "wiki inputs changed while checking knowledge reuse"
+        )
+    current_repository = collect_runtime_repository_evidence(
+        options.src_dir, options.wiki_dir, source_snapshot=source_snapshot
+    )
+    if (
+        knowledge_reuse.repository_input_hash(
+            build_repository_record(evidence=current_repository)
+        )
+        != basis["repository_hash"]
+    ):
+        raise SyncRuntimeRefreshError(
+            "repository identity changed while checking knowledge reuse"
+        )
+    if knowledge_reuse.implementation_hash() != basis["implementation_hash"]:
+        raise SyncRuntimeRefreshError(
+            "implementation changed while checking knowledge reuse"
+        )
+    committed_state.assert_current()
+    record_counts(written_artifacts=0)
+    return _ReusedSync(
+        knowledge_reuse.unchanged_commit_result(
+            committed_state, manifest, dry_run=options.dry_run
+        ),
+        inventory_result.cache_stats,
+    )
+
+
+def _prepare_sync_run(
+    options: _SyncRunOptions,
+) -> _PreparedSyncRun | _ReusedSync | None:
     manifest, seed_manifest = _load_or_seed_manifest(options)
     if manifest is None and not seed_manifest:
         return None
 
+    baseline_manifest = manifest or SyncManifest()
+    _validate_persisted_source_selection(options, manifest)
+    options = replace(
+        options,
+        cache_options=prepare_cache_options(options.src_dir, options.cache_options),
+    )
+    committed_state = capture_committed_knowledge(options.wiki_dir, manifest)
     prior_runtime_provenance = committed_runtime_provenance(
         options.wiki_dir,
         manifest,
+        committed_state=committed_state,
     )
-    baseline_manifest = manifest or SyncManifest()
-    _validate_persisted_source_selection(options, manifest)
-    _preflight_sync_governance(options.wiki_dir, baseline_manifest)
+    _preflight_sync_governance(
+        options.wiki_dir, baseline_manifest, committed_state=committed_state
+    )
     print(f"Syncing wiki from source: {options.src_dir}")
     print(f"Wiki directory: {options.wiki_dir}")
     source_snapshot = build_source_snapshot(
@@ -3547,6 +3699,40 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
             "is pending; "
             "run a normal `llm-wiki sync` first"
         )
+    reuse_observations_hash = hash_json({
+        "entrypoints": entrypoint_analysis.observations,
+        "entries": entries, "api_contracts": contracts,
+        "dependencies": surface_plan.dependency_analysis,
+    })
+    repository_evidence = collect_runtime_repository_evidence(
+        options.src_dir,
+        options.wiki_dir,
+        source_snapshot=source_snapshot,
+    )
+    if (
+        not options.rebuild_knowledge
+        and not options.initialize_surfaces
+        and not seed_manifest
+        and not repair_only
+        and not runtime_provenance_changed
+        and not diff.has_changes
+        and not surface_plan.has_work
+        and not infrastructure_plan.has_changes
+        and not source_selection_prune.deselected_source_paths
+        and not source_selection_prune.deselected_page_paths
+    ):
+        reused = _try_sync_knowledge_reuse(
+            options,
+            manifest,
+            inventory_result,
+            source_snapshot,
+            surface_plan,
+            repository_evidence,
+            committed_state,
+            reuse_observations_hash,
+        )
+        if reused is not None:
+            return reused
     graph_options = options
     graph_plan = surface_plan
     if options.initialize_surfaces:
@@ -3576,6 +3762,13 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
                 requested_surfaces=options.initialize_surfaces,
             )
             graph_plan = surface_plan
+    # Initialization can replace the requested surface plan with the effective
+    # ordinary-generation plan. Commit that same observation basis in both modes.
+    reuse_observations_hash = hash_json({
+        "entrypoints": entrypoint_analysis.observations,
+        "entries": entries, "api_contracts": contracts,
+        "dependencies": graph_plan.dependency_analysis,
+    })
     graph_observations = _build_sync_graph_observations(
         graph_options,
         inventory,
@@ -3602,8 +3795,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         else _GeneratedSurfaceTransition()
     )
     live_workflow_paths = {
-        canonical_path(PageKind.WORKFLOWS, name)
-        for name in get_call_graph(inventory)
+        canonical_path(PageKind.WORKFLOWS, name) for name in get_call_graph(inventory)
     }
     new_workflow_page_paths = (
         tuple(
@@ -3625,9 +3817,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
     )
     surface_plan = replace(
         surface_plan,
-        managed_flow_page_paths=(
-            generated_surface_transition.managed_flow_page_paths
-        ),
+        managed_flow_page_paths=(generated_surface_transition.managed_flow_page_paths),
         managed_workflow_page_paths=(
             generated_surface_transition.managed_workflow_page_paths
         ),
@@ -3640,14 +3830,7 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
     )
     source_selection_prune = replace(
         source_selection_prune,
-        deselected_surface_page_paths=(
-            generated_surface_transition.retired_page_paths
-        ),
-    )
-    repository_evidence = collect_runtime_repository_evidence(
-        options.src_dir,
-        options.wiki_dir,
-        source_snapshot=source_snapshot,
+        deselected_surface_page_paths=(generated_surface_transition.retired_page_paths),
     )
     application_diff = (
         _generator_refresh_diff(diff, inventory)
@@ -3674,12 +3857,16 @@ def _prepare_sync_run(options: _SyncRunOptions) -> _PreparedSyncRun | None:
         generator_refresh_required=generator_refresh_required,
         runtime_basis_refresh=runtime_basis_refresh,
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
+        committed_state=committed_state,
+        reuse_observations_hash=reuse_observations_hash,
     )
 
 
 def _preflight_sync_governance(
     wiki_dir: Path,
     manifest: SyncManifest,
+    *,
+    committed_state: CommittedKnowledgeState | None = None,
 ) -> None:
     """Reject corrupt or missing committed governance before page mutation."""
 
@@ -3689,6 +3876,7 @@ def _preflight_sync_governance(
             expected_bundle_id=committed_governance_bundle_id(
                 wiki_dir,
                 manifest,
+                committed_state=committed_state,
             ),
         )
     except FileNotFoundError:
@@ -4131,11 +4319,9 @@ def _finalize_prepared_sync(
     page_source_overrides = None
     retained_surface_source_overrides: dict[str, str] = {}
     if source_deferred_initialization and not prepared.repair_only:
-        retained_surface_source_overrides = (
-            _retained_initialization_source_overrides(
-                options,
-                prepared.surface_plan,
-            )
+        retained_surface_source_overrides = _retained_initialization_source_overrides(
+            options,
+            prepared.surface_plan,
         )
         page_source_overrides = {
             page_path: mapping.source_path
@@ -4162,9 +4348,7 @@ def _finalize_prepared_sync(
             prepared.inventory,
         )
         if not source_deferred_initialization
-        else _list_existing_workflow_pages(
-            options.wiki_dir / PageKind.WORKFLOWS.value
-        ),
+        else _list_existing_workflow_pages(options.wiki_dir / PageKind.WORKFLOWS.value),
         page_source_overrides=page_source_overrides,
     )
     next_manifest = None
@@ -4173,6 +4357,15 @@ def _finalize_prepared_sync(
             surfaces=prepared.surface_plan.surfaces,
             generation_inputs=prepared.surface_plan.generation_inputs,
         )
+    reuse_basis = _sync_reuse_input_basis(
+        options,
+        prepared.manifest,
+        prepared.inventory_result,
+        prepared.source_snapshot,
+        prepared.surface_plan,
+        prepared.repository_evidence,
+        prepared.reuse_observations_hash,
+    )
     artifact_result = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
             target_wiki_dir=target,
@@ -4186,6 +4379,8 @@ def _finalize_prepared_sync(
             repository_evidence=prepared.repository_evidence,
             inventory_complete=True,
             previous_manifest=prepared.manifest,
+            committed_state=prepared.committed_state,
+            reuse_input_basis=reuse_basis,
             next_manifest=next_manifest,
             manifest_surfaces=prepared.surface_plan.surfaces,
             manifest_generation_inputs=prepared.surface_plan.generation_inputs,
@@ -4285,8 +4480,7 @@ def _finalize_prepared_sync(
         )
         if deferred_infrastructure:
             print(
-                "Deferred infrastructure changes: "
-                f"{deferred_infrastructure} source(s)."
+                f"Deferred infrastructure changes: {deferred_infrastructure} source(s)."
             )
         if prepared.runtime_basis_refresh:
             print(
@@ -4484,6 +4678,13 @@ def run(args) -> None:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
     if prepared is None:
+        return
+    if isinstance(prepared, _ReusedSync):
+        _print_sync_artifact_actions(prepared.artifacts)
+        print(
+            "Dry-run: wiki is up to date." if options.dry_run else "Wiki is up to date."
+        )
+        _print_cache_stats(prepared.cache_stats, enabled=options.cache_stats_enabled)
         return
 
     if options.dry_run:

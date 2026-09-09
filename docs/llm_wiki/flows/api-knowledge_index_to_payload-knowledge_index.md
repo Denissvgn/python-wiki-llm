@@ -2,7 +2,7 @@
 
 **Entry point:** `knowledge_index_to_payload` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 10 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 12 more
 
 **Complete modules touched:**
 
@@ -14,7 +14,9 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -26,57 +28,55 @@
 ```mermaid
 sequenceDiagram
     participant p0 as knowledge_index_to_payload
-    participant p1 as isinstance
-    participant p2 as TypeError
-    participant p3 as _emit_extensions
-    participant p4 as _parse_extensions
-    participant p5 as _object
-    participant p6 as dict
-    participant p7 as require_mapping
-    participant p8 as encode
-    participant p9 as KnowledgeModelError
-    participant p10 as sorted
-    participant p11 as fullmatch
-    participant p12 as _child
-    participant p13 as _normalize_json_value
-    participant p14 as _normalize_json_value_inner
-    participant p15 as _string
-    participant p16 as isfinite
-    participant p17 as id
-    participant p18 as add
-    p0->>p0: knowledge_index_to_payload
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0->>p3: _emit_extensions
-    p3->>p4: _parse_extensions
-    p4->>p5: _object
-    p5-->>p6: dict
-    p5->>p7: require_mapping
-    p7-->>p1: isinstance
-    p7-->>p1: isinstance
-    p7-->>p8: encode
-    p5->>p9: KnowledgeModelError
-    p5->>p9: KnowledgeModelError
-    p5->>p9: KnowledgeModelError
-    p4-->>p10: sorted
-    p4-->>p11: fullmatch
-    p4->>p9: KnowledgeModelError
-    p4->>p12: _child
-    p4->>p13: _normalize_json_value
-    p13->>p14: _normalize_json_value_inner
-    p14-->>p1: isinstance
-    p14->>p15: _string
-    p14-->>p1: isinstance
-    p14-->>p1: isinstance
-    p14-->>p16: isfinite
-    p14->>p9: KnowledgeModelError
-    p14-->>p1: isinstance
-    p14-->>p17: id
-    p14->>p9: KnowledgeModelError
-    p14-->>p18: add
+    participant p1 as _model_to_payload
+    participant p2 as _knowledge_index_to_payload_unchecked
+    participant p3 as _bundle_to_payload
+    participant p4 as _emit_extensions
+    participant p5 as isinstance
+    participant p6 as _parse_extensions
+    participant p7 as _object
+    participant p8 as sorted
+    participant p9 as fullmatch
+    participant p10 as KnowledgeModelError
+    participant p11 as _child
+    participant p12 as _normalize_json_value
+    participant p13 as _wire_enum
+    participant p14 as _component_to_payload
+    participant p15 as list
+    participant p16 as _concept_to_payload
+    p0->>p1: _model_to_payload
+    p1->>p2: _knowledge_index_to_payload_unchecked
+    p2->>p3: _bundle_to_payload
+    p3->>p4: _emit_extensions
+    p4-->>p5: isinstance
+    p4->>p6: _parse_extensions
+    p6->>p7: _object
+    p6-->>p8: sorted
+    p6-->>p9: fullmatch
+    p6->>p10: KnowledgeModelError
+    p6->>p11: _child
+    p6->>p12: _normalize_json_value
+    p6->>p11: _child
+    p6->>p10: KnowledgeModelError
+    p6->>p11: _child
+    p3->>p13: _wire_enum
+    p13-->>p5: isinstance
+    p3->>p4: _emit_extensions
+    p3->>p4: _emit_extensions
+    p3->>p14: _component_to_payload
+    p14-->>p15: list
+    p14->>p4: _emit_extensions
+    p3->>p14: _component_to_payload
+    p3->>p14: _component_to_payload
+    p3->>p4: _emit_extensions
+    p2-->>p8: sorted
+    p2-->>p8: sorted
+    p2-->>p8: sorted
+    p2->>p16: _concept_to_payload
+    p16->>p13: _wire_enum
 ```
 
-> Call sequence diagram shows 30 of 1496 interactions; 1466 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1479 interactions; 1449 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -86,34 +86,37 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. knowledge_index_to_payload"]
-    s2["2. knowledge_index_to_payload"]
-    s3["3. isinstance"]
-    s4["4. TypeError"]
+    s2["2. _model_to_payload"]
+    s3["3. _knowledge_index_to_payload_unchecked"]
+    s4["4. _bundle_to_payload"]
     s5["5. _emit_extensions"]
-    s6["6. _parse_extensions"]
-    s7["7. _object"]
-    s8["8. dict"]
-    s9["9. require_mapping"]
-    s10["10. isinstance"]
-    s11["11. isinstance"]
-    s12["12. encode"]
+    s6["6. isinstance"]
+    s7["7. _parse_extensions"]
+    s8["8. _object"]
+    s9["9. sorted"]
+    s10["10. fullmatch"]
+    s11["11. KnowledgeModelError"]
+    s12["12. _child"]
     s1 -->|"_model_to_payload(validate_knowledge_index(...))"| s2
-    s2 -. "isinstance(model, KnowledgeIndex)" .-> s3
-    s2 -. "TypeError('model must be a KnowledgeIndex')" .-> s4
-    s2 -->|"_emit_extensions({...}, model.extensions, 'extensions')"| s5
-    s5 -->|"_parse_extensions(extensions, path)"| s6
-    s6 -->|"_object(value, path)"| s7
-    s7 -. "dict(require_mapping(...))" .-> s8
-    s7 -->|"require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=Kno…"| s9
-    s9 -. "isinstance(value, Mapping)" .-> s10
-    s9 -. "isinstance(key, str)" .-> s11
-    s9 -. "key.encode('utf-8')" .-> s12
+    s2 -->|"_knowledge_index_to_payload_unchecked(model)"| s3
+    s3 -->|"_bundle_to_payload(model.bundle)"| s4
+    s4 -->|"_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')"| s5
+    s5 -. "isinstance(extensions, FrozenDict)" .-> s6
+    s5 -->|"_parse_extensions(extensions, path)"| s7
+    s7 -->|"_object(value, path)"| s8
+    s7 -. "sorted(data)" .-> s9
+    s7 -. "_QUALIFIED_NAME_RE.fullmatch(key)" .-> s10
+    s7 -->|"KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')"| s11
+    s7 -->|"_child(path, key)"| s12
     click s1 "../modules/knowledge_index.md"
-    click s2 "../modules/knowledge_model.md"
+    click s2 "../modules/knowledge_index.md"
+    click s3 "../modules/knowledge_model.md"
+    click s4 "../modules/knowledge_model.md"
     click s5 "../modules/knowledge_model.md"
-    click s6 "../modules/knowledge_model.md"
     click s7 "../modules/knowledge_model.md"
-    click s9 "../modules/validation.md"
+    click s8 "../modules/knowledge_model.md"
+    click s11 "../modules/knowledge_model.md"
+    click s12 "../modules/knowledge_model.md"
 ```
 
 ### Step data
@@ -121,33 +124,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `knowledge_index_to_payload` | `value: KnowledgeIndex \| object` | - | - | `_model_to_payload(...)` |
-| `knowledge_index_to_payload` | `model: KnowledgeIndex` | `KnowledgeIndex`, `KnowledgeModelError` | - | `_knowledge_index_to_payload_unchecked(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `_model_to_payload` | `model: KnowledgeIndex` | `KnowledgeModelError` | - | `_knowledge_index_to_payload_unchecked(...)` |
+| `_knowledge_index_to_payload_unchecked` | `model: KnowledgeIndex` | `_canonical_relationship_key` | `producer[...]`, `producer[...]` | `_emit_extensions(...)` |
+| `_bundle_to_payload` | `bundle: BundleRecord` | - | - | `_emit_extensions(...)` |
 | `_emit_extensions` | `payload: dict[str, Any]`, `extensions: Extensions`, `path: str` | - | `payload[...]` | `payload` |
+| `isinstance` | - | - | - | - |
 | `_parse_extensions` | `value: object`, `path: str` | - | `result[...]` | `result` |
 | `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
-| `dict` | - | - | - | - |
-| `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `sorted` | - | - | - | - |
+| `fullmatch` | - | - | - | - |
+| `KnowledgeModelError` | - | - | - | - |
+| `_child` | `path: str`, `name: str` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_index_to_payload | knowledge_index_to_payload | 276 | `_model_to_payload(validate_knowledge_index(...))` |
-| knowledge_index_to_payload | isinstance | 641 | `isinstance(model, KnowledgeIndex)` |
-| knowledge_index_to_payload | TypeError | 642 | `TypeError('model must be a KnowledgeIndex')` |
-| knowledge_index_to_payload | _emit_extensions | 645 | `_emit_extensions({...}, model.extensions, 'extensions')` |
-| _emit_extensions | _parse_extensions | 1960 | `_parse_extensions(extensions, path)` |
-| _parse_extensions | _object | 1590 | `_object(value, path)` |
-| _object | dict | 1657 | `dict(require_mapping(...))` |
-| _object | require_mapping | 1658 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
-| require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance | 731 | `isinstance(key, str)` |
-| require_mapping | encode | 736 | `key.encode('utf-8')` |
+| knowledge_index_to_payload | _model_to_payload | 277 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 283 | `_knowledge_index_to_payload_unchecked(model)` |
+| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2197 | `_bundle_to_payload(model.bundle)` |
+| _bundle_to_payload | _emit_extensions | 2016 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
+| _emit_extensions | isinstance | 1976 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 1977 | `_parse_extensions(extensions, path)` |
+| _parse_extensions | _object | 1600 | `_object(value, path)` |
+| _parse_extensions | sorted | 1602 | `sorted(data)` |
+| _parse_extensions | fullmatch | 1603 | `_QUALIFIED_NAME_RE.fullmatch(key)` |
+| _parse_extensions | KnowledgeModelError | 1604 | `KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')` |
+| _parse_extensions | _child | 1605 | `_child(path, key)` |
 
 ### Boundary effects
 
@@ -157,11 +160,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `knowledge_index_to_payload` | `isinstance` | 641 |
-| unresolved_call | `knowledge_index_to_payload` | `TypeError` | 642 |
-| unresolved_call | `require_mapping` | `isinstance` | 727 |
-| unresolved_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| unresolved_call | `_emit_extensions` | `isinstance` | 1976 |
+| unresolved_call | `_parse_extensions` | `sorted` | 1602 |
+| unresolved_call | `_parse_extensions` | `_QUALIFIED_NAME_RE.fullmatch` | 1603 |
 | step_limit | `knowledge_index_to_payload` | `first 12 steps` | 0 |
 | truncated_flow | `knowledge_index_to_payload` | `depth limit` | 0 |
 

@@ -133,36 +133,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| materialize_typed_graph | isinstance | 315 | `isinstance(inputs, KnowledgeGraphInputs)` |
-| materialize_typed_graph | TypeError | 316 | `TypeError('inputs must be a KnowledgeGraphInputs')` |
-| materialize_typed_graph | isinstance | 318 | `isinstance(inputs.evidence_limit, bool)` |
-| materialize_typed_graph | isinstance | 319 | `isinstance(inputs.evidence_limit, int)` |
-| materialize_typed_graph | KnowledgeGraphError | 322 | `KnowledgeGraphError('evidence_limit', ...)` |
-| materialize_typed_graph | _normalise_graph_concepts | 326 | `_normalise_graph_concepts(inputs.concepts)` |
-| _normalise_graph_concepts | isinstance | 1222 | `isinstance(values, (...))` |
-| _normalise_graph_concepts | isinstance | 1222 | `isinstance(values, Sequence)` |
-| _normalise_graph_concepts | KnowledgeGraphError | 1223 | `KnowledgeGraphError('concepts', 'must be a sequence')` |
-| _normalise_graph_concepts | set | 1225 | `set(data not statically known)` |
-| _normalise_graph_concepts | enumerate | 1226 | `enumerate(values)` |
+| materialize_typed_graph | isinstance | 318 | `isinstance(inputs, KnowledgeGraphInputs)` |
+| materialize_typed_graph | TypeError | 319 | `TypeError('inputs must be a KnowledgeGraphInputs')` |
+| materialize_typed_graph | isinstance | 321 | `isinstance(inputs.evidence_limit, bool)` |
+| materialize_typed_graph | isinstance | 322 | `isinstance(inputs.evidence_limit, int)` |
+| materialize_typed_graph | KnowledgeGraphError | 325 | `KnowledgeGraphError('evidence_limit', ...)` |
+| materialize_typed_graph | _normalise_graph_concepts | 329 | `_normalise_graph_concepts(inputs.concepts)` |
+| _normalise_graph_concepts | isinstance | 1223 | `isinstance(values, (...))` |
+| _normalise_graph_concepts | isinstance | 1223 | `isinstance(values, Sequence)` |
+| _normalise_graph_concepts | KnowledgeGraphError | 1224 | `KnowledgeGraphError('concepts', 'must be a sequence')` |
+| _normalise_graph_concepts | set | 1226 | `set(data not statically known)` |
+| _normalise_graph_concepts | enumerate | 1227 | `enumerate(values)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `_normalise_graph_concepts` | 1233 |
-| mutation | `concepts.append` | `_normalise_graph_concepts` | 1253 |
-| mutation | `concepts.sort` | `_normalise_graph_concepts` | 1263 |
+| mutation | `seen.add` | `_normalise_graph_concepts` | 1234 |
+| mutation | `concepts.append` | `_normalise_graph_concepts` | 1254 |
+| mutation | `concepts.sort` | `_normalise_graph_concepts` | 1264 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `materialize_typed_graph` | `isinstance` | 315 |
-| unresolved_call | `materialize_typed_graph` | `TypeError` | 316 |
 | unresolved_call | `materialize_typed_graph` | `isinstance` | 318 |
-| unresolved_call | `materialize_typed_graph` | `isinstance` | 319 |
-| unresolved_call | `_normalise_graph_concepts` | `isinstance` | 1222 |
-| unresolved_call | `_normalise_graph_concepts` | `enumerate` | 1226 |
+| unresolved_call | `materialize_typed_graph` | `TypeError` | 319 |
+| unresolved_call | `materialize_typed_graph` | `isinstance` | 321 |
+| unresolved_call | `materialize_typed_graph` | `isinstance` | 322 |
+| unresolved_call | `_normalise_graph_concepts` | `isinstance` | 1223 |
+| unresolved_call | `_normalise_graph_concepts` | `enumerate` | 1227 |
 | step_limit | `materialize_typed_graph` | `first 12 steps` | 0 |
 | truncated_flow | `materialize_typed_graph` | `depth limit` | 0 |
 

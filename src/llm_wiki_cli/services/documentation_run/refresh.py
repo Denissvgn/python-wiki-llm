@@ -1683,7 +1683,7 @@ def _remove_refresh_transaction_marker(workspace_root: Path) -> None:
         )
     control = workspace_root / RUN_CONTROL_DIR
     if _supports_descriptor_bound_workspace_writes():
-        flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        flags = os.O_RDONLY | getattr(os, "O_DIRECTORY") | getattr(os, "O_NOFOLLOW")
         descriptor = os.open(control, flags)
         try:
             os.unlink(REFRESH_TRANSACTION_FILENAME, dir_fd=descriptor)

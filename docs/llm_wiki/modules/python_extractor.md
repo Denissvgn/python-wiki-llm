@@ -12,6 +12,7 @@ Python AST extractor for agent-wiki-cli.
 |--------|---------|
 | `..config` | `build_gitignore_matcher` |
 | `..services.imports` | `build_module_path_resolver` |
+| `..services.python_observations` | `DATA_EFFECT_OBSERVATIONS_SCHEMA`, `IMPORT_LOCATION_OBSERVATIONS_SCHEMA`, `data_effect_sidecar`, `import_sidecar` |
 | `.common` | `IMPORT_SCOPE_DEFERRED`, `IMPORT_SCOPE_TYPE_CHECKING`, `discover_source_files` |
 | `.fastapi_contracts` | `extract_fastapi_declarations` |
 | `.python_contracts` | `class_kind`, `explicit_type_alias`, `expression_to_str`, `extract_class_attributes`, `extract_enum_attributes`, `extract_model_config`, `extract_parameters`, `extract_validator`, `finalize_inventory_model_kinds`, `finalize_model_kinds`, `inferred_type_alias`, `is_pydantic_model`, `type_alias_record` |
@@ -32,16 +33,20 @@ flowchart LR
     n4["src/llm_wiki_cli/extractors/python_extractor.py"]
     n5["src/llm_wiki_cli/services/extraction_service.py"]
     n6["src/llm_wiki_cli/services/imports.py"]
+    n7["src/llm_wiki_cli/services/python_observations.py"]
     n1 --> n0
     n4 --> n0
     n4 --> n1
     n4 --> n2
     n4 --> n3
     n4 --> n6
+    n4 --> n7
     n5 --> n0
     n5 --> n1
+    n5 --> n3
     n5 --> n4
     n5 --> n6
+    n5 --> n7
     n6 --> n0
     click n0 "../modules/config.md"
     click n1 "../modules/common.md"
@@ -50,6 +55,7 @@ flowchart LR
     click n4 "../modules/python_extractor.md"
     click n5 "../modules/extraction_service.md"
     click n6 "../modules/imports.md"
+    click n7 "../modules/python_observations.md"
 ```
 
 ### Internal neighbors
@@ -62,14 +68,15 @@ flowchart LR
 | Outbound | [fastapi_contracts](../modules/fastapi_contracts.md) |
 | Outbound | [python_contracts](../modules/python_contracts.md) |
 | Outbound | [imports](../modules/imports.md) |
+| Outbound | [python_observations](../modules/python_observations.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 497 | `ast.NodeVisitor` | — |
-| [ComponentVisitor](../entities/ComponentVisitor.md) | 1034 | `ast.NodeVisitor` | — |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1528 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 500 | `ast.NodeVisitor` | — |
+| [ComponentVisitor](../entities/ComponentVisitor.md) | 1037 | `ast.NodeVisitor` | — |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1531 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 
@@ -118,4 +125,4 @@ flowchart LR
 | `_is_main_guard` | `(test) -> bool` | — | Detect an ``if __name__ == "__main__"`` test node. |
 | `_collect_type_checking_names` | `(tree: ast.Module) -> set[str]` | — | Names bound to ``typing.TYPE_CHECKING`` anywhere in *tree*. |
 | `_is_type_checking_test` | `(test, names: set[str]) -> bool` | — | Detect an ``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` test. |
-| `_scan_python_files` | `(src_dir: str, deep: bool = False, only_files: list[str] \| None = None, include_empty: bool = False, source_files: list[str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None) -> dict` | — | Scan Python files under *src_dir* and return a raw inventory dict. |
+| `_scan_python_files` | `(src_dir: str, deep: bool = False, only_files: list[str] \| None = None, include_empty: bool = False, source_files: list[str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None, defer_inventory_model_kinds: bool = False) -> dict` | — | Scan Python files under *src_dir* and return a raw inventory dict. |

@@ -120,7 +120,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| use_calibration_host_broker_authenticator | use_calibration_host_broker_authenticator | 2583 | `implementation(authenticator)` |
+| use_calibration_host_broker_authenticator | use_calibration_host_broker_authenticator | 2643 | `implementation(authenticator)` |
 | use_calibration_host_broker_authenticator | isinstance | 195 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | use_calibration_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |

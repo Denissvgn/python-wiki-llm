@@ -120,17 +120,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context | _normalise_focus | 742 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance | 2316 | `isinstance(focus, str)` |
-| _normalise_focus | list | 2322 | `list(focus)` |
-| build_context | _normalize_optional_knowledge_mode | 743 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance | 360 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | join | 361 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr | 361 | `repr(item)` |
-| _normalize_optional_knowledge_mode | InvalidRequestError | 362 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast | 367 | `cast(KnowledgeMode, value)` |
-| build_context | _validate_protocol_request | 759 | `context_cmd._validate_protocol_request(request)` |
-| build_context | _build_context | 760 | `context_cmd._build_context(src_dir, validated[...], validated[...], validated[...], validated[...], prefer_fresh=validated[...], emit_warnings=False, allow_external_src=allow_external_src, read_only=read_only, wiki_dir=wiki_dir, source_selection=source_selection, knowledge_mode=validated.get(...), include_plugins=True)` |
+| build_context | _normalise_focus | 802 | `_normalise_focus(focus)` |
+| _normalise_focus | isinstance | 2376 | `isinstance(focus, str)` |
+| _normalise_focus | list | 2382 | `list(focus)` |
+| build_context | _normalize_optional_knowledge_mode | 803 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| _normalize_optional_knowledge_mode | isinstance | 369 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | join | 370 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr | 370 | `repr(item)` |
+| _normalize_optional_knowledge_mode | InvalidRequestError | 371 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| _normalize_optional_knowledge_mode | cast | 376 | `cast(KnowledgeMode, value)` |
+| build_context | _validate_protocol_request | 819 | `context_cmd._validate_protocol_request(request)` |
+| build_context | _build_context | 820 | `context_cmd._build_context(src_dir, validated[...], validated[...], validated[...], validated[...], prefer_fresh=validated[...], emit_warnings=False, allow_external_src=allow_external_src, read_only=read_only, wiki_dir=wiki_dir, source_selection=source_selection, knowledge_mode=validated.get(...), include_plugins=True)` |
 
 ### Boundary effects
 
@@ -140,12 +140,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalise_focus` | `isinstance` | 2316 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `isinstance` | 360 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 361 |
-| external_call | `_normalize_optional_knowledge_mode` | `cast` | 367 |
-| external_call | `build_context` | `context_cmd._validate_protocol_request` | 759 |
-| external_call | `build_context` | `context_cmd._build_context` | 760 |
+| unresolved_call | `_normalise_focus` | `isinstance` | 2376 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `isinstance` | 369 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 370 |
+| external_call | `_normalize_optional_knowledge_mode` | `cast` | 376 |
+| external_call | `build_context` | `context_cmd._validate_protocol_request` | 819 |
+| external_call | `build_context` | `context_cmd._build_context` | 820 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -8,11 +8,13 @@ validated reader must reject any orphan or mixed projection set.
 
 from __future__ import annotations
 
+from .progress import observed_phase
+
 import json
 import re
 from collections import Counter
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -32,7 +34,8 @@ from .infrastructure_sync import (
 from .knowledge_envelope import EvaluatedEnvelope, INVENTORY_HASH_EXTENSION
 from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
 from .knowledge_graph import KnowledgeGraphError, typed_graph_from_knowledge_extensions
-from .knowledge_index import serialize_knowledge_index, validate_knowledge_index
+from .knowledge_index import _validated_index_serialization
+from .immutable import freeze
 from .knowledge_model import (
     ConceptKind,
     EvidenceBasis,
@@ -116,6 +119,62 @@ class ValidatedKnowledgeArtifacts:
     knowledge_index_hash: str
     evaluated_envelope_hash: str
     governance_hash: str | None = None
+    # init=False prevents dataclasses.replace from carrying authority to new data.
+    _validation: _ArtifactValidation | None = field(
+        default=None, init=False, repr=False, compare=False
+    )
+
+
+class _ArtifactValidation:
+    def __init__(
+        self,
+        artifacts: ValidatedKnowledgeArtifacts,
+        surface_bytes: bytes,
+        knowledge_bytes: bytes,
+    ):
+        self.knowledge = artifacts.knowledge
+        self.surface = artifacts.surface_payload
+        self.hashes = (
+            artifacts.surface_index_hash,
+            artifacts.knowledge_index_hash,
+            artifacts.evaluated_envelope_hash,
+            artifacts.governance_hash,
+        )
+        self.surface_bytes = surface_bytes
+        self.knowledge_bytes = knowledge_bytes
+
+    def __deepcopy__(self, memo):
+        return self
+
+
+def require_validated_artifacts(value: object) -> ValidatedKnowledgeArtifacts:
+    """Require the immutable values issued by the complete artifact validator."""
+    if not isinstance(value, ValidatedKnowledgeArtifacts):
+        raise TypeError("expected validator-issued knowledge artifacts")
+    validation = value._validation
+    if (
+        not isinstance(validation, _ArtifactValidation)
+        or validation.knowledge is not value.knowledge
+        or validation.surface is not value.surface_payload
+        or validation.hashes
+        != (
+            value.surface_index_hash,
+            value.knowledge_index_hash,
+            value.evaluated_envelope_hash,
+            value.governance_hash,
+        )
+    ):
+        raise TypeError(
+            "knowledge artifacts were not issued by the validator or were replaced"
+        )
+    return value
+
+
+def validated_artifact_bytes(value: ValidatedKnowledgeArtifacts) -> tuple[bytes, bytes]:
+    """Read captured canonical bytes without serializing or reparsing models."""
+    require_validated_artifacts(value)
+    assert value._validation is not None
+    return value._validation.surface_bytes, value._validation.knowledge_bytes
 
 
 @dataclass(frozen=True)
@@ -194,6 +253,7 @@ def validate_surface_index_bytes(
     return surface_payload
 
 
+@observed_phase("knowledge_validation")
 def validate_knowledge_artifacts(
     *,
     surface_index_bytes: bytes,
@@ -220,8 +280,9 @@ def validate_knowledge_artifacts(
             code="unsupported-schema-version",
         )
     try:
-        knowledge = validate_knowledge_index(knowledge_payload)
-        expected_knowledge_bytes = serialize_knowledge_index(knowledge).encode("utf-8")
+        knowledge, expected_knowledge_bytes = _validated_index_serialization(
+            knowledge_payload
+        )
     except (TypeError, ValueError) as exc:
         nested_field = getattr(exc, "field", None)
         nested_code = getattr(exc, "code", None)
@@ -233,17 +294,14 @@ def validate_knowledge_artifacts(
         raise KnowledgeArtifactError(
             artifact_field,
             f"does not contain a valid knowledge index: {exc}",
-            code=(
-                str(nested_code)
-                if isinstance(nested_code, str)
-                else None
-            ),
+            code=(str(nested_code) if isinstance(nested_code, str) else None),
         ) from exc
     if knowledge_index_bytes != expected_knowledge_bytes:
         raise KnowledgeArtifactError(
             "knowledge_index_bytes",
             "must use the canonical knowledge-index v1 wire encoding",
         )
+    del knowledge_payload, expected_knowledge_bytes
 
     surface_hash = sha256_bytes(surface_index_bytes)
     if knowledge.bundle.snapshot.surface_index_hash != surface_hash:
@@ -268,8 +326,7 @@ def validate_knowledge_artifacts(
         if field.startswith("typed_graph"):
             field = (
                 "knowledge_index.extensions."
-                f"{TYPED_GRAPH_EXTENSION_KEY}"
-                + field[len("typed_graph") :]
+                f"{TYPED_GRAPH_EXTENSION_KEY}" + field[len("typed_graph") :]
             )
         raise KnowledgeArtifactError(
             field,
@@ -312,11 +369,19 @@ def validate_knowledge_artifacts(
             ) from exc
     _validate_surface_knowledge_parity(surface_payload, knowledge)
     _validate_manifest_knowledge_parity(manifest, surface_payload, knowledge)
+    from .knowledge_reuse import validate_reuse_artifact_parity
+
+    try:
+        validate_reuse_artifact_parity(knowledge, manifest)
+    except ValueError as exc:
+        raise KnowledgeArtifactError(
+            "manifest.generation_inputs.knowledge_reuse", str(exc)
+        ) from exc
     from .knowledge_governance import governance_hash_from_knowledge
 
     governance_hash = governance_hash_from_knowledge(knowledge)
-    return ValidatedKnowledgeArtifacts(
-        surface_payload=surface_payload,
+    validated = ValidatedKnowledgeArtifacts(
+        surface_payload=freeze(surface_payload),
         knowledge=knowledge,
         surface_index_hash=surface_hash,
         knowledge_index_hash=sha256_bytes(knowledge_index_bytes),
@@ -325,6 +390,12 @@ def validate_knowledge_artifacts(
         ).content_hash(),
         governance_hash=governance_hash,
     )
+    object.__setattr__(
+        validated,
+        "_validation",
+        _ArtifactValidation(validated, surface_index_bytes, knowledge_index_bytes),
+    )
+    return validated
 
 
 def build_knowledge_commit_plan(
@@ -390,6 +461,7 @@ def build_knowledge_commit_plan(
     )
 
 
+@observed_phase("artifact_commit")
 def commit_knowledge_artifacts(
     plan: KnowledgeCommitPlan,
     *,

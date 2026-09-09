@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from .progress import observed_phase
+
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field as dataclass_field, replace
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -12,6 +14,7 @@ from .io import read_md
 from .knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     KnowledgeArtifactError,
+    ValidatedKnowledgeArtifacts,
     validate_knowledge_artifacts,
     validate_surface_index_bytes,
 )
@@ -62,6 +65,9 @@ class KnowledgeLoadResult:
     issues: tuple[KnowledgeLoadIssue, ...] = ()
     underlying_status: KnowledgeLoadState | None = None
     rebuilt: bool = False
+    validated_artifacts: ValidatedKnowledgeArtifacts | None = dataclass_field(
+        default=None, repr=False, compare=False
+    )
 
 
 class KnowledgeStateLoadError(ValueError):
@@ -85,6 +91,7 @@ class KnowledgeStateLoadError(ValueError):
 RebuildCallback = Callable[[tuple[KnowledgeLoadIssue, ...]], None]
 
 
+@observed_phase("knowledge_load")
 def load_knowledge_state(
     wiki_dir: str | Path,
     *,
@@ -460,6 +467,7 @@ def _load_once(
             knowledge=validated.knowledge,
             manifest_basis=manifest,
             issues=(),
+            validated_artifacts=validated,
         ),
         True,
     )

@@ -1,22 +1,24 @@
 # apply_sync_changes
 
 **Entry point:** `sync_cmd._apply_sync_changes`
-**Modules involved:** [extraction_service](../modules/extraction_service.md), [infrastructure_sync](../modules/infrastructure_sync.md), [source_snapshot](../modules/source_snapshot.md), [sync_analysis](../modules/sync_analysis.md), [sync_cmd](../modules/sync_cmd.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [extraction_service](../modules/extraction_service.md), [infrastructure_sync](../modules/infrastructure_sync.md), [progress](../modules/progress.md), [source_snapshot](../modules/source_snapshot.md), [sync_analysis](../modules/sync_analysis.md), [sync_cmd](../modules/sync_cmd.md), [sync_manifest](../modules/sync_manifest.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `infrastructure_sync.InfrastructureSyncPlan`
-2. `source_snapshot.SourceSnapshot`
-3. `sync_manifest.SourceSelectionPruneResult`
-4. `sync_manifest.SyncManifest`
-5. `sync_analysis.SyncDiff`
-6. `extraction_service.InventoryResult`
+1. `progress.observed_phase`
+2. `infrastructure_sync.InfrastructureSyncPlan`
+3. `source_snapshot.SourceSnapshot`
+4. `sync_manifest.SourceSelectionPruneResult`
+5. `sync_manifest.SyncManifest`
+6. `sync_analysis.SyncDiff`
+7. `extraction_service.InventoryResult`
 
 ## Touches
 
 - [extraction_service](../modules/extraction_service.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [progress](../modules/progress.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_analysis](../modules/sync_analysis.md)
 - [sync_cmd](../modules/sync_cmd.md)

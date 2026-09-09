@@ -1,6 +1,6 @@
 # KnowledgeMismatchPolicy
 
-**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:36`
+**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:39`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_loader](../modules/knowledge_loader.md)

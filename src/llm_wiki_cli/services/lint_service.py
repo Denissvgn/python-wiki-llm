@@ -44,9 +44,12 @@ from .infrastructure_sync import (
 )
 from .inventory_cache import (
     InventoryCacheOptions,
+    cache_options_from_args,
+    prepare_cache_options,
     InventoryCacheStats,
     format_cache_stats,
 )
+from .progress import phase as progress_phase
 from .io import read_md
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .knowledge_consumption import (
@@ -118,7 +121,13 @@ from .verification_contracts import (
     VerificationResult,
     load_verification_receipt,
 )
-from .team import build_team_issues
+from .team import (
+    TeamConfigError,
+    TeamPolicyContext,
+    build_team_issues,
+    resolve_team_policy,
+    team_config_issue,
+)
 from .wiki_surface import PageKind, is_safe_page_id, iter_page_kinds
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 from .wiki_lifecycle import (
@@ -186,12 +195,12 @@ class _LintProfiler:
 
     @contextmanager
     def phase(self, name: str) -> Iterator[None]:
-        started = time.perf_counter()
         try:
-            yield
+            with progress_phase(name) as timing:
+                yield
         finally:
-            self._durations[name] = self._durations.get(name, 0.0) + (
-                time.perf_counter() - started
+            self._durations[name] = (
+                self._durations.get(name, 0.0) + timing.elapsed_seconds
             )
 
     def to_dict(self) -> dict:
@@ -210,7 +219,8 @@ class _LintProfiler:
 @contextmanager
 def _profile_phase(profiler: _LintProfiler | None, name: str) -> Iterator[None]:
     if profiler is None:
-        yield
+        with progress_phase(name):
+            yield
         return
     with profiler.phase(name):
         yield
@@ -322,6 +332,15 @@ class _LintInputs:
     source_snapshot: SourceSnapshot
     inventory_result: InventoryResult
     include_tests: frozenset[str]
+    team_policy: TeamPolicyContext | None = None
+    manifest: SyncManifest | None = None
+
+
+@dataclass(frozen=True)
+class _LintPreflight:
+    team: TeamPolicyContext
+    selection_inputs: dict[str, object] | None
+    manifest: SyncManifest | None
 
 
 @dataclass(frozen=True)
@@ -851,6 +870,9 @@ def _collect_lint_inputs(
     source_plugins_only: bool,
     source_selection: str | Path | None,
     expected_selection_inputs: Mapping[str, object] | None,
+    *,
+    team_policy: TeamPolicyContext | None = None,
+    manifest: SyncManifest | None = None,
 ) -> _LintInputs | None:
     normalized_include_tests = normalize_include_tests(include_tests)
     with _profile_phase(profiler, "inventory"):
@@ -905,6 +927,8 @@ def _collect_lint_inputs(
         source_snapshot=source_snapshot,
         inventory_result=inventory_result,
         include_tests=normalized_include_tests,
+        team_policy=team_policy,
+        manifest=manifest,
     )
 
 
@@ -1655,6 +1679,9 @@ def _check_team_issues(
         inputs.deep_inventory,
         inputs.page_index.pages,
         docker_inventory=inputs.docker_inventory,
+        policy=inputs.team_policy,
+        manifest=inputs.manifest,
+        yaml_infrastructure_inventory=inputs.yaml_infrastructure_inventory,
     ):
         report.issues.append(_coerce_plugin_issue(issue, "team"))
 
@@ -2549,7 +2576,7 @@ def _preflight_lint_source_selection(
     wiki_path: Path,
     src_dir: str,
     source_selection: str | Path | None,
-) -> tuple[bool, dict[str, object] | None]:
+) -> tuple[bool, dict[str, object] | None, SyncManifest | None]:
     try:
         selection_policy = resolve_source_selection(src_dir, source_selection)
         selection_inputs = capture_source_selection_inputs(
@@ -2560,7 +2587,7 @@ def _preflight_lint_source_selection(
         try:
             manifest = SyncManifest.load(wiki_path)
         except FileNotFoundError:
-            return True, selection_inputs
+            return True, selection_inputs, None
         validate_persisted_source_selection_identity(
             manifest.generation_inputs,
             selection_policy.identity if selection_policy is not None else None,
@@ -2572,11 +2599,11 @@ def _preflight_lint_source_selection(
             report,
             f"Sync manifest source-selection boundary is invalid: {exc}.",
         )
-        return False, None
+        return False, None, None
     except SourceSelectionError as exc:
         _add_source_selection_mismatch(report, str(exc))
-        return False, None
-    return True, selection_inputs
+        return False, None, None
+    return True, selection_inputs, manifest
 
 
 def _new_lint_report(
@@ -2600,6 +2627,28 @@ def _add_missing_wiki(report: LintReport, wiki_path: Path) -> None:
         f"Directory {wiki_path} does not exist.",
         path=str(wiki_path),
     )
+
+
+def _preflight_lint_inputs(
+    report: LintReport,
+    wiki_path: Path,
+    src_dir: str,
+    source_selection: str | Path | None,
+) -> _LintPreflight | None:
+    try:
+        team_policy = resolve_team_policy(wiki_path)
+    except TeamConfigError as exc:
+        report.issues.append(_coerce_plugin_issue(team_config_issue(exc), "team"))
+        return None
+    if not wiki_path.exists():
+        _add_missing_wiki(report, wiki_path)
+        return None
+    selection_valid, selection_inputs, manifest = _preflight_lint_source_selection(
+        report, wiki_path, src_dir, source_selection
+    )
+    if not selection_valid:
+        return None
+    return _LintPreflight(team_policy, selection_inputs, manifest)
 
 
 def build_report(
@@ -2626,14 +2675,10 @@ def build_report(
     report = _new_lint_report(
         wiki_path, src_dir, effective_strict, knowledge_drift_report
     )
-    if not wiki_path.exists():
-        _add_missing_wiki(report, wiki_path)
+    preflight = _preflight_lint_inputs(report, wiki_path, src_dir, source_selection)
+    if preflight is None:
         return report
-    selection_valid, selection_inputs = _preflight_lint_source_selection(
-        report, wiki_path, src_dir, source_selection
-    )
-    if not selection_valid:
-        return report
+    cache_options = prepare_cache_options(src_dir, cache_options)
     inputs = _collect_lint_inputs(
         report,
         wiki_path,
@@ -2648,7 +2693,9 @@ def build_report(
         include_plugins,
         source_plugins_only,
         source_selection,
-        selection_inputs,
+        preflight.selection_inputs,
+        team_policy=preflight.team,
+        manifest=preflight.manifest,
     )
     if inputs is None:
         return report
@@ -3055,9 +3102,7 @@ def render_markdown(report: LintReport) -> str:
 def run(args):
     wiki_dir = Path(args.wiki_dir)
     src_dir = getattr(args, "src_dir", ".")
-    knowledge_drift_report = bool(
-        getattr(args, "knowledge_drift_report", False)
-    )
+    knowledge_drift_report = bool(getattr(args, "knowledge_drift_report", False))
     strict = bool(getattr(args, "strict", False) or knowledge_drift_report)
     profile = bool(getattr(args, "profile", False))
     cache_stats = bool(getattr(args, "cache_stats", False))
@@ -3071,12 +3116,7 @@ def run(args):
         src_dir = str(src_root)
 
     profiler = _LintProfiler() if profile else None
-    cache_options = InventoryCacheOptions(
-        enabled=not bool(getattr(args, "no_cache", False)),
-        rebuild=bool(getattr(args, "rebuild_cache", False)),
-        cache_dir=getattr(args, "cache_dir", None),
-        stats_enabled=cache_stats,
-    )
+    cache_options = cache_options_from_args(args)
     job_request = extraction_job_request_from_args(args)
     report = build_report(
         wiki_dir,

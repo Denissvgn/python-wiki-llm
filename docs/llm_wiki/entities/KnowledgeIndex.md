@@ -97,4 +97,4 @@ flowchart LR
 | `_basis_incompatibility_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `_evaluate_concept` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 
-> References: showing 12 of 52 logical references; 40 omitted by the 12-row generated summary limit.
+> References: showing 12 of 55 logical references; 43 omitted by the 12-row generated summary limit.

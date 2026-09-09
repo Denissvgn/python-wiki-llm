@@ -2,11 +2,12 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), [common](../modules/common.md), and 38 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 44 more
 
 **Complete modules touched:**
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_pages](../modules/canonical_pages.md)
 - [ci_check_cmd](../modules/ci_check_cmd.md)
 - [ci_report](../modules/ci_report.md)
 - [common](../modules/common.md)
@@ -18,6 +19,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -39,6 +41,10 @@
 - [metrics](../modules/metrics.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
+- [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -56,7 +62,7 @@
 sequenceDiagram
     participant p0 as run
     participant p1 as getattr
-    participant p2 as Path
+    participant p2 as RuntimeOutputError
     participant p3 as bool
     participant p4 as validate_source_root
     participant p5 as validate_path
@@ -65,15 +71,16 @@ sequenceDiagram
     participant p8 as cwd
     participant p9 as relative_to
     participant p10 as expanduser
-    participant p11 as is_absolute
-    participant p12 as is_dir
-    participant p13 as abspath
-    participant p14 as windows_current_user_sid
+    participant p11 as Path
+    participant p12 as is_absolute
+    participant p13 as is_dir
+    participant p14 as abspath
+    participant p15 as windows_current_user_sid
     p0-->>p1: getattr
     p0-->>p1: getattr
     p0-->>p1: getattr
-    p0-->>p2: Path
     p0-->>p1: getattr
+    p0->>p2: RuntimeOutputError
     p0-->>p1: getattr
     p0-->>p1: getattr
     p0-->>p3: bool
@@ -89,19 +96,19 @@ sequenceDiagram
     p5-->>p9: relative_to
     p5->>p6: PathValidationError
     p4-->>p10: expanduser
-    p4-->>p2: Path
-    p4-->>p11: is_absolute
+    p4-->>p11: Path
+    p4-->>p12: is_absolute
     p4-->>p8: cwd
     p4-->>p7: resolve
     p4->>p6: PathValidationError
-    p4-->>p12: is_dir
+    p4-->>p13: is_dir
     p4->>p6: PathValidationError
-    p4-->>p2: Path
-    p4-->>p13: abspath
-    p4->>p14: windows_current_user_sid
+    p4-->>p11: Path
+    p4-->>p14: abspath
+    p4->>p15: windows_current_user_sid
 ```
 
-> Call sequence diagram shows 30 of 2703 interactions; 2673 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2992 interactions; 2962 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -114,8 +121,8 @@ flowchart LR
     s2["2. getattr"]
     s3["3. getattr"]
     s4["4. getattr"]
-    s5["5. Path"]
-    s6["6. getattr"]
+    s5["5. getattr"]
+    s6["6. RuntimeOutputError"]
     s7["7. getattr"]
     s8["8. getattr"]
     s9["9. bool"]
@@ -125,21 +132,22 @@ flowchart LR
     s1 -. "getattr(args, 'src_dir', '.')" .-> s2
     s1 -. "getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s3
     s1 -. "getattr(args, 'format', 'text')" .-> s4
-    s1 -. "Path(getattr(...))" .-> s5
-    s1 -. "getattr(args, 'report', DEFAULT_REPORT)" .-> s6
+    s1 -. "getattr(args, 'report_schema', 'v1')" .-> s5
+    s1 -->|"RuntimeOutputError('--report-schema must be v1 or v2')"| s6
     s1 -. "getattr(args, 'helper_cache_dir', None)" .-> s7
     s1 -. "getattr(args, 'include_tests', None)" .-> s8
     s1 -. "bool(getattr(...))" .-> s9
     s1 -. "getattr(args, 'allow_external_src', False)" .-> s10
     s1 -. "getattr(args, 'source_selection', None)" .-> s11
     s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s12
-    b0["filesystem_write report_path.write_text"]
-    s1 -. "filesystem_write report_path.write_text" .-> b0
+    b0["output print"]
+    s1 -. "output print" .-> b0
     b1["output print"]
     s1 -. "output print" .-> b1
     b2["output print"]
     s1 -. "output print" .-> b2
     click s1 "../modules/ci_check_cmd.md"
+    click s6 "../modules/runtime_output.md"
     click s12 "../modules/config.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
@@ -151,12 +159,12 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `DEFAULT_REPORT`, `print_extraction_job_plan`, `sys` | - | - |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `print_extraction_job_plan`, `sys`, `sys` | - | - |
 | `getattr` | - | - | - | - |
 | `getattr` | - | - | - | - |
 | `getattr` | - | - | - | - |
-| `Path` | - | - | - | - |
 | `getattr` | - | - | - | - |
+| `RuntimeOutputError` | - | - | - | - |
 | `getattr` | - | - | - | - |
 | `getattr` | - | - | - | - |
 | `bool` | - | - | - | - |
@@ -168,38 +176,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 43 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 44 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr | 45 | `getattr(args, 'format', 'text')` |
-| run | Path | 46 | `Path(getattr(...))` |
-| run | getattr | 46 | `getattr(args, 'report', DEFAULT_REPORT)` |
-| run | getattr | 47 | `getattr(args, 'helper_cache_dir', None)` |
-| run | getattr | 48 | `getattr(args, 'include_tests', None)` |
-| run | bool | 49 | `bool(getattr(...))` |
-| run | getattr | 49 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr | 50 | `getattr(args, 'source_selection', None)` |
-| run | validate_source_root | 52 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| run | getattr | 97 | `getattr(args, 'src_dir', '.')` |
+| run | getattr | 98 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr | 99 | `getattr(args, 'format', 'text')` |
+| run | getattr | 100 | `getattr(args, 'report_schema', 'v1')` |
+| run | RuntimeOutputError | 102 | `RuntimeOutputError('--report-schema must be v1 or v2')` |
+| run | getattr | 103 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr | 104 | `getattr(args, 'include_tests', None)` |
+| run | bool | 105 | `bool(getattr(...))` |
+| run | getattr | 105 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr | 106 | `getattr(args, 'source_selection', None)` |
+| run | validate_source_root | 108 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `report_path.write_text` | `run` | 80 |
-| output | `print` | `run` | 82 |
-| output | `print` | `run` | 83 |
+| output | `print` | `run` | 161 |
+| output | `print` | `run` | 175 |
+| output | `print` | `run` | 182 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 43 |
-| unresolved_call | `run` | `getattr` | 44 |
-| unresolved_call | `run` | `getattr` | 45 |
-| unresolved_call | `run` | `getattr` | 46 |
-| unresolved_call | `run` | `getattr` | 47 |
-| unresolved_call | `run` | `getattr` | 48 |
-| unresolved_call | `run` | `getattr` | 49 |
-| unresolved_call | `run` | `getattr` | 50 |
+| unresolved_call | `run` | `getattr` | 97 |
+| unresolved_call | `run` | `getattr` | 98 |
+| unresolved_call | `run` | `getattr` | 99 |
+| unresolved_call | `run` | `getattr` | 100 |
+| unresolved_call | `run` | `getattr` | 103 |
+| unresolved_call | `run` | `getattr` | 104 |
+| unresolved_call | `run` | `getattr` | 105 |
+| unresolved_call | `run` | `getattr` | 106 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

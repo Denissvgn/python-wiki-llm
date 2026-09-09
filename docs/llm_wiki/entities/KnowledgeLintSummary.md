@@ -1,6 +1,6 @@
 # KnowledgeLintSummary
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:231`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:241`
 **Kind:** Class
 **Bases:** `KnowledgeAggregateSummary`
 **Module:** [lint_service](../modules/lint_service.md)

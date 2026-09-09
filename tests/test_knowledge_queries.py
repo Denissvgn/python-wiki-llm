@@ -624,7 +624,7 @@ def test_query_projects_every_live_freshness_outcome_and_reason(tmp_path):
         knowledge.bundle.producer,
         tool=replace(
             knowledge.bundle.producer.tool,
-            version="2.0.0",
+            version=f"{knowledge.bundle.producer.tool.version}-changed",
         ),
     )
     cases = (
@@ -1310,6 +1310,7 @@ def test_ambiguous_markdown_target_remains_an_observation_not_a_concept_edge(
     assert result["related_concepts"] == []
     assert result["relationships"][0]["resolution"] == "ambiguous"
     assert result["relationships"][0]["related_concept"] is None
+    assert unresolved.target.normalized_target is not None
     assert result["unresolved_targets"] == [
         {
             "kind": "links_to",

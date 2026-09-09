@@ -1,6 +1,6 @@
 # _InventoryBuildContext
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:261`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:269`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -30,6 +30,7 @@ _Auto-generated from `_InventoryBuildContext` in `src/llm_wiki_cli/services/extr
 | `plugin_lock_path` | `str \| None` | *required* | — |
 | `plugin_lock_hash` | `str \| None` | *required* | — |
 | `plugin_root` | `str \| Path` | *required* | — |
+| `python_sidecars` | `dict[str, dict]` | `field(default_factory=dict)` | — |
 
 ## Methods
 
@@ -84,7 +85,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 0 | `cache`, `cache_files`, `cache_key`, `parallel_jobs`, `parallel_safe_plugin_entry_points`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path`, `plugin_root`, `registry`, `request`, `source_file_by_path` |
+| [extraction_service](../modules/extraction_service.md) | 0 | `cache`, `cache_files`, `cache_key`, `parallel_jobs`, `parallel_safe_plugin_entry_points`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path`, `plugin_root`, `python_sidecars`, `registry`, `request` |
 
 ### References
 
@@ -103,4 +104,4 @@ flowchart LR
 | `_plan_language_extraction` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `_prepare_inventory_build_context` | call | [extraction_service](../modules/extraction_service.md) | 1 |
 
-> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.
+> References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.

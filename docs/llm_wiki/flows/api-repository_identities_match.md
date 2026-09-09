@@ -113,13 +113,13 @@ flowchart LR
 | repository_identities_match | isinstance | 503 | `isinstance(right, RepositoryRecord)` |
 | repository_identities_match | TypeError | 506 | `TypeError('left and right must be RepositoryRecord values')` |
 | repository_identities_match | _repository_identity | 507 | `_repository_identity(left.identity, 'left.identity')` |
-| _repository_identity | _nonempty_string | 1786 | `_nonempty_string(value, path)` |
-| _nonempty_string | _string | 1693 | `_string(value, path)` |
-| _string | require_string | 1682 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
+| _repository_identity | _nonempty_string | 1796 | `_nonempty_string(value, path)` |
+| _nonempty_string | _string | 1703 | `_string(value, path)` |
+| _string | require_string | 1692 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
 | require_string | isinstance | 706 | `isinstance(value, str)` |
 | require_string | encode | 710 | `value.encode('utf-8')` |
-| _string | KnowledgeModelError | 1684 | `KnowledgeModelError(path, 'must be a string')` |
-| _string | KnowledgeModelError | 1685 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
+| _string | KnowledgeModelError | 1694 | `KnowledgeModelError(path, 'must be a string')` |
+| _string | KnowledgeModelError | 1695 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
 
 ### Boundary effects
 

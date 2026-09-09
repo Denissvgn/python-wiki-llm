@@ -1,6 +1,6 @@
 # _LintInputs
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:316`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:326`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)
@@ -23,6 +23,8 @@ _Auto-generated from `_LintInputs` in `src/llm_wiki_cli/services/lint_service.py
 | `source_snapshot` | `SourceSnapshot` | *required* | — |
 | `inventory_result` | `InventoryResult` | *required* | — |
 | `include_tests` | `frozenset[str]` | *required* | — |
+| `team_policy` | `TeamPolicyContext \| None` | `None` | — |
+| `manifest` | `SyncManifest \| None` | `None` | — |
 
 ## Methods
 
@@ -56,7 +58,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [lint_service](../modules/lint_service.md) | 0 | `deep_inventory`, `docker_inventory`, `include_tests`, `inventory_result`, `page_index`, `source_snapshot`, `unsupported_sources`, `yaml_infrastructure_inventory` |
+| [lint_service](../modules/lint_service.md) | 0 | `deep_inventory`, `docker_inventory`, `include_tests`, `inventory_result`, `manifest`, `page_index`, `source_snapshot`, `team_policy`, `unsupported_sources`, `yaml_infrastructure_inventory` |
 
 ### References
 

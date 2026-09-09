@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1689`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1692`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -38,6 +38,8 @@ recomputing against a different source tree.
 | `generator_refresh_required` | `bool` | *required* | — |
 | `runtime_basis_refresh` | `bool` | *required* | — |
 | `log_missing` | `bool` | *required* | — |
+| `committed_state` | `CommittedKnowledgeState \| None` | `None` | — |
+| `reuse_observations_hash` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -80,7 +82,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `application_diff`, `diff`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result`, `log_missing`, `manifest`, `page_maps`, `repair_only`, `repository_evidence` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `application_diff`, `committed_state`, `diff`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result`, `log_missing`, `manifest`, `page_maps`, `repair_only` |
 
 ### References
 

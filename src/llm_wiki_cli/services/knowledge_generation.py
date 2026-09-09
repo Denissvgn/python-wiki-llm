@@ -10,6 +10,8 @@ filesystem reads are the target-state comparisons performed by
 
 from __future__ import annotations
 
+from .progress import observed_phase
+
 import json
 from collections.abc import Mapping, Sequence
 from collections.abc import Set as AbstractSet
@@ -140,12 +142,8 @@ class KnowledgeGenerationInputs:
     producer_extensions: Mapping[str, Any] = field(default_factory=dict)
     knowledge_extensions: Mapping[str, Any] = field(default_factory=dict)
     call_edges: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
-    dependency_observations: (
-        Mapping[str, Any] | Sequence[Mapping[str, Any]]
-    ) = ()
-    entrypoint_observations: (
-        Mapping[str, Any] | Sequence[Mapping[str, Any]]
-    ) = ()
+    dependency_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
+    entrypoint_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
     flows: Sequence[Mapping[str, Any]] = ()
     data_flows: Sequence[Mapping[str, Any]] = ()
     external_dependencies: Sequence[Mapping[str, Any]] = ()
@@ -154,6 +152,7 @@ class KnowledgeGenerationInputs:
     )
     graph_evidence_limit: int = DEFAULT_EVIDENCE_LIMIT
     governance: GovernanceLedger | None = None
+    reuse_input_basis: Mapping[str, object] | None = None
 
 
 def build_knowledge_generation_plan(
@@ -366,6 +365,28 @@ def _build_knowledge_generation_plan(
         module_page_map=module_page_map,
         occurrence_page_map=occurrence_page_map,
     )
+    from .knowledge_reuse import (
+        REUSE_EXTENSION_KEY,
+        REUSE_INPUT_KEY,
+        bind_reuse_commitment,
+    )
+
+    # Only this generation's complete input basis can mint a new reuse hint.
+    generation_inputs = dict(manifest.generation_inputs)
+    generation_inputs.pop(REUSE_INPUT_KEY, None)
+    manifest = manifest.with_generation_state(
+        surfaces=manifest.surfaces, generation_inputs=generation_inputs
+    )
+    knowledge_extensions.pop(REUSE_EXTENSION_KEY, None)
+    if (inputs.reuse_input_basis is not None and not inputs.force_unknown_evidence
+            and all(baseline.is_known for baseline in manifest.evidence_baselines.values())
+            and all(tombstone.last_valid_basis is not None for tombstone in manifest.tombstones.values())):
+        commitment = bind_reuse_commitment(inputs.reuse_input_basis, manifest)
+        generation_inputs[REUSE_INPUT_KEY] = commitment
+        manifest = manifest.with_generation_state(
+            surfaces=manifest.surfaces, generation_inputs=generation_inputs
+        )
+        knowledge_extensions[REUSE_EXTENSION_KEY] = commitment
     try:
         infrastructure_bases = infrastructure_evidence_by_page(
             manifest.generation_inputs
@@ -1082,6 +1103,7 @@ def _exact_source_mapping(
     return result
 
 
+@observed_phase("evidence_baselines")
 def _build_evidence_baselines(
     inventory: Mapping[str, Mapping[str, Any]],
     source_hashes: Mapping[str, str],

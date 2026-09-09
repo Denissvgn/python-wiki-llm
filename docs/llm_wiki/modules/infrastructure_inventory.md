@@ -21,41 +21,52 @@ Inventory helpers for non-Docker infrastructure YAML files.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/context_service.py"]
-    n3["src/llm_wiki_cli/services/documentation_native.py"]
-    n4["src/llm_wiki_cli/services/infrastructure_inventory.py"]
-    n5["src/llm_wiki_cli/services/infrastructure_sync.py"]
-    n6["src/llm_wiki_cli/services/lint_service.py"]
-    n7["src/llm_wiki_cli/services/source_snapshot.py"]
-    n0 --> n1
-    n0 --> n4
+    n1["src/llm_wiki_cli/commands/team_cmd.py"]
+    n2["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n3["src/llm_wiki_cli/services/context_service.py"]
+    n4["src/llm_wiki_cli/services/documentation_native.py"]
+    n5["src/llm_wiki_cli/services/infrastructure_inventory.py"]
+    n6["src/llm_wiki_cli/services/infrastructure_sync.py"]
+    n7["src/llm_wiki_cli/services/lint_service.py"]
+    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n9["src/llm_wiki_cli/services/team.py"]
+    n0 --> n2
     n0 --> n5
-    n0 --> n7
-    n1 --> n4
+    n0 --> n6
+    n0 --> n8
     n1 --> n5
-    n1 --> n7
-    n2 --> n4
-    n2 --> n7
-    n3 --> n1
-    n3 --> n2
-    n3 --> n4
-    n3 --> n7
-    n4 --> n7
-    n5 --> n4
-    n5 --> n7
-    n6 --> n1
-    n6 --> n4
+    n1 --> n8
+    n1 --> n9
+    n2 --> n5
+    n2 --> n6
+    n2 --> n8
+    n3 --> n5
+    n3 --> n8
+    n4 --> n2
+    n4 --> n3
+    n4 --> n5
+    n4 --> n8
+    n5 --> n8
     n6 --> n5
-    n6 --> n7
+    n6 --> n8
+    n7 --> n2
+    n7 --> n5
+    n7 --> n6
+    n7 --> n8
+    n7 --> n9
+    n9 --> n2
+    n9 --> n5
+    n9 --> n8
     click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/context_service.md"
-    click n3 "../modules/documentation_native.md"
-    click n4 "../modules/infrastructure_inventory.md"
-    click n5 "../modules/infrastructure_sync.md"
-    click n6 "../modules/lint_service.md"
-    click n7 "../modules/source_snapshot.md"
+    click n1 "../modules/team_cmd.md"
+    click n2 "../modules/bootstrap_runtime.md"
+    click n3 "../modules/context_service.md"
+    click n4 "../modules/documentation_native.md"
+    click n5 "../modules/infrastructure_inventory.md"
+    click n6 "../modules/infrastructure_sync.md"
+    click n7 "../modules/lint_service.md"
+    click n8 "../modules/source_snapshot.md"
+    click n9 "../modules/team.md"
 ```
 
 ### Internal neighbors
@@ -63,11 +74,13 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [sync_cmd](../modules/sync_cmd.md) |
+| Inbound | [team_cmd](../modules/team_cmd.md) |
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [documentation_native](../modules/documentation_native.md) |
 | Inbound | [infrastructure_sync](../modules/infrastructure_sync.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
+| Inbound | [team](../modules/team.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ## Functions

@@ -1,6 +1,6 @@
 # KnowledgeLoadResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:55`
+**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:58`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_loader](../modules/knowledge_loader.md)
@@ -22,6 +22,7 @@ Validated knowledge state or an explicit compatibility fallback.
 | `issues` | `tuple[KnowledgeLoadIssue, ...]` | `()` | — |
 | `underlying_status` | `KnowledgeLoadState \| None` | `None` | — |
 | `rebuilt` | `bool` | `False` | — |
+| `validated_artifacts` | `ValidatedKnowledgeArtifacts \| None` | `dataclass_field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -70,7 +71,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_loader](../modules/knowledge_loader.md) | 0 | `issues`, `knowledge`, `manifest_basis`, `rebuilt`, `status`, `surface`, `underlying_status` |
+| [knowledge_loader](../modules/knowledge_loader.md) | 0 | `issues`, `knowledge`, `manifest_basis`, `rebuilt`, `status`, `surface`, `underlying_status`, `validated_artifacts` |
 
 ### References
 

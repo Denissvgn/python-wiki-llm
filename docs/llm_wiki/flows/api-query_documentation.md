@@ -2,7 +2,7 @@
 
 **Entry point:** `query_documentation` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 15 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 14 more
 
 **Complete modules touched:**
 
@@ -19,7 +19,6 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
-- [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -83,7 +82,7 @@ sequenceDiagram
     p19->>p15: DocumentationQueryError
 ```
 
-> Call sequence diagram shows 30 of 1039 interactions; 1009 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1029 interactions; 999 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -150,35 +149,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| query_documentation | _validate_documentation_query_request | 2156 | `_validate_documentation_query_request(request)` |
-| _validate_documentation_query_request | isinstance | 1806 | `isinstance(request, Mapping)` |
-| _validate_documentation_query_request | InvalidRequestError | 1807 | `InvalidRequestError('request must be an object.', code='invalid-request', details={...})` |
-| _validate_documentation_query_request | next | 1812 | `next(..., None)` |
-| _validate_documentation_query_request | isinstance | 1812 | `isinstance(key, str)` |
-| _validate_documentation_query_request | InvalidRequestError | 1814 | `InvalidRequestError('request fields must be strings.', code='invalid-request', details={...})` |
-| _validate_documentation_query_request | get | 1819 | `request.get('operation')` |
-| _validate_documentation_query_request | isinstance | 1820 | `isinstance(operation, str)` |
-| _validate_documentation_query_request | join | 1821 | `', '.join(...)` |
-| _validate_documentation_query_request | repr | 1821 | `repr(item)` |
-| _validate_documentation_query_request | InvalidRequestError | 1822 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| query_documentation | _validate_documentation_query_request | 2216 | `_validate_documentation_query_request(request)` |
+| _validate_documentation_query_request | isinstance | 1866 | `isinstance(request, Mapping)` |
+| _validate_documentation_query_request | InvalidRequestError | 1867 | `InvalidRequestError('request must be an object.', code='invalid-request', details={...})` |
+| _validate_documentation_query_request | next | 1872 | `next(..., None)` |
+| _validate_documentation_query_request | isinstance | 1872 | `isinstance(key, str)` |
+| _validate_documentation_query_request | InvalidRequestError | 1874 | `InvalidRequestError('request fields must be strings.', code='invalid-request', details={...})` |
+| _validate_documentation_query_request | get | 1879 | `request.get('operation')` |
+| _validate_documentation_query_request | isinstance | 1880 | `isinstance(operation, str)` |
+| _validate_documentation_query_request | join | 1881 | `', '.join(...)` |
+| _validate_documentation_query_request | repr | 1881 | `repr(item)` |
+| _validate_documentation_query_request | InvalidRequestError | 1882 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `payload.update` | `query_documentation` | 2276 |
-| mutation | `payload.update` | `query_documentation` | 2295 |
+| mutation | `payload.update` | `query_documentation` | 2336 |
+| mutation | `payload.update` | `query_documentation` | 2355 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_validate_documentation_query_request` | `isinstance` | 1806 |
-| unresolved_call | `_validate_documentation_query_request` | `next` | 1812 |
-| unresolved_call | `_validate_documentation_query_request` | `isinstance` | 1812 |
-| unresolved_call | `_validate_documentation_query_request` | `request.get` | 1819 |
-| unresolved_call | `_validate_documentation_query_request` | `isinstance` | 1820 |
-| unresolved_call | `_validate_documentation_query_request` | `', '.join` | 1821 |
+| unresolved_call | `_validate_documentation_query_request` | `isinstance` | 1866 |
+| unresolved_call | `_validate_documentation_query_request` | `next` | 1872 |
+| unresolved_call | `_validate_documentation_query_request` | `isinstance` | 1872 |
+| unresolved_call | `_validate_documentation_query_request` | `request.get` | 1879 |
+| unresolved_call | `_validate_documentation_query_request` | `isinstance` | 1880 |
+| unresolved_call | `_validate_documentation_query_request` | `', '.join` | 1881 |
 | step_limit | `query_documentation` | `first 12 steps` | 0 |
 | truncated_flow | `query_documentation` | `depth limit` | 0 |
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -13,13 +14,17 @@ from llm_wiki_cli.services import context_service
 from llm_wiki_cli.services.documentation_queries import (
     DocumentationGraphQueryService,
 )
-from llm_wiki_cli.services.knowledge_consumption import KnowledgeAvailability
+from llm_wiki_cli.services.knowledge_consumption import (
+    KnowledgeAvailability,
+    KnowledgeReadView,
+)
 from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
 from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadIssue
 from llm_wiki_cli.services.knowledge_model import ComputedFreshness
 from llm_wiki_cli.services.mcp_server import McpWikiService
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
-from tests.test_knowledge_cmd import _committed_wiki, _run as _run_knowledge
+from tests.test_knowledge_cmd import _committed_wiki
+from tests.test_knowledge_cmd import _run as _run_knowledge
 from tests.test_knowledge_queries import _ready_view
 
 
@@ -275,8 +280,8 @@ def test_ready_without_relevant_selection_is_qualified_fallback_for_required() -
 
     knowledge = context_service._build_explicit_knowledge_response(
         "required",
-        _fake_ready_view(),
-        service,
+        cast(KnowledgeReadView, _fake_ready_view()),
+        cast(DocumentationGraphQueryService, service),
         {"src/unmapped.py": "high"},
     )
 
@@ -388,8 +393,8 @@ def test_qualifier_precedence_and_source_change_use_only_returned_concepts() -> 
 
     knowledge = context_service._build_explicit_knowledge_response(
         "auto",
-        view,
-        service,
+        cast(KnowledgeReadView, view),
+        cast(DocumentationGraphQueryService, service),
         {"src/selected.py": "high"},
     )
 
@@ -399,8 +404,8 @@ def test_qualifier_precedence_and_source_change_use_only_returned_concepts() -> 
     assert (
         context_service._build_explicit_knowledge_response(
             "auto",
-            view,
-            service,
+            cast(KnowledgeReadView, view),
+            cast(DocumentationGraphQueryService, service),
             {"src/selected.py": "high"},
         )["reason"]
         == "knowledge-source-changed"
@@ -415,8 +420,8 @@ def test_qualifier_precedence_and_source_change_use_only_returned_concepts() -> 
     assert (
         context_service._build_explicit_knowledge_response(
             "auto",
-            view,
-            truncated,
+            cast(KnowledgeReadView, view),
+            cast(DocumentationGraphQueryService, truncated),
             {"src/selected.py": "high"},
         )["reason"]
         == "knowledge-results-truncated"
@@ -435,8 +440,11 @@ def test_snapshot_only_ready_selection_is_explicitly_qualified() -> None:
 
     knowledge = context_service._build_explicit_knowledge_response(
         "required",
-        _fake_ready_view(snapshot_only=True),
-        _BroadService(_broad_result(concepts=[concept])),
+        cast(KnowledgeReadView, _fake_ready_view(snapshot_only=True)),
+        cast(
+            DocumentationGraphQueryService,
+            _BroadService(_broad_result(concepts=[concept])),
+        ),
         {"src/selected.py": "high"},
     )
 
@@ -453,8 +461,8 @@ def test_incompatible_basis_rejects_projection_without_querying_it() -> None:
 
     auto = context_service._build_explicit_knowledge_response(
         "auto",
-        _fake_ready_view(),
-        service,
+        cast(KnowledgeReadView, _fake_ready_view()),
+        cast(DocumentationGraphQueryService, service),
         {"src/accounts.py": "high"},
         basis_incompatible=True,
     )
@@ -467,8 +475,8 @@ def test_incompatible_basis_rejects_projection_without_querying_it() -> None:
     with pytest.raises(context_service.KnowledgeRequiredUnavailableError) as required:
         context_service._build_explicit_knowledge_response(
             "required",
-            _fake_ready_view(),
-            service,
+            cast(KnowledgeReadView, _fake_ready_view()),
+            cast(DocumentationGraphQueryService, service),
             {"src/accounts.py": "high"},
             basis_incompatible=True,
         )
@@ -489,8 +497,11 @@ def test_required_governance_restore_error_is_stable_and_shell_quoted() -> None:
     with pytest.raises(context_service.KnowledgeRequiredUnavailableError) as caught:
         context_service._build_explicit_knowledge_response(
             "required",
-            view,
-            _BroadService(_broad_result(concepts=[])),
+            cast(KnowledgeReadView, view),
+            cast(
+                DocumentationGraphQueryService,
+                _BroadService(_broad_result(concepts=[])),
+            ),
             {},
             src_dir="source tree",
             wiki_dir="wiki tree",
@@ -583,7 +594,7 @@ def test_auto_and_required_unavailable_states_share_stable_fallback_error_shape(
     auto = context_service._build_explicit_knowledge_response(
         "auto",
         view,
-        auto_service,
+        cast(DocumentationGraphQueryService, auto_service),
         {},
         src_dir="source tree",
         wiki_dir="wiki tree",
@@ -606,7 +617,7 @@ def test_auto_and_required_unavailable_states_share_stable_fallback_error_shape(
         context_service._build_explicit_knowledge_response(
             "required",
             view,
-            required_service,
+            cast(DocumentationGraphQueryService, required_service),
             {},
             src_dir="source tree",
             wiki_dir="wiki tree",
@@ -670,6 +681,7 @@ def test_invalid_projection_surface_has_consistent_read_only_fallbacks(
         _request("auto"),
     ).to_payload()
 
+    assert "knowledge" in api_payload
     results = (
         cli_payload["knowledge"],
         api_payload["knowledge"],

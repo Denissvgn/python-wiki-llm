@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import contextlib
 import io
 import json
-from pathlib import Path
 import re
 import shlex
-from typing import Iterable, Mapping, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Callable, Iterable, Mapping, Sequence, TypeVar
 
 from llm_wiki_cli import api as wiki_api
 from llm_wiki_cli import cli
@@ -623,40 +623,46 @@ def bundled_skill_dirs(skills_root: Path) -> tuple[Path, ...]:
     )
 
 
-def collect_skill_contract_errors(skill_dir: Path) -> tuple[str, ...]:
-    """Every documented-contract violation in one bundled skill directory."""
-    errors: list[str] = []
+_Example = TypeVar("_Example")
 
-    for extract_all, validate_all in (
-        (extract_cli_examples, parse_cli_example),
-        (extract_context_request_examples, validate_context_example),
-    ):
+
+def _collect_example_errors(
+    path: Path,
+    extract: Callable[[Path], Iterable[_Example]],
+    validate: Callable[[_Example], object],
+) -> list[str]:
+    try:
+        examples = extract(path)
+    except SkillContractError as exc:
+        return [str(exc)]
+    errors: list[str] = []
+    for example in examples:
         try:
-            extracted = extract_all(skill_dir)
+            validate(example)
         except SkillContractError as exc:
             errors.append(str(exc))
-            continue
-        for example in extracted:
-            try:
-                validate_all(example)
-            except SkillContractError as exc:
-                errors.append(str(exc))
+    return errors
 
+
+def collect_skill_contract_errors(skill_dir: Path) -> tuple[str, ...]:
+    """Every documented-contract violation in one bundled skill directory."""
+    errors = _collect_example_errors(skill_dir, extract_cli_examples, parse_cli_example)
+    errors.extend(
+        _collect_example_errors(
+            skill_dir, extract_context_request_examples, validate_context_example
+        )
+    )
     for path in sorted(skill_dir.rglob("*.md")):
-        for extract_one, validate_one in (
-            (extract_query_graph_examples, validate_query_graph_example),
-            (extract_mcp_tool_examples, validate_mcp_tool_example),
-        ):
-            try:
-                extracted = extract_one(path)
-            except SkillContractError as exc:
-                errors.append(str(exc))
-                continue
-            for example in extracted:
-                try:
-                    validate_one(example)
-                except SkillContractError as exc:
-                    errors.append(str(exc))
+        errors.extend(
+            _collect_example_errors(
+                path, extract_query_graph_examples, validate_query_graph_example
+            )
+        )
+        errors.extend(
+            _collect_example_errors(
+                path, extract_mcp_tool_examples, validate_mcp_tool_example
+            )
+        )
 
     try:
         validate_workflow_ordering(skill_dir / skills.SKILL_MANIFEST_NAME)

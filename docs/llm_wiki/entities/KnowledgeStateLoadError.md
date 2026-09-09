@@ -1,6 +1,6 @@
 # KnowledgeStateLoadError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:67`
+**Location:** `src/llm_wiki_cli/services/knowledge_loader.py:73`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_loader](../modules/knowledge_loader.md)

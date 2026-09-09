@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import types
 from contextlib import contextmanager
-import os
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -136,7 +137,7 @@ def _tree(root: Path) -> dict[str, bytes]:
     }
 
 
-def _projection_from_payload(payload: dict[str, object]) -> KnowledgeProjection:
+def _projection_from_payload(payload: dict[str, Any]) -> KnowledgeProjection:
     return KnowledgeProjection(
         schema_version=payload["schema_version"],
         profile=KnowledgeProjectionProfile(payload["profile"]),
@@ -267,6 +268,7 @@ def test_command_loads_one_snapshot_projection_with_public_profile(
             "public_repository_identity": None,
         },
     )
+    assert isinstance(observed["export"], dict)
     assert observed["export"]["knowledge_projection"] is projection
     assert observed["export"]["knowledge_metadata"] == "summary"
 

@@ -1,6 +1,6 @@
 # _CompatibilityModule
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/__init__.py:218`
+**Location:** `src/llm_wiki_cli/services/documentation_run/__init__.py:242`
 **Kind:** Class
 **Bases:** `_types.ModuleType`
 **Module:** [documentation_run___init__](../modules/documentation_run___init__.md)

@@ -85,16 +85,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| relationship_edge_key | next | 302 | `next(..., None)` |
-| relationship_edge_key | KnowledgeGraphError | 304 | `KnowledgeGraphError(..., 'is required for edge identity')` |
-| relationship_edge_key | sha256_bytes | 309 | `sha256_bytes(...)` |
+| relationship_edge_key | next | 304 | `next(..., None)` |
+| relationship_edge_key | KnowledgeGraphError | 306 | `KnowledgeGraphError(..., 'is required for edge identity')` |
+| relationship_edge_key | sha256_bytes | 311 | `sha256_bytes(...)` |
 | sha256_bytes | hexdigest | 197 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 | sha256_bytes | sha256 | 197 | `hashlib.sha256(value)` |
-| relationship_edge_key | encode | 309 | `_canonical_json(preimage).encode('utf-8')` |
-| relationship_edge_key | _canonical_json | 309 | `_canonical_json(preimage)` |
-| _canonical_json | canonical_json_text | 2229 | `canonical_json_text(value)` |
+| relationship_edge_key | encode | 311 | `_canonical_json(preimage).encode('utf-8')` |
+| relationship_edge_key | _canonical_json | 311 | `_canonical_json(preimage)` |
+| _canonical_json | canonical_json_text | 2230 | `canonical_json_text(value)` |
 | canonical_json_text | dumps | 158 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
-| _canonical_json | KnowledgeGraphError | 2231 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
+| _canonical_json | KnowledgeGraphError | 2232 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
 
 ### Boundary effects
 
@@ -104,10 +104,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `relationship_edge_key` | `next` | 302 |
+| unresolved_call | `relationship_edge_key` | `next` | 304 |
 | external_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 197 |
 | external_call | `sha256_bytes` | `hashlib.sha256` | 197 |
-| unresolved_call | `relationship_edge_key` | `_canonical_json(preimage).encode` | 309 |
+| unresolved_call | `relationship_edge_key` | `_canonical_json(preimage).encode` | 311 |
 | external_call | `canonical_json_text` | `json.dumps` | 158 |
 
 ## Behavior

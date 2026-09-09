@@ -688,6 +688,7 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
     )
     assert manifest["path"] == result.path
     assert manifest["go_executable"] == "/usr/bin/go"
+    assert result.path is not None
     assert manifest["artifact_fingerprint"] == helper_artifact_fingerprint(
         Path(result.path)
     )
@@ -696,6 +697,11 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
 def test_prepare_typescript_uses_locked_cache_and_detects_artifact_tampering(
     tmp_path, monkeypatch
 ):
+    source_scripts = tmp_path / "scripts"
+    source_scripts.mkdir()
+    for filename in ("extract.js", "package.json", "package-lock.json"):
+        (source_scripts / filename).write_bytes((extractor_helpers.TS_SCRIPTS_DIR / filename).read_bytes())
+    monkeypatch.setattr(extractor_helpers, "TS_SCRIPTS_DIR", source_scripts)
     configured_cache = tmp_path / "cache"
     cache_root = configured_cache / HELPER_CACHE_DIRNAME
     commands = []
@@ -748,6 +754,7 @@ def test_prepare_typescript_uses_locked_cache_and_detects_artifact_tampering(
         tmp_path, str(configured_cache)
     ) == helper_root
 
+    assert first.path is not None
     dependency_file = Path(first.path) / "package.json"
     dependency_file.write_text('{"tampered":true}\n', encoding="utf-8")
     third = prepare_typescript(cache_root)

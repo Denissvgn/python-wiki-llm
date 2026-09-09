@@ -2,7 +2,7 @@
 
 **Entry point:** `export_documentation_run` (`api`)
 **Source:** [export](../modules/export.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [documentation_policy](../modules/documentation_policy.md), and 33 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [documentation_policy](../modules/documentation_policy.md), and 35 more
 
 **Complete modules touched:**
 
@@ -16,6 +16,7 @@
 - [documentation_wiki_input](../modules/documentation_wiki_input.md)
 - [export](../modules/export.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [integrity](../modules/integrity.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -30,6 +31,7 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_projection](../modules/knowledge_projection.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [record](../modules/record.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -97,7 +99,7 @@ sequenceDiagram
     p15->>p8: DocumentationIntegrityError
 ```
 
-> Call sequence diagram shows 30 of 4515 interactions; 4485 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4440 interactions; 4410 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

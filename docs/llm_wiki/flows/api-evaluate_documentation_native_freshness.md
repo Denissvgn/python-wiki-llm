@@ -2,19 +2,22 @@
 
 **Entry point:** `evaluate_documentation_native_freshness` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [documentation_native](../modules/documentation_native.md), and 23 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 30 more
 
 **Complete modules touched:**
 
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
+- [data_flow](../modules/data_flow.md)
 - [documentation_native](../modules/documentation_native.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
+- [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [inventory_cache](../modules/inventory_cache.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -23,9 +26,13 @@
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
@@ -90,7 +97,7 @@ sequenceDiagram
     p17->>p13: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 2848 interactions; 2818 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2950 interactions; 2920 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -14,16 +14,15 @@ _Auto-generated from `src/llm_wiki_cli/commands/status_cmd.py`._
 | `..services` | `circuit_breaker` |
 | `..services.io` | `first_unsafe_path_component` |
 | `..services.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
+| `..services.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `..services.paths` | `display_project_path`, `shell_quote` |
 | `..services.rendering_lifecycle` | `LifecycleStatus`, `ManagedLifecycleState`, `classify_lifecycle_status` |
 | `..services.schema` | `SCHEMA_FILENAMES`, `ManagedSchemaBlock`, `ManagedSchemaBlockState`, `classify_managed_schema_block`, `decode_managed_document_bytes`, `require_safe_schema_path` |
 | `..services.skills` | `ReferenceSkillState`, `ReferenceSkillVerification`, `skills_install_dir`, `verify_reference_skill` |
 | `..services.wiki_lifecycle` | `WikiScaffoldPathError`, `require_safe_wiki_scaffold` |
 | `..services.wiki_surface` | `PageKind`, `canonical_path`, `iter_page_kinds` |
-| `.hook_cmd` | `is_managed_hook_content` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
-| `os` | `os` |
 | `pathlib` | `Path` |
 
 ## Local dependency map

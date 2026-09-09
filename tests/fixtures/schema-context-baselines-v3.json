@@ -93,28 +93,28 @@
           "expanded_inline": {
             "variants": {
               "default": {
-                "words": 3437,
-                "characters": 26620,
+                "words": 3433,
+                "characters": 26608,
                 "lines": 443,
-                "sha256": "f27e8dc842201f372a2e1fad8e40bbe937e8c775b2466ba367c29d5373ae2e23"
+                "sha256": "7ed25cf62908adef1e9eb8e5e8e8db3faf68264d9c58d752f9698b0da58bd7e0"
               },
               "without_quality_hints": {
-                "words": 3384,
-                "characters": 26247,
+                "words": 3380,
+                "characters": 26235,
                 "lines": 437,
-                "sha256": "87026cea113c69dc04051e185d8772215c65e5a6983d6fd240fc4945d59faf3a"
+                "sha256": "a6256e5b0ac9afa43969b2854078cca4b4b50715c40745fec4c4d4fd69314c71"
               },
               "with_issue_reporting": {
-                "words": 3581,
-                "characters": 27609,
+                "words": 3577,
+                "characters": 27597,
                 "lines": 460,
-                "sha256": "9be0070229a53ec5c829bcbc9b81916a1544d5b2dbce1eb0acb821a97b19dec9"
+                "sha256": "235ed329267c7a5a91821116fe5134db3f1f3ab3dc248cd127bee81ebe9f65f0"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 3528,
-                "characters": 27236,
+                "words": 3524,
+                "characters": 27224,
                 "lines": 454,
-                "sha256": "c479e016c111efd6a4857a7efda620dd34e0c1452f8928a603ac11f102002e02"
+                "sha256": "076e30f462f3d910553c5e684426f4da676b452e4c1e90237552a7ab52d1f1c7"
               }
             }
           }
@@ -154,28 +154,28 @@
           "expanded_inline": {
             "variants": {
               "default": {
-                "words": 3437,
-                "characters": 26652,
+                "words": 3433,
+                "characters": 26640,
                 "lines": 443,
-                "sha256": "648bd801147f2097f7333b31ceb1f8927e679c857cb22ea3251f0aa55a6918d5"
+                "sha256": "0f9570494cbbe9818b7a7a2298f781e49dbde4c588e0d60537ccd554e46e6e66"
               },
               "without_quality_hints": {
-                "words": 3384,
-                "characters": 26279,
+                "words": 3380,
+                "characters": 26267,
                 "lines": 437,
-                "sha256": "f5c04eae88015cf09c8f1a695901c73ebeb6b2bedb1e2f6b7bc60888dfc95087"
+                "sha256": "961923c43d6e46586949ce69ee6b3cae47350af22f6667f8a0f8de8691faa1ca"
               },
               "with_issue_reporting": {
-                "words": 3581,
-                "characters": 27641,
+                "words": 3577,
+                "characters": 27629,
                 "lines": 460,
-                "sha256": "ad7f3ca57dafcc04a371ce1f2ad77024727739856845a6525cd6528958bffc91"
+                "sha256": "ae097cf7f2777b105702d3c94aa30eb729417238612c52930ed92396fe6d53df"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 3528,
-                "characters": 27268,
+                "words": 3524,
+                "characters": 27256,
                 "lines": 454,
-                "sha256": "53c00bcf432a0b6720ca470743f194863c8f8bbd7c3065c767ea4381bc61c41d"
+                "sha256": "d563d849a6a9d86ce5ad707172f800457ff1e27b7d4c80ab535e88c609448d52"
               }
             }
           }
@@ -215,28 +215,28 @@
           "expanded_inline": {
             "variants": {
               "default": {
-                "words": 3436,
-                "characters": 26666,
+                "words": 3432,
+                "characters": 26654,
                 "lines": 443,
-                "sha256": "fe662b7605f4e1b0768c0bf677e670134fe6edd22eebf60dac958e5bf19a57ce"
+                "sha256": "d7abd0ba4688a68f1350451a5b86e7184970f7ce94e13b673b351f7f5291c417"
               },
               "without_quality_hints": {
-                "words": 3383,
-                "characters": 26293,
+                "words": 3379,
+                "characters": 26281,
                 "lines": 437,
-                "sha256": "8f3b1efbf93146b54b4dc2710714a882b499ae3993a7f4117beeb4eb9315d682"
+                "sha256": "b0fde94dbf17130e58911ce25bb0caeb4d536cb432c45698d578c3ce18cfd485"
               },
               "with_issue_reporting": {
-                "words": 3580,
-                "characters": 27655,
+                "words": 3576,
+                "characters": 27643,
                 "lines": 460,
-                "sha256": "b15f1d09f0dc73ab312fbd62b9ce28d55586a2056085cd20fd759a16f961ba15"
+                "sha256": "30b9b2a9365804b83b058401e2c4df3acee4e49bc63d6ec83fe95042b5f510be"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 3527,
-                "characters": 27282,
+                "words": 3523,
+                "characters": 27270,
                 "lines": 454,
-                "sha256": "d767f9052b725db5d90fdad53114bd664af9b98ccf96ac23190efab745ae550d"
+                "sha256": "9821f6ff1282032b87d3309d5a2ff69088d3492a3d6a77c0c6d99f940cac2ae0"
               }
             }
           }
@@ -276,28 +276,28 @@
           "expanded_inline": {
             "variants": {
               "default": {
-                "words": 3431,
-                "characters": 26622,
+                "words": 3427,
+                "characters": 26610,
                 "lines": 442,
-                "sha256": "83dfd11a0745f7674c157e1477a2d1da3291d0c9aea37df23bef1b3a12409d43"
+                "sha256": "c495742d236bf6bd341986b9eaed62b209e3bedfb1732197200750274fa23e53"
               },
               "without_quality_hints": {
-                "words": 3378,
-                "characters": 26249,
+                "words": 3374,
+                "characters": 26237,
                 "lines": 436,
-                "sha256": "c06b426136f20d54633bcc5099bd129159d328275b95bf4fb70112676b5aacf1"
+                "sha256": "c193ca89e80cac8e7df2373f51af6f6ef66778e44d3662c4f92fc75025400b3a"
               },
               "with_issue_reporting": {
-                "words": 3575,
-                "characters": 27611,
+                "words": 3571,
+                "characters": 27599,
                 "lines": 459,
-                "sha256": "1aabd2b807f4f9bd1154096a4cbdcf5477b3fe9e83eeb49a2057f3e547dcec70"
+                "sha256": "96b74e2bd5ef086f04479e6bee9993fee81c125c351b2b3d2f538dbc79659ee0"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 3522,
-                "characters": 27238,
+                "words": 3518,
+                "characters": 27226,
                 "lines": 453,
-                "sha256": "dea74eb390406911d913eeeac3437ff0adb2c4913215a816b1ea85306584e847"
+                "sha256": "8eb1a11beabf9d92b49a1d6949e85d6b937f7e3fb2b2d50c80403f37c6a8e687"
               }
             }
           }
@@ -337,28 +337,28 @@
           "expanded_inline": {
             "variants": {
               "default": {
-                "words": 3431,
-                "characters": 26622,
+                "words": 3427,
+                "characters": 26610,
                 "lines": 442,
-                "sha256": "83dfd11a0745f7674c157e1477a2d1da3291d0c9aea37df23bef1b3a12409d43"
+                "sha256": "c495742d236bf6bd341986b9eaed62b209e3bedfb1732197200750274fa23e53"
               },
               "without_quality_hints": {
-                "words": 3378,
-                "characters": 26249,
+                "words": 3374,
+                "characters": 26237,
                 "lines": 436,
-                "sha256": "c06b426136f20d54633bcc5099bd129159d328275b95bf4fb70112676b5aacf1"
+                "sha256": "c193ca89e80cac8e7df2373f51af6f6ef66778e44d3662c4f92fc75025400b3a"
               },
               "with_issue_reporting": {
-                "words": 3575,
-                "characters": 27611,
+                "words": 3571,
+                "characters": 27599,
                 "lines": 459,
-                "sha256": "1aabd2b807f4f9bd1154096a4cbdcf5477b3fe9e83eeb49a2057f3e547dcec70"
+                "sha256": "96b74e2bd5ef086f04479e6bee9993fee81c125c351b2b3d2f538dbc79659ee0"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 3522,
-                "characters": 27238,
+                "words": 3518,
+                "characters": 27226,
                 "lines": 453,
-                "sha256": "dea74eb390406911d913eeeac3437ff0adb2c4913215a816b1ea85306584e847"
+                "sha256": "8eb1a11beabf9d92b49a1d6949e85d6b937f7e3fb2b2d50c80403f37c6a8e687"
               }
             }
           }
@@ -398,28 +398,28 @@
           "expanded_inline": {
             "variants": {
               "default": {
-                "words": 3431,
-                "characters": 26622,
+                "words": 3427,
+                "characters": 26610,
                 "lines": 442,
-                "sha256": "83dfd11a0745f7674c157e1477a2d1da3291d0c9aea37df23bef1b3a12409d43"
+                "sha256": "c495742d236bf6bd341986b9eaed62b209e3bedfb1732197200750274fa23e53"
               },
               "without_quality_hints": {
-                "words": 3378,
-                "characters": 26249,
+                "words": 3374,
+                "characters": 26237,
                 "lines": 436,
-                "sha256": "c06b426136f20d54633bcc5099bd129159d328275b95bf4fb70112676b5aacf1"
+                "sha256": "c193ca89e80cac8e7df2373f51af6f6ef66778e44d3662c4f92fc75025400b3a"
               },
               "with_issue_reporting": {
-                "words": 3575,
-                "characters": 27611,
+                "words": 3571,
+                "characters": 27599,
                 "lines": 459,
-                "sha256": "1aabd2b807f4f9bd1154096a4cbdcf5477b3fe9e83eeb49a2057f3e547dcec70"
+                "sha256": "96b74e2bd5ef086f04479e6bee9993fee81c125c351b2b3d2f538dbc79659ee0"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 3522,
-                "characters": 27238,
+                "words": 3518,
+                "characters": 27226,
                 "lines": 453,
-                "sha256": "dea74eb390406911d913eeeac3437ff0adb2c4913215a816b1ea85306584e847"
+                "sha256": "8eb1a11beabf9d92b49a1d6949e85d6b937f7e3fb2b2d50c80403f37c6a8e687"
               }
             }
           }
@@ -457,8 +457,8 @@
     "golden": {
       "path": "tests/fixtures/context-packet-v1.json",
       "bytes": 2377,
-      "sha256": "24f15d8046c3b4594978d7a9d70da803613d40e165542113015768c8cbe09ef7",
-      "packet_id": "sha256:5ea63fa3b5e3946979d0e8d300fe20a75e4f32ebf47448c184eead4f1c034937"
+      "sha256": "acd0d0a020dd32f0054e5f0e83327d826f7c07f26a68eaf463c6e4d34870dc6e",
+      "packet_id": "sha256:bdbdd011df328537eee4a2e070bc25f14dec5fa192c640bb3f7bf1133c32038d"
     }
   }
 }

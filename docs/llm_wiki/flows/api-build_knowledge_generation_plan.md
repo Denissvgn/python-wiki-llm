@@ -2,11 +2,12 @@
 
 **Entry point:** `build_knowledge_generation_plan` (`api`)
 **Source:** [knowledge_generation](../modules/knowledge_generation.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 14 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 16 more
 
 **Complete modules touched:**
 
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -17,7 +18,9 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -75,7 +78,7 @@ sequenceDiagram
     p10->>p13: _raise_page_map_parity
 ```
 
-> Call sequence diagram shows 30 of 2948 interactions; 2918 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3025 interactions; 2995 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -107,12 +110,19 @@ flowchart LR
     s5 -->|"KnowledgeGenerationError('inventory', 'must use string source paths')"| s10
     s5 -. "isinstance(file_data, Mapping)" .-> s11
     s5 -->|"KnowledgeGenerationError(..., 'must be an object')"| s12
+    b0["mutation generation_inputs.pop"]
+    s4 -. "mutation generation_inputs.pop" .-> b0
+    b1["mutation knowledge_extensions.pop"]
+    s4 -. "mutation knowledge_extensions.pop" .-> b1
     click s1 "../modules/knowledge_generation.md"
     click s4 "../modules/knowledge_generation.md"
     click s5 "../modules/knowledge_generation.md"
     click s7 "../modules/knowledge_generation.md"
     click s10 "../modules/knowledge_generation.md"
     click s12 "../modules/knowledge_generation.md"
+    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
+    class b0 boundary
+    class b1 boundary
 ```
 
 ### Step data
@@ -122,7 +132,7 @@ flowchart LR
 | `build_knowledge_generation_plan` | `inputs: KnowledgeGenerationInputs` | `KnowledgeGenerationInputs`, `KnowledgeGenerationError`, `KnowledgeArtifactError`, `KnowledgeEnvelopeError`, `KnowledgeGraphError`, `KnowledgeIndexBuildError`, `KnowledgeLinkError`, `SyncManifestError` | - | `_build_knowledge_generation_plan(...)` |
 | `isinstance` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `_build_knowledge_generation_plan` | `inputs: KnowledgeGenerationInputs` | `SyncManifest`, `SyncManifest`, `InfrastructureSyncError` | `unknown_baselines[...]` | `build_knowledge_commit_plan(...)` |
+| `_build_knowledge_generation_plan` | `inputs: KnowledgeGenerationInputs` | `SyncManifest`, `SyncManifest`, `InfrastructureSyncError` | `unknown_baselines[...]`, `generation_inputs[...]`, `knowledge_extensions[...]` | `build_knowledge_commit_plan(...)` |
 | `_validated_inventory` | `value: object` | `Mapping`, `Mapping`, `Mapping` | `result[...]` | `result` |
 | `isinstance` | - | - | - | - |
 | `KnowledgeGenerationError` | - | - | - | - |
@@ -136,32 +146,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_generation_plan | isinstance | 170 | `isinstance(inputs, KnowledgeGenerationInputs)` |
-| build_knowledge_generation_plan | TypeError | 171 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
-| build_knowledge_generation_plan | _build_knowledge_generation_plan | 173 | `_build_knowledge_generation_plan(inputs)` |
-| _build_knowledge_generation_plan | _validated_inventory | 190 | `_validated_inventory(inputs.inventory)` |
-| _validated_inventory | isinstance | 866 | `isinstance(value, Mapping)` |
-| _validated_inventory | KnowledgeGenerationError | 867 | `KnowledgeGenerationError('inventory', 'must be an object')` |
-| _validated_inventory | items | 869 | `value.items(data not statically known)` |
-| _validated_inventory | isinstance | 870 | `isinstance(source_path, str)` |
-| _validated_inventory | KnowledgeGenerationError | 871 | `KnowledgeGenerationError('inventory', 'must use string source paths')` |
-| _validated_inventory | isinstance | 875 | `isinstance(file_data, Mapping)` |
-| _validated_inventory | KnowledgeGenerationError | 876 | `KnowledgeGenerationError(..., 'must be an object')` |
+| build_knowledge_generation_plan | isinstance | 169 | `isinstance(inputs, KnowledgeGenerationInputs)` |
+| build_knowledge_generation_plan | TypeError | 170 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
+| build_knowledge_generation_plan | _build_knowledge_generation_plan | 172 | `_build_knowledge_generation_plan(inputs)` |
+| _build_knowledge_generation_plan | _validated_inventory | 189 | `_validated_inventory(inputs.inventory)` |
+| _validated_inventory | isinstance | 887 | `isinstance(value, Mapping)` |
+| _validated_inventory | KnowledgeGenerationError | 888 | `KnowledgeGenerationError('inventory', 'must be an object')` |
+| _validated_inventory | items | 890 | `value.items(data not statically known)` |
+| _validated_inventory | isinstance | 891 | `isinstance(source_path, str)` |
+| _validated_inventory | KnowledgeGenerationError | 892 | `KnowledgeGenerationError('inventory', 'must use string source paths')` |
+| _validated_inventory | isinstance | 896 | `isinstance(file_data, Mapping)` |
+| _validated_inventory | KnowledgeGenerationError | 897 | `KnowledgeGenerationError(..., 'must be an object')` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+| Kind | Target | Step | Line |
+|---|---|---|---:|
+| mutation | `generation_inputs.pop` | `_build_knowledge_generation_plan` | 376 |
+| mutation | `knowledge_extensions.pop` | `_build_knowledge_generation_plan` | 380 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_knowledge_generation_plan` | `isinstance` | 170 |
-| unresolved_call | `build_knowledge_generation_plan` | `TypeError` | 171 |
-| unresolved_call | `_validated_inventory` | `isinstance` | 866 |
-| unresolved_call | `_validated_inventory` | `value.items` | 869 |
-| unresolved_call | `_validated_inventory` | `isinstance` | 870 |
-| unresolved_call | `_validated_inventory` | `isinstance` | 875 |
+| unresolved_call | `build_knowledge_generation_plan` | `isinstance` | 169 |
+| unresolved_call | `build_knowledge_generation_plan` | `TypeError` | 170 |
+| unresolved_call | `_validated_inventory` | `isinstance` | 887 |
+| unresolved_call | `_validated_inventory` | `value.items` | 890 |
+| unresolved_call | `_validated_inventory` | `isinstance` | 891 |
+| unresolved_call | `_validated_inventory` | `isinstance` | 896 |
 | step_limit | `build_knowledge_generation_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_generation_plan` | `depth limit` | 0 |
 

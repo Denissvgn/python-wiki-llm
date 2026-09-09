@@ -121,14 +121,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance | 405 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError | 406 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance | 407 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError | 408 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable | 409 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError | 410 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | _apply_write | 413 | `_apply_write(plan.surface_index, CommitStage.SURFACE_INDEX_WRITTEN, fault_injector)` |
-| _apply_write | write_bytes_atomic | 478 | `write_bytes_atomic(artifact.path, artifact.content)` |
+| commit_knowledge_artifacts | isinstance | 477 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError | 478 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance | 479 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError | 480 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable | 481 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError | 482 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | _apply_write | 485 | `_apply_write(plan.surface_index, CommitStage.SURFACE_INDEX_WRITTEN, fault_injector)` |
+| _apply_write | write_bytes_atomic | 550 | `write_bytes_atomic(artifact.path, artifact.content)` |
 | write_bytes_atomic | isinstance | 164 | `isinstance(content, bytes)` |
 | write_bytes_atomic | TypeError | 165 | `TypeError('content must be bytes')` |
 | write_bytes_atomic | Path | 166 | `Path(path)` |
@@ -143,12 +143,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `commit_knowledge_artifacts` | `isinstance` | 405 |
-| unresolved_call | `commit_knowledge_artifacts` | `TypeError` | 406 |
-| unresolved_call | `commit_knowledge_artifacts` | `isinstance` | 407 |
-| unresolved_call | `commit_knowledge_artifacts` | `TypeError` | 408 |
-| unresolved_call | `commit_knowledge_artifacts` | `callable` | 409 |
-| unresolved_call | `commit_knowledge_artifacts` | `TypeError` | 410 |
+| unresolved_call | `commit_knowledge_artifacts` | `isinstance` | 477 |
+| unresolved_call | `commit_knowledge_artifacts` | `TypeError` | 478 |
+| unresolved_call | `commit_knowledge_artifacts` | `isinstance` | 479 |
+| unresolved_call | `commit_knowledge_artifacts` | `TypeError` | 480 |
+| unresolved_call | `commit_knowledge_artifacts` | `callable` | 481 |
+| unresolved_call | `commit_knowledge_artifacts` | `TypeError` | 482 |
 | unresolved_call | `write_bytes_atomic` | `isinstance` | 164 |
 | unresolved_call | `write_bytes_atomic` | `TypeError` | 165 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |

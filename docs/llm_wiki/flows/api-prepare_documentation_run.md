@@ -2,7 +2,7 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [prepare](../modules/prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 48 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 51 more
 
 **Complete modules touched:**
 
@@ -22,6 +22,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -44,8 +45,10 @@
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [prepare](../modules/prepare.md)
+- [progress](../modules/progress.md)
 - [refresh](../modules/refresh.md)
 - [relationships](../modules/relationships.md)
+- [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [skills](../modules/skills.md)
 - [source_selection](../modules/source_selection.md)
@@ -109,7 +112,7 @@ sequenceDiagram
     p11-->>p12: Path
 ```
 
-> Call sequence diagram shows 30 of 4392 interactions; 4362 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4458 interactions; 4428 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

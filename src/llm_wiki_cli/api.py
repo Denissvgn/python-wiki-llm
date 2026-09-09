@@ -11,7 +11,16 @@ from contextlib import contextmanager
 from functools import wraps
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NoReturn, ParamSpec, TypeVar, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    NoReturn,
+    ParamSpec,
+    TypeVar,
+    cast,
+    Literal,
+    overload,
+)
 
 from .services import bootstrap_runtime as bootstrap_cmd
 from .services import context_service as context_cmd
@@ -721,6 +730,57 @@ def extract_source(
     except ValueError as exc:
         raise InvalidRequestError(str(exc)) from exc
     return cast(ExtractSourceResult, result.payload)
+
+
+@overload
+def build_context(
+    src_dir: str = ".",
+    *,
+    budget: int = 32000,
+    format: Literal["json"] = "json",
+    focus: str | list[str] = "changed",
+    filters: dict[str, Any] | None = None,
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    prefer_fresh: bool = False,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+    source_selection: str | Path | None = None,
+    knowledge_mode: KnowledgeMode | None = None,
+) -> ContextPayload: ...
+
+
+@overload
+def build_context(
+    src_dir: str = ".",
+    *,
+    budget: int = 32000,
+    format: Literal["markdown"],
+    focus: str | list[str] = "changed",
+    filters: dict[str, Any] | None = None,
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    prefer_fresh: bool = False,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+    source_selection: str | Path | None = None,
+    knowledge_mode: KnowledgeMode | None = None,
+) -> MarkdownContextResult: ...
+
+
+@overload
+def build_context(
+    src_dir: str = ".",
+    *,
+    budget: int = 32000,
+    format: str,
+    focus: str | list[str] = "changed",
+    filters: dict[str, Any] | None = None,
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    prefer_fresh: bool = False,
+    allow_external_src: bool = False,
+    read_only: bool = True,
+    source_selection: str | Path | None = None,
+    knowledge_mode: KnowledgeMode | None = None,
+) -> ContextPayload | MarkdownContextResult: ...
 
 
 @_api_boundary

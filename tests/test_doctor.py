@@ -213,6 +213,7 @@ def test_json_contract_has_fixed_sections_and_complete_freshness_counts(
         "degraded_reasons",
         "unhealthy_reasons",
     }
+    assert isinstance(payload["freshness"], dict)
     assert set(payload["freshness"]["counts_by_state"]) == {
         "unknown",
         "current",
@@ -222,8 +223,11 @@ def test_json_contract_has_fixed_sections_and_complete_freshness_counts(
         "source-missing",
     }
     assert payload["freshness"]["disclosure"].startswith("evaluated (")
+    assert isinstance(payload["snapshot_parity"], dict)
     assert payload["snapshot_parity"]["state"] == "valid"
+    assert isinstance(payload["governance"], dict)
     assert payload["governance"]["state"] == "not-present"
+    assert isinstance(payload["verification_receipt"], dict)
     assert payload["verification_receipt"]["state"] == "absent"
 
 

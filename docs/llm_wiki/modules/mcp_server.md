@@ -28,6 +28,7 @@ origin validation; stdio remains the default.
 | `.io` | `read_md` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
+| `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.validation` | `posix_path_text`, `require_portable_relative_path` |
@@ -65,7 +66,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (19) |
+| Outbound | `src` (20) |
 
 ### External packages
 
@@ -73,7 +74,7 @@ flowchart LR
 |---|---:|---:|
 | python | 2 | 1 |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -137,5 +138,5 @@ flowchart LR
 | `_snippet` | `(content: str, start: int, length: int) -> str` | — | — |
 | `_count_md` | `(path: Path) -> int` | — | — |
 | `_count_surface_pages` | `(path: Path, entry) -> int` | — | — |
-| `_installed_hooks` | `() -> list[str]` | — | — |
+| `_installed_hooks` | `() -> list[str]` | — | Preserve the status field while reporting only verified legacy residue. |
 | `to_json` | `(data: object) -> str` | — | Serialize data as stable, human-readable JSON. |

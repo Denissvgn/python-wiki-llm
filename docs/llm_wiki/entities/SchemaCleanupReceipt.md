@@ -1,6 +1,6 @@
 # SchemaCleanupReceipt
 
-**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:108`
+**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:103`
 **Kind:** Class
 **Bases:** —
 **Module:** [upgrade_cmd](../modules/upgrade_cmd.md)

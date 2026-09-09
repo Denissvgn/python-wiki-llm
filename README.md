@@ -3,7 +3,7 @@
 LLM Wiki CLI builds and maintains a repo-local architectural wiki for coding
 agents. It scans source code into a compact structural inventory, generates
 Markdown pages under a wiki directory, validates those pages against the live
-codebase, and prepares or triggers wiki-sync prompts after commits. It can also
+codebase, and prepares wiki-sync prompts on demand. It can also
 prepare an isolated, agent-driven documentation workspace from source or an
 existing LLM-enriched wiki without installing instructions in the target; see
 [Standalone documentation workspaces](docs/standalone-documentation.md).
@@ -84,6 +84,12 @@ inventory, context payloads, registry-backed page metadata, and graph queries
 through `extract_source(...)`, `build_context(...)`, `list_wiki_pages(...)`, and
 `query_documentation(...)` plus the dedicated query wrappers. It also exposes
 canonical packets through `build_qualified_context(...)`.
+
+`build_context(...)` returns a `ContextPayload` by default or with `format="json"`,
+and a `MarkdownContextResult` with `format="markdown"`. Type hints expose the
+corresponding fields when the format is a literal; a runtime-selected format
+retains the union of both result types.
+
 `llm-wiki obsidian export` mirrors the canonical Markdown wiki for Obsidian,
 and `llm-wiki site export|check` mirrors and validates plain, MkDocs-compatible,
 or Docusaurus-compatible Markdown output without invoking external builders.
@@ -175,7 +181,7 @@ llm-wiki lint --src-dir /path/to/repo --wiki-dir docs/llm_wiki \
 
 When using a non-default profile, carry the same `--source-selection` argument
 through helper preparation, bootstrap, sync, lint, CI, context, review, MCP,
-and other source-reading wiki operations. Generated hooks and agent
+and other source-reading wiki operations. Explicit command recipes and agent
 instructions preserve the resolved path.
 A managed wiki records the profile and its applicable selection-control inputs;
 if either changes, read consumers fail with sync guidance until an authorized
@@ -288,14 +294,15 @@ version output is malformed or older than 9.6.
 
 | Agent | Schema file | Sync mode |
 |---|---|---|
-| `claude` | `CLAUDE.md` | prompt hook; optional manual CLI trigger |
-| `aider` | `.aider.conf.yml` | prompt hook; optional manual CLI trigger |
-| `opencode` | `.opencode/instructions.md` | prompt hook; optional manual CLI trigger |
-| `copilot` | `.github/copilot-instructions.md` | IDE prompt |
-| `cursor` | `.cursorrules` | IDE prompt |
-| `generic` | `AGENTS.md` | IDE prompt |
+| `claude` | `CLAUDE.md` | explicit sync; optional manual CLI trigger |
+| `aider` | `.aider.conf.yml` | explicit sync; optional manual CLI trigger |
+| `opencode` | `.opencode/instructions.md` | explicit sync; optional manual CLI trigger |
+| `copilot` | `.github/copilot-instructions.md` | explicit sync or reviewed IDE prompt |
+| `cursor` | `.cursorrules` | explicit sync or reviewed IDE prompt |
+| `generic` | `AGENTS.md` | explicit sync or reviewed IDE prompt |
 
-Installed hooks generate a reviewed prompt file for all agents. The explicit
+Use explicit `sync` and `lint` commands with any agent. `generate-prompt`
+creates a prompt for review when needed. LLM Wiki does not install Git hooks. The explicit
 `trigger-agent` command can still delegate to a CLI agent; for Claude, this uses
 `claude -p` and leaves permission decisions to Claude's normal permission model.
 Run manual CLI triggers only in repositories and execution environments you
@@ -372,28 +379,15 @@ Generate the initial wiki from an existing codebase:
 llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 ```
 
-Install the full read-only GitHub Actions integrity gate from an immutable
-released commit:
+After relevant source changes, update and validate the wiki explicitly:
 
 ```bash
-llm-wiki install-ci --action-ref "$RELEASE_COMMIT_SHA"
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --jobs 1
+llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki --jobs 1
 ```
 
-`RELEASE_COMMIT_SHA` must be the complete 40-character commit published for the
-release. Branch names, tags, and abbreviated SHAs are rejected so a project
-cannot silently change the code that validates its wiki.
-
-Validate the wiki:
-
-```bash
-llm-wiki lint --wiki-dir docs/llm_wiki --src-dir .
-```
-
-Install a post-commit hook:
-
-```bash
-llm-wiki install-hook
-```
+Git commits do not trigger library-managed maintenance. An optional read-only
+GitHub Actions gate is described under [Automation](#automation).
 
 `init` writes the selected agent and instruction preferences to
 `.git/.llm-wiki-agent` when the project is a Git repo. Outside Git, it falls
@@ -509,10 +503,31 @@ worktree status, tracked wiki diff, sync log, and a versioned hash receipt. Its
 job summary contains only a bounded preview. This observation complements but
 never replaces the blocking `ci-check` integrity gate.
 
-`llm-wiki install-hook` installs a `post-commit` hook that generates
-`.git/llm-wiki-prompt.txt` with `llm-wiki generate-prompt` and prints a reminder
-to paste that prompt into your agent chat. Generated hooks never launch CLI
-agents automatically.
+### Git hook retirement
+
+Git hook installation has been removed. After updating the package, run the
+workspace upgrade from each repository that used LLM Wiki:
+
+```bash
+pip install --upgrade agent-wiki-cli
+llm-wiki upgrade
+```
+
+`upgrade` automatically removes recognized, unmodified LLM Wiki `post-commit`,
+`pre-commit`, and `pre-push` hooks, including older background-agent and version
+bump hooks. Cleanup runs before agent instruction refresh and does not require
+an agent preference. If instruction refresh then needs configuration repair,
+the hook cleanup remains complete. Repeating the upgrade is safe.
+
+Cleanup covers the repository's Git hooks directory, the shared Git directory
+of a linked worktree, and a repository-local `core.hooksPath`. Customized hooks,
+unrelated hooks, and external/global hook directories remain user-managed.
+Unsafe or unreadable hook paths stop cleanup with an error; changed files are
+rechecked before removal. Package installation itself does not discover or
+modify arbitrary repositories. Read-only commands do not remove hooks.
+
+For a reviewed prompt, run `llm-wiki generate-prompt` explicitly. The retired
+`install-hook` command is no longer available.
 
 For advanced trusted workflows, `trigger-agent` remains available as an explicit
 manual command:
@@ -549,18 +564,6 @@ automation runner should wait briefly for another sync to release the lock.
 The circuit breaker permits one automatic recovery attempt after 3600 seconds
 by default; set `LLM_WIKI_BREAKER_TTL_SECONDS` to another non-negative duration,
 or to `0` to require `--reset-breaker`.
-
-Optional strict pre-commit validation:
-
-```bash
-llm-wiki install-hook --enable-validation
-```
-
-Use `--force` when you intentionally want to replace an existing unrelated hook:
-
-```bash
-llm-wiki install-hook --force
-```
 
 ### Strict doctor dashboard
 
@@ -754,6 +757,23 @@ persistent inventory cache as lint when a git directory is available. Use
 control or inspect inventory cache behavior. Use `--helper-cache-dir PATH` to
 point TypeScript/JavaScript, Go, Rust, and Haskell extraction at prepared
 helpers in a separate cache.
+Python inventory caching also preserves per-source import and data-effect
+observations. A changed file refreshes its observations; deletions remove them.
+Cross-file class classification is recalculated after cached and fresh files
+are combined.
+
+After a successful sync records its generation inputs, an unchanged run can
+reuse the validated knowledge snapshot without rebuilding the graph or
+rewriting artifacts. Source/configuration, Markdown, assets, implementation,
+and lifecycle changes invalidate reuse. Governed or plugin-driven generation
+uses the full path. `--rebuild-knowledge` explicitly runs the full knowledge
+builder; `--no-cache` controls source extraction independently.
+
+`sync`, `lint`, and `ci-check` accept `--progress auto|always|never` and
+`--progress-format text|json`. Progress events are flushed to stderr. `auto`
+shows phases in an interactive terminal and heartbeats for long phases in
+automation; `always` shows every phase. JSON result output stays on stdout.
+Heartbeats describe process activity, not verification results.
 `--no-plugins` disables project-local extractor and generation plugins for
 trusted automation that must not import repository Python extensions. The
 interactive default is `--jobs 1`. Use `--jobs N` or `--jobs auto` to opt
@@ -1013,6 +1033,12 @@ inventory caching. Use `--helper-cache-dir PATH` when prepared Go/Rust/Haskell
 helpers live somewhere else. Use `--no-cache` to disable load/save,
 `--rebuild-cache` to ignore and rewrite the cache, and `--cache-stats` to
 include cache diagnostics.
+An unwritable implicit cache is disabled with a warning. An explicit
+`--cache-dir` or `LLM_WIKI_CACHE_DIR` destination is checked before extraction;
+an unusable explicit destination is a configuration error. A later cache-save
+failure preserves the computed results and emits a warning even without
+`--cache-stats`. `--no-cache` cannot be combined with `--cache-dir` or
+`--rebuild-cache`.
 Cache corruption or invalid fingerprints fall back to a full extraction without
 reducing lint coverage. With `--profile --cache-stats`, the JSON payload includes a top-level
 `cache` object. Use `--jobs N` or `--jobs auto` to opt into parallel extraction
@@ -1091,11 +1117,12 @@ llm-wiki ci-check --helper-cache-dir .cache/llm-wiki-helpers --src-dir . --wiki-
 llm-wiki ci-check --include-tests go --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --src-dir /path/to/repo --wiki-dir docs/llm_wiki --allow-external-src
 llm-wiki ci-check --format json --report .git/llm-wiki-ci-report.md
+llm-wiki ci-check --format json --report-schema v2 --no-report --cache-dir .cache/llm-wiki-inventory
 llm-wiki ci-check --format markdown
 ```
 
-`ci-check` always runs strict validation, writes a Markdown report, records a
-local metrics event, uses the same safe inventory cache when available, and
+`ci-check` always runs strict validation, attempts a Markdown report unless
+`--no-report` is selected, records a local metrics event, uses the same safe inventory cache when available, and
 exits nonzero on validation failure. Native freshness/drift is disabled unless
 `--knowledge-drift-report` is supplied, and enabled findings remain
 nonblocking. Structured output discloses the report mode through
@@ -1106,6 +1133,19 @@ composed from the same lint report, not a second source scan. The top-level
 `ok`, issue count, and process exit remain the authoritative blocking integrity
 result; the nested health status presents availability, freshness, snapshot,
 governance, drift, and verification state without changing that policy.
+Use `--report-schema v2` for the `llm-wiki-ci-check/v2` envelope. It adds
+`runtime.cache`, `runtime.report`, `check_exit_code`, and `command_exit_code`.
+Report status is `written`, `disabled`, or `failed`; the nested doctor health
+continues to describe the check itself. The default schema remains v1.
+
+CI accepts the same `--cache-dir`, `--no-cache`, `--rebuild-cache`, and
+`--cache-stats` controls as lint and sync. Reports are replaced atomically.
+If the implicit `.git/llm-wiki-ci-report.md` cannot be saved, CI prints its
+findings, warns on stderr, and preserves the check's exit status (`0` or `1`).
+An unusable explicit report/cache path fails early with exit `2`. If an
+explicitly required report fails after computation, findings are still printed
+and the command exits `2`; v2 records the separate check and command outcomes.
+`--report` and `--no-report` are mutually exclusive.
 `--no-plugins` disables project-local extractor, generation, and lint plugins;
 the portable integrity workflow always uses this fail-closed mode.
 For trusted source trees outside the runner workspace, pass
@@ -1495,6 +1535,19 @@ llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki team resolve-conflicts --wiki-dir docs/llm_wiki
 llm-wiki team resolve-conflicts --write --wiki-dir docs/llm_wiki
 ```
+
+When `team check` omits `--wiki-dir`, it uses the directory in
+`.llm-wiki/team.json`. An explicit directory must identify the same wiki.
+Lint and CI retain their usual directory defaults and reject a mismatch with
+configured team policy before extraction.
+
+Required file and directory entries must be canonical relative paths inside
+the wiki, using forward slashes. Traversal, absolute paths, and symlinks that
+escape the wiki are rejected. The default missing `log.md` obligation produces
+one diagnostic. Canonical naming uses deep inventory, collision-safe page
+names, supported infrastructure YAML, and validated retained removal records;
+unmapped pages still produce naming issues. Team check also accepts `--jobs`,
+`--helper-cache-dir`, `--include-tests`, and `--no-plugins` extraction controls.
 
 `resolve-conflicts` only applies conservative resolutions for generated pages.
 Manual workflow conflicts are left for humans to resolve.
@@ -1931,9 +1984,7 @@ When managed references remain enabled, `llm-wiki upgrade` refreshes the
 generated agent constraints and the CLI-owned `wiki-reference` policy as one
 exact nested tree. This is the deliberate force-refresh path for expected
 regular files: a locally edited or missing managed topic is restored even when
-the command does not include `--force`. The upgrade command's `--force` flag is
-separate and authorizes replacement of an unrelated post-commit hook. `init`
-and ordinary `skills install`/`skills export` keep differing regular files
+the command does not include `--force`. `init` and ordinary `skills install`/`skills export` keep differing regular files
 unless their own force behavior is requested. Unexpected, conflicting, or
 unsafe entries are always preserved and reported; inspect and back them up,
 then move them aside if intended before retrying the reference refresh.
@@ -2068,7 +2119,6 @@ Refresh framework-managed artifacts in place.
 llm-wiki upgrade
 llm-wiki upgrade --agent copilot
 llm-wiki upgrade --wiki-dir .wiki
-llm-wiki upgrade --force
 llm-wiki upgrade --no-skills
 llm-wiki upgrade --skills
 llm-wiki upgrade --agent claude --cleanup-source-agent generic
@@ -2077,8 +2127,10 @@ llm-wiki upgrade --issue-reporting
 llm-wiki upgrade --no-issue-reporting
 ```
 
-`upgrade` refreshes agent instruction blocks, wiki directories, hooks, plugin
-skill blocks, and persisted local config. The issue-reporting pair explicitly
+`upgrade` removes unmodified legacy Git hooks and refreshes agent instruction
+blocks, wiki directories, plugin skill blocks, and persisted local config. The
+legacy `--force` flag remains accepted for compatibility and has no effect on
+hook ownership; customized hooks are preserved. The issue-reporting pair explicitly
 enables or disables the local agent guidance; without either flag, `upgrade`
 preserves the stored preference. Configurations created before this preference
 existed default to disabled. For older wiki layouts, `upgrade`

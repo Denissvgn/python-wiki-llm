@@ -480,7 +480,7 @@ def test_duplicate_evidence_is_counted_and_bounded_with_omissions():
 
 def test_upstream_data_flow_coverage_stays_separate_from_edge_sampling():
     inputs = _inputs()
-    detailed = deepcopy(inputs.data_flows[0])
+    detailed = deepcopy(dict(inputs.data_flows[0]))
     detailed["coverage"] = {
         "effects": {
             "by_kind": {
@@ -523,7 +523,7 @@ def test_upstream_data_flow_coverage_stays_separate_from_edge_sampling():
 
 def test_detailed_flow_step_coverage_reaches_graph_analyzer_coverage():
     inputs = _inputs()
-    flow = deepcopy(inputs.flows[0])
+    flow = deepcopy(dict(inputs.flows[0]))
     flow.update(
         {
             "schema_version": "llm-wiki-flow-observations/v1",

@@ -1,15 +1,15 @@
-# _HookInspection
+# LegacyHookInspection
 
-**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:63`
+**Location:** `src/llm_wiki_cli/services/legacy_hooks.py:29`
 **Kind:** Class
 **Bases:** —
-**Module:** [uninstall_cmd](../modules/uninstall_cmd.md)
+**Module:** [legacy_hooks](../modules/legacy_hooks.md)
 
 **Decorators:** `@dataclass(frozen=True)`
 
 ## Description
 
-Immutable hook ownership evidence collected before mutation.
+Exact hook bytes classified before a lifecycle operation changes files.
 
 ## Attributes
 
@@ -30,30 +30,38 @@ Immutable hook ownership evidence collected before mutation.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["_HookInspection (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
+    n0["LegacyHookInspection (src/llm_wiki_cli/services/legacy_hooks.py)"]
     n1["_preflight_hooks (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
     n2["_remove_hooks (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
     n3["_validate_hook_plan (src/llm_wiki_cli/commands/uninstall_cmd.py)"]
+    n4["inspect_legacy_hooks (src/llm_wiki_cli/services/legacy_hooks.py)"]
+    n5["remove_legacy_hooks (src/llm_wiki_cli/services/legacy_hooks.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
-    click n0 "../modules/uninstall_cmd.md"
+    n4 --> n0
+    n5 --> n0
+    click n0 "../modules/legacy_hooks.md"
     click n1 "../modules/uninstall_cmd.md"
     click n2 "../modules/uninstall_cmd.md"
     click n3 "../modules/uninstall_cmd.md"
+    click n4 "../modules/legacy_hooks.md"
+    click n5 "../modules/legacy_hooks.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [uninstall_cmd](../modules/uninstall_cmd.md) | 0 | `content`, `content_bytes`, `name`, `owned`, `path` |
+| [legacy_hooks](../modules/legacy_hooks.md) | 0 | `content`, `content_bytes`, `name`, `owned`, `path` |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_preflight_hooks` | call | [uninstall_cmd](../modules/uninstall_cmd.md) | 1 |
 | `_preflight_hooks` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
 | `_remove_hooks` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
 | `_validate_hook_plan` | type_reference | [uninstall_cmd](../modules/uninstall_cmd.md) | — |
+| `inspect_legacy_hooks` | call | [legacy_hooks](../modules/legacy_hooks.md) | 1 |
+| `inspect_legacy_hooks` | type_reference | [legacy_hooks](../modules/legacy_hooks.md) | — |
+| `remove_legacy_hooks` | type_reference | [legacy_hooks](../modules/legacy_hooks.md) | — |

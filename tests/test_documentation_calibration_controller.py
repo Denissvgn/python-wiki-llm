@@ -2185,7 +2185,7 @@ def test_posix_evidence_read_uses_one_no_follow_leaf_handle(
     )
 
     assert len(leaf_opens) == 1
-    assert leaf_opens[0] & os.O_NOFOLLOW
+    assert leaf_opens[0] & getattr(os, "O_NOFOLLOW")
     assert snapshot.original_bytes == len(payload)
     assert snapshot.included == payload[:64]
     assert snapshot.sha256 == "sha256:" + hashlib.sha256(payload).hexdigest()

@@ -229,6 +229,26 @@ def _initialized_git_repository(repository: Path) -> str:
     return _git(repository, "rev-parse", "HEAD")
 
 
+@_REQUIRES_GIT
+def test_local_boolean_overrides_global_input_without_losing_git_evidence(tmp_path, monkeypatch):
+    from llm_wiki_cli.services import knowledge_envelope
+
+    global_config = tmp_path / "global.gitconfig"
+    global_config.write_text("[core]\n\tautocrlf = input\n", encoding="utf-8")
+    original = knowledge_envelope.subprocess.run
+
+    def controlled_global(cmd, **kwargs):
+        if "config" in cmd and "--includes" in cmd:
+            kwargs["env"] = {**kwargs["env"], "GIT_CONFIG_GLOBAL": str(global_config)}
+        return original(cmd, **kwargs)
+
+    monkeypatch.setattr(knowledge_envelope.subprocess, "run", controlled_global)
+    repository = tmp_path / "repository"
+    _initialized_git_repository(repository)
+    evidence = collect_git_repository_evidence(repository)
+    assert evidence.working_tree is WorkingTreeState.CLEAN
+
+
 def test_source_snapshot_hash_is_canonical_and_covers_every_consumed_kind():
     records = tuple(
         ConsumedInput.from_bytes(

@@ -2,7 +2,7 @@
 
 **Entry point:** `knowledge_index_to_payload` (`api`)
 **Source:** [knowledge_model](../modules/knowledge_model.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 7 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 8 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
@@ -40,10 +41,10 @@ sequenceDiagram
     participant p15 as _string
     participant p16 as require_string
     participant p17 as isfinite
-    participant p18 as id
     p0-->>p1: isinstance
     p0-->>p2: TypeError
     p0->>p3: _emit_extensions
+    p3-->>p1: isinstance
     p3->>p4: _parse_extensions
     p4->>p5: _object
     p5-->>p6: dict
@@ -70,10 +71,9 @@ sequenceDiagram
     p14-->>p17: isfinite
     p14->>p9: KnowledgeModelError
     p14-->>p1: isinstance
-    p14-->>p18: id
 ```
 
-> Call sequence diagram shows 30 of 1511 interactions; 1481 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1523 interactions; 1493 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -86,31 +86,30 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. TypeError"]
     s4["4. _emit_extensions"]
-    s5["5. _parse_extensions"]
-    s6["6. _object"]
-    s7["7. dict"]
-    s8["8. require_mapping"]
-    s9["9. isinstance"]
+    s5["5. isinstance"]
+    s6["6. _parse_extensions"]
+    s7["7. _object"]
+    s8["8. dict"]
+    s9["9. require_mapping"]
     s10["10. isinstance"]
-    s11["11. encode"]
-    s12["12. KnowledgeModelError"]
+    s11["11. isinstance"]
+    s12["12. encode"]
     s1 -. "isinstance(model, KnowledgeIndex)" .-> s2
     s1 -. "TypeError('model must be a KnowledgeIndex')" .-> s3
     s1 -->|"_emit_extensions({...}, model.extensions, 'extensions')"| s4
-    s4 -->|"_parse_extensions(extensions, path)"| s5
-    s5 -->|"_object(value, path)"| s6
-    s6 -. "dict(require_mapping(...))" .-> s7
-    s6 -->|"require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=Kno…"| s8
-    s8 -. "isinstance(value, Mapping)" .-> s9
-    s8 -. "isinstance(key, str)" .-> s10
-    s8 -. "key.encode('utf-8')" .-> s11
-    s6 -->|"KnowledgeModelError(path, 'must be an object')"| s12
+    s4 -. "isinstance(extensions, FrozenDict)" .-> s5
+    s4 -->|"_parse_extensions(extensions, path)"| s6
+    s6 -->|"_object(value, path)"| s7
+    s7 -. "dict(require_mapping(...))" .-> s8
+    s7 -->|"require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=Kno…"| s9
+    s9 -. "isinstance(value, Mapping)" .-> s10
+    s9 -. "isinstance(key, str)" .-> s11
+    s9 -. "key.encode('utf-8')" .-> s12
     click s1 "../modules/knowledge_model.md"
     click s4 "../modules/knowledge_model.md"
-    click s5 "../modules/knowledge_model.md"
     click s6 "../modules/knowledge_model.md"
-    click s8 "../modules/validation.md"
-    click s12 "../modules/knowledge_model.md"
+    click s7 "../modules/knowledge_model.md"
+    click s9 "../modules/validation.md"
 ```
 
 ### Step data
@@ -121,6 +120,7 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `_emit_extensions` | `payload: dict[str, Any]`, `extensions: Extensions`, `path: str` | - | `payload[...]` | `payload` |
+| `isinstance` | - | - | - | - |
 | `_parse_extensions` | `value: object`, `path: str` | - | `result[...]` | `result` |
 | `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
 | `dict` | - | - | - | - |
@@ -128,23 +128,22 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `encode` | - | - | - | - |
-| `KnowledgeModelError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_index_to_payload | isinstance | 641 | `isinstance(model, KnowledgeIndex)` |
-| knowledge_index_to_payload | TypeError | 642 | `TypeError('model must be a KnowledgeIndex')` |
-| knowledge_index_to_payload | _emit_extensions | 645 | `_emit_extensions({...}, model.extensions, 'extensions')` |
-| _emit_extensions | _parse_extensions | 1960 | `_parse_extensions(extensions, path)` |
-| _parse_extensions | _object | 1590 | `_object(value, path)` |
-| _object | dict | 1657 | `dict(require_mapping(...))` |
-| _object | require_mapping | 1658 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
+| knowledge_index_to_payload | isinstance | 651 | `isinstance(model, KnowledgeIndex)` |
+| knowledge_index_to_payload | TypeError | 652 | `TypeError('model must be a KnowledgeIndex')` |
+| knowledge_index_to_payload | _emit_extensions | 655 | `_emit_extensions({...}, model.extensions, 'extensions')` |
+| _emit_extensions | isinstance | 1976 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 1977 | `_parse_extensions(extensions, path)` |
+| _parse_extensions | _object | 1600 | `_object(value, path)` |
+| _object | dict | 1667 | `dict(require_mapping(...))` |
+| _object | require_mapping | 1668 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
 | require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance | 731 | `isinstance(key, str)` |
 | require_mapping | encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeModelError | 1660 | `KnowledgeModelError(path, 'must be an object')` |
 
 ### Boundary effects
 
@@ -154,8 +153,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `knowledge_index_to_payload` | `isinstance` | 641 |
-| unresolved_call | `knowledge_index_to_payload` | `TypeError` | 642 |
+| unresolved_call | `knowledge_index_to_payload` | `isinstance` | 651 |
+| unresolved_call | `knowledge_index_to_payload` | `TypeError` | 652 |
+| unresolved_call | `_emit_extensions` | `isinstance` | 1976 |
 | unresolved_call | `require_mapping` | `isinstance` | 727 |
 | unresolved_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |

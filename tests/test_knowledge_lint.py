@@ -6,6 +6,7 @@ import types
 from contextlib import contextmanager
 from dataclasses import replace
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -24,6 +25,7 @@ from llm_wiki_cli.services.knowledge_governance import (
 )
 from llm_wiki_cli.services.knowledge_loader import (
     KnowledgeLoadIssue,
+    KnowledgeLoadResult,
     load_knowledge_state,
 )
 from llm_wiki_cli.services.knowledge_model import (
@@ -36,6 +38,8 @@ from llm_wiki_cli.services.knowledge_observability import (
 from llm_wiki_cli.services.knowledge_orchestration import (
     RUNTIME_GENERATION_INPUT_KEY,
 )
+from llm_wiki_cli.services.lint_service import _LintProfiler
+from llm_wiki_cli.services.source_snapshot import SourceSnapshot
 from llm_wiki_cli.services.sync_manifest import (
     MANIFEST_STATE_UNAVAILABLE,
     TOMBSTONE_UNKNOWN_PROVENANCE,
@@ -162,8 +166,8 @@ def test_missing_lint_source_probes_are_unique_and_deterministic(
     monkeypatch.setattr(Path, "lstat", fake_lstat)
 
     missing = lint_cmd._reliably_missing_source_paths(
-        load_result,
-        snapshot,
+        cast(KnowledgeLoadResult, load_result),
+        cast(SourceSnapshot, snapshot),
     )
 
     assert probed == ["missing.py", "present.py"]
@@ -381,7 +385,7 @@ def test_lint_sets_observability_summary_after_knowledge_checks_close(
         wiki,
         str(source_root),
         strict=True,
-        profiler=object(),
+        profiler=cast(_LintProfiler, object()),
     )
 
     assert report.knowledge_summary is not None
@@ -931,6 +935,7 @@ def test_strict_lint_evaluates_retained_review_missing_from_projection(tmp_path)
     assert len(reviews) == 1
     assert "[reason=concept-missing,section-missing]" in reviews[0].message
     assert reviews[0].path is None
+    assert reviews[0].target is not None
     assert reviews[0].target.startswith("rv_")
 
 

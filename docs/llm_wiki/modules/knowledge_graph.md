@@ -22,6 +22,7 @@ subprocess work, network access, or LLM calls.
 |--------|---------|
 | `.contracts` | `TYPED_GRAPH_EXTENSION_KEY`, `TYPED_GRAPH_SCHEMA_VERSION` |
 | `.knowledge_evidence` | `canonical_json_text`, `sha256_bytes` |
+| `.progress` | `observed_phase` |
 | `.validation` | `require_choice`, `require_exact_fields`, `require_list`, `require_mapping`, `require_nonempty_text`, `require_nonnegative_int`, `require_positive_int`, `require_repository_relative_path`, `require_sha256` |
 | `.wiki_media` | `contains_uri_authority_userinfo` |
 | `.wiki_surface` | `WikiSurfaceError`, `validate_exact_page_coordinate` |
@@ -54,19 +55,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (5) |
+| Outbound | `src` (6) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGraphError](../entities/KnowledgeGraphError.md) | 109 | `ValueError` | Field-specific typed-graph contract or materialization failure. |
-| [GraphConcept](../entities/GraphConcept.md) | 119 | — | One already-built concept coordinate used for endpoint lifting. |
-| [KnowledgeGraphInputs](../entities/KnowledgeGraphInputs.md) | 131 | — | Complete evaluated inputs for one pure graph materialization. |
-| [_EdgeAccumulator](../entities/EdgeAccumulator.md) | 147 | — | — |
-| [_MaterializationState](../entities/MaterializationState.md) | 204 | — | — |
+| [KnowledgeGraphError](../entities/KnowledgeGraphError.md) | 111 | `ValueError` | Field-specific typed-graph contract or materialization failure. |
+| [GraphConcept](../entities/GraphConcept.md) | 121 | — | One already-built concept coordinate used for endpoint lifting. |
+| [KnowledgeGraphInputs](../entities/KnowledgeGraphInputs.md) | 133 | — | Complete evaluated inputs for one pure graph materialization. |
+| [_EdgeAccumulator](../entities/EdgeAccumulator.md) | 149 | — | — |
+| [_MaterializationState](../entities/MaterializationState.md) | 206 | — | — |
 
 ## Functions
 
@@ -78,7 +79,7 @@ flowchart LR
 | `external_resource_endpoint` | `(resource: str, *, uri: str \| None = None) -> dict[str, str]` | — | Return a typed external-resource endpoint. |
 | `unresolved_endpoint` | `(raw_target: str, *, candidates: Sequence[Mapping[str, Any]] = ()) -> dict[str, Any]` | — | Return an unresolved endpoint with optional non-authoritative candidates. |
 | `relationship_edge_key` | `(identity: Mapping[str, Any]) -> str` | — | Return the domain-separated canonical key for one edge identity. |
-| `materialize_typed_graph` | `(inputs: KnowledgeGraphInputs) -> dict[str, Any]` | — | Materialize a deterministic evidence-backed graph from evaluated inputs. |
+| `materialize_typed_graph` | `(inputs: KnowledgeGraphInputs) -> dict[str, Any]` | `@observed_phase('typed_graph')` | Materialize a deterministic evidence-backed graph from evaluated inputs. |
 | `validate_typed_graph` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None = None) -> dict[str, Any]` | — | Validate and canonicalize one ``llm-wiki-typed-graph/v1`` payload. |
 | `serialize_typed_graph` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None = None) -> str` | — | Return deterministic JSON for a standalone typed graph. |
 | `typed_graph_from_knowledge_extensions` | `(extensions: Mapping[str, Any], *, concept_kinds: Mapping[str, str] \| None = None) -> dict[str, Any] \| None` | — | Validate the reserved graph extension, returning ``None`` when absent. |

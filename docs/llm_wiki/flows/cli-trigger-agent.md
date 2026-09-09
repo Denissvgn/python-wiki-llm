@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [trigger_cmd](../modules/trigger_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_query_builder](../modules/documentation_query_builder.md), [extraction_jobs](../modules/extraction_jobs.md), and 20 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_query_builder](../modules/documentation_query_builder.md), [extraction_jobs](../modules/extraction_jobs.md), and 23 more
 
 **Complete modules touched:**
 
@@ -22,6 +22,9 @@
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [redaction](../modules/redaction.md)
 - [secure_file](../modules/secure_file.md)
 - [source_selection](../modules/source_selection.md)
@@ -89,7 +92,7 @@ sequenceDiagram
     p18-->>p1: getattr
 ```
 
-> Call sequence diagram shows 30 of 1094 interactions; 1064 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1105 interactions; 1075 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

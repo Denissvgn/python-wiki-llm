@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [migrate_cmd](../modules/migrate_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 27 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 29 more
 
 **Complete modules touched:**
 
@@ -10,9 +10,11 @@
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
+- [data_flow](../modules/data_flow.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [inventory_cache](../modules/inventory_cache.md)
@@ -22,8 +24,6 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_generation](../modules/knowledge_generation.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
-- [knowledge_graph](../modules/knowledge_graph.md)
-- [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -31,8 +31,10 @@
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
-- [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [validation](../modules/validation.md)
@@ -91,7 +93,7 @@ sequenceDiagram
     p14->>p15: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 3204 interactions; 3174 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3270 interactions; 3240 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

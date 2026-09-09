@@ -13,6 +13,7 @@ import pytest
 
 from llm_wiki_cli.services.ci_report import build_ci_check_payload
 from llm_wiki_cli.services.lint_service import LintIssue, LintReport
+from llm_wiki_cli.services.inventory_cache import InventoryCacheStats
 
 
 ROOT = Path(__file__).parents[1]
@@ -30,7 +31,19 @@ def _ci_payload(*, ok: bool = True) -> dict:
     )
     if not ok:
         report.issues.append(LintIssue("broken_links", "Broken link"))
-    return build_ci_check_payload(report)
+    return build_ci_check_payload(
+        report,
+        report_schema="v2",
+        runtime={
+            "cache": InventoryCacheStats(status="not_evaluated").to_dict(),
+            "report": {
+                "path": "report.md",
+                "explicit": True,
+                "status": "written",
+                "error": None,
+            },
+        },
+    )
 
 
 def _ci_output(*, ok: bool = True) -> str:
@@ -51,7 +64,7 @@ def _mutated_ci_output(path: tuple[str, ...], value: object) -> str:
 def _duplicate_schema_output() -> str:
     payload = json.dumps(_ci_payload(), sort_keys=True)
     return (
-        '{"schema_version":"llm-wiki-ci-check/v1",' + payload.removeprefix("{") + "\n"
+        '{"schema_version":"llm-wiki-ci-check/v2",' + payload.removeprefix("{") + "\n"
     )
 
 
@@ -469,7 +482,7 @@ def test_nonzero_cli_exit_is_preserved_when_raw_output_is_absent(
 @pytest.mark.parametrize(
     ("output", "delete_raw", "expected"),
     [
-        ("invalid output\n", False, "invalid v1 output"),
+        ("invalid output\n", False, "invalid v2 output"),
         ("", False, "empty output"),
         (None, True, "no output"),
     ],
@@ -484,12 +497,10 @@ def test_successful_cli_fails_closed_without_parseable_json(
 
     assert result.returncode != 0
     assert expected in (result.stderr + Path(wrapper_case["summary"]).read_text())
-    assert "Knowledge health: `unavailable`" in Path(
-        wrapper_case["summary"]
-    ).read_text(encoding="utf-8")
-    assert not (
-        Path(wrapper_case["report_dir"]) / "llm-wiki-ci-report.json"
-    ).exists()
+    assert "Knowledge health: `unavailable`" in Path(wrapper_case["summary"]).read_text(
+        encoding="utf-8"
+    )
+    assert not (Path(wrapper_case["report_dir"]) / "llm-wiki-ci-report.json").exists()
 
 
 def test_invalid_raw_output_never_uses_json_name(
@@ -527,7 +538,7 @@ def test_valid_failed_ci_payload_is_promoted_and_original_exit_is_preserved(
     ("output", "cli_exit"),
     [
         ('{"ok": true}\n', 0),
-        (_mutated_ci_output(("schema_version",), "llm-wiki-ci-check/v2"), 0),
+        (_mutated_ci_output(("schema_version",), "llm-wiki-ci-check/v3"), 0),
         (_mutated_ci_output(("strict",), False), 0),
         (_mutated_ci_output(("issue_count",), 1), 0),
         (
@@ -583,7 +594,7 @@ def test_schema_or_semantically_invalid_ci_output_is_never_promoted(
     assert (report_dir / "llm-wiki-ci-report.invalid.txt").read_text(
         encoding="utf-8"
     ) == output
-    assert "does not satisfy llm-wiki-ci-check/v1" in result.stderr
+    assert "does not satisfy llm-wiki-ci-check/v2" in result.stderr
 
 
 @pytest.mark.parametrize(

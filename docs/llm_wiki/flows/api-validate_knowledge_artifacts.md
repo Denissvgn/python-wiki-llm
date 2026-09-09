@@ -2,11 +2,12 @@
 
 **Entry point:** `validate_knowledge_artifacts` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 12 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 13 more
 
 **Complete modules touched:**
 
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -16,7 +17,8 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
-- [markdown_sections](../modules/markdown_sections.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -74,7 +76,7 @@ sequenceDiagram
     p9-->>p14: get
 ```
 
-> Call sequence diagram shows 30 of 1960 interactions; 1930 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1575 interactions; 1545 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -121,7 +123,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest` | `KNOWLEDGE_SCHEMA_VERSION`, `_KNOWLEDGE_SCHEMA_VERSION_RE`, `ConceptKind`, `KnowledgeGraphError`, `TYPED_GRAPH_EXTENSION_KEY`, `INVENTORY_HASH_EXTENSION`, `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` | - | `ValidatedKnowledgeArtifacts(...)` |
+| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest` | `KNOWLEDGE_SCHEMA_VERSION`, `_KNOWLEDGE_SCHEMA_VERSION_RE`, `ConceptKind`, `KnowledgeGraphError`, `TYPED_GRAPH_EXTENSION_KEY`, `INVENTORY_HASH_EXTENSION`, `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` | - | `validated` |
 | `validate_surface_index_bytes` | `surface_index_bytes: bytes` | - | - | `surface_payload` |
 | `_decode_json_object` | `content: bytes`, `field: str` | `KnowledgeArtifactError`, `Mapping` | - | `value` |
 | `isinstance` | - | - | - | - |
@@ -138,17 +140,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | validate_surface_index_bytes | 205 | `validate_surface_index_bytes(surface_index_bytes)` |
-| validate_surface_index_bytes | _decode_json_object | 174 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance | 502 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 503 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | decode | 505 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 507 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | loads | 509 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 511 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 530 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 512 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 536 | `KnowledgeArtifactError(field, ...)` |
+| validate_knowledge_artifacts | validate_surface_index_bytes | 265 | `validate_surface_index_bytes(surface_index_bytes)` |
+| validate_surface_index_bytes | _decode_json_object | 233 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance | 574 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 575 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | decode | 577 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 579 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | loads | 581 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 583 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 602 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 584 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 608 | `KnowledgeArtifactError(field, ...)` |
 
 ### Boundary effects
 
@@ -158,9 +160,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_decode_json_object` | `isinstance` | 502 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 505 |
-| external_call | `_decode_json_object` | `json.loads` | 509 |
+| unresolved_call | `_decode_json_object` | `isinstance` | 574 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 577 |
+| external_call | `_decode_json_object` | `json.loads` | 581 |
 | step_limit | `validate_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `validate_knowledge_artifacts` | `depth limit` | 0 |
 

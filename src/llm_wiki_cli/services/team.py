@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import stat
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import lru_cache
@@ -13,7 +14,12 @@ from typing import TYPE_CHECKING, Any
 from ..config import DEFAULT_WIKI_DIR
 from .io import read_md, write_json_atomic, write_md
 from .plugins import PluginError, iter_components
-from .validation import require_exact_fields, require_string_list
+from .validation import (
+    require_exact_fields,
+    require_portable_relative_path,
+    require_string_list,
+    resolve_portable_workspace_path,
+)
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
@@ -67,6 +73,15 @@ class TeamConfigError(ValueError):
 
 
 @dataclass(frozen=True)
+class TeamPolicyContext:
+    """One command's resolved policy and project-anchored wiki identity."""
+
+    config: dict[str, Any] | None
+    wiki_dir: str
+    root: Path
+
+
+@dataclass(frozen=True)
 class TeamConventionRequest:
     """Inputs needed to check wiki files against team conventions."""
 
@@ -75,6 +90,8 @@ class TeamConventionRequest:
     src_dir: str
     inventory: dict[str, Any]
     docker_inventory: dict[str, Any] | None = None
+    yaml_infrastructure_inventory: dict[str, Any] | None = None
+    manifest: SyncManifest | None = None
 
     @property
     def wiki_path(self) -> Path:
@@ -118,6 +135,21 @@ def _ensure_string_list(value: Any, field: str) -> list[str]:
     )
 
 
+def _validate_required_relative_path(relative: str, key: str) -> str:
+    try:
+        return require_portable_relative_path(relative)
+    except (TypeError, ValueError) as exc:
+        raise TeamConfigError(f"conventions.{key} contains an invalid wiki-relative path: {relative!r}") from exc
+
+
+def _resolve_required_path(wiki_path: Path, relative: str) -> Path:
+    return resolve_portable_workspace_path(
+        wiki_path, relative,
+        path_error=TeamConfigError(f"Invalid required wiki path: {relative!r}"),
+        escape_error=TeamConfigError(f"Required path escapes the configured wiki: {relative!r}"),
+    )
+
+
 def validate_team_config(data: Any) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise TeamConfigError("team config must be a JSON object.")
@@ -140,6 +172,9 @@ def validate_team_config(data: Any) -> dict[str, Any]:
         "required_infrastructure_sections",
     ):
         _ensure_string_list(conventions.get(key), f"conventions.{key}")
+    for key in ("required_files", "required_dirs"):
+        for relative in conventions[key]:
+            _validate_required_relative_path(relative, key)
     if not isinstance(conventions.get("require_log"), bool):
         raise TeamConfigError("conventions.require_log must be a boolean.")
     if not isinstance(conventions.get("canonical_naming"), bool):
@@ -181,7 +216,58 @@ def load_team_config(
         data = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise TeamConfigError(f"Invalid JSON in {path}: {exc}") from exc
+    except (OSError, UnicodeError) as exc:
+        raise TeamConfigError(f"Could not read team config {path}: {exc}") from exc
     return validate_team_config(data)
+
+
+def resolve_team_policy(
+    wiki_dir: str | Path | None,
+    *,
+    required: bool = False,
+    root: str | Path = ".",
+) -> TeamPolicyContext:
+    """Validate policy identity and contained obligations before expensive work."""
+    project_root = Path(root).resolve()
+    config = load_team_config(required=required, root=project_root)
+    selected = str(
+        wiki_dir
+        if wiki_dir is not None
+        else config["wiki_dir"]
+        if config is not None
+        else DEFAULT_WIKI_DIR
+    )
+    if config is not None:
+        try:
+            expected = (project_root / config["wiki_dir"]).resolve()
+            actual = (project_root / selected).resolve()
+            try:
+                expected.relative_to(project_root)
+                actual.relative_to(project_root)
+            except ValueError as exc:
+                raise TeamConfigError(
+                    "Configured team wiki must stay inside the project root."
+                ) from exc
+            if expected != actual:
+                raise TeamConfigError(
+                    f"Team wiki identity mismatch: configured {config['wiki_dir']!r}, "
+                    f"selected {selected!r}."
+                )
+            _required_path_states(config, actual)
+        except (OSError, RuntimeError, ValueError) as exc:
+            if isinstance(exc, TeamConfigError):
+                raise
+            raise TeamConfigError(
+                f"Could not resolve team wiki identity: {exc}"
+            ) from exc
+    from .immutable import freeze
+
+    return TeamPolicyContext(freeze(config), selected, project_root)
+
+
+def team_config_issue(exc: TeamConfigError, *, root: str | Path = ".") -> dict:
+    """Use the same policy diagnostic in standalone and integrated checks."""
+    return _issue("team_config", str(exc), path=str(team_config_path(root)))
 
 
 def team_prompt_template_default(root: str | Path = ".") -> str | None:
@@ -270,21 +356,84 @@ def check_plugin_requirements(
     return issues
 
 
+def _required_path_states(
+    config: dict[str, Any], wiki_path: Path
+) -> dict[tuple[str, str], bool]:
+    """Check every obligation inside the wiki before reading convention pages."""
+    conventions = config["conventions"]
+    obligations = {
+        *((relative, "file") for relative in conventions["required_files"]),
+        *((relative, "directory") for relative in conventions["required_dirs"]),
+    }
+    if conventions["require_log"]:
+        obligations.add(("log.md", "file"))
+    states = {}
+    for relative, kind in sorted(obligations):
+        try:
+            target = _resolve_required_path(wiki_path, relative)
+            try:
+                mode = target.stat().st_mode
+            except (FileNotFoundError, NotADirectoryError):
+                states[(relative, kind)] = False
+            else:
+                states[(relative, kind)] = (
+                    stat.S_ISREG(mode) if kind == "file" else stat.S_ISDIR(mode)
+                )
+        except (OSError, RuntimeError) as exc:
+            raise TeamConfigError(
+                f"Could not inspect required wiki path {relative!r}: {exc}"
+            ) from exc
+    return states
+
+
 def check_team_conventions(
     request: TeamConventionRequest,
 ) -> list[dict[str, str | None]]:
-    from .bootstrap_runtime import (
-        build_entity_occurrence_page_map,
-        build_module_page_map,
-    )
+    from .canonical_pages import canonical_generated_pages
     from .extraction_service import get_docker_inventory
+    from .infrastructure_inventory import get_yaml_infrastructure_inventory
+    from .sync_manifest import SyncManifest
 
     wiki_path = request.wiki_path
+    try:
+        validate_team_config(request.config)
+        required_paths = _required_path_states(request.config, wiki_path)
+        allowed = None
+        if request.config["conventions"]["canonical_naming"]:
+            manifest = request.manifest
+            if manifest is None:
+                try:
+                    manifest = SyncManifest.load(wiki_path)
+                except FileNotFoundError:
+                    pass
+            docker = request.docker_inventory
+            if docker is None:
+                docker = get_docker_inventory(request.src_dir)
+            yaml = request.yaml_infrastructure_inventory
+            if yaml is None:
+                yaml = get_yaml_infrastructure_inventory(request.src_dir)
+            infrastructure = dict(yaml)
+            infrastructure.update(docker)
+            allowed = canonical_generated_pages(
+                request.inventory, infrastructure, manifest=manifest
+            )
+    except TeamConfigError as exc:
+        return [_issue("team_config", str(exc), path=str(TEAM_CONFIG_PATH))]
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        return [
+            _issue(
+                "team_config",
+                f"Invalid canonical page authority: {exc}",
+                path=str(TEAM_CONFIG_PATH),
+            )
+        ]
     conventions = request.config["conventions"]
     issues: list[dict[str, str | None]] = []
 
-    for rel in conventions["required_files"]:
-        if not (wiki_path / rel).is_file():
+    for rel in sorted(set(conventions["required_files"])):
+        if rel == "log.md" and conventions["require_log"]:
+            continue
+        if not required_paths[(rel, "file")]:
             issues.append(
                 _issue(
                     "team_conventions",
@@ -292,8 +441,8 @@ def check_team_conventions(
                     path=rel,
                 )
             )
-    for rel in conventions["required_dirs"]:
-        if not (wiki_path / rel).is_dir():
+    for rel in sorted(set(conventions["required_dirs"])):
+        if not required_paths[(rel, "directory")]:
             issues.append(
                 _issue(
                     "team_conventions",
@@ -301,7 +450,7 @@ def check_team_conventions(
                     path=rel,
                 )
             )
-    if conventions["require_log"] and not (wiki_path / "log.md").is_file():
+    if conventions["require_log"] and not required_paths[("log.md", "file")]:
         issues.append(
             _issue(
                 "team_conventions",
@@ -348,62 +497,24 @@ def check_team_conventions(
                     )
                 )
 
-    if conventions["canonical_naming"]:
-        expected_entities = set(
-            build_entity_occurrence_page_map(request.inventory).values()
-        )
-        documented_entities = (
-            {p.stem for p in (wiki_path / "entities").glob("*.md")}
-            if (wiki_path / "entities").exists()
-            else set()
-        )
-        for name in sorted(documented_entities - expected_entities):
-            issues.append(
-                _issue(
-                    "team_canonical_naming",
-                    f"Entity page does not match canonical generated naming: {name}.md",
-                    path=f"entities/{name}.md",
-                    target=name,
-                )
-            )
-
-        expected_modules = set(build_module_page_map(request.inventory).values())
-        documented_modules = (
-            {p.stem for p in (wiki_path / "modules").glob("*.md")}
-            if (wiki_path / "modules").exists()
-            else set()
-        )
-        for name in sorted(documented_modules - expected_modules):
-            issues.append(
-                _issue(
-                    "team_canonical_naming",
-                    f"Module page does not match canonical generated naming: {name}.md",
-                    path=f"modules/{name}.md",
-                    target=name,
-                )
-            )
-
-        docker_inventory = request.docker_inventory
-        if docker_inventory is None:
-            docker_inventory = get_docker_inventory(request.src_dir)
-        expected_infra = {
-            f.replace("\\", "/").replace("/", "_").replace(".", "_")
-            for f in docker_inventory
+    if allowed is not None:
+        labels = {
+            "entities": "Entity",
+            "modules": "Module",
+            "infrastructure": "Infrastructure",
         }
-        documented_infra = (
-            {p.stem for p in (wiki_path / "infrastructure").glob("*.md")}
-            if (wiki_path / "infrastructure").exists()
-            else set()
-        )
-        for name in sorted(documented_infra - expected_infra):
-            issues.append(
-                _issue(
-                    "team_canonical_naming",
-                    f"Infrastructure page does not match canonical generated naming: {name}.md",
-                    path=f"infrastructure/{name}.md",
-                    target=name,
-                )
-            )
+        for directory, expected in allowed.items():
+            for page in sorted((wiki_path / directory).glob("*.md")):
+                relative = f"{directory}/{page.name}"
+                if relative not in expected:
+                    issues.append(
+                        _issue(
+                            "team_canonical_naming",
+                            f"{labels[directory]} page does not match canonical generated naming: {page.name}",
+                            path=relative,
+                            target=page.stem,
+                        )
+                    )
 
     return issues
 
@@ -417,20 +528,32 @@ def build_team_issues(
     require_config: bool = False,
     root: str | Path = ".",
     docker_inventory: dict | None = None,
+    policy: TeamPolicyContext | None = None,
+    yaml_infrastructure_inventory: dict | None = None,
+    manifest: SyncManifest | None = None,
 ) -> list[dict[str, str | None]]:
     try:
-        config = load_team_config(required=require_config, root=root)
+        policy = policy or resolve_team_policy(
+            wiki_dir, required=require_config, root=root
+        )
+        if (policy.root / wiki_dir).resolve() != (
+            policy.root / policy.wiki_dir
+        ).resolve():
+            raise TeamConfigError("Team policy context belongs to a different wiki.")
     except TeamConfigError as exc:
-        return [_issue("team_config", str(exc), path=str(team_config_path(root)))]
+        return [team_config_issue(exc, root=root)]
+    config = policy.config
     if not config:
         return []
-    return check_plugin_requirements(config, root=root) + check_team_conventions(
+    return check_plugin_requirements(config, root=policy.root) + check_team_conventions(
         TeamConventionRequest(
             config=config,
-            wiki_dir=wiki_dir,
+            wiki_dir=policy.root / policy.wiki_dir,
             src_dir=src_dir,
             inventory=inventory,
             docker_inventory=docker_inventory,
+            yaml_infrastructure_inventory=yaml_infrastructure_inventory,
+            manifest=manifest,
         )
     )
 

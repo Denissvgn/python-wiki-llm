@@ -11,8 +11,10 @@ import textwrap
 import types
 from copy import deepcopy
 from pathlib import Path
+from typing import cast
 
 import pytest
+
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, init_cmd
 from llm_wiki_cli.commands.extract_cmd import (
@@ -21,6 +23,8 @@ from llm_wiki_cli.commands.extract_cmd import (
     get_inventory,
     resolve_call_edges,
 )
+from llm_wiki_cli.services import knowledge_orchestration, plugins
+from llm_wiki_cli.services.bootstrap_runtime import _BootstrapRunState
 from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.diagrams import (
@@ -29,9 +33,8 @@ from llm_wiki_cli.services.diagrams import (
     GENERATED_DIAGRAM_NODE_LIMIT,
 )
 from llm_wiki_cli.services.entrypoints import build_flow, get_entry_points
-from llm_wiki_cli.services import knowledge_orchestration, plugins
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.wiki_surface import iter_directory_kinds, is_safe_page_id
+from llm_wiki_cli.services.wiki_surface import is_safe_page_id, iter_directory_kinds
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 # True when git is on PATH; used to guard git-dependent fixture steps.
@@ -526,17 +529,17 @@ class TestBootstrapCollisions:
         unchanged = tmp_path / ".llm-wiki-manifest.json"
 
         bootstrap_cmd._record_bootstrap_artifact(
-            state,
+            cast(_BootstrapRunState, state),
             path=created,
             write_state=bootstrap_cmd.ArtifactWriteState.CREATED,
         )
         bootstrap_cmd._record_bootstrap_artifact(
-            state,
+            cast(_BootstrapRunState, state),
             path=updated,
             write_state=bootstrap_cmd.ArtifactWriteState.UPDATED,
         )
         bootstrap_cmd._record_bootstrap_artifact(
-            state,
+            cast(_BootstrapRunState, state),
             path=unchanged,
             write_state=bootstrap_cmd.ArtifactWriteState.UNCHANGED,
         )

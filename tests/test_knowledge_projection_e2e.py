@@ -534,6 +534,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         for relationship in all_relationships
     )
 
+    assert view.knowledge is not None
     current_view = load_knowledge_read_view(
         wiki,
         live_evaluation=_live_evaluation(view.knowledge),
@@ -689,6 +690,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         read_only=True,
     )
 
+    assert "knowledge" in context
     assert context["knowledge"] == live_module["knowledge"] == mcp_module[
         "knowledge"
     ] == {
@@ -697,6 +699,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         "freshness": "evaluated (6 concepts)",
         "freshness_evaluated": True,
     }
+    assert live_module["concept"] is not None
     assert live_module["concept"]["freshness"] == mcp_module["concept"][
         "freshness"
     ] == {
@@ -705,6 +708,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         "hint": BASIS_INCOMPATIBLE_HINTS["extractor-selection-changed"],
         "live_comparison_performed": True,
     }
+    assert "surface" in context
     assert context["surface"]["knowledge_selection"] == {
         "unfiltered_total": 1,
         "filtered_total": 1,
@@ -803,6 +807,7 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
         "limitations": [],
     }
     assert live_graph["edges"][0]["coverage"]["truncated"] is True
+    assert "typed_graph" in context
     dependencies_coverage = next(
         item
         for item in context["typed_graph"]["coverage"]
@@ -840,12 +845,14 @@ def test_governed_projection_enriches_site_and_obsidian_without_native_writes(
             read_only=True,
         )
 
+    assert "knowledge" in snapshot_context
     assert snapshot_context["knowledge"] == {
         "availability": "ready",
         "reason": "all-projection-commitments-match",
         "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
+    assert "surface" in snapshot_context
     assert snapshot_context["surface"]["knowledge_selection"] == context["surface"][
         "knowledge_selection"
     ]

@@ -2,7 +2,7 @@
 
 **Entry point:** `validate_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 10 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 12 more
 
 **Complete modules touched:**
 
@@ -14,7 +14,9 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -74,7 +76,7 @@ sequenceDiagram
     p15->>p16: _string
 ```
 
-> Call sequence diagram shows 30 of 2015 interactions; 1985 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2027 interactions; 1997 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -136,17 +138,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_index | isinstance | 253 | `isinstance(value, KnowledgeIndex)` |
-| validate_knowledge_index | parse_knowledge_index | 255 | `parse_knowledge_index(_model_to_payload(...))` |
+| validate_knowledge_index | isinstance | 254 | `isinstance(value, KnowledgeIndex)` |
+| validate_knowledge_index | parse_knowledge_index | 256 | `parse_knowledge_index(_model_to_payload(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
-| _record | _object | 1571 | `_object(value, ...)` |
-| _object | dict | 1657 | `dict(require_mapping(...))` |
-| _object | require_mapping | 1658 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
+| _record | _object | 1581 | `_object(value, ...)` |
+| _object | dict | 1667 | `dict(require_mapping(...))` |
+| _object | require_mapping | 1668 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
 | require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance | 731 | `isinstance(key, str)` |
 | require_mapping | encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeModelError | 1660 | `KnowledgeModelError(path, 'must be an object')` |
-| _object | KnowledgeModelError | 1662 | `KnowledgeModelError(path, 'object keys must be strings')` |
+| _object | KnowledgeModelError | 1670 | `KnowledgeModelError(path, 'must be an object')` |
+| _object | KnowledgeModelError | 1672 | `KnowledgeModelError(path, 'object keys must be strings')` |
 
 ### Boundary effects
 
@@ -156,7 +158,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_knowledge_index` | `isinstance` | 253 |
+| unresolved_call | `validate_knowledge_index` | `isinstance` | 254 |
 | unresolved_call | `require_mapping` | `isinstance` | 727 |
 | unresolved_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |

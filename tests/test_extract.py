@@ -562,8 +562,10 @@ class TestGetInventory:
             path = tmp_path / rel_path
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("selected\n", encoding="utf-8")
-        outside = tmp_path / "outside" / (
-            "secret.py" if language == "python" else "secret.custom"
+        outside = (
+            tmp_path
+            / "outside"
+            / ("secret.py" if language == "python" else "secret.custom")
         )
         outside.parent.mkdir()
         outside.write_text("SECRET = 'must-not-be-read'\n", encoding="utf-8")
@@ -709,6 +711,7 @@ class TestGetInventory:
                 deep=False,
                 include_empty=False,
                 source_files=None,
+                defer_inventory_model_kinds=False,
             ):
                 assert source_files is not None
                 calls["source_files"] = source_files
@@ -1104,7 +1107,8 @@ class TestGetInventory:
             extract_cmd,
             "ThreadPoolExecutor",
             lambda *, max_workers: (
-                worker_counts.append(max_workers) or real_executor(max_workers=max_workers)
+                worker_counts.append(max_workers)
+                or real_executor(max_workers=max_workers)
             ),
         )
         monkeypatch.setattr(extract_cmd, "_instantiate_extractor", fake_instantiate)
@@ -1289,9 +1293,7 @@ class TestGetInventory:
         monkeypatch.setattr(
             extract_cmd, "parallel_safe_extractor_entry_points", lambda: set()
         )
-        monkeypatch.setattr(
-            extract_cmd, "_load_extractor", lambda _ep: FakeExtractor()
-        )
+        monkeypatch.setattr(extract_cmd, "_load_extractor", lambda _ep: FakeExtractor())
 
         result = extract_cmd.get_inventory_result(str(tmp_path))
 
@@ -1301,9 +1303,7 @@ class TestGetInventory:
         )
         assert result.extraction_job_plan.sequential_plan_ids == ("alpha", "zeta")
 
-    def test_inventory_plan_records_fully_warm_cache(
-        self, tmp_path, monkeypatch
-    ):
+    def test_inventory_plan_records_fully_warm_cache(self, tmp_path, monkeypatch):
         (tmp_path / "app.py").write_text("class App: pass\n", encoding="utf-8")
         (tmp_path / "app.ts").write_text("export class App {}\n", encoding="utf-8")
         registry = {
@@ -1603,9 +1603,7 @@ class TestGetInventory:
         assert "Path" in import_names
         assert "os" in import_names
 
-    def test_import_scope_marks_imports_that_never_run_at_import_time(
-        self, tmp_path
-    ):
+    def test_import_scope_marks_imports_that_never_run_at_import_time(self, tmp_path):
         (tmp_path / "main.py").write_text(
             textwrap.dedent("""\
             from typing import TYPE_CHECKING
@@ -4397,6 +4395,7 @@ class TestInventoryCache:
                 deep=False,
                 include_empty=False,
                 source_files=None,
+                defer_inventory_model_kinds=False,
             ):
                 assert source_files is not None
                 calls.append(list(source_files))

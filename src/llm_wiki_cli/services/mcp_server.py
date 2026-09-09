@@ -1633,20 +1633,15 @@ def _count_surface_pages(path: Path, entry) -> int:
 
 
 def _installed_hooks() -> list[str]:
-    hooks_dir = Path(".git") / "hooks"
-    if not hooks_dir.exists():
+    """Preserve the status field while reporting only verified legacy residue."""
+    from .legacy_hooks import LegacyHookError, inspect_legacy_hooks
+
+    try:
+        return list(
+            dict.fromkeys(hook.name for hook in inspect_legacy_hooks() if hook.owned)
+        )
+    except (LegacyHookError, OSError):
         return []
-    installed: list[str] = []
-    for hook_name in ["post-commit", "pre-commit", "pre-push"]:
-        hook_file = hooks_dir / hook_name
-        if not hook_file.exists():
-            continue
-        try:
-            if "LLM Wiki" in hook_file.read_text(encoding="utf-8"):
-                installed.append(hook_name)
-        except OSError:
-            continue
-    return installed
 
 
 def to_json(data: object) -> str:

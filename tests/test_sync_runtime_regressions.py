@@ -171,9 +171,9 @@ def test_wiki_only_commits_do_not_rewrite_repository_revision(
     _git(project, "commit", "--quiet", "-m", "add selected source")
     first_source_revision = _git(project, "rev-parse", "HEAD")
     monkeypatch.chdir(project)
-    bootstrap_cmd.run(
-        _bootstrap_args(src_dir=str(project), wiki_dir=str(wiki_dir))
-    )
+    bootstrap_cmd.run(_bootstrap_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+    # Establish sync-owned reuse metadata before testing an output-only commit.
+    sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
     first_tree = _wiki_bytes(wiki_dir)
     first_knowledge = load_knowledge_state(wiki_dir).knowledge
     assert first_knowledge is not None
@@ -389,9 +389,7 @@ def test_legacy_manifest_refreshes_package_facts_before_adopting_provenance(
         encoding="utf-8",
     )
     monkeypatch.chdir(project)
-    bootstrap_cmd.run(
-        _bootstrap_args(src_dir=str(project), wiki_dir=str(wiki_dir))
-    )
+    bootstrap_cmd.run(_bootstrap_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
     module_path = wiki_dir / "modules" / "app.md"
     assert "| python | 1 | 1 |" in module_path.read_text(encoding="utf-8")
 
@@ -400,8 +398,7 @@ def test_legacy_manifest_refreshes_package_facts_before_adopting_provenance(
         (wiki_dir / filename).unlink()
     assert SyncManifest.load(wiki_dir).artifact_hashes is None
     (project / "pyproject.toml").write_text(
-        '[project]\nname = "project"\nversion = "0.1.0"\n'
-        'dependencies = ["requests"]\n',
+        '[project]\nname = "project"\nversion = "0.1.0"\ndependencies = ["requests"]\n',
         encoding="utf-8",
     )
 
@@ -433,7 +430,7 @@ def test_legacy_manifest_refreshes_package_facts_before_adopting_provenance(
 
     sync_cmd.run(_sync_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
 
-    assert finalized_after_refresh == [True, True]
+    assert finalized_after_refresh == [True]
     assert _wiki_bytes(wiki_dir) == first_tree
     assert "Wiki is up to date." in capsys.readouterr().out
 
@@ -459,6 +456,7 @@ def test_repeated_surface_initialization_preserves_deferred_state_and_converges(
     flow_page = wiki_dir / "flows" / "api-publish.md"
     workflow_page = wiki_dir / "workflows" / "publish.md"
     manifest = SyncManifest.load(wiki_dir)
+    assert isinstance(manifest.generation_inputs["infrastructure"], dict)
     infrastructure_record = manifest.generation_inputs["infrastructure"]["sources"][
         "Dockerfile"
     ]

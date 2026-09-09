@@ -1,6 +1,6 @@
 # _ExtractedSyncInventory
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1618`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1621`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

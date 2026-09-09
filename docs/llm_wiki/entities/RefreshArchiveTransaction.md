@@ -32,13 +32,16 @@ Tracks an archived run until its replacement is safely committed.
 ```mermaid
 flowchart LR
     n0["_RefreshArchiveTransaction (src/llm_wiki_cli/services/documentation_run/contracts.py)"]
-    n1["prepare_documentation_run (src/llm_wiki_cli/services/documentation_run/prepare.py)"]
-    n2["_recover_interrupted_refresh (src/llm_wiki_cli/services/documentation_run/refresh.py)"]
+    n1["src/llm_wiki_cli/services/documentation_run/__init__.py"]
+    n2["prepare_documentation_run (src/llm_wiki_cli/services/documentation_run/prepare.py)"]
+    n3["_recover_interrupted_refresh (src/llm_wiki_cli/services/documentation_run/refresh.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/documentation_run_contracts.md"
-    click n1 "../modules/prepare.md"
-    click n2 "../modules/refresh.md"
+    click n1 "../modules/documentation_run___init__.md"
+    click n2 "../modules/prepare.md"
+    click n3 "../modules/refresh.md"
 ```
 
 ### Summary
@@ -51,5 +54,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
 | `prepare_documentation_run` | call | [prepare](../modules/prepare.md) | 1 |
 | `_recover_interrupted_refresh` | call | [refresh](../modules/refresh.md) | 1 |

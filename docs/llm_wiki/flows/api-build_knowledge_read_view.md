@@ -2,21 +2,21 @@
 
 **Entry point:** `build_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_consumption](../modules/knowledge_consumption.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 9 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_consumption](../modules/knowledge_consumption.md), and 9 more
 
 **Complete modules touched:**
 
 - [concept_identity](../modules/concept_identity.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
-- [markdown_sections](../modules/markdown_sections.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
-- [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
@@ -66,7 +66,7 @@ sequenceDiagram
     p6-->>p5: ValueError
 ```
 
-> Call sequence diagram shows 30 of 1204 interactions; 1174 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 841 interactions; 811 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -128,14 +128,14 @@ flowchart LR
 | build_knowledge_read_view | isinstance | 574 | `isinstance(load_result, KnowledgeLoadResult)` |
 | build_knowledge_read_view | TypeError | 575 | `TypeError('load_result must be a KnowledgeLoadResult')` |
 | build_knowledge_read_view | _read_mode | 576 | `_read_mode(snapshot_only=snapshot_only, mode=mode)` |
-| _read_mode | isinstance | 719 | `isinstance(snapshot_only, bool)` |
-| _read_mode | TypeError | 720 | `TypeError('snapshot_only must be a boolean')` |
-| _read_mode | isinstance | 730 | `isinstance(mode, KnowledgeReadMode)` |
-| _read_mode | KnowledgeReadMode | 731 | `KnowledgeReadMode(mode)` |
-| _read_mode | ValueError | 734 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
-| _read_mode | ValueError | 738 | `ValueError('snapshot_only conflicts with the requested mode')` |
+| _read_mode | isinstance | 713 | `isinstance(snapshot_only, bool)` |
+| _read_mode | TypeError | 714 | `TypeError('snapshot_only must be a boolean')` |
+| _read_mode | isinstance | 724 | `isinstance(mode, KnowledgeReadMode)` |
+| _read_mode | KnowledgeReadMode | 725 | `KnowledgeReadMode(mode)` |
+| _read_mode | ValueError | 728 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
+| _read_mode | ValueError | 732 | `ValueError('snapshot_only conflicts with the requested mode')` |
 | build_knowledge_read_view | _validate_load_result | 577 | `_validate_load_result(load_result)` |
-| _validate_load_result | isinstance | 743 | `isinstance(result.status, KnowledgeLoadState)` |
+| _validate_load_result | isinstance | 749 | `isinstance(result.status, KnowledgeLoadState)` |
 
 ### Boundary effects
 
@@ -147,12 +147,12 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `build_knowledge_read_view` | `isinstance` | 574 |
 | unresolved_call | `build_knowledge_read_view` | `TypeError` | 575 |
-| unresolved_call | `_read_mode` | `isinstance` | 719 |
-| unresolved_call | `_read_mode` | `TypeError` | 720 |
-| unresolved_call | `_read_mode` | `isinstance` | 730 |
-| unresolved_call | `_read_mode` | `ValueError` | 734 |
-| unresolved_call | `_read_mode` | `ValueError` | 738 |
-| unresolved_call | `_validate_load_result` | `isinstance` | 743 |
+| unresolved_call | `_read_mode` | `isinstance` | 713 |
+| unresolved_call | `_read_mode` | `TypeError` | 714 |
+| unresolved_call | `_read_mode` | `isinstance` | 724 |
+| unresolved_call | `_read_mode` | `ValueError` | 728 |
+| unresolved_call | `_read_mode` | `ValueError` | 732 |
+| unresolved_call | `_validate_load_result` | `isinstance` | 749 |
 | step_limit | `build_knowledge_read_view` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_read_view` | `depth limit` | 0 |
 

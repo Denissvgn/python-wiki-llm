@@ -1,6 +1,6 @@
 # KnowledgeEnvelopeError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:88`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:90`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)

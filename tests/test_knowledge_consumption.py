@@ -96,6 +96,7 @@ def test_valid_live_read_view_exposes_validated_state_and_exact_counts(tmp_path)
     assert dict(view.counts.evidence_by_state) == _expected_evidence_counts(
         loaded.knowledge
     )
+    assert view.counts.freshness_by_state is not None
     assert dict(view.counts.freshness_by_state) == dict(view.freshness.counts)
     assert view.counts.freshness_by_state[ComputedFreshness.CURRENT] == 3
     assert view.counts.freshness_by_state[ComputedFreshness.UNKNOWN] == 3
@@ -119,6 +120,7 @@ def test_default_read_without_live_evidence_never_claims_current(tmp_path):
         result.state is ComputedFreshness.UNKNOWN
         for result in view.freshness.by_locator.values()
     )
+    assert view.counts.freshness_by_state is not None
     assert view.counts.freshness_by_state[ComputedFreshness.CURRENT] == 0
     assert view.counts.freshness_by_state[ComputedFreshness.UNKNOWN] == len(
         loaded.knowledge.concepts
@@ -417,7 +419,9 @@ def test_open_read_view_loads_once_evaluates_at_most_once_and_never_rebuilds(
     assert "rebuild_callback" not in loader_kwargs
     assert len(freshness_calls) == expected_freshness_calls
     if freshness_calls:
-        assert freshness_calls[0] == (loaded.knowledge, live)
+        assert freshness_calls[0] == (loaded.validated_artifacts, live)
+        assert loaded.validated_artifacts is not None
+        assert loaded.validated_artifacts.knowledge is loaded.knowledge
     assert (view.freshness is not None) is bool(expected_freshness_calls)
 
 

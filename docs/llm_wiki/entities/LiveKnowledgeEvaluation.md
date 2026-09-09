@@ -1,6 +1,6 @@
 # LiveKnowledgeEvaluation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:159`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:160`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -39,23 +39,29 @@ flowchart LR
     n0["LiveKnowledgeEvaluation (src/llm_wiki_cli/services/knowledge_freshness.py)"]
     n1["build_knowledge_read_view (src/llm_wiki_cli/services/knowledge_consumption.py)"]
     n2["load_knowledge_read_view (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n3["_validate_live_evaluation (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n4["_validate_live_producer (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n5["evaluate_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n6["build_runtime_live_evaluation (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n3["_evaluate_model_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n4["_validate_live_evaluation (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n5["_validate_live_producer (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n6["evaluate_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n7["evaluate_validated_knowledge_freshness (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n8["build_runtime_live_evaluation (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
+    n8 --> n0
     click n0 "../modules/knowledge_freshness.md"
     click n1 "../modules/knowledge_consumption.md"
     click n2 "../modules/knowledge_consumption.md"
     click n3 "../modules/knowledge_freshness.md"
     click n4 "../modules/knowledge_freshness.md"
     click n5 "../modules/knowledge_freshness.md"
-    click n6 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_freshness.md"
+    click n7 "../modules/knowledge_freshness.md"
+    click n8 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -70,8 +76,10 @@ flowchart LR
 |---|---|---|---:|
 | `build_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `load_knowledge_read_view` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `_evaluate_model_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `_validate_live_evaluation` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `_validate_live_producer` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `evaluate_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `evaluate_validated_knowledge_freshness` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `build_runtime_live_evaluation` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
 | `build_runtime_live_evaluation` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

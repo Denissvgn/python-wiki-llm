@@ -26,51 +26,56 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/ci_check_cmd.py"]
     n2["src/llm_wiki_cli/commands/doctor_cmd.py"]
     n3["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n4["src/llm_wiki_cli/services/context_packet.py"]
-    n5["src/llm_wiki_cli/services/context_service.py"]
-    n6["src/llm_wiki_cli/services/doctor_service.py"]
-    n7["src/llm_wiki_cli/services/documentation_native.py"]
-    n8["src/llm_wiki_cli/services/extraction_jobs.py"]
-    n9["src/llm_wiki_cli/services/extraction_service.py"]
-    n10["src/llm_wiki_cli/services/lint_service.py"]
+    n4["src/llm_wiki_cli/commands/team_cmd.py"]
+    n5["src/llm_wiki_cli/services/context_packet.py"]
+    n6["src/llm_wiki_cli/services/context_service.py"]
+    n7["src/llm_wiki_cli/services/doctor_service.py"]
+    n8["src/llm_wiki_cli/services/documentation_native.py"]
+    n9["src/llm_wiki_cli/services/extraction_jobs.py"]
+    n10["src/llm_wiki_cli/services/extraction_service.py"]
+    n11["src/llm_wiki_cli/services/lint_service.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n3
-    n0 --> n5
-    n0 --> n8
+    n0 --> n4
+    n0 --> n6
     n0 --> n9
     n0 --> n10
-    n1 --> n8
-    n1 --> n10
-    n2 --> n6
-    n2 --> n8
-    n3 --> n8
+    n0 --> n11
+    n1 --> n9
+    n1 --> n11
+    n2 --> n7
+    n2 --> n9
     n3 --> n9
-    n4 --> n5
-    n4 --> n8
+    n3 --> n10
     n4 --> n9
-    n5 --> n4
-    n5 --> n8
+    n4 --> n10
+    n5 --> n6
     n5 --> n9
-    n6 --> n8
+    n5 --> n10
+    n6 --> n5
+    n6 --> n9
     n6 --> n10
-    n7 --> n5
-    n7 --> n8
     n7 --> n9
-    n9 --> n8
-    n10 --> n8
+    n7 --> n11
+    n8 --> n6
+    n8 --> n9
+    n8 --> n10
     n10 --> n9
+    n11 --> n9
+    n11 --> n10
     click n0 "../modules/cli.md"
     click n1 "../modules/ci_check_cmd.md"
     click n2 "../modules/doctor_cmd.md"
     click n3 "../modules/sync_cmd.md"
-    click n4 "../modules/context_packet.md"
-    click n5 "../modules/context_service.md"
-    click n6 "../modules/doctor_service.md"
-    click n7 "../modules/documentation_native.md"
-    click n8 "../modules/extraction_jobs.md"
-    click n9 "../modules/extraction_service.md"
-    click n10 "../modules/lint_service.md"
+    click n4 "../modules/team_cmd.md"
+    click n5 "../modules/context_packet.md"
+    click n6 "../modules/context_service.md"
+    click n7 "../modules/doctor_service.md"
+    click n8 "../modules/documentation_native.md"
+    click n9 "../modules/extraction_jobs.md"
+    click n10 "../modules/extraction_service.md"
+    click n11 "../modules/lint_service.md"
 ```
 
 ### Internal neighbors
@@ -81,6 +86,7 @@ flowchart LR
 | Inbound | [ci_check_cmd](../modules/ci_check_cmd.md) |
 | Inbound | [doctor_cmd](../modules/doctor_cmd.md) |
 | Inbound | [sync_cmd](../modules/sync_cmd.md) |
+| Inbound | [team_cmd](../modules/team_cmd.md) |
 | Inbound | [context_packet](../modules/context_packet.md) |
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [doctor_service](../modules/doctor_service.md) |

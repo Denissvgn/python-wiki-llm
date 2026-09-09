@@ -1,6 +1,6 @@
 # SourceFile
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:102`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:104`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)

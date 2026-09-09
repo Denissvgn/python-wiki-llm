@@ -58,7 +58,7 @@ Usage::
 | `re` | `re` |
 | `shlex` | `shlex` |
 | `sys` | `sys` |
-| `typing` | `Any` |
+| `typing` | `Any`, `Literal`, `overload` |
 
 ## Local dependency map
 
@@ -89,13 +89,16 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ProtocolRequestError](../entities/ProtocolRequestError.md) | 176 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
 | [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 191 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1731 | — | Operation-scoped query state captured from one knowledge read. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1773 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_extractor_failure_message` | `(inventory_result) -> str` | — | Return a compact, structured error message for extractor failures. |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[False] = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None) -> dict` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[True], job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None) -> InventoryResult` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None) -> dict \| InventoryResult` | `@overload` | — |
 | `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None) -> dict \| InventoryResult` | — | Build command inventory, optionally returning extraction metadata. |
 | `_selected_git_changed_files` | `(src_dir: str, source_snapshot: SourceSnapshot \| None) -> list[str] \| None` | — | — |
 | `_estimate_tokens` | `(text: str) -> int` | — | Approximate token count using the ~4 chars/token heuristic. |

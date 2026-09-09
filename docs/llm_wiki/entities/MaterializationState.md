@@ -1,6 +1,6 @@
 # _MaterializationState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:204`
+**Location:** `src/llm_wiki_cli/services/knowledge_graph.py:206`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_graph](../modules/knowledge_graph.md)

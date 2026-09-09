@@ -2,19 +2,25 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), [extraction_service](../modules/extraction_service.md), and 10 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), [extraction_jobs](../modules/extraction_jobs.md), and 16 more
 
 **Complete modules touched:**
 
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [data_flow](../modules/data_flow.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [imports](../modules/imports.md)
+- [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -76,7 +82,7 @@ sequenceDiagram
     p14->>p4: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 931 interactions; 901 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1281 interactions; 1251 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -146,10 +152,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 192 | `getattr(args, 'team_action', None)` |
-| run | _run_init | 194 | `_run_init(args)` |
-| _run_init | getattr | 59 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| _run_init | validate_path | 60 | `validate_path(wiki_dir, '--wiki-dir')` |
+| run | getattr | 262 | `getattr(args, 'team_action', None)` |
+| run | _run_init | 264 | `_run_init(args)` |
+| _run_init | getattr | 61 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| _run_init | validate_path | 62 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
@@ -162,16 +168,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 200 |
-| output | `print` | `_run_init` | 63 |
-| output | `print` | `_run_init` | 66 |
+| output | `print` | `run` | 270 |
+| output | `print` | `_run_init` | 65 |
+| output | `print` | `_run_init` | 68 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 192 |
-| unresolved_call | `_run_init` | `getattr` | 59 |
+| unresolved_call | `run` | `getattr` | 262 |
+| unresolved_call | `_run_init` | `getattr` | 61 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | external_call | `validate_path` | `Path.cwd().resolve` | 134 |

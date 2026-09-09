@@ -2,7 +2,7 @@
 
 **Entry point:** `evaluated_envelope_to_payload` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 6 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 7 more
 
 **Complete modules touched:**
 
@@ -12,6 +12,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -41,7 +42,6 @@ sequenceDiagram
     participant p17 as _normalize_json_value
     participant p18 as _normalize_json_value_inner
     participant p19 as set
-    participant p20 as _bundle_to_payload
     p0-->>p1: isinstance
     p0-->>p2: TypeError
     p0->>p3: KnowledgeEnvelopeError
@@ -54,6 +54,7 @@ sequenceDiagram
     p8-->>p1: isinstance
     p8-->>p2: TypeError
     p8->>p9: _emit_extensions
+    p9-->>p1: isinstance
     p9->>p10: _parse_extensions
     p10->>p11: _object
     p11-->>p5: dict
@@ -71,10 +72,9 @@ sequenceDiagram
     p10->>p16: _child
     p10->>p13: KnowledgeModelError
     p10->>p16: _child
-    p8->>p20: _bundle_to_payload
 ```
 
-> Call sequence diagram shows 30 of 685 interactions; 655 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 695 interactions; 665 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -137,34 +137,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluated_envelope_to_payload | isinstance | 1138 | `isinstance(envelope, EvaluatedEnvelope)` |
-| evaluated_envelope_to_payload | TypeError | 1139 | `TypeError('envelope must be an EvaluatedEnvelope')` |
-| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1141 | `KnowledgeEnvelopeError('schema_version', ...)` |
-| evaluated_envelope_to_payload | _validated_bundle_payload | 1145 | `_validated_bundle_payload(envelope.bundle)` |
-| _validated_bundle_payload | dict | 1927 | `dict(bundle.snapshot.extensions)` |
-| _validated_bundle_payload | pop | 1928 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
-| _validated_bundle_payload | replace | 1929 | `replace(bundle, snapshot=replace(...))` |
-| _validated_bundle_payload | replace | 1931 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
-| _validated_bundle_payload | knowledge_index_to_payload | 1937 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
-| knowledge_index_to_payload | isinstance | 641 | `isinstance(model, KnowledgeIndex)` |
-| knowledge_index_to_payload | TypeError | 642 | `TypeError('model must be a KnowledgeIndex')` |
+| evaluated_envelope_to_payload | isinstance | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
+| evaluated_envelope_to_payload | TypeError | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
+| evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
+| evaluated_envelope_to_payload | _validated_bundle_payload | 1148 | `_validated_bundle_payload(envelope.bundle)` |
+| _validated_bundle_payload | dict | 1942 | `dict(bundle.snapshot.extensions)` |
+| _validated_bundle_payload | pop | 1943 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
+| _validated_bundle_payload | replace | 1944 | `replace(bundle, snapshot=replace(...))` |
+| _validated_bundle_payload | replace | 1946 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
+| _validated_bundle_payload | knowledge_index_to_payload | 1952 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
+| knowledge_index_to_payload | isinstance | 651 | `isinstance(model, KnowledgeIndex)` |
+| knowledge_index_to_payload | TypeError | 652 | `TypeError('model must be a KnowledgeIndex')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1928 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1943 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1138 |
-| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1139 |
-| external_call | `_validated_bundle_payload` | `replace` | 1929 |
-| external_call | `_validated_bundle_payload` | `replace` | 1931 |
-| unresolved_call | `knowledge_index_to_payload` | `isinstance` | 641 |
-| unresolved_call | `knowledge_index_to_payload` | `TypeError` | 642 |
+| unresolved_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
+| unresolved_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
+| external_call | `_validated_bundle_payload` | `replace` | 1944 |
+| external_call | `_validated_bundle_payload` | `replace` | 1946 |
+| unresolved_call | `knowledge_index_to_payload` | `isinstance` | 651 |
+| unresolved_call | `knowledge_index_to_payload` | `TypeError` | 652 |
 | step_limit | `evaluated_envelope_to_payload` | `first 12 steps` | 0 |
 | truncated_flow | `evaluated_envelope_to_payload` | `depth limit` | 0 |
 

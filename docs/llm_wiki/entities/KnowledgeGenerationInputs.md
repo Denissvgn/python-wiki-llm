@@ -1,6 +1,6 @@
 # KnowledgeGenerationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:95`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:97`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -67,6 +67,7 @@ inventory source.
 | `graph_analyzer_limitations` | `Mapping[str, Sequence[str]]` | `field(default_factory=dict)` | — |
 | `graph_evidence_limit` | `int` | `DEFAULT_EVIDENCE_LIMIT` | — |
 | `governance` | `GovernanceLedger \| None` | `None` | — |
+| `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
 
 ## Methods
 

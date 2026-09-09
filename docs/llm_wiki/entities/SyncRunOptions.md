@@ -1,6 +1,6 @@
 # _SyncRunOptions
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1587`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1589`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -35,6 +35,7 @@ _Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py
 | `openapi_file` | `str \| None` | *required* | — |
 | `clear_openapi_file` | `bool` | *required* | — |
 | `source_selection` | `str \| Path \| None` | *required* | — |
+| `rebuild_knowledge` | `bool` | `False` | — |
 
 ## Methods
 
@@ -108,4 +109,4 @@ flowchart LR
 | `_canonical_sync_surface_flow_targets` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 38 logical references; 26 omitted by the 12-row generated summary limit.
+> References: showing 12 of 40 logical references; 28 omitted by the 12-row generated summary limit.

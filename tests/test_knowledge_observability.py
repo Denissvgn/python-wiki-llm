@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
+from typing import Any, cast
 
 import pytest
 
@@ -11,6 +12,7 @@ from llm_wiki_cli.services import knowledge_consumption
 from llm_wiki_cli.services.knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from llm_wiki_cli.services.knowledge_consumption import build_knowledge_read_view
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_model import ComputedFreshness
 from llm_wiki_cli.services.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
     BASIS_INCOMPATIBLE_REASON_CODES,
@@ -22,7 +24,6 @@ from llm_wiki_cli.services.knowledge_observability import (
     load_snapshot_knowledge_observability,
     summarize_knowledge_view,
 )
-from llm_wiki_cli.services.knowledge_model import ComputedFreshness
 from tests.knowledge_fixtures import fail_if_extraction_runs
 from tests.test_knowledge_freshness import _live_evaluation
 from tests.test_knowledge_loader import _committed_state
@@ -280,6 +281,7 @@ def test_snapshot_summary_never_claims_live_freshness(
     assert payload["freshness"] == "unevaluated (snapshot-only read)"
     assert payload["freshness_counts"] is None
     assert payload["freshness_evaluated"] is False
+    assert isinstance(payload["phase_durations_ms"], dict)
     assert payload["phase_durations_ms"]["load"] >= 0
     assert payload["phase_durations_ms"]["evaluate"] is None
     assert payload["phase_durations_ms"]["check"] is None
@@ -405,6 +407,8 @@ def test_aggregate_summary_defensively_copies_count_mappings(tmp_path):
     original = summary.to_payload()
 
     with pytest.raises(TypeError):
-        summary.evidence_issue_counts["unknown"] = 999
+        assert summary.evidence_issue_counts is not None
+        # Bypass static write restrictions to exercise runtime immutability.
+        cast(Any, summary.evidence_issue_counts)["unknown"] = 999
 
     assert summary.to_payload() == original

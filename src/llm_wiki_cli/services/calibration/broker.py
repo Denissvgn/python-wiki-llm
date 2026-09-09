@@ -3052,7 +3052,7 @@ def _read_bounded_file(
     total = 0
     flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)
     if hasattr(os, "O_NOFOLLOW"):
-        flags |= os.O_NOFOLLOW
+        flags |= getattr(os, "O_NOFOLLOW")
     try:
         descriptor = os.open(path, flags)
     except OSError as exc:
@@ -3296,7 +3296,7 @@ def _write_exclusive_sentinel(path: Path, content: bytes) -> None:
         raise OciBrokerError("Host isolation sentinel content must be non-empty bytes.")
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
     if hasattr(os, "O_NOFOLLOW"):
-        flags |= os.O_NOFOLLOW
+        flags |= getattr(os, "O_NOFOLLOW")
     descriptor = os.open(path, flags, 0o600)
     try:
         offset = 0

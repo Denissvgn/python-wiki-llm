@@ -114,17 +114,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options_hash | prepare_runtime_generation_options | 960 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
-| prepare_runtime_generation_options | isinstance | 219 | `isinstance(inventory_complete, bool)` |
-| prepare_runtime_generation_options | TypeError | 220 | `TypeError('inventory_complete must be a boolean')` |
-| prepare_runtime_generation_options | dict | 221 | `dict(generation_options)` |
-| prepare_runtime_generation_options | dict | 223 | `dict(generation_option_defaults)` |
-| prepare_runtime_generation_options | tuple | 225 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | fromkeys | 226 | `dict.fromkeys((...))` |
-| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 228 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
-| runtime_generation_options_hash | tuple | 963 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
-| runtime_generation_options_hash | hash_generation_options | 966 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
-| hash_generation_options | isinstance | 825 | `isinstance(values, Mapping)` |
+| runtime_generation_options_hash | prepare_runtime_generation_options | 1094 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
+| prepare_runtime_generation_options | isinstance | 317 | `isinstance(inventory_complete, bool)` |
+| prepare_runtime_generation_options | TypeError | 318 | `TypeError('inventory_complete must be a boolean')` |
+| prepare_runtime_generation_options | dict | 319 | `dict(generation_options)` |
+| prepare_runtime_generation_options | dict | 321 | `dict(generation_option_defaults)` |
+| prepare_runtime_generation_options | tuple | 323 | `tuple(dict.fromkeys(...))` |
+| prepare_runtime_generation_options | fromkeys | 324 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 326 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
+| runtime_generation_options_hash | tuple | 1097 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
+| runtime_generation_options_hash | hash_generation_options | 1100 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
+| hash_generation_options | isinstance | 827 | `isinstance(values, Mapping)` |
 
 ### Boundary effects
 
@@ -134,10 +134,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `prepare_runtime_generation_options` | `isinstance` | 219 |
-| unresolved_call | `prepare_runtime_generation_options` | `TypeError` | 220 |
-| unresolved_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 226 |
-| unresolved_call | `hash_generation_options` | `isinstance` | 825 |
+| unresolved_call | `prepare_runtime_generation_options` | `isinstance` | 317 |
+| unresolved_call | `prepare_runtime_generation_options` | `TypeError` | 318 |
+| unresolved_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 324 |
+| unresolved_call | `hash_generation_options` | `isinstance` | 827 |
 | step_limit | `runtime_generation_options_hash` | `first 12 steps` | 0 |
 
 ## Behavior

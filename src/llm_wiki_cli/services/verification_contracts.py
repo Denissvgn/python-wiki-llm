@@ -1287,7 +1287,7 @@ def _read_regular_receipt(
         )
     flags = os.O_RDONLY
     if hasattr(os, "O_NOFOLLOW"):
-        flags |= os.O_NOFOLLOW
+        flags |= getattr(os, "O_NOFOLLOW")
     try:
         descriptor = os.open(path, flags)
     except OSError as exc:

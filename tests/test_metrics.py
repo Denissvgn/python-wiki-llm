@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -265,11 +266,13 @@ def test_validation_summary_mapping_is_allowlisted_and_sanitized(tmp_path):
             "unexpected": {"remote": "private", "kept": "not-allowlisted"},
         }
     )
+    assert isinstance(payload["freshness_counts"], dict)
     payload["freshness_counts"] = {
         **payload["freshness_counts"],
         "locator": 1,
         "source_hash": 1,
     }
+    assert isinstance(payload["phase_durations_ms"], dict)
     payload["phase_durations_ms"] = {
         **payload["phase_durations_ms"],
         "output_path": "/private/report.json",
@@ -352,7 +355,7 @@ def test_metrics_recording_is_best_effort_for_type_and_serialization_failures(
         duration_ms=None,
         wiki_dir="wiki",
         src_dir=".",
-        knowledge_summary=object(),
+        knowledge_summary=cast(Any, object()),
         git_dir=git_dir,
     )
 

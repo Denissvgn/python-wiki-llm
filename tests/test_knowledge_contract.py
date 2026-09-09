@@ -727,33 +727,41 @@ def test_projection_mismatch_fixtures_hash_exact_persisted_bytes():
         assert case.knowledge_bytes is not None
 
     interrupted = cases["interrupted-before-manifest-commit"]
+    assert interrupted.surface_bytes is not None
     assert _sha256(interrupted.surface_bytes) != interrupted.committed_surface_hash
+    assert interrupted.knowledge_bytes is not None
     assert _sha256(interrupted.knowledge_bytes) != interrupted.committed_knowledge_hash
 
     surface_mismatch = cases["surface-projection-hash-mismatch"]
+    assert surface_mismatch.surface_bytes is not None
     assert (
         _sha256(surface_mismatch.surface_bytes)
         != surface_mismatch.committed_surface_hash
     )
+    assert surface_mismatch.knowledge_bytes is not None
     assert (
         _sha256(surface_mismatch.knowledge_bytes)
         == surface_mismatch.committed_knowledge_hash
     )
 
     knowledge_mismatch = cases["knowledge-projection-hash-mismatch"]
+    assert knowledge_mismatch.surface_bytes is not None
     assert (
         _sha256(knowledge_mismatch.surface_bytes)
         == knowledge_mismatch.committed_surface_hash
     )
+    assert knowledge_mismatch.knowledge_bytes is not None
     assert (
         _sha256(knowledge_mismatch.knowledge_bytes)
         != knowledge_mismatch.committed_knowledge_hash
     )
 
     envelope_mismatch = cases["envelope-projection-hash-mismatch"]
+    assert envelope_mismatch.surface_bytes is not None
     assert _sha256(envelope_mismatch.surface_bytes) == (
         envelope_mismatch.committed_surface_hash
     )
+    assert envelope_mismatch.knowledge_bytes is not None
     assert _sha256(envelope_mismatch.knowledge_bytes) == (
         envelope_mismatch.committed_knowledge_hash
     )

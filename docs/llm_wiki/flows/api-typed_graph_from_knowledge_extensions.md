@@ -148,35 +148,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| typed_graph_from_knowledge_extensions | isinstance | 516 | `isinstance(extensions, Mapping)` |
-| typed_graph_from_knowledge_extensions | KnowledgeGraphError | 517 | `KnowledgeGraphError('extensions', 'must be an object')` |
-| typed_graph_from_knowledge_extensions | get | 518 | `extensions.get(TYPED_GRAPH_EXTENSION_KEY)` |
-| typed_graph_from_knowledge_extensions | validate_typed_graph | 521 | `validate_typed_graph(value, concept_kinds=concept_kinds)` |
-| validate_typed_graph | _object | 407 | `_object(payload, 'typed_graph')` |
-| _object | require_mapping | 2282 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| typed_graph_from_knowledge_extensions | isinstance | 517 | `isinstance(extensions, Mapping)` |
+| typed_graph_from_knowledge_extensions | KnowledgeGraphError | 518 | `KnowledgeGraphError('extensions', 'must be an object')` |
+| typed_graph_from_knowledge_extensions | get | 519 | `extensions.get(TYPED_GRAPH_EXTENSION_KEY)` |
+| typed_graph_from_knowledge_extensions | validate_typed_graph | 522 | `validate_typed_graph(value, concept_kinds=concept_kinds)` |
+| validate_typed_graph | _object | 408 | `_object(payload, 'typed_graph')` |
+| _object | require_mapping | 2283 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
 | require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance | 731 | `isinstance(key, str)` |
 | require_mapping | encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2284 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2286 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | KnowledgeGraphError | 2285 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2287 | `KnowledgeGraphError(path, 'object keys must be strings')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen_analyzers.add` | `validate_typed_graph` | 453 |
-| mutation | `coverage.append` | `validate_typed_graph` | 454 |
-| mutation | `seen_keys.add` | `validate_typed_graph` | 478 |
-| mutation | `edges.append` | `validate_typed_graph` | 479 |
-| mutation | `edges.sort` | `validate_typed_graph` | 480 |
-| mutation | `coverage.sort` | `validate_typed_graph` | 481 |
+| mutation | `seen_analyzers.add` | `validate_typed_graph` | 454 |
+| mutation | `coverage.append` | `validate_typed_graph` | 455 |
+| mutation | `seen_keys.add` | `validate_typed_graph` | 479 |
+| mutation | `edges.append` | `validate_typed_graph` | 480 |
+| mutation | `edges.sort` | `validate_typed_graph` | 481 |
+| mutation | `coverage.sort` | `validate_typed_graph` | 482 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `typed_graph_from_knowledge_extensions` | `isinstance` | 516 |
-| unresolved_call | `typed_graph_from_knowledge_extensions` | `extensions.get` | 518 |
+| unresolved_call | `typed_graph_from_knowledge_extensions` | `isinstance` | 517 |
+| unresolved_call | `typed_graph_from_knowledge_extensions` | `extensions.get` | 519 |
 | unresolved_call | `require_mapping` | `isinstance` | 727 |
 | unresolved_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |

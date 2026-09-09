@@ -123,33 +123,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_producer_record | _build_component | 959 | `_build_component(tool, 'producer.tool', analyzer=False)` |
-| _build_component | isinstance | 1769 | `isinstance(value, ProducerComponentInput)` |
-| _build_component | KnowledgeEnvelopeError | 1770 | `KnowledgeEnvelopeError(field_name, 'must be a ProducerComponentInput')` |
-| _build_component | isinstance | 1775 | `isinstance(value.component_id, str)` |
-| _build_component | fullmatch | 1776 | `_COMPONENT_ID_RE.fullmatch(value.component_id)` |
-| _build_component | KnowledgeEnvelopeError | 1778 | `KnowledgeEnvelopeError(..., 'must be a normalized producer component ID')` |
-| _build_component | set | 1782 | `set(_validated_limitations(...))` |
-| _build_component | _validated_limitations | 1782 | `_validated_limitations(value.limitations, field_name)` |
-| _validated_limitations | isinstance | 1832 | `isinstance(value, (...))` |
-| _validated_limitations | KnowledgeEnvelopeError | 1833 | `KnowledgeEnvelopeError(..., 'must be an iterable of machine codes, not scalar text or bytes')` |
-| _validated_limitations | tuple | 1838 | `tuple(value)` |
+| build_producer_record | _build_component | 962 | `_build_component(tool, 'producer.tool', analyzer=False)` |
+| _build_component | isinstance | 1784 | `isinstance(value, ProducerComponentInput)` |
+| _build_component | KnowledgeEnvelopeError | 1785 | `KnowledgeEnvelopeError(field_name, 'must be a ProducerComponentInput')` |
+| _build_component | isinstance | 1790 | `isinstance(value.component_id, str)` |
+| _build_component | fullmatch | 1791 | `_COMPONENT_ID_RE.fullmatch(value.component_id)` |
+| _build_component | KnowledgeEnvelopeError | 1793 | `KnowledgeEnvelopeError(..., 'must be a normalized producer component ID')` |
+| _build_component | set | 1797 | `set(_validated_limitations(...))` |
+| _build_component | _validated_limitations | 1797 | `_validated_limitations(value.limitations, field_name)` |
+| _validated_limitations | isinstance | 1847 | `isinstance(value, (...))` |
+| _validated_limitations | KnowledgeEnvelopeError | 1848 | `KnowledgeEnvelopeError(..., 'must be an iterable of machine codes, not scalar text or bytes')` |
+| _validated_limitations | tuple | 1853 | `tuple(value)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `limitations.add` | `_build_component` | 1785 |
-| mutation | `limitations.add` | `_build_component` | 1809 |
+| mutation | `limitations.add` | `_build_component` | 1800 |
+| mutation | `limitations.add` | `_build_component` | 1824 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_build_component` | `isinstance` | 1769 |
-| unresolved_call | `_build_component` | `isinstance` | 1775 |
-| unresolved_call | `_build_component` | `_COMPONENT_ID_RE.fullmatch` | 1776 |
-| unresolved_call | `_validated_limitations` | `isinstance` | 1832 |
+| unresolved_call | `_build_component` | `isinstance` | 1784 |
+| unresolved_call | `_build_component` | `isinstance` | 1790 |
+| unresolved_call | `_build_component` | `_COMPONENT_ID_RE.fullmatch` | 1791 |
+| unresolved_call | `_validated_limitations` | `isinstance` | 1847 |
 | step_limit | `build_producer_record` | `first 12 steps` | 0 |
 
 ## Behavior

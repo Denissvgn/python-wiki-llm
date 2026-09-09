@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -45,7 +44,7 @@ from ..services.wiki_lifecycle import (
     WikiScaffoldPathError,
     require_safe_wiki_scaffold,
 )
-from .hook_cmd import is_managed_hook_content
+from ..services.legacy_hooks import LegacyHookError, inspect_legacy_hooks
 
 
 def _count_markdown_files(directory: Path) -> int:
@@ -941,61 +940,22 @@ def run(args) -> None:
         scaffold_error=scaffold_error,
     )
 
-    # Hooks
-    hooks_dir = git_dir / "hooks"
-    hooks_unsafe = first_unsafe_path_component(hooks_dir)
-    if hooks_unsafe is not None:
+    # Recognized hooks are legacy residue, never a missing installation feature.
+    try:
+        legacy_hooks = [hook.name for hook in inspect_legacy_hooks() if hook.owned]
+    except (LegacyHookError, OSError) as exc:
+        print(f"Hooks:           unavailable ({exc})")
         print(
-            "Hooks:           unavailable (unsafe path: "
-            f"{display_project_path(hooks_unsafe)})"
+            "Hook cleanup:    inspect unsafe hook entries, then run `llm-wiki upgrade`"
         )
-    elif hooks_dir.exists():
-        installed = []
-        unavailable = []
-        non_executable = []
-        for hook_name in ["post-commit", "pre-commit", "pre-push"]:
-            hook_file = hooks_dir / hook_name
-            if first_unsafe_path_component(hook_file) is not None:
-                unavailable.append(hook_name)
-                continue
-            if not hook_file.exists():
-                continue
-            if not hook_file.is_file():
-                unavailable.append(hook_name)
-                continue
-            try:
-                content = hook_file.read_text(encoding="utf-8")
-                mode = hook_file.stat().st_mode
-            except (OSError, UnicodeError):
-                unavailable.append(hook_name)
-                continue
-            if is_managed_hook_content(hook_name, content):
-                if os.name != "nt" and mode & 0o111 == 0:
-                    unavailable.append(hook_name)
-                    non_executable.append(hook_name)
-                else:
-                    installed.append(hook_name)
-        if unavailable:
-            print(
-                "Hooks:           unavailable (non-regular, unreadable, or "
-                "non-executable: " + ", ".join(unavailable) + ")"
-            )
-            if set(unavailable) == set(non_executable):
-                print(
-                    "Hook recovery:  rerun `llm-wiki install-hook --force` to "
-                    "restore executable managed hooks"
-                )
-            else:
-                print(
-                    "Hook recovery:  inspect and move aside unsafe or non-regular "
-                    "hook entries, then rerun `llm-wiki install-hook --force`"
-                )
-        elif installed:
-            print(f"Hooks:           {', '.join(installed)}")
-        else:
-            print("Hooks:           none installed")
     else:
-        print("Hooks:           no .git/hooks directory")
+        if legacy_hooks:
+            print(f"Hooks:           retired (remaining: {', '.join(legacy_hooks)})")
+            print(
+                f"Hook cleanup:    llm-wiki upgrade --wiki-dir {shell_quote(wiki_dir)}"
+            )
+        else:
+            print("Hooks:           retired (none installed)")
 
     # Circuit breaker
     git_unsafe = first_unsafe_path_component(git_dir)

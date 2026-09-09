@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-09
+
+### Added
+
+- `ci-check` supports inventory-cache controls, `--no-report`, and an opt-in
+  `llm-wiki-ci-check/v2` JSON envelope with cache/report persistence status and
+  separate check and command exit codes.
+- Sync, lint, and CI provide bounded stderr progress with `--progress` and
+  `--progress-format`. `sync --rebuild-knowledge` explicitly runs the full
+  knowledge builder independently of source caching.
+
+### Changed
+
+- Knowledge readers reuse immutable validated models and captured artifact
+  bytes. Sync can reuse an unchanged validated snapshot after recording its
+  generation inputs.
+- Python caching retains per-file import and data-effect observations and
+  recalculates cross-file model classification after merging inventory.
+
+### Removed
+
+- The public `install-hook` command and automatic Git hook installation are
+  removed. Run `llm-wiki upgrade` in each repository after updating the package
+  to remove recognized, unmodified legacy `post-commit`, `pre-commit`, and
+  `pre-push` hooks. Customized, unrelated, and external hooks are preserved.
+  Use explicit `sync`, `lint`, and `generate-prompt` commands for maintenance.
+
+### Fixed
+
+- Python API return types now reflect the selected context format and inventory
+  metadata options. Compatibility-module exports are visible to type-aware
+  editors, and optional values and platform-specific file attributes are
+  handled consistently.
+- Team checks enforce the configured wiki directory and contain required paths
+  within that wiki. A missing architectural log is reported once.
+- Canonical naming accepts generated private-only modules, collision-suffixed
+  names, supported infrastructure YAML, and validated retained removal pages.
+- Unwritable implicit cache/report destinations no longer discard computed
+  findings. Explicit destinations are checked early, and report replacement is
+  atomic.
+- Git evidence honors the selected local line-ending setting when a global
+  `core.autocrlf=input` value is overridden by a boolean value.
+
 ## [1.8.1] - 2026-09-06
 
 ### Changed
@@ -858,7 +901,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.1...v2.0.0
 [1.8.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.6.0...v1.7.0

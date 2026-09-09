@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 521 | [Open section](#entities) |
-| Modules | 152 | [Open section](#modules) |
-| Workflows | 12 | [Open section](#workflows) |
+| Entities | 533 | [Open section](#entities) |
+| Modules | 159 | [Open section](#modules) |
+| Workflows | 15 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 436 | [Open section](#entry-point-flows) |
+| Entry-point flows | 435 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -28,6 +28,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ApplyDiffContext](entities/ApplyDiffContext.md)
 - [ArtifactIntegrityError](entities/ArtifactIntegrityError.md)
 - [ArtifactSnapshot](entities/ArtifactSnapshot.md)
+- [ArtifactValidation](entities/ArtifactValidation.md)
 - [ArtifactWriteState](entities/ArtifactWriteState.md)
 - [AssetIndex](entities/AssetIndex.md)
 - [BootstrapContractError](entities/BootstrapContractError.md)
@@ -57,6 +58,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [CiCheckReportError](entities/CiCheckReportError.md)
 - [CiWorkflowInspection](entities/CiWorkflowInspection.md)
 - [CommitStage](entities/CommitStage.md)
+- [CommittedKnowledgeState](entities/CommittedKnowledgeState.md)
 - [CommittedRuntimeProvenance](entities/CommittedRuntimeProvenance.md)
 - [CompatibilityModule](entities/CompatibilityModule.md)
 - [ComponentVisitor](entities/ComponentVisitor.md)
@@ -182,6 +184,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [FlowForEntrypointResult](entities/FlowForEntrypointResult.md)
 - [FlowResult](entities/FlowResult.md)
 - [FrontMatterParseResult](entities/FrontMatterParseResult.md)
+- [FrozenDict](entities/FrozenDict.md)
+- [FrozenList](entities/FrozenList.md)
 - [GeneratedSectionContext](entities/GeneratedSectionContext.md)
 - [GeneratedSectionCoverage](entities/GeneratedSectionCoverage.md)
 - [GeneratedSurfacePruneError](entities/GeneratedSurfacePruneError.md)
@@ -208,7 +212,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HaskellExtractor](entities/HaskellExtractor.md)
 - [HeadingCandidate](entities/HeadingCandidate.md)
 - [HelperPrepareResult](entities/HelperPrepareResult.md)
-- [HookInspection](entities/HookInspection.md)
 - [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
 - [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
 - [HostBrokerAuthenticationUnavailable](entities/HostBrokerAuthenticationUnavailable.md)
@@ -284,6 +287,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [KnowledgeStatus](entities/KnowledgeStatus.md)
 - [LanguagePlugin](entities/LanguagePlugin.md)
 - [LazyCalibrationAnnotations](entities/LazyCalibrationAnnotations.md)
+- [LegacyHookError](entities/LegacyHookError.md)
+- [LegacyHookInspection](entities/LegacyHookInspection.md)
 - [Lifecycle](entities/Lifecycle.md)
 - [LifecycleEvent](entities/LifecycleEvent.md)
 - [LifecycleStatus](entities/LifecycleStatus.md)
@@ -291,6 +296,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [LinkSyntax](entities/LinkSyntax.md)
 - [LintInputs](entities/LintInputs.md)
 - [LintIssue](entities/LintIssue.md)
+- [LintPreflight](entities/LintPreflight.md)
 - [LintProfiler](entities/LintProfiler.md)
 - [LintReport](entities/LintReport.md)
 - [LiveKnowledgeEvaluation](entities/LiveKnowledgeEvaluation.md)
@@ -376,6 +382,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [PageSectionObservations](entities/PageSectionObservations.md)
 - [PagesForSymbolResult](entities/PagesForSymbolResult.md)
 - [PathValidationError](entities/PathValidationError.md)
+- [Phase](entities/Phase.md)
 - [PlannedArtifactWrite](entities/PlannedArtifactWrite.md)
 - [PluginEntryPointDetectionResult](entities/PluginEntryPointDetectionResult.md)
 - [PluginError](entities/PluginError.md)
@@ -384,6 +391,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ProducerComponent](entities/ProducerComponent.md)
 - [ProducerComponentInput](entities/ProducerComponentInput.md)
 - [ProducerRecord](entities/ProducerRecord.md)
+- [Progress](entities/Progress.md)
 - [ProtectedArtifactDurabilityError](entities/ProtectedArtifactDurabilityError.md)
 - [ProtectedArtifactError](entities/ProtectedArtifactError.md)
 - [ProtectedArtifactIntegrityError](entities/ProtectedArtifactIntegrityError.md)
@@ -421,6 +429,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [Resolution](entities/Resolution.md)
 - [ResultArtifactError](entities/ResultArtifactError.md)
 - [ResultBounds](entities/ResultBounds.md)
+- [ReusedSync](entities/ReusedSync.md)
 - [ReviewEvent](entities/ReviewEvent.md)
 - [ReviewEvidence](entities/ReviewEvidence.md)
 - [ReviewFinding](entities/ReviewFinding.md)
@@ -430,9 +439,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [RootDependencyDiagram](entities/RootDependencyDiagram.md)
 - [RunnableMcpServer](entities/RunnableMcpServer.md)
 - [RuntimeArtifactInspection](entities/RuntimeArtifactInspection.md)
+- [RuntimeDestination](entities/RuntimeDestination.md)
 - [RuntimeGraphObservations](entities/RuntimeGraphObservations.md)
 - [RuntimeKnowledgeInputs](entities/RuntimeKnowledgeInputs.md)
 - [RuntimeLiveEvaluationInputs](entities/RuntimeLiveEvaluationInputs.md)
+- [RuntimeOutputError](entities/RuntimeOutputError.md)
 - [RustExtractionRequest](entities/RustExtractionRequest.md)
 - [RustExtractor](entities/RustExtractor.md)
 - [SafeFormat](entities/SafeFormat.md)
@@ -490,6 +501,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [TargetPage](entities/TargetPage.md)
 - [TeamConfigError](entities/TeamConfigError.md)
 - [TeamConventionRequest](entities/TeamConventionRequest.md)
+- [TeamPolicyContext](entities/TeamPolicyContext.md)
 - [TreeBaseline](entities/TreeBaseline.md)
 - [TreeSnapshot](entities/TreeSnapshot.md)
 - [TsPathAliasRule](entities/TsPathAliasRule.md)
@@ -551,6 +563,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [bump_cmd](modules/bump_cmd.md) - `src/llm_wiki_cli/commands/bump_cmd.py`
 - [calibration___init__](modules/calibration___init__.md) - Isolated calibration services.
 - [calibration_contracts](modules/calibration_contracts.md) - Deterministic evidence contracts for standalone documentation calibration.
+- [canonical_pages](modules/canonical_pages.md) - Canonical generated page names and explicitly retained removal history.
 - [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
 - [ci_installer](modules/ci_installer.md) - Portable installation of the managed LLM Wiki integrity workflow.
 - [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
@@ -595,8 +608,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [generate_prompt_cmd](modules/generate_prompt_cmd.md) - `src/llm_wiki_cli/commands/generate_prompt_cmd.py`
 - [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
-- [hook_cmd](modules/hook_cmd.md) - `src/llm_wiki_cli/commands/hook_cmd.py`
+- [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
+- [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
 - [imports](modules/imports.md) - `src/llm_wiki_cli/services/imports.py`
 - [infrastructure_inventory](modules/infrastructure_inventory.md) - Inventory helpers for non-Docker infrastructure YAML files.
 - [infrastructure_sync](modules/infrastructure_sync.md) - Deterministic infrastructure discovery and incremental sync planning.
@@ -623,7 +637,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_observability](modules/knowledge_observability.md) - Privacy-safe observability for native knowledge consumers.
 - [knowledge_orchestration](modules/knowledge_orchestration.md) - Command-facing orchestration for generated native knowledge artifacts.
 - [knowledge_projection](modules/knowledge_projection.md) - Safe, deterministic projections over one validated knowledge read view.
+- [knowledge_reuse](modules/knowledge_reuse.md) - Versioned input commitments for conservative, validated sync no-ops.
 - [knowledge_verification](modules/knowledge_verification.md) - Read-only machine-verification evaluation for native knowledge sessions.
+- [legacy_hooks](modules/legacy_hooks.md) - Recognize and retire historical LLM Wiki Git hooks without installing hooks.
 - [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`
 - [llm-wiki_main](modules/llm-wiki_main.md) - `integrations/obsidian/llm-wiki/main.js`
 - [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) - LLM Wiki CLI.
@@ -646,9 +662,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [plugins_cmd](modules/plugins_cmd.md) - `src/llm_wiki_cli/commands/plugins_cmd.py`
 - [prepare](modules/prepare.md) - Documentation-run prepare services.
 - [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) - `src/llm_wiki_cli/commands/prepare_extractors_cmd.py`
+- [progress](modules/progress.md) - Bounded command-local phase events; services are silent without a caller sink.
 - [protected_artifacts](modules/protected_artifacts.md) - Protected, bounded artifact storage for controller-owned lifecycle state.
 - [python_contracts](modules/python_contracts.md) - Pure AST helpers for reconstructable Python declaration contracts.
 - [python_extractor](modules/python_extractor.md) - Python AST extractor for agent-wiki-cli.
+- [python_observations](modules/python_observations.md) - Canonical Python observation envelopes and per-source cache validation.
 - [record](modules/record.md) - Documentation-run record services.
 - [redaction](modules/redaction.md) - Shared best-effort redaction for credential-like text.
 - [refresh](modules/refresh.md) - Documentation-run refresh services.
@@ -658,6 +676,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [rendering_lifecycle](modules/rendering_lifecycle.md) - Profile selection and live managed-schema lifecycle classification.
 - [resource_diagnostics](modules/resource_diagnostics.md) - `src/llm_wiki_cli/services/resource_diagnostics.py`
 - [review_cmd](modules/review_cmd.md) - `src/llm_wiki_cli/commands/review_cmd.py`
+- [runtime_output](modules/runtime_output.md) - Best-effort implicit output and preflighted operator-selected destinations.
 - [rust_extractor](modules/rust_extractor.md) - Rust AST extractor for agent-wiki-cli.
 - [section_ownership](modules/section_ownership.md) - Conservative section ownership, scoped hashes, and semantic merge policy.
 - [secure_file](modules/secure_file.md) - Helpers for writing local runtime files with best-effort privacy.
@@ -702,6 +721,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [apply_sync_changes](workflows/apply_sync_changes.md) - entry: `sync_cmd._apply_sync_changes`
 - [build_apply_diff_context](workflows/build_apply_diff_context.md) - entry: `sync_cmd._build_apply_diff_context`
 - [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
+- [collect_lint_inputs](workflows/collect_lint_inputs.md) - entry: `lint_service._collect_lint_inputs`
 - [exit_if_large_unforced_diff](workflows/exit_if_large_unforced_diff.md) - entry: `sync_cmd._exit_if_large_unforced_diff`
 - [finalize_bootstrap](workflows/finalize_bootstrap.md) - entry: `bootstrap_runtime._finalize_bootstrap`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
@@ -709,6 +729,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [get_inventory](workflows/get_inventory.md) - entry: `context_service.get_inventory`
 - [print_dry_run_plan](workflows/print_dry_run_plan.md) - entry: `sync_cmd._print_dry_run_plan`
 - [runtime_live_concept_bases](workflows/runtime_live_concept_bases.md) - entry: `knowledge_orchestration._runtime_live_concept_bases`
+- [sync_reuse_input_basis](workflows/sync_reuse_input_basis.md) - entry: `sync_cmd._sync_reuse_input_basis`
+- [try_sync_knowledge_reuse](workflows/try_sync_knowledge_reuse.md) - entry: `sync_cmd._try_sync_knowledge_reuse`
 
 ## Guides
 
@@ -1126,7 +1148,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [cli-init](flows/cli-init.md) - entry: `run`
 - [cli-install](flows/cli-install.md) - entry: `run`
 - [cli-install-ci](flows/cli-install-ci.md) - entry: `run`
-- [cli-install-hook](flows/cli-install-hook.md) - entry: `run`
 - [cli-knowledge](flows/cli-knowledge.md) - entry: `run`
 - [cli-lint](flows/cli-lint.md) - entry: `run`
 - [cli-mcp](flows/cli-mcp.md) - entry: `run`

@@ -1,6 +1,6 @@
 # TeamConventionRequest
 
-**Location:** `src/llm_wiki_cli/services/team.py:70`
+**Location:** `src/llm_wiki_cli/services/team.py:85`
 **Kind:** Class
 **Bases:** —
 **Module:** [team](../modules/team.md)
@@ -20,6 +20,8 @@ Inputs needed to check wiki files against team conventions.
 | `src_dir` | `str` | *required* | — |
 | `inventory` | `dict[str, Any]` | *required* | — |
 | `docker_inventory` | `dict[str, Any] \| None` | `None` | — |
+| `yaml_infrastructure_inventory` | `dict[str, Any] \| None` | `None` | — |
+| `manifest` | `SyncManifest \| None` | `None` | — |
 
 ## Methods
 
@@ -46,7 +48,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [team](../modules/team.md) | 1 | `config`, `docker_inventory`, `inventory`, `src_dir`, `wiki_dir` |
+| [team](../modules/team.md) | 1 | `config`, `docker_inventory`, `inventory`, `manifest`, `src_dir`, `wiki_dir`, `yaml_infrastructure_inventory` |
 
 ### References
 

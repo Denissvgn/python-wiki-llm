@@ -1,6 +1,6 @@
 # InventoryCache
 
-**Location:** `src/llm_wiki_cli/services/inventory_cache.py:280`
+**Location:** `src/llm_wiki_cli/services/inventory_cache.py:344`
 **Kind:** Class
 **Bases:** —
 **Module:** [inventory_cache](../modules/inventory_cache.md)
@@ -19,9 +19,9 @@ JSON-backed cache for per-file built-in inventory entries.
 |--------|-----------|------------|-------------|
 | `__init__` | `(src_dir: str \| Path, options: InventoryCacheOptions)` | — | — |
 | `enabled` | `() -> bool` | `@property` | — |
-| `load` | `(cache_key: dict[str, Any]) -> dict[str, dict]` | — | — |
+| `load` | `(cache_key: dict[str, Any]) -> dict[str, dict]` | `@observed_phase('cache_lookup')` | — |
 | `finalize_lookup_status` | `() -> None` | — | — |
-| `save` | `(cache_key: dict[str, Any], files: dict[str, dict]) -> None` | — | — |
+| `save` | `(cache_key: dict[str, Any], files: dict[str, dict]) -> None` | `@observed_phase('cache_save')` | — |
 
 ## Relationships
 
@@ -33,14 +33,18 @@ flowchart LR
     n2["_prepare_inventory_build_context (src/llm_wiki_cli/services/extraction_service.py)"]
     n3["_record_stale_cache_entry (src/llm_wiki_cli/services/extraction_service.py)"]
     n4["_should_save_inventory_cache (src/llm_wiki_cli/services/extraction_service.py)"]
-    n5["format_cache_stats (src/llm_wiki_cli/services/inventory_cache.py)"]
-    n6["InventoryCache.__init__ (src/llm_wiki_cli/services/inventory_cache.py)"]
+    n5["cache_options_from_args (src/llm_wiki_cli/services/inventory_cache.py)"]
+    n6["format_cache_stats (src/llm_wiki_cli/services/inventory_cache.py)"]
+    n7["InventoryCache.__init__ (src/llm_wiki_cli/services/inventory_cache.py)"]
+    n8["prepare_cache_options (src/llm_wiki_cli/services/inventory_cache.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
+    n8 --> n0
     click n0 "../modules/inventory_cache.md"
     click n1 "../modules/extraction_service.md"
     click n2 "../modules/extraction_service.md"
@@ -48,6 +52,8 @@ flowchart LR
     click n4 "../modules/extraction_service.md"
     click n5 "../modules/inventory_cache.md"
     click n6 "../modules/inventory_cache.md"
+    click n7 "../modules/inventory_cache.md"
+    click n8 "../modules/inventory_cache.md"
 ```
 
 ### Summary
@@ -64,5 +70,7 @@ flowchart LR
 | `_prepare_inventory_build_context` | call | [extraction_service](../modules/extraction_service.md) | 1 |
 | `_record_stale_cache_entry` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `_should_save_inventory_cache` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
+| `cache_options_from_args` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
 | `format_cache_stats` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
 | `InventoryCache.__init__` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
+| `prepare_cache_options` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |

@@ -9,6 +9,8 @@ extraction of its own.
 
 from __future__ import annotations
 
+from .progress import observed_phase
+
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from collections.abc import Set as AbstractSet
@@ -32,8 +34,11 @@ from .knowledge_artifacts import (
     ValidatedKnowledgeArtifacts,
     commit_knowledge_artifacts,
     validate_knowledge_artifacts,
+    require_validated_artifacts,
+    validated_artifact_bytes,
 )
 from .knowledge_envelope import (
+    EvaluatedEnvelope,
     ConsumedInput,
     ConsumedInputKind,
     ProducerComponentInput,
@@ -151,12 +156,8 @@ class RuntimeKnowledgeInputs:
     generation_option_defaults: Mapping[str, Any] = field(default_factory=dict)
     generation_option_allowlist: Sequence[str] = ()
     call_edges: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
-    dependency_observations: (
-        Mapping[str, Any] | Sequence[Mapping[str, Any]]
-    ) = ()
-    entrypoint_observations: (
-        Mapping[str, Any] | Sequence[Mapping[str, Any]]
-    ) = ()
+    dependency_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
+    entrypoint_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
     flows: Sequence[Mapping[str, Any]] = ()
     data_flows: Sequence[Mapping[str, Any]] = ()
     external_dependencies: Sequence[Mapping[str, Any]] = ()
@@ -166,6 +167,103 @@ class RuntimeKnowledgeInputs:
     graph_evidence_limit: int = 20
     governance: GovernanceLedger | None = None
     governance_moves: Mapping[str, str] = field(default_factory=dict)
+    committed_state: CommittedKnowledgeState | None = field(
+        default=None, repr=False, compare=False
+    )
+    reuse_input_basis: Mapping[str, object] | None = None
+
+
+@dataclass(frozen=True)
+class CommittedKnowledgeState:
+    """One command's captured prior commit, including explicit absent/invalid state."""
+
+    wiki_root: Path
+    artifacts: ValidatedKnowledgeArtifacts | None = field(repr=False)
+    captured_bytes: Mapping[str, bytes | None] = field(repr=False)
+    _issued: object | None = field(default=None, init=False, repr=False, compare=False)
+
+    def require_for(self, wiki_dir: str | Path) -> None:
+        if (
+            self._issued is not _COMMITTED_STATE_TOKEN
+            or self.wiki_root != Path(wiki_dir).resolve()
+        ):
+            raise TypeError("committed state was not captured for this wiki")
+        if self.artifacts is not None:
+            require_validated_artifacts(self.artifacts)
+            surface, knowledge = validated_artifact_bytes(self.artifacts)
+            if (
+                self.captured_bytes[SURFACE_INDEX_FILENAME] is not surface
+                or self.captured_bytes[KNOWLEDGE_INDEX_FILENAME] is not knowledge
+            ):
+                raise TypeError(
+                    "committed state bytes do not belong to its validated artifacts"
+                )
+
+    def assert_current(self) -> None:
+        self.require_for(self.wiki_root)
+        for name, expected in self.captured_bytes.items():
+            try:
+                current = (self.wiki_root / name).read_bytes()
+            except FileNotFoundError:
+                current = None
+            if current != expected:
+                raise KnowledgeArtifactError(
+                    name, "committed artifacts changed during this operation"
+                )
+
+
+_COMMITTED_STATE_TOKEN = object()
+
+
+@observed_phase("prior_artifacts")
+def capture_committed_knowledge(
+    wiki_dir: str | Path,
+    manifest: SyncManifest | None,
+) -> CommittedKnowledgeState:
+    from .immutable import freeze
+    from .knowledge_artifacts import _decode_json_object
+
+    root = Path(wiki_dir).resolve()
+    captured = {}
+    for name in (SURFACE_INDEX_FILENAME, KNOWLEDGE_INDEX_FILENAME, MANIFEST_FILENAME):
+        try:
+            captured[name] = (root / name).read_bytes()
+        except FileNotFoundError:
+            captured[name] = None
+    validated = None
+    manifest_changed = False
+    if manifest is not None and manifest.artifact_hashes is not None:
+        try:
+            recorded_manifest = SyncManifest.from_payload(
+                _decode_json_object(captured[MANIFEST_FILENAME], "manifest")
+            )
+            if recorded_manifest.to_payload() != manifest.to_payload():
+                manifest_changed = True
+                raise KnowledgeArtifactError(
+                    "manifest", "changed before the prior commit was captured"
+                )
+            candidate = validate_knowledge_artifacts(
+                surface_index_bytes=captured[SURFACE_INDEX_FILENAME],
+                knowledge_index_bytes=captured[KNOWLEDGE_INDEX_FILENAME],
+                manifest=recorded_manifest,
+            )
+            marker = recorded_manifest.artifact_hashes
+            if marker is not None and (
+                candidate.surface_index_hash == marker.surface_index_hash
+                and candidate.knowledge_index_hash == marker.knowledge_index_hash
+                and candidate.evaluated_envelope_hash == marker.evaluated_envelope_hash
+                and candidate.governance_hash == marker.governance_hash
+            ):
+                validated = candidate
+        except (KnowledgeArtifactError, OSError, TypeError, ValueError):
+            pass
+    if manifest_changed:
+        raise KnowledgeArtifactError(
+            "manifest", "changed before the prior commit was captured"
+        )
+    state = CommittedKnowledgeState(root, validated, freeze(captured))
+    object.__setattr__(state, "_issued", _COMMITTED_STATE_TOKEN)
+    return state
 
 
 @dataclass(frozen=True)
@@ -261,6 +359,16 @@ def build_runtime_knowledge_plan(
 
     if not isinstance(inputs, RuntimeKnowledgeInputs):
         raise TypeError("inputs must be a RuntimeKnowledgeInputs")
+    committed_state = inputs.committed_state
+    if committed_state is None:
+        committed_state = capture_committed_knowledge(
+            inputs.target_wiki_dir, inputs.previous_manifest
+        )
+        inputs = replace(
+            inputs,
+            committed_state=committed_state,
+        )
+    committed_state.require_for(inputs.target_wiki_dir)
     governance = _prepared_runtime_governance(inputs)
     source_hashes = inputs.source_snapshot.hashes_for(inputs.inventory)
     (
@@ -338,6 +446,7 @@ def build_runtime_knowledge_plan(
             previous_producer=_previous_committed_producer(
                 inputs.target_wiki_dir,
                 inputs.previous_manifest,
+                committed_state=inputs.committed_state,
             ),
             previous_manifest=inputs.previous_manifest,
             next_manifest=next_manifest,
@@ -357,6 +466,7 @@ def build_runtime_knowledge_plan(
             graph_analyzer_limitations=inputs.graph_analyzer_limitations,
             graph_evidence_limit=inputs.graph_evidence_limit,
             governance=governance,
+            reuse_input_basis=inputs.reuse_input_basis,
         ),
     )
 
@@ -374,6 +484,7 @@ def _stabilize_revision_only_noop(
     previous = _previous_committed_artifacts(
         runtime_inputs.target_wiki_dir,
         runtime_inputs.previous_manifest,
+        committed_state=runtime_inputs.committed_state,
     )
     if previous is None:
         return candidate
@@ -384,6 +495,17 @@ def _stabilize_revision_only_noop(
         else f"git:{current_revision}"
     )
     if previous_revision == "unknown" or normalized_current == previous_revision:
+        return candidate
+    revision_only_bundle = replace(
+        previous.knowledge.bundle,
+        repository=replace(
+            previous.knowledge.bundle.repository,
+            evaluated_revision=normalized_current,
+        ),
+    )
+    if candidate.evaluated_envelope_hash != EvaluatedEnvelope(
+        bundle=revision_only_bundle
+    ).content_hash():
         return candidate
     stabilized = build_knowledge_generation_plan(
         replace(
@@ -562,44 +684,25 @@ def _runtime_live_concept_bases(
 def _previous_committed_artifacts(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
+    *,
+    committed_state: CommittedKnowledgeState | None = None,
 ) -> ValidatedKnowledgeArtifacts | None:
-    """Return the validated prior artifact set without consulting Markdown.
-
-    Markdown may already have been updated by sync, so the full live loader
-    would correctly classify the old projections as a mixed snapshot.  This
-    narrower check validates the still-committed surface/knowledge/manifest
-    trio and its exact marker without consulting current Markdown.
-    """
-
-    if manifest is None or manifest.artifact_hashes is None:
-        return None
-    root = Path(wiki_dir)
-    try:
-        validated = validate_knowledge_artifacts(
-            surface_index_bytes=(root / SURFACE_INDEX_FILENAME).read_bytes(),
-            knowledge_index_bytes=(root / KNOWLEDGE_INDEX_FILENAME).read_bytes(),
-            manifest=manifest,
-        )
-    except (KnowledgeArtifactError, OSError, TypeError, ValueError):
-        return None
-    marker = manifest.artifact_hashes
-    if (
-        validated.surface_index_hash != marker.surface_index_hash
-        or validated.knowledge_index_hash != marker.knowledge_index_hash
-        or validated.evaluated_envelope_hash != marker.evaluated_envelope_hash
-        or validated.governance_hash != marker.governance_hash
-    ):
-        return None
-    return validated
+    state = committed_state or capture_committed_knowledge(wiki_dir, manifest)
+    state.require_for(wiki_dir)
+    return state.artifacts
 
 
 def committed_governance_bundle_id(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
+    *,
+    committed_state: CommittedKnowledgeState | None = None,
 ) -> str | None:
     """Return a bundle ID only from an intact manifest-committed projection."""
 
-    validated = _previous_committed_artifacts(wiki_dir, manifest)
+    validated = _previous_committed_artifacts(
+        wiki_dir, manifest, committed_state=committed_state
+    )
     if validated is None:
         return None
     return governance_bundle_id_from_knowledge(validated.knowledge)
@@ -608,16 +711,18 @@ def committed_governance_bundle_id(
 def committed_runtime_provenance(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
+    *,
+    committed_state: CommittedKnowledgeState | None = None,
 ) -> CommittedRuntimeProvenance | None:
     """Return source and generator identity from an intact committed projection."""
 
-    validated = _previous_committed_artifacts(wiki_dir, manifest)
+    validated = _previous_committed_artifacts(
+        wiki_dir, manifest, committed_state=committed_state
+    )
     if validated is None:
         return None
     return CommittedRuntimeProvenance(
-        source_snapshot_hash=(
-            validated.knowledge.bundle.snapshot.source_snapshot_hash
-        ),
+        source_snapshot_hash=(validated.knowledge.bundle.snapshot.source_snapshot_hash),
         generation_options_hash=(
             validated.knowledge.bundle.snapshot.generation_options_hash
         ),
@@ -628,13 +733,31 @@ def committed_runtime_provenance(
 def _previous_committed_producer(
     wiki_dir: str | Path,
     manifest: SyncManifest | None,
+    *,
+    committed_state: CommittedKnowledgeState | None = None,
 ) -> ProducerRecord | None:
     """Return producer evidence only from the prior committed artifact set."""
 
-    validated = _previous_committed_artifacts(wiki_dir, manifest)
+    validated = _previous_committed_artifacts(
+        wiki_dir, manifest, committed_state=committed_state
+    )
     if validated is None:
         return None
     return validated.knowledge.bundle.producer
+
+
+def _commit_runtime_knowledge(
+    inputs: RuntimeKnowledgeInputs,
+    plan: KnowledgeCommitPlan,
+    *,
+    dry_run: bool,
+    fault_injector: FaultInjector | None,
+) -> KnowledgeCommitResult:
+    assert inputs.committed_state is not None
+    inputs.committed_state.assert_current()
+    return commit_knowledge_artifacts(
+        plan, dry_run=dry_run, fault_injector=fault_injector
+    )
 
 
 def finalize_runtime_knowledge(
@@ -647,6 +770,16 @@ def finalize_runtime_knowledge(
 
     if not isinstance(inputs, RuntimeKnowledgeInputs):
         raise TypeError("inputs must be a RuntimeKnowledgeInputs")
+    committed_state = inputs.committed_state
+    if committed_state is None:
+        committed_state = capture_committed_knowledge(
+            inputs.target_wiki_dir, inputs.previous_manifest
+        )
+        inputs = replace(
+            inputs,
+            committed_state=committed_state,
+        )
+    committed_state.require_for(inputs.target_wiki_dir)
     root = Path(inputs.target_wiki_dir)
     marker_hash = (
         getattr(inputs.previous_manifest.artifact_hashes, "governance_hash", None)
@@ -662,7 +795,8 @@ def finalize_runtime_knowledge(
         or marker_hash is not None
     )
     if not governance_requested:
-        return commit_knowledge_artifacts(
+        return _commit_runtime_knowledge(
+            inputs,
             build_runtime_knowledge_plan(inputs),
             dry_run=dry_run,
             fault_injector=fault_injector,
@@ -684,10 +818,9 @@ def finalize_runtime_knowledge(
                 GOVERNANCE_FILENAME,
                 "governance was requested without a ledger",
             )
-        return commit_knowledge_artifacts(
-            build_runtime_knowledge_plan(
-                replace(inputs, governance=effective)
-            ),
+        return _commit_runtime_knowledge(
+            inputs,
+            build_runtime_knowledge_plan(replace(inputs, governance=effective)),
             dry_run=True,
             fault_injector=fault_injector,
         )
@@ -725,14 +858,14 @@ def finalize_runtime_knowledge(
         assert effective is not None
         prepared_inputs = replace(inputs, governance=effective)
         plan = build_runtime_knowledge_plan(prepared_inputs)
+        committed_state.assert_current()
         save_governance(
             root,
             effective,
-            expected_hash=(
-                loaded.content_hash if loaded is not None else None
-            ),
+            expected_hash=(loaded.content_hash if loaded is not None else None),
         )
-        return commit_knowledge_artifacts(
+        return _commit_runtime_knowledge(
+            inputs,
             plan,
             dry_run=False,
             fault_injector=fault_injector,
@@ -748,6 +881,7 @@ def _prepared_runtime_governance(
     expected_bundle_id = committed_governance_bundle_id(
         root,
         inputs.previous_manifest,
+        committed_state=inputs.committed_state,
     )
     if inputs.governance is not None:
         ledger = validate_governance_ledger(

@@ -1,6 +1,6 @@
 # SourceSnapshotError
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:92`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:94`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [source_snapshot](../modules/source_snapshot.md)

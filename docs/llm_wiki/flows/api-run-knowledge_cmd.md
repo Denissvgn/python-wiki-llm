@@ -78,7 +78,7 @@ sequenceDiagram
     p2->>p18: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 1103 interactions; 1073 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1018 interactions; 988 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

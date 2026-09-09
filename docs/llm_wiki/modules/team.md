@@ -11,14 +11,17 @@ Shared team policy and conservative wiki conflict resolution.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR` |
-| `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map`, `_generate_index_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_build_relationships`, `_generate_entity_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_generate_docker_md`, `build_module_page_map` |
+| `.bootstrap_runtime` | `_generate_index_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_build_relationships`, `_generate_entity_md`, `build_entity_occurrence_page_map`, `build_module_page_map`, `_generate_docker_md`, `build_module_page_map` |
+| `.canonical_pages` | `canonical_generated_pages` |
 | `.extraction_service` | `get_docker_inventory`, `get_docker_inventory`, `get_inventory_result` |
+| `.immutable` | `freeze` |
+| `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
 | `.io` | `read_md`, `write_json_atomic`, `write_md` |
 | `.plugins` | `PluginError`, `iter_components` |
 | `.source_selection` | `with_source_selection_generation_input`, `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
-| `.sync_manifest` | `SyncManifest`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths`, `MANIFEST_VERSION`, `SyncManifest`, `SyncManifestError`, `SyncManifest` |
-| `.validation` | `require_exact_fields`, `require_string_list` |
+| `.sync_manifest` | `SyncManifest`, `SyncManifest`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths`, `MANIFEST_VERSION`, `SyncManifest`, `SyncManifestError`, `SyncManifest` |
+| `.validation` | `require_exact_fields`, `require_portable_relative_path`, `require_string_list`, `resolve_portable_workspace_path` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
@@ -26,6 +29,7 @@ Shared team policy and conservative wiki conflict resolution.
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `re` | `re` |
+| `stat` | `stat` |
 | `typing` | `TYPE_CHECKING`, `Any` |
 
 ## Local dependency map
@@ -47,16 +51,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (9) |
+| Outbound | `src` (12) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TeamConfigError](../entities/TeamConfigError.md) | 65 | `ValueError` | Raised when `.llm-wiki/team.json` is invalid. |
-| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 70 | — | Inputs needed to check wiki files against team conventions. |
+| [TeamConfigError](../entities/TeamConfigError.md) | 71 | `ValueError` | Raised when `.llm-wiki/team.json` is invalid. |
+| [TeamPolicyContext](../entities/TeamPolicyContext.md) | 76 | — | One command's resolved policy and project-anchored wiki identity. |
+| [TeamConventionRequest](../entities/TeamConventionRequest.md) | 85 | — | Inputs needed to check wiki files against team conventions. |
 
 ## Functions
 
@@ -67,16 +72,21 @@ flowchart LR
 | `write_default_team_config` | `(wiki_dir: str = DEFAULT_WIKI_DIR, *, root: str \| Path = '.') -> Path` | — | — |
 | `_reject_unknown_keys` | `(data: dict[str, Any], allowed: set[str], scope: str) -> None` | — | — |
 | `_ensure_string_list` | `(value: Any, field: str) -> list[str]` | — | — |
+| `_validate_required_relative_path` | `(relative: str, key: str) -> str` | — | — |
+| `_resolve_required_path` | `(wiki_path: Path, relative: str) -> Path` | — | — |
 | `validate_team_config` | `(data: Any) -> dict[str, Any]` | — | — |
 | `load_team_config` | `(*, required: bool = False, root: str \| Path = '.') -> dict[str, Any] \| None` | — | — |
+| `resolve_team_policy` | `(wiki_dir: str \| Path \| None, *, required: bool = False, root: str \| Path = '.') -> TeamPolicyContext` | — | Validate policy identity and contained obligations before expensive work. |
+| `team_config_issue` | `(exc: TeamConfigError, *, root: str \| Path = '.') -> dict` | — | Use the same policy diagnostic in standalone and integrated checks. |
 | `team_prompt_template_default` | `(root: str \| Path = '.') -> str \| None` | — | — |
 | `_issue` | `(category: str, message: str, *, path: str \| None = None, target: str \| None = None) -> dict[str, str \| None]` | — | — |
 | `_section_pattern` | `(section: str) -> re.Pattern[str]` | `@lru_cache(maxsize=None)` | — |
 | `_has_section` | `(content: str, section: str) -> bool` | — | — |
 | `_plugin_refs_by_type` | `(root: str \| Path = '.') -> dict[str, set[str]]` | — | — |
 | `check_plugin_requirements` | `(config: dict[str, Any], *, root: str \| Path = '.') -> list[dict[str, str \| None]]` | — | — |
+| `_required_path_states` | `(config: dict[str, Any], wiki_path: Path) -> dict[tuple[str, str], bool]` | — | Check every obligation inside the wiki before reading convention pages. |
 | `check_team_conventions` | `(request: TeamConventionRequest) -> list[dict[str, str \| None]]` | — | — |
-| `build_team_issues` | `(wiki_dir: str \| Path, src_dir: str, inventory: dict, pages: list[Path], *, require_config: bool = False, root: str \| Path = '.', docker_inventory: dict \| None = None) -> list[dict[str, str \| None]]` | — | — |
+| `build_team_issues` | `(wiki_dir: str \| Path, src_dir: str, inventory: dict, pages: list[Path], *, require_config: bool = False, root: str \| Path = '.', docker_inventory: dict \| None = None, policy: TeamPolicyContext \| None = None, yaml_infrastructure_inventory: dict \| None = None, manifest: SyncManifest \| None = None) -> list[dict[str, str \| None]]` | — | — |
 | `has_conflict_markers` | `(text: str) -> bool` | — | — |
 | `_existing_page_entries` | `(directory: Path, extra_key: str) -> list[dict[str, str]]` | — | — |
 | `_index_content` | `(wiki_dir: Path, inventory: dict) -> str` | — | — |

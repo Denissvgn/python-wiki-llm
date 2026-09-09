@@ -5,7 +5,7 @@ backend-path = ["."]
 
 [project]
 name = "agent-wiki-cli"
-version = "1.8.1"
+version = "2.0.0"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = "MIT"
@@ -34,6 +34,8 @@ dev = [
     "jsonschema>=4.18",
     "markdown-it-py>=4.0,<5",
     "setuptools==83.0.0",
+    # Analyze Python 3.10 fallback imports from newer development interpreters.
+    "tomli>=2",
 ]
 # TypeScript extraction requires Node.js + npm at runtime (no Python deps).
 # Prepare the locked dependency cache with `llm-wiki prepare-extractors`.

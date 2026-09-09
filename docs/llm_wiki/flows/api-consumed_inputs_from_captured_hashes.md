@@ -115,17 +115,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| consumed_inputs_from_captured_hashes | isinstance | 181 | `isinstance(content_hashes, Mapping)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 182 | `KnowledgeEnvelopeError('captured_content_hashes', 'must be an object')` |
-| consumed_inputs_from_captured_hashes | isinstance | 183 | `isinstance(candidate_kinds, Mapping)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 184 | `KnowledgeEnvelopeError('captured_input_kinds', 'must be an object')` |
-| consumed_inputs_from_captured_hashes | any | 185 | `any(...)` |
-| consumed_inputs_from_captured_hashes | isinstance | 185 | `isinstance(path, str)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 186 | `KnowledgeEnvelopeError('captured_content_hashes', 'must use string repository paths')` |
-| consumed_inputs_from_captured_hashes | any | 190 | `any(...)` |
-| consumed_inputs_from_captured_hashes | isinstance | 190 | `isinstance(path, str)` |
-| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 191 | `KnowledgeEnvelopeError('captured_input_kinds', 'must use string repository paths')` |
-| consumed_inputs_from_captured_hashes | set | 195 | `set(content_hashes)` |
+| consumed_inputs_from_captured_hashes | isinstance | 183 | `isinstance(content_hashes, Mapping)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 184 | `KnowledgeEnvelopeError('captured_content_hashes', 'must be an object')` |
+| consumed_inputs_from_captured_hashes | isinstance | 185 | `isinstance(candidate_kinds, Mapping)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 186 | `KnowledgeEnvelopeError('captured_input_kinds', 'must be an object')` |
+| consumed_inputs_from_captured_hashes | any | 187 | `any(...)` |
+| consumed_inputs_from_captured_hashes | isinstance | 187 | `isinstance(path, str)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 188 | `KnowledgeEnvelopeError('captured_content_hashes', 'must use string repository paths')` |
+| consumed_inputs_from_captured_hashes | any | 192 | `any(...)` |
+| consumed_inputs_from_captured_hashes | isinstance | 192 | `isinstance(path, str)` |
+| consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 193 | `KnowledgeEnvelopeError('captured_input_kinds', 'must use string repository paths')` |
+| consumed_inputs_from_captured_hashes | set | 197 | `set(content_hashes)` |
 
 ### Boundary effects
 
@@ -135,12 +135,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 181 |
 | unresolved_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 183 |
-| unresolved_call | `consumed_inputs_from_captured_hashes` | `any` | 185 |
 | unresolved_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 185 |
-| unresolved_call | `consumed_inputs_from_captured_hashes` | `any` | 190 |
-| unresolved_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 190 |
+| unresolved_call | `consumed_inputs_from_captured_hashes` | `any` | 187 |
+| unresolved_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 187 |
+| unresolved_call | `consumed_inputs_from_captured_hashes` | `any` | 192 |
+| unresolved_call | `consumed_inputs_from_captured_hashes` | `isinstance` | 192 |
 | step_limit | `consumed_inputs_from_captured_hashes` | `first 12 steps` | 0 |
 
 ## Behavior

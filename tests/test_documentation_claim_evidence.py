@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
+from llm_wiki_cli.services.contracts import (
+    DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
+)
 from llm_wiki_cli.services.documentation_claim_evidence import (
     CLAIM_EVIDENCE_SCHEMA_VERSION,
     RUNTIME_CAPTURE_SCHEMA_VERSION,
@@ -23,9 +27,6 @@ from llm_wiki_cli.services.documentation_queries import (
 from llm_wiki_cli.services.documentation_run import (
     DocumentationAgentResult,
     DocumentationSchemaError,
-)
-from llm_wiki_cli.services.contracts import (
-    DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION,
 )
 from tests.test_knowledge_queries import (
     MODULE_LOCATOR,
@@ -61,7 +62,7 @@ def _capture_record(
     capture_path: str | None,
     capture_digest: str | None,
     state: str = "captured",
-) -> dict[str, object]:
+) -> dict[str, Any]:
     return {
         "schema_version": RUNTIME_CAPTURE_SCHEMA_VERSION,
         "capture_id": "capture:usage-1",
@@ -269,7 +270,7 @@ def test_qualification_wraps_native_query_errors() -> None:
         match="native concept query failed",
     ):
         qualify_claim_evidence(
-            FailingService(),
+            cast(DocumentationGraphQueryService, FailingService()),
             claim_id="claim:query-error",
             canonical_page="modules/accounts.md",
             concept_query=MODULE_LOCATOR,
@@ -381,7 +382,7 @@ def test_claim_preserves_expired_section_review_without_private_parsing() -> Non
             }
 
     record = qualify_claim_evidence(
-        QueryService(),
+        cast(DocumentationGraphQueryService, QueryService()),
         claim_id="finding:expired-review",
         canonical_page="entities/User.md",
         concept_query="uid_user",

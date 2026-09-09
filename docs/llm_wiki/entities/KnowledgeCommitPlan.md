@@ -1,6 +1,6 @@
 # KnowledgeCommitPlan
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:122`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:181`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -38,8 +38,9 @@ flowchart LR
     n3["commit_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n4["_build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n5["build_knowledge_generation_plan (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n6["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n7["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n6["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -47,6 +48,7 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/knowledge_artifacts.md"
     click n1 "../modules/knowledge_cmd.md"
     click n2 "../modules/knowledge_artifacts.md"
@@ -55,6 +57,7 @@ flowchart LR
     click n5 "../modules/knowledge_generation.md"
     click n6 "../modules/knowledge_orchestration.md"
     click n7 "../modules/knowledge_orchestration.md"
+    click n8 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -73,5 +76,6 @@ flowchart LR
 | `commit_knowledge_artifacts` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `build_knowledge_generation_plan` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `_commit_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

@@ -105,8 +105,8 @@ def test_save_writes_schema_and_prunes_to_given_files(tmp_path):
     )
 
     payload = json.loads((cache_dir / CACHE_FILENAME).read_text(encoding="utf-8"))
-    assert payload["schema"] == "inventory-v2"
-    assert payload["version"] == 2
+    assert payload["schema"] == "inventory-v3"
+    assert payload["version"] == 3
     assert payload["source_selection_identity"] is None
     assert sorted(payload["files"]) == ["app.py"]
     assert payload["files"]["app.py"]["hash"] == "sha256:test"
@@ -123,10 +123,10 @@ def test_save_handles_atomic_replace_oserror(tmp_path, monkeypatch):
     )
     assert cache.path is not None
 
-    def fail_replace(self, target):
+    def fail_replace(source, target):
         raise OSError("replace denied")
 
-    monkeypatch.setattr(type(cache.path), "replace", fail_replace)
+    monkeypatch.setattr("llm_wiki_cli.services.io.os.replace", fail_replace)
 
     cache.save({"version": 1}, {"app.py": {"hash": "sha256:new"}})
 
@@ -248,14 +248,13 @@ def test_cache_key_uses_semantic_source_selection_identity(tmp_path):
     write_profile(["a"])
     narrowed = key()
 
-    assert first["schema"] == "inventory-v2"
-    assert first["source_selection_identity"] == formatting_only[
-        "source_selection_identity"
-    ]
+    assert first["schema"] == "inventory-v3"
+    assert (
+        first["source_selection_identity"]
+        == formatting_only["source_selection_identity"]
+    )
     assert first == formatting_only
-    assert narrowed["source_selection_identity"] != first[
-        "source_selection_identity"
-    ]
+    assert narrowed["source_selection_identity"] != first["source_selection_identity"]
     assert narrowed != first
 
 

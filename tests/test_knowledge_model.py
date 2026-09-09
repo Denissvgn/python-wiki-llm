@@ -1614,9 +1614,11 @@ def test_canonical_payload_ignores_core_collection_input_order():
 
     for path in collection_paths.values():
         permuted = deepcopy(payload)
-        collection = permuted
+        collection: object = permuted
         for segment in path:
+            assert isinstance(collection, dict)
             collection = collection[segment]
+        assert isinstance(collection, list)
         collection.reverse()
 
         permuted_model = parse_knowledge_index(permuted)
@@ -1626,9 +1628,9 @@ def test_canonical_payload_ignores_core_collection_input_order():
     assert [concept.locator for concept in baseline_model.concepts] == [
         concept["locator"] for concept in payload["concepts"]
     ]
-    assert [
-        relationship.kind.value for relationship in baseline_model.relationships
-    ] == [relationship["kind"] for relationship in payload["relationships"]]
+    assert [relationship.kind for relationship in baseline_model.relationships] == [
+        relationship["kind"] for relationship in payload["relationships"]
+    ]
     assert [
         component.component_id
         for component in baseline_model.bundle.producer.extractors

@@ -1099,6 +1099,15 @@ class SyncManifest:
         return cls.from_payload(data)
 
     def _validate_operational_state(self) -> None:
+        from .knowledge_reuse import REUSE_INPUT_KEY, validate_reuse_commitment
+
+        if REUSE_INPUT_KEY in self.generation_inputs:
+            try:
+                validate_reuse_commitment(self.generation_inputs[REUSE_INPUT_KEY])
+            except ValueError as exc:
+                raise SyncManifestError(
+                    f"generation_inputs.{REUSE_INPUT_KEY}", str(exc)
+                ) from exc
         try:
             selection_identity = source_selection_identity_from_generation_inputs(
                 self.generation_inputs

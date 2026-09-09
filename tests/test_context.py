@@ -9,6 +9,7 @@ import textwrap
 import types
 from dataclasses import replace
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -16,11 +17,13 @@ from llm_wiki_cli import cli
 from llm_wiki_cli.commands import context_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 from llm_wiki_cli.services import context_packet as context_packet_service
+from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 from llm_wiki_cli.services.extraction_jobs import ExtractionJobPlan
 from llm_wiki_cli.services.knowledge_artifacts import (
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
 )
+from llm_wiki_cli.services.knowledge_consumption import KnowledgeReadView
 from llm_wiki_cli.services.knowledge_evidence import (
     build_module_observation_basis,
     sha256_bytes,
@@ -35,17 +38,17 @@ from llm_wiki_cli.services.knowledge_index import (
 from llm_wiki_cli.services.knowledge_observability import (
     BASIS_INCOMPATIBLE_HINTS,
 )
-from llm_wiki_cli.services.sync_manifest import (
-    ManifestEvidenceBaseline,
-    ManifestPageSource,
-    SyncManifest,
-)
 from llm_wiki_cli.services.source_selection import (
     SOURCE_SELECTION_SCHEMA_VERSION,
     resolve_source_selection,
     with_source_selection_generation_input,
 )
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.sync_manifest import (
+    ManifestEvidenceBaseline,
+    ManifestPageSource,
+    SyncManifest,
+)
 from tests import knowledge_fixtures as knowledge_fixture_helpers
 from tests.knowledge_fixtures import (
     EvaluatedKnowledgeFixture,
@@ -54,11 +57,11 @@ from tests.knowledge_fixtures import (
     one_module_two_entities_fixture,
 )
 from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
-from tests.test_knowledge_index import _builder_case_for
 from tests.test_knowledge_compatibility import (
     COMPATIBILITY_CASES,
     _materialize_case,
 )
+from tests.test_knowledge_index import _builder_case_for
 
 CONTEXT_FIXTURE_DIR = Path(__file__).parent / "fixtures"
 PREFER_FRESH_OFF_GOLDEN = (
@@ -1620,7 +1623,7 @@ class TestKnowledgePageSelection:
                     mixed_stale_page,
                 ]
             },
-            service,
+            cast(DocumentationGraphQueryService, service),
         )
 
         assert ranks == {
@@ -1658,7 +1661,7 @@ class TestKnowledgePageSelection:
 
         ranks = context_cmd._context_freshness_rank_by_source(
             {"pages": [current_page, unknown_page]},
-            service,
+            cast(DocumentationGraphQueryService, service),
         )
 
         assert ranks == {"src/mixed.py": 1}
@@ -1675,7 +1678,7 @@ class TestKnowledgePageSelection:
 
         ranks = context_cmd._context_freshness_rank_by_source(
             {"pages": [page]},
-            service,
+            cast(DocumentationGraphQueryService, service),
         )
 
         assert ranks == {}
@@ -1747,7 +1750,9 @@ class TestKnowledgePageSelection:
         )
         service = _KnowledgeQueryStub({page["canonical_path"]: concept})
 
-        enriched = context_cmd._knowledge_enriched_page_ref(page, service)
+        enriched = context_cmd._knowledge_enriched_page_ref(
+            page, cast(DocumentationGraphQueryService, service)
+        )
 
         assert enriched["knowledge"] == {
             "availability": "ready",
@@ -1812,7 +1817,9 @@ class TestKnowledgePageSelection:
         }
         service = _KnowledgeQueryStub({page["canonical_path"]: concept})
 
-        enriched = context_cmd._knowledge_enriched_page_ref(page, service)
+        enriched = context_cmd._knowledge_enriched_page_ref(
+            page, cast(DocumentationGraphQueryService, service)
+        )
 
         assert enriched["knowledge"]["machine_verification"] == {
             "availability": "invalid",
@@ -1851,7 +1858,7 @@ class TestKnowledgePageSelection:
         selected, counts = context_cmd._select_knowledge_page_refs(
             pages,
             {},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=[],
         )
@@ -1900,7 +1907,7 @@ class TestKnowledgePageSelection:
         selected, counts = context_cmd._select_knowledge_page_refs(
             pages,
             {"freshness": "source-changed", "evidence": "missing"},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=observed,
         )
@@ -1919,7 +1926,7 @@ class TestKnowledgePageSelection:
         current, current_counts = context_cmd._select_knowledge_page_refs(
             pages,
             {"freshness": "current"},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=None,
         )
@@ -1964,7 +1971,7 @@ class TestKnowledgePageSelection:
         selected, counts = context_cmd._select_knowledge_page_refs(
             pages,
             {},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=[],
         )
@@ -1989,7 +1996,7 @@ class TestKnowledgePageSelection:
         refined, refined_counts = context_cmd._select_knowledge_page_refs(
             pages,
             {"freshness": "unknown"},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=None,
         )
@@ -2025,7 +2032,7 @@ class TestKnowledgePageSelection:
         selected, _counts = context_cmd._select_knowledge_page_refs(
             [page for page, _concept in fixtures],
             {},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=[],
         )
@@ -2065,7 +2072,7 @@ class TestKnowledgePageSelection:
         candidates, _counts = context_cmd._select_knowledge_page_refs(
             [page],
             {},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=None,
         )
@@ -2116,7 +2123,7 @@ class TestKnowledgePageSelection:
                 "relationship_resolution": "resolved",
                 "relationship_direction": "incoming",
             },
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=1,
             observed=observed,
         )
@@ -2195,7 +2202,7 @@ class TestKnowledgePageSelection:
         selected, counts = context_cmd._select_knowledge_page_refs(
             [page],
             {"relationship_kind": "calls"},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=[],
         )
@@ -2230,7 +2237,7 @@ class TestKnowledgePageSelection:
         selected, counts = context_cmd._select_knowledge_page_refs(
             [page],
             {},
-            service,
+            cast(DocumentationGraphQueryService, service),
             limit=20,
             observed=[],
         )
@@ -2277,7 +2284,7 @@ def test_committed_surface_mapping_preserves_collision_page_symbol_lookup():
     }
     query_surface = context_cmd._context_query_surface(
         live_surface,
-        types.SimpleNamespace(surface=committed_surface),
+        cast(KnowledgeReadView, types.SimpleNamespace(surface=committed_surface)),
     )
     inventory = {
         path: {
@@ -2460,17 +2467,12 @@ def test_context_generation_option_evaluation_fails_closed(
     monkeypatch.chdir(tree["root"])
     real_options = context_cmd.runtime_generation_options
 
-    if live_policy == "mismatch":
-
-        def evaluated_options(**kwargs):
-            options = real_options(**kwargs)
-            options["preserve_semantic"] = False
-            return options
-
-    else:
-
-        def evaluated_options(**_kwargs):
+    def evaluated_options(**kwargs):
+        if live_policy != "mismatch":
             raise ValueError("invalid runtime generation policy")
+        options = real_options(**kwargs)
+        options["preserve_semantic"] = False
+        return options
 
     monkeypatch.setattr(
         context_cmd,
@@ -2670,6 +2672,7 @@ class TestProtocolRun:
         }
         assert preferred["files"][fresh_path]["priority"] == "high"
         assert preferred["truncated"] is True
+        assert "ranking_policy" in preferred
         assert preferred["ranking_policy"] == {
             "name": "relevance-then-current-freshness",
             "prefer_fresh": True,
@@ -2679,6 +2682,7 @@ class TestProtocolRun:
             "applied": True,
             "filters_stale_content": False,
         }
+        assert "surface" in preferred
         states = {
             page["source_path"]: page["knowledge"]["freshness"]["state"]
             for page in preferred["surface"]["pages"]

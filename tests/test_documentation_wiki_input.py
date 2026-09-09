@@ -826,7 +826,7 @@ def test_selection_control_broadening_is_stale_before_new_source_hash(
     ignore.write_text("", encoding="utf-8")
     real_hash = source_snapshot_module._sha256_file
 
-    def guarded_hash(path: Path) -> str:
+    def guarded_hash(path: Path) -> str | None:
         if path == secret:
             pytest.fail("newly admitted source must not be hashed before rejection")
         return real_hash(path)
@@ -2671,7 +2671,7 @@ def test_non_regular_input_is_rejected(tmp_path: Path) -> None:
     wiki = tmp_path / "wiki"
     _write(wiki / "index.md", "# Index\n")
     fifo = wiki / "stream"
-    os.mkfifo(fifo)
+    getattr(os, "mkfifo")(fifo)
 
     with pytest.raises(DocumentationWikiInputError) as exc_info:
         adopt_documentation_wiki_snapshot(

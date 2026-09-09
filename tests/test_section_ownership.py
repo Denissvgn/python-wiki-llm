@@ -371,6 +371,7 @@ def test_section_extension_sorts_pages_and_preserves_section_order():
     extension = section_ownership_extension([second, first])
     payload = extension[SECTION_OWNERSHIP_EXTENSION_KEY]
 
+    assert isinstance(payload, dict)
     assert payload["schema_version"] == SECTION_OWNERSHIP_SCHEMA_VERSION
     assert [page["page_locator"] for page in payload["pages"]] == [
         "llm-wiki://modules/a",
@@ -416,6 +417,7 @@ def test_persisted_section_contract_rejects_reorder_scope_and_snapshot_mismatch(
     assert validate_section_ownership(payload, concepts=concepts) == payload
 
     reordered = deepcopy(payload)
+    assert isinstance(reordered, dict)
     reordered["pages"][0]["sections"][1:] = reversed(
         reordered["pages"][0]["sections"][1:]
     )
@@ -425,6 +427,7 @@ def test_persisted_section_contract_rejects_reorder_scope_and_snapshot_mismatch(
         validate_section_ownership(reordered, concepts=concepts)
 
     wrong_scope = deepcopy(payload)
+    assert isinstance(wrong_scope, dict)
     semantic = wrong_scope["pages"][0]["sections"][1]
     semantic["structural_hash"] = semantic["exact_hash"]
     with pytest.raises(SectionOwnershipError, match="hash scopes"):
@@ -451,6 +454,7 @@ def test_persisted_section_contract_enforces_conservative_page_policy():
     payload = section_ownership_extension([observed])[
         SECTION_OWNERSHIP_EXTENSION_KEY
     ]
+    assert isinstance(payload, dict)
     custom = payload["pages"][0]["sections"][1]
     assert custom["ownership"] == "unknown"
 

@@ -1,6 +1,6 @@
 # RuntimeKnowledgeInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:126`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:131`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -49,6 +49,8 @@ Evaluated command state needed to plan one three-artifact commit.
 | `graph_evidence_limit` | `int` | `20` | — |
 | `governance` | `GovernanceLedger \| None` | `None` | — |
 | `governance_moves` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
+| `committed_state` | `CommittedKnowledgeState \| None` | `field(default=None, repr=False, compare=False)` | — |
+| `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
 
 ## Methods
 
@@ -64,11 +66,12 @@ flowchart LR
     n2["_finalize_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n3["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n4["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
-    n5["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n6["_runtime_manifest_generation_inputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n7["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n8["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n9["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n5["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n6["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["_runtime_manifest_generation_inputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n9["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n10["finalize_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -78,6 +81,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/knowledge_orchestration.md"
     click n1 "../modules/migrate_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -88,13 +92,14 @@ flowchart LR
     click n7 "../modules/knowledge_orchestration.md"
     click n8 "../modules/knowledge_orchestration.md"
     click n9 "../modules/knowledge_orchestration.md"
+    click n10 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `call_edges`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry`, `flows`, `force_unknown_evidence`, `generation_option_allowlist`, `generation_option_defaults`, `generation_options` |
+| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `call_edges`, `committed_state`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry`, `flows`, `force_unknown_evidence`, `generation_option_allowlist`, `generation_option_defaults` |
 
 ### References
 
@@ -105,6 +110,7 @@ flowchart LR
 | `_finalize_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_finalize_bootstrap_artifacts` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_commit_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_prepared_runtime_governance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_runtime_manifest_generation_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

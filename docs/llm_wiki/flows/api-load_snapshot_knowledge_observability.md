@@ -2,12 +2,13 @@
 
 **Entry point:** `load_snapshot_knowledge_observability` (`api`)
 **Source:** [knowledge_observability](../modules/knowledge_observability.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), and 19 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 22 more
 
 **Complete modules touched:**
 
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -21,6 +22,8 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [markdown_sections](../modules/markdown_sections.md)
 - [paths](../modules/paths.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
@@ -88,7 +91,7 @@ sequenceDiagram
     p10->>p5: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 1932 interactions; 1902 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1809 interactions; 1779 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

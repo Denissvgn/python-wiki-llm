@@ -7,13 +7,11 @@ import json
 import textwrap
 import types
 from pathlib import Path
-from typing import get_type_hints
+from typing import cast, get_type_hints
 
 import pytest
 
 import llm_wiki_cli.api as api
-from llm_wiki_cli.services import contracts as service_contracts
-from llm_wiki_cli.services import mcp_server, plugins
 from llm_wiki_cli.api import (
     EXTRACT_SCHEMA_VERSION,
     ExtractionError,
@@ -30,6 +28,9 @@ from llm_wiki_cli.api import (
     list_wiki_pages,
     pages_for_symbol,
 )
+from llm_wiki_cli.services import contracts as service_contracts
+from llm_wiki_cli.services import mcp_server, plugins
+from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 from llm_wiki_cli.services.knowledge_artifacts import (
     build_knowledge_commit_plan,
     commit_knowledge_artifacts,
@@ -63,7 +64,7 @@ from llm_wiki_cli.services.source_selection import (
     resolve_source_selection,
     with_source_selection_generation_input,
 )
-from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+from llm_wiki_cli.services.source_snapshot import SourceSnapshot, build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import SyncManifest
 from llm_wiki_cli.services.verification_contracts import (
     ARTIFACT_INTEGRITY_CHECKER_ID,
@@ -608,6 +609,7 @@ def test_python_knowledge_api_uses_shared_compatibility_policy(
     assert related["found"] is case.serves_knowledge
     assert evidence["found"] is case.serves_knowledge
     if case.serves_knowledge:
+        assert concept["concept"] is not None
         assert concept["concept"]["locator"] == "llm-wiki://entities/User"
     else:
         assert concept["concept"] is None
@@ -757,8 +759,10 @@ def test_build_context_accepts_graph_filters_and_wiki_dir(tmp_project):
         wiki_dir="agent_wiki",
     )
 
+    assert "graphs" in payload
     assert payload["graphs"]["symbol"]["callees"]["found"] is True
     assert payload["graphs"]["symbol"]["pages"]["pages"]
+    assert "surface" in payload
     assert payload["surface"]["kind"] == "flows"
     assert payload["surface"]["count"] == payload["surface"]["returned"]
     assert payload["surface"]["bounds"]["pages"]["returned"] == len(
@@ -793,7 +797,9 @@ def test_build_context_graph_sections_are_optional_additions(tmp_project):
     assert "graphs" not in plain_payload
     assert "surface" not in plain_payload
     assert {"budget", "used", "files"} <= set(enriched_payload)
+    assert "graphs" in enriched_payload
     assert enriched_payload["graphs"]["entrypoint"]["flow"]["found"] is True
+    assert "surface" in enriched_payload
     assert enriched_payload["surface"]["pages"][0]["canonical_path"] == (
         "flows/api-run.md"
     )
@@ -890,12 +896,15 @@ def test_build_context_passes_knowledge_refinements_and_preserves_results(
         "filters": refinements,
         "wiki_dir": "agent_wiki",
     }
+    assert "knowledge" in result
     assert result["knowledge"] == knowledge_status
+    assert "surface" in result
     assert result["surface"]["knowledge_selection"]["unfiltered_total"] == 2
     assert result["surface"]["knowledge_selection"]["filtered_total"] == 1
     assert result["surface"]["pages"][0]["knowledge"]["freshness"]["state"] == (
         "source-changed"
     )
+    assert "warnings" in result
     assert result["warnings"] == [
         "Knowledge context includes stale concept references."
     ]
@@ -980,7 +989,9 @@ def test_build_context_preserves_compact_typed_relationship_selection(
     )
 
     assert seen["filters"] == refinements
+    assert "typed_graph" in result
     assert result["typed_graph"] == graph_status
+    assert "surface" in result
     assert result["surface"]["pages"][0]["typed_graph"] == graph_selection
     encoded = json.dumps(result, sort_keys=True)
     assert "samples" not in encoded
@@ -1046,7 +1057,9 @@ def test_build_context_markdown_preserves_knowledge_status_and_warnings(
         filters={"surface": "entities"},
     )
 
+    assert "knowledge" in result["payload"]
     assert result["payload"]["knowledge"] == status
+    assert "warnings" in result
     assert result["warnings"] == [
         "Knowledge context is degraded; no candidates were dropped."
     ]
@@ -1100,7 +1113,7 @@ def test_query_filter_iterable_consumption_is_bounded():
         api.related_concepts(
             "llm-wiki://entities/User",
             kinds=kinds,
-            service=object(),
+            service=cast(DocumentationGraphQueryService, object()),
         )
 
     assert kinds.pulls == api.MAX_QUERY_FILTER_VALUES + 1
@@ -1121,7 +1134,7 @@ def test_query_filter_iteration_failure_is_a_stable_invalid_request():
         api.related_concepts(
             "llm-wiki://entities/User",
             kinds=BrokenKinds(),
-            service=object(),
+            service=cast(DocumentationGraphQueryService, object()),
         )
 
     assert exc_info.value.code == "invalid-request"
@@ -1169,6 +1182,8 @@ def test_build_context_forwards_opt_in_freshness_policy(monkeypatch):
     result = api.build_context(".", prefer_fresh=True)
 
     assert seen["prefer_fresh"] is True
+    assert "ranking_policy" in result
+    assert "prefer_fresh" in result["ranking_policy"]
     assert result["ranking_policy"]["prefer_fresh"] is True
 
 
@@ -1346,7 +1361,7 @@ def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
     retained_inventory = api.extract_cmd.InventoryResult(
         inventory=inventory,
         statuses={},
-        source_snapshot=source_snapshot,
+        source_snapshot=cast(SourceSnapshot, source_snapshot),
     )
     extract_result = api.extract_cmd.ExtractPayloadResult(
         payload={
@@ -1512,6 +1527,7 @@ def test_query_service_builder_exposes_committed_knowledge_end_to_end(
         "freshness_evaluated": True,
     }
     assert result["found"] is True
+    assert result["concept"] is not None
     assert result["concept"]["locator"] == "llm-wiki://entities/User"
     assert result["concept"]["freshness"]["state"] == "current"
 
@@ -1926,6 +1942,7 @@ def test_api_exposes_machine_receipt_as_separate_read_only_dimension(
         service=service,
     )
 
+    assert result["concept"] is not None
     assert result["concept"]["verification"] == "untracked"
     assert result["concept"]["machine_verification"] == {
         "availability": "recorded",
@@ -1985,6 +2002,7 @@ def test_query_service_builder_uses_snapshot_only_on_live_option_failure(
         "freshness": "unevaluated (snapshot-only read)",
         "freshness_evaluated": False,
     }
+    assert result["concept"] is not None
     assert result["concept"]["freshness"] == {
         "state": None,
         "reason": "not-evaluated",
@@ -2000,11 +2018,13 @@ def test_graph_query_service_and_wrappers_return_documentation_answers(tmp_proje
 
     flow = flow_for_entrypoint("api-run", service=service)
     assert flow["found"] is True
+    assert flow["flow"] is not None
     assert flow["flow"]["entry"]["symbol"] == "run"
     assert flow["flow"]["modules_touched"] == ["api.py", "repo.py"]
 
     data_flow = data_flow_for_entrypoint("run", service=service)
     assert data_flow["found"] is True
+    assert data_flow["data_flow"] is not None
     assert data_flow["data_flow"]["entry"]["id"] == "api-run"
 
     caller_result = callers("save", service=service)

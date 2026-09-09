@@ -2,7 +2,7 @@
 
 **Entry point:** `build_artifact_verification_context` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 8 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 9 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
@@ -64,6 +65,7 @@ sequenceDiagram
     p12-->>p1: isinstance
     p12-->>p2: TypeError
     p12->>p13: _emit_extensions
+    p13-->>p1: isinstance
     p13->>p14: _parse_extensions
     p14->>p15: _object
     p15-->>p16: dict
@@ -72,10 +74,9 @@ sequenceDiagram
     p17-->>p1: isinstance
     p17-->>p18: encode
     p15->>p19: KnowledgeModelError
-    p15->>p19: KnowledgeModelError
 ```
 
-> Call sequence diagram shows 30 of 1089 interactions; 1059 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1103 interactions; 1073 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

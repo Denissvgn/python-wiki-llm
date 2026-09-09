@@ -24,7 +24,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, Literal, overload
 
 from ..config import (
     DEFAULT_WIKI_DIR,
@@ -227,6 +227,48 @@ def _extractor_failure_message(inventory_result) -> str:
         detail = f": {status.message}" if status.message else ""
         details.append(f"{status.language} extraction failed{detail}")
     return "; ".join(details) or "Source extraction failed."
+
+
+@overload
+def get_inventory(
+    src_dir: str,
+    *,
+    deep: bool = False,
+    return_result: Literal[False] = False,
+    job_request: ExtractionJobRequest | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    include_plugins: bool = True,
+    source_selection: str | Path | None = None,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict: ...
+
+
+@overload
+def get_inventory(
+    src_dir: str,
+    *,
+    deep: bool = False,
+    return_result: Literal[True],
+    job_request: ExtractionJobRequest | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    include_plugins: bool = True,
+    source_selection: str | Path | None = None,
+    source_snapshot: SourceSnapshot | None = None,
+) -> InventoryResult: ...
+
+
+@overload
+def get_inventory(
+    src_dir: str,
+    *,
+    deep: bool = False,
+    return_result: bool,
+    job_request: ExtractionJobRequest | None = None,
+    plan_reporter: Callable[[ExtractionJobPlan], None] | None = None,
+    include_plugins: bool = True,
+    source_selection: str | Path | None = None,
+    source_snapshot: SourceSnapshot | None = None,
+) -> dict | InventoryResult: ...
 
 
 def get_inventory(

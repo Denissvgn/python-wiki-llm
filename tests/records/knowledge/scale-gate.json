@@ -27,7 +27,7 @@
     "network": "not used",
     "python": "project-supported Python >=3.10",
     "serialization": "UTF-8 deterministic JSON",
-    "tool": "agent-wiki-cli 1.8.1"
+    "tool": "agent-wiki-cli 2.0.0"
   },
   "fixture": {
     "call_observations": {
@@ -173,7 +173,7 @@
     },
     "knowledge_index": {
       "serialized_bytes": 490304,
-      "sha256": "sha256:dbe50387c288e97c28cd09c8d967b3b63d3bcd8be743efc8c69a64255a1a188b"
+      "sha256": "sha256:c84470c0a5f28d27dfd8bc88a73b3c6b6fd779f2f55884a76aaf53a980f09949"
     },
     "queries": {
       "calls_with_evidence": {

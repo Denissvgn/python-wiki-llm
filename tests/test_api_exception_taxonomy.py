@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import inspect
-from pathlib import Path
 import typing
 import warnings
+from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
 import llm_wiki_cli.api as api
 from llm_wiki_cli import api_types
 from llm_wiki_cli.services.bootstrap_service import BootstrapRequestError
+from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 
 
 _PUBLIC_FUNCTION_NAMES = (
@@ -216,7 +218,8 @@ def _failure_cases(tmp_path: Path):
     missing_wiki = tmp_path / "missing-wiki"
     missing_workspace = tmp_path / "missing-workspace"
     missing_controller = tmp_path / "missing-controller"
-    query_service = _FailingQueryService()
+    # The double implements just the query methods exercised by these failures.
+    query_service = cast(DocumentationGraphQueryService, _FailingQueryService())
 
     return {
         "bootstrap_wiki": lambda: api.bootstrap_wiki(
@@ -351,14 +354,16 @@ def _failure_cases(tmp_path: Path):
             missing_controller
         ),
         "select_documentation_model": lambda: api.select_documentation_model(
-            None,
-            None,
+            cast(Any, None),
+            cast(Any, None),
         ),
         "validate_documentation_model_selection": lambda: (
-            api.validate_documentation_model_selection(None, None, None)
+            api.validate_documentation_model_selection(
+                cast(Any, None), cast(Any, None), cast(Any, None)
+            )
         ),
         "use_calibration_host_broker_authenticator": lambda: _enter(
-            api.use_calibration_host_broker_authenticator(object())
+            api.use_calibration_host_broker_authenticator(cast(Any, object()))
         ),
         "prepare_p0_calibration_run": lambda: _deprecated(
             api.prepare_p0_calibration_run,

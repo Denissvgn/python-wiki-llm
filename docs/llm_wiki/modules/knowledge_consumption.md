@@ -16,6 +16,7 @@ to every downstream consumer participating in the operation.
 
 | Source | Symbols |
 |--------|---------|
+| `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.knowledge_freshness` | `KnowledgeFreshnessReport`, `LiveKnowledgeEvaluation`, `evaluate_knowledge_freshness` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeLoadState` |
@@ -50,9 +51,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (17) |
-| Outbound | `src` (5) |
+| Outbound | `src` (6) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -78,6 +79,7 @@ flowchart LR
 | `build_knowledge_read_view` | `(load_result: KnowledgeLoadResult, *, live_evaluation: LiveKnowledgeEvaluation \| None = None, snapshot_only: bool = False, mode: KnowledgeReadMode \| str \| None = None) -> KnowledgeReadView` | — | Build one shared view from an already completed artifact load. |
 | `load_knowledge_read_view` | `(wiki_dir: str \| Path, *, live_evaluation: LiveKnowledgeEvaluation \| None = None, snapshot_only: bool = False, mode: KnowledgeReadMode \| str \| None = None, markdown_pages: Mapping[str, str \| bytes] \| None = None, include_machine_verification: bool = False) -> KnowledgeReadView` | — | Load exactly once and return a read-only native-consumer session. |
 | `_read_mode` | `(*, snapshot_only: bool, mode: KnowledgeReadMode \| str \| None) -> KnowledgeReadMode` | — | — |
+| `_loaded_freshness` | `(load_result, live_evaluation)` | — | — |
 | `_validate_load_result` | `(result: KnowledgeLoadResult) -> None` | — | — |
 | `_unsupported_reason` | `(issues: tuple[KnowledgeLoadIssue, ...]) -> KnowledgeReadReason \| None` | — | — |
 | `_knowledge_counts` | `(knowledge: KnowledgeIndex, freshness: KnowledgeFreshnessReport \| None) -> KnowledgeReadCounts` | — | — |

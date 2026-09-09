@@ -322,57 +322,87 @@ class TestUpgradeSwitchAgent:
         assert read_config("docs/llm_wiki")["issue_reporting"] is True
 
 
-class TestUpgradeReinstallsHooks:
-    """Hook files are updated on upgrade."""
-
-    def test_hooks_installed(self, tmp_path):
+class TestUpgradeRetiresHooks:
+    def test_upgrade_never_installs_hooks(self, tmp_path):
         _init_project(tmp_path, agent="copilot")
         os.chdir(tmp_path)
-
-        hook = Path(".git/hooks/post-commit")
-        # Remove any existing hook
-        if hook.exists():
-            hook.unlink()
-        assert not hook.exists()
-
         upgrade_cmd.run(_make_args())
+        for name in ("post-commit", "pre-commit", "pre-push"):
+            assert not Path(".git/hooks", name).exists()
 
-        assert hook.exists()
-        content = hook.read_text(encoding="utf-8")
-        assert "LLM Wiki" in content
+    @pytest.mark.parametrize("agent", ["generic", "claude"])
+    def test_upgrade_removes_existing_hooks_when_refreshing_or_switching(
+        self, tmp_path, agent
+    ):
+        from llm_wiki_cli.services import legacy_hooks
 
-    def test_hooks_refreshed_on_agent_switch(self, tmp_path):
-        _init_project(tmp_path, agent="copilot")
+        _init_project(tmp_path, agent="generic")
         os.chdir(tmp_path)
+        hooks = Path(".git/hooks")
+        fixtures = Path(__file__).parent / "fixtures" / "legacy_hooks"
+        (hooks / "post-commit").write_text(
+            legacy_hooks._build_ide_post_commit("docs/llm_wiki"), encoding="utf-8"
+        )
+        (hooks / "pre-commit").write_text(
+            legacy_hooks._build_validation_pre_commit("docs/llm_wiki"), encoding="utf-8"
+        )
+        (hooks / "pre-push").write_bytes(
+            (fixtures / "pre-push-5f093180.sh").read_bytes()
+        )
+        upgrade_cmd.run(_make_args(agent=agent))
+        assert all(not (hooks / name).exists() for name in legacy_hooks.HOOK_NAMES)
+        assert read_config("docs/llm_wiki")["agent"] == agent
 
-        # Install initial hooks
-        upgrade_cmd.run(_make_args())
-        hook = Path(".git/hooks/post-commit")
-        old_content = hook.read_text(encoding="utf-8")
-        assert "generate-prompt" in old_content  # IDE mode
+    def test_cleanup_is_independent_of_current_wiki_dir(self, tmp_path):
+        from llm_wiki_cli.services import legacy_hooks
 
-        # Switch to CLI agent
-        upgrade_cmd.run(_make_args(agent="claude"))
-        new_content = hook.read_text(encoding="utf-8")
-        assert "generate-prompt" in new_content
-        assert "trigger-agent" not in new_content
-
-    def test_prompt_hook_keeps_custom_wiki_dir_for_cli_agent(self, tmp_path):
         _init_project(tmp_path, agent="claude", wiki_dir="my docs/wiki")
         os.chdir(tmp_path)
-
+        hook = Path(".git/hooks/post-commit")
+        hook.write_text(
+            legacy_hooks._legacy_auto_sync_post_commit("aider", "old wiki"),
+            encoding="utf-8",
+        )
         upgrade_cmd.run(_make_args(wiki_dir="my docs/wiki"))
+        assert not hook.exists()
 
-        hook_text = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        assert "generate-prompt" in hook_text
-        assert "trigger-agent" not in hook_text
-        assert "--wiki-dir 'my docs/wiki'" in hook_text
+    @pytest.mark.parametrize("force", [False, True])
+    def test_force_never_removes_custom_hooks(self, tmp_path, force):
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        hook = Path(".git/hooks/post-commit")
+        content = b"#!/bin/sh\necho custom\n"
+        hook.write_bytes(content)
+        upgrade_cmd.run(_make_args(force=force))
+        assert hook.read_bytes() == content
+
+    def test_changed_hook_after_cleanup_preflight_is_preserved(
+        self, tmp_path, monkeypatch
+    ):
+        from llm_wiki_cli.services import legacy_hooks
+
+        _init_project(tmp_path, agent="generic")
+        os.chdir(tmp_path)
+        hook = Path(".git/hooks/post-commit")
+        hook.write_text(
+            legacy_hooks._build_ide_post_commit("docs/llm_wiki"), encoding="utf-8"
+        )
+        remove = upgrade_cmd.remove_legacy_hooks
+        changed = b"#!/bin/sh\necho new user hook\n"
+
+        def replace_hook(**kwargs):
+            hook.write_bytes(changed)
+            return remove(**kwargs)
+
+        monkeypatch.setattr(upgrade_cmd, "remove_legacy_hooks", replace_hook)
+        with pytest.raises(SystemExit) as caught:
+            upgrade_cmd.run(_make_args())
+        assert caught.value.code == 2
+        assert hook.read_bytes() == changed
 
 
 class TestUpgradePreservesSourceSelection:
-    def test_explicit_profile_wins_and_refreshes_schema_hooks_and_config(
-        self, tmp_path
-    ):
+    def test_explicit_profile_wins_while_retiring_hooks(self, tmp_path):
         _init_project(tmp_path, agent="generic")
         os.chdir(tmp_path)
         Path("selected-a").mkdir()
@@ -391,11 +421,10 @@ class TestUpgradePreservesSourceSelection:
         upgrade_cmd.run(_make_args(source_selection="config/b.json"))
 
         schema = Path("AGENTS.md").read_text(encoding="utf-8")
-        post = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
-        pre = pre_commit.read_text(encoding="utf-8")
-        for content in (schema, post, pre):
-            assert "--source-selection config/b.json" in content
-            assert "--source-selection config/a.json" not in content
+        assert not Path(".git/hooks/post-commit").exists()
+        assert not pre_commit.exists()
+        assert "--source-selection config/b.json" in schema
+        assert "--source-selection config/a.json" not in schema
         assert read_config("docs/llm_wiki")["source_selection"] == "config/b.json"
 
     def test_stored_profile_wins_over_auto_discovery(self, tmp_path):
@@ -687,7 +716,7 @@ class TestUpgradeIdempotent:
 
         upgrade_cmd.run(_make_args())
         first = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
-        hook_first = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert not Path(".git/hooks/post-commit").exists()
         gi_first = (
             Path(".gitignore").read_text(encoding="utf-8")
             if Path(".gitignore").exists()
@@ -696,7 +725,7 @@ class TestUpgradeIdempotent:
 
         upgrade_cmd.run(_make_args())
         second = Path(SCHEMA_FILENAMES["copilot"]).read_text(encoding="utf-8")
-        hook_second = Path(".git/hooks/post-commit").read_text(encoding="utf-8")
+        assert not Path(".git/hooks/post-commit").exists()
         gi_second = (
             Path(".gitignore").read_text(encoding="utf-8")
             if Path(".gitignore").exists()
@@ -704,7 +733,6 @@ class TestUpgradeIdempotent:
         )
 
         assert first == second
-        assert hook_first == hook_second
         assert gi_first == gi_second
         assert ".git/llm-wiki-prompt.txt" not in gi_second
         assert ".git/llm-wiki.lock" not in gi_second
@@ -815,3 +843,27 @@ class TestUpgradeReferenceSkill:
             for path in new_dir.rglob("*")
             if path.is_file()
         } == set(REFERENCE_SKILL_FILES)
+
+
+@pytest.mark.parametrize("configuration", ["absent", "invalid"])
+def test_hook_retirement_completes_before_agent_config_recovery(
+    tmp_path, monkeypatch, configuration
+):
+    from llm_wiki_cli.config import get_agent_config_path
+    from llm_wiki_cli.services import legacy_hooks
+
+    _init_project(tmp_path, agent="generic")
+    monkeypatch.chdir(tmp_path)
+    config = get_agent_config_path("docs/llm_wiki")
+    if configuration == "absent":
+        config.unlink()
+    else:
+        config.write_bytes(b"{invalid-json")
+    hook = Path(".git/hooks/post-commit")
+    hook.write_text(
+        legacy_hooks._build_ide_post_commit("docs/llm_wiki"), encoding="utf-8"
+    )
+    with pytest.raises(SystemExit) as caught:
+        upgrade_cmd.run(_make_args())
+    assert caught.value.code != 0
+    assert not hook.exists()

@@ -1,6 +1,6 @@
 # SyncRuntimeRefreshError
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:260`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:268`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -25,10 +25,13 @@ flowchart LR
     n0["SyncRuntimeRefreshError (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1["ValueError"]
     n2["_prepare_sync_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n3["_try_sync_knowledge_reuse (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
+    click n3 "../modules/sync_cmd.md"
 ```
 
 ### Summary
@@ -48,3 +51,4 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
+| `_try_sync_knowledge_reuse` | call | [sync_cmd](../modules/sync_cmd.md) | 7 |

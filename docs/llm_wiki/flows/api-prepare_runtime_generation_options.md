@@ -66,13 +66,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prepare_runtime_generation_options | isinstance | 219 | `isinstance(inventory_complete, bool)` |
-| prepare_runtime_generation_options | TypeError | 220 | `TypeError('inventory_complete must be a boolean')` |
-| prepare_runtime_generation_options | dict | 221 | `dict(generation_options)` |
-| prepare_runtime_generation_options | dict | 223 | `dict(generation_option_defaults)` |
-| prepare_runtime_generation_options | tuple | 225 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | fromkeys | 226 | `dict.fromkeys((...))` |
-| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 228 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
+| prepare_runtime_generation_options | isinstance | 317 | `isinstance(inventory_complete, bool)` |
+| prepare_runtime_generation_options | TypeError | 318 | `TypeError('inventory_complete must be a boolean')` |
+| prepare_runtime_generation_options | dict | 319 | `dict(generation_options)` |
+| prepare_runtime_generation_options | dict | 321 | `dict(generation_option_defaults)` |
+| prepare_runtime_generation_options | tuple | 323 | `tuple(dict.fromkeys(...))` |
+| prepare_runtime_generation_options | fromkeys | 324 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 326 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
 
 ### Boundary effects
 
@@ -82,9 +82,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `prepare_runtime_generation_options` | `isinstance` | 219 |
-| unresolved_call | `prepare_runtime_generation_options` | `TypeError` | 220 |
-| unresolved_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 226 |
+| unresolved_call | `prepare_runtime_generation_options` | `isinstance` | 317 |
+| unresolved_call | `prepare_runtime_generation_options` | `TypeError` | 318 |
+| unresolved_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 324 |
 
 ## Behavior
 

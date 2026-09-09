@@ -129,12 +129,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_markdown_snapshot | isinstance | 782 | `isinstance(pages, Mapping)` |
-| hash_markdown_snapshot | KnowledgeEnvelopeError | 783 | `KnowledgeEnvelopeError('markdown_pages', 'must be an object')` |
-| hash_markdown_snapshot | set | 785 | `set(data not statically known)` |
-| hash_markdown_snapshot | items | 786 | `pages.items(data not statically known)` |
-| hash_markdown_snapshot | _repository_relative_path | 787 | `_repository_relative_path(path, 'markdown_pages.path')` |
-| _repository_relative_path | require_repository_relative_path | 1486 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
+| hash_markdown_snapshot | isinstance | 784 | `isinstance(pages, Mapping)` |
+| hash_markdown_snapshot | KnowledgeEnvelopeError | 785 | `KnowledgeEnvelopeError('markdown_pages', 'must be an object')` |
+| hash_markdown_snapshot | set | 787 | `set(data not statically known)` |
+| hash_markdown_snapshot | items | 788 | `pages.items(data not statically known)` |
+| hash_markdown_snapshot | _repository_relative_path | 789 | `_repository_relative_path(path, 'markdown_pages.path')` |
+| _repository_relative_path | require_repository_relative_path | 1501 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
 | require_repository_relative_path | isinstance | 256 | `isinstance(value, str)` |
 | require_repository_relative_path | strip | 258 | `value.strip(data not statically known)` |
 | require_repository_relative_path | any | 260 | `any(...)` |
@@ -145,16 +145,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `hash_markdown_snapshot` | 798 |
-| mutation | `records.append` | `hash_markdown_snapshot` | 803 |
-| mutation | `records.sort` | `hash_markdown_snapshot` | 809 |
+| mutation | `seen.add` | `hash_markdown_snapshot` | 800 |
+| mutation | `records.append` | `hash_markdown_snapshot` | 805 |
+| mutation | `records.sort` | `hash_markdown_snapshot` | 811 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_markdown_snapshot` | `isinstance` | 782 |
-| unresolved_call | `hash_markdown_snapshot` | `pages.items` | 786 |
+| unresolved_call | `hash_markdown_snapshot` | `isinstance` | 784 |
+| unresolved_call | `hash_markdown_snapshot` | `pages.items` | 788 |
 | unresolved_call | `require_repository_relative_path` | `isinstance` | 256 |
 | unresolved_call | `require_repository_relative_path` | `value.strip` | 258 |
 | unresolved_call | `require_repository_relative_path` | `any` | 260 |

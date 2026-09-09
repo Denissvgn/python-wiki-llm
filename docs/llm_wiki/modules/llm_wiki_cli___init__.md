@@ -26,7 +26,8 @@ flowchart LR
     n6["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n7["src/llm_wiki_cli/services/inventory_cache.py"]
     n8["src/llm_wiki_cli/services/knowledge_orchestration.py"]
-    n9["src/llm_wiki_cli/services/plugins.py"]
+    n9["src/llm_wiki_cli/services/knowledge_reuse.py"]
+    n10["src/llm_wiki_cli/services/plugins.py"]
     n1 --> n0
     n1 --> n2
     n1 --> n3
@@ -39,15 +40,18 @@ flowchart LR
     n3 --> n7
     n3 --> n8
     n3 --> n9
+    n3 --> n10
     n4 --> n0
     n4 --> n8
     n5 --> n0
-    n5 --> n9
+    n5 --> n10
     n6 --> n0
     n7 --> n0
-    n7 --> n9
+    n7 --> n10
     n8 --> n0
     n9 --> n0
+    n9 --> n8
+    n10 --> n0
     click n0 "../modules/llm_wiki_cli___init__.md"
     click n1 "../modules/cli.md"
     click n2 "../modules/migrate_cmd.md"
@@ -57,7 +61,8 @@ flowchart LR
     click n6 "../modules/documentation_run_dependencies.md"
     click n7 "../modules/inventory_cache.md"
     click n8 "../modules/knowledge_orchestration.md"
-    click n9 "../modules/plugins.md"
+    click n9 "../modules/knowledge_reuse.md"
+    click n10 "../modules/plugins.md"
 ```
 
 ### Internal neighbors
@@ -72,4 +77,5 @@ flowchart LR
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
 | Inbound | [inventory_cache](../modules/inventory_cache.md) |
 | Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Inbound | [knowledge_reuse](../modules/knowledge_reuse.md) |
 | Inbound | [plugins](../modules/plugins.md) |

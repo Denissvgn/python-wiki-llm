@@ -13,6 +13,8 @@ subprocess work, network access, or LLM calls.
 
 from __future__ import annotations
 
+from .progress import observed_phase
+
 import json
 import math
 import re
@@ -309,6 +311,7 @@ def relationship_edge_key(identity: Mapping[str, Any]) -> str:
     return sha256_bytes(_canonical_json(preimage).encode("utf-8"))
 
 
+@observed_phase("typed_graph")
 def materialize_typed_graph(inputs: KnowledgeGraphInputs) -> dict[str, Any]:
     """Materialize a deterministic evidence-backed graph from evaluated inputs."""
 
@@ -387,9 +390,7 @@ def materialize_typed_graph(inputs: KnowledgeGraphInputs) -> dict[str, Any]:
             {"analyzer": analyzer, **state.coverage[analyzer]}
             for analyzer in sorted(state.coverage)
         ],
-        "edges": [
-            state.edges[key].payload() for key in sorted(state.edges)
-        ],
+        "edges": [state.edges[key].payload() for key in sorted(state.edges)],
     }
     return validate_typed_graph(
         graph,

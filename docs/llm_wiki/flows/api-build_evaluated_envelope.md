@@ -2,7 +2,7 @@
 
 **Entry point:** `build_evaluated_envelope` (`api`)
 **Source:** [knowledge_envelope](../modules/knowledge_envelope.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 4 more
+**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 5 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 
@@ -69,7 +70,7 @@ sequenceDiagram
     p17-->>p8: walk
 ```
 
-> Call sequence diagram shows 30 of 490 interactions; 460 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 494 interactions; 464 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -130,17 +131,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_evaluated_envelope | isinstance | 892 | `isinstance(inputs, EnvelopeInputs)` |
-| build_evaluated_envelope | TypeError | 893 | `TypeError('inputs must be an EnvelopeInputs')` |
-| build_evaluated_envelope | isinstance | 894 | `isinstance(inputs.repository, RepositoryRecord)` |
-| build_evaluated_envelope | KnowledgeEnvelopeError | 895 | `KnowledgeEnvelopeError('repository', 'must be a pre-evaluated RepositoryRecord')` |
-| build_evaluated_envelope | _extensions_copy | 899 | `_extensions_copy(inputs.repository.extensions, 'repository.extensions')` |
-| _extensions_copy | isinstance | 1755 | `isinstance(value, Mapping)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1756 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
-| _extensions_copy | any | 1757 | `any(...)` |
-| _extensions_copy | isinstance | 1757 | `isinstance(key, str)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1758 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
-| _extensions_copy | _reject_machine_local_paths | 1759 | `_reject_machine_local_paths(value, field_name)` |
+| build_evaluated_envelope | isinstance | 895 | `isinstance(inputs, EnvelopeInputs)` |
+| build_evaluated_envelope | TypeError | 896 | `TypeError('inputs must be an EnvelopeInputs')` |
+| build_evaluated_envelope | isinstance | 897 | `isinstance(inputs.repository, RepositoryRecord)` |
+| build_evaluated_envelope | KnowledgeEnvelopeError | 898 | `KnowledgeEnvelopeError('repository', 'must be a pre-evaluated RepositoryRecord')` |
+| build_evaluated_envelope | _extensions_copy | 902 | `_extensions_copy(inputs.repository.extensions, 'repository.extensions')` |
+| _extensions_copy | isinstance | 1770 | `isinstance(value, Mapping)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1771 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
+| _extensions_copy | any | 1772 | `any(...)` |
+| _extensions_copy | isinstance | 1772 | `isinstance(key, str)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1773 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
+| _extensions_copy | _reject_machine_local_paths | 1774 | `_reject_machine_local_paths(value, field_name)` |
 
 ### Boundary effects
 
@@ -150,12 +151,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_evaluated_envelope` | `isinstance` | 892 |
-| unresolved_call | `build_evaluated_envelope` | `TypeError` | 893 |
-| unresolved_call | `build_evaluated_envelope` | `isinstance` | 894 |
-| unresolved_call | `_extensions_copy` | `isinstance` | 1755 |
-| unresolved_call | `_extensions_copy` | `any` | 1757 |
-| unresolved_call | `_extensions_copy` | `isinstance` | 1757 |
+| unresolved_call | `build_evaluated_envelope` | `isinstance` | 895 |
+| unresolved_call | `build_evaluated_envelope` | `TypeError` | 896 |
+| unresolved_call | `build_evaluated_envelope` | `isinstance` | 897 |
+| unresolved_call | `_extensions_copy` | `isinstance` | 1770 |
+| unresolved_call | `_extensions_copy` | `any` | 1772 |
+| unresolved_call | `_extensions_copy` | `isinstance` | 1772 |
 | step_limit | `build_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `build_evaluated_envelope` | `depth limit` | 0 |
 

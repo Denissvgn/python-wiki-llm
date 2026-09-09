@@ -19,6 +19,7 @@ step whose result is inert input to the builder.
 | `.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.knowledge_evidence` | `canonical_json_bytes`, `formatted_json_text`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_model` | `EVALUATED_REVISION_PATTERN`, `LIMITATION_CODE_PATTERN`, `REPOSITORY_IDENTITY_PATTERN`, `REPOSITORY_IDENTITY_SOURCE_EXTENSION`, `BundleRecord`, `KnowledgeIndex`, `KnowledgeModelError`, `ProducerComponent`, `ProducerRecord`, `RepositoryIdentitySource`, `RepositoryRecord`, `SnapshotRecord`, `WorkingTreeState`, `knowledge_index_to_payload` |
+| `.progress` | `observed_phase` |
 | `.validation` | `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
@@ -50,23 +51,23 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (13) |
-| Outbound | `src` (4) |
+| Inbound | `src` (14) |
+| Outbound | `src` (5) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [_GitCommandResult](../entities/GitCommandResult.md) | Class | 78 | — | — |
-| [KnowledgeEnvelopeError](../entities/KnowledgeEnvelopeError.md) | Class | 88 | `ValueError` | Field-specific validation failure while constructing an envelope. |
-| [ConsumedInputKind](../entities/ConsumedInputKind.md) | Enum | 97 | `str`, `Enum` | Known classes of repository/configuration input consumed by a run. |
-| [ConsumedInput](../entities/ConsumedInput.md) | Class | 123 | — | One already captured repository-relative content commitment. |
-| [ProducerComponentInput](../entities/ProducerComponentInput.md) | Class | 217 | — | Safe, already selected producer metadata. |
-| [RepositoryEvidence](../entities/RepositoryEvidence.md) | Class | 233 | — | Already collected local VCS evidence; raw remotes are never serialized. |
-| [EnvelopeInputs](../entities/EnvelopeInputs.md) | Class | 245 | — | Complete in-memory inputs for one evaluated envelope. |
-| [EvaluatedEnvelope](../entities/EvaluatedEnvelope.md) | Class | 265 | — | Version-tagged evaluated basis committed through manifest v5. |
+| [_GitCommandResult](../entities/GitCommandResult.md) | Class | 80 | — | — |
+| [KnowledgeEnvelopeError](../entities/KnowledgeEnvelopeError.md) | Class | 90 | `ValueError` | Field-specific validation failure while constructing an envelope. |
+| [ConsumedInputKind](../entities/ConsumedInputKind.md) | Enum | 99 | `str`, `Enum` | Known classes of repository/configuration input consumed by a run. |
+| [ConsumedInput](../entities/ConsumedInput.md) | Class | 125 | — | One already captured repository-relative content commitment. |
+| [ProducerComponentInput](../entities/ProducerComponentInput.md) | Class | 219 | — | Safe, already selected producer metadata. |
+| [RepositoryEvidence](../entities/RepositoryEvidence.md) | Class | 235 | — | Already collected local VCS evidence; raw remotes are never serialized. |
+| [EnvelopeInputs](../entities/EnvelopeInputs.md) | Class | 247 | — | Complete in-memory inputs for one evaluated envelope. |
+| [EvaluatedEnvelope](../entities/EvaluatedEnvelope.md) | Class | 267 | — | Version-tagged evaluated basis committed through manifest v5. |
 
 ## Functions
 
@@ -87,7 +88,7 @@ flowchart LR
 | `hash_generation_options` | `(values: Mapping[str, Any], *, defaults: Mapping[str, Any], allowlist: Iterable[str]) -> str` | — | Hash effective allowlisted behavior options, including defaults. |
 | `hash_component_configuration` | `(configuration: Mapping[str, Any]) -> str` | — | Hash one complete safe component configuration allowlist. |
 | `hash_aggregate_inputs` | `(inputs: Sequence[Any] \| Iterable[Any]) -> str` | — | Hash ordered aggregate evidence while retaining order and multiplicity. |
-| `build_evaluated_envelope` | `(inputs: EnvelopeInputs) -> EvaluatedEnvelope` | — | Build and typed-validate a complete envelope without performing I/O. |
+| `build_evaluated_envelope` | `(inputs: EnvelopeInputs) -> EvaluatedEnvelope` | `@observed_phase('envelope')` | Build and typed-validate a complete envelope without performing I/O. |
 | `build_producer_record` | `(*, tool: ProducerComponentInput, extractors: Iterable[ProducerComponentInput] = (), plugins: Iterable[ProducerComponentInput] = (), extensions: Mapping[str, Any] \| None = None) -> ProducerRecord` | — | Build canonical producer evidence from safe selected metadata. |
 | `plugin_producer_inputs` | `(components: Iterable[Mapping[str, Any]], *, plugin_configurations: Mapping[str, Mapping[str, Any] \| None] \| None = None, plugin_limitations: Mapping[str, Iterable[str]] \| None = None) -> tuple[ProducerComponentInput, ...]` | — | Project installed component records into safe per-plugin producer input. |
 | `evaluated_envelope_to_payload` | `(envelope: EvaluatedEnvelope) -> dict[str, Any]` | — | Return a deterministic JSON-compatible evaluated-envelope payload. |

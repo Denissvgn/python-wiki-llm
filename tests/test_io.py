@@ -223,7 +223,7 @@ def test_first_unsafe_path_component_checks_symlink_target_chain_with_owner_pred
     metadata = unsafe_path.lstat()
     reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
     assert stat.S_ISLNK(metadata.st_mode) or bool(
-        reparse_flag and metadata.st_file_attributes & reparse_flag
+        reparse_flag and getattr(metadata, "st_file_attributes", 0) & reparse_flag
     )
 
 
@@ -326,5 +326,5 @@ def test_first_unsafe_path_component_owner_predicate_preserves_target_traversal(
     metadata = unsafe_path.lstat()
     reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
     assert stat.S_ISLNK(metadata.st_mode) or bool(
-        reparse_flag and metadata.st_file_attributes & reparse_flag
+        reparse_flag and getattr(metadata, "st_file_attributes", 0) & reparse_flag
     )

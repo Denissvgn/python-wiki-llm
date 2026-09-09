@@ -2,7 +2,7 @@
 
 **Entry point:** `record_documentation_agent_result` (`api`)
 **Source:** [record](../modules/record.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 52 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 56 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -43,12 +44,15 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
 - [record](../modules/record.md)
 - [refresh](../modules/refresh.md)
+- [runtime_output](../modules/runtime_output.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
@@ -116,7 +120,7 @@ sequenceDiagram
     p15->>p8: DocumentationIntegrityError
 ```
 
-> Call sequence diagram shows 30 of 5497 interactions; 5467 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 5611 interactions; 5581 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

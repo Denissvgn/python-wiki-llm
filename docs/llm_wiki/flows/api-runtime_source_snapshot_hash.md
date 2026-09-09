@@ -141,33 +141,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_source_snapshot_hash | hash_source_snapshot | 1274 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
-| hash_source_snapshot | set | 732 | `set(data not statically known)` |
-| hash_source_snapshot | enumerate | 733 | `enumerate(inputs)` |
-| hash_source_snapshot | isinstance | 734 | `isinstance(item, ConsumedInput)` |
-| hash_source_snapshot | KnowledgeEnvelopeError | 735 | `KnowledgeEnvelopeError(..., 'must be a ConsumedInput')` |
-| hash_source_snapshot | KnowledgeEnvelopeError | 740 | `KnowledgeEnvelopeError(..., ...)` |
-| hash_source_snapshot | add | 744 | `seen_paths.add(item.path)` |
-| hash_source_snapshot | append | 745 | `records.append({...})` |
-| hash_source_snapshot | sort | 752 | `records.sort(key=...)` |
-| hash_source_snapshot | _hash_structured | 753 | `_hash_structured(SOURCE_SNAPSHOT_DOMAIN, {...}, 'source_inputs')` |
-| _hash_structured | values | 1589 | `payload.values(data not statically known)` |
+| runtime_source_snapshot_hash | hash_source_snapshot | 1408 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
+| hash_source_snapshot | set | 734 | `set(data not statically known)` |
+| hash_source_snapshot | enumerate | 735 | `enumerate(inputs)` |
+| hash_source_snapshot | isinstance | 736 | `isinstance(item, ConsumedInput)` |
+| hash_source_snapshot | KnowledgeEnvelopeError | 737 | `KnowledgeEnvelopeError(..., 'must be a ConsumedInput')` |
+| hash_source_snapshot | KnowledgeEnvelopeError | 742 | `KnowledgeEnvelopeError(..., ...)` |
+| hash_source_snapshot | add | 746 | `seen_paths.add(item.path)` |
+| hash_source_snapshot | append | 747 | `records.append({...})` |
+| hash_source_snapshot | sort | 754 | `records.sort(key=...)` |
+| hash_source_snapshot | _hash_structured | 755 | `_hash_structured(SOURCE_SNAPSHOT_DOMAIN, {...}, 'source_inputs')` |
+| _hash_structured | values | 1604 | `payload.values(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen_paths.add` | `hash_source_snapshot` | 744 |
-| mutation | `records.append` | `hash_source_snapshot` | 745 |
-| mutation | `records.sort` | `hash_source_snapshot` | 752 |
+| mutation | `seen_paths.add` | `hash_source_snapshot` | 746 |
+| mutation | `records.append` | `hash_source_snapshot` | 747 |
+| mutation | `records.sort` | `hash_source_snapshot` | 754 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_source_snapshot` | `enumerate` | 733 |
-| unresolved_call | `hash_source_snapshot` | `isinstance` | 734 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1589 |
+| unresolved_call | `hash_source_snapshot` | `enumerate` | 735 |
+| unresolved_call | `hash_source_snapshot` | `isinstance` | 736 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1604 |
 | step_limit | `runtime_source_snapshot_hash` | `first 12 steps` | 0 |
 
 ## Behavior

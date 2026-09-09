@@ -540,7 +540,7 @@ def _literal_exports(tree: ast.Module) -> frozenset[str] | None:
         ):
             continue
         try:
-            value = ast.literal_eval(node.value)
+            value = ast.literal_eval(node.value) if node.value is not None else None
         except (TypeError, ValueError):
             return None
         if isinstance(value, (list, tuple, set)) and all(
@@ -887,14 +887,16 @@ def _validation_body_fingerprint(
         ) -> ast.ExceptHandler:
             if node.name is not None:
                 node.name = replacements.get(node.name, node.name)
-            return self.generic_visit(node)
+            self.generic_visit(node)
+            return node
 
         def _visit_named_scope(
             self,
             node: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef,
         ) -> ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef:
             node.name = replacements.get(node.name, node.name)
-            return self.generic_visit(node)
+            self.generic_visit(node)
+            return node
 
         visit_FunctionDef = _visit_named_scope
         visit_AsyncFunctionDef = _visit_named_scope

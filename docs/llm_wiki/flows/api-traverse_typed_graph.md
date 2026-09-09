@@ -135,11 +135,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| traverse_typed_graph | _normalize_query_input | 1582 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback | 1137 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1139 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str | 1140 | `str(exc)` |
-| traverse_typed_graph | normalize_concept_coordinate | 1583 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| traverse_typed_graph | _normalize_query_input | 1642 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback | 1197 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1199 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str | 1200 | `str(exc)` |
+| traverse_typed_graph | normalize_concept_coordinate | 1643 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 73 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | strip | 60 | `value.strip(data not statically known)` |
@@ -155,7 +155,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1137 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1197 |
 | unresolved_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |

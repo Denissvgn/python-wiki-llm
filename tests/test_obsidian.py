@@ -10,12 +10,14 @@ import types
 from contextlib import contextmanager
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import obsidian_cmd
-from llm_wiki_cli.services import obsidian, source_snapshot as source_snapshot_module
+from llm_wiki_cli.services import obsidian
+from llm_wiki_cli.services import source_snapshot as source_snapshot_module
 from llm_wiki_cli.services.knowledge_model import KnowledgeProjectionProfile
 from llm_wiki_cli.services.knowledge_projection import KnowledgeProjection
 from llm_wiki_cli.services.source_selection import (
@@ -257,7 +259,7 @@ def _knowledge_projection(
     )
 
 
-def _projection_from_payload(payload: dict[str, object]) -> KnowledgeProjection:
+def _projection_from_payload(payload: dict[str, Any]) -> KnowledgeProjection:
     return KnowledgeProjection(
         schema_version=payload["schema_version"],
         profile=KnowledgeProjectionProfile(payload["profile"]),

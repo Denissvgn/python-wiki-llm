@@ -31,30 +31,35 @@ flowchart LR
     n3["src/llm_wiki_cli/services/documentation_native.py"]
     n4["src/llm_wiki_cli/services/extraction_service.py"]
     n5["src/llm_wiki_cli/services/lint_service.py"]
-    n6["src/llm_wiki_cli/services/validation.py"]
+    n6["src/llm_wiki_cli/services/python_observations.py"]
+    n7["src/llm_wiki_cli/services/validation.py"]
     n0 --> n1
     n0 --> n2
     n0 --> n4
+    n0 --> n7
     n1 --> n2
     n1 --> n4
-    n1 --> n6
-    n2 --> n6
+    n1 --> n7
+    n2 --> n7
     n3 --> n1
     n3 --> n2
     n3 --> n4
-    n3 --> n6
+    n3 --> n7
     n4 --> n2
+    n4 --> n6
     n5 --> n1
     n5 --> n2
     n5 --> n4
-    n5 --> n6
+    n5 --> n7
+    n6 --> n2
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/data_flow.md"
     click n3 "../modules/documentation_native.md"
     click n4 "../modules/extraction_service.md"
     click n5 "../modules/lint_service.md"
-    click n6 "../modules/validation.md"
+    click n6 "../modules/python_observations.md"
+    click n7 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -66,6 +71,7 @@ flowchart LR
 | Inbound | [documentation_native](../modules/documentation_native.md) |
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
+| Inbound | [python_observations](../modules/python_observations.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Classes

@@ -1,6 +1,6 @@
 # EnvelopeInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:245`
+**Location:** `src/llm_wiki_cli/services/knowledge_envelope.py:247`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_envelope](../modules/knowledge_envelope.md)

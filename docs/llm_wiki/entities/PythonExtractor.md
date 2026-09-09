@@ -1,6 +1,6 @@
 # PythonExtractor
 
-**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1528`
+**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1531`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_extractor](../modules/python_extractor.md)
@@ -20,7 +20,7 @@ Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol`.
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__init__` | `() -> None` | — | — |
-| `extract` | `(src_dir: str, only_files: list[str] \| None = None, deep: bool = False, include_empty: bool = False, source_files: list[str] \| None = None, capture_data_effect_observations: bool = False, capture_import_observations: bool = False) -> dict` | — | Scan *src_dir* for Python files and return an inventory dict. |
+| `extract` | `(src_dir: str, only_files: list[str] \| None = None, deep: bool = False, include_empty: bool = False, source_files: list[str] \| None = None, capture_data_effect_observations: bool = False, capture_import_observations: bool = False, defer_inventory_model_kinds: bool = False) -> dict` | — | Scan *src_dir* for Python files and return an inventory dict. |
 
 ## Relationships
 

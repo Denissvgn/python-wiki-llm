@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 39 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 40 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -29,8 +30,6 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_generation](../modules/knowledge_generation.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
-- [knowledge_graph](../modules/knowledge_graph.md)
-- [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [markdown_sections](../modules/markdown_sections.md)
@@ -38,8 +37,10 @@
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_observations](../modules/python_observations.md)
 - [relationships](../modules/relationships.md)
-- [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [services_schema](../modules/services_schema.md)
 - [source_selection](../modules/source_selection.md)
@@ -106,7 +107,7 @@ sequenceDiagram
     p16-->>p18: POINTER
 ```
 
-> Call sequence diagram shows 30 of 4148 interactions; 4118 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4127 interactions; 4097 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
