@@ -9,6 +9,8 @@ step whose result is inert input to the builder.
 
 from __future__ import annotations
 
+from .progress import observed_phase
+
 import math
 import os
 import re
@@ -886,6 +888,7 @@ def hash_aggregate_inputs(inputs: Sequence[Any] | Iterable[Any]) -> str:
     )
 
 
+@observed_phase("envelope")
 def build_evaluated_envelope(inputs: EnvelopeInputs) -> EvaluatedEnvelope:
     """Build and typed-validate a complete envelope without performing I/O."""
 
@@ -1247,12 +1250,22 @@ def _run_effective_git_config(
         raise ValueError("effective Git config key is not allowlisted")
     if value_type not in {None, "bool"}:
         raise ValueError("effective Git config value type is not allowlisted")
+    selected_value = None
+    if value_type == "bool":
+        selected = _run_effective_git_config(root, key)
+        if not selected.succeeded:
+            return selected
+        selected_value = selected.output
     git_environment = {
         name: value for name, value in os.environ.items() if not name.startswith("GIT_")
     }
     git_environment["LC_ALL"] = "C"
     git_environment["GIT_OPTIONAL_LOCKS"] = "0"
     type_arguments = () if value_type is None else (f"--type={value_type}",)
+    # Git may try to type-convert an overridden global value before choosing
+    # the effective one (notably global autocrlf=input and local=false). Filter
+    # by the selected literal value first; never reinterpret it with our parser.
+    value_arguments = () if selected_value is None else ("--fixed-value",)
     try:
         result = subprocess.run(
             [
@@ -1263,8 +1276,10 @@ def _run_effective_git_config(
                 "config",
                 "--includes",
                 *type_arguments,
+                *value_arguments,
                 "--get",
                 key,
+                *((selected_value,) if selected_value is not None else ()),
             ],
             capture_output=True,
             text=True,
@@ -1283,7 +1298,7 @@ def _run_effective_git_config(
         return _GitCommandResult(available=False, returncode=None)
     return _GitCommandResult(
         available=True,
-        returncode=result.returncode,
+        returncode=128 if selected_value is not None and result.returncode == 1 else result.returncode,
         output=result.stdout.strip(),
     )
 

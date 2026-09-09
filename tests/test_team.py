@@ -275,6 +275,7 @@ class TestTeamLintAndCheck:
         (project / "docs" / "llm_wiki").mkdir(parents=True)
         monkeypatch.chdir(project)
         seen = {}
+
         def fake_inventory_result(src_dir, **kwargs):
             seen["src_dir"] = src_dir
             seen["gated_snapshot"] = kwargs["source_snapshot"]
@@ -294,6 +295,7 @@ class TestTeamLintAndCheck:
         )
         monkeypatch.setattr(team_cmd, "get_docker_inventory", fake_docker_inventory)
         monkeypatch.setattr(team, "build_team_issues", lambda *args, **kwargs: [])
+        team.write_default_team_config()
 
         team_cmd.run(
             _ns(
@@ -346,6 +348,7 @@ class TestTeamLintAndCheck:
             return []
 
         monkeypatch.setattr(team, "build_team_issues", capture_issues)
+        team.write_default_team_config()
 
         team_cmd.run(
             _ns(
@@ -411,6 +414,7 @@ class TestTeamLintAndCheck:
             pytest.fail("team check must gate before conventions and wiki pages")
 
         monkeypatch.setattr(team, "build_team_issues", fail_issues)
+        team.write_default_team_config()
 
         with pytest.raises(SourceSelectionError, match="persisted"):
             team_cmd.run(

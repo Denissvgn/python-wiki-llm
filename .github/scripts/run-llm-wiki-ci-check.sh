@@ -217,6 +217,7 @@ set +e
   --jobs "${jobs}" \
   --knowledge-drift-report \
   --format json \
+  --report-schema v2 \
   --no-plugins > "${raw_output}"
 cli_exit=$?
 ci_completed=true
@@ -242,7 +243,7 @@ elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; the
   set +e
   "${python_executable}" -I -m llm_wiki_cli.services.ci_report validate \
     --report "${raw_output}" \
-    --cli-exit "${cli_exit}"
+    --cli-exit "${cli_exit}" --schema v2
   json_validation_exit=$?
   set -e
   if [[ ${json_validation_exit} -eq 0 ]]; then
@@ -250,7 +251,7 @@ elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; the
       mv -- "${raw_output}" "${JSON_REPORT}" &&
       [[ -f "${JSON_REPORT}" && ! -L "${JSON_REPORT}" ]]; then
       json_valid=true
-      json_state="available (validated llm-wiki-ci-check/v1)"
+      json_state="available (validated llm-wiki-ci-check/v2)"
     else
       json_state="unavailable (could not preserve validated output)"
       if [[ -e "${JSON_REPORT}" || -L "${JSON_REPORT}" ]]; then
@@ -261,11 +262,11 @@ elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; the
       printf 'Could not preserve validated JSON evidence.\n' >&2
     fi
   else
-    json_state="unavailable (invalid v1 output; diagnostic raw available)"
+    json_state="unavailable (invalid v2 output; diagnostic raw available)"
     if [[ ! -e "${INVALID_REPORT}" && ! -L "${INVALID_REPORT}" ]] &&
       mv -- "${raw_output}" "${INVALID_REPORT}" &&
       [[ -f "${INVALID_REPORT}" && ! -L "${INVALID_REPORT}" ]]; then
-      printf 'CI output does not satisfy llm-wiki-ci-check/v1; preserved as %s.\n' \
+      printf 'CI output does not satisfy llm-wiki-ci-check/v2; preserved as %s.\n' \
         "${INVALID_REPORT}" >&2
     else
       json_state="unavailable (invalid output could not be preserved)"

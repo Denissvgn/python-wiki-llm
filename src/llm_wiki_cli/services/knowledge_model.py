@@ -597,6 +597,17 @@ def _validated_reserved_extensions(
     )
 
     normalized = dict(extensions)
+    from .knowledge_reuse import REUSE_EXTENSION_KEY, validate_reuse_commitment
+
+    if REUSE_EXTENSION_KEY in normalized:
+        try:
+            normalized[REUSE_EXTENSION_KEY] = validate_reuse_commitment(
+                normalized[REUSE_EXTENSION_KEY]
+            )
+        except ValueError as exc:
+            raise KnowledgeModelError(
+                f"extensions.{REUSE_EXTENSION_KEY}", str(exc)
+            ) from exc
     try:
         typed_graph = typed_graph_from_knowledge_extensions(
             normalized,
@@ -605,8 +616,7 @@ def _validated_reserved_extensions(
         field = exc.field
         if field.startswith("typed_graph"):
             field = (
-                f"extensions.{TYPED_GRAPH_EXTENSION_KEY}"
-                + field[len("typed_graph") :]
+                f"extensions.{TYPED_GRAPH_EXTENSION_KEY}" + field[len("typed_graph") :]
             )
         raise KnowledgeModelError(field, exc.message) from exc
     if typed_graph is not None:
@@ -1957,7 +1967,15 @@ def _emit_extensions(
     extensions: Extensions,
     path: str,
 ) -> dict[str, Any]:
-    parsed = _parse_extensions(extensions, path)
+    from .immutable import FrozenDict
+
+    # Copy elision only. Public model emitters still parse the complete payload;
+    # the artifact factory freezes values only after full model validation.
+    parsed = (
+        extensions
+        if isinstance(extensions, FrozenDict)
+        else _parse_extensions(extensions, path)
+    )
     if parsed:
         payload["extensions"] = parsed
     return payload

@@ -417,7 +417,8 @@ def test_open_read_view_loads_once_evaluates_at_most_once_and_never_rebuilds(
     assert "rebuild_callback" not in loader_kwargs
     assert len(freshness_calls) == expected_freshness_calls
     if freshness_calls:
-        assert freshness_calls[0] == (loaded.knowledge, live)
+        assert freshness_calls[0] == (loaded.validated_artifacts, live)
+        assert loaded.validated_artifacts.knowledge is loaded.knowledge
     assert (view.freshness is not None) is bool(expected_freshness_calls)
 
 

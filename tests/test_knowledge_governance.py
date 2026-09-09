@@ -975,7 +975,10 @@ def test_governance_lock_rejects_symlink_without_touching_target(
     wiki_dir.mkdir()
     outside = tmp_path / "outside.txt"
     outside.write_bytes(b"do not change\n")
-    (wiki_dir / GOVERNANCE_LOCK_FILENAME).symlink_to(outside)
+    # Own the selected lock location instead of inheriting a host ancestor .git.
+    lock_root = tmp_path / ".git"
+    lock_root.mkdir()
+    (lock_root / GOVERNANCE_LOCK_FILENAME).symlink_to(outside)
 
     with pytest.raises(GovernanceError, match="symbolic-link"):
         with governance_lock(wiki_dir):

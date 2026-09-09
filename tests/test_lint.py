@@ -1466,6 +1466,7 @@ class TestLintProfile:
                     src_dir=".",
                     profile=True,
                     cache_stats=True,
+                    cache_dir=str(tmp_path / "cache"),
                 )
             )
 

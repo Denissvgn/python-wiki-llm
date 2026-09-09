@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ci-check` supports inventory-cache controls, `--no-report`, and an opt-in
+  `llm-wiki-ci-check/v2` JSON envelope with cache/report persistence status and
+  separate check and command exit codes.
+- Sync, lint, and CI provide bounded stderr progress with `--progress` and
+  `--progress-format`. `sync --rebuild-knowledge` explicitly runs the full
+  knowledge builder independently of source caching.
+
+### Changed
+
+- Knowledge readers reuse immutable validated models and captured artifact
+  bytes. Sync can reuse an unchanged validated snapshot after recording its
+  generation inputs.
+- Python caching retains per-file import and data-effect observations and
+  recalculates cross-file model classification after merging inventory.
+
+### Fixed
+
+- Team checks enforce the configured wiki directory and contain required paths
+  within that wiki. A missing architectural log is reported once.
+- Canonical naming accepts generated private-only modules, collision-suffixed
+  names, supported infrastructure YAML, and validated retained removal pages.
+- Unwritable implicit cache/report destinations no longer discard computed
+  findings. Explicit destinations are checked early, and report replacement is
+  atomic.
+- Git evidence honors the selected local line-ending setting when a global
+  `core.autocrlf=input` value is overridden by a boolean value.
+
 ## [1.8.1] - 2026-09-06
 
 ### Changed

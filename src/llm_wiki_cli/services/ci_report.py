@@ -16,7 +16,11 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from .contracts import CI_CHECK_SCHEMA_VERSION, DOCTOR_SCHEMA_VERSION
+from .contracts import (
+    CI_CHECK_SCHEMA_VERSION,
+    CI_CHECK_V2_SCHEMA_VERSION,
+    DOCTOR_SCHEMA_VERSION,
+)
 from .doctor_service import compose_doctor_report
 from .knowledge_observability import KnowledgeAggregateSummary
 from .lint_service import LintReport, report_to_dict
@@ -155,10 +159,12 @@ _RECORDED_RESULTS = frozenset({"passed", "failed"})
 _JSON_EVIDENCE_STATES = frozenset(
     {
         "available (validated llm-wiki-ci-check/v1)",
+        "available (validated llm-wiki-ci-check/v2)",
         "unavailable (no output)",
         "unavailable (unexpected evidence-path collision)",
         "unavailable (could not preserve validated output)",
         "unavailable (invalid v1 output; diagnostic raw available)",
+        "unavailable (invalid v2 output; diagnostic raw available)",
         "unavailable (invalid output could not be preserved)",
         "unavailable (empty output)",
         "unavailable (raw output is not a regular file)",
@@ -174,11 +180,19 @@ class CiCheckReportError(ValueError):
     """A field-specific failure in the versioned CI report contract."""
 
 
-def build_ci_check_payload(report: LintReport) -> dict[str, object]:
-    """Compose CI v1 and doctor v1 from one already evaluated lint report."""
+def build_ci_check_payload(
+    report: LintReport,
+    *,
+    report_schema: str = "v1",
+    runtime: Mapping[str, object] | None = None,
+    command_exit_code: int | None = None,
+) -> dict[str, object]:
+    """Compose versioned CI and doctor results from one evaluated lint report."""
 
     if not isinstance(report, LintReport):
         raise TypeError("report must be a LintReport")
+    if report_schema not in {"v1", "v2"}:
+        raise ValueError("report_schema must be v1 or v2")
     payload: dict[str, object] = {
         "schema_version": CI_CHECK_SCHEMA_VERSION,
         **report_to_dict(report, include_execution=True),
@@ -189,6 +203,17 @@ def build_ci_check_payload(report: LintReport) -> dict[str, object]:
         wiki_dir=report.wiki_dir,
         src_dir=report.src_dir,
     ).to_payload()
+    if report_schema == "v2":
+        check_exit = 0 if report.passed else 1
+        payload.update(
+            schema_version=CI_CHECK_V2_SCHEMA_VERSION,
+            check_exit_code=check_exit,
+            command_exit_code=check_exit
+            if command_exit_code is None
+            else command_exit_code,
+            runtime=runtime,
+        )
+        _validate_ci_v2(payload, cli_exit=payload["command_exit_code"])
     return payload
 
 
@@ -1014,12 +1039,111 @@ def validate_doctor_payload(
     )
 
 
+def _validate_ci_v2(value: object, *, cli_exit: int) -> Mapping[str, Any]:
+    extras = frozenset({"check_exit_code", "command_exit_code", "runtime"})
+    report = _exact_object(
+        value, "report", _CI_REQUIRED_FIELDS | extras, _CI_OPTIONAL_FIELDS
+    )
+    check_exit = _nonnegative_integer(
+        report["check_exit_code"], "report.check_exit_code"
+    )
+    command_exit = _nonnegative_integer(
+        report["command_exit_code"], "report.command_exit_code"
+    )
+    legacy = {key: item for key, item in report.items() if key not in extras}
+    legacy["schema_version"] = CI_CHECK_SCHEMA_VERSION
+    validate_ci_check_payload(legacy, cli_exit=check_exit)
+    runtime = _exact_object(
+        report["runtime"], "report.runtime", frozenset({"cache", "report"})
+    )
+    destination = _exact_object(
+        runtime["report"],
+        "report.runtime.report",
+        frozenset({"path", "explicit", "status", "error"}),
+    )
+    explicit = _boolean(destination["explicit"], "report.runtime.report.explicit")
+    status = _enum(
+        destination["status"],
+        "report.runtime.report.status",
+        frozenset({"written", "disabled", "failed"}),
+    )
+    path = _nullable_string(destination["path"], "report.runtime.report.path")
+    error = _nullable_string(destination["error"], "report.runtime.report.error")
+    if status == "disabled":
+        if path is not None or explicit or error is not None:
+            raise CiCheckReportError(
+                "disabled report output cannot have a path, requirement, or error"
+            )
+    elif path is None or ((error is not None) != (status == "failed")):
+        raise CiCheckReportError("report output status does not match its path/error")
+    counts = frozenset(
+        {
+            "hits",
+            "misses",
+            "stale",
+            "changed",
+            "deleted",
+            "fresh_extracted",
+            "saved_entries",
+        }
+    )
+    cache = _exact_object(
+        runtime["cache"],
+        "report.runtime.cache",
+        counts
+        | frozenset({"enabled", "path", "status", "load_error", "failure_stage"}),
+    )
+    _boolean(cache["enabled"], "report.runtime.cache.enabled")
+    _nullable_string(cache["path"], "report.runtime.cache.path")
+    _enum(
+        cache["status"],
+        "report.runtime.cache.status",
+        frozenset(
+            {
+                "not_evaluated",
+                "disabled",
+                "miss",
+                "rebuild",
+                "corrupt",
+                "invalid",
+                "loaded",
+                "hit",
+                "partial",
+                "save_failed",
+            }
+        ),
+    )
+    for name in counts:
+        _nonnegative_integer(cache[name], f"report.runtime.cache.{name}")
+    if not isinstance(cache["load_error"], str):
+        raise CiCheckReportError("report.runtime.cache.load_error must be a string")
+    failure_stage = _nullable_string(
+        cache["failure_stage"], "report.runtime.cache.failure_stage"
+    )
+    if failure_stage not in {None, "preflight", "load", "save"}:
+        raise CiCheckReportError("report.runtime.cache.failure_stage is invalid")
+    expected_exit = 2 if explicit and status == "failed" else check_exit
+    if isinstance(cli_exit, bool) or not isinstance(cli_exit, int):
+        raise CiCheckReportError("cli_exit must be an integer")
+    if command_exit != expected_exit or cli_exit != command_exit:
+        raise CiCheckReportError(
+            "command exit does not match check and required report output"
+        )
+    return report
+
+
 def validate_ci_check_payload(
     value: object,
     *,
     cli_exit: int,
 ) -> Mapping[str, Any]:
-    """Validate the complete CI v1 contract and its captured process exit."""
+    """Validate CI v1/v2 and distinguish check and required-output failures."""
+
+    if (
+        isinstance(value, Mapping)
+        and value.get("schema_version") == CI_CHECK_V2_SCHEMA_VERSION
+    ):
+        return _validate_ci_v2(value, cli_exit=cli_exit)
 
     report = _exact_object(
         value,
@@ -1041,9 +1165,7 @@ def validate_ci_check_payload(
     ok = _boolean(report["ok"], "report.ok")
     issue_count = _nonnegative_integer(report["issue_count"], "report.issue_count")
     issues = _validate_lint_findings(report["issues"], "report.issues")
-    diagnostics = _validate_lint_findings(
-        report["diagnostics"], "report.diagnostics"
-    )
+    diagnostics = _validate_lint_findings(report["diagnostics"], "report.diagnostics")
     if issue_count != len(issues):
         raise CiCheckReportError("report.issue_count does not match report.issues")
     if ok is not (issue_count == 0):
@@ -1078,18 +1200,12 @@ def validate_ci_check_payload(
             "report.knowledge_health.drift.reasons do not match report.diagnostics"
         )
 
-    governance = _object(
-        health["governance"], "report.knowledge_health.governance"
-    )
+    governance = _object(health["governance"], "report.knowledge_health.governance")
     governance_issues = [
-        finding
-        for finding in issues
-        if finding["category"] == "knowledge_governance"
+        finding for finding in issues if finding["category"] == "knowledge_governance"
     ]
     review_issues = [
-        finding
-        for finding in issues
-        if finding["category"] == "knowledge_review"
+        finding for finding in issues if finding["category"] == "knowledge_review"
     ]
     if governance["issue_count"] != len(governance_issues):
         raise CiCheckReportError(
@@ -1182,9 +1298,7 @@ def render_ci_summary(
     if markdown_state not in {"available", "unavailable"}:
         raise CiCheckReportError("markdown_state is unsupported")
     expected_tree_state = (
-        "clean"
-        if status_count == 0
-        else f"dirty ({status_count} status records)"
+        "clean" if status_count == 0 else f"dirty ({status_count} status records)"
     )
     if tree_state not in {expected_tree_state, "unavailable"}:
         raise CiCheckReportError("tree_state does not match status_count")
@@ -1199,9 +1313,19 @@ def render_ci_summary(
     if report is not None:
         validate_ci_check_payload(report, cli_exit=cli_exit)
     report_available = report is not None
-    json_available = json_state == "available (validated llm-wiki-ci-check/v1)"
+    json_available = json_state in {
+        "available (validated llm-wiki-ci-check/v1)",
+        "available (validated llm-wiki-ci-check/v2)",
+    }
     if report_available is not json_available:
         raise CiCheckReportError("validated report and JSON evidence state disagree")
+    if (
+        report is not None
+        and json_state != f"available (validated {report['schema_version']})"
+    ):
+        raise CiCheckReportError(
+            "validated report schema and JSON evidence state disagree"
+        )
     expected_result = (
         "PASS"
         if cli_exit == 0
@@ -1303,6 +1427,7 @@ def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
     validate = commands.add_parser("validate")
     validate.add_argument("--report", required=True)
     validate.add_argument("--cli-exit", required=True, type=int)
+    validate.add_argument("--schema", choices=("v1", "v2"))
 
     summary = commands.add_parser("render-summary")
     summary.add_argument("--report")
@@ -1326,7 +1451,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _arguments(argv)
     try:
         if args.action == "validate":
-            load_ci_check_payload(args.report, cli_exit=args.cli_exit)
+            payload = load_ci_check_payload(args.report, cli_exit=args.cli_exit)
+            if (
+                args.schema is not None
+                and payload["schema_version"] != f"llm-wiki-ci-check/{args.schema}"
+            ):
+                raise CiCheckReportError(
+                    "report schema does not match the requested version"
+                )
             return 0
 
         report = (

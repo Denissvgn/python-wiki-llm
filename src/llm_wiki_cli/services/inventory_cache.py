@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -21,10 +21,20 @@ from ..config import (
 from ..extractors.common import LANGUAGE_EXTENSIONS
 from .plugins import lock_path, plugin_store
 from .source_snapshot import SourceFile, SourceSnapshot
+from .io import write_json_atomic
+from .progress import observed_phase
+from .runtime_output import (
+    RuntimeDestination,
+    RuntimeOutputError,
+    WarningSink,
+    prepare_destination,
+    stderr_warning,
+    warn,
+)
 
 CACHE_FILENAME = "llm-wiki-inventory-cache.json"
-CACHE_SCHEMA = "inventory-v2"
-CACHE_VERSION = 2
+CACHE_SCHEMA = "inventory-v3"
+CACHE_VERSION = 3
 ENV_CACHE_DIR = "LLM_WIKI_CACHE_DIR"
 
 
@@ -36,6 +46,10 @@ class InventoryCacheOptions:
     rebuild: bool = False
     cache_dir: str | None = None
     stats_enabled: bool = False
+    destination: RuntimeDestination | None = field(
+        default=None, repr=False, compare=False
+    )
+    warning: WarningSink | None = field(default=None, repr=False, compare=False)
 
 
 @dataclass
@@ -51,6 +65,7 @@ class InventoryCacheStats:
     fresh_extracted: int = 0
     saved_entries: int = 0
     load_error: str = ""
+    failure_stage: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -154,6 +169,8 @@ def _implementation_fingerprint() -> str:
         "extractors/go_scripts/go.mod",
         "extractors/haskell_scripts/Main.hs",
         "services/imports.py",
+        "services/python_observations.py",
+        "services/extraction_service.py",
         "extractors/haskell_scripts/Inventory.hs",
         "extractors/haskell_scripts/Parser.hs",
         "extractors/haskell_scripts/Paths.hs",
@@ -277,12 +294,63 @@ def resolve_inventory_cache_path(
     return git_dir / CACHE_FILENAME
 
 
+def cache_options_from_args(args) -> InventoryCacheOptions:
+    disabled = bool(getattr(args, "no_cache", False))
+    rebuild = bool(getattr(args, "rebuild_cache", False))
+    cache_dir = getattr(args, "cache_dir", None)
+    if cache_dir is not None and not str(cache_dir).strip():
+        raise RuntimeOutputError("--cache-dir must be a non-empty directory path")
+    if disabled and (rebuild or cache_dir is not None):
+        raise RuntimeOutputError(
+            "--no-cache cannot be combined with --cache-dir or --rebuild-cache"
+        )
+    return InventoryCacheOptions(
+        enabled=not disabled,
+        rebuild=rebuild,
+        cache_dir=cache_dir,
+        stats_enabled=bool(getattr(args, "cache_stats", False)),
+        warning=stderr_warning,
+    )
+
+
+def prepare_cache_options(
+    src_dir: str | Path, options: InventoryCacheOptions | None
+) -> InventoryCacheOptions | None:
+    if options is None or not options.enabled or options.destination is not None:
+        return options
+    explicit = options.cache_dir is not None or bool(os.environ.get(ENV_CACHE_DIR))
+    try:
+        path = resolve_inventory_cache_path(src_dir, options.cache_dir)
+    except (OSError, ValueError, RuntimeError) as exc:
+        if explicit:
+            raise RuntimeOutputError(
+                f"Cannot resolve explicit cache destination: {exc}"
+            ) from exc
+        warn(
+            options.warning,
+            f"Implicit cache destination unavailable: {exc}. Use --cache-dir.",
+        )
+        return replace(
+            options, destination=RuntimeDestination(None, False, "failed", str(exc))
+        )
+    return replace(
+        options,
+        destination=prepare_destination(
+            path, kind="cache", explicit=explicit, warning=options.warning
+        ),
+    )
+
+
 class InventoryCache:
     """JSON-backed cache for per-file built-in inventory entries."""
 
     def __init__(self, src_dir: str | Path, options: InventoryCacheOptions):
-        path = resolve_inventory_cache_path(src_dir, options.cache_dir)
-        enabled = bool(options.enabled and path is not None)
+        options = prepare_cache_options(src_dir, options) or options
+        destination = options.destination
+        path = destination.path if destination is not None else None
+        enabled = bool(
+            options.enabled and path is not None and destination.status != "failed"
+        )
         self.path = path
         self.options = options
         self.stats = InventoryCacheStats(
@@ -291,12 +359,17 @@ class InventoryCache:
             status="rebuild"
             if enabled and options.rebuild
             else ("miss" if enabled else "disabled"),
+            load_error=destination.error or "" if destination is not None else "",
+            failure_stage="preflight"
+            if destination is not None and destination.status == "failed"
+            else None,
         )
 
     @property
     def enabled(self) -> bool:
         return self.stats.enabled
 
+    @observed_phase("cache_lookup")
     def load(self, cache_key: dict[str, Any]) -> dict[str, dict]:
         if not self.enabled or self.path is None:
             return {}
@@ -311,6 +384,11 @@ class InventoryCache:
         except Exception as exc:
             self.stats.status = "corrupt"
             self.stats.load_error = str(exc)
+            self.stats.failure_stage = "load"
+            warn(
+                self.options.warning,
+                f"Inventory cache could not be loaded: {exc}; extracting fresh inventory.",
+            )
             return {}
 
         if not isinstance(raw, dict) or not isinstance(raw.get("files"), dict):
@@ -344,26 +422,24 @@ class InventoryCache:
         elif self.stats.misses or self.stats.changed or self.stats.stale:
             self.stats.status = "miss"
 
+    @observed_phase("cache_save")
     def save(self, cache_key: dict[str, Any], files: dict[str, dict]) -> None:
         if not self.enabled or self.path is None:
             return
         payload = dict(cache_key)
         payload["files"] = dict(sorted(files.items()))
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = self.path.with_name(f".{self.path.name}.{os.getpid()}.tmp")
         try:
-            tmp_path.write_text(
-                json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-            )
-            tmp_path.replace(self.path)
+            write_json_atomic(self.path, payload)
             self.stats.saved_entries = len(files)
         except OSError as exc:
             self.stats.status = "save_failed"
             self.stats.load_error = str(exc)
-            try:
-                tmp_path.unlink()
-            except OSError:
-                pass
+            self.stats.failure_stage = "save"
+            self.stats.saved_entries = 0
+            warn(
+                self.options.warning,
+                f"Inventory cache was not saved at {self.path}: {exc}",
+            )
 
 
 def is_valid_cache_entry(entry: Any, source_file: SourceFile, file_hash: str) -> bool:

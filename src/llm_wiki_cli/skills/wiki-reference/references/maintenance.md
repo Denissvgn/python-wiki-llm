@@ -69,6 +69,18 @@ infrastructure-observation, or source-revision change.
    [Extractors and dependencies](extractors-dependencies.md), then repeat the
    failed command.
 
+   A successful unchanged sync may reuse its validated generation inputs and
+   report unchanged artifact actions. The owning command still performs its
+   validation. Use `--rebuild-knowledge` when an explicit full-builder comparison
+   is needed; `--no-cache` only disables source caching. Keep the same prior
+   wiki history when comparing retained pages with the full builder.
+
+   Use `--progress always --progress-format json` for machine-readable progress
+   events on stderr. Result JSON stays on stdout. For console-only CI, use
+   `ci-check --no-report --format json --report-schema v2`; v2 separates check
+   outcomes from required report-write failures. Select an explicit writable
+   `--cache-dir` when repository metadata is read-only.
+
 2. Inspect the sync plan and every affected canonical page. Treat its reported
    `CREATE`, `UPDATE`, `METADATA`, `SKIP`, `DEPRECATE`, `RENAME`, `MOVE`, and
    `REMOVE` rows as the change inventory. A source-removal or deprecation row is

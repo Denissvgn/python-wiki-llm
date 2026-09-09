@@ -36,6 +36,7 @@ from .knowledge_model import (
     ProducerComponent,
     ProducerRecord,
     SnapshotRecord,
+    _knowledge_index_to_payload_unchecked,
     knowledge_index_to_payload,
     parse_knowledge_index,
 )
@@ -223,18 +224,43 @@ def evaluate_knowledge_freshness(
 ) -> KnowledgeFreshnessReport:
     """Evaluate every concept exactly once from supplied in-memory values."""
 
+    from .knowledge_artifacts import (
+        ValidatedKnowledgeArtifacts,
+        require_validated_artifacts,
+    )
+
     try:
         model = (
-            parse_knowledge_index(knowledge_index_to_payload(knowledge))
+            require_validated_artifacts(knowledge).knowledge
+            if isinstance(knowledge, ValidatedKnowledgeArtifacts)
+            else parse_knowledge_index(_knowledge_index_to_payload_unchecked(knowledge))
             if isinstance(knowledge, KnowledgeIndex)
             else parse_knowledge_index(knowledge)
         )
-    except (KnowledgeModelError, TypeError, ValueError) as exc:
+    except (KnowledgeModelError, TypeError, ValueError, AttributeError) as exc:
         raise KnowledgeFreshnessError(
             "knowledge",
             f"must be a validated knowledge index: {exc}",
         ) from exc
 
+    return _evaluate_model_freshness(model, live)
+
+
+def evaluate_validated_knowledge_freshness(
+    artifacts: object,
+    live: LiveKnowledgeEvaluation | None = None,
+) -> KnowledgeFreshnessReport:
+    """Reuse a validator-issued immutable recorded model; live inputs still validate."""
+    from .knowledge_artifacts import require_validated_artifacts
+
+    validated = require_validated_artifacts(artifacts)
+    return _evaluate_model_freshness(validated.knowledge, live)
+
+
+def _evaluate_model_freshness(
+    model: KnowledgeIndex,
+    live: LiveKnowledgeEvaluation | None,
+) -> KnowledgeFreshnessReport:
     validated_live = None if live is None else _validate_live_evaluation(model, live)
     results: dict[str, ConceptFreshnessResult] = {}
     counts: Counter[ComputedFreshness] = Counter()

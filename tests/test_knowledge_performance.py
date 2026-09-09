@@ -295,7 +295,8 @@ def test_one_freshness_evaluation_and_zero_query_method_io(
     view = build_knowledge_read_view(loaded, live_evaluation=live)
     service = _service(knowledge_view=view)
 
-    assert evaluations == [(loaded.knowledge, live)]
+    assert evaluations == [(loaded.validated_artifacts, live)]
+    assert loaded.validated_artifacts.knowledge is loaded.knowledge
 
     def forbidden_io(*_args, **_kwargs):
         raise AssertionError("query methods must not perform I/O")
@@ -330,7 +331,8 @@ def test_one_freshness_evaluation_and_zero_query_method_io(
     )
 
     assert all(isinstance(result, dict) for result in results)
-    assert evaluations == [(loaded.knowledge, live)]
+    assert evaluations == [(loaded.validated_artifacts, live)]
+    assert loaded.validated_artifacts.knowledge is loaded.knowledge
 
 
 def test_default_and_mcp_bounds_disclose_stress_truncation(stress_views):

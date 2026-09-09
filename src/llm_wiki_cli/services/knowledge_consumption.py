@@ -590,10 +590,7 @@ def build_knowledge_read_view(
         freshness = (
             None
             if selected_mode is KnowledgeReadMode.SNAPSHOT_ONLY
-            else evaluate_knowledge_freshness(
-                load_result.knowledge,
-                live_evaluation,
-            )
+            else _loaded_freshness(load_result, live_evaluation)
         )
         counts = _knowledge_counts(load_result.knowledge, freshness)
         return KnowledgeReadView(
@@ -627,10 +624,7 @@ def build_knowledge_read_view(
         )
 
     unsupported_reason = _unsupported_reason(load_result.issues)
-    if (
-        effective_state is KnowledgeLoadState.INVALID
-        and unsupported_reason is not None
-    ):
+    if effective_state is KnowledgeLoadState.INVALID and unsupported_reason is not None:
         availability = KnowledgeAvailability.UNSUPPORTED
         reason = unsupported_reason
     else:
@@ -737,6 +731,18 @@ def _read_mode(
     if snapshot_only and selected is not KnowledgeReadMode.SNAPSHOT_ONLY:
         raise ValueError("snapshot_only conflicts with the requested mode")
     return selected
+
+
+def _loaded_freshness(load_result, live_evaluation):
+    from .knowledge_artifacts import require_validated_artifacts
+
+    try:
+        artifacts = require_validated_artifacts(load_result.validated_artifacts)
+    except TypeError:
+        artifacts = None
+    if artifacts is not None and artifacts.knowledge is load_result.knowledge:
+        return evaluate_knowledge_freshness(artifacts, live_evaluation)
+    return evaluate_knowledge_freshness(load_result.knowledge, live_evaluation)
 
 
 def _validate_load_result(result: KnowledgeLoadResult) -> None:

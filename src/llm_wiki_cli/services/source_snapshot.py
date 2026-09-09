@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .progress import observed_phase
+
 import hashlib
 import os
 import stat
@@ -1375,6 +1377,7 @@ def _resolve_snapshot_selection(
     return selection_policy
 
 
+@observed_phase("source_snapshot")
 def build_source_snapshot(
     src_dir: str | Path,
     only_files: Iterable[str] | None = None,

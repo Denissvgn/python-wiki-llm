@@ -696,6 +696,11 @@ def test_prepare_go_builds_cached_binary_and_manifest(tmp_path, monkeypatch):
 def test_prepare_typescript_uses_locked_cache_and_detects_artifact_tampering(
     tmp_path, monkeypatch
 ):
+    source_scripts = tmp_path / "scripts"
+    source_scripts.mkdir()
+    for filename in ("extract.js", "package.json", "package-lock.json"):
+        (source_scripts / filename).write_bytes((extractor_helpers.TS_SCRIPTS_DIR / filename).read_bytes())
+    monkeypatch.setattr(extractor_helpers, "TS_SCRIPTS_DIR", source_scripts)
     configured_cache = tmp_path / "cache"
     cache_root = configured_cache / HELPER_CACHE_DIRNAME
     commands = []

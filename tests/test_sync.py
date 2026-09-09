@@ -568,6 +568,8 @@ class TestSyncSurfaceIndex:
             )
         )
 
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki_dir)))
+
         artifact_paths = (
             "index.md",
             SURFACE_INDEX_FILENAME,
@@ -612,7 +614,6 @@ class TestSyncSurfaceIndex:
             if after[relative_path] != before[relative_path]
         ] == []
         output = capsys.readouterr().out
-        assert "SKIP index.md (unchanged)" in output
         assert "Surface index: unchanged" in output
         assert "Knowledge index: unchanged" in output
         assert "Manifest: unchanged" in output
@@ -1055,7 +1056,7 @@ class TestSyncInventoryRuntime:
                 _make_sync_args(
                     src_dir=str(tmp_path),
                     wiki_dir=str(wiki_dir),
-                    no_cache=True,
+                    no_cache=False,
                     rebuild_cache=True,
                     cache_stats=True,
                     cache_dir=str(tmp_path / "cache"),
@@ -1071,7 +1072,7 @@ class TestSyncInventoryRuntime:
         assert seen["job_request"].requested_jobs == 2
         assert seen["job_request"].resolved_jobs == 2
         assert events == ["report", "work"]
-        assert seen["cache_options"].enabled is False
+        assert seen["cache_options"].enabled is True
         assert seen["cache_options"].rebuild is True
         assert seen["cache_options"].stats_enabled is True
         assert seen["cache_options"].cache_dir == str(tmp_path / "cache")

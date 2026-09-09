@@ -497,6 +497,7 @@ def test_immediate_noop_sync_preserves_all_committed_artifact_bytes(
     capsys,
 ):
     project, wiki_dir = knowledge_command_project
+    sync_cmd.run(_sync_args(project, wiki_dir))
     capsys.readouterr()
     before = _artifact_bytes(wiki_dir)
     before_manifest = SyncManifest.load(wiki_dir)
@@ -808,6 +809,7 @@ def test_changed_source_sync_commits_only_expected_modeled_changes(
     capsys,
 ):
     project, wiki_dir = knowledge_command_project
+    sync_cmd.run(_sync_args(project, wiki_dir))
     capsys.readouterr()
     before = load_knowledge_state(wiki_dir)
     assert before.knowledge is not None
@@ -822,6 +824,7 @@ def test_changed_source_sync_commits_only_expected_modeled_changes(
     modeled_extension_keys = {
         TYPED_GRAPH_EXTENSION_KEY,
         SECTION_OWNERSHIP_EXTENSION_KEY,
+        "llm-wiki/knowledge-reuse-v1",
     }
     assert {
         key: value

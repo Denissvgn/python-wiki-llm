@@ -46,6 +46,9 @@
         },
         "llm-wiki/governance-v1": {
           "$ref": "#/$defs/governanceProjection"
+        },
+        "llm-wiki/knowledge-reuse-v1": {
+          "$ref": "#/$defs/knowledgeReuse"
         }
       }
     }
@@ -3102,6 +3105,63 @@
         }
       },
       "additionalProperties": false
+    },
+    "knowledgeReuse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "assets_hash",
+        "generation_options_hash",
+        "implementation_hash",
+        "inventory_hash",
+        "lifecycle_hash",
+        "markdown_snapshot_hash",
+        "repository_hash",
+        "source_snapshot_hash",
+        "observation_inputs_hash"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-knowledge-reuse/v1"
+        },
+        "assets_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "generation_options_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "implementation_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "inventory_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "lifecycle_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "markdown_snapshot_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "repository_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "source_snapshot_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "observation_inputs_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
     }
   }
 }

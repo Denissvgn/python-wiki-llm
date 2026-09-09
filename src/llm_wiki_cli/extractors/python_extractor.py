@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+from ..services.python_observations import (
+    DATA_EFFECT_OBSERVATIONS_SCHEMA as DATA_EFFECT_OBSERVATIONS_SCHEMA,
+    IMPORT_LOCATION_OBSERVATIONS_SCHEMA as IMPORT_LOCATION_OBSERVATIONS_SCHEMA,
+    data_effect_sidecar,
+    import_sidecar,
+)
+
 import ast
 import sys
 from pathlib import Path
@@ -95,10 +102,6 @@ def _extract_decorators(node) -> list[str]:
 # not the enclosing function, so the walk does not descend into them.
 _SCOPE_BOUNDARIES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
 _DATA_EFFECT_LIMIT = 8
-DATA_EFFECT_OBSERVATIONS_SCHEMA = "llm-wiki-data-effect-observations/v1"
-IMPORT_LOCATION_OBSERVATIONS_SCHEMA = (
-    "llm-wiki-import-location-observations/v1"
-)
 _DATA_EFFECT_KEYS = (
     "inputs",
     "reads",
@@ -1361,6 +1364,7 @@ def _scan_python_files(
     source_files: list[str] | None = None,
     data_effect_observations: list[dict] | None = None,
     import_location_observations: list[dict] | None = None,
+    defer_inventory_model_kinds: bool = False,
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -1515,10 +1519,9 @@ def _scan_python_files(
                     for observation in file_import_observations or []
                 )
 
-    resolver = build_module_path_resolver(inventory)
-    finalize_inventory_model_kinds(
-        inventory, module_candidates=resolver.candidates
-    )
+    if not defer_inventory_model_kinds:
+        resolver = build_module_path_resolver(inventory)
+        finalize_inventory_model_kinds(inventory, module_candidates=resolver.candidates)
     return inventory
 
 
@@ -1544,6 +1547,7 @@ class PythonExtractor:
         source_files: list[str] | None = None,
         capture_data_effect_observations: bool = False,
         capture_import_observations: bool = False,
+        defer_inventory_model_kinds: bool = False,
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
@@ -1569,43 +1573,12 @@ class PythonExtractor:
             source_files=source_files,
             data_effect_observations=observations,
             import_location_observations=import_observations,
+            defer_inventory_model_kinds=defer_inventory_model_kinds,
         )
         for entry in inventory.values():
             entry["language"] = "python"
         if observations is not None:
-            self.last_data_effect_observations = {
-                "schema_version": DATA_EFFECT_OBSERVATIONS_SCHEMA,
-                "callables": sorted(
-                    observations,
-                    key=lambda item: (
-                        item["file"],
-                        item["symbol"],
-                        item["line"],
-                    ),
-                ),
-            }
+            self.last_data_effect_observations = data_effect_sidecar(observations)
         if import_observations is not None:
-            self.last_import_observations = {
-                "schema_version": IMPORT_LOCATION_OBSERVATIONS_SCHEMA,
-                "observations": sorted(
-                    import_observations,
-                    key=lambda item: (
-                        item["source_path"],
-                        item["import_index"],
-                        item["module"],
-                        item["name"],
-                        item["line"],
-                    ),
-                ),
-                "coverage": {
-                    "observed": len(import_observations),
-                    "emitted": len(import_observations),
-                    "omitted": 0,
-                    "limit": None,
-                    "truncated": False,
-                    "limitations": [
-                        "static-import-observation-does-not-claim-runtime-completeness"
-                    ],
-                },
-            }
+            self.last_import_observations = import_sidecar(import_observations)
         return inventory

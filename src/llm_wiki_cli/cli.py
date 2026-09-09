@@ -30,6 +30,8 @@ from .commands import (
     upgrade_cmd,
 )
 from .config import AGENT_CHOICES, DEFAULT_WIKI_DIR, PathValidationError
+from .services.runtime_output import RuntimeOutputError
+from .services.progress import Progress
 from .services import (
     bootstrap_runtime as bootstrap_cmd,
     context_service as context_cmd,
@@ -345,10 +347,26 @@ def _add_extract_command(subparsers):
     )
 
 
+def _add_progress_arguments(parser):
+    parser.add_argument(
+        "--progress",
+        choices=("auto", "always", "never"),
+        default="auto",
+        help="Emit bounded phase progress on stderr",
+    )
+    parser.add_argument(
+        "--progress-format",
+        choices=("text", "json"),
+        default="text",
+        help="Phase event format on stderr",
+    )
+
+
 def _add_lint_command(subparsers):
     lint_parser = subparsers.add_parser(
         "lint", help="Lint LLM Wiki for broken links, orphans, and AST drift"
     )
+    _add_progress_arguments(lint_parser)
     lint_parser.add_argument(
         "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to lint"
     )
@@ -455,6 +473,7 @@ def _add_ci_check_command(subparsers):
     ci_parser = subparsers.add_parser(
         "ci-check", help="Run strict wiki validation and write a CI report"
     )
+    _add_progress_arguments(ci_parser)
     ci_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
     ci_parser.add_argument(
         "--allow-external-src",
@@ -472,10 +491,32 @@ def _add_ci_check_command(subparsers):
         default="text",
         help="Console output format (default: text)",
     )
-    ci_parser.add_argument(
+    report_destination = ci_parser.add_mutually_exclusive_group()
+    report_destination.add_argument(
         "--report",
-        default=".git/llm-wiki-ci-report.md",
+        default=None,
         help="Markdown report path (default: .git/llm-wiki-ci-report.md)",
+    )
+    report_destination.add_argument(
+        "--no-report", action="store_true", help="Disable the Markdown report file"
+    )
+    ci_parser.add_argument(
+        "--report-schema",
+        choices=("v1", "v2"),
+        default="v1",
+        help="JSON result schema; v2 includes runtime output status",
+    )
+    ci_parser.add_argument(
+        "--cache-dir", metavar="PATH", help="Inventory cache directory"
+    )
+    ci_parser.add_argument(
+        "--no-cache", action="store_true", help="Disable inventory caching"
+    )
+    ci_parser.add_argument(
+        "--rebuild-cache", action="store_true", help="Rebuild inventory cache"
+    )
+    ci_parser.add_argument(
+        "--cache-stats", action="store_true", help="Include cache diagnostics"
     )
     ci_parser.add_argument(
         "--knowledge-drift-report",
@@ -899,7 +940,9 @@ def _add_team_command(subparsers):
         help="Allow --src-dir to point outside the current working directory",
     )
     team_check.add_argument(
-        "--wiki-dir", default=DEFAULT_WIKI_DIR, help="Wiki directory to validate"
+        "--wiki-dir",
+        default=None,
+        help="Wiki directory to validate (default: configured team wiki)",
     )
     team_check.add_argument(
         "--format",
@@ -908,6 +951,12 @@ def _add_team_command(subparsers):
         help="Output format (default: text)",
     )
     _add_source_selection_argument(team_check)
+    _add_helper_cache_argument(team_check)
+    _add_include_tests_argument(team_check)
+    _add_jobs_argument(team_check)
+    team_check.add_argument(
+        "--no-plugins", action="store_true", help="Disable project-local extractors"
+    )
     team_resolve = team_sub.add_parser(
         "resolve-conflicts", help="Safely resolve generated wiki conflicts"
     )
@@ -1709,6 +1758,12 @@ def _add_sync_command(subparsers):
         "sync",
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
     )
+    _add_progress_arguments(sync_parser)
+    sync_parser.add_argument(
+        "--rebuild-knowledge",
+        action="store_true",
+        help="Force the full knowledge builder independently of inventory caching",
+    )
     sync_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan (default: .)"
     )
@@ -2307,7 +2362,15 @@ def _add_docs_command(subparsers):
 
 
 def _dispatch_command(args):
-    _COMMAND_MODULES[args.command].run(args)
+    if args.command in {"sync", "lint", "ci-check"}:
+        with Progress(
+            args.command,
+            mode=args.progress,
+            output_format=args.progress_format,
+        ).run():
+            _COMMAND_MODULES[args.command].run(args)
+    else:
+        _COMMAND_MODULES[args.command].run(args)
 
 
 def main():
@@ -2322,6 +2385,9 @@ def main():
     except PathValidationError as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)
+    except RuntimeOutputError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
     except Exception as exc:
         if os.environ.get("LLM_WIKI_DEBUG"):
             raise

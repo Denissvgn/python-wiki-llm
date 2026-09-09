@@ -7,6 +7,8 @@ from pathlib import Path
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services import team
 from ..services.extraction_service import get_docker_inventory, get_inventory_result
+from ..services.extraction_jobs import extraction_job_request_from_args
+from ..services.infrastructure_inventory import get_yaml_infrastructure_inventory
 from ..services.source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
@@ -16,7 +18,7 @@ from ..services.source_snapshot import (
     build_source_snapshot,
     capture_source_selection_inputs,
 )
-from ..services.sync_manifest import SyncManifest
+from ..services.sync_manifest import SyncManifest, SyncManifestError
 
 
 def _render_issues_text(title: str, issues: list[dict]) -> str:
@@ -70,8 +72,11 @@ def _preflight_team_source_selection(
     src_dir: str,
     wiki_dir: str | Path,
     source_selection: str | Path | None,
-) -> SourceSnapshot:
+    *,
+    include_tests=None,
+) -> tuple[SourceSnapshot, SyncManifest | None]:
     policy = resolve_source_selection(src_dir, source_selection)
+    manifest = None
     try:
         manifest = SyncManifest.load(Path(wiki_dir))
     except FileNotFoundError:
@@ -101,16 +106,17 @@ def _preflight_team_source_selection(
     )
     source_snapshot = build_source_snapshot(
         src_dir,
+        include_tests=include_tests,
         source_selection=source_selection,
         selection_policy=policy,
         expected_selection_inputs=selection_inputs,
     )
-    return source_snapshot
+    return source_snapshot, manifest
 
 
 def _run_check(args) -> None:
     src_dir = getattr(args, "src_dir", ".")
-    wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
+    wiki_dir = getattr(args, "wiki_dir", None)
     output_format = getattr(args, "format", "text")
     allow_external_src = bool(getattr(args, "allow_external_src", False))
     src_root = validate_source_root(
@@ -118,24 +124,79 @@ def _run_check(args) -> None:
     )
     if allow_external_src:
         src_dir = str(src_root)
+    if wiki_dir is not None:
+        validate_path(wiki_dir, "--wiki-dir")
+    try:
+        policy = team.resolve_team_policy(wiki_dir, required=True)
+    except team.TeamConfigError as exc:
+        _finish_check(
+            str(wiki_dir or DEFAULT_WIKI_DIR),
+            src_dir,
+            output_format,
+            [team.team_config_issue(exc)],
+        )
+        return
+    wiki_dir = policy.wiki_dir
     validate_path(wiki_dir, "--wiki-dir")
 
     source_selection = getattr(args, "source_selection", None)
-    source_snapshot = _preflight_team_source_selection(
-        src_dir,
-        wiki_dir,
-        source_selection,
-    )
+    try:
+        source_snapshot, manifest = _preflight_team_source_selection(
+            src_dir,
+            wiki_dir,
+            source_selection,
+            include_tests=getattr(args, "include_tests", None),
+        )
+    except (
+        SyncManifestError,
+        OSError,
+        json.JSONDecodeError,
+        UnicodeError,
+        RuntimeError,
+    ) as exc:
+        _finish_check(
+            wiki_dir,
+            src_dir,
+            output_format,
+            [
+                team.team_config_issue(
+                    team.TeamConfigError(f"Invalid canonical page authority: {exc}")
+                )
+            ],
+        )
+        return
     wiki_path = Path(wiki_dir)
     pages = list(wiki_path.rglob("*.md")) if wiki_path.exists() else []
     inventory_result = get_inventory_result(
         src_dir,
+        deep=True,
         source_selection=source_selection,
         source_snapshot=source_snapshot,
+        include_tests=getattr(args, "include_tests", None),
+        helper_cache_dir=getattr(args, "helper_cache_dir", None),
+        include_plugins=not bool(getattr(args, "no_plugins", False)),
+        parallel_jobs=getattr(args, "jobs", 1),
+        job_request=extraction_job_request_from_args(args),
     )
+    if getattr(inventory_result, "failed", ()):
+        issues = [
+            {
+                "category": "extractor_failure",
+                "severity": "error",
+                "path": None,
+                "target": status.language,
+                "message": f"{status.language} extraction failed: {status.message}",
+            }
+            for status in inventory_result.failed
+        ]
+        _finish_check(wiki_dir, src_dir, output_format, issues)
+        return
     docker_inventory = get_docker_inventory(
         src_dir,
         source_snapshot=inventory_result.source_snapshot,
+    )
+    yaml_inventory = get_yaml_infrastructure_inventory(
+        src_dir, source_snapshot=inventory_result.source_snapshot
     )
     issues = team.build_team_issues(
         wiki_dir,
@@ -144,7 +205,16 @@ def _run_check(args) -> None:
         pages,
         require_config=True,
         docker_inventory=docker_inventory,
+        policy=policy,
+        manifest=manifest,
+        yaml_infrastructure_inventory=yaml_inventory,
     )
+    _finish_check(wiki_dir, src_dir, output_format, issues)
+
+
+def _finish_check(
+    wiki_dir: str, src_dir: str, output_format: str, issues: list
+) -> None:
     payload = {
         "ok": not issues,
         "wiki_dir": wiki_dir,

@@ -754,6 +754,23 @@ persistent inventory cache as lint when a git directory is available. Use
 control or inspect inventory cache behavior. Use `--helper-cache-dir PATH` to
 point TypeScript/JavaScript, Go, Rust, and Haskell extraction at prepared
 helpers in a separate cache.
+Python inventory caching also preserves per-source import and data-effect
+observations. A changed file refreshes its observations; deletions remove them.
+Cross-file class classification is recalculated after cached and fresh files
+are combined.
+
+After a successful sync records its generation inputs, an unchanged run can
+reuse the validated knowledge snapshot without rebuilding the graph or
+rewriting artifacts. Source/configuration, Markdown, assets, implementation,
+and lifecycle changes invalidate reuse. Governed or plugin-driven generation
+uses the full path. `--rebuild-knowledge` explicitly runs the full knowledge
+builder; `--no-cache` controls source extraction independently.
+
+`sync`, `lint`, and `ci-check` accept `--progress auto|always|never` and
+`--progress-format text|json`. Progress events are flushed to stderr. `auto`
+shows phases in an interactive terminal and heartbeats for long phases in
+automation; `always` shows every phase. JSON result output stays on stdout.
+Heartbeats describe process activity, not verification results.
 `--no-plugins` disables project-local extractor and generation plugins for
 trusted automation that must not import repository Python extensions. The
 interactive default is `--jobs 1`. Use `--jobs N` or `--jobs auto` to opt
@@ -1013,6 +1030,12 @@ inventory caching. Use `--helper-cache-dir PATH` when prepared Go/Rust/Haskell
 helpers live somewhere else. Use `--no-cache` to disable load/save,
 `--rebuild-cache` to ignore and rewrite the cache, and `--cache-stats` to
 include cache diagnostics.
+An unwritable implicit cache is disabled with a warning. An explicit
+`--cache-dir` or `LLM_WIKI_CACHE_DIR` destination is checked before extraction;
+an unusable explicit destination is a configuration error. A later cache-save
+failure preserves the computed results and emits a warning even without
+`--cache-stats`. `--no-cache` cannot be combined with `--cache-dir` or
+`--rebuild-cache`.
 Cache corruption or invalid fingerprints fall back to a full extraction without
 reducing lint coverage. With `--profile --cache-stats`, the JSON payload includes a top-level
 `cache` object. Use `--jobs N` or `--jobs auto` to opt into parallel extraction
@@ -1091,11 +1114,12 @@ llm-wiki ci-check --helper-cache-dir .cache/llm-wiki-helpers --src-dir . --wiki-
 llm-wiki ci-check --include-tests go --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --src-dir /path/to/repo --wiki-dir docs/llm_wiki --allow-external-src
 llm-wiki ci-check --format json --report .git/llm-wiki-ci-report.md
+llm-wiki ci-check --format json --report-schema v2 --no-report --cache-dir .cache/llm-wiki-inventory
 llm-wiki ci-check --format markdown
 ```
 
-`ci-check` always runs strict validation, writes a Markdown report, records a
-local metrics event, uses the same safe inventory cache when available, and
+`ci-check` always runs strict validation, attempts a Markdown report unless
+`--no-report` is selected, records a local metrics event, uses the same safe inventory cache when available, and
 exits nonzero on validation failure. Native freshness/drift is disabled unless
 `--knowledge-drift-report` is supplied, and enabled findings remain
 nonblocking. Structured output discloses the report mode through
@@ -1106,6 +1130,19 @@ composed from the same lint report, not a second source scan. The top-level
 `ok`, issue count, and process exit remain the authoritative blocking integrity
 result; the nested health status presents availability, freshness, snapshot,
 governance, drift, and verification state without changing that policy.
+Use `--report-schema v2` for the `llm-wiki-ci-check/v2` envelope. It adds
+`runtime.cache`, `runtime.report`, `check_exit_code`, and `command_exit_code`.
+Report status is `written`, `disabled`, or `failed`; the nested doctor health
+continues to describe the check itself. The default schema remains v1.
+
+CI accepts the same `--cache-dir`, `--no-cache`, `--rebuild-cache`, and
+`--cache-stats` controls as lint and sync. Reports are replaced atomically.
+If the implicit `.git/llm-wiki-ci-report.md` cannot be saved, CI prints its
+findings, warns on stderr, and preserves the check's exit status (`0` or `1`).
+An unusable explicit report/cache path fails early with exit `2`. If an
+explicitly required report fails after computation, findings are still printed
+and the command exits `2`; v2 records the separate check and command outcomes.
+`--report` and `--no-report` are mutually exclusive.
 `--no-plugins` disables project-local extractor, generation, and lint plugins;
 the portable integrity workflow always uses this fail-closed mode.
 For trusted source trees outside the runner workspace, pass
@@ -1495,6 +1532,19 @@ llm-wiki team check --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki team resolve-conflicts --wiki-dir docs/llm_wiki
 llm-wiki team resolve-conflicts --write --wiki-dir docs/llm_wiki
 ```
+
+When `team check` omits `--wiki-dir`, it uses the directory in
+`.llm-wiki/team.json`. An explicit directory must identify the same wiki.
+Lint and CI retain their usual directory defaults and reject a mismatch with
+configured team policy before extraction.
+
+Required file and directory entries must be canonical relative paths inside
+the wiki, using forward slashes. Traversal, absolute paths, and symlinks that
+escape the wiki are rejected. The default missing `log.md` obligation produces
+one diagnostic. Canonical naming uses deep inventory, collision-safe page
+names, supported infrastructure YAML, and validated retained removal records;
+unmapped pages still produce naming issues. Team check also accepts `--jobs`,
+`--helper-cache-dir`, `--include-tests`, and `--no-plugins` extraction controls.
 
 `resolve-conflicts` only applies conservative resolutions for generated pages.
 Manual workflow conflicts are left for humans to resolve.

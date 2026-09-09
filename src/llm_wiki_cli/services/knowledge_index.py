@@ -9,6 +9,9 @@ link observations from the generation run being committed.
 
 from __future__ import annotations
 
+from .progress import observed_phase, record_counts
+from .immutable import freeze
+
 import json
 import posixpath
 import re
@@ -66,10 +69,7 @@ from .knowledge_model import (
     parse_knowledge_index,
 )
 from .knowledge_model import (
-    knowledge_index_to_payload as _model_to_payload,
-)
-from .knowledge_model import (
-    serialize_knowledge_index as _serialize_model,
+    _knowledge_index_to_payload_unchecked,
 )
 from .sync_manifest import (
     ManifestEvidenceBaseline,
@@ -233,6 +233,7 @@ def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
         relationships=tuple(relationships),
         extensions=inputs.extensions,
     )
+    record_counts(concepts=len(concepts), relationships=len(relationships))
     try:
         return validate_knowledge_index(model)
     except KnowledgeModelError as exc:
@@ -251,7 +252,7 @@ def validate_knowledge_index(
     """
 
     if isinstance(value, KnowledgeIndex):
-        # The model serializer validates manually constructed dataclass graphs.
+        # Project once, then validate once, including manually constructed models.
         model = parse_knowledge_index(_model_to_payload(value))
     else:
         model = parse_knowledge_index(value)
@@ -276,10 +277,44 @@ def knowledge_index_to_payload(value: KnowledgeIndex | object) -> dict[str, Any]
     return _model_to_payload(validate_knowledge_index(value))
 
 
+def _model_to_payload(model: KnowledgeIndex) -> dict[str, Any]:
+    """Project model fields without a second parser pass; callers validate inputs."""
+    try:
+        return _knowledge_index_to_payload_unchecked(model)
+    except KnowledgeModelError:
+        raise
+    except (AttributeError, TypeError) as exc:
+        raise KnowledgeModelError(
+            "model", "must contain the declared knowledge model dataclass shapes"
+        ) from exc
+
+
+def _validated_index_serialization(value: object) -> tuple[KnowledgeIndex, bytes]:
+    """Validate untrusted input once and return its model and canonical bytes."""
+    model = freeze(validate_knowledge_index(value))
+    content = _serialize_payload(_model_to_payload(model))
+    return model, content.encode("utf-8")
+
+
+def _serialize_payload(payload: dict[str, Any]) -> str:
+    try:
+        return (
+            json.dumps(
+                payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False
+            )
+            + "\n"
+        )
+    except (RecursionError, TypeError, ValueError) as exc:
+        raise KnowledgeModelError(
+            "model", "cannot be serialized as finite JSON"
+        ) from exc
+
+
+@observed_phase("knowledge_serialization")
 def serialize_knowledge_index(value: KnowledgeIndex | object) -> str:
     """Validate and serialize deterministically with one trailing newline."""
 
-    return _serialize_model(validate_knowledge_index(value))
+    return _serialize_payload(knowledge_index_to_payload(value))
 
 
 def _validate_and_join_inputs(inputs: KnowledgeIndexInputs) -> _BuildContext:
