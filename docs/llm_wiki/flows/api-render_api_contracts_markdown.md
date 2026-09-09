@@ -136,42 +136,42 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_api_contracts_markdown | get | 1935 | `contracts.get('openapi')` |
-| render_api_contracts_markdown | isinstance | 1936 | `isinstance(openapi, Mapping)` |
-| render_api_contracts_markdown | extend | 1937 | `lines.extend([...])` |
-| render_api_contracts_markdown | get | 1939 | `openapi.get('version')` |
-| render_api_contracts_markdown | _md_code | 1939 | `_md_code(openapi.get(...))` |
-| _md_code | replace | 1886 | `str(value).replace('\|', '\\\|').replace('\n', ' ')` |
-| _md_code | replace | 1886 | `str(value).replace('\|', '\\\|')` |
-| _md_code | str | 1886 | `str(value)` |
-| _md_code | max | 1888 | `max(..., default=0)` |
-| _md_code | len | 1888 | `len(match)` |
-| _md_code | findall | 1888 | `re.findall('`+', text)` |
+| render_api_contracts_markdown | get | 1963 | `contracts.get('openapi')` |
+| render_api_contracts_markdown | isinstance | 1964 | `isinstance(openapi, Mapping)` |
+| render_api_contracts_markdown | extend | 1965 | `lines.extend([...])` |
+| render_api_contracts_markdown | get | 1967 | `openapi.get('version')` |
+| render_api_contracts_markdown | _md_code | 1967 | `_md_code(openapi.get(...))` |
+| _md_code | replace | 1914 | `str(value).replace('\|', '\\\|').replace('\n', ' ')` |
+| _md_code | replace | 1914 | `str(value).replace('\|', '\\\|')` |
+| _md_code | str | 1914 | `str(value)` |
+| _md_code | max | 1916 | `max(..., default=0)` |
+| _md_code | len | 1916 | `len(match)` |
+| _md_code | findall | 1916 | `re.findall('`+', text)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 1937 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 1945 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 1954 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 1956 |
-| mutation | `lines.append` | `render_api_contracts_markdown` | 1973 |
-| mutation | `lines.append` | `render_api_contracts_markdown` | 1986 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 1994 |
-| mutation | `lines.append` | `render_api_contracts_markdown` | 1996 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 1965 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 1973 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 1982 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 1984 |
+| mutation | `lines.append` | `render_api_contracts_markdown` | 2001 |
+| mutation | `lines.append` | `render_api_contracts_markdown` | 2014 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 2022 |
+| mutation | `lines.append` | `render_api_contracts_markdown` | 2024 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `render_api_contracts_markdown` | `contracts.get` | 1935 |
-| unresolved_call | `render_api_contracts_markdown` | `isinstance` | 1936 |
-| unresolved_call | `render_api_contracts_markdown` | `openapi.get` | 1939 |
-| unresolved_call | `_md_code` | `str(value).replace('\|', '\\\|').replace` | 1886 |
-| unresolved_call | `_md_code` | `str(value).replace` | 1886 |
-| unresolved_call | `_md_code` | `max` | 1888 |
-| external_call | `_md_code` | `re.findall` | 1888 |
+| unresolved_call | `render_api_contracts_markdown` | `contracts.get` | 1963 |
+| unresolved_call | `render_api_contracts_markdown` | `isinstance` | 1964 |
+| unresolved_call | `render_api_contracts_markdown` | `openapi.get` | 1967 |
+| unresolved_call | `_md_code` | `str(value).replace('\|', '\\\|').replace` | 1914 |
+| unresolved_call | `_md_code` | `str(value).replace` | 1914 |
+| unresolved_call | `_md_code` | `max` | 1916 |
+| external_call | `_md_code` | `re.findall` | 1916 |
 | step_limit | `render_api_contracts_markdown` | `first 12 steps` | 0 |
 
 ## Behavior

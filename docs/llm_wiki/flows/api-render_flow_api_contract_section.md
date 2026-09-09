@@ -116,35 +116,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_flow_api_contract_section | sorted | 2162 | `sorted(operations, key=...)` |
-| render_flow_api_contract_section | str | 2163 | `str(...)` |
-| render_flow_api_contract_section | get | 2163 | `item.get('path')` |
-| render_flow_api_contract_section | str | 2163 | `str(...)` |
-| render_flow_api_contract_section | get | 2163 | `item.get('method')` |
-| render_flow_api_contract_section | _operation_anchor | 2165 | `_operation_anchor(operation)` |
-| _operation_anchor | get | 1895 | `operation.get('id')` |
-| _operation_anchor | get | 1896 | `operation.get('method', '')` |
-| _operation_anchor | get | 1896 | `operation.get('path', '')` |
-| _operation_anchor | lower | 1898 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower(data not statically known)` |
-| _operation_anchor | strip | 1898 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-')` |
+| render_flow_api_contract_section | sorted | 2190 | `sorted(operations, key=...)` |
+| render_flow_api_contract_section | str | 2191 | `str(...)` |
+| render_flow_api_contract_section | get | 2191 | `item.get('path')` |
+| render_flow_api_contract_section | str | 2191 | `str(...)` |
+| render_flow_api_contract_section | get | 2191 | `item.get('method')` |
+| render_flow_api_contract_section | _operation_anchor | 2193 | `_operation_anchor(operation)` |
+| _operation_anchor | get | 1923 | `operation.get('id')` |
+| _operation_anchor | get | 1924 | `operation.get('method', '')` |
+| _operation_anchor | get | 1924 | `operation.get('path', '')` |
+| _operation_anchor | lower | 1926 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower(data not statically known)` |
+| _operation_anchor | strip | 1926 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.append` | `render_flow_api_contract_section` | 2167 |
-| mutation | `lines.append` | `render_flow_api_contract_section` | 2171 |
+| mutation | `lines.append` | `render_flow_api_contract_section` | 2195 |
+| mutation | `lines.append` | `render_flow_api_contract_section` | 2199 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `render_flow_api_contract_section` | `sorted` | 2162 |
-| unresolved_call | `render_flow_api_contract_section` | `item.get` | 2163 |
-| unresolved_call | `_operation_anchor` | `operation.get` | 1895 |
-| unresolved_call | `_operation_anchor` | `operation.get` | 1896 |
-| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower` | 1898 |
-| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip` | 1898 |
+| unresolved_call | `render_flow_api_contract_section` | `sorted` | 2190 |
+| unresolved_call | `render_flow_api_contract_section` | `item.get` | 2191 |
+| unresolved_call | `_operation_anchor` | `operation.get` | 1923 |
+| unresolved_call | `_operation_anchor` | `operation.get` | 1924 |
+| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower` | 1926 |
+| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip` | 1926 |
 | step_limit | `render_flow_api_contract_section` | `first 12 steps` | 0 |
 
 ## Behavior

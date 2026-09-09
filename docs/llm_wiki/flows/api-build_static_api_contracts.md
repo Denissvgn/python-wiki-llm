@@ -137,43 +137,43 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_static_api_contracts | _declaration_nodes | 736 | `_declaration_nodes(inventory)` |
-| _declaration_nodes | _framework_records | 228 | `_framework_records(inventory)` |
-| _framework_records | items | 218 | `inventory.items(data not statically known)` |
-| _framework_records | get | 219 | `file_data.get('frameworks')` |
-| _framework_records | isinstance | 220 | `isinstance(frameworks, Mapping)` |
-| _framework_records | get | 220 | `frameworks.get('fastapi')` |
-| _framework_records | isinstance | 221 | `isinstance(fastapi, Mapping)` |
-| _declaration_nodes | get | 230 | `fastapi.get(plural, [...])` |
-| _declaration_nodes | isinstance | 231 | `isinstance(record, Mapping)` |
-| _declaration_nodes | str | 233 | `str(...)` |
-| _declaration_nodes | get | 233 | `record.get('binding')` |
+| build_static_api_contracts | _declaration_nodes | 737 | `_declaration_nodes(inventory)` |
+| _declaration_nodes | _framework_records | 229 | `_framework_records(inventory)` |
+| _framework_records | items | 219 | `inventory.items(data not statically known)` |
+| _framework_records | get | 220 | `file_data.get('frameworks')` |
+| _framework_records | isinstance | 221 | `isinstance(frameworks, Mapping)` |
+| _framework_records | get | 221 | `frameworks.get('fastapi')` |
+| _framework_records | isinstance | 222 | `isinstance(fastapi, Mapping)` |
+| _declaration_nodes | get | 231 | `fastapi.get(plural, [...])` |
+| _declaration_nodes | isinstance | 232 | `isinstance(record, Mapping)` |
+| _declaration_nodes | str | 234 | `str(...)` |
+| _declaration_nodes | get | 234 | `record.get('binding')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `diagnostics.append` | `build_static_api_contracts` | 755 |
-| mutation | `diagnostics.append` | `build_static_api_contracts` | 792 |
-| mutation | `unknowns.append` | `build_static_api_contracts` | 809 |
-| mutation | `unknowns.append` | `build_static_api_contracts` | 818 |
-| mutation | `applications.append` | `build_static_api_contracts` | 827 |
-| mutation | `diagnostics.append` | `build_static_api_contracts` | 1136 |
-| mutation | `assembled.sort` | `build_static_api_contracts` | 1154 |
-| mutation | `applications.append` | `_declaration_nodes` | 240 |
+| mutation | `diagnostics.append` | `build_static_api_contracts` | 756 |
+| mutation | `diagnostics.append` | `build_static_api_contracts` | 793 |
+| mutation | `unknowns.append` | `build_static_api_contracts` | 810 |
+| mutation | `unknowns.append` | `build_static_api_contracts` | 819 |
+| mutation | `applications.append` | `build_static_api_contracts` | 828 |
+| mutation | `diagnostics.append` | `build_static_api_contracts` | 1137 |
+| mutation | `assembled.sort` | `build_static_api_contracts` | 1155 |
+| mutation | `applications.append` | `_declaration_nodes` | 241 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_framework_records` | `inventory.items` | 218 |
-| unresolved_call | `_framework_records` | `file_data.get` | 219 |
-| unresolved_call | `_framework_records` | `isinstance` | 220 |
-| unresolved_call | `_framework_records` | `frameworks.get` | 220 |
+| unresolved_call | `_framework_records` | `inventory.items` | 219 |
+| unresolved_call | `_framework_records` | `file_data.get` | 220 |
 | unresolved_call | `_framework_records` | `isinstance` | 221 |
-| unresolved_call | `_declaration_nodes` | `fastapi.get` | 230 |
-| unresolved_call | `_declaration_nodes` | `isinstance` | 231 |
-| unresolved_call | `_declaration_nodes` | `record.get` | 233 |
+| unresolved_call | `_framework_records` | `frameworks.get` | 221 |
+| unresolved_call | `_framework_records` | `isinstance` | 222 |
+| unresolved_call | `_declaration_nodes` | `fastapi.get` | 231 |
+| unresolved_call | `_declaration_nodes` | `isinstance` | 232 |
+| unresolved_call | `_declaration_nodes` | `record.get` | 234 |
 | step_limit | `build_static_api_contracts` | `first 12 steps` | 0 |
 
 ## Behavior

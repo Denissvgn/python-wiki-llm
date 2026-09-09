@@ -23,7 +23,7 @@ Versioned input commitments for conservative, validated sync no-ops.
 | `.wiki_media` | `build_asset_index` |
 | `.wiki_surface` | `collect_wiki_pages` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Mapping` |
+| `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `asdict`, `replace` |
 | `hashlib` | `hashlib` |
 | `os` | `os` |
@@ -48,10 +48,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (4) |
+| Inbound | `src` (5) |
 | Outbound | `src` (12) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -65,5 +65,6 @@ flowchart LR
 | `wiki_input_hashes` | `(wiki_dir: str \| Path) -> tuple[str, str]` | — | — |
 | `bind_reuse_commitment` | `(basis: Mapping[str, object], manifest) -> dict` | — | — |
 | `validate_reuse_artifact_parity` | `(knowledge, manifest) -> None` | — | A manifest hint alone never authorizes reuse of a projection. |
+| `observation_inputs_hash` | `(*, entrypoint_observations: Mapping, entry_points: Sequence[Mapping], api_contracts: Mapping, dependency_analysis: Mapping \| None) -> str` | — | Commit the same raw detector inputs for bootstrap and sync. |
 | `build_reuse_input_basis` | `(wiki_dir, inventory_result, source_snapshot, generation_inputs, generation_options, repository_evidence, *, include_plugins = True, manifest = None, inventory_complete = True, observation_inputs_hash = None) -> dict[str, object] \| None` | — | Capture the inputs of the deterministic built-in sync pipeline. |
 | `unchanged_commit_result` | `(state, manifest, *, dry_run: bool = False)` | — | Return the ordinary result shape using already captured, validated bytes. |

@@ -1,6 +1,6 @@
 # ApiContractError
 
-**Location:** `src/llm_wiki_cli/services/api_contracts.py:72`
+**Location:** `src/llm_wiki_cli/services/api_contracts.py:73`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [api_contracts](../modules/api_contracts.md)

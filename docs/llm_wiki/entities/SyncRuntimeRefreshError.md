@@ -1,6 +1,6 @@
 # SyncRuntimeRefreshError
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:268`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:270`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_cmd](../modules/sync_cmd.md)

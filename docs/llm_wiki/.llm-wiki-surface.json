@@ -19,7 +19,7 @@
       "api-contracts": 0,
       "dependencies": 1,
       "entities": 533,
-      "flows": 435,
+      "flows": 436,
       "guides": 6,
       "index": 1,
       "infrastructure": 0,
@@ -29,7 +29,7 @@
       "workflows": 15
     },
     "dependency_architecture": 2,
-    "total": 1152
+    "total": 1153
   },
   "dependency_pages": {
     "count": 2,
@@ -1305,7 +1305,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1867,
+              "line": 1895,
               "step": "attach_routes_to_entry_points",
               "step_index": 1,
               "target": "result.append"
@@ -1314,49 +1314,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1836,
+              "line": 1864,
               "step": "attach_routes_to_entry_points",
               "target": "defaultdict"
             },
             {
               "kind": "external_call",
-              "line": 1837,
+              "line": 1865,
               "step": "attach_routes_to_entry_points",
               "target": "defaultdict"
             },
             {
               "kind": "unresolved_call",
-              "line": 1838,
+              "line": 1866,
               "step": "attach_routes_to_entry_points",
               "target": "contracts.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1839,
+              "line": 1867,
               "step": "attach_routes_to_entry_points",
               "target": "operation.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1840,
+              "line": 1868,
               "step": "attach_routes_to_entry_points",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1842,
+              "line": 1870,
               "step": "attach_routes_to_entry_points",
               "target": "handler.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1843,
+              "line": 1871,
               "step": "attach_routes_to_entry_points",
               "target": "handler.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1844,
+              "line": 1872,
               "step": "attach_routes_to_entry_points",
               "target": "handler.get"
             },
@@ -1592,7 +1592,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 1265,
+              "line": 1266,
               "step": "load_openapi_document",
               "step_index": 2,
               "target": "resolved.read_bytes"
@@ -1601,37 +1601,37 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1186,
+              "line": 1187,
               "step": "_resolve_openapi_path",
               "target": "Path(source_root).resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 1187,
+              "line": 1188,
               "step": "_resolve_openapi_path",
               "target": "Path(path).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 1188,
+              "line": 1189,
               "step": "_resolve_openapi_path",
               "target": "candidate.is_absolute"
             },
             {
               "kind": "unresolved_call",
-              "line": 1191,
+              "line": 1192,
               "step": "_resolve_openapi_path",
               "target": "Path(os.path.abspath(candidate)).relative_to(root).as_posix"
             },
             {
               "kind": "unresolved_call",
-              "line": 1191,
+              "line": 1192,
               "step": "_resolve_openapi_path",
               "target": "Path(os.path.abspath(candidate)).relative_to"
             },
             {
               "kind": "external_call",
-              "line": 1191,
+              "line": 1192,
               "step": "_resolve_openapi_path",
               "target": "os.path.abspath"
             },
@@ -4469,7 +4469,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 755,
+              "line": 756,
               "step": "build_static_api_contracts",
               "step_index": 1,
               "target": "diagnostics.append"
@@ -4477,7 +4477,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 792,
+              "line": 793,
               "step": "build_static_api_contracts",
               "step_index": 1,
               "target": "diagnostics.append"
@@ -4485,7 +4485,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 809,
+              "line": 810,
               "step": "build_static_api_contracts",
               "step_index": 1,
               "target": "unknowns.append"
@@ -4493,7 +4493,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 818,
+              "line": 819,
               "step": "build_static_api_contracts",
               "step_index": 1,
               "target": "unknowns.append"
@@ -4501,7 +4501,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 827,
+              "line": 828,
               "step": "build_static_api_contracts",
               "step_index": 1,
               "target": "applications.append"
@@ -4509,7 +4509,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1136,
+              "line": 1137,
               "step": "build_static_api_contracts",
               "step_index": 1,
               "target": "diagnostics.append"
@@ -4517,7 +4517,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1154,
+              "line": 1155,
               "step": "build_static_api_contracts",
               "step_index": 1,
               "target": "assembled.sort"
@@ -4525,7 +4525,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 240,
+              "line": 241,
               "step": "_declaration_nodes",
               "step_index": 2,
               "target": "applications.append"
@@ -4534,27 +4534,15 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 218,
+              "line": 219,
               "step": "_framework_records",
               "target": "inventory.items"
             },
             {
               "kind": "unresolved_call",
-              "line": 219,
+              "line": 220,
               "step": "_framework_records",
               "target": "file_data.get"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 220,
-              "step": "_framework_records",
-              "target": "isinstance"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 220,
-              "step": "_framework_records",
-              "target": "frameworks.get"
             },
             {
               "kind": "unresolved_call",
@@ -4564,19 +4552,31 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 230,
-              "step": "_declaration_nodes",
-              "target": "fastapi.get"
+              "line": 221,
+              "step": "_framework_records",
+              "target": "frameworks.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 222,
+              "step": "_framework_records",
+              "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
               "line": 231,
               "step": "_declaration_nodes",
+              "target": "fastapi.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 232,
+              "step": "_declaration_nodes",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 233,
+              "line": 234,
               "step": "_declaration_nodes",
               "target": "record.get"
             },
@@ -12564,6 +12564,77 @@
       "category": "api",
       "detector": "builtin",
       "entry_point": {
+        "label": "link_entry_point_flows",
+        "source_path": "src/llm_wiki_cli/services/api_contracts.py",
+        "symbol": "link_entry_point_flows"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "external_call",
+              "line": 1837,
+              "step": "link_entry_point_flows",
+              "target": "deepcopy"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1840,
+              "step": "link_entry_point_flows",
+              "target": "entry.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1842,
+              "step": "link_entry_point_flows",
+              "target": "str(entry.get('symbol') or '').rsplit"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1842,
+              "step": "link_entry_point_flows",
+              "target": "entry.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1843,
+              "step": "link_entry_point_flows",
+              "target": "entry.get"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 1844,
+              "step": "link_entry_point_flows",
+              "target": "linked.get"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "link_entry_point_flows",
+              "target": "first 12 steps"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/api_contracts.py"
+          ],
+          "step_count": 22,
+          "truncated": false
+        }
+      },
+      "id": "api-link_entry_point_flows",
+      "language": "python"
+    },
+    {
+      "category": "api",
+      "detector": "builtin",
+      "entry_point": {
         "label": "list_concept_sections",
         "source_path": "src/llm_wiki_cli/api.py",
         "symbol": "list_concept_sections"
@@ -13298,7 +13369,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 1265,
+              "line": 1266,
               "step": "load_openapi_document",
               "step_index": 1,
               "target": "resolved.read_bytes"
@@ -13307,37 +13378,37 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1186,
+              "line": 1187,
               "step": "_resolve_openapi_path",
               "target": "Path(source_root).resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 1187,
+              "line": 1188,
               "step": "_resolve_openapi_path",
               "target": "Path(path).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 1188,
+              "line": 1189,
               "step": "_resolve_openapi_path",
               "target": "candidate.is_absolute"
             },
             {
               "kind": "unresolved_call",
-              "line": 1191,
+              "line": 1192,
               "step": "_resolve_openapi_path",
               "target": "Path(os.path.abspath(candidate)).relative_to(root).as_posix"
             },
             {
               "kind": "unresolved_call",
-              "line": 1191,
+              "line": 1192,
               "step": "_resolve_openapi_path",
               "target": "Path(os.path.abspath(candidate)).relative_to"
             },
             {
               "kind": "external_call",
-              "line": 1191,
+              "line": 1192,
               "step": "_resolve_openapi_path",
               "target": "os.path.abspath"
             },
@@ -16711,25 +16782,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1149,
+              "line": 1181,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 1154,
+              "line": 1186,
               "step": "_validate_runtime_policy",
               "target": "min"
             },
             {
               "kind": "unresolved_call",
-              "line": 1161,
+              "line": 1193,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1167,
+              "line": 1199,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             }
@@ -17336,7 +17407,7 @@
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/sync_analysis.py"
           ],
-          "step_count": 4459,
+          "step_count": 4483,
           "truncated": true
         }
       },
@@ -19253,31 +19324,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1937,
-              "step": "render_api_contracts_markdown",
-              "step_index": 1,
-              "target": "lines.extend"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 1945,
-              "step": "render_api_contracts_markdown",
-              "step_index": 1,
-              "target": "lines.extend"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 1954,
-              "step": "render_api_contracts_markdown",
-              "step_index": 1,
-              "target": "lines.extend"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 1956,
+              "line": 1965,
               "step": "render_api_contracts_markdown",
               "step_index": 1,
               "target": "lines.extend"
@@ -19288,20 +19335,12 @@
               "line": 1973,
               "step": "render_api_contracts_markdown",
               "step_index": 1,
-              "target": "lines.append"
+              "target": "lines.extend"
             },
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1986,
-              "step": "render_api_contracts_markdown",
-              "step_index": 1,
-              "target": "lines.append"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 1994,
+              "line": 1982,
               "step": "render_api_contracts_markdown",
               "step_index": 1,
               "target": "lines.extend"
@@ -19309,7 +19348,39 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1996,
+              "line": 1984,
+              "step": "render_api_contracts_markdown",
+              "step_index": 1,
+              "target": "lines.extend"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 2001,
+              "step": "render_api_contracts_markdown",
+              "step_index": 1,
+              "target": "lines.append"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 2014,
+              "step": "render_api_contracts_markdown",
+              "step_index": 1,
+              "target": "lines.append"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 2022,
+              "step": "render_api_contracts_markdown",
+              "step_index": 1,
+              "target": "lines.extend"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 2024,
               "step": "render_api_contracts_markdown",
               "step_index": 1,
               "target": "lines.append"
@@ -19318,43 +19389,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1935,
+              "line": 1963,
               "step": "render_api_contracts_markdown",
               "target": "contracts.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1936,
+              "line": 1964,
               "step": "render_api_contracts_markdown",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1939,
+              "line": 1967,
               "step": "render_api_contracts_markdown",
               "target": "openapi.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1886,
+              "line": 1914,
               "step": "_md_code",
               "target": "str(value).replace('|', '\\\\|').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 1886,
+              "line": 1914,
               "step": "_md_code",
               "target": "str(value).replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 1888,
+              "line": 1916,
               "step": "_md_code",
               "target": "max"
             },
             {
               "kind": "external_call",
-              "line": 1888,
+              "line": 1916,
               "step": "_md_code",
               "target": "re.findall"
             },
@@ -19517,7 +19588,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 2167,
+              "line": 2195,
               "step": "render_flow_api_contract_section",
               "step_index": 1,
               "target": "lines.append"
@@ -19525,7 +19596,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 2171,
+              "line": 2199,
               "step": "render_flow_api_contract_section",
               "step_index": 1,
               "target": "lines.append"
@@ -19534,37 +19605,37 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2162,
+              "line": 2190,
               "step": "render_flow_api_contract_section",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 2163,
+              "line": 2191,
               "step": "render_flow_api_contract_section",
               "target": "item.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1895,
+              "line": 1923,
               "step": "_operation_anchor",
               "target": "operation.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1896,
+              "line": 1924,
               "step": "_operation_anchor",
               "target": "operation.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1898,
+              "line": 1926,
               "step": "_operation_anchor",
               "target": "_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower"
             },
             {
               "kind": "unresolved_call",
-              "line": 1898,
+              "line": 1926,
               "step": "_operation_anchor",
               "target": "_SAFE_ID_RE.sub('-', str(identity)).strip"
             },
@@ -22589,31 +22660,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1354,
+              "line": 1386,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1355,
+              "line": 1387,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1356,
+              "line": 1388,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1357,
+              "line": 1389,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1359,
+              "line": 1391,
               "step": "runtime_consumed_inputs",
               "target": "source_snapshot.to_consumed_inputs"
             },
@@ -22669,31 +22740,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1048,
+              "line": 1080,
               "step": "runtime_generation_options",
               "target": "surface_value"
             },
             {
               "kind": "unresolved_call",
-              "line": 1051,
+              "line": 1083,
               "step": "runtime_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1050,
+              "line": 1082,
               "step": "runtime_generation_options",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 1136,
+              "line": 1168,
               "step": "_runtime_policy_from_generation_inputs",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1149,
+              "line": 1181,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
@@ -28679,7 +28750,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6109,
+              "line": 6134,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -28781,7 +28852,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 4128,
+          "step_count": 4152,
           "truncated": true
         }
       },
@@ -31976,7 +32047,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 4678,
+              "line": 4658,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -31984,7 +32055,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 4684,
+              "line": 4664,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -31992,7 +32063,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2310,
+              "line": 2292,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -32000,7 +32071,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2316,
+              "line": 2298,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -32008,7 +32079,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2322,
+              "line": 2304,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -32017,25 +32088,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 2289,
+              "line": 2271,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2290,
+              "line": 2272,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2291,
+              "line": 2273,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "unresolved_call",
-              "line": 2292,
+              "line": 2274,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -32109,7 +32180,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 5981,
+          "step_count": 5983,
           "truncated": true
         }
       },
@@ -34305,6 +34376,7 @@
         "flows/api-knowledge_index_to_payload-knowledge_model.md",
         "flows/api-knowledge_status_payload.md",
         "flows/api-lifecycle_state_by_uid.md",
+        "flows/api-link_entry_point_flows.md",
         "flows/api-list_concept_sections.md",
         "flows/api-list_wiki_pages.md",
         "flows/api-load_and_evaluate_verification_receipt.md",
@@ -47649,6 +47721,18 @@
       "title": "lifecycle_state_by_uid"
     },
     {
+      "canonical_path": "flows/api-link_entry_point_flows.md",
+      "id": "api-link_entry_point_flows",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/api-link_entry_point_flows",
+      "outgoing_internal_links": [
+        "modules/api_contracts.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/api_contracts.py",
+      "title": "link_entry_point_flows"
+    },
+    {
       "canonical_path": "flows/api-list_concept_sections.md",
       "id": "api-list_concept_sections",
       "kind": "flows",
@@ -52508,5 +52592,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:c88cb2f2fbd8110b9e281a7d6e4abc1322471b06e7670fd91f13b59f1959a0a0"
+  "source_hash": "sha256:3b7b6d70d1c5fe83f361a8a06075b50b1bf3dd607e01763236e11022e7d14282"
 }

@@ -107,7 +107,7 @@ sequenceDiagram
     p11-->>p2: getattr
 ```
 
-> Call sequence diagram shows 30 of 5980 interactions; 5950 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 5982 interactions; 5952 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -182,36 +182,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 4668 | `_sync_run_options_from_args(args)` |
-| _sync_run_options_from_args | getattr | 2289 | `getattr(args, 'src_dir', '.')` |
-| _sync_run_options_from_args | Path | 2290 | `Path(getattr(...))` |
-| _sync_run_options_from_args | getattr | 2290 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
-| _sync_run_options_from_args | bool | 2291 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr | 2291 | `getattr(args, 'dry_run', False)` |
-| _sync_run_options_from_args | bool | 2292 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr | 2292 | `getattr(args, 'no_plugins', False)` |
-| _sync_run_options_from_args | _cache_options_from_args | 2293 | `_cache_options_from_args(args)` |
-| _cache_options_from_args | cache_options_from_args | 273 | `cache_options_from_args(args)` |
+| run | _sync_run_options_from_args | 4648 | `_sync_run_options_from_args(args)` |
+| _sync_run_options_from_args | getattr | 2271 | `getattr(args, 'src_dir', '.')` |
+| _sync_run_options_from_args | Path | 2272 | `Path(getattr(...))` |
+| _sync_run_options_from_args | getattr | 2272 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
+| _sync_run_options_from_args | bool | 2273 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr | 2273 | `getattr(args, 'dry_run', False)` |
+| _sync_run_options_from_args | bool | 2274 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr | 2274 | `getattr(args, 'no_plugins', False)` |
+| _sync_run_options_from_args | _cache_options_from_args | 2275 | `_cache_options_from_args(args)` |
+| _cache_options_from_args | cache_options_from_args | 275 | `cache_options_from_args(args)` |
 | cache_options_from_args | bool | 298 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 4678 |
-| output | `print` | `run` | 4684 |
-| output | `print` | `_sync_run_options_from_args` | 2310 |
-| output | `print` | `_sync_run_options_from_args` | 2316 |
-| output | `print` | `_sync_run_options_from_args` | 2322 |
+| output | `print` | `run` | 4658 |
+| output | `print` | `run` | 4664 |
+| output | `print` | `_sync_run_options_from_args` | 2292 |
+| output | `print` | `_sync_run_options_from_args` | 2298 |
+| output | `print` | `_sync_run_options_from_args` | 2304 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2289 |
-| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2290 |
-| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2291 |
-| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2292 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2271 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2272 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2273 |
+| unresolved_call | `_sync_run_options_from_args` | `getattr` | 2274 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

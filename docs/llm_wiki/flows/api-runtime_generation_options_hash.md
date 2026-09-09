@@ -114,7 +114,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options_hash | prepare_runtime_generation_options | 1094 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
+| runtime_generation_options_hash | prepare_runtime_generation_options | 1126 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
 | prepare_runtime_generation_options | isinstance | 317 | `isinstance(inventory_complete, bool)` |
 | prepare_runtime_generation_options | TypeError | 318 | `TypeError('inventory_complete must be a boolean')` |
 | prepare_runtime_generation_options | dict | 319 | `dict(generation_options)` |
@@ -122,8 +122,8 @@ flowchart LR
 | prepare_runtime_generation_options | tuple | 323 | `tuple(dict.fromkeys(...))` |
 | prepare_runtime_generation_options | fromkeys | 324 | `dict.fromkeys((...))` |
 | prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 326 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
-| runtime_generation_options_hash | tuple | 1097 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
-| runtime_generation_options_hash | hash_generation_options | 1100 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
+| runtime_generation_options_hash | tuple | 1129 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
+| runtime_generation_options_hash | hash_generation_options | 1132 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
 | hash_generation_options | isinstance | 827 | `isinstance(values, Mapping)` |
 
 ### Boundary effects

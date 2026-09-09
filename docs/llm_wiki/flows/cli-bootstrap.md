@@ -107,7 +107,7 @@ sequenceDiagram
     p16-->>p18: POINTER
 ```
 
-> Call sequence diagram shows 30 of 4127 interactions; 4097 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4151 interactions; 4121 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -171,9 +171,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6103 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path | 4232 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4233 | `validate_path(str(...), '--wiki-dir')` |
+| run | _bootstrap_run_options_from_args | 6128 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path | 4237 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4238 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
@@ -181,13 +181,13 @@ flowchart LR
 | validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
 | validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str | 4233 | `str(wiki_dir)` |
+| _bootstrap_run_options_from_args | str | 4238 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6109 |
+| output | `print` | `run` | 6134 |
 
 ### Static analysis gaps
 
