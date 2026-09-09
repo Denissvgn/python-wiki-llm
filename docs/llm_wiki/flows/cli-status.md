@@ -2,14 +2,13 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [status_cmd](../modules/status_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [hook_cmd](../modules/hook_cmd.md), and 26 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 26 more
 
 **Complete modules touched:**
 
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [hook_cmd](../modules/hook_cmd.md)
 - [immutable](../modules/immutable.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -23,6 +22,7 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [legacy_hooks](../modules/legacy_hooks.md)
 - [paths](../modules/paths.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -94,7 +94,7 @@ sequenceDiagram
     p12-->>p19: S_ISLNK
 ```
 
-> Call sequence diagram shows 30 of 1631 interactions; 1601 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1666 interactions; 1636 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -162,7 +162,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `WikiScaffoldPathError`, `AgentConfigState`, `IDE_AGENTS`, `AgentConfigState`, `os` | - | `none` |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `WikiScaffoldPathError`, `AgentConfigState`, `IDE_AGENTS`, `AgentConfigState`, `LegacyHookError` | - | `none` |
 | `getattr` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -179,8 +179,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 856 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 857 | `validate_path(str(...), '--wiki-dir')` |
+| run | getattr | 855 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 856 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
@@ -188,27 +188,27 @@ flowchart LR
 | validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
 | validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| run | str | 857 | `str(wiki_dir)` |
-| run | require_safe_wiki_scaffold | 859 | `require_safe_wiki_scaffold(wiki_dir)` |
+| run | str | 856 | `str(wiki_dir)` |
+| run | require_safe_wiki_scaffold | 858 | `require_safe_wiki_scaffold(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
+| output | `print` | `run` | 874 |
 | output | `print` | `run` | 875 |
-| output | `print` | `run` | 876 |
-| output | `print` | `run` | 880 |
-| output | `print` | `run` | 885 |
+| output | `print` | `run` | 879 |
+| output | `print` | `run` | 884 |
+| output | `print` | `run` | 888 |
 | output | `print` | `run` | 889 |
-| output | `print` | `run` | 890 |
-| output | `print` | `run` | 892 |
-| output | `print` | `run` | 895 |
+| output | `print` | `run` | 891 |
+| output | `print` | `run` | 894 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 856 |
+| unresolved_call | `run` | `getattr` | 855 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | external_call | `validate_path` | `Path.cwd().resolve` | 134 |

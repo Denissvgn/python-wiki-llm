@@ -1,6 +1,6 @@
 # _RuntimeArtifactInspection
 
-**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:84`
+**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:76`
 **Kind:** Class
 **Bases:** —
 **Module:** [uninstall_cmd](../modules/uninstall_cmd.md)

@@ -34,7 +34,7 @@ flowchart TD
 | [services_contracts](modules/services_contracts.md) | 32 | 0 |
 | [wiki_surface](modules/wiki_surface.md) | 31 | 1 |
 | [io](modules/io.md) | 30 | 1 |
-| [source_selection](modules/source_selection.md) | 29 | 2 |
+| [source_selection](modules/source_selection.md) | 28 | 2 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 26 | 1 |
 | [sync_manifest](modules/sync_manifest.md) | 25 | 6 |
 | [knowledge_model](modules/knowledge_model.md) | 22 | 10 |
@@ -84,9 +84,9 @@ flowchart TD
 | [extractor_helpers](modules/extractor_helpers.md) | 5 | 1 |
 | [immutable](modules/immutable.md) | 5 | 0 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
+| [legacy_hooks](modules/legacy_hooks.md) | 5 | 4 |
 | [metrics](modules/metrics.md) | 5 | 9 |
 | [verification_contracts](modules/verification_contracts.md) | 5 | 5 |
-| [hook_cmd](modules/hook_cmd.md) | 4 | 5 |
 | [api_contracts](modules/api_contracts.md) | 4 | 4 |
 | [calibration___init__](modules/calibration___init__.md) | 4 | 4 |
 | [documentation_wiki_input](modules/documentation_wiki_input.md) | 4 | 13 |
@@ -169,7 +169,7 @@ flowchart TD
 | [prepare](modules/prepare.md) | 1 | 8 |
 | [knowledge_generation](modules/knowledge_generation.md) | 1 | 15 |
 | [lockfile](modules/lockfile.md) | 1 | 0 |
-| [mcp_server](modules/mcp_server.md) | 1 | 19 |
+| [mcp_server](modules/mcp_server.md) | 1 | 20 |
 | [obsidian](modules/obsidian.md) | 1 | 11 |
 | [packages](modules/packages.md) | 1 | 2 |
 | [plugin_samples](modules/plugin_samples.md) | 1 | 1 |
@@ -179,7 +179,8 @@ flowchart TD
 | [render_summary](modules/render_summary.md) | 0 | 1 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
-| [cli](modules/cli.md) | 0 | 37 |
+| [cli](modules/cli.md) | 0 | 36 |
+| [hook_cmd](modules/hook_cmd.md) | 0 | 1 |
 | [eval_lite___init__](modules/eval_lite___init__.md) | 0 | 1 |
 | [detectors](modules/detectors.md) | 0 | 0 |
 | [styles](modules/styles.md) | 0 | 0 |

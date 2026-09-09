@@ -1,6 +1,6 @@
 # _SchemaCleanup
 
-**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:74`
+**Location:** `src/llm_wiki_cli/commands/uninstall_cmd.py:66`
 **Kind:** Class
 **Bases:** —
 **Module:** [uninstall_cmd](../modules/uninstall_cmd.md)

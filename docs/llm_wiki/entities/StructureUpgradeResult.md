@@ -1,6 +1,6 @@
 # StructureUpgradeResult
 
-**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:95`
+**Location:** `src/llm_wiki_cli/commands/upgrade_cmd.py:90`
 **Kind:** Class
 **Bases:** —
 **Module:** [upgrade_cmd](../modules/upgrade_cmd.md)

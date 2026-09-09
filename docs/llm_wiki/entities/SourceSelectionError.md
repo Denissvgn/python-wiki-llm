@@ -26,18 +26,18 @@ Field-specific failure loading or validating source selection.
 flowchart LR
     n0["SourceSelectionError (src/llm_wiki_cli/services/source_selection.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/commands/hook_cmd.py"]
-    n3["src/llm_wiki_cli/commands/init_cmd.py"]
-    n4["_fallback_dependency_analysis (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n5["src/llm_wiki_cli/commands/upgrade_cmd.py"]
-    n6["src/llm_wiki_cli/services/api_contracts.py"]
-    n7["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n8["src/llm_wiki_cli/services/ci_installer.py"]
-    n9["src/llm_wiki_cli/services/context_service.py"]
-    n10["src/llm_wiki_cli/services/documentation_native.py"]
-    n11["src/llm_wiki_cli/services/documentation_policy.py"]
-    n12["src/llm_wiki_cli/services/documentation_query_builder.py"]
-    n13["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n2["src/llm_wiki_cli/commands/init_cmd.py"]
+    n3["_fallback_dependency_analysis (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n4["src/llm_wiki_cli/commands/upgrade_cmd.py"]
+    n5["src/llm_wiki_cli/services/api_contracts.py"]
+    n6["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n7["src/llm_wiki_cli/services/ci_installer.py"]
+    n8["src/llm_wiki_cli/services/context_service.py"]
+    n9["src/llm_wiki_cli/services/documentation_native.py"]
+    n10["src/llm_wiki_cli/services/documentation_policy.py"]
+    n11["src/llm_wiki_cli/services/documentation_query_builder.py"]
+    n12["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n13["src/llm_wiki_cli/services/documentation_wiki_input.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -52,18 +52,18 @@ flowchart LR
     n12 --> n0
     n13 --> n0
     click n0 "../modules/source_selection.md"
-    click n2 "../modules/hook_cmd.md"
-    click n3 "../modules/init_cmd.md"
-    click n4 "../modules/sync_cmd.md"
-    click n5 "../modules/upgrade_cmd.md"
-    click n6 "../modules/api_contracts.md"
-    click n7 "../modules/bootstrap_runtime.md"
-    click n8 "../modules/ci_installer.md"
-    click n9 "../modules/context_service.md"
-    click n10 "../modules/documentation_native.md"
-    click n11 "../modules/documentation_policy.md"
-    click n12 "../modules/documentation_query_builder.md"
-    click n13 "../modules/documentation_run_dependencies.md"
+    click n2 "../modules/init_cmd.md"
+    click n3 "../modules/sync_cmd.md"
+    click n4 "../modules/upgrade_cmd.md"
+    click n5 "../modules/api_contracts.md"
+    click n6 "../modules/bootstrap_runtime.md"
+    click n7 "../modules/ci_installer.md"
+    click n8 "../modules/context_service.md"
+    click n9 "../modules/documentation_native.md"
+    click n10 "../modules/documentation_policy.md"
+    click n11 "../modules/documentation_query_builder.md"
+    click n12 "../modules/documentation_run_dependencies.md"
+    click n13 "../modules/documentation_wiki_input.md"
 ```
 
 ### Summary
@@ -82,7 +82,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `hook_cmd` | import | [hook_cmd](../modules/hook_cmd.md) | — |
 | `init_cmd` | import | [init_cmd](../modules/init_cmd.md) | — |
 | `_fallback_dependency_analysis` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `upgrade_cmd` | import | [upgrade_cmd](../modules/upgrade_cmd.md) | — |
@@ -94,5 +93,6 @@ flowchart LR
 | `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) | — |
 | `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
+| `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 
-> References: showing 12 of 46 logical references; 34 omitted by the 12-row generated summary limit.
+> References: showing 12 of 45 logical references; 33 omitted by the 12-row generated summary limit.

@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:60dd0ae0c52a3037bf191db89f085c7b8f9c3420fb24aeb150f5407c47f569ac",
-    "knowledge_index_hash": "sha256:ed2686d83adf9cfac4d90a5118f93d5a1bc254e95ca874d9c03a38e0272ba833",
-    "surface_index_hash": "sha256:0bc184359a4c905a9ec18a68b7158f4f1b8c018dfcae70bce5d1c8c5e6ae8076"
+    "evaluated_envelope_hash": "sha256:c200cfc0e4f82922aafc692df61d2a04f6e093c770bbb36e716bad4c0d9b8983",
+    "knowledge_index_hash": "sha256:284be1c0daac0e19d90b0d7a9b106f11b9dd18e7a3dc02c8ac7c5c96bbc9076d",
+    "surface_index_hash": "sha256:f1528b94b604a8babb018a5c0a672564976fd6b1471d13f2307f13d261a4fbc2"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -390,7 +390,7 @@
         "concept_observation_hash": "sha256:6a2e5ccc96171eb0b19f782d67a4e79a02a14a873606b3d0f81810f8e2adcb15",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+        "source_content_hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
@@ -1490,7 +1490,7 @@
         "concept_observation_hash": "sha256:07a2b129cc9678f50578348835dc8a1aad13745f0c7a3b559151bec0d79cc057",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -1942,16 +1942,6 @@
         "scope": "entity",
         "source_content_hash": "sha256:775eac3ac83462c24d65d092146332d60e7caaa5c24b9dec1ba3d68b121201ea",
         "source_path": "src/llm_wiki_cli/services/extractor_helpers.py"
-      },
-      "state": "known"
-    },
-    "entities/HookInspection.md": {
-      "basis": {
-        "concept_observation_hash": "sha256:c1258272b3d0b8bbd578731e4fd6ddc13d494ba3c8580bfe1d585e9b1baf1b7a",
-        "extractor_ref": "llm-wiki/extractor/python",
-        "scope": "entity",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
-        "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
     },
@@ -2705,6 +2695,26 @@
       },
       "state": "known"
     },
+    "entities/LegacyHookError.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:c5a0265b712f3211fba9f0ee0e0de0248cf0db5b219b29d2f7deb3c2000abbd0",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "entity",
+        "source_content_hash": "sha256:84ee42f0f443e91f246ca2548a59651729f53e89959d62b09d39dbcd8ac96735",
+        "source_path": "src/llm_wiki_cli/services/legacy_hooks.py"
+      },
+      "state": "known"
+    },
+    "entities/LegacyHookInspection.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:dfdb0c61ffc04b09696962981510d9848f6c7d6deceb774fe4793b9c81fc0e92",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "entity",
+        "source_content_hash": "sha256:84ee42f0f443e91f246ca2548a59651729f53e89959d62b09d39dbcd8ac96735",
+        "source_path": "src/llm_wiki_cli/services/legacy_hooks.py"
+      },
+      "state": "known"
+    },
     "entities/Lifecycle.md": {
       "basis": {
         "concept_observation_hash": "sha256:99c9e1217ea3e88e8dcca03db5574e9cdf3c3914d03a07423c4700720a2e6ff7",
@@ -2880,7 +2890,7 @@
         "concept_observation_hash": "sha256:de84106429dcd791dbfd655c8073f76e115bc045fbf9ae80fe41c8a744607bbc",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -2930,7 +2940,7 @@
         "concept_observation_hash": "sha256:232256a789c476d7050c48ab92227998c80847856209e64a2448400185e0e396",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c8a011cd700c992051bdb68d4b3e022d899260a4dfe746e06236904111931f5b",
+        "source_content_hash": "sha256:83ff83d6516780d01589be6d9c71a22591f1a1bf2174073627469421d14f29ed",
         "source_path": "src/llm_wiki_cli/services/schema.py"
       },
       "state": "known"
@@ -2940,7 +2950,7 @@
         "concept_observation_hash": "sha256:33496f5dbd6d4db831579dcf93ca9e87b90f6796817be0fb22c54f85c5d4295a",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c8a011cd700c992051bdb68d4b3e022d899260a4dfe746e06236904111931f5b",
+        "source_content_hash": "sha256:83ff83d6516780d01589be6d9c71a22591f1a1bf2174073627469421d14f29ed",
         "source_path": "src/llm_wiki_cli/services/schema.py"
       },
       "state": "known"
@@ -2950,7 +2960,7 @@
         "concept_observation_hash": "sha256:c113700644957dc014473696bf13c3d1c2020d738842d8771ce246fe51e9c858",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c8a011cd700c992051bdb68d4b3e022d899260a4dfe746e06236904111931f5b",
+        "source_content_hash": "sha256:83ff83d6516780d01589be6d9c71a22591f1a1bf2174073627469421d14f29ed",
         "source_path": "src/llm_wiki_cli/services/schema.py"
       },
       "state": "known"
@@ -2960,7 +2970,7 @@
         "concept_observation_hash": "sha256:23493ca81963a4483a2228918b4824c4e0880d3d8b60d5124639c2325b80c3f5",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c8a011cd700c992051bdb68d4b3e022d899260a4dfe746e06236904111931f5b",
+        "source_content_hash": "sha256:83ff83d6516780d01589be6d9c71a22591f1a1bf2174073627469421d14f29ed",
         "source_path": "src/llm_wiki_cli/services/schema.py"
       },
       "state": "known"
@@ -3110,7 +3120,7 @@
         "concept_observation_hash": "sha256:d0ec0a0e8bc4ebce71e8a9fc10d75259b3d2786b844a6772d2a7d8ab63b249b6",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -3120,7 +3130,7 @@
         "concept_observation_hash": "sha256:cf7062897afe688cb2b82c66676652ce13de3178260b89b9e462877101c70a0d",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -3130,7 +3140,7 @@
         "concept_observation_hash": "sha256:76e5621883fefea39bacb36b97eb4339a620cd9c5bd4efb527ac82b776f01040",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -3140,7 +3150,7 @@
         "concept_observation_hash": "sha256:ef221988ef8fe1c016c7213e32369e8e4d94f50e18d860da71146cf3bbc4ef1f",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -3440,7 +3450,7 @@
         "concept_observation_hash": "sha256:9710af14b1109e109f2879c8840264dd4ba40801b63e530eb674da2c131060dc",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -3860,7 +3870,7 @@
         "concept_observation_hash": "sha256:f2b6ef94bf9c5f65277b45534f6c358d922dc9f5a81281252ef6443f7b1a94f5",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9894d2567a6608c92266027f5b2d4ab24bbecc4a49278544e34fee1d34f21a86",
+        "source_content_hash": "sha256:b4dec4b52974f46b6d1f2f344dea5b6ad44ee5131b88974f0704c07dc4664855",
         "source_path": "src/llm_wiki_cli/commands/upgrade_cmd.py"
       },
       "state": "known"
@@ -3870,7 +3880,7 @@
         "concept_observation_hash": "sha256:d2d87cdaab702c15c728971808eb7c74dac8436489cbfedfb5c638fff465e7f4",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+        "source_content_hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
@@ -4190,7 +4200,7 @@
         "concept_observation_hash": "sha256:d75295cf7e4c4b37f8a5548b9836e5edeb98a62a4df250d78c070c26a466455d",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -4200,7 +4210,7 @@
         "concept_observation_hash": "sha256:21d037a2cec5adc801d3e23eef82f34c436bccf72048a5fec4ff38b9342bd9d1",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+        "source_content_hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
@@ -4290,7 +4300,7 @@
         "concept_observation_hash": "sha256:0ad75d68530d75faf94515f3a13a8a96f5d449b5e7401a2c1d85d36d48ff456c",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+        "source_content_hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
@@ -4300,7 +4310,7 @@
         "concept_observation_hash": "sha256:cfdea99f4ee2a09a93b129e18a1cd4258ad1574f28a09325a3ca191f47643b01",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9894d2567a6608c92266027f5b2d4ab24bbecc4a49278544e34fee1d34f21a86",
+        "source_content_hash": "sha256:b4dec4b52974f46b6d1f2f344dea5b6ad44ee5131b88974f0704c07dc4664855",
         "source_path": "src/llm_wiki_cli/commands/upgrade_cmd.py"
       },
       "state": "known"
@@ -4310,7 +4320,7 @@
         "concept_observation_hash": "sha256:09d04e7988c6a3cad6b861b8cb270db48884c9b5d3e71cf2edc288aeaad0615d",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:c8a011cd700c992051bdb68d4b3e022d899260a4dfe746e06236904111931f5b",
+        "source_content_hash": "sha256:83ff83d6516780d01589be6d9c71a22591f1a1bf2174073627469421d14f29ed",
         "source_path": "src/llm_wiki_cli/services/schema.py"
       },
       "state": "known"
@@ -4510,7 +4520,7 @@
         "concept_observation_hash": "sha256:da23263513d8f6a7e0a40cd8c4fe65b700ae2d21cd9dd92504b0aa87ca080bc1",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9894d2567a6608c92266027f5b2d4ab24bbecc4a49278544e34fee1d34f21a86",
+        "source_content_hash": "sha256:b4dec4b52974f46b6d1f2f344dea5b6ad44ee5131b88974f0704c07dc4664855",
         "source_path": "src/llm_wiki_cli/commands/upgrade_cmd.py"
       },
       "state": "known"
@@ -4550,7 +4560,7 @@
         "concept_observation_hash": "sha256:acc3f22918a92d279a9a62fa48ac87110170d6343e53f3714244339dcec8f23f",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -4560,7 +4570,7 @@
         "concept_observation_hash": "sha256:47fd0f1546abff3f8158a75039939d83277e470e930af33f2be56d301e060134",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -4630,7 +4640,7 @@
         "concept_observation_hash": "sha256:5f17d0e312be0ab30756548c13734725a616692b21e407b5d1f2557abdf152ff",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:9894d2567a6608c92266027f5b2d4ab24bbecc4a49278544e34fee1d34f21a86",
+        "source_content_hash": "sha256:b4dec4b52974f46b6d1f2f344dea5b6ad44ee5131b88974f0704c07dc4664855",
         "source_path": "src/llm_wiki_cli/commands/upgrade_cmd.py"
       },
       "state": "known"
@@ -4900,7 +4910,7 @@
         "concept_observation_hash": "sha256:aa4633afac8d2ac21daddb334073e0f3345b4d0235bf0c53076675e8ab675718",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+        "source_content_hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
@@ -5120,7 +5130,7 @@
         "concept_observation_hash": "sha256:fbe943af7a04500a0aa2374952b75861bf5d8f349a04db26d0ebab9c61b82bf9",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+        "source_content_hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
@@ -5310,7 +5320,7 @@
         "concept_observation_hash": "sha256:86e21154954d715315e9d046bc8b9f82b176b4e624aa327f27728cccbd6cdf71",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "entity",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -5467,10 +5477,10 @@
     },
     "modules/cli.md": {
       "basis": {
-        "concept_observation_hash": "sha256:0b5a8754854921749407a3820abdcc938f2cd9947d3c01268a5ae0520d213839",
+        "concept_observation_hash": "sha256:ca1948bf6fb651d7bf9b1c2aecfc42dad989944b897911ffcd21a065a1e90733",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:04b83fd773365e4bf8304e3bf8e93ce906cc37fce96354a69d39fabf06b7826b",
+        "source_content_hash": "sha256:835864d595a7a089c432ab2adaaa6b2e4176db1aa3b1ef80b4c8c6c94cc461a0",
         "source_path": "src/llm_wiki_cli/cli.py"
       },
       "state": "known"
@@ -5867,10 +5877,10 @@
     },
     "modules/hook_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:76adda7e6cebf43030e94fc45fafd53c648beea5373c981a7f66655b101413df",
+        "concept_observation_hash": "sha256:76d82e4ccd91ac9ba0afcaa8f93144daaeb298d9b0860cad09445d7642e7a840",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:83849b3d1b34cea1789aeef45f69c1bc436a321afc299c43369e4855e0ad7991",
+        "source_content_hash": "sha256:d396e4f0cb7c2012f7fad80494e4f5453dba7532bac759aaa2ba32cce352fa48",
         "source_path": "src/llm_wiki_cli/commands/hook_cmd.py"
       },
       "state": "known"
@@ -6175,6 +6185,16 @@
       },
       "state": "known"
     },
+    "modules/legacy_hooks.md": {
+      "basis": {
+        "concept_observation_hash": "sha256:d0bd475888534f9e8c122f1db323ea85521eaf20bc032e1c45f4c55c1d35c417",
+        "extractor_ref": "llm-wiki/extractor/python",
+        "scope": "module",
+        "source_content_hash": "sha256:84ee42f0f443e91f246ca2548a59651729f53e89959d62b09d39dbcd8ac96735",
+        "source_path": "src/llm_wiki_cli/services/legacy_hooks.py"
+      },
+      "state": "known"
+    },
     "modules/lint_service.md": {
       "basis": {
         "concept_observation_hash": "sha256:5f4e8c9d71d5ef8a5c9d6ef7e79a182502a9d890e47df4005bc27b8b4d8a6174",
@@ -6237,10 +6257,10 @@
     },
     "modules/mcp_server.md": {
       "basis": {
-        "concept_observation_hash": "sha256:38da1bfce3d8aaae19cda4cd7ed0dccbbcfef9ff6d8c653ae89f68eefe74ae91",
+        "concept_observation_hash": "sha256:7ff2b57c0c0b71c7fa113f942c73d31a72eb03577a41df1fde540d76f329d27f",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+        "source_content_hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py"
       },
       "state": "known"
@@ -6600,7 +6620,7 @@
         "concept_observation_hash": "sha256:1cda706bcebc495b31cb8cb15579676946515a09e1ad472d36b2dede5b8068a8",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:c8a011cd700c992051bdb68d4b3e022d899260a4dfe746e06236904111931f5b",
+        "source_content_hash": "sha256:83ff83d6516780d01589be6d9c71a22591f1a1bf2174073627469421d14f29ed",
         "source_path": "src/llm_wiki_cli/services/schema.py"
       },
       "state": "known"
@@ -6687,10 +6707,10 @@
     },
     "modules/status_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:75eb8ca77b02488e2748dce0a9ca8a4066992e06def67422a66c90a9138cf1ba",
+        "concept_observation_hash": "sha256:601d20ca80df50d3269c53814659d0d71d64db2e2f14d55fa08cea3f6d36e981",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:7342f2a7a0e7b9630f4aa52bbddf42e5ea67b9482f8f86ad3923bd6c403711d0",
+        "source_content_hash": "sha256:6b112aa4c8e58990bc8e05c53e71ea1883ad7b1e46d4630ba8bd3b3a8e6b3a6e",
         "source_path": "src/llm_wiki_cli/commands/status_cmd.py"
       },
       "state": "known"
@@ -6777,20 +6797,20 @@
     },
     "modules/uninstall_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:77b438fccb83cd42b56815078c97ff8e18e4906ae8b2e39c36d014e75031ae2c",
+        "concept_observation_hash": "sha256:42aa80aa68107463799413969792af09c98b2ce52d6a77a56ace2e71aff0a046",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+        "source_content_hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
         "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
       },
       "state": "known"
     },
     "modules/upgrade_cmd.md": {
       "basis": {
-        "concept_observation_hash": "sha256:39ec41a06486a74cd2fffcf53d1e509e8a5999093db29a83e5010af9889de672",
+        "concept_observation_hash": "sha256:43887792c4a59fb414475aae6cac2fea49f3a8fd8071cb9ce7514b57e0224fe6",
         "extractor_ref": "llm-wiki/extractor/python",
         "scope": "module",
-        "source_content_hash": "sha256:9894d2567a6608c92266027f5b2d4ab24bbecc4a49278544e34fee1d34f21a86",
+        "source_content_hash": "sha256:b4dec4b52974f46b6d1f2f344dea5b6ad44ee5131b88974f0704c07dc4664855",
         "source_path": "src/llm_wiki_cli/commands/upgrade_cmd.py"
       },
       "state": "known"
@@ -6938,14 +6958,14 @@
     "knowledge_reuse": {
       "assets_hash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
       "generation_options_hash": "sha256:963c315eb4f1d2b1fb73b2343d545b0268798643b4c9f247f8c3633bcff03442",
-      "implementation_hash": "sha256:6e58b994bcc020560605e34687f2083d256b4e4dc27c7491164fcc2066afb223",
-      "inventory_hash": "sha256:b84b3a7f2208766ec4be0dced939ff5908ce5004ef8eb8ccec595c63e0639f0a",
-      "lifecycle_hash": "sha256:1a72bbf63ded64e77d4d2ae11f958b93242daeb00b2a1cdbce6efd5c1ef3ae85",
-      "markdown_snapshot_hash": "sha256:b892f8568aee75775e57fea5f2fca7a764619af7e098803bc2d1f0458fc5f903",
-      "observation_inputs_hash": "sha256:c4e70f1733d3567e73048f15a37267700fb0df2845274582c99be2f602c6a905",
+      "implementation_hash": "sha256:e0af66f90ca467ebb7625124b614a6a3f88ff57f2ab9908bae9ab94abb4e3c09",
+      "inventory_hash": "sha256:48c9319b8189eed09ece2e5790220821db6f7d286e5ebe1304d1e41ab764a4a9",
+      "lifecycle_hash": "sha256:b88f8e05f803713b0df9f087962b4880852a6ba10899a6e249069953ebd54b52",
+      "markdown_snapshot_hash": "sha256:44460cdcc097b17f77cbf481c07097a8e1a90aa125a5c0be02b20420bd6cda9e",
+      "observation_inputs_hash": "sha256:b20575ee36acd091d118d31d5347b61f500bb815d98b7066c98f9d81467caeda",
       "repository_hash": "sha256:2077323ceb2fca4f1d6724fca822b6d87e1aa6d21ae0e46e777ff6c6cff29253",
       "schema_version": "llm-wiki-knowledge-reuse/v1",
-      "source_snapshot_hash": "sha256:77a137fc540d9ac402a00c3ab8e2528751b7268a6d1192f2077f99e4ad0688f1"
+      "source_snapshot_hash": "sha256:5de6ca8e2a412d11a4573279a320a6b576cfc340fd34ca9ff5459953683dab12"
     },
     "llm-wiki/generation-options/v1": {
       "data_flow_enabled": true,
@@ -8148,12 +8168,6 @@
       "scope": "entity",
       "source_path": "src/llm_wiki_cli/services/extractor_helpers.py"
     },
-    "entities/HookInspection.md": {
-      "entity_name": "_HookInspection",
-      "occurrence": 1,
-      "scope": "entity",
-      "source_path": "src/llm_wiki_cli/commands/uninstall_cmd.py"
-    },
     "entities/HostBrokerAuthenticationError.md": {
       "entity_name": "HostBrokerAuthenticationError",
       "occurrence": 1,
@@ -8603,6 +8617,18 @@
       "occurrence": 1,
       "scope": "entity",
       "source_path": "src/llm_wiki_cli/api.py"
+    },
+    "entities/LegacyHookError.md": {
+      "entity_name": "LegacyHookError",
+      "occurrence": 1,
+      "scope": "entity",
+      "source_path": "src/llm_wiki_cli/services/legacy_hooks.py"
+    },
+    "entities/LegacyHookInspection.md": {
+      "entity_name": "LegacyHookInspection",
+      "occurrence": 1,
+      "scope": "entity",
+      "source_path": "src/llm_wiki_cli/services/legacy_hooks.py"
     },
     "entities/Lifecycle.md": {
       "entity_name": "Lifecycle",
@@ -10516,6 +10542,10 @@
       "scope": "module",
       "source_path": "src/llm_wiki_cli/services/knowledge_verification.py"
     },
+    "modules/legacy_hooks.md": {
+      "scope": "module",
+      "source_path": "src/llm_wiki_cli/services/legacy_hooks.py"
+    },
     "modules/lint_service.md": {
       "scope": "module",
       "source_path": "src/llm_wiki_cli/services/lint_service.py"
@@ -11990,7 +12020,6 @@
             "_add_init_command": "—",
             "_add_install_ci_command": "—",
             "_add_install_command": "—",
-            "_add_install_hook_command": "—",
             "_add_jobs_argument": "—",
             "_add_knowledge_command": "—",
             "_add_knowledge_dry_run": "—",
@@ -12028,10 +12057,10 @@
           }
         }
       },
-      "hash": "sha256:04b83fd773365e4bf8304e3bf8e93ce906cc37fce96354a69d39fabf06b7826b",
+      "hash": "sha256:835864d595a7a089c432ab2adaaa6b2e4176db1aa3b1ef80b4c8c6c94cc461a0",
       "language": "python",
       "module_page": "cli",
-      "semantic_hash": "sha256:2452dd7c9ab5736c69fd4d3ab041569f087cb6452ffa3d94e44bac80ba6abe0a"
+      "semantic_hash": "sha256:c20a72f5b444c35a5ce5946a57076e1c44c384bc8c6ceaff83aa4586634a2a8f"
     },
     "src/llm_wiki_cli/commands/bump_cmd.py": {
       "entities": [],
@@ -12194,35 +12223,16 @@
         "entities": {},
         "module": {
           "classes": {},
-          "description": "_Auto-generated from `src/llm_wiki_cli/commands/hook_cmd.py`._",
+          "description": "Compatibility imports for legacy hook recognition; installation is retired.",
           "functions": {
-            "_build_ide_post_commit": "—",
-            "_build_post_commit": "Build the managed post-commit hook.",
-            "_build_validation_pre_commit": "—",
-            "_current_post_commit_parameters": "—",
-            "_current_pre_commit_parameters": "—",
-            "_hook_parameters_are_within_project": "—",
-            "_install_hook": "Write a hook file and make it executable.",
-            "_is_legacy_prompt_invocation": "—",
-            "_is_legacy_trigger_invocation": "—",
-            "_legacy_auto_sync_parameters": "—",
-            "_legacy_auto_sync_post_commit": "—",
-            "_legacy_ide_post_commit": "—",
-            "_legacy_skeleton_digest": "—",
-            "_read_agent_config": "Read the agent name persisted by `llm-wiki init`.",
-            "_source_selection_args": "—",
-            "is_managed_hook_content": "Return whether ``content`` exactly matches a recognized managed hook.",
-            "require_hook_installable": "Reject a custom hook collision before any lifecycle mutation.",
-            "require_safe_hook_arguments": "Reject control characters that cannot round-trip through hook scripts.",
-            "require_safe_hook_paths": "Reject redirected, non-regular, or unreadable managed hook paths.",
-            "run": "—"
+            "run": "Reject calls from integrations that still import the old command module."
           }
         }
       },
-      "hash": "sha256:83849b3d1b34cea1789aeef45f69c1bc436a321afc299c43369e4855e0ad7991",
+      "hash": "sha256:d396e4f0cb7c2012f7fad80494e4f5453dba7532bac759aaa2ba32cce352fa48",
       "language": "python",
       "module_page": "hook_cmd",
-      "semantic_hash": "sha256:67171b6f62e2100f16fb075972238ed7ee2ae3f41ec41ab7383a43ad66888b53"
+      "semantic_hash": "sha256:b3c4822facda8cf95f30b4fd8e686db580eef5be54b915eec0cac25f4a2e0798"
     },
     "src/llm_wiki_cli/commands/init_cmd.py": {
       "entities": [],
@@ -12804,10 +12814,10 @@
           }
         }
       },
-      "hash": "sha256:7342f2a7a0e7b9630f4aa52bbddf42e5ea67b9482f8f86ad3923bd6c403711d0",
+      "hash": "sha256:6b112aa4c8e58990bc8e05c53e71ea1883ad7b1e46d4630ba8bd3b3a8e6b3a6e",
       "language": "python",
       "module_page": "status_cmd",
-      "semantic_hash": "sha256:0a9e4fc18c22ab4001c3ccf1255d81f0873874a9fe7ed7e9053927182855a9f6"
+      "semantic_hash": "sha256:e5b333c9fdd6aa65979770aba5268ed7f2efcb8fdd18edb5d8bc2ca4b28a09f3"
     },
     "src/llm_wiki_cli/commands/sync_cmd.py": {
       "entities": [
@@ -13363,7 +13373,6 @@
     "src/llm_wiki_cli/commands/uninstall_cmd.py": {
       "entities": [
         "UnsafeUninstallPathError",
-        "_HookInspection",
         "_SchemaCleanup",
         "_RuntimeArtifactInspection",
         "_WikiRemovalInspection",
@@ -13375,11 +13384,6 @@
           "name": "UnsafeUninstallPathError",
           "occurrence": 1,
           "page": "UnsafeUninstallPathError"
-        },
-        {
-          "name": "_HookInspection",
-          "occurrence": 1,
-          "page": "HookInspection"
         },
         {
           "name": "_SchemaCleanup",
@@ -13410,7 +13414,6 @@
       "entity_pages": {
         "UnsafeUninstallPathError": "UnsafeUninstallPathError",
         "_CiWorkflowInspection": "CiWorkflowInspection",
-        "_HookInspection": "HookInspection",
         "_ReferenceSkillInspection": "ReferenceSkillInspection",
         "_RuntimeArtifactInspection": "RuntimeArtifactInspection",
         "_SchemaCleanup": "SchemaCleanup",
@@ -13431,17 +13434,6 @@
               "removable": "—"
             },
             "description": "Managed CI ownership evidence collected before confirmation.",
-            "methods": {}
-          },
-          "_HookInspection": {
-            "attributes": {
-              "content": "—",
-              "content_bytes": "—",
-              "name": "—",
-              "owned": "—",
-              "path": "—"
-            },
-            "description": "Immutable hook ownership evidence collected before mutation.",
             "methods": {}
           },
           "_ReferenceSkillInspection": {
@@ -13496,7 +13488,6 @@
           "classes": {
             "UnsafeUninstallPathError": "Raised when an uninstall-owned path could escape the project tree.",
             "_CiWorkflowInspection": "Managed CI ownership evidence collected before confirmation.",
-            "_HookInspection": "Immutable hook ownership evidence collected before mutation.",
             "_ReferenceSkillInspection": "One managed-reference tree classified for the uninstall preview.",
             "_RuntimeArtifactInspection": "One runtime path classified without following unsafe entries.",
             "_SchemaCleanup": "One verified managed-schema cleanup prepared before mutation.",
@@ -13510,19 +13501,18 @@
             "_path_contains": "Return whether ``descendant`` is lexically inside ``ancestor``.",
             "_preflight_agent_schemas": "Validate every possible managed schema and stage safe removals.",
             "_preflight_ci_workflow": "Capture dedicated CI workflow ownership for the uninstall preview.",
-            "_preflight_hooks": "Inspect every known hook without following an unsafe path.",
+            "_preflight_hooks": "—",
             "_preflight_reference_skills": "Capture exact managed-reference states for the uninstall preview.",
             "_preflight_runtime_artifacts": "Classify present runtime paths before any uninstall mutation.",
             "_preflight_wiki_removal": "Classify the optional wiki root without opening redirected targets.",
             "_remove_ci_workflow": "Remove the dedicated CI workflow only from its previewed checksum.",
-            "_remove_hooks": "Remove llm-wiki hooks, but only from one safe ownership snapshot.",
+            "_remove_hooks": "—",
             "_remove_reference_skill": "Remove installed wiki-reference skill copies, but only exact-current ones.",
             "_remove_runtime_artifacts": "Remove local runtime artifacts created by llm-wiki.",
             "_remove_wiki_dir": "Remove the wiki directory tree.",
-            "_require_safe_hook_path": "Reject a hook path containing a symlink, reparse, or traversal.",
             "_runtime_artifact_paths": "Return unique runtime paths, including the resolved local config path.",
             "_same_path_identity": "Return whether two spellings identify the same local path.",
-            "_validate_hook_plan": "Ensure hook ownership evidence is still current before unlinking.",
+            "_validate_hook_plan": "—",
             "_validate_reference_plan": "Reject any managed-reference state change after confirmation.",
             "_validate_runtime_plan": "Reject runtime path changes after the uninstall preview.",
             "_validate_schema_plan": "Ensure schema cleanup evidence is still current before writing.",
@@ -13531,10 +13521,10 @@
           }
         }
       },
-      "hash": "sha256:6de9183888ca0ee423127c9162b9b2c8bf5b1fba46dd25b281290bba091da2d6",
+      "hash": "sha256:8db9b22283a0cfd7827d2de29ea8a16d2da8bef95a14706f6e1367e429330949",
       "language": "python",
       "module_page": "uninstall_cmd",
-      "semantic_hash": "sha256:ae4cd357859ac4b46b5811f55aaf9011e932d3c493804b7ed4e4feb2514ff71e"
+      "semantic_hash": "sha256:f0ed8dc808d97349294be185bfdfeb161feed562c6e999c6578de5fce4edb042"
     },
     "src/llm_wiki_cli/commands/upgrade_cmd.py": {
       "entities": [
@@ -13618,7 +13608,7 @@
             "SourceCleanupOutcome": "Result of one recorded-source cleanup transaction.",
             "StructureUpgradeResult": "Paths created while refreshing the framework-owned wiki structure."
           },
-          "description": "llm-wiki upgrade — refresh all framework-managed artifacts in place.\n\nReplaces the uninstall → init → install-hook cycle with a single idempotent\ncommand that:\n1. Replaces the agent constraint block with the latest version\n2. Ensures wiki directory structure is complete\n3. Reinstalls git hooks\n4. Optionally switches agents",
+          "description": "llm-wiki upgrade — refresh all framework-managed artifacts in place.\n\nReplaces the uninstall → init cycle with a single idempotent\ncommand that:\n1. Removes unmodified legacy LLM Wiki Git hooks\n2. Replaces the agent constraint block with the latest version\n3. Ensures wiki directory structure is complete\n4. Optionally switches agents",
           "functions": {
             "_clean_old_schema": "Clean the source schema and return a receipt for guarded rollback.",
             "_cleanup_config_is_current": "Keep destructive cleanup bound to the exact pending config commit.",
@@ -13631,16 +13621,15 @@
             "_restore_old_schema": "Restore an already-cleaned source schema without overwriting new bytes.",
             "_target_cleanup_is_ready": "Revalidate the committed target immediately before source destruction.",
             "_upgrade_dirs": "Ensure all standard wiki subdirectories and tracking files exist.",
-            "_upgrade_hooks": "Reinstall git hooks for the resolved agent.",
             "_upgrade_schema": "Atomically write the target schema without cleaning any source path.",
             "run": "—"
           }
         }
       },
-      "hash": "sha256:9894d2567a6608c92266027f5b2d4ab24bbecc4a49278544e34fee1d34f21a86",
+      "hash": "sha256:b4dec4b52974f46b6d1f2f344dea5b6ad44ee5131b88974f0704c07dc4664855",
       "language": "python",
       "module_page": "upgrade_cmd",
-      "semantic_hash": "sha256:9548f737b20e37c7180df34f703f912ecca6a69c349ff03182b35e5ecf3212ca"
+      "semantic_hash": "sha256:c640b1da64f264530fc75b49f90383cc8283461451e61626a2be21ea563b66ae"
     },
     "src/llm_wiki_cli/config.py": {
       "entities": [
@@ -24805,6 +24794,81 @@
       "module_page": "knowledge_verification",
       "semantic_hash": "sha256:363fc5b9e3e1cfa9a0a81896c5b592d22a8cbf8b7d1333565e87db6886439c89"
     },
+    "src/llm_wiki_cli/services/legacy_hooks.py": {
+      "entities": [
+        "LegacyHookError",
+        "LegacyHookInspection"
+      ],
+      "entity_page_occurrences": [
+        {
+          "name": "LegacyHookError",
+          "occurrence": 1,
+          "page": "LegacyHookError"
+        },
+        {
+          "name": "LegacyHookInspection",
+          "occurrence": 1,
+          "page": "LegacyHookInspection"
+        }
+      ],
+      "entity_pages": {
+        "LegacyHookError": "LegacyHookError",
+        "LegacyHookInspection": "LegacyHookInspection"
+      },
+      "generated_semantics": {
+        "entities": {
+          "LegacyHookError": {
+            "attributes": {},
+            "description": "Hook ownership or its filesystem snapshot cannot be verified safely.",
+            "methods": {}
+          },
+          "LegacyHookInspection": {
+            "attributes": {
+              "content": "—",
+              "content_bytes": "—",
+              "name": "—",
+              "owned": "—",
+              "path": "—"
+            },
+            "description": "Exact hook bytes classified before a lifecycle operation changes files.",
+            "methods": {}
+          }
+        },
+        "module": {
+          "classes": {
+            "LegacyHookError": "Hook ownership or its filesystem snapshot cannot be verified safely.",
+            "LegacyHookInspection": "Exact hook bytes classified before a lifecycle operation changes files."
+          },
+          "description": "Recognize and retire historical LLM Wiki Git hooks without installing hooks.\n\nThe frozen script renderers below are ownership fingerprints for migrations.\nThey are never executed or written to a hook path.",
+          "functions": {
+            "_build_ide_post_commit": "—",
+            "_build_post_commit": "Build the managed post-commit hook.",
+            "_build_validation_pre_commit": "—",
+            "_current_post_commit_parameters": "—",
+            "_current_pre_commit_parameters": "—",
+            "_git_value": "—",
+            "_hook_directories": "Locate repository-owned hooks, including a linked worktree's common Git dir.",
+            "_hook_parameters_are_within_project": "—",
+            "_is_legacy_prompt_invocation": "—",
+            "_is_legacy_trigger_invocation": "—",
+            "_legacy_auto_sync_parameters": "—",
+            "_legacy_auto_sync_post_commit": "—",
+            "_legacy_ide_post_commit": "—",
+            "_legacy_skeleton_digest": "—",
+            "_require_safe_path": "—",
+            "_source_selection_args": "—",
+            "inspect_legacy_hooks": "Capture known hook candidates without executing them or following links.",
+            "is_managed_hook_content": "Return whether ``content`` exactly matches a recognized managed hook.",
+            "remove_legacy_hooks": "Remove exact, unmodified library hooks from one rechecked ownership snapshot.",
+            "require_safe_hook_arguments": "Reject control characters that cannot round-trip through hook scripts."
+          }
+        }
+      },
+      "hash": "sha256:84ee42f0f443e91f246ca2548a59651729f53e89959d62b09d39dbcd8ac96735",
+      "language": "python",
+      "module_page": "legacy_hooks",
+      "semantic_hash": "sha256:d2de37a2252c8a0d61f142dde46dadceb3a3ae331b1a81cb132cc30404dbb044"
+    },
     "src/llm_wiki_cli/services/lint_service.py": {
       "entities": [
         "_LintProfiler",
@@ -25535,7 +25599,7 @@
             "_default_port_for_scheme": "—",
             "_ensure_inside": "Retain the legacy lexical helper for callers outside page reads.",
             "_graph_query_args": "—",
-            "_installed_hooks": "—",
+            "_installed_hooks": "Preserve the status field while reporting only verified legacy residue.",
             "_is_loopback_host": "—",
             "_is_required_knowledge_failure": "—",
             "_is_safe_page_id": "—",
@@ -25574,10 +25638,10 @@
           }
         }
       },
-      "hash": "sha256:7b9fc3b2b29dd02953d5cb3fd1356e27f217482b8000cf2485a1df09d0c64393",
+      "hash": "sha256:24b015fb8c9bc1abb8075528cac233d40a6c58a870f4bfbc843f90d00550f310",
       "language": "python",
       "module_page": "mcp_server",
-      "semantic_hash": "sha256:2217f737105acb399e32e6e9fa058ccff07ac5914cf7c57c61898bd7326b6121"
+      "semantic_hash": "sha256:9554f7c30a238b891a93f1f25b873d3cb7fd41ce66ed98730a0af4f8017f0fd4"
     },
     "src/llm_wiki_cli/services/metrics.py": {
       "entities": [],
@@ -26665,7 +26729,7 @@
           }
         }
       },
-      "hash": "sha256:c8a011cd700c992051bdb68d4b3e022d899260a4dfe746e06236904111931f5b",
+      "hash": "sha256:83ff83d6516780d01589be6d9c71a22591f1a1bf2174073627469421d14f29ed",
       "language": "python",
       "module_page": "services_schema",
       "semantic_hash": "sha256:400d44b4c6b773414d13388cd2d2d1056244916181a23c1edad61756af2e3733"

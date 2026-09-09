@@ -2,15 +2,15 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [uninstall_cmd](../modules/uninstall_cmd.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [hook_cmd](../modules/hook_cmd.md), and 5 more
+**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), and 5 more
 
 **Complete modules touched:**
 
 - [ci_installer](../modules/ci_installer.md)
 - [config](../modules/config.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [hook_cmd](../modules/hook_cmd.md)
 - [io](../modules/io.md)
+- [legacy_hooks](../modules/legacy_hooks.md)
 - [paths](../modules/paths.md)
 - [services_schema](../modules/services_schema.md)
 - [skills](../modules/skills.md)
@@ -31,15 +31,16 @@ sequenceDiagram
     participant p7 as str
     participant p8 as Path
     participant p9 as _preflight_hooks
-    participant p10 as _require_safe_hook_path
-    participant p11 as first_unsafe_path_component
-    participant p12 as fspath
-    participant p13 as abspath
-    participant p14 as is_absolute
-    participant p15 as list
-    participant p16 as pop
-    participant p17 as lstat
-    participant p18 as S_ISLNK
+    participant p10 as inspect_legacy_hooks
+    participant p11 as _hook_directories
+    participant p12 as _require_safe_path
+    participant p13 as first_unsafe_path_component
+    participant p14 as fspath
+    participant p15 as abspath
+    participant p16 as is_absolute
+    participant p17 as list
+    participant p18 as pop
+    participant p19 as lstat
     p0-->>p1: getattr
     p0->>p2: validate_path
     p2->>p3: PathValidationError
@@ -54,25 +55,25 @@ sequenceDiagram
     p0-->>p1: getattr
     p0-->>p1: getattr
     p0->>p9: _preflight_hooks
-    p9-->>p8: Path
-    p9->>p10: _require_safe_hook_path
-    p10->>p11: first_unsafe_path_component
-    p11-->>p8: Path
-    p11-->>p12: fspath
-    p11-->>p8: Path
-    p11-->>p13: abspath
-    p11-->>p14: is_absolute
+    p9->>p10: inspect_legacy_hooks
+    p10->>p11: _hook_directories
+    p11-->>p4: resolve
     p11-->>p5: cwd
-    p11-->>p8: Path
-    p11-->>p15: list
-    p11-->>p16: pop
-    p11-->>p17: lstat
-    p11-->>p1: getattr
-    p11-->>p1: getattr
-    p11-->>p18: S_ISLNK
+    p11->>p12: _require_safe_path
+    p12->>p13: first_unsafe_path_component
+    p13-->>p8: Path
+    p13-->>p14: fspath
+    p13-->>p8: Path
+    p13-->>p15: abspath
+    p13-->>p16: is_absolute
+    p13-->>p5: cwd
+    p13-->>p8: Path
+    p13-->>p17: list
+    p13-->>p18: pop
+    p13-->>p19: lstat
 ```
 
-> Call sequence diagram shows 30 of 1116 interactions; 1086 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1150 interactions; 1120 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -156,8 +157,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 900 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 901 | `validate_path(str(...), '--wiki-dir')` |
+| run | getattr | 811 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 812 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
@@ -165,27 +166,27 @@ flowchart LR
 | validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
 | validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| run | str | 901 | `str(wiki_dir_arg)` |
-| run | Path | 902 | `Path(wiki_dir_arg)` |
+| run | str | 812 | `str(wiki_dir_arg)` |
+| run | Path | 813 | `Path(wiki_dir_arg)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 928 |
-| output | `print` | `run` | 932 |
-| output | `print` | `run` | 935 |
-| output | `print` | `run` | 936 |
-| output | `print` | `run` | 939 |
-| output | `print` | `run` | 942 |
-| output | `print` | `run` | 945 |
-| output | `print` | `run` | 948 |
+| output | `print` | `run` | 839 |
+| output | `print` | `run` | 843 |
+| output | `print` | `run` | 846 |
+| output | `print` | `run` | 847 |
+| output | `print` | `run` | 850 |
+| output | `print` | `run` | 853 |
+| output | `print` | `run` | 856 |
+| output | `print` | `run` | 859 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 900 |
+| unresolved_call | `run` | `getattr` | 811 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | external_call | `validate_path` | `Path.cwd().resolve` | 134 |

@@ -2,15 +2,15 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [upgrade_cmd](../modules/upgrade_cmd.md)
-**Modules touched:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [hook_cmd](../modules/hook_cmd.md), [io](../modules/io.md), and 11 more
+**Modules touched:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 11 more
 
 **Complete modules touched:**
 
 - [config](../modules/config.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [hook_cmd](../modules/hook_cmd.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [legacy_hooks](../modules/legacy_hooks.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
@@ -79,7 +79,7 @@ sequenceDiagram
     p11-->>p19: bool
 ```
 
-> Call sequence diagram shows 30 of 1761 interactions; 1731 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1774 interactions; 1744 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -147,7 +147,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR`, `WikiScaffoldPathError`, `sys`, `AgentConfigState`, `sys`, `AgentConfigState`, `AgentConfigState`, `sys` | `config[...]`, `config[...]`, `config[...]` | - |
+| `run` | `args` | `DEFAULT_WIKI_DIR`, `WikiScaffoldPathError`, `sys`, `LegacyHookError`, `sys`, `AgentConfigState`, `sys`, `AgentConfigState` | `config[...]`, `config[...]`, `config[...]` | - |
 | `getattr` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -164,8 +164,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 634 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 635 | `validate_path(wiki_dir, '--wiki-dir')` |
+| run | getattr | 585 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 586 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
@@ -173,27 +173,27 @@ flowchart LR
 | validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
 | validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| run | require_safe_wiki_scaffold | 637 | `require_safe_wiki_scaffold(wiki_dir)` |
+| run | require_safe_wiki_scaffold | 588 | `require_safe_wiki_scaffold(wiki_dir)` |
 | require_safe_wiki_scaffold | Path | 43 | `Path(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 640 |
-| output | `print` | `run` | 656 |
-| output | `print` | `run` | 668 |
-| output | `print` | `run` | 679 |
-| output | `print` | `run` | 687 |
-| output | `print` | `run` | 698 |
-| output | `print` | `run` | 703 |
-| output | `print` | `run` | 711 |
+| output | `print` | `run` | 591 |
+| output | `print` | `run` | 596 |
+| output | `print` | `run` | 600 |
+| output | `print` | `run` | 602 |
+| output | `print` | `run` | 619 |
+| output | `print` | `run` | 631 |
+| output | `print` | `run` | 642 |
+| output | `print` | `run` | 650 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 634 |
+| unresolved_call | `run` | `getattr` | 585 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | external_call | `validate_path` | `Path.cwd().resolve` | 134 |

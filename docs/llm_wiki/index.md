@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 532 | [Open section](#entities) |
-| Modules | 158 | [Open section](#modules) |
+| Entities | 533 | [Open section](#entities) |
+| Modules | 159 | [Open section](#modules) |
 | Workflows | 15 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 436 | [Open section](#entry-point-flows) |
+| Entry-point flows | 435 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -212,7 +212,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HaskellExtractor](entities/HaskellExtractor.md)
 - [HeadingCandidate](entities/HeadingCandidate.md)
 - [HelperPrepareResult](entities/HelperPrepareResult.md)
-- [HookInspection](entities/HookInspection.md)
 - [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
 - [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
 - [HostBrokerAuthenticationUnavailable](entities/HostBrokerAuthenticationUnavailable.md)
@@ -288,6 +287,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [KnowledgeStatus](entities/KnowledgeStatus.md)
 - [LanguagePlugin](entities/LanguagePlugin.md)
 - [LazyCalibrationAnnotations](entities/LazyCalibrationAnnotations.md)
+- [LegacyHookError](entities/LegacyHookError.md)
+- [LegacyHookInspection](entities/LegacyHookInspection.md)
 - [Lifecycle](entities/Lifecycle.md)
 - [LifecycleEvent](entities/LifecycleEvent.md)
 - [LifecycleStatus](entities/LifecycleStatus.md)
@@ -607,7 +608,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [generate_prompt_cmd](modules/generate_prompt_cmd.md) - `src/llm_wiki_cli/commands/generate_prompt_cmd.py`
 - [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
-- [hook_cmd](modules/hook_cmd.md) - `src/llm_wiki_cli/commands/hook_cmd.py`
+- [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
 - [imports](modules/imports.md) - `src/llm_wiki_cli/services/imports.py`
@@ -638,6 +639,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_projection](modules/knowledge_projection.md) - Safe, deterministic projections over one validated knowledge read view.
 - [knowledge_reuse](modules/knowledge_reuse.md) - Versioned input commitments for conservative, validated sync no-ops.
 - [knowledge_verification](modules/knowledge_verification.md) - Read-only machine-verification evaluation for native knowledge sessions.
+- [legacy_hooks](modules/legacy_hooks.md) - Recognize and retire historical LLM Wiki Git hooks without installing hooks.
 - [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`
 - [llm-wiki_main](modules/llm-wiki_main.md) - `integrations/obsidian/llm-wiki/main.js`
 - [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) - LLM Wiki CLI.
@@ -1146,7 +1148,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [cli-init](flows/cli-init.md) - entry: `run`
 - [cli-install](flows/cli-install.md) - entry: `run`
 - [cli-install-ci](flows/cli-install-ci.md) - entry: `run`
-- [cli-install-hook](flows/cli-install-hook.md) - entry: `run`
 - [cli-knowledge](flows/cli-knowledge.md) - entry: `run`
 - [cli-lint](flows/cli-lint.md) - entry: `run`
 - [cli-mcp](flows/cli-mcp.md) - entry: `run`
