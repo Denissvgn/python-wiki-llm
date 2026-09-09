@@ -38,6 +38,7 @@ from .knowledge_artifacts import (
     validated_artifact_bytes,
 )
 from .knowledge_envelope import (
+    EvaluatedEnvelope,
     ConsumedInput,
     ConsumedInputKind,
     ProducerComponentInput,
@@ -492,6 +493,17 @@ def _stabilize_revision_only_noop(
         else f"git:{current_revision}"
     )
     if previous_revision == "unknown" or normalized_current == previous_revision:
+        return candidate
+    revision_only_bundle = replace(
+        previous.knowledge.bundle,
+        repository=replace(
+            previous.knowledge.bundle.repository,
+            evaluated_revision=normalized_current,
+        ),
+    )
+    if candidate.evaluated_envelope_hash != EvaluatedEnvelope(
+        bundle=revision_only_bundle
+    ).content_hash():
         return candidate
     stabilized = build_knowledge_generation_plan(
         replace(

@@ -163,3 +163,21 @@ def test_public_serialization_still_rejects_manually_invalid_model(tmp_path):
     forged_extensions = replace(model, extensions=FrozenDict({"unqualified": True}))
     with pytest.raises(ValueError):
         knowledge_index.serialize_knowledge_index(forged_extensions)
+
+
+def test_revision_change_with_new_inputs_builds_only_one_candidate(tmp_path):
+    from llm_wiki_cli.services.knowledge_envelope import RepositoryEvidence
+
+    runtime, _, _ = _runtime_input_case(tmp_path, inventory_complete=True)
+    first = replace(runtime, repository_evidence=RepositoryEvidence(evaluated_revision="a" * 40))
+    knowledge_orchestration.finalize_runtime_knowledge(first)
+    current = replace(
+        runtime,
+        previous_manifest=SyncManifest.load(Path(runtime.target_wiki_dir)),
+        repository_evidence=RepositoryEvidence(evaluated_revision="b" * 40),
+        generation_options={**runtime.generation_options, "preserve_semantic": False},
+    )
+    with patch.object(knowledge_orchestration, "build_knowledge_generation_plan", wraps=knowledge_orchestration.build_knowledge_generation_plan) as build:
+        result = knowledge_orchestration.finalize_runtime_knowledge(current)
+    assert build.call_count == 1
+    assert result.changed
