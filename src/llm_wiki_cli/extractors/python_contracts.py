@@ -45,6 +45,9 @@ _ENUM_REFS = {
     "enum.IntFlag",
 }
 _TYPE_ALIAS_REFS = {"typing.TypeAlias", "typing_extensions.TypeAlias"}
+_TYPED_DICT_REFS = {"typing.TypedDict", "typing_extensions.TypedDict"}
+_REQUIRED_REFS = {"typing.Required", "typing_extensions.Required"}
+_NOT_REQUIRED_REFS = {"typing.NotRequired", "typing_extensions.NotRequired"}
 _ANNOTATED_REFS = {"typing.Annotated", "typing_extensions.Annotated"}
 _LITERAL_REFS = {"typing.Literal", "typing_extensions.Literal"}
 _OPTIONAL_REFS = {"typing.Optional", "typing_extensions.Optional"}
@@ -214,8 +217,8 @@ def annotation_is_nullable(
     annotation: ast.AST, import_aliases: Mapping[str, str]
 ) -> bool:
     """Whether an annotation explicitly permits ``None``."""
-    annotation, _ = _unwrap_annotated(annotation, import_aliases)
     annotation = _parse_forward_annotation(annotation)
+    annotation, _ = _unwrap_annotated(annotation, import_aliases)
     if _is_none_annotation(annotation):
         return True
     if isinstance(annotation, ast.BinOp) and isinstance(annotation.op, ast.BitOr):
@@ -224,6 +227,8 @@ def annotation_is_nullable(
         ) or annotation_is_nullable(annotation.right, import_aliases)
     if isinstance(annotation, ast.Subscript):
         ref = normalize_reference(annotation.value, import_aliases)
+        if ref in _REQUIRED_REFS | _NOT_REQUIRED_REFS:
+            return annotation_is_nullable(annotation.slice, import_aliases)
         if ref in _OPTIONAL_REFS:
             return True
         if ref in _UNION_REFS:
@@ -453,25 +458,37 @@ def is_pydantic_model(
     )
 
 
+def is_typed_dict(node: ast.ClassDef, import_aliases: Mapping[str, str]) -> bool:
+    return any(
+        base in _TYPED_DICT_REFS for base in normalized_bases(node, import_aliases)
+    )
+
+
 def finalize_model_kinds(classes: list[dict]) -> None:
-    """Propagate Pydantic model classification through local subclasses."""
+    """Propagate known model classification through local subclasses."""
+    for model_kind in ("pydantic", "typeddict"):
+        _finalize_local_model_kind(classes, model_kind)
+
+
+def _finalize_local_model_kind(classes: list[dict], model_kind: str) -> None:
     model_names = {
         str(item.get("name"))
         for item in classes
-        if item.get("model_kind") == "pydantic"
+        if item.get("model_kind") == model_kind
     }
     changed = True
     while changed:
         changed = False
         for item in classes:
-            if item.get("model_kind") == "pydantic":
+            if item.get("model_kind") is not None:
                 continue
             bases = {
                 str(base).replace("::", ".").rsplit(".", 1)[-1]
                 for base in item.get("bases", [])
+                if model_kind != "typeddict" or str(base).isidentifier()
             }
             if bases & model_names:
-                item["model_kind"] = "pydantic"
+                item["model_kind"] = model_kind
                 model_names.add(str(item.get("name")))
                 changed = True
 
@@ -481,7 +498,21 @@ def finalize_inventory_model_kinds(
     *,
     module_candidates: Callable[[str, str], set[str]] | None = None,
 ) -> None:
-    """Propagate Pydantic model identity through imported local base classes."""
+    """Resolve imported model bases and apply declared TypedDict key contracts."""
+    for model_kind in ("pydantic", "typeddict"):
+        _finalize_inventory_model_kind(inventory, model_kind, module_candidates)
+    for file_data in inventory.values():
+        aliases = _inventory_import_aliases(file_data.get("imports", []))
+        for item in file_data.get("classes", []):
+            if item.get("model_kind") == "typeddict":
+                _apply_typed_dict_presence(item, aliases)
+
+
+def _finalize_inventory_model_kind(
+    inventory: Mapping[str, dict],
+    model_kind: str,
+    module_candidates: Callable[[str, str], set[str]] | None,
+) -> None:
     changed = True
     while changed:
         changed = False
@@ -491,7 +522,7 @@ def finalize_inventory_model_kinds(
                 name = str(item.get("name") or "")
                 if not name:
                     continue
-                if item.get("model_kind") == "pydantic":
+                if item.get("model_kind") == model_kind:
                     model_locations.setdefault(name, set()).add(filepath)
 
         for filepath, file_data in inventory.items():
@@ -506,22 +537,24 @@ def finalize_inventory_model_kinds(
                         str(record["name"]),
                     )
                 elif record.get("type") == "import" and record.get("module"):
-                    binding = str(
-                        record.get("name") or record["module"]
-                    ).split(".", 1)[0]
+                    binding = str(record.get("name") or record["module"]).split(".", 1)[
+                        0
+                    ]
                     imported_bases[binding] = (
                         str(record["module"]),
                         "",
                     )
             for item in file_data.get("classes", []):
-                if item.get("model_kind") == "pydantic":
+                if item.get("model_kind") is not None:
                     continue
                 for base in item.get("bases", []):
                     base_text = str(base).split("[", 1)[0]
                     root = base_text.split(".", 1)[0]
                     leaf = base_text.rsplit(".", 1)[-1]
                     locations = model_locations.get(leaf, set())
-                    local_match = filepath in locations
+                    local_match = filepath in locations and (
+                        model_kind != "typeddict" or base_text.isidentifier()
+                    )
                     imported_match = False
                     imported = imported_bases.get(root)
                     if imported is not None and module_candidates is not None:
@@ -535,8 +568,10 @@ def finalize_inventory_model_kinds(
                         target_locations = model_locations.get(target_name, set())
                         resolved_files = module_candidates(target_module, filepath)
                         imported_match = bool(target_locations & resolved_files)
+                        if model_kind == "typeddict" and len(resolved_files) != 1:
+                            imported_match = False
                     if local_match or imported_match:
-                        item["model_kind"] = "pydantic"
+                        item["model_kind"] = model_kind
                         changed = True
                         break
                 if changed:
@@ -544,6 +579,58 @@ def finalize_inventory_model_kinds(
                     break
             if changed:
                 break
+
+
+def _inventory_import_aliases(imports: list[dict]) -> dict[str, str]:
+    aliases = {}
+    for record in imports:
+        module = record.get("module", "")
+        name = record.get("name", "")
+        if record.get("type") == "from":
+            separator = "" if module.endswith(".") else "."
+            aliases[record.get("alias") or name] = f"{module}{separator}{name}"
+        elif record.get("type") == "import":
+            binding = name.split(".", 1)[0]
+            aliases[binding] = module if name != module else binding
+    return aliases
+
+
+def _typed_dict_required_override(
+    annotation: ast.AST, aliases: Mapping[str, str]
+) -> bool | None:
+    annotation = _parse_forward_annotation(annotation)
+    while isinstance(annotation, ast.Subscript):
+        ref = normalize_reference(annotation.value, aliases)
+        if ref in _REQUIRED_REFS:
+            return True
+        if ref in _NOT_REQUIRED_REFS:
+            return False
+        if ref not in _ANNOTATED_REFS:
+            break
+        annotation = _parse_forward_annotation(_subscript_elements(annotation)[0])
+    return None
+
+
+def _apply_typed_dict_presence(item: dict, aliases: Mapping[str, str]) -> None:
+    # Totality applies to this class's declarations, not inherited keys.
+    total = {"True": True, "False": False}.get(
+        item.get("class_keywords", {}).get("total", "True")
+    )
+    for attribute in item.get("attributes", []):
+        try:
+            annotation = ast.parse(attribute.get("type", ""), mode="eval").body
+        except (SyntaxError, ValueError):
+            annotation = ast.Constant(value=None)
+        override = _typed_dict_required_override(annotation, aliases)
+        required = total if override is None else override
+        if required is None:
+            attribute.pop("required", None)
+        else:
+            attribute["required"] = required
+        attribute["nullable"] = annotation_is_nullable(annotation, aliases)
+        # TypedDict construction does not populate defaults from class values.
+        attribute.pop("default", None)
+        attribute.pop("default_factory", None)
 
 
 def extract_enum_attributes(node: ast.ClassDef) -> list[dict]:

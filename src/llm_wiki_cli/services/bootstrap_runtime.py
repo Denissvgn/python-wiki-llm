@@ -1729,6 +1729,30 @@ def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
         lines.append("")
         return
 
+    if class_info.get("model_kind") == "typeddict":
+        lines.extend(
+            [
+                "| Name | Type | Presence | Description |",
+                "|------|------|----------|-------------|",
+            ]
+        )
+        for attribute in attributes:
+            required = attribute.get("required")
+            presence = (
+                "required"
+                if required is True
+                else "optional"
+                if required is False
+                else "unknown"
+            )
+            lines.append(
+                f"| `{_table_text(attribute.get('name'))}` | "
+                f"{_table_inline_code(attribute.get('type'))} | *{presence}* | "
+                f"{_table_text(attribute.get('description'))} |"
+            )
+        lines.append("")
+        return
+
     enriched = class_info.get("model_kind") == "pydantic" or any(
         any(
             key in attribute

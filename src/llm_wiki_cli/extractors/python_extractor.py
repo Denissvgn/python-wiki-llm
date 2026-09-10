@@ -34,6 +34,7 @@ from .python_contracts import (
     finalize_model_kinds,
     inferred_type_alias,
     is_pydantic_model,
+    is_typed_dict,
     type_alias_record,
 )
 
@@ -1171,6 +1172,13 @@ class ComponentVisitor(ast.NodeVisitor):
         }
         if is_pydantic_model(node, self._module_import_aliases):
             class_info["model_kind"] = "pydantic"
+        elif is_typed_dict(node, self._module_import_aliases):
+            class_info["model_kind"] = "typeddict"
+        for keyword in node.keywords:
+            if keyword.arg == "total":
+                class_info["class_keywords"] = {
+                    "total": expression_to_str(keyword.value)
+                }
         model_config = extract_model_config(node, self._module_import_aliases)
         if model_config:
             class_info["model_config"] = model_config

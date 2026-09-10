@@ -103,6 +103,7 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "classes[].attributes[].unknowns",
         "classes[].attributes[].validation_alias",
         "classes[].attributes[].value",
+        "classes[].class_keywords",
         "classes[].inferred",
         "classes[].kind",
         "classes[].literal_values",

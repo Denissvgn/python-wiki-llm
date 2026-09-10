@@ -225,6 +225,7 @@ EXTRACT_ADDITIVE_FIELDS = {
     "classes[].attributes[].unknowns",
     "classes[].attributes[].validation_alias",
     "classes[].attributes[].value",
+    "classes[].class_keywords",
     "classes[].inferred",
     "classes[].kind",
     "classes[].literal_values",
