@@ -335,15 +335,23 @@ def sequence_diagram(interactions: Iterable[Mapping]) -> str:
     """Render a Mermaid ``sequenceDiagram`` from caller→callee interactions.
 
     Each interaction is a mapping with ``from``, ``to``, and ``label`` keys and
-    an optional ``dashed`` flag (rendered with a dashed arrow, e.g. for external
-    or unresolved calls). Participants are declared explicitly in first-seen
+    optional ``from_label``/``to_label`` display text and a ``dashed`` flag
+    (e.g. for external or unresolved calls). Identity keys remain independent
+    of displayed labels. Participants are declared explicitly in first-seen
     order so the output is deterministic.
     """
     interactions = list(interactions)
     aliases = _ordered_participants(interactions)
+    labels = {}
+    for interaction in interactions:
+        for endpoint in ("from", "to"):
+            labels.setdefault(
+                interaction[endpoint],
+                interaction.get(f"{endpoint}_label", interaction[endpoint]),
+            )
     lines = [_FENCE, "sequenceDiagram"]
     for actor, alias in aliases.items():
-        lines.append(f"    participant {alias} as {_sequence_text(actor)}")
+        lines.append(f"    participant {alias} as {_sequence_text(labels[actor])}")
     for interaction in interactions:
         arrow = "-->>" if interaction.get("dashed") else "->>"
         src = aliases[interaction["from"]]

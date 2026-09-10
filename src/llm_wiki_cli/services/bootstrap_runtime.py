@@ -2467,6 +2467,40 @@ def _append_flow_module_summary(
     lines.extend(f"- {link}" for link in links)
 
 
+def _flow_actors(flow: dict) -> list[tuple[str, str]]:
+    """Return stable participant identities and unambiguous display labels."""
+    actors: list[tuple[str, str, str]] = []
+    scopes: dict[int, dict] = {}
+    identities_by_label: dict[str, set[str]] = defaultdict(set)
+    for step in flow.get("steps", []):
+        depth = step["depth"]
+        symbol = step["symbol"]
+        if step["kind"] in {"external", "unresolved"}:
+            edge = step.get("edge", {})
+            caller = edge.get("from") or scopes.get(depth - 1, {})
+            label = edge.get("name") or symbol
+            identity = json.dumps(
+                [step["kind"], caller.get("file"), caller.get("symbol"), label]
+            )
+            context = f"{caller.get('file') or '?'}:{caller.get('symbol') or '?'}"
+        else:
+            label = symbol
+            identity = json.dumps(["internal", step.get("file"), symbol])
+            context = step.get("file") or "?"
+        actors.append((identity, label, context))
+        identities_by_label[label].add(identity)
+        scopes[depth] = step
+        for deeper in [known for known in scopes if known > depth]:
+            del scopes[deeper]
+    return [
+        (
+            identity,
+            label if len(identities_by_label[label]) == 1 else f"{label} ({context})",
+        )
+        for identity, label, context in actors
+    ]
+
+
 def _flow_interactions(flow: dict) -> list[dict]:
     """Convert depth-tagged flow steps into caller→callee sequence interactions.
 
@@ -2475,25 +2509,47 @@ def _flow_interactions(flow: dict) -> list[dict]:
     calls are marked ``dashed``.
     """
     interactions: list[dict] = []
-    stack: dict[int, str] = {}
-    for step in flow.get("steps", []):
+    stack: dict[int, tuple[str, str]] = {}
+    for step, actor in zip(flow.get("steps", []), _flow_actors(flow)):
         depth = step["depth"]
-        symbol = step["symbol"]
         if depth == 0:
-            stack = {0: symbol}
+            stack = {0: actor}
             continue
+        caller = stack.get(depth - 1, ("?", "?"))
         interactions.append(
             {
-                "from": stack.get(depth - 1, "?"),
-                "to": symbol,
-                "label": symbol,
+                "from": caller[0],
+                "to": actor[0],
+                "from_label": caller[1],
+                "to_label": actor[1],
+                "label": actor[1],
                 "dashed": step["kind"] in ("external", "unresolved"),
             }
         )
-        stack[depth] = symbol
+        stack[depth] = actor
         for deeper in [d for d in stack if d > depth]:
             del stack[deeper]
     return interactions
+
+
+def _flow_data_display(flow: dict, data_flow: Mapping) -> dict:
+    """Apply the same labels to display copies without changing analysis data."""
+    labels = {index: actor[1] for index, actor in enumerate(_flow_actors(flow), 1)}
+    return {
+        **data_flow,
+        "steps": [
+            {**step, "symbol": labels.get(step.get("index"), step.get("symbol"))}
+            for step in data_flow.get("steps", [])
+        ],
+        "transfers": [
+            {
+                **transfer,
+                "from": labels.get(transfer.get("from_step"), transfer.get("from")),
+                "to": labels.get(transfer.get("to_step"), transfer.get("to")),
+            }
+            for transfer in data_flow.get("transfers", [])
+        ],
+    }
 
 
 _FLOW_SEQUENCE_INTERACTION_LIMIT = 30
@@ -2806,7 +2862,11 @@ def _generate_flow_md(
                 flow_id=entry.get("id"),
                 category=entry.get("category"),
             )
-        lines.extend(_generate_data_flow_section(data_flow, page_map, diagram_style))
+        lines.extend(
+            _generate_data_flow_section(
+                _flow_data_display(flow, data_flow), page_map, diagram_style
+            )
+        )
 
     api_contract_section = render_flow_api_contract_section(
         api_contract_operations or []
@@ -2834,6 +2894,7 @@ def _preserve_level_two_section(existing: str, generated: str, heading: str) -> 
 
 
 # ── Architecture pages: dependencies + load order ──────────
+
 
 def _dependency_module_link(filepath: str, module_page_map: Mapping[str, str]) -> str:
     """Markdown link from an architecture page (wiki root) to a module page."""

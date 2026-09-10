@@ -2919,6 +2919,48 @@ class TestBootstrapExternalSource:
 
 
 class TestGenerateFlowMd:
+    @pytest.mark.parametrize(
+        "kind,to_file,name,self_message",
+        [
+            ("unresolved", None, "service.check_wiki", False),
+            ("internal", "service.py", "check_wiki", False),
+            ("internal", "handler.py", "check_wiki", True),
+        ],
+    )
+    def test_same_named_flow_targets_keep_their_identity(
+        self, kind, to_file, name, self_message
+    ):
+        entry = {
+            "id": "api-check_wiki",
+            "category": "api",
+            "file": "handler.py",
+            "symbol": "check_wiki",
+            "label": "check_wiki",
+        }
+        edges = [
+            {
+                "from": {"file": "handler.py", "symbol": "check_wiki"},
+                "to": {"file": to_file, "symbol": "check_wiki"},
+                "name": name,
+                "kind": kind,
+                "line": 2,
+            }
+        ]
+        flow = build_flow(entry, edges)
+        data_flow = analyze_data_flow({}, flow, edges)
+        markdown = bootstrap_cmd._generate_flow_md(flow, data_flow=data_flow)
+        participants = [
+            line for line in markdown.splitlines() if "participant p" in line
+        ]
+        assert len(participants) == (1 if self_message else 2)
+        assert ("p0->>p0:" in markdown) is self_message
+        if kind == "unresolved":
+            assert "p0-->>p1: service.check_wiki" in markdown
+            assert "| check_wiki | service.check_wiki | 2 |" in markdown
+        if to_file == "service.py":
+            assert "check_wiki (handler.py)" in markdown
+            assert "check_wiki (service.py)" in markdown
+
     def test_renders_entry_modules_and_diagram(self):
         flow = {
             "entry": {
@@ -3148,7 +3190,7 @@ class TestGenerateFlowMd:
         assert "[orchestrator](../modules/orchestrator.md)" in md
         assert "**Related modules:**" in md
         assert "`asyncio.run(main_entry(...))`" in md
-        assert "| __main__ | run | 11 | `asyncio.run(main_entry(...))` |" in md
+        assert "| __main__ | asyncio.run | 11 | `asyncio.run(main_entry(...))` |" in md
 
     def test_long_module_metadata_is_bounded_with_complete_linked_details(self):
         touched_paths = [f"pkg/touched_{index:02d}.py" for index in range(18)]
