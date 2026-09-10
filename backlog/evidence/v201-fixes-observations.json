@@ -1,0 +1,143 @@
+{
+  "source_revision": "91b2b55de204fdf5453fd7aceb933ccff22a69a8",
+  "python": "3.14.4",
+  "platform": "linux",
+  "comparison_scope": "targeted source fixtures and recorded-basis replay; no live doctor",
+  "findings": {
+    "FINDING-01": {
+      "delegated_edge": {
+        "from": {
+          "file": "handler.py",
+          "symbol": "check_wiki"
+        },
+        "to": {
+          "file": null,
+          "symbol": "check_wiki"
+        },
+        "name": "service.check_wiki",
+        "kind": "unresolved",
+        "line": 2
+      },
+      "rendered_diagram": "```mermaid\nsequenceDiagram\n    participant p0 as check_wiki\n    participant p1 as service.check_wiki\n    p0-->>p1: service.check_wiki\n```",
+      "distinct_targets_collapsed": false,
+      "real_recursion_control_is_internal": true
+    },
+    "FINDING-02": {
+      "annotations_only_body_calls": [],
+      "annotations_only_workflow_chain": [],
+      "calls_only_body_calls": [
+        "C",
+        "B",
+        "A"
+      ],
+      "calls_only_has_workflow": true
+    },
+    "FINDING-03": {
+      "registry_has_typescript": true,
+      "registry_has_javascript": false,
+      "javascript_configuration_hash": "sha256:3f805d232ac825ebbdbe29d1d0ab3ac2f3430134588bd0538ab0908759c9fa90",
+      "javascript_limitations": [],
+      "typescript_control_has_hash": true,
+      "counterfactual_alias_has_hash": true,
+      "recorded_module_matching_basis_replay": {
+        "state": "basis-incompatible",
+        "reason": "extractor-configuration-unknown"
+      },
+      "counterfactual_matching_basis_replay": {
+        "state": "current",
+        "reason": "recorded-basis-matches-live-evaluation"
+      },
+      "strict_indeterminate_classifier_exit": 2,
+      "strict_indeterminate_classifier_reasons": [
+        "freshness-indeterminate"
+      ]
+    },
+    "FINDING-04": {
+      "type_checking_import": {
+        "module": "b",
+        "name": "b",
+        "type": "import",
+        "scope": "type_checking"
+      },
+      "coupling_edges": [
+        [
+          "a.py",
+          "b.py"
+        ],
+        [
+          "b.py",
+          "a.py"
+        ]
+      ],
+      "import_time_edges": [
+        [
+          "b.py",
+          "a.py"
+        ]
+      ],
+      "runtime_cycles": [],
+      "local_cycle_participation": false,
+      "local_cycle_edges": [],
+      "rendered_cycle_warning": false
+    },
+    "FINDING-05": {
+      "runtime_optional_keys": [
+        "selection"
+      ],
+      "runtime_required_keys": [
+        "availability",
+        "bounds",
+        "fallback",
+        "freshness_evaluated",
+        "mode",
+        "reason",
+        "selected",
+        "status"
+      ],
+      "extracted_selection": {
+        "name": "selection",
+        "line": 63,
+        "type": "ContextKnowledgeSelection",
+        "required": false,
+        "nullable": false
+      },
+      "rendered_selection_row": "| `selection` | `ContextKnowledgeSelection` | *optional* | \u2014 |"
+    },
+    "FINDING-06": {
+      "rendered_interactions": 30,
+      "omission_disclosure": "> Call sequence diagram shows 30 of 40 interactions; 10 omitted to keep the visualization within the 30-interaction and generated-diagram limits.",
+      "last_ten_calls_omitted_as_documented": true
+    },
+    "FINDING-07": {
+      "import_time_edges": [
+        [
+          "pkg/app.py",
+          "pkg/helper.py"
+        ]
+      ],
+      "order": [
+        "client/main.js",
+        "helper/main.rs",
+        "pkg/helper.py",
+        "pkg/app.py"
+      ],
+      "all_dependency_constraints_satisfied": true,
+      "cross_runtime_edges": []
+    },
+    "FINDING-08": {
+      "source_module_docstring": null,
+      "source_function_docstrings": {
+        "_render_console": null,
+        "_report_destination": null,
+        "_persist_report": null,
+        "run": null
+      },
+      "rendered_source_fallback": true
+    },
+    "FINDING-09": {
+      "context_flag_parser_exit": 2,
+      "parser_error": "verify_v201_report.py: error: unrecognized arguments: --helper-cache-dir custom-cache",
+      "documented_environment_cache_selection_works": true
+    }
+  }
+}

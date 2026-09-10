@@ -710,6 +710,16 @@ generated from detected entry points with a call sequence, generated static
 generated data-flow section. Large generated call-sequence diagrams are capped
 to the first 30 interactions and include an omitted-interaction note so Mermaid
 output stays readable on large repositories.
+Sequence participants distinguish same-named functions in different modules
+and calls through different receivers. A delegated call such as
+`service.check_wiki()` stays distinct from a `check_wiki` wrapper; genuine
+self-calls retain their self-arrows.
+Workflow pages require resolved body calls into at least three other project
+modules. Their sequences follow captured source order, without claiming runtime
+branching or evaluation order. Type annotations and docstrings do not create
+call steps. When an upgraded detector no longer recognizes a generated
+workflow, sync retires generated-only pages; it stops before removing a page
+with authored `Behavior` so you can archive that content explicitly.
 Dependency architecture pages are generated as `dependencies.md` and
 `load-order.md`; use `--skip-dependencies` for projects that do not want those
 pages or lint diagnostics. Generated `index.md` is a registry-backed landing
@@ -873,6 +883,11 @@ test files remain part of normal Python extraction.
 JavaScript `.js` and `.jsx` files are handled by the TypeScript extractor
 family and use `language: "javascript"` in inventory output. Prepare the same
 helper with `llm-wiki prepare-extractors --language typescript`.
+Native knowledge records the selected producing extractor independently of this
+language label, including TypeScript-family plugins that emit JavaScript.
+After upgrading from artifacts with unknown JavaScript producer configuration,
+run `llm-wiki sync --rebuild-knowledge` to record a fresh basis, then check health
+with `llm-wiki doctor --strict`. Other health findings retain their usual meaning.
 Plain `.js` files include named top-level function declarations in the
 `functions` list even when they are local CommonJS helpers. Those functions are
 rendered on module pages; JavaScript function declarations do not create entity
@@ -919,6 +934,14 @@ keyword-only, and variadic-keyword declarations. Python model/type inventory
 also carries optional required/nullable/default/factory, alias, constraint,
 description/example, `Annotated`, validator/config, enum-member, literal, and
 type-alias metadata without importing Pydantic or application modules.
+TypedDict classes use `model_kind: "typeddict"`; their fields' `required` flags
+describe whether dictionary keys must be present. `total=False` applies to keys
+declared by that class, while inherited keys retain their original presence
+rules. Resolvable `Required`/`NotRequired` annotations override totality.
+An explicit `total` expression is retained in `class_keywords.total`; when its
+value cannot be determined statically, key presence is unknown unless overridden.
+Entity pages show a separate **Presence** column for TypedDict keys, independently
+of nullability and value defaults.
 The payload also gains an optional top-level
 `entrypoints` array (detected user-reachable entry points: `{id, category, file,
 symbol, label}`), a `data_flows` list for detected user flows, plus a top-level

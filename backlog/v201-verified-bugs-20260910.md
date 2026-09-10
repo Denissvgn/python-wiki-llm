@@ -3,18 +3,21 @@
 Engineering planning record, 2026-09-10. Reviewed source revision:
 `1f281a14389c4efefeb1968dd4681704151ed7f7`.
 
-Four independent bugs are confirmed. This backlog contains proposed fixes;
-none has been implemented. The [verification review](evidence/v201-report-review-20260910.md)
+All four confirmed bugs are implemented and verified. The original impact,
+proof, and fixing plans below are retained for traceability; the
+[implementation validation record](evidence/v201-fixes-validation-20260910.md)
+records the completed checks and migration behavior. The
+[verification review](evidence/v201-report-review-20260910.md)
 records the disposition of every original finding, including the five that do
 not establish a correctness defect. [Recorded observations](evidence/v201-findings-observations.json)
 and the [reproduction script](../tests/verify_v201_report.py) provide the evidence.
 
 | ID | Priority | Original finding | Confirmed defect | Status |
 |---|---|---|---|---|
-| VB-01 | P1 | FINDING-03 / report BUG-01 | JavaScript output cannot acquire known producer configuration from the default registry | Open |
-| VB-02 | P1 | FINDING-02 / report BUG-02 | Workflow call chains are assembled from signatures and prose instead of body calls | Open |
-| VB-03 | P2 | FINDING-01 / report BUG-03 | Sequence participants with different identities collapse onto the same symbol label | Open |
-| VB-04 | P2 | FINDING-05 / report BUG-05 | Optional TypedDict keys are extracted and rendered as required | Open |
+| VB-01 | P1 | FINDING-03 / report BUG-01 | JavaScript output cannot acquire known producer configuration from the default registry | Closed |
+| VB-02 | P1 | FINDING-02 / report BUG-02 | Workflow call chains are assembled from signatures and prose instead of body calls | Closed |
+| VB-03 | P2 | FINDING-01 / report BUG-03 | Sequence participants with different identities collapse onto the same symbol label | Closed |
+| VB-04 | P2 | FINDING-05 / report BUG-05 | Optional TypedDict keys are extracted and rendered as required | Closed |
 
 P1 means a supported operation is blocked or a generated structural surface
 systematically asserts incorrect facts. P2 means a narrower output correctness

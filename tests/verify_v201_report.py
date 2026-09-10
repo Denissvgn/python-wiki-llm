@@ -106,7 +106,7 @@ def finding_02():
     functions = {fn["name"]: fn for fn in inventory["handler.py"]["functions"]}
     return {
         "annotations_only_body_calls": functions["annotations_only"].get("calls", []),
-        "annotations_only_workflow_chain": workflows["annotations_only"]["chain"],
+        "annotations_only_workflow_chain": workflows.get("annotations_only", {}).get("chain", []),
         "calls_only_body_calls": [call["name"] for call in functions["calls_only"]["calls"]],
         "calls_only_has_workflow": "calls_only" in workflows,
     }
