@@ -3,12 +3,14 @@ from __future__ import annotations
 import json
 import os
 import posixpath
+from collections.abc import Mapping
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 
 from ..config import is_agent_worktree_path
+from .python_imports import PythonModuleIndex, is_python_source
 from .validation import (
     path_is_under as shared_path_is_under,
     path_is_under_scope as shared_path_is_under_scope,
@@ -48,6 +50,7 @@ class ModulePathResolver:
     haskell_module_lookup: dict[str, frozenset[str]]
     go_module_scopes: tuple[_GoModuleScope, ...]
     ts_path_aliases: tuple[_TsPathAliasRule, ...]
+    python_modules: PythonModuleIndex | None = None
 
     @classmethod
     def build(
@@ -57,6 +60,32 @@ class ModulePathResolver:
         *,
         source_snapshot: SourceSnapshot | None = None,
     ) -> ModulePathResolver:
+        python_inventory = inventory
+        if (project_root is not None or source_snapshot is not None) and not any(
+            isinstance(data, Mapping) and "python_import_scope" in data
+            for data in inventory.values()
+        ):
+            # Direct graph callers can supply a root/snapshot instead of the
+            # already stamped inventory used by extraction. Discover once per
+            # index, never once per candidate lookup, without mutating inputs.
+            from .packages import discover_packages, stamp_inventory_packages
+
+            root = project_root
+            if root is None:
+                assert source_snapshot is not None
+                root = source_snapshot.root
+            python_inventory = {
+                path: dict(data)
+                for path, data in inventory.items()
+                if isinstance(data, Mapping)
+            }
+            stamp_inventory_packages(
+                python_inventory,
+                discover_packages(str(root), source_snapshot=source_snapshot),
+                source_paths=(
+                    source_snapshot.language_paths("python") if source_snapshot else ()
+                ),
+            )
         lookup: defaultdict[str, set[str]] = defaultdict(set)
         language_lookup: defaultdict[str, defaultdict[str, set[str]]] = defaultdict(
             lambda: defaultdict(set)
@@ -93,6 +122,10 @@ class ModulePathResolver:
             keys.update(_suffix_candidates(stripped_src_no_suffix))
             for package_path in package_paths:
                 keys.update(_suffix_candidates(package_path))
+            if is_python_source(filepath, data):
+                keys = {path_no_suffix}
+                if path.name == "__init__.py":
+                    keys.add(path.parent.as_posix())
             language_family = _language_family(data)
             for key in keys:
                 if not key:
@@ -130,9 +163,13 @@ class ModulePathResolver:
                 project_root,
                 source_snapshot,
             ),
+            python_modules=PythonModuleIndex.build(python_inventory),
         )
 
     def candidates(self, module: str, importer_filepath: str) -> set[str]:
+        if is_python_source(importer_filepath, self.inventory.get(importer_filepath)):
+            index = self.python_modules or PythonModuleIndex.build(self.inventory)
+            return index.candidates(module, importer_filepath)
         if self._is_go_importer(importer_filepath):
             return self._go_candidates(module, importer_filepath)
         if self._is_haskell_importer(importer_filepath):

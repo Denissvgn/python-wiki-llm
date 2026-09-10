@@ -1240,6 +1240,7 @@ def _update_inventory_cache_entries(
         raw_entry = deepcopy(extracted.get(rel_path, {}))
         if raw_entry:
             raw_entry.pop("package", None)
+            raw_entry.pop("python_import_scope", None)
         context.updated_cache_files[rel_path] = make_cache_entry(
             source_file, file_hash, raw_entry
         )
@@ -1265,6 +1266,11 @@ def _merge_inventory_results(
     packages = discover_packages(
         str(context.request.src_dir), source_snapshot=context.source_snapshot
     )
+    stamp_inventory_packages(
+        inventory,
+        packages,
+        source_paths=context.source_snapshot.language_paths("python"),
+    )
     if context.registry.get("python") == EXTRACTOR_REGISTRY["python"]:
         from ..extractors.python_contracts import finalize_inventory_model_kinds
 
@@ -1277,7 +1283,6 @@ def _merge_inventory_results(
         finalize_inventory_model_kinds(
             python_inventory, module_candidates=resolver.candidates
         )
-    stamp_inventory_packages(inventory, packages)
     return inventory
 
 

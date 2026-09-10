@@ -68,6 +68,7 @@ from .entrypoints import (
     read_console_scripts,
 )
 from .imports import ModulePathResolver, build_module_path_resolver
+from .python_imports import is_python_source
 from .infrastructure_inventory import (
     RUNTIME_CONFIG_TYPES,
     get_yaml_infrastructure_inventory,
@@ -519,6 +520,8 @@ def _build_relationships(
             module_candidates = module_resolver.candidates(
                 imp.get("module", ""), filepath
             )
+            if is_python_source(filepath, data) and len(module_candidates) != 1:
+                continue
             if module_candidates:
                 candidates &= module_candidates
             candidates.discard(filepath)

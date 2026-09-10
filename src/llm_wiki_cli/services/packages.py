@@ -9,11 +9,13 @@ source root).  Each discovered package is represented as a
 from __future__ import annotations
 
 import ast
+import posixpath
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Sequence
 
 from ..config import EXCLUDED_DIRS
+from .python_imports import normalized_root, under_root
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
@@ -35,6 +37,78 @@ class PackageInfo:
     root: str  # directory containing the package marker, relative to src_dir
     version: str
     marker_path: str  # relative path of pyproject.toml / setup.py
+    import_roots: tuple[str, ...] | None = ()  # marker-relative; None means unknown
+
+
+def _configured_import_roots(
+    text: str, *, setup_py: bool = False
+) -> tuple[str, ...] | None:
+    """Read literal packaging source roots without executing a build backend."""
+    roots = None
+    specified = False
+    if setup_py:
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            return None
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if not (
+                (isinstance(node.func, ast.Name) and node.func.id == "setup")
+                or (isinstance(node.func, ast.Attribute) and node.func.attr == "setup")
+            ):
+                continue
+            for keyword in node.keywords:
+                if keyword.arg == "package_dir":
+                    specified = True
+                    try:
+                        value = ast.literal_eval(keyword.value)
+                    except (ValueError, TypeError, SyntaxError):
+                        return None
+                    roots = (
+                        [value[""]] if isinstance(value, dict) and "" in value else None
+                    )
+    else:
+        if tomllib is None:
+            return None
+        try:
+            data = tomllib.loads(text)
+        except (ValueError, TypeError):
+            return None
+        tool = data.get("tool", {})
+        if not isinstance(tool, dict):
+            return None
+        setuptools = tool.get("setuptools", {})
+        if isinstance(setuptools, dict):
+            if "package-dir" in setuptools:
+                specified = True
+                mapping = setuptools["package-dir"]
+                roots = (
+                    [mapping[""]]
+                    if isinstance(mapping, dict) and "" in mapping
+                    else None
+                )
+            elif isinstance(setuptools.get("packages"), dict):
+                find = setuptools["packages"].get("find", {})
+                if isinstance(find, dict) and "where" in find:
+                    specified, roots = True, find["where"]
+        poetry = tool.get("poetry", {})
+        if not specified and isinstance(poetry, dict) and "packages" in poetry:
+            specified = True
+            packages = poetry["packages"]
+            if isinstance(packages, list) and all(
+                isinstance(item, dict) for item in packages
+            ):
+                roots = [item.get("from", ".") for item in packages]
+    if not specified:
+        return ()
+    if not isinstance(roots, list) or not roots:
+        return None
+    normalized = [normalized_root(root) for root in roots]
+    if any(root is None for root in normalized):
+        return None
+    return tuple(sorted({root or "." for root in normalized}))
 
 
 def _parse_pyproject_toml(text: str) -> dict[str, str]:
@@ -145,6 +219,7 @@ def discover_packages(
                 root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
                 version=info.get("version", "0.0.0"),
                 marker_path=rel.as_posix(),
+                import_roots=_configured_import_roots(text),
             )
         )
 
@@ -170,6 +245,7 @@ def discover_packages(
                 root=rel.parent.as_posix() if rel.parent != Path(".") else ".",
                 version=info.get("version", "0.0.0"),
                 marker_path=rel.as_posix(),
+                import_roots=_configured_import_roots(text, setup_py=True),
             )
         )
 
@@ -179,6 +255,8 @@ def discover_packages(
 def stamp_inventory_packages(
     inventory: dict,
     packages: Sequence[PackageInfo],
+    *,
+    source_paths: Sequence[str] = (),
 ) -> None:
     """Add a ``"package"`` key to each inventory entry in-place.
 
@@ -188,8 +266,13 @@ def stamp_inventory_packages(
     """
     # Sort packages longest-root-first for greedy matching
     sorted_pkgs = sorted(packages, key=lambda p: len(p.root), reverse=True)
+    known_paths = {path.replace("\\", "/") for path in (*inventory, *source_paths)}
+    scopes = {
+        package: _package_import_scope(package, known_paths) for package in packages
+    }
 
     for filepath, data in inventory.items():
+        data.pop("python_import_scope", None)
         if data.get("language") != "python":
             data["package"] = None
             continue
@@ -199,8 +282,37 @@ def stamp_inventory_packages(
             prefix = pkg.root
             if prefix == ".":
                 matched = pkg.name
+                data["python_import_scope"] = {
+                    "root": scopes[pkg]["root"],
+                    "search_roots": list(scopes[pkg]["search_roots"]),
+                }
                 break
             if fp_posix == prefix or fp_posix.startswith(prefix + "/"):
                 matched = pkg.name
+                data["python_import_scope"] = {
+                    "root": scopes[pkg]["root"],
+                    "search_roots": list(scopes[pkg]["search_roots"]),
+                }
                 break
         data["package"] = matched
+
+
+def _package_import_scope(package: PackageInfo, source_paths: set[str]) -> dict:
+    root = normalized_root(package.root)
+    if root is None:
+        return {"root": package.root, "search_roots": []}
+    roots = []
+    if package.import_roots is not None:
+        if package.import_roots:
+            roots = [posixpath.join(root, item) for item in package.import_roots]
+        else:
+            roots = [root]
+            src = posixpath.join(root, "src")
+            if any(under_root(path, src) for path in source_paths):
+                roots.append(src)
+            if root and posixpath.join(root, "__init__.py") in source_paths:
+                roots.append(posixpath.dirname(root))
+    return {
+        "root": root or ".",
+        "search_roots": sorted({normalized_root(item) or "." for item in roots}),
+    }

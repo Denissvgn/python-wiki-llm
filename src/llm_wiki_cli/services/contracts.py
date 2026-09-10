@@ -209,6 +209,7 @@ CALIBRATION_CONTROLLER_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 OCI_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 
 EXTRACT_ADDITIVE_FIELDS = {
+    "python_import_scope",
     "calls[].args",
     "calls[].kwargs",
     "classes[].attributes[].alias",
