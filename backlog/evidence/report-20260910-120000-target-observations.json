@@ -1,0 +1,76 @@
+{
+  "subject_root": "/mnt/data/projects/traid-platform",
+  "scope": "eight explicitly selected source files; no full subject scan or imports",
+  "source_sha256": {
+    "libs/common_errors/logging.py": "40d8bbadab61fe3b2645c0b5c3b4dc43ba4a840449197a82b83d7d37ea012035",
+    "services/admin-service/src/monitoring/logging.py": "e803cb3b5d0ef21f14f0aec179c5a33bc2ea57d3916f540589d7bb2683bef6bf",
+    "services/autotrade-service/src/utils/logging.py": "ce085cbb1f11df599f69f791a99e07ae49bd5f0025c7a1b75f54d2f5142a2143",
+    "traid_training_sdk/core/logging.py": "2463344c3078cabd4da82ed36ed289be80258a1b2845f4663543da37afb81081",
+    "services/autotrade-service/src/core/permissions.py": "a40f382d448fa9a20fa7934021235fd329ce2e3112a9795dda4835721f315871",
+    "services/order-router/src/core/balance_cache.py": "96b9e410328b921c68ec977d80062fcda9f8e70ba3852825c332c752a3009685",
+    "services/data-ingest/src/api/readiness.py": "29da32b243714b90236a9cae3569843477c1b1e48d610296cd1e1e445841ef1d",
+    "services/autoresearch-agent/src/main.py": "f3fce70ef2b5a12712d4cd69b04776e94ce3ef5596ff8eb40c3f0e4f9c00b5e7"
+  },
+  "route_operations": [
+    {
+      "method": "GET",
+      "path": null,
+      "handler": {
+        "file": "services/autoresearch-agent/src/main.py",
+        "symbol": "observability_alerts",
+        "qualname": "observability_alerts",
+        "line": 366
+      },
+      "unknowns": [
+        {
+          "field": "path",
+          "reason": "not_statically_resolvable"
+        }
+      ]
+    }
+  ],
+  "bare_set_edges": [
+    {
+      "from": {
+        "file": "services/autotrade-service/src/core/permissions.py",
+        "symbol": "get_user_permissions_set"
+      },
+      "to": {
+        "file": "services/order-router/src/core/balance_cache.py",
+        "symbol": "set"
+      },
+      "name": "set",
+      "kind": "internal",
+      "line": 326
+    }
+  ],
+  "bare_set_observations": [
+    {
+      "from": {
+        "file": "services/autotrade-service/src/core/permissions.py",
+        "symbol": "get_user_permissions_set"
+      },
+      "to": {
+        "file": "services/order-router/src/core/balance_cache.py",
+        "symbol": "set"
+      },
+      "name": "set",
+      "kind": "internal",
+      "line": 326
+    }
+  ],
+  "readiness_logging_candidates": [
+    "libs/common_errors/logging.py",
+    "services/admin-service/src/monitoring/logging.py",
+    "services/autotrade-service/src/utils/logging.py",
+    "traid_training_sdk/core/logging.py"
+  ],
+  "logging_runtime_cycles": [
+    [
+      "libs/common_errors/logging.py",
+      "services/admin-service/src/monitoring/logging.py",
+      "services/autotrade-service/src/utils/logging.py",
+      "traid_training_sdk/core/logging.py"
+    ]
+  ]
+}
