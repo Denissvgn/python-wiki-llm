@@ -551,6 +551,9 @@ class TestSyncSurfaceIndex:
 
 
                 def publish(alpha: Alpha, beta: Beta, gamma: Gamma) -> Gamma:
+                    Alpha()
+                    Beta()
+                    Gamma()
                     return gamma
             """),
             encoding="utf-8",

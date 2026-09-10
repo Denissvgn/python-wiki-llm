@@ -2426,39 +2426,73 @@ def _iter_callable_components(data: dict):
         yield from cls.get("methods", [])
 
 
-def _function_references_symbol(fn: dict, visible_name: str) -> bool:
-    referenced = False
-    for param in fn.get("params", []):
-        if visible_name in param.get("type", ""):
-            referenced = True
-    if visible_name in fn.get("return_type", ""):
-        referenced = True
-    for decorator in fn.get("decorators", []):
-        if visible_name in decorator:
-            referenced = True
-    if visible_name in fn.get("docstring", ""):
-        referenced = True
-    return referenced
-
-
-def _referenced_import_chain(
+def _workflow_call_chain(
     fn: dict,
-    imported_symbols: dict[str, tuple[str, str]],
-) -> tuple[set[str], list[str]]:
+    filepath: str,
+    data: dict,
+    class_name: str | None,
+    imported_candidates: dict[str, tuple[tuple[str, str], ...]],
+    inventory: dict,
+) -> tuple[set[str], list[str], list[dict]]:
+    """Project direct, resolved body calls in their captured source order."""
     touched_module_paths: set[str] = set()
     chain: list[str] = []
-    for visible_name, (src_path, source_name) in imported_symbols.items():
-        if _function_references_symbol(fn, visible_name):
-            touched_module_paths.add(src_path)
-            chain.append(f"{_module_name(src_path)}.{source_name}")
-    return touched_module_paths, chain
+    call_sites: list[dict] = []
+    parameter_names = {param.get("name") for param in fn.get("params", [])}
+    for call in fn.get("calls", []):
+        attr = call.get("attr", "")
+        visible_name = _attr_root(attr) if attr else call["name"]
+        if visible_name in parameter_names or (
+            attr
+            and (
+                len(attr.split(".")) != 2
+                or not all(part.isidentifier() for part in attr.split("."))
+            )
+        ):
+            continue
+        target_file, target_symbol, kind, _ = _resolve_call_observation(
+            call,
+            filepath,
+            class_name,
+            data,
+            imported_candidates,
+            set(imported_candidates),
+            _file_local_symbols(data),
+            {},
+        )
+        if kind != "internal" or target_file is None or target_file == filepath:
+            continue
+        target_data = inventory[target_file]
+        symbols = _file_local_symbols(target_data)
+        if attr:
+            imported = imported_candidates.get(visible_name, ())
+            owner = imported[0][1] if len(imported) == 1 else ""
+            for cls in target_data.get("classes", []):
+                if cls["name"] == owner and any(
+                    method["name"] == call["name"] for method in cls.get("methods", [])
+                ):
+                    target_symbol = f"{owner}.{call['name']}"
+                    symbols.add(target_symbol)
+        if target_symbol not in symbols:
+            continue
+        touched_module_paths.add(target_file)
+        chain.append(f"{_module_name(target_file)}.{target_symbol}")
+        call_sites.append(
+            {
+                "file": target_file,
+                "symbol": target_symbol,
+                "line": call.get("line", 0),
+                "call": attr or call["name"],
+            }
+        )
+    return touched_module_paths, chain, call_sites
 
 
 def _workflow_name(fn_name: str, module_name: str) -> str:
     workflow_name = fn_name.lstrip("_")
     if workflow_name == "run":
         return f"{module_name}_flow"
-    return workflow_name
+    return workflow_name.replace(".", "_")
 
 
 def _workflow_entry(
@@ -2484,20 +2518,28 @@ def _workflow_entry(
 def _workflow_entries_for_file(
     filepath: str,
     data: dict,
-    imported_symbols: dict[str, tuple[str, str]],
+    inventory: dict,
+    symbol_to_files: dict[str, set[str]],
+    module_resolver,
 ) -> dict[str, dict]:
     module_name = _module_name(filepath)
     workflows: dict[str, dict] = {}
-    for fn in _iter_callable_components(data):
-        touched_module_paths, chain = _referenced_import_chain(fn, imported_symbols)
+    imported = _detailed_import_candidates(
+        filepath, data.get("imports", []), symbol_to_files, module_resolver
+    )
+    for caller_symbol, fn, class_name in _caller_components(data):
+        touched_module_paths, chain, call_sites = _workflow_call_chain(
+            fn, filepath, data, class_name, imported, inventory
+        )
         if len(touched_module_paths) >= _WORKFLOW_MODULE_THRESHOLD:
             workflow_name, workflow = _workflow_entry(
                 filepath,
                 module_name,
-                fn,
+                {**fn, "name": caller_symbol},
                 touched_module_paths,
                 chain,
             )
+            workflow["call_sites"] = call_sites
             workflows[workflow_name] = workflow
     return workflows
 
@@ -2505,8 +2547,9 @@ def _workflow_entries_for_file(
 def get_call_graph(inventory: dict) -> dict:
     """Build cross-module call chains from a deep inventory.
 
-    Detects functions that import and reference symbols from 3+ other
-    project-internal modules — these are workflow candidates.
+    Detects functions with resolved body calls into 3+ other project modules.
+    Signatures and prose are not execution evidence. Chains retain captured
+    source order, which is not a claim about runtime branching or evaluation.
 
     Returns a dict of workflow_name -> {entry, chain, modules_touched}.
     """
@@ -2517,16 +2560,11 @@ def get_call_graph(inventory: dict) -> dict:
     for filepath, data in inventory.items():
         if _is_test_file(filepath):
             continue
-        imported_symbols = _resolve_imported_symbols(
-            filepath,
-            data.get("imports", []),
-            symbol_to_files,
-            module_resolver,
-        )
-        if imported_symbols:
-            workflows.update(
-                _workflow_entries_for_file(filepath, data, imported_symbols)
+        workflows.update(
+            _workflow_entries_for_file(
+                filepath, data, inventory, symbol_to_files, module_resolver
             )
+        )
 
     return workflows
 

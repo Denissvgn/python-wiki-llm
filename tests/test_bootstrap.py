@@ -985,6 +985,8 @@ class TestBootstrapCollisions:
             from schemas.common import MessageResponse
 
             def create_task(task: Task, data: CreateSchema) -> MessageResponse:
+                Task()
+                CreateSchema()
                 return MessageResponse()
         """)
         )

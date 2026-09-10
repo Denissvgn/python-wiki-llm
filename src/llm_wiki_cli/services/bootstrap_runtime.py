@@ -2343,6 +2343,11 @@ def _generate_workflow_md(
     entry = wf["entry"]
     modules = _workflow_module_refs(wf, module_page_map)
     chain = wf.get("chain", [])
+    if wf.get("call_sites"):
+        chain = [
+            f"{(module_page_map or {}).get(site['file'], _module_name_from_path(site['file']))}.{site['symbol']}"
+            for site in wf["call_sites"]
+        ]
     docstring = wf.get("docstring", "")
 
     lines = [

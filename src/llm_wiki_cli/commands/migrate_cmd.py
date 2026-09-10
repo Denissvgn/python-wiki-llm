@@ -80,6 +80,7 @@ from ..services.bootstrap_runtime import (
 )
 from ..services.extraction_service import (
     InventoryResult,
+    _workflow_name,
     get_call_graph,
     get_docker_inventory,
     get_inventory_result,
@@ -506,13 +507,13 @@ def _build_workflow_link_maps(
         return {}
 
     page_maps: dict[str, dict[str, str]] = {}
-    for wf_name, wf_data in get_call_graph(inventory).items():
+    for wf_name, source_paths in _workflow_link_sources(inventory, module_page_map).items():
         wf_path = workflow_dir / f"{wf_name}.md"
         if not wf_path.exists():
             continue
 
         stem_targets: dict[str, set[str]] = {}
-        for source_path in wf_data.get("modules_touched_paths", []):
+        for source_path in source_paths:
             page_stem = module_page_map.get(source_path)
             if not page_stem:
                 continue
@@ -529,6 +530,46 @@ def _build_workflow_link_maps(
             page_maps[_page_rel(wf_path, wiki_dir)] = link_map
 
     return page_maps
+
+
+def _workflow_link_sources(
+    inventory: dict, module_page_map: dict[str, str]
+) -> dict[str, set[str]]:
+    """Keep legacy type-reference link repair separate from workflow detection.
+
+    Older pages may have been generated from annotations without any body
+    calls. Those references still help repair links on existing pages; they
+    must not create new workflows or be rendered as an execution sequence.
+    """
+    workflows = get_call_graph(inventory)
+    paths = {
+        name: set(workflow.get("modules_touched_paths", []))
+        for name, workflow in workflows.items()
+    }
+    candidates: dict[str, dict[str, set[str]]] = {}
+    definitions: dict[str, set[str]] = {}
+    for source, data in inventory.items():
+        for function in data.get("functions", []):
+            name = _workflow_name(function["name"], Path(source).stem)
+            definitions.setdefault(name, set()).add(source)
+    for (_, target), references in _build_relationships(inventory, module_page_map).items():
+        for reference in references:
+            function = reference.get("function")
+            if not function:
+                continue
+            source = reference["module_path"]
+            name = _workflow_name(function, reference["module"])
+            entries = candidates.setdefault(name, {})
+            entries.setdefault(source, {source}).add(target)
+    for name, entries in candidates.items():
+        if name in workflows:
+            source = workflows[name].get("entry_module_path")
+            paths[name].update(entries.get(source, set()))
+        elif len(entries) == 1 and len(definitions.get(name, set())) == 1:
+            # A same-named callable in another module is not sufficient proof
+            # to rewrite an ambiguous legacy link.
+            paths[name] = next(iter(entries.values()))
+    return paths
 
 
 def _unique(values: list[TargetPage]) -> TargetPage | None:
