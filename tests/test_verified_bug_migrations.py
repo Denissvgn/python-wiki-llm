@@ -182,6 +182,7 @@ def test_typed_dict_presence_refreshes_pages_and_structural_observations(
             for c in state.knowledge.concepts
             if c.locator == "llm-wiki://entities/Result"
         )
+        assert concept.facets.structure.basis is not None
         return concept.facets.structure.basis.concept_observation_hash
 
     previous = basis()

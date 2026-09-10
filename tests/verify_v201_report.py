@@ -21,9 +21,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
 from llm_wiki_cli.api_types import ContextKnowledgeResult
 from llm_wiki_cli.cli import _build_parser
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
@@ -47,6 +44,8 @@ from llm_wiki_cli.services.knowledge_freshness import (
 from llm_wiki_cli.services.knowledge_model import parse_knowledge_index
 from llm_wiki_cli.services.knowledge_orchestration import _producer_evidence
 from llm_wiki_cli.services.module_maps import build_module_dependency_maps
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def inventory_from_sources(sources):

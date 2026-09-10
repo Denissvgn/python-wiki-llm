@@ -21,9 +21,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
 from llm_wiki_cli.cli import main as cli_main
 from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services import bootstrap_runtime

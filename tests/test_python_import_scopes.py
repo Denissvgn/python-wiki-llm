@@ -138,6 +138,7 @@ def test_changed_packaging_roots_are_restamped_on_cached_inventory(tmp_path):
     marker.write_text(marker.read_text().replace('"one"', '"two"'), encoding="utf-8")
     warm = get_inventory_result(str(project), deep=True, cache_options=options)
     cold = get_inventory_result(str(project), deep=True)
+    assert warm.cache_stats is not None
     assert warm.cache_stats.hits > 0
     assert warm.inventory == cold.inventory
     assert build_module_path_resolver(warm.inventory).candidates("model", "app.py") == {

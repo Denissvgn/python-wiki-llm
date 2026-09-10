@@ -15,9 +15,6 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
 from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.api_contracts import (
     attach_routes_to_entry_points,
@@ -40,6 +37,8 @@ from llm_wiki_cli.services.knowledge_artifacts import (
     KnowledgeArtifactError,
     _validate_surface_flow_routes,
 )
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def write_sources(root, sources):
@@ -194,11 +193,14 @@ def call_outcomes(
     inv = inventory(sources)
     edges = resolve_call_edges(inv)
     observations = resolve_call_observations(inv)["observations"]
-    pick = lambda items: next(
-        item
-        for item in items
-        if item["from"] == {"file": caller, "symbol": symbol} and item["name"] == name
-    )
+    def pick(items):
+        return next(
+            item
+            for item in items
+            if item["from"] == {"file": caller, "symbol": symbol}
+            and item["name"] == name
+        )
+
     flow = build_flow(
         {
             "id": "api-" + symbol,

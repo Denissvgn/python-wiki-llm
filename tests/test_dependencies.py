@@ -22,7 +22,7 @@ def _imp(module, name=None):
     return {"module": module, "name": name if name is not None else module}
 
 
-def _mod(*imports):
+def _mod(*imports) -> dict:
     return {"imports": list(imports)}
 
 
