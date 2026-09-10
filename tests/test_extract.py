@@ -4238,18 +4238,19 @@ class TestResolveCallEdges:
         assert edge["kind"] == "unresolved"
         assert edge["to"]["file"] is None
 
-    def test_detailed_observations_preserve_ambiguity_without_changing_legacy(self):
+    def test_declared_import_root_ambiguity_keeps_legacy_fileless(self):
         inventory = {
-            "a.py": {
+            "one/target.py": {
                 "functions": [{"name": "target", "calls": []}],
                 "classes": [],
             },
-            "b.py": {
+            "two/target.py": {
                 "functions": [{"name": "target", "calls": []}],
                 "classes": [],
             },
             "main.py": {
-                "imports": [{"module": "", "name": "target"}],
+                "python_import_scope": {"root": ".", "search_roots": ["one", "two"]},
+                "imports": [{"module": "target", "name": "target", "type": "from"}],
                 "functions": [
                     {
                         "name": "run",
@@ -4263,7 +4264,7 @@ class TestResolveCallEdges:
         legacy = resolve_call_edges(inventory)
         detailed = resolve_call_observations(inventory)
 
-        assert legacy[-1]["kind"] == "external"
+        assert legacy[-1]["kind"] == "unresolved"
         assert legacy[-1]["line"] == 0
         assert detailed["schema_version"] == "llm-wiki-call-observations/v1"
         assert detailed["coverage"]["observed"] == 1
@@ -4271,8 +4272,8 @@ class TestResolveCallEdges:
         assert observation["kind"] == "ambiguous"
         assert observation["line"] is None
         assert observation["candidates"] == [
-            {"file": "a.py", "symbol": "target"},
-            {"file": "b.py", "symbol": "target"},
+            {"file": "one/target.py", "symbol": "target"},
+            {"file": "two/target.py", "symbol": "target"},
         ]
         assert resolve_call_edges(inventory) == legacy
 

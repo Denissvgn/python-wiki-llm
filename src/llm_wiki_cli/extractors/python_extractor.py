@@ -21,6 +21,7 @@ from .common import (
     discover_source_files,
 )
 from .fastapi_contracts import extract_fastapi_declarations
+from .python_bindings import analyze_python_bindings
 from .python_contracts import (
     class_kind,
     explicit_type_alias,
@@ -189,7 +190,12 @@ def _call_record(node: ast.Call, *, include_arguments: bool = False) -> dict | N
     return record
 
 
-def _extract_calls(node) -> list[dict]:
+def _extract_calls(
+    node,
+    *,
+    binding_facts: dict[int, dict] | None = None,
+    bound_calls: list[dict] | None = None,
+) -> list[dict]:
     """Collect direct call targets within a function/method body.
 
     Walks the body but does not descend into nested function or class
@@ -208,6 +214,14 @@ def _extract_calls(node) -> list[dict]:
                 record = _call_record(child, include_arguments=True)
                 if record is not None:
                     calls.append(record)
+                    if bound_calls is not None:
+                        bound_calls.append(
+                            dict(
+                                (binding_facts or {}).get(
+                                    id(child), {"kind": "unresolved"}
+                                )
+                            )
+                        )
             _walk(child)
 
     for statement in node.body:
@@ -893,6 +907,7 @@ def _extract_function_info(
     omit_method_receiver: bool = False,
     data_effect_observations: list[dict] | None = None,
     observation_symbol: str | None = None,
+    call_binding_facts: dict[int, dict] | None = None,
 ) -> dict:
     """Extract full function/method info from a FunctionDef or AsyncFunctionDef.
 
@@ -907,18 +922,23 @@ def _extract_function_info(
         "is_async": isinstance(node, ast.AsyncFunctionDef),
     }
 
-    params = extract_parameters(
-        node.args, omit_method_receiver=omit_method_receiver
-    )
+    params = extract_parameters(node.args, omit_method_receiver=omit_method_receiver)
 
     return_type = _annotation_to_str(node.returns)
     info["params"] = params
     info["return_type"] = return_type
 
     if deep:
-        calls = _extract_calls(node)
+        call_bindings: list[dict] | None = (
+            [] if call_binding_facts is not None else None
+        )
+        calls = _extract_calls(
+            node, binding_facts=call_binding_facts, bound_calls=call_bindings
+        )
         if calls:
             info["calls"] = calls
+            if call_bindings is not None:
+                info["call_bindings"] = call_bindings
         effect_coverage: dict[str, dict] | None = (
             {} if data_effect_observations is not None else None
         )
@@ -1043,6 +1063,7 @@ class ComponentVisitor(ast.NodeVisitor):
         module_import_aliases: dict[str, str] | None = None,
         data_effect_observations: list[dict] | None = None,
         import_location_observations: list[dict] | None = None,
+        call_binding_facts: dict[int, dict] | None = None,
     ):
         self.classes = []
         self.functions = []  # top-level functions only
@@ -1052,6 +1073,8 @@ class ComponentVisitor(ast.NodeVisitor):
         self.all_exports = []  # names listed in __all__ (when statically known)
         self.has_main = False  # whether an `if __name__ == "__main__"` guard exists
         self.main_block_calls = []  # deep-mode calls inside the __main__ guard
+        self.main_block_call_bindings: list[dict] = []
+        self._call_binding_facts = call_binding_facts
         self.nested_functions = []  # decorated functions defined inside other defs
         self._class_depth = 0
         self._function_depth = 0
@@ -1151,6 +1174,7 @@ class ComponentVisitor(ast.NodeVisitor):
                         deep=self._deep,
                         module_globals=self._module_globals,
                         module_import_aliases=self._module_import_aliases,
+                        call_binding_facts=self._call_binding_facts,
                         omit_method_receiver=not is_static_method,
                         data_effect_observations=self._data_effect_observations,
                         observation_symbol=f"{node.name}.{child.name}",
@@ -1195,6 +1219,7 @@ class ComponentVisitor(ast.NodeVisitor):
                         deep=self._deep,
                         module_globals=self._module_globals,
                         module_import_aliases=self._module_import_aliases,
+                        call_binding_facts=self._call_binding_facts,
                         data_effect_observations=self._data_effect_observations,
                     )
                 )
@@ -1204,6 +1229,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=self._deep,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    call_binding_facts=self._call_binding_facts,
                     data_effect_observations=self._data_effect_observations,
                 )
                 info["private"] = True
@@ -1218,6 +1244,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=True,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    call_binding_facts=self._call_binding_facts,
                     data_effect_observations=self._data_effect_observations,
                 )
             )
@@ -1236,6 +1263,7 @@ class ComponentVisitor(ast.NodeVisitor):
                         deep=self._deep,
                         module_globals=self._module_globals,
                         module_import_aliases=self._module_import_aliases,
+                        call_binding_facts=self._call_binding_facts,
                         data_effect_observations=self._data_effect_observations,
                     )
                 )
@@ -1245,6 +1273,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=self._deep,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    call_binding_facts=self._call_binding_facts,
                     data_effect_observations=self._data_effect_observations,
                 )
                 info["private"] = True
@@ -1259,6 +1288,7 @@ class ComponentVisitor(ast.NodeVisitor):
                     deep=True,
                     module_globals=self._module_globals,
                     module_import_aliases=self._module_import_aliases,
+                    call_binding_facts=self._call_binding_facts,
                     data_effect_observations=self._data_effect_observations,
                 )
             )
@@ -1345,7 +1375,15 @@ class ComponentVisitor(ast.NodeVisitor):
         ):
             self.has_main = True
             if self._deep:
-                self.main_block_calls.extend(_extract_calls(node))
+                self.main_block_calls.extend(
+                    _extract_calls(
+                        node,
+                        binding_facts=self._call_binding_facts,
+                        bound_calls=self.main_block_call_bindings
+                        if self._call_binding_facts is not None
+                        else None,
+                    )
+                )
         if _is_type_checking_test(node.test, self._type_checking_names):
             # Only the body is type-only; an ``else:`` branch is the runtime one.
             self.visit(node.test)
@@ -1424,12 +1462,14 @@ def _scan_python_files(
         file_import_observations: list[dict] | None = (
             [] if import_location_observations is not None else None
         )
+        python_bindings = analyze_python_bindings(tree) if deep else None
         visitor = ComponentVisitor(
             deep=deep,
             module_globals=_extract_module_globals(tree),
             module_import_aliases=_extract_import_aliases(tree),
             data_effect_observations=file_effect_observations,
             import_location_observations=file_import_observations,
+            call_binding_facts=python_bindings.calls if python_bindings else None,
         )
         visitor.visit(tree)
         if data_effect_observations is not None:
@@ -1480,6 +1520,8 @@ def _scan_python_files(
 
             if deep:
                 file_entry["imports"] = visitor.imports
+                if python_bindings is not None:
+                    file_entry["python_bindings"] = python_bindings.module
                 file_entry["module_docstring"] = ast.get_docstring(tree) or ""
                 if visitor.all_exports:
                     file_entry["all_exports"] = visitor.all_exports
@@ -1487,6 +1529,9 @@ def _scan_python_files(
                     file_entry["main_block"] = True
                 if visitor.main_block_calls:
                     file_entry["main_block_calls"] = visitor.main_block_calls
+                    file_entry["main_block_call_bindings"] = (
+                        visitor.main_block_call_bindings
+                    )
                 if visitor.nested_functions:
                     file_entry["nested_functions"] = visitor.nested_functions
                 if module_calls:
