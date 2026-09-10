@@ -731,6 +731,10 @@ Passing `--openapi-file` implies `--api-contracts`; the supplied OpenAPI 3.0 or
 3.1 JSON/YAML document is authoritative for wire fields, while syntax-only
 source analysis contributes handler, module, entity, and flow links. The target
 application is never imported or executed.
+Dynamic route expressions remain visible as unknown API-contract evidence.
+Only concrete routes are attached to flow metadata, so unresolved paths do not
+prevent bootstrap or sync and are never replaced with invented URLs. Supply an
+OpenAPI export when authoritative concrete paths are needed.
 `--depth full` is the default and includes
 docstrings, imports, attributes, method signatures, generated relationship
 sections, bounded per-module dependency mini-map summaries, and diagram data
@@ -934,6 +938,13 @@ keyword-only, and variadic-keyword declarations. Python model/type inventory
 also carries optional required/nullable/default/factory, alias, constraint,
 description/example, `Annotated`, validator/config, enum-member, literal, and
 type-alias metadata without importing Pydantic or application modules.
+Python call targets follow lexical bindings. Builtins remain file-less calls;
+local declarations, aliases, and imports resolve only when their targets are
+justified. Uncertain rebinding and closures remain unresolved instead of linking
+to unrelated same-named functions. Optional `call_bindings` entries parallel a
+callable's `calls` list, `python_bindings` describes module bindings, and
+`main_block_call_bindings` parallels guarded process-entry calls. Older
+inventories may omit these fields.
 TypedDict classes use `model_kind: "typeddict"`; their fields' `required` flags
 describe whether dictionary keys must be present. `total=False` applies to keys
 declared by that class, while inherited keys retain their original presence
@@ -1090,7 +1101,16 @@ and profile JSON but do not make `lint`, `lint --strict`, or `ci-check` fail by
 themselves. Stale architecture pages with no current source modules remain hard
 issues.
 Python dependency reconciliation reads `pyproject.toml` and `requirements*.txt`
-manifests, including nested manifests scoped to their directory. TypeScript and
+manifests, including nested manifests scoped to their directory. Python imports
+use the selected source root, conventional `src` layouts, and declared packaging
+roots; a nested file's basename is not a repository-wide import alias.
+`python_import_scope` records source-relative project and search roots when
+packaging metadata is available. Literal setuptools `package-dir`/`find.where`
+and Poetry package `from` settings support custom layouts. Ambiguous candidates
+are disclosed without becoming unconditional dependency edges or import cycles.
+Legitimate local standard-library shadowing and explicit relative imports remain
+supported; runtime import-hook and `sys.path` changes are not executed.
+TypeScript and
 JavaScript reconciliation reads the nearest scoped `package.json` and resolves
 first-party imports through the nearest `tsconfig.json` `baseUrl`/`paths`
 aliases before reporting undeclared external packages. Generic internal import

@@ -1,0 +1,313 @@
+{
+  "source_revision": "3812e1e6eccc77562f21e642ef080e14f3c0934d",
+  "report_sha256": "aa890596a3fc09d36a4170b66ff609d1f79c5341b9c3b20e6cd4e595797bea06",
+  "python": "3.14.4",
+  "platform": "linux",
+  "scope": "synthetic bounded fixtures; no external application execution",
+  "findings": {
+    "FINDING-01": {
+      "operation_paths": [
+        null
+      ],
+      "operation_unknowns": [
+        [
+          {
+            "field": "path",
+            "reason": "not_statically_resolvable"
+          }
+        ]
+      ],
+      "attached_routes": [],
+      "surface_validation_error": null,
+      "bootstrap_cases": {
+        "literal": {
+          "exit_code": 0,
+          "stderr": "",
+          "committed_artifacts": [
+            ".llm-wiki-knowledge.json",
+            ".llm-wiki-manifest.json",
+            ".llm-wiki-surface.json"
+          ],
+          "generated_markdown_count": 5
+        },
+        "dynamic": {
+          "exit_code": 0,
+          "stderr": "",
+          "committed_artifacts": [
+            ".llm-wiki-knowledge.json",
+            ".llm-wiki-manifest.json",
+            ".llm-wiki-surface.json"
+          ],
+          "generated_markdown_count": 5
+        },
+        "dynamic_without_api_page": {
+          "exit_code": 0,
+          "stderr": "",
+          "committed_artifacts": [
+            ".llm-wiki-knowledge.json",
+            ".llm-wiki-manifest.json",
+            ".llm-wiki-surface.json"
+          ],
+          "generated_markdown_count": 4
+        }
+      },
+      "sync_from_valid_baseline": {
+        "exit_code": 0,
+        "stderr": "Extractor plan: requested=1 resolved=1 eligible_parallel=1 effective_workers=1 parallel=python sequential=- cache_elided=-",
+        "prior_trio_bytes_preserved": false,
+        "prior_wiki_bytes_preserved": false,
+        "changed_wiki_paths": [
+          ".llm-wiki-knowledge.json",
+          ".llm-wiki-manifest.json",
+          ".llm-wiki-surface.json",
+          "api-contracts.md",
+          "flows/http-items.md",
+          "log.md",
+          "modules/app.md"
+        ]
+      }
+    },
+    "FINDING-02": {
+      "no_collision_control": {
+        "legacy_edge": {
+          "from": {
+            "file": "service_a/permissions.py",
+            "symbol": "permissions"
+          },
+          "to": {
+            "file": null,
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "external",
+          "line": 2
+        },
+        "detailed_observation": {
+          "from": {
+            "file": "service_a/permissions.py",
+            "symbol": "permissions"
+          },
+          "to": {
+            "file": null,
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "external",
+          "line": 2
+        },
+        "modules_touched": [
+          "service_a/permissions.py"
+        ]
+      },
+      "builtin_collision": {
+        "legacy_edge": {
+          "from": {
+            "file": "service_a/permissions.py",
+            "symbol": "permissions"
+          },
+          "to": {
+            "file": null,
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "external",
+          "line": 2
+        },
+        "detailed_observation": {
+          "from": {
+            "file": "service_a/permissions.py",
+            "symbol": "permissions"
+          },
+          "to": {
+            "file": null,
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "external",
+          "line": 2
+        },
+        "modules_touched": [
+          "service_a/permissions.py"
+        ]
+      },
+      "local_shadow_control": {
+        "legacy_edge": {
+          "from": {
+            "file": "service_a/permissions.py",
+            "symbol": "permissions"
+          },
+          "to": {
+            "file": "service_a/permissions.py",
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "internal",
+          "line": 4
+        },
+        "detailed_observation": {
+          "from": {
+            "file": "service_a/permissions.py",
+            "symbol": "permissions"
+          },
+          "to": {
+            "file": "service_a/permissions.py",
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "internal",
+          "line": 4
+        },
+        "modules_touched": [
+          "service_a/permissions.py"
+        ]
+      },
+      "imported_shadow_control": {
+        "legacy_edge": {
+          "from": {
+            "file": "app.py",
+            "symbol": "run"
+          },
+          "to": {
+            "file": "cache.py",
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "internal",
+          "line": 3,
+          "args": [
+            {
+              "kind": "literal",
+              "value": "'key'"
+            },
+            {
+              "kind": "literal",
+              "value": "1"
+            }
+          ]
+        },
+        "detailed_observation": {
+          "from": {
+            "file": "app.py",
+            "symbol": "run"
+          },
+          "to": {
+            "file": "cache.py",
+            "symbol": "set"
+          },
+          "name": "set",
+          "kind": "internal",
+          "line": 3,
+          "args": [
+            {
+              "kind": "literal",
+              "value": "'key'"
+            },
+            {
+              "kind": "literal",
+              "value": "1"
+            }
+          ]
+        },
+        "modules_touched": [
+          "app.py",
+          "cache.py"
+        ]
+      },
+      "unbound_nonbuiltin_variant": {
+        "legacy_edge": {
+          "from": {
+            "file": "app.py",
+            "symbol": "run"
+          },
+          "to": {
+            "file": null,
+            "symbol": "helper"
+          },
+          "name": "helper",
+          "kind": "unresolved",
+          "line": 2
+        },
+        "detailed_observation": {
+          "from": {
+            "file": "app.py",
+            "symbol": "run"
+          },
+          "to": {
+            "file": null,
+            "symbol": "helper"
+          },
+          "name": "helper",
+          "kind": "unresolved",
+          "line": 2
+        },
+        "modules_touched": [
+          "app.py"
+        ]
+      },
+      "external_import_variant": {
+        "legacy_edge": {
+          "from": {
+            "file": "app.py",
+            "symbol": "run"
+          },
+          "to": {
+            "file": null,
+            "symbol": "Client"
+          },
+          "name": "Client",
+          "kind": "external",
+          "line": 3
+        },
+        "detailed_observation": {
+          "from": {
+            "file": "app.py",
+            "symbol": "run"
+          },
+          "to": {
+            "file": null,
+            "symbol": "Client"
+          },
+          "name": "Client",
+          "kind": "external",
+          "line": 3
+        },
+        "modules_touched": [
+          "app.py"
+        ]
+      }
+    },
+    "FINDING-03": {
+      "stdlib_import_candidates": [],
+      "absolute_suffix_candidates": [],
+      "relative_import_control": [
+        "service_a/utils/logging.py"
+      ],
+      "suffix_expansion": [
+        "logging",
+        "utils/logging"
+      ],
+      "import_time_edges": [],
+      "runtime_cycles": [],
+      "api_logging_observation": {
+        "source_path": "service_a/api.py",
+        "module": "logging",
+        "name": "logging",
+        "line": null,
+        "candidates": [],
+        "target_path": null,
+        "resolution": "external"
+      },
+      "indeterminate_cycle_group_rendered": false,
+      "top_level_shadow_control": [
+        "logging.py"
+      ],
+      "top_level_shadow_runtime_marker": "local"
+    }
+  },
+  "report_table_check": {
+    "row_sample_sum": 71,
+    "reported_sample_total": 64,
+    "row_clean_sum": 65,
+    "reported_clean_total": 58
+  }
+}
