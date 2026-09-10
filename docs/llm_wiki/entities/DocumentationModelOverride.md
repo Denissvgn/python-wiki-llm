@@ -59,4 +59,5 @@ flowchart LR
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
 | `_resolve_override` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
+| `DocumentationModelOverride.from_dict` | call | [documentation_model_policy](../modules/documentation_model_policy.md) | 1 |
 | `DocumentationModelOverride.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |

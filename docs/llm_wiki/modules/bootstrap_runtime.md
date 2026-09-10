@@ -22,7 +22,7 @@ artifacts only after the public Markdown surface has been written.
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.data_flow` | `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `top_level_package` |
-| `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
+| `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
 | `.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
 | `.imports` | `ModulePathResolver`, `build_module_path_resolver` |
@@ -35,6 +35,7 @@ artifacts only after the public Markdown surface has been written.
 | `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.paths` | `normalize_source_path`, `portable_source_root_label` |
+| `.python_imports` | `is_python_source` |
 | `.relationships` | `build_entity_page_relationship_summaries` |
 | `.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `decode_managed_document_bytes`, `encode_managed_document_text`, `pin_source_selection_command_recipes` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
@@ -45,6 +46,7 @@ artifacts only after the public Markdown surface has been written.
 | `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
+| `ast` | `ast` |
 | `collections` | `defaultdict`, `Counter`, `defaultdict`, `Counter` |
 | `collections.abc` | `Iterable`, `Mapping`, `Sequence` |
 | `copy` | `deepcopy` |
@@ -77,27 +79,27 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (14) |
-| Outbound | `src` (30) |
+| Outbound | `src` (31) |
 
-> All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 704 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 982 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 2855 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4104 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4128 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4141 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4148 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4156 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4162 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4173 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4184 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4192 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4199 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 710 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 988 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3033 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4282 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4306 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4319 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4326 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4334 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4340 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4351 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4362 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4370 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4377 | — | — |
 
 ## Functions
 
@@ -201,7 +203,11 @@ flowchart LR
 | `_flow_related_module_refs` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return sorted module links for process-related internal imports. |
 | `_flow_module_link` | `(ref: tuple[str, str]) -> str` | — | — |
 | `_append_flow_module_summary` | `(lines: list[str], label: str, refs: list[tuple[str, str]]) -> None` | — | Render compact flow metadata and retain a complete linked list when long. |
+| `_compact_flow_target` | `(expression: str, fallback: str) -> str` | — | Elide receiver arguments using syntax alone, without inferring a type. |
+| `_flow_display_label` | `(label: str, *, limit: int, context: str = '') -> str` | — | Reserve the end of a callable and its disambiguator before Mermaid caps. |
+| `_flow_actors` | `(flow: dict) -> list[tuple[str, str]]` | — | Return stable participant identities and unambiguous display labels. |
 | `_flow_interactions` | `(flow: dict) -> list[dict]` | — | Convert depth-tagged flow steps into caller→callee sequence interactions. |
+| `_flow_data_display` | `(flow: dict, data_flow: Mapping) -> dict` | — | Apply the same labels to display copies without changing analysis data. |
 | `_bounded_sequence_diagram` | `(interactions: list[dict]) -> _BoundedGeneratedDiagram` | — | — |
 | `_md_cell` | `(value: object) -> str` | — | — |
 | `_effect_label` | `(effect: Mapping) -> str` | — | — |

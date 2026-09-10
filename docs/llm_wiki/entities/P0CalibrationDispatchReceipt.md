@@ -71,5 +71,6 @@ flowchart LR
 | `_record_p0_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |
 | `_validate_result_import_bindings` | type_reference | [controller](../modules/controller.md) | — |
 | `dispatch_calibration_agent` | type_reference | [controller](../modules/controller.md) | — |
+| `P0CalibrationDispatchReceipt.from_dict` | call | [controller](../modules/controller.md) | 1 |
 | `P0CalibrationDispatchReceipt.from_dict` | type_reference | [controller](../modules/controller.md) | — |
 | `record_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |

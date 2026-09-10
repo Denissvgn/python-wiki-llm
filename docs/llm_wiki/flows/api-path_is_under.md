@@ -11,9 +11,9 @@
 sequenceDiagram
     participant p0 as path_is_under
     participant p1 as bool
-    participant p2 as startswith
+    participant p2 as path.startswith
     p0-->>p1: bool
-    p0-->>p2: startswith
+    p0-->>p2: path.startswith
 ```
 
 ## Data flow
@@ -23,7 +23,7 @@ sequenceDiagram
 flowchart LR
     s1["1. path_is_under"]
     s2["2. bool"]
-    s3["3. startswith"]
+    s3["3. path.startswith"]
     s1 -. "bool(prefix)" .-> s2
     s1 -. "path.startswith(...)" .-> s3
     click s1 "../modules/validation.md"
@@ -35,14 +35,14 @@ flowchart LR
 |---|---|---|---|---|
 | `path_is_under` | `path: str`, `prefix: str` | - | - | `...` |
 | `bool` | - | - | - | - |
-| `startswith` | - | - | - | - |
+| `path.startswith` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | path_is_under | bool | 418 | `bool(prefix)` |
-| path_is_under | startswith | 418 | `path.startswith(...)` |
+| path_is_under | path.startswith | 418 | `path.startswith(...)` |
 
 ### Boundary effects
 

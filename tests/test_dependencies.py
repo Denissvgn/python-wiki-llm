@@ -22,7 +22,7 @@ def _imp(module, name=None):
     return {"module": module, "name": name if name is not None else module}
 
 
-def _mod(*imports):
+def _mod(*imports) -> dict:
     return {"imports": list(imports)}
 
 
@@ -147,6 +147,10 @@ class TestBuildDependencyGraph:
             "service/server.py": _mod(_imp("tools", "Widget")),
             "service/tools/__init__.py": _mod(),
         }
+        inventory["service/server.py"]["python_import_scope"] = {
+            "root": "service",
+            "search_roots": ["service"],
+        }
         graph = build_dependency_graph(inventory)
         assert graph["edges"] == [("service/server.py", "service/tools/__init__.py")]
         assert graph["unresolved"] == []
@@ -169,15 +173,20 @@ class TestBuildDependencyGraph:
         assert graph["unresolved"] == []
         assert graph["nodes"] == ["a.py"]
 
-    def test_ambiguous_module_narrowed_by_symbol(self):
-        # Two ``settings`` modules; the imported symbol disambiguates the target.
+    def test_ambiguous_python_roots_are_not_disambiguated_by_symbol(self):
+        # A matching symbol cannot establish which import root is selected.
         inventory = {
             "app.py": _mod(_imp("settings", "DEBUG")),
             "pkg/a/settings.py": {"imports": [], "functions": [{"name": "DEBUG"}]},
             "pkg/b/settings.py": {"imports": [], "functions": []},
         }
+        inventory["app.py"]["python_import_scope"] = {
+            "root": ".",
+            "search_roots": ["pkg/a", "pkg/b"],
+        }
         graph = build_dependency_graph(inventory)
-        assert graph["edges"] == [("app.py", "pkg/a/settings.py")]
+        assert graph["edges"] == []
+        assert graph["unresolved"][0]["kind"] == "ambiguous"
 
     def test_duplicate_imports_collapse_to_one_edge(self):
         inventory = {
@@ -253,6 +262,10 @@ class TestBuildDependencyObservations:
             "one/shared.py": _mod(),
             "two/shared.py": _mod(),
         }
+        inventory["app.py"]["python_import_scope"] = {
+            "root": ".",
+            "search_roots": [".", "one", "two"],
+        }
 
         legacy = build_dependency_graph(inventory)
         result = build_dependency_observations(inventory)
@@ -260,16 +273,12 @@ class TestBuildDependencyObservations:
 
         assert legacy == {
             "edges": [
-                ("app.py", "one/shared.py"),
                 ("app.py", "pkg/target.py"),
-                ("app.py", "two/shared.py"),
             ],
             # Unclassified import records execute at import time, so the two
             # edge views coincide for inventories without a ``scope``.
             "import_time_edges": [
-                ("app.py", "one/shared.py"),
                 ("app.py", "pkg/target.py"),
-                ("app.py", "two/shared.py"),
             ],
             "nodes": [
                 "app.py",
@@ -280,6 +289,12 @@ class TestBuildDependencyObservations:
             "unresolved": [
                 {"file": "app.py", "module": ".missing", "name": "value"},
                 {"file": "app.py", "module": "requests", "name": "get"},
+                {
+                    "file": "app.py",
+                    "module": "shared",
+                    "name": "missing",
+                    "kind": "ambiguous",
+                },
             ],
         }
         assert by_module["pkg.target"] == {
@@ -352,6 +367,10 @@ class TestBuildDependencyObservations:
             ),
             "one/commands/build.py": _mod(),
             "two/commands/build.py": _mod(),
+        }
+        inventory["app.py"]["python_import_scope"] = {
+            "root": ".",
+            "search_roots": ["one", "two"],
         }
 
         result = build_dependency_observations(inventory)

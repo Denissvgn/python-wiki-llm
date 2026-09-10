@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [migrate_cmd](../modules/migrate_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 29 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 31 more
 
 **Complete modules touched:**
 
@@ -33,10 +33,12 @@
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
@@ -46,54 +48,58 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
-    participant p2 as Path
-    participant p3 as bool
+    participant p1 as getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    participant p2 as Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    participant p3 as bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)
     participant p4 as validate_source_root
     participant p5 as validate_path
     participant p6 as PathValidationError
-    participant p7 as resolve
-    participant p8 as cwd
-    participant p9 as relative_to
-    participant p10 as expanduser
-    participant p11 as is_absolute
-    participant p12 as is_dir
-    participant p13 as abspath
-    participant p14 as windows_current_user_sid
-    participant p15 as WindowsSecurityGuardError
-    p0-->>p1: getattr
-    p0-->>p2: Path
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p3: bool
-    p0-->>p1: getattr
+    participant p7 as (…).resolve
+    participant p8 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p9 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    participant p10 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    participant p11 as Path(…).expanduser
+    participant p12 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p13 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p14 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p15 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p16 as resolved.is_dir
+    participant p17 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p18 as windows_current_user_sid
+    participant p19 as WindowsSecurityGuardError
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p2: Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p3: bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
     p0->>p4: validate_source_root
     p4->>p5: validate_path
     p5->>p6: PathValidationError
-    p5-->>p7: resolve
-    p5-->>p8: cwd
-    p5-->>p7: resolve
-    p5-->>p8: cwd
-    p5-->>p9: relative_to
+    p5-->>p7: (…).resolve
+    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p5-->>p9: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p5-->>p10: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     p5->>p6: PathValidationError
-    p4-->>p10: expanduser
-    p4-->>p2: Path
-    p4-->>p11: is_absolute
-    p4-->>p8: cwd
-    p4-->>p7: resolve
+    p4-->>p11: Path(…).expanduser
+    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p4-->>p13: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    p4-->>p14: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p4-->>p15: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
     p4->>p6: PathValidationError
-    p4-->>p12: is_dir
+    p4-->>p16: resolved.is_dir
     p4->>p6: PathValidationError
-    p4-->>p2: Path
-    p4-->>p13: abspath
-    p4->>p14: windows_current_user_sid
-    p14->>p15: WindowsSecurityGuardError
+    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p4-->>p17: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    p4->>p18: windows_current_user_sid
+    p18->>p19: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 3270 interactions; 3240 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3448 interactions; 3418 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -103,26 +109,26 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. run"]
-    s2["2. getattr"]
-    s3["3. Path"]
-    s4["4. getattr"]
-    s5["5. getattr"]
-    s6["6. getattr"]
-    s7["7. getattr"]
-    s8["8. getattr"]
-    s9["9. bool"]
-    s10["10. getattr"]
+    s2["2. getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s3["3. Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s4["4. getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s5["5. getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s6["6. getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s7["7. getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s8["8. getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s9["9. bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
+    s10["10. getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)"]
     s11["11. validate_source_root"]
     s12["12. validate_path"]
-    s1 -. "getattr(args, 'src_dir', '.')" .-> s2
-    s1 -. "Path(getattr(...))" .-> s3
-    s1 -. "getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s4
-    s1 -. "getattr(args, 'dry_run', False)" .-> s5
-    s1 -. "getattr(args, 'chunk_size', None)" .-> s6
-    s1 -. "getattr(args, 'chunk', None)" .-> s7
-    s1 -. "getattr(args, 'plan_chunks', False)" .-> s8
-    s1 -. "bool(getattr(...))" .-> s9
-    s1 -. "getattr(args, 'allow_external_src', False)" .-> s10
+    s1 -. "getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'src_dir', '.')" .-> s2
+    s1 -. "Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)(getattr(...))" .-> s3
+    s1 -. "getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s4
+    s1 -. "getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'dry_run', False)" .-> s5
+    s1 -. "getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'chunk_size', None)" .-> s6
+    s1 -. "getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'chunk', None)" .-> s7
+    s1 -. "getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'plan_chunks', False)" .-> s8
+    s1 -. "bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)(getattr(...))" .-> s9
+    s1 -. "getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'allow_external_src', False)" .-> s10
     s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external)"| s11
     s11 -->|"validate_path(path, label)"| s12
     b0["output print"]
@@ -160,15 +166,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | `DEFAULT_WIKI_DIR`, `sys`, `sys`, `sys` | - | `none`, `none`, `none` |
-| `getattr` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | - | - | - | - |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 
@@ -176,42 +182,42 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 1631 | `getattr(args, 'src_dir', '.')` |
-| run | Path | 1632 | `Path(getattr(...))` |
-| run | getattr | 1632 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr | 1633 | `getattr(args, 'dry_run', False)` |
-| run | getattr | 1634 | `getattr(args, 'chunk_size', None)` |
-| run | getattr | 1635 | `getattr(args, 'chunk', None)` |
-| run | getattr | 1636 | `getattr(args, 'plan_chunks', False)` |
-| run | bool | 1637 | `bool(getattr(...))` |
-| run | getattr | 1637 | `getattr(args, 'allow_external_src', False)` |
-| run | validate_source_root | 1638 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1672 | `getattr(args, 'src_dir', '.')` |
+| run | Path (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1673 | `Path(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1673 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1674 | `getattr(args, 'dry_run', False)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1675 | `getattr(args, 'chunk_size', None)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1676 | `getattr(args, 'chunk', None)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1677 | `getattr(args, 'plan_chunks', False)` |
+| run | bool (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `getattr(args, 'allow_external_src', False)` |
+| run | validate_source_root | 1679 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 1648 |
-| output | `print` | `run` | 1652 |
-| output | `print` | `run` | 1655 |
-| output | `print` | `run` | 1656 |
-| output | `print` | `run` | 1665 |
-| output | `print` | `run` | 1673 |
-| output | `print` | `run` | 1679 |
-| output | `print` | `run` | 1684 |
+| output | `print` | `run` | 1689 |
+| output | `print` | `run` | 1693 |
+| output | `print` | `run` | 1696 |
+| output | `print` | `run` | 1697 |
+| output | `print` | `run` | 1706 |
+| output | `print` | `run` | 1714 |
+| output | `print` | `run` | 1720 |
+| output | `print` | `run` | 1725 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 1631 |
-| unresolved_call | `run` | `getattr` | 1632 |
-| unresolved_call | `run` | `getattr` | 1633 |
-| unresolved_call | `run` | `getattr` | 1634 |
-| unresolved_call | `run` | `getattr` | 1635 |
-| unresolved_call | `run` | `getattr` | 1636 |
-| unresolved_call | `run` | `getattr` | 1637 |
+| external_call | `run` | `getattr` | 1672 |
+| external_call | `run` | `getattr` | 1673 |
+| external_call | `run` | `getattr` | 1674 |
+| external_call | `run` | `getattr` | 1675 |
+| external_call | `run` | `getattr` | 1676 |
+| external_call | `run` | `getattr` | 1677 |
+| external_call | `run` | `getattr` | 1678 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

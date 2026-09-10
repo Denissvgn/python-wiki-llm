@@ -55,4 +55,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `reconcile_review_ledger` | call | [documentation_review](../modules/documentation_review.md) | 1 |
+| `SupervisorReconciliation.from_dict` | call | [documentation_review](../modules/documentation_review.md) | 1 |
 | `SupervisorReconciliation.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) | — |

@@ -55,5 +55,6 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `verify_calibration_run` | type_reference | [api](../modules/api.md) | — |
+| `P0CalibrationVerificationReport.from_dict` | call | [controller](../modules/controller.md) | 1 |
 | `P0CalibrationVerificationReport.from_dict` | type_reference | [controller](../modules/controller.md) | — |
 | `verify_calibration_run` | type_reference | [controller](../modules/controller.md) | — |

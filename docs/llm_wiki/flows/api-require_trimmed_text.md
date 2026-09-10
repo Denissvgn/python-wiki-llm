@@ -12,12 +12,12 @@ sequenceDiagram
     participant p0 as require_trimmed_text
     participant p1 as require_nonempty_text
     participant p2 as isinstance
-    participant p3 as strip
+    participant p3 as value.strip
     participant p4 as any
     participant p5 as ord
     p0->>p1: require_nonempty_text
     p1-->>p2: isinstance
-    p1-->>p3: strip
+    p1-->>p3: value.strip
     p1-->>p4: any
     p1-->>p5: ord
     p1-->>p5: ord
@@ -31,7 +31,7 @@ flowchart LR
     s1["1. require_trimmed_text"]
     s2["2. require_nonempty_text"]
     s3["3. isinstance"]
-    s4["4. strip"]
+    s4["4. value.strip"]
     s5["5. any"]
     s6["6. ord"]
     s7["7. ord"]
@@ -52,7 +52,7 @@ flowchart LR
 | `require_trimmed_text` | `value: object`, `error: Exception`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `any` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `ord` | - | - | - | - |
@@ -63,7 +63,7 @@ flowchart LR
 |---|---|---:|---|
 | require_trimmed_text | require_nonempty_text | 658 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
 | require_nonempty_text | isinstance | 574 | `isinstance(value, str)` |
-| require_nonempty_text | strip | 576 | `value.strip(data not statically known)` |
+| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
 | require_nonempty_text | any | 582 | `any(...)` |
 | require_nonempty_text | ord | 583 | `ord(character)` |
 | require_nonempty_text | ord | 584 | `ord(character)` |
@@ -76,11 +76,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_nonempty_text` | `isinstance` | 574 |
+| external_call | `require_nonempty_text` | `isinstance` | 574 |
 | unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| unresolved_call | `require_nonempty_text` | `any` | 582 |
-| unresolved_call | `require_nonempty_text` | `ord` | 583 |
-| unresolved_call | `require_nonempty_text` | `ord` | 584 |
+| external_call | `require_nonempty_text` | `any` | 582 |
+| external_call | `require_nonempty_text` | `ord` | 583 |
+| external_call | `require_nonempty_text` | `ord` | 584 |
 
 ## Behavior
 

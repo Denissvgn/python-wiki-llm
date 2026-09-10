@@ -82,7 +82,9 @@ flowchart LR
 | `_execute_container_command` | type_reference | [broker](../modules/broker.md) | — |
 | `_process_status` | type_reference | [broker](../modules/broker.md) | — |
 | `_validate_process_result_bounds` | type_reference | [broker](../modules/broker.md) | — |
+| `BoundedProcessResult.completed` | call | [broker](../modules/broker.md) | 1 |
 | `BoundedProcessResult.completed` | type_reference | [broker](../modules/broker.md) | — |
+| `BoundedProcessResult.timeout` | call | [broker](../modules/broker.md) | 1 |
 | `BoundedProcessResult.timeout` | type_reference | [broker](../modules/broker.md) | — |
 | `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) | — |
 | `OciProcessRunner.__call__` | type_reference | [broker](../modules/broker.md) | — |

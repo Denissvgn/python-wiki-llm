@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [obsidian_cmd](../modules/obsidian_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 36 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 37 more
 
 **Complete modules touched:**
 
@@ -43,6 +43,7 @@
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -53,56 +54,59 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
+    participant p1 as getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
     participant p2 as validate_path
     participant p3 as PathValidationError
-    participant p4 as resolve
-    participant p5 as cwd
-    participant p6 as relative_to
-    participant p7 as bool
-    participant p8 as validate_source_root
-    participant p9 as expanduser
-    participant p10 as Path
-    participant p11 as is_absolute
-    participant p12 as is_dir
-    participant p13 as abspath
-    participant p14 as windows_current_user_sid
-    participant p15 as WindowsSecurityGuardError
-    participant p16 as _current_windows_user_sid
-    participant p17 as WinDLL
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
+    participant p4 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
+    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p6 as Path.cwd().resolve
+    participant p7 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    participant p8 as bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    participant p9 as validate_source_root
+    participant p10 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p11 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p12 as candidate.is_absolute
+    participant p13 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p14 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p15 as resolved.is_dir
+    participant p16 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p17 as windows_current_user_sid
+    participant p18 as WindowsSecurityGuardError
+    participant p19 as _current_windows_user_sid
+    participant p20 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
     p0->>p2: validate_path
     p2->>p3: PathValidationError
-    p2-->>p4: resolve
-    p2-->>p5: cwd
-    p2-->>p4: resolve
-    p2-->>p5: cwd
-    p2-->>p6: relative_to
+    p2-->>p4: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
+    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p2-->>p6: Path.cwd().resolve
+    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p2-->>p7: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     p2->>p3: PathValidationError
-    p0-->>p7: bool
-    p0-->>p1: getattr
-    p0->>p8: validate_source_root
-    p8->>p2: validate_path
-    p8-->>p9: expanduser
-    p8-->>p10: Path
-    p8-->>p11: is_absolute
-    p8-->>p5: cwd
-    p8-->>p4: resolve
-    p8->>p3: PathValidationError
-    p8-->>p12: is_dir
-    p8->>p3: PathValidationError
-    p8-->>p10: Path
-    p8-->>p13: abspath
-    p8->>p14: windows_current_user_sid
-    p14->>p15: WindowsSecurityGuardError
-    p14->>p16: _current_windows_user_sid
-    p16-->>p17: WinDLL
+    p0-->>p8: bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    p0->>p9: validate_source_root
+    p9->>p2: validate_path
+    p9-->>p10: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    p9-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p9-->>p12: candidate.is_absolute
+    p9-->>p13: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p9-->>p14: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    p9->>p3: PathValidationError
+    p9-->>p15: resolved.is_dir
+    p9->>p3: PathValidationError
+    p9-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p9-->>p16: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    p9->>p17: windows_current_user_sid
+    p17->>p18: WindowsSecurityGuardError
+    p17->>p19: _current_windows_user_sid
+    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 2585 interactions; 2555 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2733 interactions; 2703 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -112,28 +116,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. run"]
-    s2["2. getattr"]
-    s3["3. getattr"]
-    s4["4. getattr"]
-    s5["5. getattr"]
+    s2["2. getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)"]
+    s3["3. getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)"]
+    s4["4. getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)"]
+    s5["5. getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)"]
     s6["6. validate_path"]
     s7["7. PathValidationError"]
-    s8["8. resolve"]
-    s9["9. cwd"]
-    s10["10. resolve"]
-    s11["11. cwd"]
-    s12["12. relative_to"]
-    s1 -. "getattr(args, 'obsidian_action', None)" .-> s2
-    s1 -. "getattr(args, 'format', 'text')" .-> s3
-    s1 -. "getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s4
-    s1 -. "getattr(args, 'src_dir', '.')" .-> s5
+    s8["8. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
+    s9["9. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s10["10. Path.cwd().resolve"]
+    s11["11. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s12["12. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
+    s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'obsidian_action', None)" .-> s2
+    s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'format', 'text')" .-> s3
+    s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s4
+    s1 -. "getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'src_dir', '.')" .-> s5
     s1 -->|"validate_path(wiki_dir, '--wiki-dir')"| s6
     s6 -->|"PathValidationError(...)"| s7
-    s6 -. "(Path.cwd() / path).resolve(data not statically known)" .-> s8
-    s6 -. "Path.cwd(data not statically known)" .-> s9
+    s6 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
+    s6 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
     s6 -. "Path.cwd().resolve(data not statically known)" .-> s10
-    s6 -. "Path.cwd(data not statically known)" .-> s11
-    s6 -. "resolved.relative_to(cwd)" .-> s12
+    s6 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
+    s6 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -151,33 +155,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | `DEFAULT_WIKI_DIR`, `DEFAULT_NOTES_DIR`, `DEFAULT_WIKI_DIR`, `DEFAULT_PLUGIN_SOURCE`, `ObsidianError`, `sys`, `sys` | - | `none`, `none`, `none` |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `resolve` | - | - | - | - |
-| `cwd` | - | - | - | - |
-| `resolve` | - | - | - | - |
-| `cwd` | - | - | - | - |
-| `relative_to` | - | - | - | - |
+| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd().resolve` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 74 | `getattr(args, 'obsidian_action', None)` |
-| run | getattr | 75 | `getattr(args, 'format', 'text')` |
-| run | getattr | 79 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr | 80 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 74 | `getattr(args, 'obsidian_action', None)` |
+| run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 75 | `getattr(args, 'format', 'text')` |
+| run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 79 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 80 | `getattr(args, 'src_dir', '.')` |
 | run | validate_path | 81 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
-| validate_path | resolve | 134 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | cwd | 134 | `Path.cwd(data not statically known)` |
-| validate_path | relative_to | 136 | `resolved.relative_to(cwd)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
@@ -190,13 +194,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 74 |
-| unresolved_call | `run` | `getattr` | 75 |
-| unresolved_call | `run` | `getattr` | 79 |
-| unresolved_call | `run` | `getattr` | 80 |
+| external_call | `run` | `getattr` | 74 |
+| external_call | `run` | `getattr` | 75 |
+| external_call | `run` | `getattr` | 79 |
+| external_call | `run` | `getattr` | 80 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
-| external_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
 | external_call | `validate_path` | `Path.cwd` | 134 |
 | unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
 | step_limit | `run` | `first 12 steps` | 0 |

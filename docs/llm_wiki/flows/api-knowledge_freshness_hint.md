@@ -62,10 +62,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `knowledge_freshness_hint` | `isinstance` | 470 |
-| unresolved_call | `knowledge_freshness_hint` | `isinstance` | 473 |
-| unresolved_call | `knowledge_freshness_hint` | `ValueError` | 474 |
-| unresolved_call | `knowledge_freshness_hint` | `ValueError` | 480 |
+| external_call | `knowledge_freshness_hint` | `isinstance` | 470 |
+| external_call | `knowledge_freshness_hint` | `isinstance` | 473 |
+| external_call | `knowledge_freshness_hint` | `ValueError` | 474 |
+| external_call | `knowledge_freshness_hint` | `ValueError` | 480 |
 
 ## Behavior
 

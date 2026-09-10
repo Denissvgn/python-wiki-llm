@@ -66,6 +66,15 @@ def test_context_packet_golden_is_lf_only() -> None:
     assert b"\r" not in GOLDEN_PATH.read_bytes()
 
 
+@pytest.mark.parametrize("version", [1, 2])
+def test_packets_without_binding_metadata_remain_valid(version):
+    content = (REPO_ROOT / f"tests/fixtures/context-packet-v{version}-pre-bindings.json").read_bytes()
+    result = validate_context_packet(content)
+    assert result.valid is True
+    assert result.packet.to_bytes() == content
+    assert all("python_bindings" not in value for value in result.packet.to_payload()["response"]["files"].values())
+
+
 def _write_snapshot_project(root: Path, *, opaque_text: bool = False) -> None:
     root.mkdir(parents=True)
     docstring = (

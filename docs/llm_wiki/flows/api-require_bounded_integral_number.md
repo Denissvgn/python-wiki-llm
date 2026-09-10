@@ -11,14 +11,14 @@
 sequenceDiagram
     participant p0 as require_bounded_integral_number
     participant p1 as isinstance
-    participant p2 as isfinite
-    participant p3 as is_integer
+    participant p2 as math.isfinite
+    participant p3 as value.is_integer
     participant p4 as int
     p0-->>p1: isinstance
     p0-->>p1: isinstance
     p0-->>p1: isinstance
-    p0-->>p2: isfinite
-    p0-->>p3: is_integer
+    p0-->>p2: math.isfinite
+    p0-->>p3: value.is_integer
     p0-->>p4: int
 ```
 
@@ -31,8 +31,8 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. isinstance"]
     s4["4. isinstance"]
-    s5["5. isfinite"]
-    s6["6. is_integer"]
+    s5["5. math.isfinite"]
+    s6["6. value.is_integer"]
     s7["7. int"]
     s1 -. "isinstance(value, bool)" .-> s2
     s1 -. "isinstance(value, int)" .-> s3
@@ -51,8 +51,8 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
-| `isfinite` | - | - | - | - |
-| `is_integer` | - | - | - | - |
+| `math.isfinite` | - | - | - | - |
+| `value.is_integer` | - | - | - | - |
 | `int` | - | - | - | - |
 
 ### Call data
@@ -62,8 +62,8 @@ flowchart LR
 | require_bounded_integral_number | isinstance | 857 | `isinstance(value, bool)` |
 | require_bounded_integral_number | isinstance | 859 | `isinstance(value, int)` |
 | require_bounded_integral_number | isinstance | 861 | `isinstance(value, float)` |
-| require_bounded_integral_number | isfinite | 861 | `math.isfinite(value)` |
-| require_bounded_integral_number | is_integer | 861 | `value.is_integer(data not statically known)` |
+| require_bounded_integral_number | math.isfinite | 861 | `math.isfinite(value)` |
+| require_bounded_integral_number | value.is_integer | 861 | `value.is_integer(data not statically known)` |
 | require_bounded_integral_number | int | 862 | `int(value)` |
 
 ### Boundary effects
@@ -74,9 +74,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_bounded_integral_number` | `isinstance` | 857 |
-| unresolved_call | `require_bounded_integral_number` | `isinstance` | 859 |
-| unresolved_call | `require_bounded_integral_number` | `isinstance` | 861 |
+| external_call | `require_bounded_integral_number` | `isinstance` | 857 |
+| external_call | `require_bounded_integral_number` | `isinstance` | 859 |
+| external_call | `require_bounded_integral_number` | `isinstance` | 861 |
 | external_call | `require_bounded_integral_number` | `math.isfinite` | 861 |
 | unresolved_call | `require_bounded_integral_number` | `value.is_integer` | 861 |
 

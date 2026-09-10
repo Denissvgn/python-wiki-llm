@@ -11,8 +11,8 @@ Stable ``llm-wiki-doctor/v1`` Python API payload.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `schema_version` | `str` | *required* | — |
 | `status` | `str` | *required* | — |
 | `exit_code` | `int` | *required* | — |

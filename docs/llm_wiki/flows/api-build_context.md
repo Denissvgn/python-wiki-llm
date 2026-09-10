@@ -2,7 +2,43 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md)
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_service](../modules/context_service.md), and 29 more
+
+**Complete modules touched:**
+
+- [api](../modules/api.md)
+- [common](../modules/common.md)
+- [config](../modules/config.md)
+- [context_service](../modules/context_service.md)
+- [data_flow](../modules/data_flow.md)
+- [dependency_versions](../modules/dependency_versions.md)
+- [documentation_queries](../modules/documentation_queries.md)
+- [documentation_query_builder](../modules/documentation_query_builder.md)
+- [entrypoints](../modules/entrypoints.md)
+- [extraction_service](../modules/extraction_service.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
+- [imports](../modules/imports.md)
+- [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [io](../modules/io.md)
+- [knowledge_consumption](../modules/knowledge_consumption.md)
+- [knowledge_envelope](../modules/knowledge_envelope.md)
+- [knowledge_freshness](../modules/knowledge_freshness.md)
+- [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_verification](../modules/knowledge_verification.md)
+- [plugins](../modules/plugins.md)
+- [python_calls](../modules/python_calls.md)
+- [python_imports](../modules/python_imports.md)
+- [services_dependencies](../modules/services_dependencies.md)
+- [source_selection](../modules/source_selection.md)
+- [source_snapshot](../modules/source_snapshot.md)
+- [sync_manifest](../modules/sync_manifest.md)
+- [validation](../modules/validation.md)
+- [wiki_media](../modules/wiki_media.md)
+- [wiki_surface](../modules/wiki_surface.md)
+- [wiki_surface_index](../modules/wiki_surface_index.md)
 
 ## Call sequence
 
@@ -11,59 +47,59 @@
 sequenceDiagram
     participant p0 as build_context
     participant p1 as _normalise_focus
-    participant p2 as isinstance
-    participant p3 as list
+    participant p2 as isinstance (src/llm_wiki_cli/api.py:_normalise_focus)
+    participant p3 as list (src/llm_wiki_cli/api.py:_normalise_focus)
     participant p4 as _normalize_optional_knowledge_mode
-    participant p5 as join
-    participant p6 as repr
-    participant p7 as InvalidRequestError
-    participant p8 as cast
-    participant p9 as _validate_protocol_request
-    participant p10 as _build_context
-    participant p11 as get
-    participant p12 as _caused_by
-    participant p13 as set
-    participant p14 as id
-    participant p15 as add
-    participant p16 as WorkspaceStateError
-    participant p17 as str
-    participant p18 as _path_error_field
-    participant p19 as PathPolicyError
-    participant p20 as _raise_required_knowledge_api_error
-    participant p21 as _required_knowledge_failure
+    participant p5 as isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    participant p6 as ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    participant p7 as repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    participant p8 as InvalidRequestError
+    participant p9 as cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    participant p10 as _validate_protocol_request
+    participant p11 as isinstance (src/llm_wiki_cli/services…validate_protocol_request)
+    participant p12 as data.get (src/llm_wiki_cli/services…validate_protocol_request)
+    participant p13 as _validate_protocol_request_impl
+    participant p14 as isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p15 as ProtocolRequestError
+    participant p16 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p17 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p18 as sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p19 as set (src/llm_wiki_cli/services…ate_protocol_request_impl)
     p0->>p1: _normalise_focus
-    p1-->>p2: isinstance
-    p1-->>p3: list
+    p1-->>p2: isinstance (src/llm_wiki_cli/api.py:_normalise_focus)
+    p1-->>p3: list (src/llm_wiki_cli/api.py:_normalise_focus)
     p0->>p4: _normalize_optional_knowledge_mode
-    p4-->>p2: isinstance
-    p4-->>p5: join
-    p4-->>p6: repr
-    p4->>p7: InvalidRequestError
-    p4-->>p8: cast
-    p0-->>p9: _validate_protocol_request
-    p0-->>p10: _build_context
-    p0-->>p11: get
-    p0->>p12: _caused_by
-    p12-->>p13: set
-    p12-->>p14: id
-    p12-->>p2: isinstance
-    p12-->>p15: add
-    p12-->>p14: id
-    p0->>p16: WorkspaceStateError
-    p0-->>p17: str
-    p0->>p18: _path_error_field
-    p0-->>p17: str
-    p0-->>p19: PathPolicyError
-    p0-->>p17: str
-    p0->>p18: _path_error_field
-    p0-->>p17: str
-    p0->>p20: _raise_required_knowledge_api_error
-    p20->>p21: _required_knowledge_failure
-    p21-->>p13: set
-    p21-->>p14: id
+    p4-->>p5: isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    p4-->>p6: ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    p4-->>p7: repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    p4->>p8: InvalidRequestError
+    p4-->>p9: cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)
+    p0->>p10: _validate_protocol_request
+    p10-->>p11: isinstance (src/llm_wiki_cli/services…validate_protocol_request)
+    p10-->>p12: data.get (src/llm_wiki_cli/services…validate_protocol_request)
+    p10->>p13: _validate_protocol_request_impl
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13->>p15: ProtocolRequestError
+    p13-->>p16: any (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13->>p15: ProtocolRequestError
+    p13-->>p17: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13->>p15: ProtocolRequestError
+    p13-->>p18: sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13-->>p19: set (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13->>p15: ProtocolRequestError
+    p13->>p15: ProtocolRequestError
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13->>p15: ProtocolRequestError
+    p13-->>p17: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p13->>p15: ProtocolRequestError
 ```
 
-> Call sequence diagram shows 30 of 61 interactions; 31 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1997 interactions; 1967 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -72,31 +108,32 @@ sequenceDiagram
 flowchart LR
     s1["1. build_context"]
     s2["2. _normalise_focus"]
-    s3["3. isinstance"]
-    s4["4. list"]
+    s3["3. isinstance (src/llm_wiki_cli/api.py:_normalise_focus)"]
+    s4["4. list (src/llm_wiki_cli/api.py:_normalise_focus)"]
     s5["5. _normalize_optional_knowledge_mode"]
-    s6["6. isinstance"]
-    s7["7. join"]
-    s8["8. repr"]
+    s6["6. isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)"]
+    s7["7. ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)"]
+    s8["8. repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)"]
     s9["9. InvalidRequestError"]
-    s10["10. cast"]
+    s10["10. cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)"]
     s11["11. _validate_protocol_request"]
-    s12["12. _build_context"]
+    s12["12. isinstance (src/llm_wiki_cli/services…validate_protocol_request)"]
     s1 -->|"_normalise_focus(focus)"| s2
-    s2 -. "isinstance(focus, str)" .-> s3
-    s2 -. "list(focus)" .-> s4
+    s2 -. "isinstance (src/llm_wiki_cli/api.py:_normalise_focus)(focus, str)" .-> s3
+    s2 -. "list (src/llm_wiki_cli/api.py:_normalise_focus)(focus)" .-> s4
     s1 -->|"_normalize_optional_knowledge_mode(knowledge_mode)"| s5
-    s5 -. "isinstance(value, str)" .-> s6
-    s5 -. "', '.join(...)" .-> s7
-    s5 -. "repr(item)" .-> s8
+    s5 -. "isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)(value, str)" .-> s6
+    s5 -. "', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)(...)" .-> s7
+    s5 -. "repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)(item)" .-> s8
     s5 -->|"InvalidRequestError(..., code='invalid-request', details={...})"| s9
-    s5 -. "cast(KnowledgeMode, value)" .-> s10
-    s1 -. "context_cmd._validate_protocol_request(request)" .-> s11
-    s1 -. "context_cmd._build_context(src_dir, validated[...], validated[...], validated[...], validated[...], prefer_fresh=validated[...], emit_warnings=False, allow_ext…" .-> s12
+    s5 -. "cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)(KnowledgeMode, value)" .-> s10
+    s1 -->|"_validate_protocol_request(request)"| s11
+    s11 -. "isinstance (src/llm_wiki_cli/services…validate_protocol_request)(data, dict)" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/api.md"
     click s5 "../modules/api.md"
     click s9 "../modules/api.md"
+    click s11 "../modules/context_service.md"
 ```
 
 ### Step data
@@ -105,32 +142,32 @@ flowchart LR
 |---|---|---|---|---|
 | `build_context` | `src_dir: str`, `budget: int`, `format: str`, `focus: str \| list[str]`, `filters: dict[str, Any] \| None`, `wiki_dir: str`, `prefer_fresh: bool`, `allow_external_src: bool` | `context_cmd`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `PathValidationError`, `context_cmd`, `context_cmd`, `MarkdownContextResult`, `ContextPayload` | `request[...]`, `result[...]` | `cast(...)`, `cast(...)` |
 | `_normalise_focus` | `focus: str \| list[str]` | - | - | `[...]`, `[...]`, `[...]`, `list(...)` |
-| `isinstance` | - | - | - | - |
-| `list` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/api.py:_normalise_focus)` | - | - | - | - |
+| `list (src/llm_wiki_cli/api.py:_normalise_focus)` | - | - | - | - |
 | `_normalize_optional_knowledge_mode` | `value: object` | `KNOWLEDGE_MODE_VALUES`, `KNOWLEDGE_MODE_VALUES`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `KnowledgeMode` | - | `None`, `cast(...)` |
-| `isinstance` | - | - | - | - |
-| `join` | - | - | - | - |
-| `repr` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
+| `', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
+| `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
 | `InvalidRequestError` | - | - | - | - |
-| `cast` | - | - | - | - |
-| `_validate_protocol_request` | - | - | - | - |
-| `_build_context` | - | - | - | - |
+| `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
+| `_validate_protocol_request` | `data: object` | `PROTOCOL_VERSION`, `ProtocolRequestError`, `PROTOCOL_VERSION`, `KNOWLEDGE_PROTOCOL_VERSION` | `exc.protocol` | `_validate_protocol_request_impl(...)` |
+| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_context | _normalise_focus | 802 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance | 2376 | `isinstance(focus, str)` |
-| _normalise_focus | list | 2382 | `list(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2376 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2382 | `list(focus)` |
 | build_context | _normalize_optional_knowledge_mode | 803 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance | 369 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | join | 370 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr | 370 | `repr(item)` |
+| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 369 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 370 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 370 | `repr(item)` |
 | _normalize_optional_knowledge_mode | InvalidRequestError | 371 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast | 376 | `cast(KnowledgeMode, value)` |
+| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 376 | `cast(KnowledgeMode, value)` |
 | build_context | _validate_protocol_request | 819 | `context_cmd._validate_protocol_request(request)` |
-| build_context | _build_context | 820 | `context_cmd._build_context(src_dir, validated[...], validated[...], validated[...], validated[...], prefer_fresh=validated[...], emit_warnings=False, allow_external_src=allow_external_src, read_only=read_only, wiki_dir=wiki_dir, source_selection=source_selection, knowledge_mode=validated.get(...), include_plugins=True)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1071 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -140,13 +177,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalise_focus` | `isinstance` | 2376 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `isinstance` | 369 |
+| external_call | `_normalise_focus` | `isinstance` | 2376 |
+| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 369 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 370 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 376 |
-| external_call | `build_context` | `context_cmd._validate_protocol_request` | 819 |
-| external_call | `build_context` | `context_cmd._build_context` | 820 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1071 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
+| truncated_flow | `build_context` | `depth limit` | 0 |
 
 ## Behavior
 

@@ -102,9 +102,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_exact_fields` | `isinstance` | 1205 |
-| unresolved_call | `require_exact_fields` | `sorted` | 1210 |
-| unresolved_call | `require_exact_fields` | `sorted` | 1211 |
+| external_call | `require_exact_fields` | `isinstance` | 1205 |
+| external_call | `require_exact_fields` | `sorted` | 1210 |
+| external_call | `require_exact_fields` | `sorted` | 1211 |
 | unresolved_call | `require_exact_fields` | `invalid_error` | 1213 |
 | unresolved_call | `require_exact_fields` | `error_factory` | 1221 |
 

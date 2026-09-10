@@ -68,5 +68,6 @@ flowchart LR
 | `_downgrade_incompatible_tombstones` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 | `_reconcile_active_structural_evidence` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `ManifestTombstone.from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 2 |
 | `ManifestTombstone.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `SyncManifest.build_from_inventory` | call | [sync_manifest](../modules/sync_manifest.md) | 4 |

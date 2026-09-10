@@ -11,8 +11,8 @@ Compact availability and freshness status shared by query adapters.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `availability` | `str` | *required* | — |
 | `reason` | `str` | *required* | — |
 | `freshness` | `str` | *required* | — |

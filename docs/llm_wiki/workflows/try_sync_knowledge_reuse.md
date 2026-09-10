@@ -1,27 +1,34 @@
 # try_sync_knowledge_reuse
 
 **Entry point:** `sync_cmd._try_sync_knowledge_reuse`
-**Modules involved:** [extraction_service](../modules/extraction_service.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [progress](../modules/progress.md), [source_snapshot](../modules/source_snapshot.md), [sync_cmd](../modules/sync_cmd.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [progress](../modules/progress.md), [source_snapshot](../modules/source_snapshot.md), [sync_cmd](../modules/sync_cmd.md), [validation](../modules/validation.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `progress.observed_phase`
-2. `knowledge_envelope.RepositoryEvidence`
-3. `knowledge_orchestration.CommittedKnowledgeState`
-4. `source_snapshot.SourceSnapshot`
-5. `sync_manifest.SyncManifest`
-6. `extraction_service.InventoryResult`
+1. `knowledge_envelope.build_repository_record`
+2. `knowledge_reuse.bind_reuse_commitment`
+3. `source_snapshot.source_snapshot_matches_current_files`
+4. `validation.resolve_portable_workspace_path`
+5. `knowledge_evidence.hash_file`
+6. `knowledge_reuse.wiki_input_hashes`
+7. `knowledge_orchestration.collect_runtime_repository_evidence`
+8. `knowledge_reuse.repository_input_hash`
+9. `knowledge_envelope.build_repository_record`
+10. `knowledge_reuse.implementation_hash`
+11. `progress.record_counts`
+12. `knowledge_reuse.unchanged_commit_result`
 
 ## Touches
 
-- [extraction_service](../modules/extraction_service.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [progress](../modules/progress.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_cmd](../modules/sync_cmd.md)
-- [sync_manifest](../modules/sync_manifest.md)
+- [validation](../modules/validation.md)
 
 ## Behavior
 

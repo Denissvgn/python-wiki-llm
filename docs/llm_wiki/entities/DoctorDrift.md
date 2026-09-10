@@ -11,8 +11,8 @@ _Auto-generated from `DoctorDrift` in `src/llm_wiki_cli/api_types.py`._
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `state` | `str` | *required* | — |
 | `confirmed_stale` | `int` | *required* | — |
 | `indeterminate` | `int` | *required* | — |

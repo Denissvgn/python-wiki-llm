@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as query_documentation
-    p0-->>p0: query_documentation
+    participant p1 as service.query_documentation
+    p0-->>p1: service.query_documentation
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. query_documentation"]
-    s2["2. query_documentation"]
+    s2["2. service.query_documentation"]
     s1 -. "service.query_documentation(request)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `query_documentation` | `request: dict` | - | - | `service.query_documentation(...)` |
-| `query_documentation` | - | - | - | - |
+| `service.query_documentation` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| query_documentation | query_documentation | 1167 | `service.query_documentation(request)` |
+| query_documentation | service.query_documentation | 1167 | `service.query_documentation(request)` |
 
 ### Boundary effects
 

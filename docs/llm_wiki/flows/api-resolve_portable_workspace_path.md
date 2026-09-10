@@ -14,50 +14,52 @@ sequenceDiagram
     participant p2 as isinstance
     participant p3 as _default_path_error
     participant p4 as SharedValidationError
-    participant p5 as fspath
-    participant p6 as encode
-    participant p7 as replace
+    participant p5 as os.fspath
+    participant p6 as raw.encode
+    participant p7 as raw.replace
     participant p8 as PurePosixPath
-    participant p9 as is_absolute
-    participant p10 as match
-    participant p11 as as_posix
-    participant p12 as strip
-    participant p13 as endswith
-    participant p14 as casefold
-    participant p15 as require_portable_path_component
-    participant p16 as normalize
-    participant p17 as any
-    participant p18 as ord
+    participant p9 as path.is_absolute
+    participant p10 as _WINDOWS_ABSOLUTE_RE.match
+    participant p11 as path.as_posix
+    participant p12 as normalized.strip
+    participant p13 as canonical.casefold().endswith
+    participant p14 as canonical.casefold
+    participant p15 as required_suffix.casefold
+    participant p16 as require_portable_path_component
+    participant p17 as component.encode
+    participant p18 as unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)
+    participant p19 as any
+    participant p20 as ord
     p0->>p1: require_portable_relative_path
     p1-->>p2: isinstance
     p1->>p3: _default_path_error
     p3->>p4: SharedValidationError
-    p1-->>p5: fspath
+    p1-->>p5: os.fspath
     p1-->>p2: isinstance
     p1->>p3: _default_path_error
-    p1-->>p6: encode
+    p1-->>p6: raw.encode
     p1->>p3: _default_path_error
     p1->>p3: _default_path_error
-    p1-->>p7: replace
+    p1-->>p7: raw.replace
     p1-->>p8: PurePosixPath
-    p1-->>p9: is_absolute
-    p1-->>p10: match
+    p1-->>p9: path.is_absolute
+    p1-->>p10: _WINDOWS_ABSOLUTE_RE.match
     p1->>p3: _default_path_error
     p1->>p3: _default_path_error
-    p1-->>p11: as_posix
-    p1-->>p12: strip
-    p1-->>p13: endswith
-    p1-->>p14: casefold
-    p1-->>p14: casefold
+    p1-->>p11: path.as_posix
+    p1-->>p12: normalized.strip
+    p1-->>p13: canonical.casefold().endswith
+    p1-->>p14: canonical.casefold
+    p1-->>p15: required_suffix.casefold
     p1->>p3: _default_path_error
-    p1->>p15: require_portable_path_component
-    p15-->>p6: encode
-    p15->>p4: SharedValidationError
-    p15-->>p16: normalize
-    p15->>p4: SharedValidationError
-    p15-->>p17: any
-    p15-->>p18: ord
-    p15-->>p18: ord
+    p1->>p16: require_portable_path_component
+    p16-->>p17: component.encode
+    p16->>p4: SharedValidationError
+    p16-->>p18: unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)
+    p16->>p4: SharedValidationError
+    p16-->>p19: any
+    p16-->>p20: ord
+    p16-->>p20: ord
 ```
 
 > Call sequence diagram shows 30 of 47 interactions; 17 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -72,14 +74,14 @@ flowchart LR
     s3["3. isinstance"]
     s4["4. _default_path_error"]
     s5["5. SharedValidationError"]
-    s6["6. fspath"]
+    s6["6. os.fspath"]
     s7["7. isinstance"]
     s8["8. _default_path_error"]
-    s9["9. encode"]
+    s9["9. raw.encode"]
     s10["10. _default_path_error"]
     s11["11. _default_path_error"]
-    s12["12. replace"]
-    s1 -->|"require_portable_relative_path(relative, text_error=path_error, relative_error=path_error, escape_error=escape_error, traversal_error=..., separator_error=path…"| s2
+    s12["12. raw.replace"]
+    s1 -->|"require_portable_relative_path(…)"| s2
     s2 -. "isinstance(value, (...))" .-> s3
     s2 -->|"_default_path_error(value)"| s4
     s4 -->|"SharedValidationError(...)"| s5
@@ -108,13 +110,13 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `SharedValidationError` | - | - | - | - |
-| `fspath` | - | - | - | - |
+| `os.fspath` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
-| `encode` | - | - | - | - |
+| `raw.encode` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
-| `replace` | - | - | - | - |
+| `raw.replace` | - | - | - | - |
 
 ### Call data
 
@@ -124,13 +126,13 @@ flowchart LR
 | require_portable_relative_path | isinstance | 170 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 171 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 67 | `SharedValidationError(...)` |
-| require_portable_relative_path | fspath | 172 | `os.fspath(value)` |
+| require_portable_relative_path | os.fspath | 172 | `os.fspath(value)` |
 | require_portable_relative_path | isinstance | 173 | `isinstance(raw, str)` |
 | require_portable_relative_path | _default_path_error | 174 | `_default_path_error(value)` |
-| require_portable_relative_path | encode | 176 | `raw.encode('utf-8')` |
+| require_portable_relative_path | raw.encode | 176 | `raw.encode('utf-8')` |
 | require_portable_relative_path | _default_path_error | 179 | `_default_path_error(raw)` |
 | require_portable_relative_path | _default_path_error | 182 | `_default_path_error(raw)` |
-| require_portable_relative_path | replace | 183 | `raw.replace('\\', '/')` |
+| require_portable_relative_path | raw.replace | 183 | `raw.replace('\\', '/')` |
 
 ### Boundary effects
 
@@ -140,9 +142,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_portable_relative_path` | `isinstance` | 170 |
+| external_call | `require_portable_relative_path` | `isinstance` | 170 |
 | external_call | `require_portable_relative_path` | `os.fspath` | 172 |
-| unresolved_call | `require_portable_relative_path` | `isinstance` | 173 |
+| external_call | `require_portable_relative_path` | `isinstance` | 173 |
 | unresolved_call | `require_portable_relative_path` | `raw.encode` | 176 |
 | unresolved_call | `require_portable_relative_path` | `raw.replace` | 183 |
 | step_limit | `resolve_portable_workspace_path` | `first 12 steps` | 0 |

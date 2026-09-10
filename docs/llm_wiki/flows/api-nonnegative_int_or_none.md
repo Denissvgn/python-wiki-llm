@@ -51,7 +51,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `nonnegative_int_or_none` | `isinstance` | 797 |
+| external_call | `nonnegative_int_or_none` | `isinstance` | 797 |
 
 ## Behavior
 

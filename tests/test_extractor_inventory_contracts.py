@@ -87,6 +87,10 @@ HASKELL_OPTIONAL_FIELD_INVENTORY = {
 def test_extract_v1_data_flow_fields_are_additive_contract():
     assert contracts.EXTRACT_SCHEMA_VERSION == "llm-wiki-extract/v1"
     assert getattr(contracts, "EXTRACT_ADDITIVE_FIELDS", None) == {
+        "call_bindings",
+        "main_block_call_bindings",
+        "python_bindings",
+        "python_import_scope",
         "calls[].args",
         "calls[].kwargs",
         "classes[].attributes[].alias",
@@ -103,6 +107,7 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "classes[].attributes[].unknowns",
         "classes[].attributes[].validation_alias",
         "classes[].attributes[].value",
+        "classes[].class_keywords",
         "classes[].inferred",
         "classes[].kind",
         "classes[].literal_values",

@@ -1,6 +1,6 @@
 # ExistingPage
 
-**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:112`
+**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:113`
 **Kind:** Class
 **Bases:** —
 **Module:** [migrate_cmd](../modules/migrate_cmd.md)

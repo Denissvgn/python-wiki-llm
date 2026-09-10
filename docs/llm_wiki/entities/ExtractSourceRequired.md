@@ -11,8 +11,8 @@ _Auto-generated from `_ExtractSourceRequired` in `src/llm_wiki_cli/api_types.py`
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `schema_version` | `str` | *required* | — |
 | `inventory` | `dict[str, dict[str, Any]]` | *required* | — |
 | `data_flow_details` | `dict[str, Any]` | *required* | — |

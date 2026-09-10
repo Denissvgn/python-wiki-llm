@@ -1,0 +1,1400 @@
+{
+  "python": "3.14.4",
+  "labels": {
+    "long_chain": {
+      "raw_calls": [
+        {
+          "name": "build",
+          "attr": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "line": 8
+        },
+        {
+          "name": "Builder",
+          "line": 8,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        }
+      ],
+      "call_bindings": [
+        {
+          "kind": "unresolved"
+        },
+        {
+          "kind": "local",
+          "symbol": "Builder"
+        }
+      ],
+      "edges": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "long_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "kind": "unresolved",
+          "line": 8
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "long_chain"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 8,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "long_chain"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 8,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "long_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "kind": "unresolved",
+          "line": 8
+        }
+      ],
+      "diagrams": [
+        "sequenceDiagram\n    participant p0 as long_chain\n    participant p1 as Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    participant p2 as Builder\n    p0-->>p1: Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    p0->>p2: Builder",
+        "flowchart LR\n    s1[\"1. long_chain\"]\n    s2[\"2. Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option…\"]\n    s3[\"3. Builder\"]\n    s1 -. \"Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\" .-> s2\n    s1 -->|\"Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\"| s3"
+      ],
+      "diagrams_show_build_method": false,
+      "evidence_table_retains_build_method": true,
+      "participant_count": 3
+    },
+    "short_chain": {
+      "raw_calls": [
+        {
+          "name": "build",
+          "attr": "Builder().build",
+          "line": 11
+        },
+        {
+          "name": "Builder",
+          "line": 11
+        }
+      ],
+      "call_bindings": [
+        {
+          "kind": "unresolved"
+        },
+        {
+          "kind": "local",
+          "symbol": "Builder"
+        }
+      ],
+      "edges": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "short_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "Builder().build",
+          "kind": "unresolved",
+          "line": 11
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "short_chain"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 11
+        }
+      ],
+      "observations": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "short_chain"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 11
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "short_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "Builder().build",
+          "kind": "unresolved",
+          "line": 11
+        }
+      ],
+      "diagrams": [
+        "sequenceDiagram\n    participant p0 as short_chain\n    participant p1 as Builder().build\n    participant p2 as Builder\n    p0-->>p1: Builder().build\n    p0->>p2: Builder",
+        "flowchart LR\n    s1[\"1. short_chain\"]\n    s2[\"2. Builder().build\"]\n    s3[\"3. Builder\"]\n    s1 -. \"Builder().build(data not statically known)\" .-> s2\n    s1 -->|\"Builder(data not statically known)\"| s3"
+      ],
+      "diagrams_show_build_method": true,
+      "evidence_table_retains_build_method": true,
+      "participant_count": 3
+    },
+    "factory_chain": {
+      "raw_calls": [
+        {
+          "name": "build",
+          "attr": "factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "line": 14
+        },
+        {
+          "name": "factory",
+          "line": 14,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        }
+      ],
+      "call_bindings": [
+        {
+          "kind": "unresolved"
+        },
+        {
+          "kind": "unresolved"
+        }
+      ],
+      "edges": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "factory_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "kind": "unresolved",
+          "line": 14
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "factory_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "factory"
+          },
+          "name": "factory",
+          "kind": "unresolved",
+          "line": 14,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "factory_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "factory"
+          },
+          "name": "factory",
+          "kind": "unresolved",
+          "line": 14,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "factory_chain"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "kind": "unresolved",
+          "line": 14
+        }
+      ],
+      "diagrams": [
+        "sequenceDiagram\n    participant p0 as factory_chain\n    participant p1 as factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    participant p2 as factory\n    p0-->>p1: factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    p0-->>p2: factory",
+        "flowchart LR\n    s1[\"1. factory_chain\"]\n    s2[\"2. factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option…\"]\n    s3[\"3. factory\"]\n    s1 -. \"factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\" .-> s2\n    s1 -. \"factory(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\" .-> s3"
+      ],
+      "diagrams_show_build_method": false,
+      "evidence_table_retains_build_method": true,
+      "participant_count": 3
+    },
+    "distinct_methods": {
+      "raw_calls": [
+        {
+          "name": "build",
+          "attr": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "line": 17
+        },
+        {
+          "name": "Builder",
+          "line": 17,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        },
+        {
+          "name": "finish",
+          "attr": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).finish",
+          "line": 18
+        },
+        {
+          "name": "Builder",
+          "line": 18,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        }
+      ],
+      "call_bindings": [
+        {
+          "kind": "unresolved"
+        },
+        {
+          "kind": "local",
+          "symbol": "Builder"
+        },
+        {
+          "kind": "unresolved"
+        },
+        {
+          "kind": "local",
+          "symbol": "Builder"
+        }
+      ],
+      "edges": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "kind": "unresolved",
+          "line": 17
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 17,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": null,
+            "symbol": "finish"
+          },
+          "name": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).finish",
+          "kind": "unresolved",
+          "line": 18
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 18,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 17,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "Builder"
+          },
+          "name": "Builder",
+          "kind": "internal",
+          "line": 18,
+          "kwargs": [
+            {
+              "name": "configuration_option_0",
+              "kind": "name",
+              "value": "value_0"
+            },
+            {
+              "name": "configuration_option_1",
+              "kind": "name",
+              "value": "value_1"
+            },
+            {
+              "name": "configuration_option_2",
+              "kind": "name",
+              "value": "value_2"
+            },
+            {
+              "name": "configuration_option_3",
+              "kind": "name",
+              "value": "value_3"
+            },
+            {
+              "name": "configuration_option_4",
+              "kind": "name",
+              "value": "value_4"
+            },
+            {
+              "name": "configuration_option_5",
+              "kind": "name",
+              "value": "value_5"
+            },
+            {
+              "name": "configuration_option_6",
+              "kind": "name",
+              "value": "value_6"
+            },
+            {
+              "name": "configuration_option_7",
+              "kind": "name",
+              "value": "value_7"
+            },
+            {
+              "name": "configuration_option_8",
+              "kind": "name",
+              "value": "value_8"
+            }
+          ]
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).build",
+          "kind": "unresolved",
+          "line": 17
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "distinct_methods"
+          },
+          "to": {
+            "file": null,
+            "symbol": "finish"
+          },
+          "name": "Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=value_4, configuration_option_5=value_5, configuration_option_6=value_6, configuration_option_7=value_7, configuration_option_8=value_8).finish",
+          "kind": "unresolved",
+          "line": 18
+        }
+      ],
+      "diagrams": [
+        "sequenceDiagram\n    participant p0 as distinct_methods\n    participant p1 as Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    participant p2 as Builder\n    participant p3 as Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    p0-->>p1: Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    p0->>p2: Builder\n    p0-->>p3: Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\n    p0->>p2: Builder",
+        "flowchart LR\n    s1[\"1. distinct_methods\"]\n    s2[\"2. Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option…\"]\n    s3[\"3. Builder\"]\n    s4[\"4. Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option…\"]\n    s5[\"5. Builder\"]\n    s1 -. \"Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\" .-> s2\n    s1 -->|\"Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\"| s3\n    s1 -. \"Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\" .-> s4\n    s1 -->|\"Builder(configuration_option_0=value_0, configuration_option_1=value_1, configuration_option_2=value_2, configuration_option_3=value_3, configuration_option_4=…\"| s5"
+      ],
+      "diagrams_show_build_method": false,
+      "evidence_table_retains_build_method": true,
+      "participant_count": 4
+    }
+  },
+  "output_path_policy": {
+    "from_unrelated_cwd": {
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: --wiki-dir '<fixture>/output/wiki' resolves to '<fixture>/output/wiki', which is outside the project root '<fixture>/caller'.\n",
+      "output_created": false
+    },
+    "from_output_workspace": {
+      "exit_code": 0,
+      "stdout": "Bootstrapping wiki from source: <fixture>/source (depth=full)\nWiki output directory: <fixture>/output/wiki\nExtracting source inventory...\nExtracted source inventory: 1 file(s).\nBuilding cross-reference relationships...\nBuilt cross-reference relationships: 0.\nGenerating entity and module pages...\n  CREATE entity: Session\n  CREATE module: app\nGenerated entity/module pages: 1 entities, 1 modules.\nGenerating user-flow pages...\nGenerated user-flow pages: 0.\nGenerating infrastructure pages...\nInfrastructure discovery root: . (0 supported source(s), 0 unsupported YAML candidate(s)).\nGenerated infrastructure pages: 0.\nGenerating architecture pages...\n  CREATE architecture: dependencies\n  CREATE architecture: load-order\nGenerated architecture pages: 2.\n  WRITE index.md\nWriting generated knowledge artifacts...\nWriting sync manifest...\n  CREATE <fixture>/output/wiki/.llm-wiki-surface.json\n  CREATE <fixture>/output/wiki/.llm-wiki-knowledge.json\n  CREATE <fixture>/output/wiki/.llm-wiki-manifest.json\n\nBootstrap complete: 1 entities, 1 modules, 0 workflows, 0 flows, 0 infrastructure, 2 architecture and 0 API contract pages created from 1 source files (0 cross-references).\n",
+      "stderr": ""
+    },
+    "doctor_from_output_workspace": {
+      "exit_code": 0,
+      "status": "healthy",
+      "availability": {
+        "reason": "all-projection-commitments-match",
+        "state": "ready",
+        "usable": true
+      },
+      "freshness": {
+        "concepts": 6,
+        "counts_by_state": {
+          "basis-incompatible": 0,
+          "current": 2,
+          "nonsemantic-source-change": 0,
+          "source-changed": 0,
+          "source-missing": 0,
+          "unknown": 4
+        },
+        "disclosure": "evaluated (6 concepts)",
+        "evaluated": true
+      },
+      "snapshot_parity": {
+        "issue_count": 0,
+        "reasons": [],
+        "state": "valid"
+      },
+      "drift": {
+        "confirmed_stale": 0,
+        "counts_by_state": {
+          "basis-incompatible": 0,
+          "current": 2,
+          "nonsemantic-source-change": 0,
+          "source-changed": 0,
+          "source-missing": 0,
+          "unknown": 4
+        },
+        "diagnostic_count": 0,
+        "indeterminate": 0,
+        "nonsemantic_changes": 0,
+        "reasons": [],
+        "state": "current"
+      },
+      "degraded_reasons": [],
+      "unhealthy_reasons": []
+    },
+    "source_bytes_unchanged": true
+  },
+  "context_cache": {
+    "unsupported_flag": {
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "usage: llm-wiki [-h] [--version]\n                {init,extract,lint,prepare-extractors,ci-check,install-ci,install,knowledge,plugins,team,trigger-agent,bootstrap,bump,generate-prompt,metrics,review,uninstall,status,mcp,obsidian,site,skills,release,upgrade,sync,migrate,context,docs,doctor} ...\nllm-wiki: error: unrecognized arguments: --helper-cache-dir <fixture>/isolated-helper-cache\n"
+    },
+    "environment_selection": "<fixture>/isolated-helper-cache/llm-wiki-extractors",
+    "prepared_environment_context": {
+      "exit_code": 0,
+      "stdout": "{\n  \"budget\": 8000,\n  \"used\": 83,\n  \"truncated\": false,\n  \"omitted_files\": [],\n  \"downgraded_files\": {},\n  \"bounds\": {\n    \"files\": {\n      \"total\": 1,\n      \"returned\": 1,\n      \"truncated\": false\n    }\n  },\n  \"files\": {\n    \"example.ts\": {\n      \"classes\": [],\n      \"functions\": [\n        {\n          \"name\": \"hello\",\n          \"kind\": \"function\",\n          \"line\": 1,\n          \"end_line\": 1,\n          \"is_async\": false,\n          \"docstring\": \"\",\n          \"decorators\": [],\n          \"params\": [\n            {\n              \"name\": \"name\",\n              \"type\": \"string\"\n            }\n          ],\n          \"return_type\": \"\"\n        }\n      ],\n      \"exports\": [\n        \"hello\"\n      ],\n      \"module_docstring\": \"\",\n      \"package\": null,\n      \"priority\": \"high\",\n      \"detail\": \"deep\"\n    }\n  }\n}\n",
+      "stderr": "Extractor plan: requested=1 resolved=1 eligible_parallel=1 effective_workers=1 parallel=typescript sequential=- cache_elided=-\n"
+    }
+  },
+  "in_flight_drift": {
+    "mutation_after_inventory": [
+      {
+        "before": "5bc4d948ad3c3a1c646f54b091fa5251db1c1e7063dd2d1e34cb5bc2699e2a6b",
+        "after": "f19a024769b23d8aa722fcc829a2a801e9bf62d6655fe027a68da0c4b28992b5"
+      }
+    ],
+    "bootstrap": {
+      "exit_code": 0,
+      "stdout": "Bootstrapping wiki from source: <fixture>/source (depth=full)\nWiki output directory: <fixture>/drift/wiki\nExtracting source inventory...\nExtracted source inventory: 1 file(s).\nBuilding cross-reference relationships...\nBuilt cross-reference relationships: 0.\nGenerating entity and module pages...\n  CREATE entity: Session\n  CREATE module: app\nGenerated entity/module pages: 1 entities, 1 modules.\nGenerating user-flow pages...\nGenerated user-flow pages: 0.\nGenerating infrastructure pages...\nInfrastructure discovery root: . (0 supported source(s), 0 unsupported YAML candidate(s)).\nGenerated infrastructure pages: 0.\nGenerating architecture pages...\n  CREATE architecture: dependencies\n  CREATE architecture: load-order\nGenerated architecture pages: 2.\n  WRITE index.md\nWriting generated knowledge artifacts...\nWriting sync manifest...\n  CREATE <fixture>/drift/wiki/.llm-wiki-surface.json\n  CREATE <fixture>/drift/wiki/.llm-wiki-knowledge.json\n  CREATE <fixture>/drift/wiki/.llm-wiki-manifest.json\n\nBootstrap complete: 1 entities, 1 modules, 0 workflows, 0 flows, 0 infrastructure, 2 architecture and 0 API contract pages created from 1 source files (0 cross-references).\n",
+      "stderr": ""
+    },
+    "doctor_before_sync": {
+      "exit_code": 1,
+      "status": "degraded",
+      "availability": {
+        "reason": "all-projection-commitments-match",
+        "state": "ready",
+        "usable": true
+      },
+      "freshness": {
+        "concepts": 6,
+        "counts_by_state": {
+          "basis-incompatible": 0,
+          "current": 0,
+          "nonsemantic-source-change": 2,
+          "source-changed": 0,
+          "source-missing": 0,
+          "unknown": 4
+        },
+        "disclosure": "evaluated (6 concepts)",
+        "evaluated": true
+      },
+      "snapshot_parity": {
+        "issue_count": 0,
+        "reasons": [],
+        "state": "valid"
+      },
+      "drift": {
+        "confirmed_stale": 0,
+        "counts_by_state": {
+          "basis-incompatible": 0,
+          "current": 0,
+          "nonsemantic-source-change": 2,
+          "source-changed": 0,
+          "source-missing": 0,
+          "unknown": 4
+        },
+        "diagnostic_count": 2,
+        "indeterminate": 0,
+        "nonsemantic_changes": 2,
+        "reasons": [
+          "source-bytes-changed-concept-observation-unchanged"
+        ],
+        "state": "nonsemantic-change"
+      },
+      "degraded_reasons": [
+        "nonsemantic-source-change"
+      ],
+      "unhealthy_reasons": []
+    },
+    "sync": {
+      "exit_code": 0,
+      "stdout": "Syncing wiki from source: <fixture>/source\nWiki directory: wiki\nExtracting current source inventory...\nExtracted current source inventory: 1 file(s).\nPreparing sync page maps...\nPrepared sync page maps.\nInfrastructure discovery roots: . (0 supported source(s), 0 unsupported YAML candidate(s)).\nBuilding relationships for 1 affected entity target(s)...\nBuilt affected relationships: 0.\nApplying wiki page changes...\n  SKIP entity (unchanged): Session\n  SKIP module (unchanged): app\nApplied wiki page changes.\n  SKIP index.md (unchanged)\n  APPEND log.md\nSurface index: unchanged (.llm-wiki-surface.json)\nKnowledge index: updated (.llm-wiki-knowledge.json)\nManifest: updated (.llm-wiki-manifest.json)\n\nSync complete: 0 created, 0 updated, 0 metadata-only, 5 skipped, 0 deprecated.\nInfrastructure observations: 0 added, 0 changed, 0 moved, 0 removed, 0 unsupported YAML.\n",
+      "stderr": "Extractor plan: requested=1 resolved=1 eligible_parallel=1 effective_workers=1 parallel=python sequential=- cache_elided=-\n"
+    },
+    "doctor_after_sync": {
+      "exit_code": 0,
+      "status": "healthy",
+      "availability": {
+        "reason": "all-projection-commitments-match",
+        "state": "ready",
+        "usable": true
+      },
+      "freshness": {
+        "concepts": 6,
+        "counts_by_state": {
+          "basis-incompatible": 0,
+          "current": 2,
+          "nonsemantic-source-change": 0,
+          "source-changed": 0,
+          "source-missing": 0,
+          "unknown": 4
+        },
+        "disclosure": "evaluated (6 concepts)",
+        "evaluated": true
+      },
+      "snapshot_parity": {
+        "issue_count": 0,
+        "reasons": [],
+        "state": "valid"
+      },
+      "drift": {
+        "confirmed_stale": 0,
+        "counts_by_state": {
+          "basis-incompatible": 0,
+          "current": 2,
+          "nonsemantic-source-change": 0,
+          "source-changed": 0,
+          "source-missing": 0,
+          "unknown": 4
+        },
+        "diagnostic_count": 0,
+        "indeterminate": 0,
+        "nonsemantic_changes": 0,
+        "reasons": [],
+        "state": "current"
+      },
+      "degraded_reasons": [],
+      "unhealthy_reasons": []
+    },
+    "content_page_bytes_and_mtimes_preserved": true
+  },
+  "reported_source": {
+    "path": "/mnt/data/projects/decompileAnyToPython/src/any2py/recovery/builder.py",
+    "sha256": "bebfe3c86f4d117164aa9096e9af87e251f7aee018017d13882ee642030c184d",
+    "flow": {
+      "raw_calls": [
+        {
+          "name": "build",
+          "attr": "_ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_route_override, cache_hit=cache_hit, cache_identity_sha256=cache_identity_sha256).build",
+          "line": 1543
+        },
+        {
+          "name": "_ReportBuilder",
+          "line": 1543,
+          "args": [
+            {
+              "kind": "name",
+              "value": "facts"
+            },
+            {
+              "kind": "name",
+              "value": "identity"
+            }
+          ],
+          "kwargs": [
+            {
+              "name": "abi",
+              "kind": "name",
+              "value": "abi"
+            },
+            {
+              "name": "rizin",
+              "kind": "name",
+              "value": "rizin"
+            },
+            {
+              "name": "overrides",
+              "kind": "name",
+              "value": "overrides"
+            },
+            {
+              "name": "known_unreachable_ranges",
+              "kind": "name",
+              "value": "known_unreachable_ranges"
+            },
+            {
+              "name": "native_route_override",
+              "kind": "name",
+              "value": "native_route_override"
+            },
+            {
+              "name": "cache_hit",
+              "kind": "name",
+              "value": "cache_hit"
+            },
+            {
+              "name": "cache_identity_sha256",
+              "kind": "name",
+              "value": "cache_identity_sha256"
+            }
+          ]
+        }
+      ],
+      "call_bindings": [
+        {
+          "kind": "unresolved"
+        },
+        {
+          "kind": "local",
+          "symbol": "_ReportBuilder"
+        }
+      ],
+      "edges": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "build_recovery_report"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "_ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_route_override, cache_hit=cache_hit, cache_identity_sha256=cache_identity_sha256).build",
+          "kind": "unresolved",
+          "line": 1543
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "build_recovery_report"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "_ReportBuilder"
+          },
+          "name": "_ReportBuilder",
+          "kind": "internal",
+          "line": 1543,
+          "args": [
+            {
+              "kind": "name",
+              "value": "facts"
+            },
+            {
+              "kind": "name",
+              "value": "identity"
+            }
+          ],
+          "kwargs": [
+            {
+              "name": "abi",
+              "kind": "name",
+              "value": "abi"
+            },
+            {
+              "name": "rizin",
+              "kind": "name",
+              "value": "rizin"
+            },
+            {
+              "name": "overrides",
+              "kind": "name",
+              "value": "overrides"
+            },
+            {
+              "name": "known_unreachable_ranges",
+              "kind": "name",
+              "value": "known_unreachable_ranges"
+            },
+            {
+              "name": "native_route_override",
+              "kind": "name",
+              "value": "native_route_override"
+            },
+            {
+              "name": "cache_hit",
+              "kind": "name",
+              "value": "cache_hit"
+            },
+            {
+              "name": "cache_identity_sha256",
+              "kind": "name",
+              "value": "cache_identity_sha256"
+            }
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "build_recovery_report"
+          },
+          "to": {
+            "file": "builder.py",
+            "symbol": "_ReportBuilder"
+          },
+          "name": "_ReportBuilder",
+          "kind": "internal",
+          "line": 1543,
+          "args": [
+            {
+              "kind": "name",
+              "value": "facts"
+            },
+            {
+              "kind": "name",
+              "value": "identity"
+            }
+          ],
+          "kwargs": [
+            {
+              "name": "abi",
+              "kind": "name",
+              "value": "abi"
+            },
+            {
+              "name": "rizin",
+              "kind": "name",
+              "value": "rizin"
+            },
+            {
+              "name": "overrides",
+              "kind": "name",
+              "value": "overrides"
+            },
+            {
+              "name": "known_unreachable_ranges",
+              "kind": "name",
+              "value": "known_unreachable_ranges"
+            },
+            {
+              "name": "native_route_override",
+              "kind": "name",
+              "value": "native_route_override"
+            },
+            {
+              "name": "cache_hit",
+              "kind": "name",
+              "value": "cache_hit"
+            },
+            {
+              "name": "cache_identity_sha256",
+              "kind": "name",
+              "value": "cache_identity_sha256"
+            }
+          ]
+        },
+        {
+          "from": {
+            "file": "builder.py",
+            "symbol": "build_recovery_report"
+          },
+          "to": {
+            "file": null,
+            "symbol": "build"
+          },
+          "name": "_ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_route_override, cache_hit=cache_hit, cache_identity_sha256=cache_identity_sha256).build",
+          "kind": "unresolved",
+          "line": 1543
+        }
+      ],
+      "diagrams": [
+        "sequenceDiagram\n    participant p0 as build_recovery_report\n    participant p1 as _ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\n    participant p2 as _ReportBuilder\n    p0-->>p1: _ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\n    p0->>p2: _ReportBuilder",
+        "flowchart LR\n    s1[\"1. build_recovery_report\"]\n    s2[\"2. _ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_r…\"]\n    s3[\"3. _ReportBuilder\"]\n    s1 -. \"_ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\" .-> s2\n    s1 -->|\"_ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\"| s3"
+      ],
+      "diagrams_show_build_method": false,
+      "evidence_table_retains_build_method": true,
+      "participant_count": 3
+    },
+    "source_bytes_unchanged": true
+  },
+  "reported_flow": {
+    "path": "/mnt/data/projects/python-llm-wiki-tests/runs/run_20260910_170500/decompile_any_to_python/docs/llm_wiki/flows/api-build_recovery_report.md",
+    "sha256": "674920299bd4a47b72f724dbb63e313c3a75cbe6283384f47fac795b14086788",
+    "diagrams": [
+      "sequenceDiagram\n    participant p0 as build_recovery_report\n    participant p1 as _ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\n    participant p2 as _ReportBuilder\n    p0-->>p1: _ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\n    p0->>p2: _ReportBuilder",
+      "flowchart LR\n    s1[\"1. build_recovery_report\"]\n    s2[\"2. _ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_r…\"]\n    s3[\"3. _ReportBuilder\"]\n    s1 -. \"_ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\" .-> s2\n    s1 -->|\"_ReportBuilder(facts, identity, abi=abi, rizin=rizin, overrides=overrides, known_unreachable_ranges=known_unreachable_ranges, native_route_override=native_rout…\"| s3\n    click s1 \"../modules/builder.md\"\n    click s3 \"../modules/builder.md\""
+    ]
+  }
+}

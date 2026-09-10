@@ -107,4 +107,4 @@ flowchart LR
 | `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_governance_moves_for_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 86 logical references; 74 omitted by the 12-row generated summary limit.
+> References: showing 12 of 88 logical references; 76 omitted by the 12-row generated summary limit.

@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `coerce_nonnegative_int` | `isinstance` | 890 |
+| external_call | `coerce_nonnegative_int` | `isinstance` | 890 |
 
 ## Behavior
 

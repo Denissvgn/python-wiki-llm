@@ -11,8 +11,8 @@ _Auto-generated from `_ContextKnowledgeRequired` in `src/llm_wiki_cli/api_types.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `mode` | `KnowledgeMode` | *required* | — |
 | `status` | `str` | *required* | — |
 | `availability` | `str` | *required* | — |

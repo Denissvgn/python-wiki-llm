@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-09-10
+
+### Fixed
+
+- Python call graphs respect lexical bindings, builtins, import aliases, and
+  local shadowing instead of linking calls to unrelated same-named symbols.
+- Python imports resolve within justified source and package roots, avoiding
+  false dependencies and cycles caused by unrelated nested modules with names
+  such as `logging` or `json`.
+- Workflow sequences use resolved calls from function bodies. Type annotations
+  and docstrings no longer create workflow steps or phantom workflow pages.
+- Flow diagrams distinguish same-named targets and keep invoked method names
+  visible in compact labels such as `ReportBuilder(…).build`, while preserving
+  complete call evidence and unresolved-call status.
+- TypedDict documentation preserves required and optional key presence across
+  inheritance, `total`, `Required`, and `NotRequired` declarations.
+- Unresolved HTTP operations retain their uncertainty without adding invalid
+  resolved routes that could interrupt bootstrap or sync.
+- JavaScript knowledge records identify the actual extractor producer, allowing
+  compatible refreshed artifacts to pass provenance comparisons.
+
+### Migration
+
+- Refresh existing knowledge artifacts with `llm-wiki sync
+  --rebuild-knowledge --jobs 1`. Historical JavaScript records with unknown
+  producer configuration remain `basis-incompatible` until refreshed.
+- Sync retires obsolete generated workflow pages. If an obsolete page contains
+  authored `Behavior`, sync stops with exit code 2 so that content can be
+  explicitly archived before removal. Review the dry-run scope before applying
+  a broad refresh; `--force` also authorizes removal of those authored pages.
+
 ## [2.0.1] - 2026-09-09
 
 ### Fixed
@@ -911,7 +942,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.1...v2.0.0
 [1.8.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.0...v1.8.1

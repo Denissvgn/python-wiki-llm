@@ -20,55 +20,57 @@
 sequenceDiagram
     participant p0 as lifecycle_state_by_uid
     participant p1 as validate_governance_ledger
-    participant p2 as isinstance
+    participant p2 as isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)
     participant p3 as TypeError
     participant p4 as GovernanceError
     participant p5 as _bundle_id
     participant p6 as validate_bundle_id
     participant p7 as _machine_text
-    participant p8 as ConceptIdentityError
-    participant p9 as len
-    participant p10 as strip
-    participant p11 as any
-    participant p12 as isspace
-    participant p13 as normalize
-    participant p14 as startswith
-    participant p15 as category
-    participant p16 as fullmatch
-    participant p17 as casefold
-    participant p18 as _looks_absolute_path
-    participant p19 as match
-    participant p20 as _contains_uri_userinfo
-    participant p21 as urlsplit
+    participant p8 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p9 as ConceptIdentityError
+    participant p10 as len (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p11 as value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p12 as any (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p13 as character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p14 as unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p15 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p16 as unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p17 as _BUNDLE_ID_RE.fullmatch
+    participant p18 as text.casefold
+    participant p19 as _looks_absolute_path
+    participant p20 as value.startswith (src/llm_wiki_cli/services…y.py:_looks_absolute_path)
+    participant p21 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…y.py:_looks_absolute_path)
+    participant p22 as _contains_uri_userinfo
+    participant p23 as urlsplit
     p0->>p1: validate_governance_ledger
-    p1-->>p2: isinstance
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)
     p1-->>p3: TypeError
     p1->>p4: GovernanceError
     p1->>p5: _bundle_id
     p5->>p6: validate_bundle_id
     p6->>p7: _machine_text
-    p7-->>p2: isinstance
-    p7->>p8: ConceptIdentityError
-    p7-->>p9: len
-    p7->>p8: ConceptIdentityError
-    p7-->>p10: strip
-    p7-->>p11: any
-    p7-->>p12: isspace
-    p7->>p8: ConceptIdentityError
-    p7-->>p13: normalize
-    p7->>p8: ConceptIdentityError
-    p7-->>p11: any
-    p7-->>p14: startswith
-    p7-->>p15: category
-    p7->>p8: ConceptIdentityError
-    p6-->>p16: fullmatch
-    p6-->>p17: casefold
-    p6->>p18: _looks_absolute_path
-    p18-->>p14: startswith
-    p18-->>p19: match
-    p6->>p20: _contains_uri_userinfo
-    p20-->>p21: urlsplit
-    p6->>p8: ConceptIdentityError
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7->>p9: ConceptIdentityError
+    p7-->>p10: len (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7->>p9: ConceptIdentityError
+    p7-->>p11: value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7-->>p12: any (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7-->>p13: character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7->>p9: ConceptIdentityError
+    p7-->>p14: unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7->>p9: ConceptIdentityError
+    p7-->>p12: any (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7-->>p15: unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7-->>p16: unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p7->>p9: ConceptIdentityError
+    p6-->>p17: _BUNDLE_ID_RE.fullmatch
+    p6-->>p18: text.casefold
+    p6->>p19: _looks_absolute_path
+    p19-->>p20: value.startswith (src/llm_wiki_cli/services…y.py:_looks_absolute_path)
+    p19-->>p21: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…y.py:_looks_absolute_path)
+    p6->>p22: _contains_uri_userinfo
+    p22-->>p23: urlsplit
+    p6->>p9: ConceptIdentityError
     p5->>p4: GovernanceError
 ```
 
@@ -83,26 +85,26 @@ sequenceDiagram
 flowchart LR
     s1["1. lifecycle_state_by_uid"]
     s2["2. validate_governance_ledger"]
-    s3["3. isinstance"]
+    s3["3. isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)"]
     s4["4. TypeError"]
     s5["5. GovernanceError"]
     s6["6. _bundle_id"]
     s7["7. validate_bundle_id"]
     s8["8. _machine_text"]
-    s9["9. isinstance"]
+    s9["9. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
     s10["10. ConceptIdentityError"]
-    s11["11. len"]
+    s11["11. len (src/llm_wiki_cli/services…identity.py:_machine_text)"]
     s12["12. ConceptIdentityError"]
     s1 -->|"validate_governance_ledger(ledger)"| s2
-    s2 -. "isinstance(ledger, GovernanceLedger)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)" .-> s3
     s2 -. "TypeError('ledger must be a GovernanceLedger')" .-> s4
     s2 -->|"GovernanceError('schema_version', ..., code='governance-version-unsupported')"| s5
     s2 -->|"_bundle_id(ledger.bundle_id, 'bundle_id')"| s6
     s6 -->|"validate_bundle_id(value)"| s7
     s7 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s8
-    s8 -. "isinstance(value, str)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s9
     s8 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s10
-    s8 -. "len(value)" .-> s11
+    s8 -. "len (src/llm_wiki_cli/services…identity.py:_machine_text)(value)" .-> s11
     s8 -->|"ConceptIdentityError(field, ...)"| s12
     click s1 "../modules/knowledge_governance.md"
     click s2 "../modules/knowledge_governance.md"
@@ -120,15 +122,15 @@ flowchart LR
 |---|---|---|---|---|
 | `lifecycle_state_by_uid` | `ledger: GovernanceLedger` | - | `result[...]` | `result` |
 | `validate_governance_ledger` | `ledger: GovernanceLedger`, `expected_bundle_id: str \| None` | `GovernanceLedger`, `GOVERNANCE_SCHEMA_VERSION`, `GOVERNANCE_SCHEMA_VERSION`, `GovernanceAllocation`, `ConceptIdentityError`, `ALIAS_NATURAL_KEY`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY` | `current_keys[...]`, `alias_counts[...]`, `alias_owners[...]` | `GovernanceLedger(...)` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `GovernanceError` | - | - | - | - |
 | `_bundle_id` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_bundle_id(...)` |
 | `validate_bundle_id` | `value: object` | `_MAX_BUNDLE_ID_LENGTH` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `len` | - | - | - | - |
+| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 
 ### Call data
@@ -136,15 +138,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | lifecycle_state_by_uid | validate_governance_ledger | 1444 | `validate_governance_ledger(ledger)` |
-| validate_governance_ledger | isinstance | 523 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 523 | `isinstance(ledger, GovernanceLedger)` |
 | validate_governance_ledger | TypeError | 524 | `TypeError('ledger must be a GovernanceLedger')` |
 | validate_governance_ledger | GovernanceError | 526 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
 | validate_governance_ledger | _bundle_id | 531 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
 | _bundle_id | validate_bundle_id | 3357 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance | 912 | `isinstance(value, str)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len | 914 | `len(value)` |
+| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 914 | `len(value)` |
 | _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
 
 ### Boundary effects
@@ -155,9 +157,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_governance_ledger` | `isinstance` | 523 |
-| unresolved_call | `validate_governance_ledger` | `TypeError` | 524 |
-| unresolved_call | `_machine_text` | `isinstance` | 912 |
+| external_call | `validate_governance_ledger` | `isinstance` | 523 |
+| external_call | `validate_governance_ledger` | `TypeError` | 524 |
+| external_call | `_machine_text` | `isinstance` | 912 |
 | step_limit | `lifecycle_state_by_uid` | `first 12 steps` | 0 |
 | truncated_flow | `lifecycle_state_by_uid` | `depth limit` | 0 |
 

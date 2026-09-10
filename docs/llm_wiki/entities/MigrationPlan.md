@@ -1,6 +1,6 @@
 # MigrationPlan
 
-**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:141`
+**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:142`
 **Kind:** Class
 **Bases:** —
 **Module:** [migrate_cmd](../modules/migrate_cmd.md)

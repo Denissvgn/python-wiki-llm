@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as search_wiki
-    p0-->>p0: search_wiki
+    participant p1 as service.search_wiki
+    p0-->>p1: service.search_wiki
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. search_wiki"]
-    s2["2. search_wiki"]
+    s2["2. service.search_wiki"]
     s1 -. "service.search_wiki(query, kinds=kinds, limit=limit)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `search_wiki` | `query: str`, `kinds: list[str] \| None`, `limit: int` | - | - | `service.search_wiki(...)` |
-| `search_wiki` | - | - | - | - |
+| `service.search_wiki` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| search_wiki | search_wiki | 1239 | `service.search_wiki(query, kinds=kinds, limit=limit)` |
+| search_wiki | service.search_wiki | 1239 | `service.search_wiki(query, kinds=kinds, limit=limit)` |
 
 ### Boundary effects
 

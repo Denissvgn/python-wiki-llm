@@ -10,51 +10,56 @@
 ```mermaid
 sequenceDiagram
     participant p0 as add_identity_alias
-    participant p1 as isinstance
-    participant p2 as TypeError
+    participant p1 as isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)
+    participant p2 as TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias)
     participant p3 as _typed_tuple
-    participant p4 as tuple
-    participant p5 as enumerate
-    participant p6 as all
-    participant p7 as validate_identity_registry
-    participant p8 as find_identity_collisions
-    participant p9 as defaultdict
-    participant p10 as append
-    participant p11 as identity_coordinate_key
-    participant p12 as validate_alias_type
-    participant p13 as AliasType
-    participant p14 as ConceptIdentityError
-    participant p15 as validate_alias_value
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
+    participant p4 as isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    participant p5 as TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    participant p6 as tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    participant p7 as enumerate
+    participant p8 as all
+    participant p9 as validate_identity_registry
+    participant p10 as find_identity_collisions
+    participant p11 as defaultdict
+    participant p12 as allocations_by_uid[…].append
+    participant p13 as current_coordinates[…][…].append (src/llm_wiki_cli/services…nd_identity_collisions, 1)
+    participant p14 as current_coordinates[…][…].append (src/llm_wiki_cli/services…:find_identity_collisions)
+    participant p15 as identity_coordinate_key
+    participant p16 as validate_alias_type
+    participant p17 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
+    participant p18 as AliasType
+    participant p19 as ConceptIdentityError
+    participant p20 as validate_alias_value
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias)
     p0->>p3: _typed_tuple
-    p3-->>p1: isinstance
-    p3-->>p2: TypeError
-    p3-->>p4: tuple
-    p3-->>p2: TypeError
-    p3-->>p5: enumerate
-    p3-->>p1: isinstance
-    p3-->>p2: TypeError
-    p0-->>p6: all
-    p0->>p7: validate_identity_registry
-    p7->>p3: _typed_tuple
-    p7->>p3: _typed_tuple
-    p7->>p8: find_identity_collisions
-    p8->>p3: _typed_tuple
-    p8->>p3: _typed_tuple
-    p8-->>p9: defaultdict
-    p8-->>p9: defaultdict
-    p8-->>p9: defaultdict
-    p8-->>p10: append
-    p8-->>p10: append
-    p8-->>p10: append
-    p8->>p11: identity_coordinate_key
-    p11->>p12: validate_alias_type
-    p12-->>p1: isinstance
-    p12->>p13: AliasType
-    p12->>p14: ConceptIdentityError
-    p11->>p15: validate_alias_value
-    p15->>p12: validate_alias_type
+    p3-->>p4: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    p3-->>p5: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    p3-->>p6: tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    p3-->>p5: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    p3-->>p7: enumerate
+    p3-->>p4: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    p3-->>p5: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    p0-->>p8: all
+    p0->>p9: validate_identity_registry
+    p9->>p3: _typed_tuple
+    p9->>p3: _typed_tuple
+    p9->>p10: find_identity_collisions
+    p10->>p3: _typed_tuple
+    p10->>p3: _typed_tuple
+    p10-->>p11: defaultdict
+    p10-->>p11: defaultdict
+    p10-->>p11: defaultdict
+    p10-->>p12: allocations_by_uid[…].append
+    p10-->>p13: current_coordinates[…][…].append (src/llm_wiki_cli/services…nd_identity_collisions, 1)
+    p10-->>p14: current_coordinates[…][…].append (src/llm_wiki_cli/services…:find_identity_collisions)
+    p10->>p15: identity_coordinate_key
+    p15->>p16: validate_alias_type
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
+    p16->>p18: AliasType
+    p16->>p19: ConceptIdentityError
+    p15->>p20: validate_alias_value
+    p20->>p16: validate_alias_type
 ```
 
 > Call sequence diagram shows 30 of 159 interactions; 129 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -67,27 +72,27 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. add_identity_alias"]
-    s2["2. isinstance"]
-    s3["3. TypeError"]
+    s2["2. isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)"]
+    s3["3. TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias)"]
     s4["4. _typed_tuple"]
-    s5["5. isinstance"]
-    s6["6. TypeError"]
-    s7["7. tuple"]
-    s8["8. TypeError"]
+    s5["5. isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s6["6. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s7["7. tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s8["8. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
     s9["9. enumerate"]
-    s10["10. isinstance"]
-    s11["11. TypeError"]
+    s10["10. isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
+    s11["11. TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)"]
     s12["12. all"]
-    s1 -. "isinstance(allocation, ConceptAllocation)" .-> s2
-    s1 -. "TypeError('allocation must be a ConceptAllocation')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)(allocation, ConceptAllocation)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias)('allocation must be a ConceptAllocation')" .-> s3
     s1 -->|"_typed_tuple(allocations, ConceptAllocation, 'allocations')"| s4
-    s4 -. "isinstance(values, (...))" .-> s5
-    s4 -. "TypeError(...)" .-> s6
-    s4 -. "tuple(values)" .-> s7
-    s4 -. "TypeError(...)" .-> s8
+    s4 -. "isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values, (...))" .-> s5
+    s4 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s6
+    s4 -. "tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values)" .-> s7
+    s4 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s8
     s4 -. "enumerate(result)" .-> s9
-    s4 -. "isinstance(value, expected_type)" .-> s10
-    s4 -. "TypeError(...)" .-> s11
+    s4 -. "isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(value, expected_type)" .-> s10
+    s4 -. "TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)" .-> s11
     s1 -. "all(...)" .-> s12
     click s1 "../modules/concept_identity.md"
     click s4 "../modules/concept_identity.md"
@@ -98,32 +103,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `add_identity_alias` | `allocation: ConceptAllocation`, `alias_type: AliasType \| str`, `value: object`, `allocations: Iterable[ConceptAllocation]`, `aliases: Iterable[IdentityAlias]` | `ConceptAllocation`, `ConceptAllocation`, `AliasType` | - | `IdentityUpdate(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias)` | - | - | - | - |
 | `_typed_tuple` | `values: Iterable[_RecordT]`, `expected_type: type[_RecordT]`, `field: str` | - | - | `result` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `tuple` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
 | `enumerate` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)` | - | - | - | - |
 | `all` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| add_identity_alias | isinstance | 861 | `isinstance(allocation, ConceptAllocation)` |
-| add_identity_alias | TypeError | 862 | `TypeError('allocation must be a ConceptAllocation')` |
+| add_identity_alias | isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias) | 861 | `isinstance(allocation, ConceptAllocation)` |
+| add_identity_alias | TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias) | 862 | `TypeError('allocation must be a ConceptAllocation')` |
 | add_identity_alias | _typed_tuple | 863 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
-| _typed_tuple | isinstance | 983 | `isinstance(values, (...))` |
-| _typed_tuple | TypeError | 984 | `TypeError(...)` |
-| _typed_tuple | tuple | 986 | `tuple(values)` |
-| _typed_tuple | TypeError | 988 | `TypeError(...)` |
+| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 983 | `isinstance(values, (...))` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 984 | `TypeError(...)` |
+| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 986 | `tuple(values)` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 988 | `TypeError(...)` |
 | _typed_tuple | enumerate | 991 | `enumerate(result)` |
-| _typed_tuple | isinstance | 992 | `isinstance(value, expected_type)` |
-| _typed_tuple | TypeError | 993 | `TypeError(...)` |
+| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 992 | `isinstance(value, expected_type)` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 993 | `TypeError(...)` |
 | add_identity_alias | all | 864 | `all(...)` |
 
 ### Boundary effects
@@ -134,15 +139,15 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `add_identity_alias` | `isinstance` | 861 |
-| unresolved_call | `add_identity_alias` | `TypeError` | 862 |
-| unresolved_call | `_typed_tuple` | `isinstance` | 983 |
-| unresolved_call | `_typed_tuple` | `TypeError` | 984 |
-| unresolved_call | `_typed_tuple` | `TypeError` | 988 |
-| unresolved_call | `_typed_tuple` | `enumerate` | 991 |
-| unresolved_call | `_typed_tuple` | `isinstance` | 992 |
-| unresolved_call | `_typed_tuple` | `TypeError` | 993 |
-| unresolved_call | `add_identity_alias` | `all` | 864 |
+| external_call | `add_identity_alias` | `isinstance` | 861 |
+| external_call | `add_identity_alias` | `TypeError` | 862 |
+| external_call | `_typed_tuple` | `isinstance` | 983 |
+| external_call | `_typed_tuple` | `TypeError` | 984 |
+| external_call | `_typed_tuple` | `TypeError` | 988 |
+| external_call | `_typed_tuple` | `enumerate` | 991 |
+| external_call | `_typed_tuple` | `isinstance` | 992 |
+| external_call | `_typed_tuple` | `TypeError` | 993 |
+| external_call | `add_identity_alias` | `all` | 864 |
 | step_limit | `add_identity_alias` | `first 12 steps` | 0 |
 | truncated_flow | `add_identity_alias` | `depth limit` | 0 |
 

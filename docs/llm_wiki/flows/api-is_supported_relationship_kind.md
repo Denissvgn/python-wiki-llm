@@ -11,9 +11,9 @@
 sequenceDiagram
     participant p0 as is_supported_relationship_kind
     participant p1 as isinstance
-    participant p2 as fullmatch
+    participant p2 as _QUALIFIED_NAME_RE.fullmatch
     p0-->>p1: isinstance
-    p0-->>p2: fullmatch
+    p0-->>p2: _QUALIFIED_NAME_RE.fullmatch
 ```
 
 ## Data flow
@@ -23,7 +23,7 @@ sequenceDiagram
 flowchart LR
     s1["1. is_supported_relationship_kind"]
     s2["2. isinstance"]
-    s3["3. fullmatch"]
+    s3["3. _QUALIFIED_NAME_RE.fullmatch"]
     s1 -. "isinstance(value, str)" .-> s2
     s1 -. "_QUALIFIED_NAME_RE.fullmatch(value)" .-> s3
     click s1 "../modules/knowledge_graph.md"
@@ -35,14 +35,14 @@ flowchart LR
 |---|---|---|---|---|
 | `is_supported_relationship_kind` | `value: object` | `CORE_RELATIONSHIP_KINDS` | - | `...` |
 | `isinstance` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
+| `_QUALIFIED_NAME_RE.fullmatch` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | is_supported_relationship_kind | isinstance | 105 | `isinstance(value, str)` |
-| is_supported_relationship_kind | fullmatch | 107 | `_QUALIFIED_NAME_RE.fullmatch(value)` |
+| is_supported_relationship_kind | _QUALIFIED_NAME_RE.fullmatch | 107 | `_QUALIFIED_NAME_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `is_supported_relationship_kind` | `isinstance` | 105 |
+| external_call | `is_supported_relationship_kind` | `isinstance` | 105 |
 | unresolved_call | `is_supported_relationship_kind` | `_QUALIFIED_NAME_RE.fullmatch` | 107 |
 
 ## Behavior

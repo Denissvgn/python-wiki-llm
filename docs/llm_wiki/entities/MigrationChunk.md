@@ -1,6 +1,6 @@
 # MigrationChunk
 
-**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:169`
+**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:170`
 **Kind:** Class
 **Bases:** —
 **Module:** [migrate_cmd](../modules/migrate_cmd.md)

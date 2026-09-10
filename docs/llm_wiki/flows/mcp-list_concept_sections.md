@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as list_concept_sections
-    p0-->>p0: list_concept_sections
+    participant p1 as service.list_concept_sections
+    p0-->>p1: service.list_concept_sections
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. list_concept_sections"]
-    s2["2. list_concept_sections"]
+    s2["2. service.list_concept_sections"]
     s1 -. "service.list_concept_sections(locator_or_exact_route, ownership=ownership, limit=limit)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `list_concept_sections` | `locator_or_exact_route: str`, `ownership: str \| None`, `limit: int` | - | - | `service.list_concept_sections(...)` |
-| `list_concept_sections` | - | - | - | - |
+| `service.list_concept_sections` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_concept_sections | list_concept_sections | 1199 | `service.list_concept_sections(locator_or_exact_route, ownership=ownership, limit=limit)` |
+| list_concept_sections | service.list_concept_sections | 1199 | `service.list_concept_sections(locator_or_exact_route, ownership=ownership, limit=limit)` |
 
 ### Boundary effects
 

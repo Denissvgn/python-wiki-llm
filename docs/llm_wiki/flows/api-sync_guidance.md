@@ -12,13 +12,13 @@ sequenceDiagram
     participant p0 as sync_guidance
     participant p1 as _render_recovery_command
     participant p2 as _uses_windows_command_line
-    participant p3 as list2cmdline
-    participant p4 as join
+    participant p3 as subprocess.list2cmdline
+    participant p4 as shlex.join
     participant p5 as str
     p0->>p1: _render_recovery_command
     p1->>p2: _uses_windows_command_line
-    p1-->>p3: list2cmdline
-    p1-->>p4: join
+    p1-->>p3: subprocess.list2cmdline
+    p1-->>p4: shlex.join
     p0-->>p5: str
 ```
 
@@ -30,8 +30,8 @@ flowchart LR
     s1["1. sync_guidance"]
     s2["2. _render_recovery_command"]
     s3["3. _uses_windows_command_line"]
-    s4["4. list2cmdline"]
-    s5["5. join"]
+    s4["4. subprocess.list2cmdline"]
+    s5["5. shlex.join"]
     s6["6. str"]
     s1 -->|"_render_recovery_command([...])"| s2
     s2 -->|"_uses_windows_command_line(data not statically known)"| s3
@@ -50,8 +50,8 @@ flowchart LR
 | `sync_guidance` | `src_dir: str`, `wiki_dir: Union[str, Path]` | - | - | `...` |
 | `_render_recovery_command` | `arguments: list[str]` | - | - | `subprocess.list2cmdline(...)`, `shlex.join(...)` |
 | `_uses_windows_command_line` | - | `os` | - | `...` |
-| `list2cmdline` | - | - | - | - |
-| `join` | - | - | - | - |
+| `subprocess.list2cmdline` | - | - | - | - |
+| `shlex.join` | - | - | - | - |
 | `str` | - | - | - | - |
 
 ### Call data
@@ -60,8 +60,8 @@ flowchart LR
 |---|---|---:|---|
 | sync_guidance | _render_recovery_command | 317 | `_render_recovery_command([...])` |
 | _render_recovery_command | _uses_windows_command_line | 148 | `_uses_windows_command_line(data not statically known)` |
-| _render_recovery_command | list2cmdline | 149 | `subprocess.list2cmdline(arguments)` |
-| _render_recovery_command | join | 150 | `shlex.join(arguments)` |
+| _render_recovery_command | subprocess.list2cmdline | 149 | `subprocess.list2cmdline(arguments)` |
+| _render_recovery_command | shlex.join | 150 | `shlex.join(arguments)` |
 | sync_guidance | str | 326 | `str(wiki_dir)` |
 
 ### Boundary effects

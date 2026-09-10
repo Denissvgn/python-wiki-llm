@@ -10,57 +10,60 @@
 ```mermaid
 sequenceDiagram
     participant p0 as atomic_write_guarded_bytes
-    participant p1 as Path
-    participant p2 as is_absolute
-    participant p3 as OSError
-    participant p4 as isinstance
-    participant p5 as TypeError
+    participant p1 as Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    participant p2 as target.is_absolute
+    participant p3 as OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    participant p4 as isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    participant p5 as TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
     participant p6 as _atomic_write_guarded_bytes_windows
-    participant p7 as uuid4
+    participant p7 as uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
     participant p8 as guard_windows_directory_chain
     participant p9 as WindowsDirectoryGuardError
-    participant p10 as abspath
-    participant p11 as fspath
-    participant p12 as append
-    participant p13 as _open_windows_directory_guard
-    participant p14 as WinDLL
-    participant p15 as create_file
-    participant p16 as _windows_api_path
-    participant p17 as startswith
-    participant p18 as HANDLE
-    participant p19 as get_last_error
-    participant p20 as WinError
-    participant p21 as _WindowsDirectoryGuardUnavailableError
-    p0-->>p1: Path
-    p0-->>p2: is_absolute
-    p0-->>p3: OSError
-    p0-->>p3: OSError
-    p0-->>p4: isinstance
-    p0-->>p5: TypeError
+    participant p10 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p11 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p12 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p13 as handles.append
+    participant p14 as _open_windows_directory_guard
+    participant p15 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p16 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p17 as _windows_api_path
+    participant p18 as os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    participant p19 as os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    participant p20 as value.startswith
+    participant p21 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p22 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p23 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p24 as _WindowsDirectoryGuardUnavailableError
+    p0-->>p1: Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    p0-->>p2: target.is_absolute
+    p0-->>p3: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    p0-->>p3: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    p0-->>p5: TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
     p0->>p6: _atomic_write_guarded_bytes_windows
-    p6-->>p7: uuid4
-    p6-->>p7: uuid4
+    p6-->>p7: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
+    p6-->>p7: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
     p6->>p8: guard_windows_directory_chain
     p8->>p9: WindowsDirectoryGuardError
-    p8-->>p1: Path
-    p8-->>p10: abspath
-    p8-->>p11: fspath
+    p8-->>p10: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p8-->>p11: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p8-->>p12: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
     p8->>p9: WindowsDirectoryGuardError
-    p8-->>p1: Path
-    p8-->>p12: append
-    p8->>p13: _open_windows_directory_guard
-    p13-->>p14: WinDLL
-    p13-->>p15: create_file
-    p13->>p16: _windows_api_path
-    p16-->>p10: abspath
-    p16-->>p11: fspath
-    p16-->>p17: startswith
-    p16-->>p17: startswith
-    p13-->>p18: HANDLE
-    p13-->>p19: get_last_error
-    p13-->>p20: WinError
-    p13->>p21: _WindowsDirectoryGuardUnavailableError
-    p13->>p9: WindowsDirectoryGuardError
+    p8-->>p10: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p8-->>p13: handles.append
+    p8->>p14: _open_windows_directory_guard
+    p14-->>p15: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p14-->>p16: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p14->>p17: _windows_api_path
+    p17-->>p18: os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    p17-->>p19: os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    p17-->>p20: value.startswith
+    p17-->>p20: value.startswith
+    p14-->>p21: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p14-->>p22: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p14-->>p23: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p14->>p24: _WindowsDirectoryGuardUnavailableError
+    p14->>p9: WindowsDirectoryGuardError
 ```
 
 > Call sequence diagram shows 30 of 372 interactions; 342 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -73,26 +76,26 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. atomic_write_guarded_bytes"]
-    s2["2. Path"]
-    s3["3. is_absolute"]
-    s4["4. OSError"]
-    s5["5. OSError"]
-    s6["6. isinstance"]
-    s7["7. TypeError"]
+    s2["2. Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
+    s3["3. target.is_absolute"]
+    s4["4. OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
+    s5["5. OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
+    s6["6. isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
+    s7["7. TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
     s8["8. _atomic_write_guarded_bytes_windows"]
-    s9["9. uuid4"]
-    s10["10. uuid4"]
+    s9["9. uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)"]
+    s10["10. uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)"]
     s11["11. guard_windows_directory_chain"]
     s12["12. WindowsDirectoryGuardError"]
-    s1 -. "Path(path)" .-> s2
+    s1 -. "Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(path)" .-> s2
     s1 -. "target.is_absolute(data not statically known)" .-> s3
-    s1 -. "OSError(...)" .-> s4
-    s1 -. "OSError(...)" .-> s5
-    s1 -. "isinstance(data, bytes)" .-> s6
-    s1 -. "TypeError('Guarded output data must be bytes.')" .-> s7
+    s1 -. "OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)" .-> s4
+    s1 -. "OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)" .-> s5
+    s1 -. "isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(data, bytes)" .-> s6
+    s1 -. "TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)('Guarded output data must be bytes.')" .-> s7
     s1 -->|"_atomic_write_guarded_bytes_windows(target, data, expected_existing=expected_existing, require_single_link=require_single_link)"| s8
-    s8 -. "uuid.uuid4(data not statically known)" .-> s9
-    s8 -. "uuid.uuid4(data not statically known)" .-> s10
+    s8 -. "uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(data not statically known)" .-> s9
+    s8 -. "uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(data not statically known)" .-> s10
     s8 -->|"guard_windows_directory_chain(Path(...), relative_components)"| s11
     s11 -->|"WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')"| s12
     b0["filesystem_write quarantine.unlink"]
@@ -122,15 +125,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `atomic_write_guarded_bytes` | `path: Path`, `data: bytes`, `mode: int`, `require_single_link: bool`, `expected_existing: bytes \| None \| object` | `os` | - | `target` |
-| `Path` | - | - | - | - |
-| `is_absolute` | - | - | - | - |
-| `OSError` | - | - | - | - |
-| `OSError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
+| `target.is_absolute` | - | - | - | - |
+| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
+| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
 | `_atomic_write_guarded_bytes_windows` | `target: Path`, `data: bytes`, `expected_existing: bytes \| None \| object`, `require_single_link: bool` | `os`, `os`, `os`, `os`, `os`, `_EXPECTED_EXISTING_UNSET` | - | - |
-| `uuid4` | - | - | - | - |
-| `uuid4` | - | - | - | - |
+| `uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)` | - | - | - | - |
+| `uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)` | - | - | - | - |
 | `guard_windows_directory_chain` | `root: Path`, `relative_components: Sequence[str]`, `create_missing: bool`, `require_restrictive_dacl: bool` | `os`, `WindowsDurabilityError` | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
 
@@ -138,15 +141,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| atomic_write_guarded_bytes | Path | 1603 | `Path(path)` |
-| atomic_write_guarded_bytes | is_absolute | 1604 | `target.is_absolute(data not statically known)` |
-| atomic_write_guarded_bytes | OSError | 1605 | `OSError(...)` |
-| atomic_write_guarded_bytes | OSError | 1607 | `OSError(...)` |
-| atomic_write_guarded_bytes | isinstance | 1608 | `isinstance(data, bytes)` |
-| atomic_write_guarded_bytes | TypeError | 1609 | `TypeError('Guarded output data must be bytes.')` |
+| atomic_write_guarded_bytes | Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1603 | `Path(path)` |
+| atomic_write_guarded_bytes | target.is_absolute | 1604 | `target.is_absolute(data not statically known)` |
+| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1605 | `OSError(...)` |
+| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1607 | `OSError(...)` |
+| atomic_write_guarded_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1608 | `isinstance(data, bytes)` |
+| atomic_write_guarded_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1609 | `TypeError('Guarded output data must be bytes.')` |
 | atomic_write_guarded_bytes | _atomic_write_guarded_bytes_windows | 1611 | `_atomic_write_guarded_bytes_windows(target, data, expected_existing=expected_existing, require_single_link=require_single_link)` |
-| _atomic_write_guarded_bytes_windows | uuid4 | 2566 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_guarded_bytes_windows | uuid4 | 2567 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2566 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2567 | `uuid.uuid4(data not statically known)` |
 | _atomic_write_guarded_bytes_windows | guard_windows_directory_chain | 2571 | `guard_windows_directory_chain(Path(...), relative_components)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 
@@ -165,10 +168,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `atomic_write_guarded_bytes` | `target.is_absolute` | 1604 |
-| unresolved_call | `atomic_write_guarded_bytes` | `OSError` | 1605 |
-| unresolved_call | `atomic_write_guarded_bytes` | `OSError` | 1607 |
-| unresolved_call | `atomic_write_guarded_bytes` | `isinstance` | 1608 |
-| unresolved_call | `atomic_write_guarded_bytes` | `TypeError` | 1609 |
+| external_call | `atomic_write_guarded_bytes` | `OSError` | 1605 |
+| external_call | `atomic_write_guarded_bytes` | `OSError` | 1607 |
+| external_call | `atomic_write_guarded_bytes` | `isinstance` | 1608 |
+| external_call | `atomic_write_guarded_bytes` | `TypeError` | 1609 |
 | external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2566 |
 | external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2567 |
 | step_limit | `atomic_write_guarded_bytes` | `first 12 steps` | 0 |

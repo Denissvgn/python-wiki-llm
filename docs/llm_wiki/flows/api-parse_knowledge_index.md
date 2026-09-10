@@ -25,54 +25,56 @@
 sequenceDiagram
     participant p0 as parse_knowledge_index
     participant p1 as _record
-    participant p2 as _object
-    participant p3 as dict
+    participant p2 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p3 as dict (src/llm_wiki_cli/services…nowledge_model.py:_object)
     participant p4 as require_mapping
-    participant p5 as isinstance
-    participant p6 as encode
+    participant p5 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    participant p6 as key.encode
     participant p7 as KnowledgeModelError
-    participant p8 as sorted
-    participant p9 as set
+    participant p8 as sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)
+    participant p9 as set (src/llm_wiki_cli/services…nowledge_model.py:_record)
     participant p10 as _child
     participant p11 as _parse_extensions
-    participant p12 as fullmatch
-    participant p13 as _normalize_json_value
-    participant p14 as _normalize_json_value_inner
-    participant p15 as _string
-    participant p16 as require_string
+    participant p12 as sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)
+    participant p13 as _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
+    participant p14 as _normalize_json_value
+    participant p15 as _normalize_json_value_inner
+    participant p16 as isinstance (src/llm_wiki_cli/services…ormalize_json_value_inner)
+    participant p17 as _string
+    participant p18 as require_string
     p0->>p1: _record
-    p1->>p2: _object
-    p2-->>p3: dict
+    p1->>p2: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p2-->>p3: dict (src/llm_wiki_cli/services…nowledge_model.py:_object)
     p2->>p4: require_mapping
-    p4-->>p5: isinstance
-    p4-->>p5: isinstance
-    p4-->>p6: encode
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p4-->>p6: key.encode
     p2->>p7: KnowledgeModelError
     p2->>p7: KnowledgeModelError
     p2->>p7: KnowledgeModelError
-    p1-->>p8: sorted
-    p1-->>p9: set
+    p1-->>p8: sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)
+    p1-->>p9: set (src/llm_wiki_cli/services…nowledge_model.py:_record)
     p1->>p7: KnowledgeModelError
     p1->>p10: _child
-    p1-->>p8: sorted
-    p1-->>p9: set
+    p1-->>p8: sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)
+    p1-->>p9: set (src/llm_wiki_cli/services…nowledge_model.py:_record)
     p1->>p7: KnowledgeModelError
     p1->>p10: _child
     p1->>p11: _parse_extensions
-    p11->>p2: _object
-    p11-->>p8: sorted
-    p11-->>p12: fullmatch
+    p11->>p2: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p11-->>p12: sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)
+    p11-->>p13: _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
     p11->>p7: KnowledgeModelError
     p11->>p10: _child
-    p11->>p13: _normalize_json_value
-    p13->>p14: _normalize_json_value_inner
-    p14-->>p5: isinstance
-    p14->>p15: _string
-    p15->>p16: require_string
-    p15->>p7: KnowledgeModelError
+    p11->>p14: _normalize_json_value
+    p14->>p15: _normalize_json_value_inner
+    p15-->>p16: isinstance (src/llm_wiki_cli/services…ormalize_json_value_inner)
+    p15->>p17: _string
+    p17->>p18: require_string
+    p17->>p7: KnowledgeModelError
 ```
 
-> Call sequence diagram shows 30 of 2010 interactions; 1980 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2025 interactions; 1995 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -83,27 +85,27 @@ sequenceDiagram
 flowchart LR
     s1["1. parse_knowledge_index"]
     s2["2. _record"]
-    s3["3. _object"]
-    s4["4. dict"]
+    s3["3. _object (src/llm_wiki_cli/services/knowledge_model.py)"]
+    s4["4. dict (src/llm_wiki_cli/services…nowledge_model.py:_object)"]
     s5["5. require_mapping"]
-    s6["6. isinstance"]
-    s7["7. isinstance"]
-    s8["8. encode"]
+    s6["6. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s7["7. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s8["8. key.encode"]
     s9["9. KnowledgeModelError"]
     s10["10. KnowledgeModelError"]
     s11["11. KnowledgeModelError"]
-    s12["12. sorted"]
+    s12["12. sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)"]
     s1 -->|"_record(payload, '', {...}, required={...})"| s2
-    s2 -->|"_object(value, ...)"| s3
-    s3 -. "dict(require_mapping(...))" .-> s4
-    s3 -->|"require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=Kno…"| s5
-    s5 -. "isinstance(value, Mapping)" .-> s6
-    s5 -. "isinstance(key, str)" .-> s7
+    s2 -->|"_object (src/llm_wiki_cli/services/knowledge_model.py)(value, ...)"| s3
+    s3 -. "dict (src/llm_wiki_cli/services…nowledge_model.py:_object)(require_mapping(...))" .-> s4
+    s3 -->|"require_mapping(…)"| s5
+    s5 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s7
     s5 -. "key.encode('utf-8')" .-> s8
     s3 -->|"KnowledgeModelError(path, 'must be an object')"| s9
     s3 -->|"KnowledgeModelError(path, 'object keys must be strings')"| s10
     s3 -->|"KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')"| s11
-    s2 -. "sorted(...)" .-> s12
+    s2 -. "sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)(...)" .-> s12
     click s1 "../modules/knowledge_model.md"
     click s2 "../modules/knowledge_model.md"
     click s3 "../modules/knowledge_model.md"
@@ -119,32 +121,32 @@ flowchart LR
 |---|---|---|---|---|
 | `parse_knowledge_index` | `payload: object` | `KNOWLEDGE_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` | - | `model` |
 | `_record` | `value: object`, `path: str`, `fields: AbstractSet[str]`, `required: AbstractSet[str]` | - | - | `(...)` |
-| `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
-| `dict` | - | - | - | - |
+| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `value: object`, `path: str` | - | - | `dict(...)` |
+| `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | - | - | - | - |
 | `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `key.encode` | - | - | - | - |
 | `KnowledgeModelError` | - | - | - | - |
 | `KnowledgeModelError` | - | - | - | - |
 | `KnowledgeModelError` | - | - | - | - |
-| `sorted` | - | - | - | - |
+| `sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
-| _record | _object | 1581 | `_object(value, ...)` |
-| _object | dict | 1667 | `dict(require_mapping(...))` |
-| _object | require_mapping | 1668 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
-| require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance | 731 | `isinstance(key, str)` |
-| require_mapping | encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeModelError | 1670 | `KnowledgeModelError(path, 'must be an object')` |
-| _object | KnowledgeModelError | 1672 | `KnowledgeModelError(path, 'object keys must be strings')` |
-| _object | KnowledgeModelError | 1676 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
-| _record | sorted | 1583 | `sorted(...)` |
+| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1581 | `_object(value, ...)` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1667 | `dict(require_mapping(...))` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1668 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
+| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1670 | `KnowledgeModelError(path, 'must be an object')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1672 | `KnowledgeModelError(path, 'object keys must be strings')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1676 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
+| _record | sorted (src/llm_wiki_cli/services…nowledge_model.py:_record) | 1583 | `sorted(...)` |
 
 ### Boundary effects
 
@@ -154,10 +156,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_mapping` | `isinstance` | 727 |
-| unresolved_call | `require_mapping` | `isinstance` | 731 |
+| external_call | `require_mapping` | `isinstance` | 727 |
+| external_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |
-| unresolved_call | `_record` | `sorted` | 1583 |
+| external_call | `_record` | `sorted` | 1583 |
 | step_limit | `parse_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `parse_knowledge_index` | `depth limit` | 0 |
 

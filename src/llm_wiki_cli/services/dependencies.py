@@ -34,7 +34,6 @@ import heapq
 import json
 import os
 import re
-import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -44,6 +43,8 @@ from ..config import is_agent_worktree_path
 from ..extractors.common import executes_at_import
 from .dependency_versions import build_dependency_version_details
 from .imports import build_module_path_resolver
+from .python_imports import is_python_source
+from .python_stdlib import python_stdlib_module_names as _python_stdlib
 from .source_snapshot import SourceSnapshot, build_source_snapshot
 from .validation import (
     path_is_under as shared_path_is_under,
@@ -116,7 +117,9 @@ def _resolve_internal_targets(
         filepath,
         import_type=imp.get("type"),
     )
-    if len(targets) > 1:
+    if len(targets) > 1 and not is_python_source(
+        filepath, resolver.inventory.get(filepath)
+    ):
         narrowed = targets & symbol_index.get(name, set())
         if narrowed:
             targets = narrowed
@@ -176,13 +179,16 @@ def build_dependency_graph(
             continue
         for imp in data.get("imports", []):
             targets = _resolve_internal_targets(imp, filepath, resolver, symbol_index)
-            if not targets:
+            ambiguous = is_python_source(filepath, data) and len(targets) > 1
+            if not targets or ambiguous:
                 module = imp.get("module", "") or ""
                 entry = {
                     "file": filepath,
                     "module": module,
                     "name": imp.get("name", "") or "",
                 }
+                if ambiguous:
+                    entry["kind"] = "ambiguous"
                 if resolver.typescript_path_alias_matched(
                     _resolve_target_module(module, entry["name"]), filepath
                 ):
@@ -830,232 +836,6 @@ _PYTHON_ALIASES: dict[str, str] = {
     "prometheus_client": "prometheus-client",
     "pydantic_settings": "pydantic-settings",
 }
-
-# Bundled fallback for ``sys.stdlib_module_names`` (added in 3.10). Top-level
-# standard-library module names for Python 3.9; used only on 3.9 so a stdlib
-# import is never misreported as an undeclared external dependency.
-_PYTHON_STDLIB_FALLBACK: frozenset[str] = frozenset(
-    {
-        "__future__",
-        "_thread",
-        "abc",
-        "aifc",
-        "argparse",
-        "array",
-        "ast",
-        "asynchat",
-        "asyncio",
-        "asyncore",
-        "atexit",
-        "audioop",
-        "base64",
-        "bdb",
-        "binascii",
-        "bisect",
-        "builtins",
-        "bz2",
-        "cProfile",
-        "calendar",
-        "cgi",
-        "cgitb",
-        "chunk",
-        "cmath",
-        "cmd",
-        "code",
-        "codecs",
-        "codeop",
-        "collections",
-        "colorsys",
-        "compileall",
-        "concurrent",
-        "configparser",
-        "contextlib",
-        "contextvars",
-        "copy",
-        "copyreg",
-        "crypt",
-        "csv",
-        "ctypes",
-        "curses",
-        "dataclasses",
-        "datetime",
-        "dbm",
-        "decimal",
-        "difflib",
-        "dis",
-        "distutils",
-        "doctest",
-        "email",
-        "encodings",
-        "ensurepip",
-        "enum",
-        "errno",
-        "faulthandler",
-        "fcntl",
-        "filecmp",
-        "fileinput",
-        "fnmatch",
-        "fractions",
-        "ftplib",
-        "functools",
-        "gc",
-        "genericpath",
-        "getopt",
-        "getpass",
-        "gettext",
-        "glob",
-        "graphlib",
-        "grp",
-        "gzip",
-        "hashlib",
-        "heapq",
-        "hmac",
-        "html",
-        "http",
-        "idlelib",
-        "imaplib",
-        "imghdr",
-        "imp",
-        "importlib",
-        "inspect",
-        "io",
-        "ipaddress",
-        "itertools",
-        "json",
-        "keyword",
-        "lib2to3",
-        "linecache",
-        "locale",
-        "logging",
-        "lzma",
-        "mailbox",
-        "mailcap",
-        "marshal",
-        "math",
-        "mimetypes",
-        "mmap",
-        "modulefinder",
-        "msilib",
-        "msvcrt",
-        "multiprocessing",
-        "netrc",
-        "nis",
-        "nntplib",
-        "nt",
-        "ntpath",
-        "nturl2path",
-        "numbers",
-        "opcode",
-        "operator",
-        "optparse",
-        "os",
-        "ossaudiodev",
-        "pathlib",
-        "pdb",
-        "pickle",
-        "pickletools",
-        "pipes",
-        "pkgutil",
-        "platform",
-        "plistlib",
-        "poplib",
-        "posix",
-        "posixpath",
-        "pprint",
-        "profile",
-        "pstats",
-        "pty",
-        "pwd",
-        "py_compile",
-        "pyclbr",
-        "pydoc",
-        "pyexpat",
-        "queue",
-        "quopri",
-        "random",
-        "re",
-        "readline",
-        "reprlib",
-        "resource",
-        "rlcompleter",
-        "runpy",
-        "sched",
-        "secrets",
-        "select",
-        "selectors",
-        "shelve",
-        "shlex",
-        "shutil",
-        "signal",
-        "site",
-        "smtpd",
-        "smtplib",
-        "sndhdr",
-        "socket",
-        "socketserver",
-        "spwd",
-        "sqlite3",
-        "ssl",
-        "stat",
-        "statistics",
-        "string",
-        "stringprep",
-        "struct",
-        "subprocess",
-        "sunau",
-        "symtable",
-        "sys",
-        "sysconfig",
-        "syslog",
-        "tabnanny",
-        "tarfile",
-        "telnetlib",
-        "tempfile",
-        "termios",
-        "test",
-        "textwrap",
-        "threading",
-        "time",
-        "timeit",
-        "tkinter",
-        "token",
-        "tokenize",
-        "trace",
-        "traceback",
-        "tracemalloc",
-        "tty",
-        "turtle",
-        "turtledemo",
-        "types",
-        "typing",
-        "unicodedata",
-        "unittest",
-        "urllib",
-        "uu",
-        "uuid",
-        "venv",
-        "warnings",
-        "wave",
-        "weakref",
-        "webbrowser",
-        "winreg",
-        "winsound",
-        "wsgiref",
-        "xdrlib",
-        "xml",
-        "xmlrpc",
-        "zipapp",
-        "zipfile",
-        "zipimport",
-        "zlib",
-        "zoneinfo",
-    }
-)
-
-
-def _python_stdlib() -> frozenset[str]:
-    names = getattr(sys, "stdlib_module_names", None)
-    return frozenset(names) if names else _PYTHON_STDLIB_FALLBACK
 
 
 def _normalize_python(name: str) -> str:
@@ -2334,7 +2114,7 @@ def classify_imports(
         lambda: defaultdict(set)
     )
     for item in graph.get("unresolved", []):
-        if item.get("kind") == "path_alias":
+        if item.get("kind") in {"path_alias", "ambiguous"}:
             continue
         data = inventory.get(item["file"])
         language = data.get("language") if isinstance(data, dict) else None
@@ -2486,8 +2266,9 @@ def _python_internal_distribution_uses(
     if manifest is None:
         return {}
 
-    resolver = build_module_path_resolver(inventory)
-    symbol_index = _build_symbol_file_index(inventory)
+    targets_by_importer: defaultdict[str, set[str]] = defaultdict(set)
+    for source, target in _graph.get("edges", []):
+        targets_by_importer[source].add(target)
     grouped: defaultdict[str, set[str]] = defaultdict(set)
     for importer, importer_data in inventory.items():
         if not (
@@ -2503,7 +2284,7 @@ def _python_internal_distribution_uses(
             if not module or module.startswith("."):
                 continue
             import_root = module.split(".", 1)[0]
-            targets = _resolve_internal_targets(imp, importer, resolver, symbol_index)
+            targets = targets_by_importer.get(importer, ())
             for target in targets:
                 target_data = inventory.get(target)
                 if not (

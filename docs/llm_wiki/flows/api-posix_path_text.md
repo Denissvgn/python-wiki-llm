@@ -10,9 +10,9 @@
 ```mermaid
 sequenceDiagram
     participant p0 as posix_path_text
-    participant p1 as replace
+    participant p1 as str(…).replace
     participant p2 as str
-    p0-->>p1: replace
+    p0-->>p1: str(…).replace
     p0-->>p2: str
 ```
 
@@ -22,9 +22,9 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. posix_path_text"]
-    s2["2. replace"]
+    s2["2. str(…).replace"]
     s3["3. str"]
-    s1 -. "str(value).replace('\\', '/')" .-> s2
+    s1 -. "str(…).replace('\\', '/')" .-> s2
     s1 -. "str(value)" .-> s3
     click s1 "../modules/validation.md"
 ```
@@ -34,14 +34,14 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `posix_path_text` | `value: object` | - | - | `...` |
-| `replace` | - | - | - | - |
+| `str(…).replace` | - | - | - | - |
 | `str` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| posix_path_text | replace | 473 | `str(value).replace('\\', '/')` |
+| posix_path_text | str(…).replace | 473 | `str(value).replace('\\', '/')` |
 | posix_path_text | str | 473 | `str(value)` |
 
 ### Boundary effects

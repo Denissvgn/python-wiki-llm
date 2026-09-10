@@ -32,27 +32,29 @@ sequenceDiagram
     participant p2 as _knowledge_index_to_payload_unchecked
     participant p3 as _bundle_to_payload
     participant p4 as _emit_extensions
-    participant p5 as isinstance
+    participant p5 as isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)
     participant p6 as _parse_extensions
-    participant p7 as _object
-    participant p8 as sorted
-    participant p9 as fullmatch
+    participant p7 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p8 as sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)
+    participant p9 as _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
     participant p10 as KnowledgeModelError
     participant p11 as _child
     participant p12 as _normalize_json_value
     participant p13 as _wire_enum
-    participant p14 as _component_to_payload
-    participant p15 as list
-    participant p16 as _concept_to_payload
+    participant p14 as isinstance (src/llm_wiki_cli/services…ledge_model.py:_wire_enum)
+    participant p15 as _component_to_payload
+    participant p16 as list (src/llm_wiki_cli/services….py:_component_to_payload)
+    participant p17 as sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
+    participant p18 as _concept_to_payload
     p0->>p1: _model_to_payload
     p1->>p2: _knowledge_index_to_payload_unchecked
     p2->>p3: _bundle_to_payload
     p3->>p4: _emit_extensions
-    p4-->>p5: isinstance
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)
     p4->>p6: _parse_extensions
-    p6->>p7: _object
-    p6-->>p8: sorted
-    p6-->>p9: fullmatch
+    p6->>p7: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p6-->>p8: sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)
+    p6-->>p9: _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
     p6->>p10: KnowledgeModelError
     p6->>p11: _child
     p6->>p12: _normalize_json_value
@@ -60,23 +62,23 @@ sequenceDiagram
     p6->>p10: KnowledgeModelError
     p6->>p11: _child
     p3->>p13: _wire_enum
-    p13-->>p5: isinstance
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…ledge_model.py:_wire_enum)
     p3->>p4: _emit_extensions
     p3->>p4: _emit_extensions
-    p3->>p14: _component_to_payload
-    p14-->>p15: list
-    p14->>p4: _emit_extensions
-    p3->>p14: _component_to_payload
-    p3->>p14: _component_to_payload
+    p3->>p15: _component_to_payload
+    p15-->>p16: list (src/llm_wiki_cli/services….py:_component_to_payload)
+    p15->>p4: _emit_extensions
+    p3->>p15: _component_to_payload
+    p3->>p15: _component_to_payload
     p3->>p4: _emit_extensions
-    p2-->>p8: sorted
-    p2-->>p8: sorted
-    p2-->>p8: sorted
-    p2->>p16: _concept_to_payload
-    p16->>p13: _wire_enum
+    p2-->>p17: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
+    p2-->>p17: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
+    p2-->>p17: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
+    p2->>p18: _concept_to_payload
+    p18->>p13: _wire_enum
 ```
 
-> Call sequence diagram shows 30 of 1479 interactions; 1449 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1487 interactions; 1457 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -90,22 +92,22 @@ flowchart LR
     s3["3. _knowledge_index_to_payload_unchecked"]
     s4["4. _bundle_to_payload"]
     s5["5. _emit_extensions"]
-    s6["6. isinstance"]
+    s6["6. isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)"]
     s7["7. _parse_extensions"]
-    s8["8. _object"]
-    s9["9. sorted"]
-    s10["10. fullmatch"]
+    s8["8. _object (src/llm_wiki_cli/services/knowledge_model.py)"]
+    s9["9. sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)"]
+    s10["10. _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)"]
     s11["11. KnowledgeModelError"]
     s12["12. _child"]
     s1 -->|"_model_to_payload(validate_knowledge_index(...))"| s2
     s2 -->|"_knowledge_index_to_payload_unchecked(model)"| s3
     s3 -->|"_bundle_to_payload(model.bundle)"| s4
     s4 -->|"_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')"| s5
-    s5 -. "isinstance(extensions, FrozenDict)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)(extensions, FrozenDict)" .-> s6
     s5 -->|"_parse_extensions(extensions, path)"| s7
-    s7 -->|"_object(value, path)"| s8
-    s7 -. "sorted(data)" .-> s9
-    s7 -. "_QUALIFIED_NAME_RE.fullmatch(key)" .-> s10
+    s7 -->|"_object (src/llm_wiki_cli/services/knowledge_model.py)(value, path)"| s8
+    s7 -. "sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)(data)" .-> s9
+    s7 -. "_QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)(key)" .-> s10
     s7 -->|"KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')"| s11
     s7 -->|"_child(path, key)"| s12
     click s1 "../modules/knowledge_index.md"
@@ -128,11 +130,11 @@ flowchart LR
 | `_knowledge_index_to_payload_unchecked` | `model: KnowledgeIndex` | `_canonical_relationship_key` | `producer[...]`, `producer[...]` | `_emit_extensions(...)` |
 | `_bundle_to_payload` | `bundle: BundleRecord` | - | - | `_emit_extensions(...)` |
 | `_emit_extensions` | `payload: dict[str, Any]`, `extensions: Extensions`, `path: str` | - | `payload[...]` | `payload` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | - | - | - | - |
 | `_parse_extensions` | `value: object`, `path: str` | - | `result[...]` | `result` |
-| `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
-| `sorted` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
+| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `value: object`, `path: str` | - | - | `dict(...)` |
+| `sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)` | - | - | - | - |
+| `_QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)` | - | - | - | - |
 | `KnowledgeModelError` | - | - | - | - |
 | `_child` | `path: str`, `name: str` | - | - | `...` |
 
@@ -144,11 +146,11 @@ flowchart LR
 | _model_to_payload | _knowledge_index_to_payload_unchecked | 283 | `_knowledge_index_to_payload_unchecked(model)` |
 | _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2197 | `_bundle_to_payload(model.bundle)` |
 | _bundle_to_payload | _emit_extensions | 2016 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
-| _emit_extensions | isinstance | 1976 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 1976 | `isinstance(extensions, FrozenDict)` |
 | _emit_extensions | _parse_extensions | 1977 | `_parse_extensions(extensions, path)` |
-| _parse_extensions | _object | 1600 | `_object(value, path)` |
-| _parse_extensions | sorted | 1602 | `sorted(data)` |
-| _parse_extensions | fullmatch | 1603 | `_QUALIFIED_NAME_RE.fullmatch(key)` |
+| _parse_extensions | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1600 | `_object(value, path)` |
+| _parse_extensions | sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions) | 1602 | `sorted(data)` |
+| _parse_extensions | _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions) | 1603 | `_QUALIFIED_NAME_RE.fullmatch(key)` |
 | _parse_extensions | KnowledgeModelError | 1604 | `KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')` |
 | _parse_extensions | _child | 1605 | `_child(path, key)` |
 
@@ -160,8 +162,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_emit_extensions` | `isinstance` | 1976 |
-| unresolved_call | `_parse_extensions` | `sorted` | 1602 |
+| external_call | `_emit_extensions` | `isinstance` | 1976 |
+| external_call | `_parse_extensions` | `sorted` | 1602 |
 | unresolved_call | `_parse_extensions` | `_QUALIFIED_NAME_RE.fullmatch` | 1603 |
 | step_limit | `knowledge_index_to_payload` | `first 12 steps` | 0 |
 | truncated_flow | `knowledge_index_to_payload` | `depth limit` | 0 |

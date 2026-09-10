@@ -11,8 +11,8 @@ Top-level ``list_wiki_pages`` payload.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `wiki_dir` | `str` | *required* | — |
 | `counts` | `WikiPageCounts` | *required* | — |
 | `pages` | `list[WikiPage]` | *required* | — |

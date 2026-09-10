@@ -10,56 +10,61 @@
 ```mermaid
 sequenceDiagram
     participant p0 as classify_wiki_lifecycle
-    participant p1 as Path
-    participant p2 as exists
-    participant p3 as is_symlink
+    participant p1 as Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    participant p2 as manifest.exists
+    participant p3 as manifest.is_symlink
     participant p4 as is_pristine_wiki_target
-    participant p5 as is_dir
-    participant p6 as iter_page_kinds
-    participant p7 as sorted
-    participant p8 as rglob
-    participant p9 as as_posix
-    participant p10 as relative_to
-    participant p11 as set
-    participant p12 as items
-    participant p13 as is_file
-    participant p14 as stat
-    participant p15 as read_text
-    participant p16 as loads
-    participant p17 as isinstance
-    participant p18 as frozenset
-    participant p19 as any
-    participant p20 as type
-    p0-->>p1: Path
-    p0-->>p2: exists
-    p0-->>p3: is_symlink
+    participant p5 as Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    participant p6 as root.is_symlink
+    participant p7 as root.exists
+    participant p8 as root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    participant p9 as iter_page_kinds
+    participant p10 as sorted
+    participant p11 as root.rglob
+    participant p12 as path.is_symlink
+    participant p13 as path.relative_to(…).as_posix
+    participant p14 as path.relative_to
+    participant p15 as set
+    participant p16 as paths_by_relative.items
+    participant p17 as path.is_dir
+    participant p18 as path.is_file
+    participant p19 as path.stat
+    participant p20 as path.read_text
+    participant p21 as json.loads
+    participant p22 as isinstance
+    participant p23 as frozenset
+    participant p24 as any
+    participant p25 as type
+    p0-->>p1: Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    p0-->>p2: manifest.exists
+    p0-->>p3: manifest.is_symlink
     p0->>p4: is_pristine_wiki_target
-    p4-->>p1: Path
-    p4-->>p3: is_symlink
-    p4-->>p2: exists
-    p4-->>p5: is_dir
-    p4->>p6: iter_page_kinds
-    p4-->>p7: sorted
-    p4-->>p8: rglob
-    p4-->>p3: is_symlink
-    p4-->>p9: as_posix
-    p4-->>p10: relative_to
-    p4-->>p11: set
-    p4-->>p12: items
-    p4-->>p5: is_dir
-    p4-->>p13: is_file
-    p4-->>p14: stat
-    p4-->>p15: read_text
-    p4-->>p15: read_text
-    p4-->>p15: read_text
-    p4-->>p16: loads
-    p4-->>p17: isinstance
-    p4-->>p18: frozenset
-    p4-->>p18: frozenset
-    p4-->>p18: frozenset
-    p4-->>p19: any
-    p4-->>p20: type
-    p4-->>p11: set
+    p4-->>p5: Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    p4-->>p6: root.is_symlink
+    p4-->>p7: root.exists
+    p4-->>p8: root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    p4->>p9: iter_page_kinds
+    p4-->>p10: sorted
+    p4-->>p11: root.rglob
+    p4-->>p12: path.is_symlink
+    p4-->>p13: path.relative_to(…).as_posix
+    p4-->>p14: path.relative_to
+    p4-->>p15: set
+    p4-->>p16: paths_by_relative.items
+    p4-->>p17: path.is_dir
+    p4-->>p18: path.is_file
+    p4-->>p19: path.stat
+    p4-->>p20: path.read_text
+    p4-->>p20: path.read_text
+    p4-->>p20: path.read_text
+    p4-->>p21: json.loads
+    p4-->>p22: isinstance
+    p4-->>p23: frozenset
+    p4-->>p23: frozenset
+    p4-->>p23: frozenset
+    p4-->>p24: any
+    p4-->>p25: type
+    p4-->>p15: set
 ```
 
 > Call sequence diagram shows 30 of 40 interactions; 10 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -70,25 +75,25 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. classify_wiki_lifecycle"]
-    s2["2. Path"]
-    s3["3. exists"]
-    s4["4. is_symlink"]
+    s2["2. Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)"]
+    s3["3. manifest.exists"]
+    s4["4. manifest.is_symlink"]
     s5["5. is_pristine_wiki_target"]
-    s6["6. Path"]
-    s7["7. is_symlink"]
-    s8["8. exists"]
-    s9["9. is_dir"]
+    s6["6. Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)"]
+    s7["7. root.is_symlink"]
+    s8["8. root.exists"]
+    s9["9. root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)"]
     s10["10. iter_page_kinds"]
     s11["11. sorted"]
-    s12["12. rglob"]
-    s1 -. "Path(wiki_dir)" .-> s2
+    s12["12. root.rglob"]
+    s1 -. "Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)(wiki_dir)" .-> s2
     s1 -. "manifest.exists(data not statically known)" .-> s3
     s1 -. "manifest.is_symlink(data not statically known)" .-> s4
     s1 -->|"is_pristine_wiki_target(root)"| s5
-    s5 -. "Path(wiki_dir)" .-> s6
+    s5 -. "Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(wiki_dir)" .-> s6
     s5 -. "root.is_symlink(data not statically known)" .-> s7
     s5 -. "root.exists(data not statically known)" .-> s8
-    s5 -. "root.is_dir(data not statically known)" .-> s9
+    s5 -. "root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(data not statically known)" .-> s9
     s5 -->|"iter_page_kinds(data not statically known)"| s10
     s5 -. "sorted(root.rglob(...))" .-> s11
     s5 -. "root.rglob('*')" .-> s12
@@ -112,33 +117,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `classify_wiki_lifecycle` | `wiki_dir: Union[str, Path]` | `MANIFEST_FILENAME`, `WikiLifecycleState`, `WikiLifecycleState`, `WikiLifecycleState`, `WikiLifecycleState` | - | `WikiLifecycleState.MANAGED`, `WikiLifecycleState.FIRST_USE`, `WikiLifecycleState.SYNC_SEEDABLE`, `WikiLifecycleState.MIGRATION_REQUIRED` |
-| `Path` | - | - | - | - |
-| `exists` | - | - | - | - |
-| `is_symlink` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)` | - | - | - | - |
+| `manifest.exists` | - | - | - | - |
+| `manifest.is_symlink` | - | - | - | - |
 | `is_pristine_wiki_target` | `wiki_dir: Union[str, Path]` | `INITIAL_WIKI_INDEX_MARKDOWN`, `INITIAL_WIKI_LOG_MARKDOWN`, `AGENT_CHOICES`, `SchemaRenderProfile`, `SCHEMA_BLOCK_VERSION`, `RenderReason` | `paths_by_relative[...]` | `False`, `True`, `False`, `False`, `True`, `False`, `False`, `False` |
-| `Path` | - | - | - | - |
-| `is_symlink` | - | - | - | - |
-| `exists` | - | - | - | - |
-| `is_dir` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | - | - | - | - |
+| `root.is_symlink` | - | - | - | - |
+| `root.exists` | - | - | - | - |
+| `root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | - | - | - | - |
 | `iter_page_kinds` | - | `_PAGE_KINDS` | - | `_PAGE_KINDS` |
 | `sorted` | - | - | - | - |
-| `rglob` | - | - | - | - |
+| `root.rglob` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_wiki_lifecycle | Path | 276 | `Path(wiki_dir)` |
-| classify_wiki_lifecycle | exists | 278 | `manifest.exists(data not statically known)` |
-| classify_wiki_lifecycle | is_symlink | 278 | `manifest.is_symlink(data not statically known)` |
+| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 276 | `Path(wiki_dir)` |
+| classify_wiki_lifecycle | manifest.exists | 278 | `manifest.exists(data not statically known)` |
+| classify_wiki_lifecycle | manifest.is_symlink | 278 | `manifest.is_symlink(data not statically known)` |
 | classify_wiki_lifecycle | is_pristine_wiki_target | 280 | `is_pristine_wiki_target(root)` |
-| is_pristine_wiki_target | Path | 156 | `Path(wiki_dir)` |
-| is_pristine_wiki_target | is_symlink | 157 | `root.is_symlink(data not statically known)` |
-| is_pristine_wiki_target | exists | 159 | `root.exists(data not statically known)` |
-| is_pristine_wiki_target | is_dir | 161 | `root.is_dir(data not statically known)` |
+| is_pristine_wiki_target | Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 156 | `Path(wiki_dir)` |
+| is_pristine_wiki_target | root.is_symlink | 157 | `root.is_symlink(data not statically known)` |
+| is_pristine_wiki_target | root.exists | 159 | `root.exists(data not statically known)` |
+| is_pristine_wiki_target | root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 161 | `root.is_dir(data not statically known)` |
 | is_pristine_wiki_target | iter_page_kinds | 165 | `iter_page_kinds(data not statically known)` |
 | is_pristine_wiki_target | sorted | 177 | `sorted(root.rglob(...))` |
-| is_pristine_wiki_target | rglob | 177 | `root.rglob('*')` |
+| is_pristine_wiki_target | root.rglob | 177 | `root.rglob('*')` |
 
 ### Boundary effects
 
@@ -157,7 +162,7 @@ flowchart LR
 | unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 157 |
 | unresolved_call | `is_pristine_wiki_target` | `root.exists` | 159 |
 | unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 161 |
-| unresolved_call | `is_pristine_wiki_target` | `sorted` | 177 |
+| external_call | `is_pristine_wiki_target` | `sorted` | 177 |
 | unresolved_call | `is_pristine_wiki_target` | `root.rglob` | 177 |
 | step_limit | `classify_wiki_lifecycle` | `first 12 steps` | 0 |
 

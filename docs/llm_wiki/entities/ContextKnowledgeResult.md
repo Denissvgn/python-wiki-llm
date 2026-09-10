@@ -11,9 +11,9 @@ Canonical explicit-mode knowledge outcome.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `selection` | `ContextKnowledgeSelection` | *required* | — |
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
+| `selection` | `ContextKnowledgeSelection` | *optional* | — |
 
 ## Methods
 

@@ -13,50 +13,53 @@ sequenceDiagram
     participant p1 as _object_array
     participant p2 as require_mapping_list
     participant p3 as require_list
-    participant p4 as isinstance
+    participant p4 as isinstance (src/llm_wiki_cli/services…alidation.py:require_list)
     participant p5 as require_mapping
-    participant p6 as encode
-    participant p7 as DocumentationClaimEvidenceError
-    participant p8 as tuple
-    participant p9 as _normalize_claim_record
-    participant p10 as _mapping
-    participant p11 as _exact_fields
-    participant p12 as require_exact_fields
-    participant p13 as str
-    participant p14 as set
-    participant p15 as sorted
-    participant p16 as invalid_error
-    participant p17 as error_factory
+    participant p6 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    participant p7 as key.encode
+    participant p8 as DocumentationClaimEvidenceError
+    participant p9 as tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)
+    participant p10 as _normalize_claim_record
+    participant p11 as _mapping
+    participant p12 as _exact_fields
+    participant p13 as require_exact_fields
+    participant p14 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p15 as str
+    participant p16 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p17 as tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p18 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p19 as invalid_error
+    participant p20 as error_factory
     p0->>p1: _object_array
     p1->>p2: require_mapping_list
     p2->>p3: require_list
-    p3-->>p4: isinstance
+    p3-->>p4: isinstance (src/llm_wiki_cli/services…alidation.py:require_list)
     p2->>p5: require_mapping
-    p5-->>p4: isinstance
-    p5-->>p4: isinstance
-    p5-->>p6: encode
-    p1->>p7: DocumentationClaimEvidenceError
-    p1->>p7: DocumentationClaimEvidenceError
-    p0-->>p8: tuple
-    p0->>p9: _normalize_claim_record
-    p9->>p10: _mapping
-    p10->>p5: require_mapping
-    p10->>p7: DocumentationClaimEvidenceError
-    p9->>p11: _exact_fields
-    p11->>p12: require_exact_fields
-    p12-->>p4: isinstance
-    p12-->>p13: str
-    p12-->>p14: set
-    p12-->>p14: set
-    p12-->>p14: set
-    p12-->>p8: tuple
-    p12-->>p15: sorted
-    p12-->>p8: tuple
-    p12-->>p15: sorted
-    p12-->>p16: invalid_error
-    p12-->>p17: error_factory
-    p11->>p7: DocumentationClaimEvidenceError
-    p11->>p7: DocumentationClaimEvidenceError
+    p5-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p5-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p5-->>p7: key.encode
+    p1->>p8: DocumentationClaimEvidenceError
+    p1->>p8: DocumentationClaimEvidenceError
+    p0-->>p9: tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)
+    p0->>p10: _normalize_claim_record
+    p10->>p11: _mapping
+    p11->>p5: require_mapping
+    p11->>p8: DocumentationClaimEvidenceError
+    p10->>p12: _exact_fields
+    p12->>p13: require_exact_fields
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p15: str
+    p13-->>p16: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p16: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p16: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p17: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p18: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p17: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p18: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p13-->>p19: invalid_error
+    p13-->>p20: error_factory
+    p12->>p8: DocumentationClaimEvidenceError
+    p12->>p8: DocumentationClaimEvidenceError
 ```
 
 > Call sequence diagram shows 30 of 257 interactions; 227 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -72,25 +75,25 @@ flowchart LR
     s2["2. _object_array"]
     s3["3. require_mapping_list"]
     s4["4. require_list"]
-    s5["5. isinstance"]
+    s5["5. isinstance (src/llm_wiki_cli/services…alidation.py:require_list)"]
     s6["6. require_mapping"]
-    s7["7. isinstance"]
-    s8["8. isinstance"]
-    s9["9. encode"]
+    s7["7. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s8["8. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s9["9. key.encode"]
     s10["10. DocumentationClaimEvidenceError"]
     s11["11. DocumentationClaimEvidenceError"]
-    s12["12. tuple"]
+    s12["12. tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)"]
     s1 -->|"_object_array(value, 'claim_evidence')"| s2
     s2 -->|"require_mapping_list(value, error=DocumentationClaimEvidenceError(...), item_error=DocumentationClaimEvidenceError(...), require_string_keys=True)"| s3
     s3 -->|"require_list(value, error=error)"| s4
-    s4 -. "isinstance(value, list)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_cli/services…alidation.py:require_list)(value, list)" .-> s5
     s3 -->|"require_mapping(item, error=..., require_string_keys=require_string_keys)"| s6
-    s6 -. "isinstance(value, Mapping)" .-> s7
-    s6 -. "isinstance(key, str)" .-> s8
+    s6 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s7
+    s6 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s8
     s6 -. "key.encode('utf-8')" .-> s9
     s2 -->|"DocumentationClaimEvidenceError(...)"| s10
     s2 -->|"DocumentationClaimEvidenceError(...)"| s11
-    s1 -. "tuple(...)" .-> s12
+    s1 -. "tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)(...)" .-> s12
     click s1 "../modules/documentation_claim_evidence.md"
     click s2 "../modules/documentation_claim_evidence.md"
     click s3 "../modules/validation.md"
@@ -108,14 +111,14 @@ flowchart LR
 | `_object_array` | `value: object`, `field_name: str` | - | - | `require_mapping_list(...)` |
 | `require_mapping_list` | `value: object`, `error: Exception`, `item_error: Exception \| None`, `require_string_keys: bool` | - | - | `items` |
 | `require_list` | `value: object`, `error: Exception` | - | - | `value` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…alidation.py:require_list)` | - | - | - | - |
 | `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `key.encode` | - | - | - | - |
 | `DocumentationClaimEvidenceError` | - | - | - | - |
 | `DocumentationClaimEvidenceError` | - | - | - | - |
-| `tuple` | - | - | - | - |
+| `tuple (src/llm_wiki_cli/services…ze_claim_evidence_records)` | - | - | - | - |
 
 ### Call data
 
@@ -124,14 +127,14 @@ flowchart LR
 | normalize_claim_evidence_records | _object_array | 192 | `_object_array(value, 'claim_evidence')` |
 | _object_array | require_mapping_list | 1431 | `require_mapping_list(value, error=DocumentationClaimEvidenceError(...), item_error=DocumentationClaimEvidenceError(...), require_string_keys=True)` |
 | require_mapping_list | require_list | 1015 | `require_list(value, error=error)` |
-| require_list | isinstance | 764 | `isinstance(value, list)` |
+| require_list | isinstance (src/llm_wiki_cli/services…alidation.py:require_list) | 764 | `isinstance(value, list)` |
 | require_mapping_list | require_mapping | 1017 | `require_mapping(item, error=..., require_string_keys=require_string_keys)` |
-| require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance | 731 | `isinstance(key, str)` |
-| require_mapping | encode | 736 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
+| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
 | _object_array | DocumentationClaimEvidenceError | 1433 | `DocumentationClaimEvidenceError(...)` |
 | _object_array | DocumentationClaimEvidenceError | 1434 | `DocumentationClaimEvidenceError(...)` |
-| normalize_claim_evidence_records | tuple | 193 | `tuple(...)` |
+| normalize_claim_evidence_records | tuple (src/llm_wiki_cli/services…ze_claim_evidence_records) | 193 | `tuple(...)` |
 
 ### Boundary effects
 
@@ -141,9 +144,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_list` | `isinstance` | 764 |
-| unresolved_call | `require_mapping` | `isinstance` | 727 |
-| unresolved_call | `require_mapping` | `isinstance` | 731 |
+| external_call | `require_list` | `isinstance` | 764 |
+| external_call | `require_mapping` | `isinstance` | 727 |
+| external_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |
 | step_limit | `normalize_claim_evidence_records` | `first 12 steps` | 0 |
 | truncated_flow | `normalize_claim_evidence_records` | `depth limit` | 0 |

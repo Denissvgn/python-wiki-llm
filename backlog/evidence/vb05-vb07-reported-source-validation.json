@@ -1,0 +1,100 @@
+{
+  "workspace": "/tmp/llm-wiki-vb05-vb07-real-787dqgc_",
+  "selected_source_files": 12,
+  "bootstrap_exit": 0,
+  "sync_exit": 0,
+  "first_sync_trio_bytes_and_mtimes_unchanged": true,
+  "doctor_exit": 0,
+  "permission_set_legacy": [
+    {
+      "from": {
+        "file": "services/autotrade-service/src/core/permissions.py",
+        "symbol": "get_user_permissions_set"
+      },
+      "to": {
+        "file": null,
+        "symbol": "set"
+      },
+      "name": "set",
+      "kind": "external",
+      "line": 326
+    }
+  ],
+  "permission_set_detailed": [
+    {
+      "from": {
+        "file": "services/autotrade-service/src/core/permissions.py",
+        "symbol": "get_user_permissions_set"
+      },
+      "to": {
+        "file": null,
+        "symbol": "set"
+      },
+      "name": "set",
+      "kind": "external",
+      "line": 326
+    }
+  ],
+  "logging_runtime_cycles": [],
+  "reported_flows": [
+    {
+      "id": "http-get_dashboard",
+      "modules_touched": [
+        "services/autotrade-service/src/api/admin.py",
+        "services/autotrade-service/src/core/rbac.py",
+        "services/autotrade-service/src/core/permissions.py",
+        "services/autotrade-service/src/core/database.py"
+      ]
+    },
+    {
+      "id": "http-get_leverage_options",
+      "modules_touched": [
+        "services/autotrade-service/src/api/autotrade.py"
+      ]
+    }
+  ],
+  "all_emitted_routes_concrete": true,
+  "source_files_unchanged": true,
+  "surface_counts": {
+    "assets": {
+      "by_media_type": {
+        "image": 0,
+        "other": 0,
+        "video": 0
+      },
+      "referenced": 0,
+      "total": 0,
+      "unreferenced": 0
+    },
+    "by_kind": {
+      "api-contracts": 1,
+      "dependencies": 1,
+      "entities": 17,
+      "flows": 53,
+      "guides": 0,
+      "index": 1,
+      "infrastructure": 0,
+      "load-order": 1,
+      "log": 1,
+      "modules": 12,
+      "workflows": 1
+    },
+    "dependency_architecture": 2,
+    "total": 88
+  },
+  "source_sha256": {
+    "libs/common_errors/logging.py": "40d8bbadab61fe3b2645c0b5c3b4dc43ba4a840449197a82b83d7d37ea012035",
+    "services/admin-service/src/monitoring/logging.py": "e803cb3b5d0ef21f14f0aec179c5a33bc2ea57d3916f540589d7bb2683bef6bf",
+    "services/autotrade-service/src/utils/logging.py": "ce085cbb1f11df599f69f791a99e07ae49bd5f0025c7a1b75f54d2f5142a2143",
+    "traid_training_sdk/core/logging.py": "2463344c3078cabd4da82ed36ed289be80258a1b2845f4663543da37afb81081",
+    "services/autotrade-service/src/core/permissions.py": "a40f382d448fa9a20fa7934021235fd329ce2e3112a9795dda4835721f315871",
+    "services/order-router/src/core/balance_cache.py": "96b9e410328b921c68ec977d80062fcda9f8e70ba3852825c332c752a3009685",
+    "services/data-ingest/src/api/readiness.py": "29da32b243714b90236a9cae3569843477c1b1e48d610296cd1e1e445841ef1d",
+    "services/autoresearch-agent/src/main.py": "f3fce70ef2b5a12712d4cd69b04776e94ce3ef5596ff8eb40c3f0e4f9c00b5e7",
+    "services/autotrade-service/src/api/admin.py": "f168a058a1855cb7fd9ae6ee392707abcc2c58a6735c89ccb47c2010fdb57bb7",
+    "services/autotrade-service/src/api/autotrade.py": "46ac045cd56b0df71f8ddc952a9445dacb9a59ef530cb20d0c326e227921b267",
+    "services/autotrade-service/src/core/rbac.py": "ca52ab089f4cafe92bc555b654d9ac828e36939208ea150766b0e23fce589d05",
+    "services/autotrade-service/src/core/database.py": "4581fe469cb2f39f8971f676598ace64650b1c05fe0de240b2a561c3c5d8182c"
+  },
+  "implementation_commit": "3812e1e"
+}

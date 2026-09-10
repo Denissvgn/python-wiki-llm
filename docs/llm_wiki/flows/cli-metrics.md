@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [metrics_cmd](../modules/metrics_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 19 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 20 more
 
 **Complete modules touched:**
 
@@ -28,6 +28,7 @@
 - [python_observations](../modules/python_observations.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 
 ## Call sequence
@@ -36,56 +37,59 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
-    participant p2 as bool
+    participant p1 as getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    participant p2 as bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)
     participant p3 as validate_source_root
     participant p4 as validate_path
     participant p5 as PathValidationError
-    participant p6 as resolve
-    participant p7 as cwd
-    participant p8 as relative_to
-    participant p9 as expanduser
-    participant p10 as Path
-    participant p11 as is_absolute
-    participant p12 as is_dir
-    participant p13 as abspath
-    participant p14 as windows_current_user_sid
-    participant p15 as WindowsSecurityGuardError
-    participant p16 as _current_windows_user_sid
-    participant p17 as WinDLL
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p2: bool
-    p0-->>p1: getattr
+    participant p6 as (…).resolve
+    participant p7 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p8 as Path.cwd().resolve
+    participant p9 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    participant p10 as Path(…).expanduser
+    participant p11 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p12 as candidate.is_absolute
+    participant p13 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p14 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p15 as resolved.is_dir
+    participant p16 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p17 as windows_current_user_sid
+    participant p18 as WindowsSecurityGuardError
+    participant p19 as _current_windows_user_sid
+    participant p20 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    p0-->>p2: bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
     p0->>p3: validate_source_root
     p3->>p4: validate_path
     p4->>p5: PathValidationError
-    p4-->>p6: resolve
-    p4-->>p7: cwd
-    p4-->>p6: resolve
-    p4-->>p7: cwd
-    p4-->>p8: relative_to
+    p4-->>p6: (…).resolve
+    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p4-->>p8: Path.cwd().resolve
+    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p4-->>p9: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     p4->>p5: PathValidationError
-    p3-->>p9: expanduser
-    p3-->>p10: Path
-    p3-->>p11: is_absolute
-    p3-->>p7: cwd
-    p3-->>p6: resolve
+    p3-->>p10: Path(…).expanduser
+    p3-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p3-->>p12: candidate.is_absolute
+    p3-->>p13: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p3-->>p14: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
     p3->>p5: PathValidationError
-    p3-->>p12: is_dir
+    p3-->>p15: resolved.is_dir
     p3->>p5: PathValidationError
-    p3-->>p10: Path
-    p3-->>p13: abspath
-    p3->>p14: windows_current_user_sid
-    p14->>p15: WindowsSecurityGuardError
-    p14->>p16: _current_windows_user_sid
-    p16-->>p17: WinDLL
-    p16-->>p17: WinDLL
+    p3-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p3-->>p16: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    p3->>p17: windows_current_user_sid
+    p17->>p18: WindowsSecurityGuardError
+    p17->>p19: _current_windows_user_sid
+    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 852 interactions; 822 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 909 interactions; 879 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -95,28 +99,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. run"]
-    s2["2. getattr"]
-    s3["3. getattr"]
-    s4["4. getattr"]
-    s5["5. getattr"]
-    s6["6. bool"]
-    s7["7. getattr"]
+    s2["2. getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)"]
+    s3["3. getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)"]
+    s4["4. getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)"]
+    s5["5. getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)"]
+    s6["6. bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)"]
+    s7["7. getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)"]
     s8["8. validate_source_root"]
     s9["9. validate_path"]
     s10["10. PathValidationError"]
-    s11["11. resolve"]
-    s12["12. cwd"]
-    s1 -. "getattr(args, 'src_dir', '.')" .-> s2
-    s1 -. "getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s3
-    s1 -. "getattr(args, 'last', '30d')" .-> s4
-    s1 -. "getattr(args, 'format', 'text')" .-> s5
-    s1 -. "bool(getattr(...))" .-> s6
-    s1 -. "getattr(args, 'allow_external_src', False)" .-> s7
+    s11["11. (…).resolve"]
+    s12["12. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s1 -. "getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'src_dir', '.')" .-> s2
+    s1 -. "getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s3
+    s1 -. "getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'last', '30d')" .-> s4
+    s1 -. "getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'format', 'text')" .-> s5
+    s1 -. "bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)(getattr(...))" .-> s6
+    s1 -. "getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'allow_external_src', False)" .-> s7
     s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external)"| s8
     s8 -->|"validate_path(path, label)"| s9
     s9 -->|"PathValidationError(...)"| s10
-    s9 -. "(Path.cwd() / path).resolve(data not statically known)" .-> s11
-    s9 -. "Path.cwd(data not statically known)" .-> s12
+    s9 -. "(…).resolve(data not statically known)" .-> s11
+    s9 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -135,33 +139,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | `DEFAULT_WIKI_DIR` | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)` | - | - | - | - |
+| `bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)` | - | - | - | - |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `resolve` | - | - | - | - |
-| `cwd` | - | - | - | - |
+| `(…).resolve` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 110 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 111 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr | 112 | `getattr(args, 'last', '30d')` |
-| run | getattr | 113 | `getattr(args, 'format', 'text')` |
-| run | bool | 115 | `bool(getattr(...))` |
-| run | getattr | 115 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 110 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 111 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 112 | `getattr(args, 'last', '30d')` |
+| run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 113 | `getattr(args, 'format', 'text')` |
+| run | bool (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 116 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
+| validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
 
 ### Boundary effects
 
@@ -174,11 +178,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 110 |
-| unresolved_call | `run` | `getattr` | 111 |
-| unresolved_call | `run` | `getattr` | 112 |
-| unresolved_call | `run` | `getattr` | 113 |
-| unresolved_call | `run` | `getattr` | 115 |
+| external_call | `run` | `getattr` | 110 |
+| external_call | `run` | `getattr` | 111 |
+| external_call | `run` | `getattr` | 112 |
+| external_call | `run` | `getattr` | 113 |
+| external_call | `run` | `getattr` | 115 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | step_limit | `run` | `first 12 steps` | 0 |

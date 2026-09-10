@@ -11,21 +11,21 @@
 sequenceDiagram
     participant p0 as require_trimmed_text_list
     participant p1 as isinstance
-    participant p2 as strip
+    participant p2 as item.strip
     participant p3 as any
     participant p4 as ord
-    participant p5 as append
+    participant p5 as items.append
     participant p6 as len
     participant p7 as set
     participant p8 as sorted
     p0-->>p1: isinstance
     p0-->>p1: isinstance
     p0-->>p1: isinstance
-    p0-->>p2: strip
-    p0-->>p2: strip
+    p0-->>p2: item.strip
+    p0-->>p2: item.strip
     p0-->>p3: any
     p0-->>p4: ord
-    p0-->>p5: append
+    p0-->>p5: items.append
     p0-->>p6: len
     p0-->>p7: set
     p0-->>p6: len
@@ -41,11 +41,11 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. isinstance"]
     s4["4. isinstance"]
-    s5["5. strip"]
-    s6["6. strip"]
+    s5["5. item.strip"]
+    s6["6. item.strip"]
     s7["7. any"]
     s8["8. ord"]
-    s9["9. append"]
+    s9["9. items.append"]
     s10["10. len"]
     s11["11. set"]
     s12["12. len"]
@@ -75,11 +75,11 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `item.strip` | - | - | - | - |
+| `item.strip` | - | - | - | - |
 | `any` | - | - | - | - |
 | `ord` | - | - | - | - |
-| `append` | - | - | - | - |
+| `items.append` | - | - | - | - |
 | `len` | - | - | - | - |
 | `set` | - | - | - | - |
 | `len` | - | - | - | - |
@@ -91,11 +91,11 @@ flowchart LR
 | require_trimmed_text_list | isinstance | 680 | `isinstance(value, container_type)` |
 | require_trimmed_text_list | isinstance | 680 | `isinstance(value, Iterable)` |
 | require_trimmed_text_list | isinstance | 684 | `isinstance(item, str)` |
-| require_trimmed_text_list | strip | 684 | `item.strip(data not statically known)` |
-| require_trimmed_text_list | strip | 686 | `item.strip(data not statically known)` |
+| require_trimmed_text_list | item.strip | 684 | `item.strip(data not statically known)` |
+| require_trimmed_text_list | item.strip | 686 | `item.strip(data not statically known)` |
 | require_trimmed_text_list | any | 688 | `any(...)` |
 | require_trimmed_text_list | ord | 689 | `ord(character)` |
-| require_trimmed_text_list | append | 692 | `items.append(item)` |
+| require_trimmed_text_list | items.append | 692 | `items.append(item)` |
 | require_trimmed_text_list | len | 693 | `len(set(...))` |
 | require_trimmed_text_list | set | 693 | `set(items)` |
 | require_trimmed_text_list | len | 693 | `len(items)` |
@@ -110,12 +110,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_trimmed_text_list` | `isinstance` | 680 |
-| unresolved_call | `require_trimmed_text_list` | `isinstance` | 684 |
+| external_call | `require_trimmed_text_list` | `isinstance` | 680 |
+| external_call | `require_trimmed_text_list` | `isinstance` | 684 |
 | unresolved_call | `require_trimmed_text_list` | `item.strip` | 684 |
 | unresolved_call | `require_trimmed_text_list` | `item.strip` | 686 |
-| unresolved_call | `require_trimmed_text_list` | `any` | 688 |
-| unresolved_call | `require_trimmed_text_list` | `ord` | 689 |
+| external_call | `require_trimmed_text_list` | `any` | 688 |
+| external_call | `require_trimmed_text_list` | `ord` | 689 |
 | step_limit | `require_trimmed_text_list` | `first 12 steps` | 0 |
 
 ## Behavior

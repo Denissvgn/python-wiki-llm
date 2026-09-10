@@ -1857,6 +1857,30 @@ def link_entry_point_flows(
     return linked
 
 
+def _resolved_flow_route(operation: Mapping[str, Any]) -> dict[str, Any] | None:
+    """Project concrete route evidence without inventing values for unknowns."""
+    method, path = operation.get("method"), operation.get("path")
+    if not isinstance(method, str) or not method.strip() or method.upper() == "UNKNOWN":
+        return None
+    if not isinstance(path, str) or not path.strip():
+        return None
+    if any(
+        isinstance(unknown, Mapping) and unknown.get("field") in {"method", "path"}
+        for unknown in operation.get("unknowns", [])
+    ):
+        return None
+    operation_id = operation.get("operation_id")
+    return {
+        "method": method,
+        "path": path,
+        "operation_id": (
+            operation_id
+            if isinstance(operation_id, str) and operation_id.strip()
+            else None
+        ),
+    }
+
+
 def attach_routes_to_entry_points(
     entry_points: Sequence[Mapping[str, Any]], contracts: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
@@ -1870,14 +1894,13 @@ def attach_routes_to_entry_points(
         filepath = str(handler.get("file") or "")
         symbol = str(handler.get("symbol") or "")
         qualname = str(handler.get("qualname") or symbol)
-        routes[(filepath, qualname)].append(
-            {
-                "method": operation.get("method"),
-                "path": operation.get("path"),
-                "operation_id": operation.get("operation_id"),
-            }
-        )
-        leaf_qualnames[(filepath, symbol)].add(qualname)
+        # Retain every handler identity before filtering: an unknown route
+        # cannot make a colliding leaf name unambiguous.
+        handler_routes = routes[(filepath, qualname)]
+        route = _resolved_flow_route(operation)
+        if route is not None:
+            handler_routes.append(route)
+        leaf_qualnames[(filepath, symbol.rsplit(".", 1)[-1])].add(qualname)
     result = []
     for entry in entry_points:
         item = dict(entry)
@@ -1888,10 +1911,12 @@ def attach_routes_to_entry_points(
             qualnames = leaf_qualnames.get((filepath, symbol.rsplit(".", 1)[-1]), set())
             if len(qualnames) == 1:
                 handler_routes = routes.get((filepath, next(iter(qualnames))))
-        if item.get("category") == "http" and handler_routes:
-            item["routes"] = sorted(
-                handler_routes, key=lambda route: (str(route["path"]), str(route["method"]))
-            )
+        if item.get("category") == "http" and handler_routes is not None:
+            item.pop("routes", None)
+            if handler_routes:
+                item["routes"] = sorted(
+                    handler_routes, key=lambda route: (route["path"], route["method"])
+                )
         result.append(item)
     return result
 

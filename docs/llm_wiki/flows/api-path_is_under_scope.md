@@ -10,16 +10,16 @@
 ```mermaid
 sequenceDiagram
     participant p0 as path_is_under_scope
-    participant p1 as strip
-    participant p2 as replace
+    participant p1 as path.replace(…).strip
+    participant p2 as path.replace
     participant p3 as path_is_under
     participant p4 as bool
-    participant p5 as startswith
-    p0-->>p1: strip
-    p0-->>p2: replace
+    participant p5 as path.startswith
+    p0-->>p1: path.replace(…).strip
+    p0-->>p2: path.replace
     p0->>p3: path_is_under
     p3-->>p4: bool
-    p3-->>p5: startswith
+    p3-->>p5: path.startswith
 ```
 
 ## Data flow
@@ -28,12 +28,12 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. path_is_under_scope"]
-    s2["2. strip"]
-    s3["3. replace"]
+    s2["2. path.replace(…).strip"]
+    s3["3. path.replace"]
     s4["4. path_is_under"]
     s5["5. bool"]
-    s6["6. startswith"]
-    s1 -. "path.replace('\\', '/').strip('/')" .-> s2
+    s6["6. path.startswith"]
+    s1 -. "path.replace(…).strip('/')" .-> s2
     s1 -. "path.replace('\\', '/')" .-> s3
     s1 -->|"path_is_under(normalized, scope_root)"| s4
     s4 -. "bool(prefix)" .-> s5
@@ -47,21 +47,21 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `path_is_under_scope` | `path: str`, `scope_root: str` | - | - | `...` |
-| `strip` | - | - | - | - |
-| `replace` | - | - | - | - |
+| `path.replace(…).strip` | - | - | - | - |
+| `path.replace` | - | - | - | - |
 | `path_is_under` | `path: str`, `prefix: str` | - | - | `...` |
 | `bool` | - | - | - | - |
-| `startswith` | - | - | - | - |
+| `path.startswith` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| path_is_under_scope | strip | 424 | `path.replace('\\', '/').strip('/')` |
-| path_is_under_scope | replace | 424 | `path.replace('\\', '/')` |
+| path_is_under_scope | path.replace(…).strip | 424 | `path.replace('\\', '/').strip('/')` |
+| path_is_under_scope | path.replace | 424 | `path.replace('\\', '/')` |
 | path_is_under_scope | path_is_under | 425 | `path_is_under(normalized, scope_root)` |
 | path_is_under | bool | 418 | `bool(prefix)` |
-| path_is_under | startswith | 418 | `path.startswith(...)` |
+| path_is_under | path.startswith | 418 | `path.startswith(...)` |
 
 ### Boundary effects
 

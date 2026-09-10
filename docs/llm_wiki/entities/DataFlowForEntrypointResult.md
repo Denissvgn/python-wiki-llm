@@ -11,8 +11,8 @@ _Auto-generated from `DataFlowForEntrypointResult` in `src/llm_wiki_cli/api_type
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `data_flow` | `dict[str, Any] \| None` | *required* | — |
 
 ## Methods

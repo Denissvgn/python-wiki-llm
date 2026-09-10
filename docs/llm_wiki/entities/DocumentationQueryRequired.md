@@ -11,8 +11,8 @@ _Auto-generated from `_DocumentationQueryRequired` in `src/llm_wiki_cli/api_type
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `schema_version` | `str` | *required* | — |
 | `operation` | `str` | *required* | — |
 | `query` | `Any` | *required* | — |

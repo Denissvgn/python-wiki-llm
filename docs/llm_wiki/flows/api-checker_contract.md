@@ -12,12 +12,12 @@ sequenceDiagram
     participant p0 as checker_contract
     participant p1 as _checker_id
     participant p2 as isinstance
-    participant p3 as fullmatch
+    participant p3 as _CHECKER_ID_RE.fullmatch
     participant p4 as VerificationContractError
     participant p5 as UnknownVerificationCheckerError
     p0->>p1: _checker_id
     p1-->>p2: isinstance
-    p1-->>p3: fullmatch
+    p1-->>p3: _CHECKER_ID_RE.fullmatch
     p1->>p4: VerificationContractError
     p0->>p5: UnknownVerificationCheckerError
 ```
@@ -30,7 +30,7 @@ flowchart LR
     s1["1. checker_contract"]
     s2["2. _checker_id"]
     s3["3. isinstance"]
-    s4["4. fullmatch"]
+    s4["4. _CHECKER_ID_RE.fullmatch"]
     s5["5. VerificationContractError"]
     s6["6. UnknownVerificationCheckerError"]
     s1 -->|"_checker_id(checker_id, 'checker_id')"| s2
@@ -51,7 +51,7 @@ flowchart LR
 | `checker_contract` | `checker_id: str` | `_CHECKER_REGISTRY` | - | `_CHECKER_REGISTRY[...]` |
 | `_checker_id` | `value: object`, `field_name: str` | - | - | `value` |
 | `isinstance` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
+| `_CHECKER_ID_RE.fullmatch` | - | - | - | - |
 | `VerificationContractError` | - | - | - | - |
 | `UnknownVerificationCheckerError` | - | - | - | - |
 
@@ -61,7 +61,7 @@ flowchart LR
 |---|---|---:|---|
 | checker_contract | _checker_id | 671 | `_checker_id(checker_id, 'checker_id')` |
 | _checker_id | isinstance | 1359 | `isinstance(value, str)` |
-| _checker_id | fullmatch | 1359 | `_CHECKER_ID_RE.fullmatch(value)` |
+| _checker_id | _CHECKER_ID_RE.fullmatch | 1359 | `_CHECKER_ID_RE.fullmatch(value)` |
 | _checker_id | VerificationContractError | 1360 | `VerificationContractError(...)` |
 | checker_contract | UnknownVerificationCheckerError | 675 | `UnknownVerificationCheckerError(checker_id)` |
 
@@ -73,7 +73,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_checker_id` | `isinstance` | 1359 |
+| external_call | `_checker_id` | `isinstance` | 1359 |
 | unresolved_call | `_checker_id` | `_CHECKER_ID_RE.fullmatch` | 1359 |
 
 ## Behavior

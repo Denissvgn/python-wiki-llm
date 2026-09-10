@@ -4051,6 +4051,46 @@ class TestExcludedDirsRelative:
 
 
 class TestGetCallGraph:
+    def test_annotations_and_prose_do_not_create_workflows(self, tmp_path):
+        for name in ("A", "B", "C"):
+            (tmp_path / f"{name.lower()}.py").write_text(f"class {name}: pass\n")
+        (tmp_path / "app.py").write_text(
+            "from a import A\nfrom b import B\nfrom c import C\n"
+            "def annotations(a: A, b: B) -> C:\n    return a\n"
+            "def prose():\n    '''Use A then B then C.'''\n    return None\n"
+        )
+        assert get_call_graph(get_inventory(str(tmp_path), deep=True)) == {}
+
+    def test_body_calls_drive_workflows_with_aliases_and_repeated_calls(self, tmp_path):
+        for name in ("a", "b", "c"):
+            (tmp_path / f"{name}.py").write_text("def work(): return 1\n")
+        (tmp_path / "app.py").write_text(
+            "from a import work as first\nimport b as second\nfrom c import work as third\n"
+            "def run():\n    first()\n    second.work()\n    third()\n    first()\n"
+        )
+        graph = get_call_graph(get_inventory(str(tmp_path), deep=True))
+        assert graph["app_flow"]["chain"] == ["a.work", "b.work", "c.work", "a.work"]
+        assert graph["app_flow"]["modules_touched_paths"] == [
+            "a.py",
+            "app.py",
+            "b.py",
+            "c.py",
+        ]
+
+    def test_method_workflow_retains_qualified_entry_and_excludes_unknown_receivers(
+        self, tmp_path
+    ):
+        for name in ("A", "B", "C"):
+            (tmp_path / f"{name.lower()}.py").write_text(f"class {name}: pass\n")
+        (tmp_path / "app.py").write_text(
+            "from a import A\nfrom b import B\nfrom c import C\n"
+            "class Service:\n    def execute(self):\n        A()\n        B()\n        C()\n"
+            "def missing(service):\n    service.A()\n    service.B()\n    service.C()\n"
+        )
+        graph = get_call_graph(get_inventory(str(tmp_path), deep=True))
+        assert len(graph) == 1
+        assert next(iter(graph.values()))["entry"] == "app.Service.execute"
+
     def test_get_call_graph_stays_decomposed(self):
         assert _body_line_count(get_call_graph) <= 35
 
@@ -4091,6 +4131,8 @@ class TestGetCallGraph:
             from schemas.common import MessageResponse
 
             def create_task(task: Task, data: CreateSchema) -> MessageResponse:
+                Task()
+                CreateSchema()
                 return MessageResponse()
         """)
         )
@@ -4196,18 +4238,19 @@ class TestResolveCallEdges:
         assert edge["kind"] == "unresolved"
         assert edge["to"]["file"] is None
 
-    def test_detailed_observations_preserve_ambiguity_without_changing_legacy(self):
+    def test_declared_import_root_ambiguity_keeps_legacy_fileless(self):
         inventory = {
-            "a.py": {
+            "one/target.py": {
                 "functions": [{"name": "target", "calls": []}],
                 "classes": [],
             },
-            "b.py": {
+            "two/target.py": {
                 "functions": [{"name": "target", "calls": []}],
                 "classes": [],
             },
             "main.py": {
-                "imports": [{"module": "", "name": "target"}],
+                "python_import_scope": {"root": ".", "search_roots": ["one", "two"]},
+                "imports": [{"module": "target", "name": "target", "type": "from"}],
                 "functions": [
                     {
                         "name": "run",
@@ -4221,7 +4264,7 @@ class TestResolveCallEdges:
         legacy = resolve_call_edges(inventory)
         detailed = resolve_call_observations(inventory)
 
-        assert legacy[-1]["kind"] == "external"
+        assert legacy[-1]["kind"] == "unresolved"
         assert legacy[-1]["line"] == 0
         assert detailed["schema_version"] == "llm-wiki-call-observations/v1"
         assert detailed["coverage"]["observed"] == 1
@@ -4229,8 +4272,8 @@ class TestResolveCallEdges:
         assert observation["kind"] == "ambiguous"
         assert observation["line"] is None
         assert observation["candidates"] == [
-            {"file": "a.py", "symbol": "target"},
-            {"file": "b.py", "symbol": "target"},
+            {"file": "one/target.py", "symbol": "target"},
+            {"file": "two/target.py", "symbol": "target"},
         ]
         assert resolve_call_edges(inventory) == legacy
 

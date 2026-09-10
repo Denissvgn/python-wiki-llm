@@ -18,7 +18,7 @@ flowchart TD
 
 > These groups reach each other only from inside functions or under `TYPE_CHECKING`, so nothing is imported while they load and their order is well defined. They are listed because they are cyclic on paper, not because they need fixing.
 
-- [go_extractor](modules/go_extractor.md) ⇄ [haskell_extractor](modules/haskell_extractor.md) ⇄ [python_extractor](modules/python_extractor.md) ⇄ [rust_extractor](modules/rust_extractor.md) ⇄ [api_contracts](modules/api_contracts.md) ⇄ [services_dependencies](modules/services_dependencies.md) ⇄ [dependency_versions](modules/dependency_versions.md) ⇄ [entrypoints](modules/entrypoints.md) ⇄ [extraction_service](modules/extraction_service.md) ⇄ [extractor_helpers](modules/extractor_helpers.md) ⇄ [imports](modules/imports.md) ⇄ [infrastructure_inventory](modules/infrastructure_inventory.md) ⇄ [infrastructure_sync](modules/infrastructure_sync.md) ⇄ [inventory_cache](modules/inventory_cache.md) ⇄ [knowledge_artifacts](modules/knowledge_artifacts.md) ⇄ [knowledge_envelope](modules/knowledge_envelope.md) ⇄ [knowledge_freshness](modules/knowledge_freshness.md) ⇄ [knowledge_generation](modules/knowledge_generation.md) ⇄ [knowledge_governance](modules/knowledge_governance.md) ⇄ [knowledge_index](modules/knowledge_index.md) ⇄ [knowledge_links](modules/knowledge_links.md) ⇄ [knowledge_model](modules/knowledge_model.md) ⇄ [knowledge_orchestration](modules/knowledge_orchestration.md) ⇄ [knowledge_reuse](modules/knowledge_reuse.md) ⇄ [packages](modules/packages.md) ⇄ [python_observations](modules/python_observations.md) ⇄ [source_snapshot](modules/source_snapshot.md) ⇄ [sync_manifest](modules/sync_manifest.md)
+- [go_extractor](modules/go_extractor.md) ⇄ [haskell_extractor](modules/haskell_extractor.md) ⇄ [python_extractor](modules/python_extractor.md) ⇄ [rust_extractor](modules/rust_extractor.md) ⇄ [api_contracts](modules/api_contracts.md) ⇄ [services_dependencies](modules/services_dependencies.md) ⇄ [dependency_versions](modules/dependency_versions.md) ⇄ [entrypoints](modules/entrypoints.md) ⇄ [extraction_service](modules/extraction_service.md) ⇄ [extractor_helpers](modules/extractor_helpers.md) ⇄ [imports](modules/imports.md) ⇄ [infrastructure_inventory](modules/infrastructure_inventory.md) ⇄ [infrastructure_sync](modules/infrastructure_sync.md) ⇄ [inventory_cache](modules/inventory_cache.md) ⇄ [knowledge_artifacts](modules/knowledge_artifacts.md) ⇄ [knowledge_envelope](modules/knowledge_envelope.md) ⇄ [knowledge_freshness](modules/knowledge_freshness.md) ⇄ [knowledge_generation](modules/knowledge_generation.md) ⇄ [knowledge_governance](modules/knowledge_governance.md) ⇄ [knowledge_index](modules/knowledge_index.md) ⇄ [knowledge_links](modules/knowledge_links.md) ⇄ [knowledge_model](modules/knowledge_model.md) ⇄ [knowledge_orchestration](modules/knowledge_orchestration.md) ⇄ [knowledge_reuse](modules/knowledge_reuse.md) ⇄ [packages](modules/packages.md) ⇄ [python_calls](modules/python_calls.md) ⇄ [python_observations](modules/python_observations.md) ⇄ [source_snapshot](modules/source_snapshot.md) ⇄ [sync_manifest](modules/sync_manifest.md)
 - [calibration___init__](modules/calibration___init__.md) ⇄ [broker](modules/broker.md) ⇄ [calibration_contracts](modules/calibration_contracts.md) ⇄ [controller](modules/controller.md) ⇄ [host_broker](modules/host_broker.md) ⇄ [documentation_run___init__](modules/documentation_run___init__.md) ⇄ [documentation_run_contracts](modules/documentation_run_contracts.md) ⇄ [documentation_run_dependencies](modules/documentation_run_dependencies.md) ⇄ [export](modules/export.md) ⇄ [integrity](modules/integrity.md) ⇄ [packet](modules/packet.md) ⇄ [prepare](modules/prepare.md) ⇄ [record](modules/record.md) ⇄ [refresh](modules/refresh.md) ⇄ [documentation_run_schema](modules/documentation_run_schema.md) ⇄ [verify](modules/verify.md) ⇄ [workspace](modules/workspace.md)
 - [context_packet](modules/context_packet.md) ⇄ [context_service](modules/context_service.md) ⇄ [documentation_query_builder](modules/documentation_query_builder.md)
 - [knowledge_consumption](modules/knowledge_consumption.md) ⇄ [knowledge_verification](modules/knowledge_verification.md)
@@ -39,19 +39,19 @@ flowchart TD
 | [sync_manifest](modules/sync_manifest.md) | 25 | 6 |
 | [knowledge_model](modules/knowledge_model.md) | 22 | 10 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 21 | 5 |
-| [extraction_service](modules/extraction_service.md) | 19 | 23 |
+| [extraction_service](modules/extraction_service.md) | 19 | 25 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 18 | 17 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 17 | 6 |
 | [knowledge_governance](modules/knowledge_governance.md) | 17 | 9 |
 | [plugins](modules/plugins.md) | 16 | 3 |
 | [filesystem_guard](modules/filesystem_guard.md) | 15 | 0 |
-| [bootstrap_runtime](modules/bootstrap_runtime.md) | 14 | 30 |
+| [bootstrap_runtime](modules/bootstrap_runtime.md) | 14 | 31 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 14 | 5 |
 | [knowledge_observability](modules/knowledge_observability.md) | 14 | 9 |
 | [progress](modules/progress.md) | 14 | 1 |
 | [wiki_media](modules/wiki_media.md) | 13 | 0 |
 | [common](modules/common.md) | 12 | 1 |
-| [services_dependencies](modules/services_dependencies.md) | 11 | 6 |
+| [services_dependencies](modules/services_dependencies.md) | 11 | 8 |
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 24 |
 | [extraction_jobs](modules/extraction_jobs.md) | 11 | 0 |
 | [knowledge_graph](modules/knowledge_graph.md) | 11 | 6 |
@@ -65,9 +65,9 @@ flowchart TD
 | [documentation_query_builder](modules/documentation_query_builder.md) | 8 | 14 |
 | [workspace](modules/workspace.md) | 8 | 3 |
 | [entrypoints](modules/entrypoints.md) | 8 | 4 |
+| [imports](modules/imports.md) | 8 | 4 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 1 |
 | [integrity](modules/integrity.md) | 7 | 7 |
-| [imports](modules/imports.md) | 7 | 3 |
 | [infrastructure_sync](modules/infrastructure_sync.md) | 7 | 4 |
 | [inventory_cache](modules/inventory_cache.md) | 7 | 8 |
 | [knowledge_orchestration](modules/knowledge_orchestration.md) | 7 | 18 |
@@ -79,6 +79,7 @@ flowchart TD
 | [knowledge_loader](modules/knowledge_loader.md) | 6 | 9 |
 | [knowledge_verification](modules/knowledge_verification.md) | 6 | 4 |
 | [markdown_sections](modules/markdown_sections.md) | 6 | 1 |
+| [python_imports](modules/python_imports.md) | 6 | 1 |
 | [concept_identity](modules/concept_identity.md) | 5 | 1 |
 | [refresh](modules/refresh.md) | 5 | 8 |
 | [extractor_helpers](modules/extractor_helpers.md) | 5 | 1 |
@@ -122,7 +123,8 @@ flowchart TD
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
 | [python_observations](modules/python_observations.md) | 2 | 2 |
-| [relationships](modules/relationships.md) | 2 | 2 |
+| [python_stdlib](modules/python_stdlib.md) | 2 | 0 |
+| [relationships](modules/relationships.md) | 2 | 3 |
 | [resource_diagnostics](modules/resource_diagnostics.md) | 2 | 0 |
 | [secure_file](modules/secure_file.md) | 2 | 0 |
 | [site_export](modules/site_export.md) | 2 | 8 |
@@ -158,7 +160,8 @@ flowchart TD
 | [fastapi_contracts](modules/fastapi_contracts.md) | 1 | 0 |
 | [go_extractor](modules/go_extractor.md) | 1 | 2 |
 | [haskell_extractor](modules/haskell_extractor.md) | 1 | 2 |
-| [python_extractor](modules/python_extractor.md) | 1 | 6 |
+| [python_bindings](modules/python_bindings.md) | 1 | 0 |
+| [python_extractor](modules/python_extractor.md) | 1 | 7 |
 | [rust_extractor](modules/rust_extractor.md) | 1 | 2 |
 | [canonical_pages](modules/canonical_pages.md) | 1 | 3 |
 | [dependency_versions](modules/dependency_versions.md) | 1 | 3 |
@@ -171,9 +174,10 @@ flowchart TD
 | [lockfile](modules/lockfile.md) | 1 | 0 |
 | [mcp_server](modules/mcp_server.md) | 1 | 20 |
 | [obsidian](modules/obsidian.md) | 1 | 11 |
-| [packages](modules/packages.md) | 1 | 2 |
+| [packages](modules/packages.md) | 1 | 3 |
 | [plugin_samples](modules/plugin_samples.md) | 1 | 1 |
 | [protected_artifacts](modules/protected_artifacts.md) | 1 | 2 |
+| [python_calls](modules/python_calls.md) | 1 | 1 |
 | [wiki_git_policy](modules/wiki_git_policy.md) | 1 | 0 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 1 | 0 |
 | [render_summary](modules/render_summary.md) | 0 | 1 |

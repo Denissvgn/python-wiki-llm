@@ -14,13 +14,13 @@ sequenceDiagram
     participant p2 as isinstance
     participant p3 as str
     participant p4 as sorted
-    participant p5 as items
+    participant p5 as value.items
     p0->>p1: _json_copy
     p1-->>p2: isinstance
     p1-->>p3: str
     p1->>p1: _json_copy
     p1-->>p4: sorted
-    p1-->>p5: items
+    p1-->>p5: value.items
     p1-->>p3: str
     p1-->>p2: isinstance
     p1->>p1: _json_copy
@@ -40,7 +40,7 @@ flowchart LR
     s4["4. str"]
     s5["5. _json_copy"]
     s6["6. sorted"]
-    s7["7. items"]
+    s7["7. value.items"]
     s8["8. str"]
     s9["9. isinstance"]
     s10["10. _json_copy"]
@@ -74,7 +74,7 @@ flowchart LR
 | `str` | - | - | - | - |
 | `_json_copy` | `value: object` | `Mapping`, `Enum` | - | `...`, `...`, `...`, `value.value`, `value` |
 | `sorted` | - | - | - | - |
-| `items` | - | - | - | - |
+| `value.items` | - | - | - | - |
 | `str` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `_json_copy` | `value: object` | `Mapping`, `Enum` | - | `...`, `...`, `...`, `value.value`, `value` |
@@ -90,7 +90,7 @@ flowchart LR
 | _json_copy | str | 3570 | `str(key)` |
 | _json_copy | _json_copy | 3570 | `_json_copy(item)` |
 | _json_copy | sorted | 3571 | `sorted(value.items(...), key=...)` |
-| _json_copy | items | 3571 | `value.items(data not statically known)` |
+| _json_copy | value.items | 3571 | `value.items(data not statically known)` |
 | _json_copy | str | 3571 | `str(pair[...])` |
 | _json_copy | isinstance | 3573 | `isinstance(value, tuple)` |
 | _json_copy | _json_copy | 3574 | `_json_copy(item)` |
@@ -105,11 +105,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_json_copy` | `isinstance` | 3568 |
-| unresolved_call | `_json_copy` | `sorted` | 3571 |
+| external_call | `_json_copy` | `isinstance` | 3568 |
+| external_call | `_json_copy` | `sorted` | 3571 |
 | unresolved_call | `_json_copy` | `value.items` | 3571 |
-| unresolved_call | `_json_copy` | `isinstance` | 3573 |
-| unresolved_call | `_json_copy` | `isinstance` | 3575 |
+| external_call | `_json_copy` | `isinstance` | 3573 |
+| external_call | `_json_copy` | `isinstance` | 3575 |
 | step_limit | `projection_json_value` | `first 12 steps` | 0 |
 
 ## Behavior

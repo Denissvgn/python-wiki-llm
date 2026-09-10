@@ -11,8 +11,8 @@ Top-level documentation export and verification report.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `schema_version` | `str` | *required* | — |
 | `run_id` | `str` | *required* | — |
 | `state` | `str` | *required* | — |

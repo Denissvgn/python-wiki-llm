@@ -1231,12 +1231,22 @@ def _producer_evidence(
             if raw_language not in (None, "")
             else Path(source_path).suffix.lstrip(".").casefold() or "unknown"
         )
-        plugin = plugin_by_language.get(language)
+        # Inventory labels describe the source, while the registry describes
+        # executors. The TypeScript helper also emits JavaScript records.
+        # An explicitly selected JavaScript executor takes precedence.
+        producer_language = language
+        if (
+            language == "javascript"
+            and language not in registry
+            and language not in plugin_by_language
+        ):
+            producer_language = "typescript"
+        plugin = plugin_by_language.get(producer_language)
         configuration: Mapping[str, Any] | None
         if plugin is None:
             component_id = _builtin_extractor_id(language)
             version: str | None = __version__
-            entry_point = registry.get(language)
+            entry_point = registry.get(producer_language)
             configuration = (
                 {
                     "entry_point": entry_point,
@@ -1257,7 +1267,7 @@ def _producer_evidence(
             configuration = {
                 "entry_point": str(plugin["entry_point"]),
                 "inventory_mode": inventory_mode,
-                "language": language,
+                "language": producer_language,
                 "parallel_safe": plugin.get("parallel_safe") is True,
             }
         refs[source_path] = component_id

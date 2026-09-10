@@ -19,56 +19,59 @@
 ```mermaid
 sequenceDiagram
     participant p0 as attach_machine_verification_read_view
-    participant p1 as isinstance
-    participant p2 as TypeError
+    participant p1 as isinstance (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p2 as TypeError (src/llm_wiki_cli/services…ne_verification_read_view)
     participant p3 as replace
     participant p4 as load_machine_verification_read_view
-    participant p5 as MachineVerificationReadView
-    participant p6 as load_verification_receipt
-    participant p7 as Path
-    participant p8 as first_unsafe_path_component
-    participant p9 as fspath
-    participant p10 as abspath
-    participant p11 as is_absolute
-    participant p12 as cwd
-    participant p13 as list
-    participant p14 as pop
-    participant p15 as lstat
-    participant p16 as getattr
-    participant p17 as S_ISLNK
-    participant p18 as bool
-    participant p19 as trusted_symlink_owner
-    participant p20 as callable
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
+    participant p5 as isinstance (src/llm_wiki_cli/services…verification_read_view, 1)
+    participant p6 as TypeError (src/llm_wiki_cli/services…verification_read_view, 1)
+    participant p7 as MachineVerificationReadView
+    participant p8 as load_verification_receipt
+    participant p9 as Path (src/llm_wiki_cli/services…load_verification_receipt)
+    participant p10 as first_unsafe_path_component
+    participant p11 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p12 as os.fspath
+    participant p13 as os.path.abspath
+    participant p14 as lexical.is_absolute
+    participant p15 as Path.cwd
+    participant p16 as list (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p17 as pending_parts.pop
+    participant p18 as current.lstat
+    participant p19 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p20 as stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p21 as bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p22 as trusted_symlink_owner
+    participant p23 as callable
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ne_verification_read_view)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ne_verification_read_view)
     p0-->>p3: replace
     p0->>p4: load_machine_verification_read_view
-    p4-->>p1: isinstance
-    p4-->>p2: TypeError
-    p4->>p5: MachineVerificationReadView
-    p4->>p6: load_verification_receipt
-    p6-->>p7: Path
-    p6->>p8: first_unsafe_path_component
-    p8-->>p7: Path
-    p8-->>p9: fspath
-    p8-->>p7: Path
-    p8-->>p10: abspath
-    p8-->>p11: is_absolute
-    p8-->>p12: cwd
-    p8-->>p7: Path
-    p8-->>p13: list
-    p8-->>p14: pop
-    p8-->>p15: lstat
-    p8-->>p16: getattr
-    p8-->>p16: getattr
-    p8-->>p17: S_ISLNK
-    p8-->>p18: bool
-    p8-->>p18: bool
-    p8-->>p16: getattr
-    p8-->>p19: trusted_symlink_owner
-    p8-->>p20: callable
-    p8-->>p16: getattr
-    p8-->>p7: Path
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…verification_read_view, 1)
+    p4-->>p6: TypeError (src/llm_wiki_cli/services…verification_read_view, 1)
+    p4->>p7: MachineVerificationReadView
+    p4->>p8: load_verification_receipt
+    p8-->>p9: Path (src/llm_wiki_cli/services…load_verification_receipt)
+    p8->>p10: first_unsafe_path_component
+    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p12: os.fspath
+    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p13: os.path.abspath
+    p10-->>p14: lexical.is_absolute
+    p10-->>p15: Path.cwd
+    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p16: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p17: pending_parts.pop
+    p10-->>p18: current.lstat
+    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p20: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p21: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p21: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p22: trusted_symlink_owner
+    p10-->>p23: callable
+    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
 ```
 
 > Call sequence diagram shows 30 of 213 interactions; 183 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -81,28 +84,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. attach_machine_verification_read_view"]
-    s2["2. isinstance"]
-    s3["3. TypeError"]
+    s2["2. isinstance (src/llm_wiki_cli/services…ne_verification_read_view)"]
+    s3["3. TypeError (src/llm_wiki_cli/services…ne_verification_read_view)"]
     s4["4. replace"]
     s5["5. load_machine_verification_read_view"]
-    s6["6. isinstance"]
-    s7["7. TypeError"]
+    s6["6. isinstance (src/llm_wiki_cli/services…verification_read_view, 1)"]
+    s7["7. TypeError (src/llm_wiki_cli/services…verification_read_view, 1)"]
     s8["8. MachineVerificationReadView"]
     s9["9. load_verification_receipt"]
-    s10["10. Path"]
+    s10["10. Path (src/llm_wiki_cli/services…load_verification_receipt)"]
     s11["11. first_unsafe_path_component"]
-    s12["12. Path"]
-    s1 -. "isinstance(knowledge_view, KnowledgeReadView)" .-> s2
-    s1 -. "TypeError('knowledge_view must be a KnowledgeReadView')" .-> s3
+    s12["12. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s1 -. "isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_cli/services…ne_verification_read_view)('knowledge_view must be a KnowledgeReadView')" .-> s3
     s1 -. "replace(knowledge_view, machine_verification=load_machine_verification_read_view(...))" .-> s4
     s1 -->|"load_machine_verification_read_view(wiki_dir, knowledge_view)"| s5
-    s5 -. "isinstance(knowledge_view, KnowledgeReadView)" .-> s6
-    s5 -. "TypeError('knowledge_view must be a KnowledgeReadView')" .-> s7
+    s5 -. "isinstance (src/llm_wiki_cli/services…verification_read_view, 1)(knowledge_view, KnowledgeReadView)" .-> s6
+    s5 -. "TypeError (src/llm_wiki_cli/services…verification_read_view, 1)('knowledge_view must be a KnowledgeReadView')" .-> s7
     s5 -->|"MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')"| s8
     s5 -->|"load_verification_receipt(Path(...))"| s9
-    s9 -. "Path(wiki_dir)" .-> s10
+    s9 -. "Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)" .-> s10
     s9 -->|"first_unsafe_path_component(root)"| s11
-    s11 -. "Path(os.fspath(...))" .-> s12
+    s11 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))" .-> s12
     b0["mutation pending_parts.pop"]
     s11 -. "mutation pending_parts.pop" .-> b0
     click s1 "../modules/knowledge_verification.md"
@@ -119,33 +122,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `attach_machine_verification_read_view` | `wiki_dir: str \| Path`, `knowledge_view: KnowledgeReadView` | `KnowledgeReadView`, `MachineVerificationAvailability` | - | `knowledge_view`, `replace(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ne_verification_read_view)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…ne_verification_read_view)` | - | - | - | - |
 | `replace` | - | - | - | - |
 | `load_machine_verification_read_view` | `wiki_dir: str \| Path`, `knowledge_view: KnowledgeReadView` | `KnowledgeReadView`, `MachineVerificationAvailability`, `MachineVerificationAvailability`, `MachineVerificationAvailability`, `GOVERNANCE_EXTENSION_KEY`, `Mapping`, `MachineVerificationAvailability` | - | `MachineVerificationReadView(...)`, `MachineVerificationReadView(...)`, `MachineVerificationReadView(...)`, `MachineVerificationReadView(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…verification_read_view, 1)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…verification_read_view, 1)` | - | - | - | - |
 | `MachineVerificationReadView` | - | - | - | - |
 | `load_verification_receipt` | `wiki_dir: str \| Path`, `missing_ok: bool` | - | - | `None`, `deserialize_verification_receipt(...)` |
-| `Path` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
-| `Path` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| attach_machine_verification_read_view | isinstance | 53 | `isinstance(knowledge_view, KnowledgeReadView)` |
-| attach_machine_verification_read_view | TypeError | 54 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
+| attach_machine_verification_read_view | isinstance (src/llm_wiki_cli/services…ne_verification_read_view) | 53 | `isinstance(knowledge_view, KnowledgeReadView)` |
+| attach_machine_verification_read_view | TypeError (src/llm_wiki_cli/services…ne_verification_read_view) | 54 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
 | attach_machine_verification_read_view | replace | 60 | `replace(knowledge_view, machine_verification=load_machine_verification_read_view(...))` |
 | attach_machine_verification_read_view | load_machine_verification_read_view | 62 | `load_machine_verification_read_view(wiki_dir, knowledge_view)` |
-| load_machine_verification_read_view | isinstance | 75 | `isinstance(knowledge_view, KnowledgeReadView)` |
-| load_machine_verification_read_view | TypeError | 76 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
+| load_machine_verification_read_view | isinstance (src/llm_wiki_cli/services…verification_read_view, 1) | 75 | `isinstance(knowledge_view, KnowledgeReadView)` |
+| load_machine_verification_read_view | TypeError (src/llm_wiki_cli/services…verification_read_view, 1) | 76 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
 | load_machine_verification_read_view | MachineVerificationReadView | 80 | `MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')` |
 | load_machine_verification_read_view | load_verification_receipt | 86 | `load_verification_receipt(Path(...))` |
-| load_verification_receipt | Path | 956 | `Path(wiki_dir)` |
+| load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 956 | `Path(wiki_dir)` |
 | load_verification_receipt | first_unsafe_path_component | 957 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path | 50 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
 
 ### Boundary effects
 
@@ -157,11 +160,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `attach_machine_verification_read_view` | `isinstance` | 53 |
-| unresolved_call | `attach_machine_verification_read_view` | `TypeError` | 54 |
+| external_call | `attach_machine_verification_read_view` | `isinstance` | 53 |
+| external_call | `attach_machine_verification_read_view` | `TypeError` | 54 |
 | external_call | `attach_machine_verification_read_view` | `replace` | 60 |
-| unresolved_call | `load_machine_verification_read_view` | `isinstance` | 75 |
-| unresolved_call | `load_machine_verification_read_view` | `TypeError` | 76 |
+| external_call | `load_machine_verification_read_view` | `isinstance` | 75 |
+| external_call | `load_machine_verification_read_view` | `TypeError` | 76 |
 | step_limit | `attach_machine_verification_read_view` | `first 12 steps` | 0 |
 | truncated_flow | `attach_machine_verification_read_view` | `depth limit` | 0 |
 

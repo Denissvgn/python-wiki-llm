@@ -24,7 +24,7 @@ from llm_wiki_cli.commands.extract_cmd import (
     resolve_call_edges,
 )
 from llm_wiki_cli.services import knowledge_orchestration, plugins
-from llm_wiki_cli.services.bootstrap_runtime import _BootstrapRunState
+from llm_wiki_cli.services.bootstrap_runtime import _BootstrapRunState, _flow_interactions
 from llm_wiki_cli.services.data_flow import analyze_data_flow
 from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.diagrams import (
@@ -985,6 +985,8 @@ class TestBootstrapCollisions:
             from schemas.common import MessageResponse
 
             def create_task(task: Task, data: CreateSchema) -> MessageResponse:
+                Task()
+                CreateSchema()
                 return MessageResponse()
         """)
         )
@@ -2917,6 +2919,237 @@ class TestBootstrapExternalSource:
 
 
 class TestGenerateFlowMd:
+    @pytest.mark.parametrize(
+        "expression,symbol,expected",
+        [
+            ("factory(???).build", "build", "build"),
+            ("factory(" + "x" * 9000 + ").build", "build", "build"),
+            ("(" * 300 + "factory()" + ")" * 300 + ".build", "build", "build"),
+            ("factory" + "().prepare" * 40 + "().build", "build", ".build"),
+            ("clients[index].build", "build", "clients[…].build"),
+            ("(left if ready else right).build", "build", "(…).build"),
+            ("客户(用户='test').构建", "构建", "客户(…).构建"),
+            ("factory('end; # % \\n').build", "build", "factory(…).build"),
+            ("factory::<Value>().build", "build", "build"),
+        ],
+    )
+    def test_legacy_receiver_display_is_bounded_and_keeps_uncertainty(
+        self, expression, symbol, expected
+    ):
+        from llm_wiki_cli.services.diagrams import sequence_diagram
+
+        edge = {
+            "from": {"file": "app.py", "symbol": "run"},
+            "to": {"file": None, "symbol": symbol},
+            "name": expression,
+            "kind": "unresolved",
+            "line": 1,
+        }
+        flow = build_flow(
+            {"id": "api-run", "category": "api", "file": "app.py", "symbol": "run"}, [edge]
+        )
+        before = deepcopy(flow)
+        interactions = _flow_interactions(flow)
+        diagram = sequence_diagram(interactions)
+        assert len(interactions) == 1 and interactions[0]["dashed"]
+        assert expected in interactions[0]["to_label"]
+        assert len(interactions[0]["to_label"]) <= 157
+        assert "p0-->>p1:" in diagram
+        assert len(diagram.splitlines()) == 6
+        assert all(character not in diagram for character in (";", "#", "%"))
+        assert flow == before
+
+    @pytest.mark.parametrize(
+        "receiver,imports,parameters,compact",
+        [
+            ("Builder({args})", "", "", "Builder(…).build"),
+            ("Builder()", "", "", "Builder().build"),
+            ("factory({args})", "", "factory", "factory(…).build"),
+            ("Builder({args})", "", "Builder", "Builder(…).build"),
+            ("factory({args})", "from sdk import factory\n", "", "factory(…).build"),
+            ("sdk.Builder({args})", "import sdk\n", "", "sdk.Builder(…).build"),
+            (
+                "factory({args}).prepare({args})",
+                "",
+                "factory",
+                "factory(…).prepare(…).build",
+            ),
+        ],
+    )
+    def test_call_result_labels_retain_method_and_raw_evidence(
+        self, tmp_path, receiver, imports, parameters, compact
+    ):
+        from llm_wiki_cli.extractors.python_extractor import PythonExtractor
+        from llm_wiki_cli.services.extraction_service import resolve_call_observations
+
+        arguments = ", ".join(f"configuration_option_{n}=value_{n}" for n in range(9))
+        target = receiver.format(args=arguments) + ".build"
+        (tmp_path / "builder.py").write_text(
+            imports + "class Builder:\n    def build(self):\n        pass\n\n"
+            f"def run({parameters}):\n    return {target}()\n",
+            encoding="utf-8",
+        )
+        inventory = PythonExtractor().extract(
+            str(tmp_path), source_files=["builder.py"], deep=True
+        )
+        edges = resolve_call_edges(inventory)
+        observations = resolve_call_observations(inventory)
+        entry = {
+            "id": "api-run",
+            "category": "api",
+            "file": "builder.py",
+            "symbol": "run",
+            "label": "run",
+        }
+        flow = build_flow(entry, edges)
+        data_flow = analyze_data_flow(inventory, flow, edges)
+        before = deepcopy((inventory, edges, observations, flow, data_flow))
+
+        method = next(edge for edge in edges if edge["name"] == target)
+        assert method["kind"] == "unresolved"
+        assert method["to"] == {"file": None, "symbol": "build"}
+        assert any(item["name"] == target for item in observations["observations"])
+        markdown = bootstrap_cmd._generate_flow_md(
+            flow, {"builder.py": "builder"}, data_flow=data_flow
+        )
+
+        assert (inventory, edges, observations, flow, data_flow) == before
+        assert target in markdown.split("### Call data", 1)[1]
+        diagrams = re.findall(r"```mermaid\n(.*?)\n```", markdown, flags=re.DOTALL)
+        assert len(diagrams) == 2
+        for diagram in diagrams:
+            assert compact in diagram
+            assert "configuration_option_0" not in diagram
+        assert "p0-->>p1: " + compact in diagrams[0]
+        assert compact in next(line for line in diagrams[1].splitlines() if ' -. "' in line)
+        assert 'click s1 "../modules/builder.md"' in diagrams[1]
+        _assert_generated_diagram_budgets(markdown)
+
+    def test_compact_receiver_labels_disambiguate_without_merging_calls(self):
+        entry = {
+            "id": "api-run",
+            "category": "api",
+            "file": "app.py",
+            "symbol": "run",
+            "label": "run",
+        }
+        calls = [
+            "factory(configuration=first).build",
+            "factory(configuration=second).build",
+            "factory(configuration=first).finish",
+            "factory(configuration=first).build",
+        ]
+        edges = [
+            {
+                "from": {"file": "app.py", "symbol": "run"},
+                "to": {"file": None, "symbol": call.rsplit(".", 1)[1]},
+                "name": call,
+                "kind": "unresolved",
+                "line": line,
+            }
+            for line, call in enumerate(calls, 1)
+        ]
+        flow = build_flow(entry, edges)
+        interactions = _flow_interactions(flow)
+        assert len(interactions) == 4
+        assert interactions[0]["to"] == interactions[3]["to"]
+        assert len({item["to"] for item in interactions}) == 3
+        labels = [item["to_label"] for item in interactions]
+        assert labels[0] == labels[3]
+        assert len(set(labels)) == 3
+        assert all("configuration=" not in label for label in labels)
+        assert "factory(…).build" in labels[0]
+        assert "factory(…).build" in labels[1]
+        assert labels[2] == "factory(…).finish"
+        assert interactions == _flow_interactions(flow)
+
+    def test_long_receiver_labels_reserve_method_and_collision_suffix(self):
+        from llm_wiki_cli.services.diagrams import sequence_diagram
+
+        entry = {
+            "id": "api-run",
+            "category": "api",
+            "file": "long/" * 50 + "app.py",
+            "symbol": "run",
+            "label": "run",
+        }
+        prefix = "工具" * 100
+        calls = [prefix + "(option=first).build", prefix + "(option=second).build"]
+        edges = [
+            {
+                "from": {"file": entry["file"], "symbol": "run"},
+                "to": {"file": None, "symbol": "build"},
+                "name": call,
+                "kind": "unresolved",
+                "line": line,
+            }
+            for line, call in enumerate(calls, 1)
+        ]
+        flow = build_flow(entry, edges)
+        markdown = bootstrap_cmd._generate_flow_md(
+            flow, data_flow=analyze_data_flow({}, flow, edges)
+        )
+        sequence = sequence_diagram(_flow_interactions(flow))
+        labels = [
+            line.split(" as ", 1)[1]
+            for line in sequence.splitlines()
+            if "participant p" in line
+        ]
+        assert len(set(labels)) == 3
+        assert all(".build" in label and "工具" in label for label in labels[1:])
+        assert all(len(label) <= 160 for label in labels)
+        data_diagram = re.findall(r"```mermaid\n(.*?)\n```", markdown, flags=re.DOTALL)[1]
+        node_labels = [
+            match.group(1)
+            for match in re.finditer(r'^\s+s\d+\["(.*?)"\]', data_diagram, re.MULTILINE)
+        ]
+        assert len(set(node_labels)) == 3
+        assert all(".build" in label for label in node_labels[1:])
+        assert all(len(label) <= 160 for label in node_labels)
+        _assert_generated_diagram_budgets(markdown)
+
+    @pytest.mark.parametrize(
+        "kind,to_file,name,self_message",
+        [
+            ("unresolved", None, "service.check_wiki", False),
+            ("internal", "service.py", "check_wiki", False),
+            ("internal", "handler.py", "check_wiki", True),
+        ],
+    )
+    def test_same_named_flow_targets_keep_their_identity(
+        self, kind, to_file, name, self_message
+    ):
+        entry = {
+            "id": "api-check_wiki",
+            "category": "api",
+            "file": "handler.py",
+            "symbol": "check_wiki",
+            "label": "check_wiki",
+        }
+        edges = [
+            {
+                "from": {"file": "handler.py", "symbol": "check_wiki"},
+                "to": {"file": to_file, "symbol": "check_wiki"},
+                "name": name,
+                "kind": kind,
+                "line": 2,
+            }
+        ]
+        flow = build_flow(entry, edges)
+        data_flow = analyze_data_flow({}, flow, edges)
+        markdown = bootstrap_cmd._generate_flow_md(flow, data_flow=data_flow)
+        participants = [
+            line for line in markdown.splitlines() if "participant p" in line
+        ]
+        assert len(participants) == (1 if self_message else 2)
+        assert ("p0->>p0:" in markdown) is self_message
+        if kind == "unresolved":
+            assert "p0-->>p1: service.check_wiki" in markdown
+            assert "| check_wiki | service.check_wiki | 2 |" in markdown
+        if to_file == "service.py":
+            assert "check_wiki (handler.py)" in markdown
+            assert "check_wiki (service.py)" in markdown
+
     def test_renders_entry_modules_and_diagram(self):
         flow = {
             "entry": {
@@ -3146,7 +3379,7 @@ class TestGenerateFlowMd:
         assert "[orchestrator](../modules/orchestrator.md)" in md
         assert "**Related modules:**" in md
         assert "`asyncio.run(main_entry(...))`" in md
-        assert "| __main__ | run | 11 | `asyncio.run(main_entry(...))` |" in md
+        assert "| __main__ | asyncio.run | 11 | `asyncio.run(main_entry(...))` |" in md
 
     def test_long_module_metadata_is_bounded_with_complete_linked_details(self):
         touched_paths = [f"pkg/touched_{index:02d}.py" for index in range(18)]

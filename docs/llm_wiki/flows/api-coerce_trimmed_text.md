@@ -10,9 +10,9 @@
 ```mermaid
 sequenceDiagram
     participant p0 as coerce_trimmed_text
-    participant p1 as strip
+    participant p1 as str(…).strip
     participant p2 as str
-    p0-->>p1: strip
+    p0-->>p1: str(…).strip
     p0-->>p2: str
 ```
 
@@ -22,9 +22,9 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. coerce_trimmed_text"]
-    s2["2. strip"]
+    s2["2. str(…).strip"]
     s3["3. str"]
-    s1 -. "str(value).strip(data not statically known)" .-> s2
+    s1 -. "str(…).strip(data not statically known)" .-> s2
     s1 -. "str(value)" .-> s3
     click s1 "../modules/validation.md"
 ```
@@ -34,14 +34,14 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `coerce_trimmed_text` | `value: object` | - | - | `...` |
-| `strip` | - | - | - | - |
+| `str(…).strip` | - | - | - | - |
 | `str` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| coerce_trimmed_text | strip | 907 | `str(value).strip(data not statically known)` |
+| coerce_trimmed_text | str(…).strip | 907 | `str(value).strip(data not statically known)` |
 | coerce_trimmed_text | str | 907 | `str(value)` |
 
 ### Boundary effects

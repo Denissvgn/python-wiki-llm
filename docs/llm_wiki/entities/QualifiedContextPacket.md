@@ -58,4 +58,5 @@ flowchart LR
 |---|---|---|---:|
 | `planner` | import | [planner](../modules/planner.md) | — |
 | `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `QualifiedContextPacket._from_validated_payload` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `QualifiedContextPacket._from_validated_payload` | type_reference | [context_packet](../modules/context_packet.md) | — |

@@ -17,7 +17,7 @@ sequenceDiagram
     participant p5 as any
     participant p6 as quote
     participant p7 as zip
-    participant p8 as join
+    participant p8 as '/'.join
     p0-->>p1: isinstance
     p0-->>p2: ValueError
     p0-->>p2: ValueError
@@ -34,7 +34,7 @@ sequenceDiagram
     p0-->>p2: ValueError
     p0-->>p6: quote
     p0-->>p7: zip
-    p0-->>p8: join
+    p0-->>p8: '/'.join
 ```
 
 ## Data flow
@@ -109,13 +109,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `section_locator` | `isinstance` | 300 |
-| unresolved_call | `section_locator` | `ValueError` | 301 |
-| unresolved_call | `section_locator` | `ValueError` | 303 |
-| unresolved_call | `section_locator` | `ValueError` | 307 |
-| unresolved_call | `section_locator` | `any` | 308 |
-| unresolved_call | `section_locator` | `isinstance` | 308 |
-| unresolved_call | `section_locator` | `ValueError` | 309 |
+| external_call | `section_locator` | `isinstance` | 300 |
+| external_call | `section_locator` | `ValueError` | 301 |
+| external_call | `section_locator` | `ValueError` | 303 |
+| external_call | `section_locator` | `ValueError` | 307 |
+| external_call | `section_locator` | `any` | 308 |
+| external_call | `section_locator` | `isinstance` | 308 |
+| external_call | `section_locator` | `ValueError` | 309 |
 | step_limit | `section_locator` | `first 12 steps` | 0 |
 
 ## Behavior

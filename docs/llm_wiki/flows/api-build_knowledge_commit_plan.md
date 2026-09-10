@@ -33,47 +33,48 @@ sequenceDiagram
     participant p2 as validate_knowledge_artifacts
     participant p3 as validate_surface_index_bytes
     participant p4 as _decode_json_object
-    participant p5 as isinstance
+    participant p5 as isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
     participant p6 as KnowledgeArtifactError
-    participant p7 as decode
-    participant p8 as loads
+    participant p7 as content.decode
+    participant p8 as json.loads
     participant p9 as _unique_json_object
     participant p10 as _reject_json_constant
     participant p11 as _validate_surface_payload
     participant p12 as _validate_utf8_json
-    participant p13 as encode
-    participant p14 as items
-    participant p15 as enumerate
+    participant p13 as isinstance (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
+    participant p14 as value.encode
+    participant p15 as value.items (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
+    participant p16 as enumerate (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
     p0-->>p1: Path
     p0->>p2: validate_knowledge_artifacts
     p2->>p3: validate_surface_index_bytes
     p3->>p4: _decode_json_object
-    p4-->>p5: isinstance
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
     p4->>p6: KnowledgeArtifactError
-    p4-->>p7: decode
+    p4-->>p7: content.decode
     p4->>p6: KnowledgeArtifactError
-    p4-->>p8: loads
+    p4-->>p8: json.loads
     p4->>p9: _unique_json_object
     p9->>p6: KnowledgeArtifactError
     p4->>p10: _reject_json_constant
     p10->>p6: KnowledgeArtifactError
-    p4-->>p5: isinstance
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
     p4->>p6: KnowledgeArtifactError
-    p4-->>p5: isinstance
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
     p4->>p6: KnowledgeArtifactError
     p3->>p11: _validate_surface_payload
     p11->>p12: _validate_utf8_json
-    p12-->>p5: isinstance
-    p12-->>p13: encode
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
+    p12-->>p14: value.encode
     p12->>p6: KnowledgeArtifactError
-    p12-->>p5: isinstance
-    p12-->>p14: items
-    p12-->>p5: isinstance
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
+    p12-->>p15: value.items (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
     p12->>p6: KnowledgeArtifactError
     p12->>p12: _validate_utf8_json
     p12->>p12: _validate_utf8_json
-    p12-->>p5: isinstance
-    p12-->>p15: enumerate
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
+    p12-->>p16: enumerate (src/llm_wiki_cli/services…ts.py:_validate_utf8_json)
 ```
 
 > Call sequence diagram shows 30 of 837 interactions; 807 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -90,18 +91,18 @@ flowchart LR
     s3["3. validate_knowledge_artifacts"]
     s4["4. validate_surface_index_bytes"]
     s5["5. _decode_json_object"]
-    s6["6. isinstance"]
+    s6["6. isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)"]
     s7["7. KnowledgeArtifactError"]
-    s8["8. decode"]
+    s8["8. content.decode"]
     s9["9. KnowledgeArtifactError"]
-    s10["10. loads"]
+    s10["10. json.loads"]
     s11["11. _unique_json_object"]
     s12["12. KnowledgeArtifactError"]
     s1 -. "Path(wiki_dir)" .-> s2
     s1 -->|"validate_knowledge_artifacts(surface_index_bytes=surface_index_bytes, knowledge_index_bytes=knowledge_index_bytes, manifest=manifest)"| s3
     s3 -->|"validate_surface_index_bytes(surface_index_bytes)"| s4
     s4 -->|"_decode_json_object(surface_index_bytes, 'surface_index_bytes')"| s5
-    s5 -. "isinstance(content, bytes)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)(content, bytes)" .-> s6
     s5 -->|"KnowledgeArtifactError(field, 'must be bytes')"| s7
     s5 -. "content.decode('utf-8')" .-> s8
     s5 -->|"KnowledgeArtifactError(field, 'must be valid UTF-8')"| s9
@@ -127,11 +128,11 @@ flowchart LR
 | `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest` | `KNOWLEDGE_SCHEMA_VERSION`, `_KNOWLEDGE_SCHEMA_VERSION_RE`, `ConceptKind`, `KnowledgeGraphError`, `TYPED_GRAPH_EXTENSION_KEY`, `INVENTORY_HASH_EXTENSION`, `TYPED_GRAPH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY` | - | `validated` |
 | `validate_surface_index_bytes` | `surface_index_bytes: bytes` | - | - | `surface_payload` |
 | `_decode_json_object` | `content: bytes`, `field: str` | `KnowledgeArtifactError`, `Mapping` | - | `value` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | - | - | - | - |
 | `KnowledgeArtifactError` | - | - | - | - |
-| `decode` | - | - | - | - |
+| `content.decode` | - | - | - | - |
 | `KnowledgeArtifactError` | - | - | - | - |
-| `loads` | - | - | - | - |
+| `json.loads` | - | - | - | - |
 | `_unique_json_object` | `pairs: list[tuple[str, Any]]`, `field: str` | - | `result[...]` | `result` |
 | `KnowledgeArtifactError` | - | - | - | - |
 
@@ -143,11 +144,11 @@ flowchart LR
 | build_knowledge_commit_plan | validate_knowledge_artifacts | 416 | `validate_knowledge_artifacts(surface_index_bytes=surface_index_bytes, knowledge_index_bytes=knowledge_index_bytes, manifest=manifest)` |
 | validate_knowledge_artifacts | validate_surface_index_bytes | 265 | `validate_surface_index_bytes(surface_index_bytes)` |
 | validate_surface_index_bytes | _decode_json_object | 233 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance | 574 | `isinstance(content, bytes)` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 574 | `isinstance(content, bytes)` |
 | _decode_json_object | KnowledgeArtifactError | 575 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | decode | 577 | `content.decode('utf-8')` |
+| _decode_json_object | content.decode | 577 | `content.decode('utf-8')` |
 | _decode_json_object | KnowledgeArtifactError | 579 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | loads | 581 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | json.loads | 581 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
 | _decode_json_object | _unique_json_object | 583 | `_unique_json_object(pairs, field)` |
 | _unique_json_object | KnowledgeArtifactError | 602 | `KnowledgeArtifactError(field, ...)` |
 
@@ -159,7 +160,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_decode_json_object` | `isinstance` | 574 |
+| external_call | `_decode_json_object` | `isinstance` | 574 |
 | unresolved_call | `_decode_json_object` | `content.decode` | 577 |
 | external_call | `_decode_json_object` | `json.loads` | 581 |
 | step_limit | `build_knowledge_commit_plan` | `first 12 steps` | 0 |

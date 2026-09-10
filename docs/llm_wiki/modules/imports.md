@@ -11,10 +11,12 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 | Source | Symbols |
 |--------|---------|
 | `..config` | `is_agent_worktree_path` |
+| `.python_imports` | `PythonModuleIndex`, `is_python_source` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `path_is_under`, `path_is_under_scope` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
+| `collections.abc` | `Mapping` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
 | `os` | `os` |
@@ -27,86 +29,31 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/config.py"]
-    n1["src/llm_wiki_cli/extractors/python_extractor.py"]
-    n2["src/llm_wiki_cli/services/api_contracts.py"]
-    n3["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n4["src/llm_wiki_cli/services/dependencies.py"]
-    n5["src/llm_wiki_cli/services/entrypoints.py"]
-    n6["src/llm_wiki_cli/services/extraction_service.py"]
-    n7["src/llm_wiki_cli/services/imports.py"]
-    n8["src/llm_wiki_cli/services/relationships.py"]
-    n9["src/llm_wiki_cli/services/source_snapshot.py"]
-    n10["src/llm_wiki_cli/services/validation.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/imports.py"]
+    n0 --> n1
     n1 --> n0
-    n1 --> n7
-    n2 --> n7
-    n2 --> n9
-    n3 --> n0
-    n3 --> n2
-    n3 --> n4
-    n3 --> n5
-    n3 --> n6
-    n3 --> n7
-    n3 --> n8
-    n3 --> n9
-    n3 --> n10
-    n4 --> n0
-    n4 --> n7
-    n4 --> n9
-    n4 --> n10
-    n5 --> n7
-    n5 --> n9
-    n5 --> n10
-    n6 --> n0
-    n6 --> n1
-    n6 --> n2
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n9
-    n7 --> n0
-    n7 --> n9
-    n7 --> n10
-    n8 --> n7
-    n8 --> n10
-    n9 --> n0
-    n9 --> n10
-    click n0 "../modules/config.md"
-    click n1 "../modules/python_extractor.md"
-    click n2 "../modules/api_contracts.md"
-    click n3 "../modules/bootstrap_runtime.md"
-    click n4 "../modules/services_dependencies.md"
-    click n5 "../modules/entrypoints.md"
-    click n6 "../modules/extraction_service.md"
-    click n7 "../modules/imports.md"
-    click n8 "../modules/relationships.md"
-    click n9 "../modules/source_snapshot.md"
-    click n10 "../modules/validation.md"
+    click n1 "../modules/imports.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [python_extractor](../modules/python_extractor.md) |
-| Inbound | [api_contracts](../modules/api_contracts.md) |
-| Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| Inbound | [services_dependencies](../modules/services_dependencies.md) |
-| Inbound | [entrypoints](../modules/entrypoints.md) |
-| Inbound | [extraction_service](../modules/extraction_service.md) |
-| Inbound | [relationships](../modules/relationships.md) |
-| Outbound | [config](../modules/config.md) |
-| Outbound | [source_snapshot](../modules/source_snapshot.md) |
-| Outbound | [validation](../modules/validation.md) |
+| Inbound | `src` (8) |
+| Outbound | `src` (4) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_TsPathAliasRule](../entities/TsPathAliasRule.md) | 22 | — | One ``compilerOptions.paths`` mapping scoped to its tsconfig directory. |
-| [_GoModuleScope](../entities/GoModuleScope.md) | 33 | — | One ``go.mod`` module declaration scoped to its directory. |
-| [ModulePathResolver](../entities/ModulePathResolver.md) | 41 | — | Indexed module import resolver for a fixed inventory. |
+| [_TsPathAliasRule](../entities/TsPathAliasRule.md) | 24 | — | One ``compilerOptions.paths`` mapping scoped to its tsconfig directory. |
+| [_GoModuleScope](../entities/GoModuleScope.md) | 35 | — | One ``go.mod`` module declaration scoped to its directory. |
+| [ModulePathResolver](../entities/ModulePathResolver.md) | 43 | — | Indexed module import resolver for a fixed inventory. |
 
 ## Functions
 

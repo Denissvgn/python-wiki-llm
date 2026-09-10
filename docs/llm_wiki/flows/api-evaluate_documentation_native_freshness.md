@@ -47,57 +47,60 @@
 ```mermaid
 sequenceDiagram
     participant p0 as evaluate_documentation_native_freshness
-    participant p1 as isinstance
-    participant p2 as TypeError
+    participant p1 as isinstance (src/llm_wiki_cli/services…entation_native_freshness)
+    participant p2 as TypeError (src/llm_wiki_cli/services…entation_native_freshness)
     participant p3 as _native_source_snapshot_preflight
     participant p4 as _validated_directory
-    participant p5 as expanduser
-    participant p6 as Path
-    participant p7 as lstat
+    participant p5 as Path(…).expanduser
+    participant p6 as Path (src/llm_wiki_cli/services…e.py:_validated_directory)
+    participant p7 as candidate.lstat
     participant p8 as DocumentationNativeError
-    participant p9 as S_ISLNK
-    participant p10 as S_ISDIR
-    participant p11 as resolve
+    participant p9 as stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory)
+    participant p10 as stat.S_ISDIR (src/llm_wiki_cli/services…e.py:_validated_directory)
+    participant p11 as candidate.resolve (src/llm_wiki_cli/services…e.py:_validated_directory)
     participant p12 as resolve_source_selection
-    participant p13 as SourceSelectionError
-    participant p14 as _override_text
-    participant p15 as fspath
-    participant p16 as _selection_path
-    participant p17 as _require_selection_path
-    participant p18 as require_repository_relative_path
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
+    participant p13 as Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)
+    participant p14 as Path (src/llm_wiki_cli/services…:resolve_source_selection)
+    participant p15 as SourceSelectionError
+    participant p16 as _override_text
+    participant p17 as os.fspath
+    participant p18 as isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    participant p19 as _selection_path
+    participant p20 as _require_selection_path
+    participant p21 as require_repository_relative_path
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…entation_native_freshness)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…entation_native_freshness)
     p0->>p3: _native_source_snapshot_preflight
     p3->>p4: _validated_directory
-    p4-->>p5: expanduser
-    p4-->>p6: Path
-    p4-->>p7: lstat
+    p4-->>p5: Path(…).expanduser
+    p4-->>p6: Path (src/llm_wiki_cli/services…e.py:_validated_directory)
+    p4-->>p7: candidate.lstat
     p4->>p8: DocumentationNativeError
-    p4-->>p9: S_ISLNK
-    p4-->>p10: S_ISDIR
+    p4-->>p9: stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory)
+    p4-->>p10: stat.S_ISDIR (src/llm_wiki_cli/services…e.py:_validated_directory)
     p4->>p8: DocumentationNativeError
-    p4-->>p11: resolve
+    p4-->>p11: candidate.resolve (src/llm_wiki_cli/services…e.py:_validated_directory)
     p3->>p12: resolve_source_selection
-    p12-->>p11: resolve
-    p12-->>p6: Path
-    p12->>p13: SourceSelectionError
-    p12->>p14: _override_text
-    p14-->>p15: fspath
-    p14->>p13: SourceSelectionError
-    p14-->>p1: isinstance
-    p14->>p13: SourceSelectionError
-    p14->>p16: _selection_path
-    p16->>p17: _require_selection_path
-    p17->>p18: require_repository_relative_path
-    p17->>p13: SourceSelectionError
-    p17->>p13: SourceSelectionError
-    p17->>p13: SourceSelectionError
-    p17->>p13: SourceSelectionError
+    p12-->>p13: Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)
+    p12-->>p14: Path (src/llm_wiki_cli/services…:resolve_source_selection)
+    p12->>p15: SourceSelectionError
+    p12->>p16: _override_text
+    p16-->>p17: os.fspath
+    p16->>p15: SourceSelectionError
+    p16-->>p18: isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    p16->>p15: SourceSelectionError
+    p16->>p19: _selection_path
+    p19->>p20: _require_selection_path
+    p20->>p21: require_repository_relative_path
+    p20->>p15: SourceSelectionError
+    p20->>p15: SourceSelectionError
+    p20->>p15: SourceSelectionError
+    p20->>p15: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 2950 interactions; 2920 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2938 interactions; 2908 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -107,28 +110,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. evaluate_documentation_native_freshness"]
-    s2["2. isinstance"]
-    s3["3. TypeError"]
-    s4["4. isinstance"]
-    s5["5. TypeError"]
+    s2["2. isinstance (src/llm_wiki_cli/services…entation_native_freshness)"]
+    s3["3. TypeError (src/llm_wiki_cli/services…entation_native_freshness)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…entation_native_freshness)"]
+    s5["5. TypeError (src/llm_wiki_cli/services…entation_native_freshness)"]
     s6["6. _native_source_snapshot_preflight"]
     s7["7. _validated_directory"]
-    s8["8. expanduser"]
-    s9["9. Path"]
-    s10["10. lstat"]
+    s8["8. Path(…).expanduser"]
+    s9["9. Path (src/llm_wiki_cli/services…e.py:_validated_directory)"]
+    s10["10. candidate.lstat"]
     s11["11. DocumentationNativeError"]
-    s12["12. S_ISLNK"]
-    s1 -. "isinstance(knowledge, KnowledgeIndex)" .-> s2
-    s1 -. "TypeError('knowledge must be a KnowledgeIndex')" .-> s3
-    s1 -. "isinstance(manifest, SyncManifest)" .-> s4
-    s1 -. "TypeError('manifest must be a SyncManifest')" .-> s5
+    s12["12. stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory)"]
+    s1 -. "isinstance (src/llm_wiki_cli/services…entation_native_freshness)(knowledge, KnowledgeIndex)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_cli/services…entation_native_freshness)('knowledge must be a KnowledgeIndex')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_cli/services…entation_native_freshness)(manifest, SyncManifest)" .-> s4
+    s1 -. "TypeError (src/llm_wiki_cli/services…entation_native_freshness)('manifest must be a SyncManifest')" .-> s5
     s1 -->|"_native_source_snapshot_preflight(source_root=source_root, manifest=manifest, source_selection=source_selection, operation='native freshness')"| s6
     s6 -->|"_validated_directory(source_root, 'source_root')"| s7
-    s7 -. "Path(value).expanduser(data not statically known)" .-> s8
-    s7 -. "Path(value)" .-> s9
+    s7 -. "Path(…).expanduser(data not statically known)" .-> s8
+    s7 -. "Path (src/llm_wiki_cli/services…e.py:_validated_directory)(value)" .-> s9
     s7 -. "candidate.lstat(data not statically known)" .-> s10
     s7 -->|"DocumentationNativeError(...)"| s11
-    s7 -. "stat.S_ISLNK(metadata.st_mode)" .-> s12
+    s7 -. "stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory)(metadata.st_mode)" .-> s12
     b0["mutation missing_source_paths.add"]
     s1 -. "mutation missing_source_paths.add" .-> b0
     b1["mutation reasons.append"]
@@ -153,33 +156,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `evaluate_documentation_native_freshness` | `knowledge: KnowledgeIndex`, `manifest: SyncManifest`, `source_root: str \| Path`, `trust_source_plugins: bool`, `helper_cache_dir: str \| Path \| None`, `source_selection: str \| Path \| None` | `KnowledgeIndex`, `SyncManifest`, `ObservationScope`, `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RUNTIME_GENERATION_OPTION_DEFAULTS`, `PageKind`, `ComputedFreshness` | - | `DocumentationNativeFreshness(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…entation_native_freshness)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…entation_native_freshness)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…entation_native_freshness)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…entation_native_freshness)` | - | - | - | - |
 | `_native_source_snapshot_preflight` | `source_root: str \| Path`, `manifest: SyncManifest`, `source_selection: str \| Path \| None`, `operation: str`, `allow_same_path_identity_update: bool` | `SourceSelectionError`, `SourceSnapshotError` | - | `(...)` |
 | `_validated_directory` | `value: str \| Path`, `field_name: str` | - | - | `candidate.resolve(...)` |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `lstat` | - | - | - | - |
+| `Path(…).expanduser` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…e.py:_validated_directory)` | - | - | - | - |
+| `candidate.lstat` | - | - | - | - |
 | `DocumentationNativeError` | - | - | - | - |
-| `S_ISLNK` | - | - | - | - |
+| `stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluate_documentation_native_freshness | isinstance | 202 | `isinstance(knowledge, KnowledgeIndex)` |
-| evaluate_documentation_native_freshness | TypeError | 203 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| evaluate_documentation_native_freshness | isinstance | 204 | `isinstance(manifest, SyncManifest)` |
-| evaluate_documentation_native_freshness | TypeError | 205 | `TypeError('manifest must be a SyncManifest')` |
+| evaluate_documentation_native_freshness | isinstance (src/llm_wiki_cli/services…entation_native_freshness) | 202 | `isinstance(knowledge, KnowledgeIndex)` |
+| evaluate_documentation_native_freshness | TypeError (src/llm_wiki_cli/services…entation_native_freshness) | 203 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| evaluate_documentation_native_freshness | isinstance (src/llm_wiki_cli/services…entation_native_freshness) | 204 | `isinstance(manifest, SyncManifest)` |
+| evaluate_documentation_native_freshness | TypeError (src/llm_wiki_cli/services…entation_native_freshness) | 205 | `TypeError('manifest must be a SyncManifest')` |
 | evaluate_documentation_native_freshness | _native_source_snapshot_preflight | 206 | `_native_source_snapshot_preflight(source_root=source_root, manifest=manifest, source_selection=source_selection, operation='native freshness')` |
 | _native_source_snapshot_preflight | _validated_directory | 155 | `_validated_directory(source_root, 'source_root')` |
-| _validated_directory | expanduser | 1078 | `Path(value).expanduser(data not statically known)` |
-| _validated_directory | Path | 1078 | `Path(value)` |
-| _validated_directory | lstat | 1080 | `candidate.lstat(data not statically known)` |
+| _validated_directory | Path(…).expanduser | 1078 | `Path(value).expanduser(data not statically known)` |
+| _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1078 | `Path(value)` |
+| _validated_directory | candidate.lstat | 1080 | `candidate.lstat(data not statically known)` |
 | _validated_directory | DocumentationNativeError | 1082 | `DocumentationNativeError(...)` |
-| _validated_directory | S_ISLNK | 1085 | `stat.S_ISLNK(metadata.st_mode)` |
+| _validated_directory | stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory) | 1085 | `stat.S_ISLNK(metadata.st_mode)` |
 
 ### Boundary effects
 
@@ -194,10 +197,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `evaluate_documentation_native_freshness` | `isinstance` | 202 |
-| unresolved_call | `evaluate_documentation_native_freshness` | `TypeError` | 203 |
-| unresolved_call | `evaluate_documentation_native_freshness` | `isinstance` | 204 |
-| unresolved_call | `evaluate_documentation_native_freshness` | `TypeError` | 205 |
+| external_call | `evaluate_documentation_native_freshness` | `isinstance` | 202 |
+| external_call | `evaluate_documentation_native_freshness` | `TypeError` | 203 |
+| external_call | `evaluate_documentation_native_freshness` | `isinstance` | 204 |
+| external_call | `evaluate_documentation_native_freshness` | `TypeError` | 205 |
 | unresolved_call | `_validated_directory` | `Path(value).expanduser` | 1078 |
 | unresolved_call | `_validated_directory` | `candidate.lstat` | 1080 |
 | external_call | `_validated_directory` | `stat.S_ISLNK` | 1085 |

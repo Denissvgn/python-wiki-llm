@@ -50,4 +50,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `OciResourceLimits.from_dict` | call | [broker](../modules/broker.md) | 1 |
 | `OciResourceLimits.from_dict` | type_reference | [broker](../modules/broker.md) | — |

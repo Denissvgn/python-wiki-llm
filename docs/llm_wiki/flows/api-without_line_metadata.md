@@ -12,11 +12,11 @@ sequenceDiagram
     participant p0 as without_line_metadata
     participant p1 as isinstance
     participant p2 as sorted
-    participant p3 as items
+    participant p3 as value.items
     p0-->>p1: isinstance
     p0->>p0: without_line_metadata
     p0-->>p2: sorted
-    p0-->>p3: items
+    p0-->>p3: value.items
     p0-->>p1: isinstance
     p0->>p0: without_line_metadata
 ```
@@ -30,7 +30,7 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. without_line_metadata"]
     s4["4. sorted"]
-    s5["5. items"]
+    s5["5. value.items"]
     s6["6. isinstance"]
     s7["7. without_line_metadata"]
     s1 -. "isinstance(value, dict)" .-> s2
@@ -52,7 +52,7 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `without_line_metadata` | `value: Any` | - | - | `...`, `...`, `value` |
 | `sorted` | - | - | - | - |
-| `items` | - | - | - | - |
+| `value.items` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `without_line_metadata` | `value: Any` | - | - | `...`, `...`, `value` |
 
@@ -60,12 +60,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| without_line_metadata | isinstance | 921 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 923 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 924 | `sorted(value.items(...))` |
-| without_line_metadata | items | 924 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 927 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 928 | `without_line_metadata(item)` |
+| without_line_metadata | isinstance | 922 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 924 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 925 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 925 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 928 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 929 | `without_line_metadata(item)` |
 
 ### Boundary effects
 
@@ -75,10 +75,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `without_line_metadata` | `isinstance` | 921 |
-| unresolved_call | `without_line_metadata` | `sorted` | 924 |
-| unresolved_call | `without_line_metadata` | `value.items` | 924 |
-| unresolved_call | `without_line_metadata` | `isinstance` | 927 |
+| external_call | `without_line_metadata` | `isinstance` | 922 |
+| external_call | `without_line_metadata` | `sorted` | 925 |
+| unresolved_call | `without_line_metadata` | `value.items` | 925 |
+| external_call | `without_line_metadata` | `isinstance` | 928 |
 
 ## Behavior
 

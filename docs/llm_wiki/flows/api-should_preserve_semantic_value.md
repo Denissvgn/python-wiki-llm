@@ -11,14 +11,17 @@
 sequenceDiagram
     participant p0 as should_preserve_semantic_value
     participant p1 as is_placeholder_description
-    participant p2 as strip
-    participant p3 as match
+    participant p2 as value.strip
+    participant p3 as _AUTO_GENERATED_RE.match
+    participant p4 as (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
+    participant p5 as (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
+    participant p6 as old_generated.strip
     p0->>p1: is_placeholder_description
-    p1-->>p2: strip
-    p1-->>p3: match
-    p0-->>p2: strip
-    p0-->>p2: strip
-    p0-->>p2: strip
+    p1-->>p2: value.strip
+    p1-->>p3: _AUTO_GENERATED_RE.match
+    p0-->>p4: (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
+    p0-->>p5: (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
+    p0-->>p6: old_generated.strip
 ```
 
 ## Data flow
@@ -28,16 +31,16 @@ sequenceDiagram
 flowchart LR
     s1["1. should_preserve_semantic_value"]
     s2["2. is_placeholder_description"]
-    s3["3. strip"]
-    s4["4. match"]
-    s5["5. strip"]
-    s6["6. strip"]
-    s7["7. strip"]
+    s3["3. value.strip"]
+    s4["4. _AUTO_GENERATED_RE.match"]
+    s5["5. (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)"]
+    s6["6. (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)"]
+    s7["7. old_generated.strip"]
     s1 -->|"is_placeholder_description(existing)"| s2
     s2 -. "value.strip(data not statically known)" .-> s3
     s2 -. "_AUTO_GENERATED_RE.match(stripped)" .-> s4
-    s1 -. "(existing or '').strip(data not statically known)" .-> s5
-    s1 -. "(generated or '').strip(data not statically known)" .-> s6
+    s1 -. "(…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)(data not statically known)" .-> s5
+    s1 -. "(…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)(data not statically known)" .-> s6
     s1 -. "old_generated.strip(data not statically known)" .-> s7
     click s1 "../modules/markdown_sections.md"
     click s2 "../modules/markdown_sections.md"
@@ -49,22 +52,22 @@ flowchart LR
 |---|---|---|---|---|
 | `should_preserve_semantic_value` | `existing: str \| None`, `generated: str \| None`, `old_generated: str \| None` | - | - | `False`, `...`, `False`, `...` |
 | `is_placeholder_description` | `value: str \| None` | - | - | `True`, `True`, `...` |
-| `strip` | - | - | - | - |
-| `match` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
+| `_AUTO_GENERATED_RE.match` | - | - | - | - |
+| `(…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)` | - | - | - | - |
+| `(…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)` | - | - | - | - |
+| `old_generated.strip` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | should_preserve_semantic_value | is_placeholder_description | 543 | `is_placeholder_description(existing)` |
-| is_placeholder_description | strip | 530 | `value.strip(data not statically known)` |
-| is_placeholder_description | match | 533 | `_AUTO_GENERATED_RE.match(stripped)` |
-| should_preserve_semantic_value | strip | 545 | `(existing or '').strip(data not statically known)` |
-| should_preserve_semantic_value | strip | 546 | `(generated or '').strip(data not statically known)` |
-| should_preserve_semantic_value | strip | 549 | `old_generated.strip(data not statically known)` |
+| is_placeholder_description | value.strip | 530 | `value.strip(data not statically known)` |
+| is_placeholder_description | _AUTO_GENERATED_RE.match | 533 | `_AUTO_GENERATED_RE.match(stripped)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value) | 545 | `(existing or '').strip(data not statically known)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1) | 546 | `(generated or '').strip(data not statically known)` |
+| should_preserve_semantic_value | old_generated.strip | 549 | `old_generated.strip(data not statically known)` |
 
 ### Boundary effects
 

@@ -11,8 +11,8 @@ Fields shared by bounded documentation graph queries.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `query` | `str` | *required* | — |
 | `found` | `bool` | *required* | — |
 | `ambiguous` | `bool` | *required* | — |

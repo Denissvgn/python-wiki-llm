@@ -11,9 +11,9 @@
 sequenceDiagram
     participant p0 as require_string
     participant p1 as isinstance
-    participant p2 as encode
+    participant p2 as value.encode
     p0-->>p1: isinstance
-    p0-->>p2: encode
+    p0-->>p2: value.encode
 ```
 
 ## Data flow
@@ -23,7 +23,7 @@ sequenceDiagram
 flowchart LR
     s1["1. require_string"]
     s2["2. isinstance"]
-    s3["3. encode"]
+    s3["3. value.encode"]
     s1 -. "isinstance(value, str)" .-> s2
     s1 -. "value.encode('utf-8')" .-> s3
     click s1 "../modules/validation.md"
@@ -35,14 +35,14 @@ flowchart LR
 |---|---|---|---|---|
 | `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
 | `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `value.encode` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_string | isinstance | 706 | `isinstance(value, str)` |
-| require_string | encode | 710 | `value.encode('utf-8')` |
+| require_string | value.encode | 710 | `value.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_string` | `isinstance` | 706 |
+| external_call | `require_string` | `isinstance` | 706 |
 | unresolved_call | `require_string` | `value.encode` | 710 |
 
 ## Behavior

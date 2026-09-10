@@ -161,6 +161,7 @@ flowchart LR
 | `_reconcile_openapi` | `(static: Mapping[str, Any], loaded: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `build_api_contracts` | `(inventory: Mapping[str, Mapping[str, Any]], *, openapi_file: str \| Path \| None = None, source_root: str \| Path = '.', source_snapshot: SourceSnapshot \| None = None) -> dict[str, Any]` | — | Build static contracts or reconcile them with authoritative OpenAPI. |
 | `link_entry_point_flows` | `(contracts: Mapping[str, object], entry_points: Iterable[Mapping[str, object]]) -> dict` | — | Attach stable flow ids to operations with statically linked handlers. |
+| `_resolved_flow_route` | `(operation: Mapping[str, Any]) -> dict[str, Any] \| None` | — | Project concrete route evidence without inventing values for unknowns. |
 | `attach_routes_to_entry_points` | `(entry_points: Sequence[Mapping[str, Any]], contracts: Mapping[str, Any]) -> list[dict[str, Any]]` | — | Keep one HTTP flow per handler while attaching all resolved routes. |
 | `_md_text` | `(value: Any) -> str` | — | — |
 | `_md_code` | `(value: Any) -> str` | — | — |

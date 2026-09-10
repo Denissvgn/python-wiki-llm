@@ -27,10 +27,7 @@ def test_indexed_resolver_handles_common_import_shapes():
         "pkg/feature/local.py"
     }
     assert resolver.candidates("../shared", "pkg/feature/use.py") == {"pkg/shared.py"}
-    assert resolver.candidates("settings", "pkg/feature/use.py") == {
-        "pkg/a/settings.py",
-        "pkg/b/settings.py",
-    }
+    assert resolver.candidates("settings", "pkg/feature/use.py") == set()
 
 
 def test_import_resolver_prefers_python_from_import_child_modules():
@@ -74,7 +71,10 @@ def test_import_resolver_does_not_treat_plain_import_alias_as_submodule():
 
 def test_generic_resolver_scopes_python_imports_to_python_modules():
     inventory = {
-        "rlm/gateway.py": {"language": "python"},
+        "rlm/gateway.py": {
+            "language": "python",
+            "python_import_scope": {"root": "rlm", "search_roots": ["rlm"]},
+        },
         "rlm/openai.py": {"language": "python"},
         "internal/llm/openai.go": {"language": "go"},
         "internal/llm/anthropic.go": {"language": "go"},

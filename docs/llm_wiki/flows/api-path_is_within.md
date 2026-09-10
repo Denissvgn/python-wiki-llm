@@ -10,8 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as path_is_within
-    participant p1 as relative_to
-    p0-->>p1: relative_to
+    participant p1 as path.relative_to
+    p0-->>p1: path.relative_to
 ```
 
 ## Data flow
@@ -20,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. path_is_within"]
-    s2["2. relative_to"]
+    s2["2. path.relative_to"]
     s1 -. "path.relative_to(root)" .-> s2
     click s1 "../modules/validation.md"
 ```
@@ -30,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `path_is_within` | `path: Path`, `root: Path` | - | - | `False`, `True` |
-| `relative_to` | - | - | - | - |
+| `path.relative_to` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| path_is_within | relative_to | 432 | `path.relative_to(root)` |
+| path_is_within | path.relative_to | 432 | `path.relative_to(root)` |
 
 ### Boundary effects
 

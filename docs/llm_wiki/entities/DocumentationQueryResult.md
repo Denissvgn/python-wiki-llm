@@ -11,39 +11,39 @@ Common envelope returned by the shared bounded query dispatcher.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `knowledge` | `KnowledgeStatus \| dict[str, Any]` | *required* | — |
-| `concept` | `dict[str, Any] \| None` | *required* | — |
-| `total` | `int` | *required* | — |
-| `returned` | `int` | *required* | — |
-| `direction` | `str` | *required* | — |
-| `kinds` | `list[str]` | *required* | — |
-| `relationships` | `list[dict[str, Any]]` | *required* | — |
-| `related_concepts` | `list[dict[str, Any]]` | *required* | — |
-| `unresolved_targets` | `list[dict[str, Any]]` | *required* | — |
-| `external_targets` | `list[dict[str, Any]]` | *required* | — |
-| `origins` | `list[str]` | *required* | — |
-| `resolutions` | `list[str]` | *required* | — |
-| `include_evidence` | `bool` | *required* | — |
-| `typed_graph` | `dict[str, Any]` | *required* | — |
-| `edges` | `list[dict[str, Any]]` | *required* | — |
-| `symbol` | `dict[str, Any] \| None` | *required* | — |
-| `pages` | `list[dict[str, Any]]` | *required* | — |
-| `callers` | `list[dict[str, Any]]` | *required* | — |
-| `callees` | `list[dict[str, Any]]` | *required* | — |
-| `flow` | `dict[str, Any] \| None` | *required* | — |
-| `data_flow` | `dict[str, Any] \| None` | *required* | — |
-| `path` | `str \| None` | *required* | — |
-| `inbound` | `list[str]` | *required* | — |
-| `outbound` | `list[str]` | *required* | — |
-| `metrics` | `dict[str, Any]` | *required* | — |
-| `cycle_groups` | `list[dict[str, Any]]` | *required* | — |
-| `load_order_index` | `int \| None` | *required* | — |
-| `impacted_paths` | `list[str]` | *required* | — |
-| `concepts` | `list[dict[str, Any]]` | *required* | — |
-| `limitations` | `list[str]` | *required* | — |
-| `raw_evidence` | `list[dict[str, Any]]` | *required* | — |
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
+| `knowledge` | `KnowledgeStatus \| dict[str, Any]` | *optional* | — |
+| `concept` | `dict[str, Any] \| None` | *optional* | — |
+| `total` | `int` | *optional* | — |
+| `returned` | `int` | *optional* | — |
+| `direction` | `str` | *optional* | — |
+| `kinds` | `list[str]` | *optional* | — |
+| `relationships` | `list[dict[str, Any]]` | *optional* | — |
+| `related_concepts` | `list[dict[str, Any]]` | *optional* | — |
+| `unresolved_targets` | `list[dict[str, Any]]` | *optional* | — |
+| `external_targets` | `list[dict[str, Any]]` | *optional* | — |
+| `origins` | `list[str]` | *optional* | — |
+| `resolutions` | `list[str]` | *optional* | — |
+| `include_evidence` | `bool` | *optional* | — |
+| `typed_graph` | `dict[str, Any]` | *optional* | — |
+| `edges` | `list[dict[str, Any]]` | *optional* | — |
+| `symbol` | `dict[str, Any] \| None` | *optional* | — |
+| `pages` | `list[dict[str, Any]]` | *optional* | — |
+| `callers` | `list[dict[str, Any]]` | *optional* | — |
+| `callees` | `list[dict[str, Any]]` | *optional* | — |
+| `flow` | `dict[str, Any] \| None` | *optional* | — |
+| `data_flow` | `dict[str, Any] \| None` | *optional* | — |
+| `path` | `str \| None` | *optional* | — |
+| `inbound` | `list[str]` | *optional* | — |
+| `outbound` | `list[str]` | *optional* | — |
+| `metrics` | `dict[str, Any]` | *optional* | — |
+| `cycle_groups` | `list[dict[str, Any]]` | *optional* | — |
+| `load_order_index` | `int \| None` | *optional* | — |
+| `impacted_paths` | `list[str]` | *optional* | — |
+| `concepts` | `list[dict[str, Any]]` | *optional* | — |
+| `limitations` | `list[str]` | *optional* | — |
+| `raw_evidence` | `list[dict[str, Any]]` | *optional* | — |
 
 ## Methods
 

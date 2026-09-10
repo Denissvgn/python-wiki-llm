@@ -11,8 +11,8 @@ Bounded inert content selected by explicit knowledge mode.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `concepts` | `list[dict[str, Any]]` | *required* | — |
 | `pages` | `list[dict[str, Any]]` | *required* | — |
 | `relationships` | `list[dict[str, Any]]` | *required* | — |

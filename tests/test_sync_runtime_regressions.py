@@ -107,6 +107,9 @@ def _bootstrap_rich_project(
 
 
             def publish(alpha: Alpha, beta: Beta, gamma: Gamma) -> Gamma:
+                Alpha()
+                Beta()
+                Gamma()
                 return gamma
             """
         ),

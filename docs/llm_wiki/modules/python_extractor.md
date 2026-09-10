@@ -15,7 +15,8 @@ Python AST extractor for agent-wiki-cli.
 | `..services.python_observations` | `DATA_EFFECT_OBSERVATIONS_SCHEMA`, `IMPORT_LOCATION_OBSERVATIONS_SCHEMA`, `data_effect_sidecar`, `import_sidecar` |
 | `.common` | `IMPORT_SCOPE_DEFERRED`, `IMPORT_SCOPE_TYPE_CHECKING`, `discover_source_files` |
 | `.fastapi_contracts` | `extract_fastapi_declarations` |
-| `.python_contracts` | `class_kind`, `explicit_type_alias`, `expression_to_str`, `extract_class_attributes`, `extract_enum_attributes`, `extract_model_config`, `extract_parameters`, `extract_validator`, `finalize_inventory_model_kinds`, `finalize_model_kinds`, `inferred_type_alias`, `is_pydantic_model`, `type_alias_record` |
+| `.python_bindings` | `analyze_python_bindings` |
+| `.python_contracts` | `class_kind`, `explicit_type_alias`, `expression_to_str`, `extract_class_attributes`, `extract_enum_attributes`, `extract_model_config`, `extract_parameters`, `extract_validator`, `finalize_inventory_model_kinds`, `finalize_model_kinds`, `inferred_type_alias`, `is_pydantic_model`, `is_typed_dict`, `type_alias_record` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `pathlib` | `Path` |
@@ -29,33 +30,36 @@ flowchart LR
     n0["src/llm_wiki_cli/config.py"]
     n1["src/llm_wiki_cli/extractors/common.py"]
     n2["src/llm_wiki_cli/extractors/fastapi_contracts.py"]
-    n3["src/llm_wiki_cli/extractors/python_contracts.py"]
-    n4["src/llm_wiki_cli/extractors/python_extractor.py"]
-    n5["src/llm_wiki_cli/services/extraction_service.py"]
-    n6["src/llm_wiki_cli/services/imports.py"]
-    n7["src/llm_wiki_cli/services/python_observations.py"]
+    n3["src/llm_wiki_cli/extractors/python_bindings.py"]
+    n4["src/llm_wiki_cli/extractors/python_contracts.py"]
+    n5["src/llm_wiki_cli/extractors/python_extractor.py"]
+    n6["src/llm_wiki_cli/services/extraction_service.py"]
+    n7["src/llm_wiki_cli/services/imports.py"]
+    n8["src/llm_wiki_cli/services/python_observations.py"]
     n1 --> n0
-    n4 --> n0
-    n4 --> n1
-    n4 --> n2
-    n4 --> n3
-    n4 --> n6
-    n4 --> n7
     n5 --> n0
     n5 --> n1
+    n5 --> n2
     n5 --> n3
     n5 --> n4
-    n5 --> n6
     n5 --> n7
+    n5 --> n8
     n6 --> n0
+    n6 --> n1
+    n6 --> n4
+    n6 --> n5
+    n6 --> n7
+    n6 --> n8
+    n7 --> n0
     click n0 "../modules/config.md"
     click n1 "../modules/common.md"
     click n2 "../modules/fastapi_contracts.md"
-    click n3 "../modules/python_contracts.md"
-    click n4 "../modules/python_extractor.md"
-    click n5 "../modules/extraction_service.md"
-    click n6 "../modules/imports.md"
-    click n7 "../modules/python_observations.md"
+    click n3 "../modules/python_bindings.md"
+    click n4 "../modules/python_contracts.md"
+    click n5 "../modules/python_extractor.md"
+    click n6 "../modules/extraction_service.md"
+    click n7 "../modules/imports.md"
+    click n8 "../modules/python_observations.md"
 ```
 
 ### Internal neighbors
@@ -66,6 +70,7 @@ flowchart LR
 | Outbound | [config](../modules/config.md) |
 | Outbound | [common](../modules/common.md) |
 | Outbound | [fastapi_contracts](../modules/fastapi_contracts.md) |
+| Outbound | [python_bindings](../modules/python_bindings.md) |
 | Outbound | [python_contracts](../modules/python_contracts.md) |
 | Outbound | [imports](../modules/imports.md) |
 | Outbound | [python_observations](../modules/python_observations.md) |
@@ -74,9 +79,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 500 | `ast.NodeVisitor` | — |
-| [ComponentVisitor](../entities/ComponentVisitor.md) | 1037 | `ast.NodeVisitor` | — |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1531 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 515 | `ast.NodeVisitor` | — |
+| [ComponentVisitor](../entities/ComponentVisitor.md) | 1058 | `ast.NodeVisitor` | — |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1584 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 
@@ -90,7 +95,7 @@ flowchart LR
 | `_extract_decorators` | `(node) -> list[str]` | — | Extract decorator names from a node. |
 | `_call_arguments` | `(node: ast.Call) -> dict` | — | — |
 | `_call_record` | `(node: ast.Call, *, include_arguments: bool = False) -> dict \| None` | — | Build a call record from an ``ast.Call`` node. |
-| `_extract_calls` | `(node) -> list[dict]` | — | Collect direct call targets within a function/method body. |
+| `_extract_calls` | `(node, *, binding_facts: dict[int, dict] \| None = None, bound_calls: list[dict] \| None = None) -> list[dict]` | — | Collect direct call targets within a function/method body. |
 | `_bound_import_name` | `(alias: ast.alias, *, from_import: bool = False) -> str` | — | — |
 | `_iter_binding_targets` | `(target) -> list[ast.AST]` | — | — |
 | `_target_bound_names` | `(target) -> set[str]` | — | — |
@@ -117,7 +122,7 @@ flowchart LR
 | `_import_time_body` | `(statement, type_checking_names: set[str]) -> list` | — | Return the nested statements of *statement* that run at import time. |
 | `_collect_module_calls` | `(body, calls: list[dict], type_checking_names: set[str]) -> None` | — | — |
 | `_extract_module_calls` | `(tree: ast.Module) -> list[dict]` | — | Collect module-scope executable side effects (import-time work). |
-| `_extract_function_info` | `(node, deep: bool = False, module_globals: set[str] \| None = None, module_import_aliases: dict[str, str] \| None = None, *, omit_method_receiver: bool = False, data_effect_observations: list[dict] \| None = None, observation_symbol: str \| None = None) -> dict` | — | Extract full function/method info from a FunctionDef or AsyncFunctionDef. |
+| `_extract_function_info` | `(node, deep: bool = False, module_globals: set[str] \| None = None, module_import_aliases: dict[str, str] \| None = None, *, omit_method_receiver: bool = False, data_effect_observations: list[dict] \| None = None, observation_symbol: str \| None = None, call_binding_facts: dict[int, dict] \| None = None) -> dict` | — | Extract full function/method info from a FunctionDef or AsyncFunctionDef. |
 | `_extract_class_attributes` | `(node, module_import_aliases: dict[str, str] \| None = None) -> list[dict]` | — | Extract annotated attributes from a class body (Pydantic fields, dataclass fields, etc.). |
 | `_string_list` | `(node) -> list[str]` | — | Return the string constants of a ``List``/``Tuple`` literal (else empty). |
 | `_safe_name_or_attribute` | `(node) -> dict \| None` | — | — |

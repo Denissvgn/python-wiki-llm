@@ -62,6 +62,7 @@ def _main_source(*, changed: bool) -> str:
         '"""Process entry points and graph boundaries."""',
         "",
         "import os",
+        "from models import User",
     ]
     if changed:
         lines.append("import json")
@@ -123,6 +124,9 @@ def test_bootstrap_sync_query_context_and_mcp_share_graph_and_section_state(
 
             [project.scripts]
             graph-section-e2e = "main:main"
+
+            [tool.setuptools.packages.find]
+            where = [".", "pkg_a", "pkg_b"]
             """
         ),
         encoding="utf-8",

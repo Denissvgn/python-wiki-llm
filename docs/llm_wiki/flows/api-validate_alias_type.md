@@ -60,7 +60,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_alias_type` | `isinstance` | 445 |
+| external_call | `validate_alias_type` | `isinstance` | 445 |
 
 ## Behavior
 

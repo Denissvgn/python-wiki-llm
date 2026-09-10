@@ -64,8 +64,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `normalize_documentation_query_limit` | `isinstance` | 52 |
-| unresolved_call | `normalize_documentation_query_limit` | `min` | 54 |
+| external_call | `normalize_documentation_query_limit` | `isinstance` | 52 |
+| external_call | `normalize_documentation_query_limit` | `min` | 54 |
 
 ## Behavior
 

@@ -11,8 +11,8 @@ _Auto-generated from `CallersResult` in `src/llm_wiki_cli/api_types.py`._
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `callable` | `dict[str, Any] \| None` | *required* | — |
 | `callers` | `list[dict[str, Any]]` | *required* | — |
 

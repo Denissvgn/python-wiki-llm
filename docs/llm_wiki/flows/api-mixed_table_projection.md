@@ -11,52 +11,58 @@
 sequenceDiagram
     participant p0 as mixed_table_projection
     participant p1 as normalize_markdown
-    participant p2 as replace
-    participant p3 as splitlines
-    participant p4 as endswith
-    participant p5 as description_table_cells
-    participant p6 as enumerate
-    participant p7 as split_table_row
-    participant p8 as strip
-    participant p9 as startswith
-    participant p10 as len
-    participant p11 as extend
-    participant p12 as append
-    participant p13 as join
-    participant p14 as index
-    participant p15 as is_table_separator
-    participant p16 as all
-    participant p17 as fullmatch
+    participant p2 as text.replace(…).replace
+    participant p3 as text.replace
+    participant p4 as normalized.splitlines
+    participant p5 as normalized.endswith
+    participant p6 as description_table_cells
+    participant p7 as normalize_markdown(…).splitlines
+    participant p8 as enumerate
+    participant p9 as split_table_row
+    participant p10 as line.strip
+    participant p11 as stripped.startswith
+    participant p12 as stripped.endswith
+    participant p13 as len (src/llm_wiki_cli/services…ections.py:split_table_row)
+    participant p14 as current.extend
+    participant p15 as current.append
+    participant p16 as cells.append (src/llm_wiki_cli/services…ections.py:split_table_row)
+    participant p17 as (…).join(…).strip
+    participant p18 as ''.join
+    participant p19 as headers.index
+    participant p20 as len (src/llm_wiki_cli/services…py:description_table_cells)
+    participant p21 as is_table_separator
+    participant p22 as all
+    participant p23 as re.fullmatch
     p0->>p1: normalize_markdown
-    p1-->>p2: replace
-    p1-->>p2: replace
-    p0-->>p3: splitlines
-    p0-->>p4: endswith
-    p0->>p5: description_table_cells
-    p5-->>p3: splitlines
-    p5->>p1: normalize_markdown
-    p5-->>p6: enumerate
-    p5->>p7: split_table_row
-    p7-->>p8: strip
-    p7-->>p9: startswith
-    p7-->>p4: endswith
-    p7-->>p10: len
-    p7-->>p10: len
-    p7-->>p11: extend
-    p7-->>p10: len
-    p7-->>p12: append
-    p7-->>p12: append
-    p7-->>p8: strip
-    p7-->>p13: join
-    p7-->>p12: append
-    p7-->>p12: append
-    p7-->>p8: strip
-    p7-->>p13: join
-    p5-->>p14: index
-    p5-->>p10: len
-    p5->>p15: is_table_separator
-    p15-->>p16: all
-    p15-->>p17: fullmatch
+    p1-->>p2: text.replace(…).replace
+    p1-->>p3: text.replace
+    p0-->>p4: normalized.splitlines
+    p0-->>p5: normalized.endswith
+    p0->>p6: description_table_cells
+    p6-->>p7: normalize_markdown(…).splitlines
+    p6->>p1: normalize_markdown
+    p6-->>p8: enumerate
+    p6->>p9: split_table_row
+    p9-->>p10: line.strip
+    p9-->>p11: stripped.startswith
+    p9-->>p12: stripped.endswith
+    p9-->>p13: len (src/llm_wiki_cli/services…ections.py:split_table_row)
+    p9-->>p13: len (src/llm_wiki_cli/services…ections.py:split_table_row)
+    p9-->>p14: current.extend
+    p9-->>p13: len (src/llm_wiki_cli/services…ections.py:split_table_row)
+    p9-->>p15: current.append
+    p9-->>p16: cells.append (src/llm_wiki_cli/services…ections.py:split_table_row)
+    p9-->>p17: (…).join(…).strip
+    p9-->>p18: ''.join
+    p9-->>p15: current.append
+    p9-->>p16: cells.append (src/llm_wiki_cli/services…ections.py:split_table_row)
+    p9-->>p17: (…).join(…).strip
+    p9-->>p18: ''.join
+    p6-->>p19: headers.index
+    p6-->>p20: len (src/llm_wiki_cli/services…py:description_table_cells)
+    p6->>p21: is_table_separator
+    p21-->>p22: all
+    p21-->>p23: re.fullmatch
 ```
 
 > Call sequence diagram shows 30 of 71 interactions; 41 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -68,23 +74,23 @@ sequenceDiagram
 flowchart LR
     s1["1. mixed_table_projection"]
     s2["2. normalize_markdown"]
-    s3["3. replace"]
-    s4["4. replace"]
-    s5["5. splitlines"]
-    s6["6. endswith"]
+    s3["3. text.replace(…).replace"]
+    s4["4. text.replace"]
+    s5["5. normalized.splitlines"]
+    s6["6. normalized.endswith"]
     s7["7. description_table_cells"]
-    s8["8. splitlines"]
+    s8["8. normalize_markdown(…).splitlines"]
     s9["9. normalize_markdown"]
     s10["10. enumerate"]
     s11["11. split_table_row"]
-    s12["12. strip"]
+    s12["12. line.strip"]
     s1 -->|"normalize_markdown(section_markdown)"| s2
-    s2 -. "text.replace('\r\n', '\n').replace('\r', '\n')" .-> s3
+    s2 -. "text.replace(…).replace('\r', '\n')" .-> s3
     s2 -. "text.replace('\r\n', '\n')" .-> s4
     s1 -. "normalized.splitlines(data not statically known)" .-> s5
     s1 -. "normalized.endswith('\n')" .-> s6
     s1 -->|"description_table_cells(normalized)"| s7
-    s7 -. "normalize_markdown(markdown).splitlines(data not statically known)" .-> s8
+    s7 -. "normalize_markdown(…).splitlines(data not statically known)" .-> s8
     s7 -->|"normalize_markdown(markdown)"| s9
     s7 -. "enumerate(lines)" .-> s10
     s7 -->|"split_table_row(line)"| s11
@@ -124,32 +130,32 @@ flowchart LR
 |---|---|---|---|---|
 | `mixed_table_projection` | `section_markdown: str` | `MIXED_TABLE_DOMAIN`, `MIXED_TABLE_DOMAIN` | `row[...]`, `structural_lines[...]`, `semantic_by_key[...]` | `MixedTableProjection(...)` |
 | `normalize_markdown` | `text: str` | - | - | `...` |
-| `replace` | - | - | - | - |
-| `replace` | - | - | - | - |
-| `splitlines` | - | - | - | - |
-| `endswith` | - | - | - | - |
+| `text.replace(…).replace` | - | - | - | - |
+| `text.replace` | - | - | - | - |
+| `normalized.splitlines` | - | - | - | - |
+| `normalized.endswith` | - | - | - | - |
 | `description_table_cells` | `markdown: str` | - | `occurrences[...]` | `tuple(...)`, `(...)` |
-| `splitlines` | - | - | - | - |
+| `normalize_markdown(…).splitlines` | - | - | - | - |
 | `normalize_markdown` | `text: str` | - | - | `...` |
 | `enumerate` | - | - | - | - |
 | `split_table_row` | `line: str` | - | - | `[...]`, `cells` |
-| `strip` | - | - | - | - |
+| `line.strip` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | mixed_table_projection | normalize_markdown | 605 | `normalize_markdown(section_markdown)` |
-| normalize_markdown | replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| normalize_markdown | replace | 81 | `text.replace('\r\n', '\n')` |
-| mixed_table_projection | splitlines | 606 | `normalized.splitlines(data not statically known)` |
-| mixed_table_projection | endswith | 607 | `normalized.endswith('\n')` |
+| normalize_markdown | text.replace(…).replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| normalize_markdown | text.replace | 81 | `text.replace('\r\n', '\n')` |
+| mixed_table_projection | normalized.splitlines | 606 | `normalized.splitlines(data not statically known)` |
+| mixed_table_projection | normalized.endswith | 607 | `normalized.endswith('\n')` |
 | mixed_table_projection | description_table_cells | 608 | `description_table_cells(normalized)` |
-| description_table_cells | splitlines | 558 | `normalize_markdown(markdown).splitlines(data not statically known)` |
+| description_table_cells | normalize_markdown(…).splitlines | 558 | `normalize_markdown(markdown).splitlines(data not statically known)` |
 | description_table_cells | normalize_markdown | 558 | `normalize_markdown(markdown)` |
 | description_table_cells | enumerate | 559 | `enumerate(lines)` |
 | description_table_cells | split_table_row | 560 | `split_table_row(line)` |
-| split_table_row | strip | 467 | `line.strip(data not statically known)` |
+| split_table_row | line.strip | 467 | `line.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -167,12 +173,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
-| external_call | `normalize_markdown` | `text.replace` | 81 |
+| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
+| unresolved_call | `normalize_markdown` | `text.replace` | 81 |
 | unresolved_call | `mixed_table_projection` | `normalized.splitlines` | 606 |
 | unresolved_call | `mixed_table_projection` | `normalized.endswith` | 607 |
 | unresolved_call | `description_table_cells` | `normalize_markdown(markdown).splitlines` | 558 |
-| unresolved_call | `description_table_cells` | `enumerate` | 559 |
+| external_call | `description_table_cells` | `enumerate` | 559 |
 | unresolved_call | `split_table_row` | `line.strip` | 467 |
 | step_limit | `mixed_table_projection` | `first 12 steps` | 0 |
 

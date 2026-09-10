@@ -53,4 +53,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_validate_process_result_bounds` | type_reference | [broker](../modules/broker.md) | — |
+| `OciOutputLimits.from_dict` | call | [broker](../modules/broker.md) | 1 |
 | `OciOutputLimits.from_dict` | type_reference | [broker](../modules/broker.md) | — |

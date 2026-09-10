@@ -15,6 +15,7 @@ flows. They do not read or write files and do not render Markdown.
 | Source | Symbols |
 |--------|---------|
 | `.imports` | `build_module_path_resolver` |
+| `.python_imports` | `is_python_source` |
 | `.validation` | `positive_int_or_none` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
@@ -29,21 +30,26 @@ flowchart LR
     n0["src/llm_wiki_cli/services/bootstrap_runtime.py"]
     n1["src/llm_wiki_cli/services/documentation_queries.py"]
     n2["src/llm_wiki_cli/services/imports.py"]
-    n3["src/llm_wiki_cli/services/relationships.py"]
-    n4["src/llm_wiki_cli/services/validation.py"]
+    n3["src/llm_wiki_cli/services/python_imports.py"]
+    n4["src/llm_wiki_cli/services/relationships.py"]
+    n5["src/llm_wiki_cli/services/validation.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4
-    n1 --> n3
+    n0 --> n5
     n1 --> n4
-    n2 --> n4
-    n3 --> n2
-    n3 --> n4
+    n1 --> n5
+    n2 --> n3
+    n2 --> n5
+    n4 --> n2
+    n4 --> n3
+    n4 --> n5
     click n0 "../modules/bootstrap_runtime.md"
     click n1 "../modules/documentation_queries.md"
     click n2 "../modules/imports.md"
-    click n3 "../modules/relationships.md"
-    click n4 "../modules/validation.md"
+    click n3 "../modules/python_imports.md"
+    click n4 "../modules/relationships.md"
+    click n5 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -53,6 +59,7 @@ flowchart LR
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Inbound | [documentation_queries](../modules/documentation_queries.md) |
 | Outbound | [imports](../modules/imports.md) |
+| Outbound | [python_imports](../modules/python_imports.md) |
 | Outbound | [validation](../modules/validation.md) |
 
 ## Functions
@@ -70,6 +77,7 @@ flowchart LR
 | `_build_class_index` | `(inventory: Mapping) -> tuple[dict, dict]` | — | — |
 | `_imported_class_bindings` | `(inventory: Mapping, filepath: str, by_key: Mapping, resolver) -> dict[str, tuple[str, str]]` | — | — |
 | `_resolve_base_key` | `(raw_base: str, filepath: str, by_key: Mapping[tuple[str, str], Mapping], by_name: Mapping[str, list[tuple[str, str]]], imported: Mapping[str, tuple[str, str]], resolver) -> Optional[tuple[str, str]]` | — | — |
+| `_python_imported_module` | `(module: str, data: Mapping) -> str \| None` | — | — |
 | `_resolved_bases` | `(inventory: Mapping, by_key: Mapping[tuple[str, str], Mapping], by_name: Mapping[str, list[tuple[str, str]]], relation_limit: int \| None = _RELATION_LIMIT) -> dict[tuple[str, str], list[dict]]` | — | — |
 | `_subclasses_by_base` | `(bases_by_class: Mapping[tuple[str, str], list[dict]], relation_limit: int \| None = _RELATION_LIMIT) -> dict[tuple[str, str], list[dict]]` | — | — |
 | `_iter_callable_records` | `(inventory: Mapping) -> Iterable[tuple[str, str, dict]]` | — | — |

@@ -10,56 +10,62 @@
 ```mermaid
 sequenceDiagram
     participant p0 as build_dependency_version_details
-    participant p1 as resolve
-    participant p2 as Path
+    participant p1 as Path(…).resolve
+    participant p2 as Path (src/llm_wiki_cli/services…ependency_version_details)
     participant p3 as _snapshot_sources
-    participant p4 as set
-    participant p5 as relative_to
+    participant p4 as set (src/llm_wiki_cli/services…ions.py:_snapshot_sources)
+    participant p5 as marker.abs_path.relative_to
     participant p6 as _dependency_source_names
-    participant p7 as startswith
-    participant p8 as endswith
-    participant p9 as add
-    participant p10 as sorted
+    participant p7 as value.startswith
+    participant p8 as value.endswith
+    participant p9 as paths.add
+    participant p10 as sorted (src/llm_wiki_cli/services…ions.py:_snapshot_sources)
     participant p11 as _source_path
-    participant p12 as as_posix
-    participant p13 as get
-    participant p14 as is_file
-    participant p15 as list
-    participant p16 as _walk_sources
-    participant p17 as walk
-    participant p18 as is_agent_worktree_path
-    participant p19 as _normalized_rel_parts
-    participant p20 as isinstance
-    p0-->>p1: resolve
-    p0-->>p2: Path
+    participant p12 as path.relative_to(…).as_posix
+    participant p13 as path.relative_to
+    participant p14 as snapshot.files_by_language.get
+    participant p15 as candidate_directories.add
+    participant p16 as cargo.is_file
+    participant p17 as list
+    participant p18 as manifest.name.startswith
+    participant p19 as sibling.is_file
+    participant p20 as _walk_sources
+    participant p21 as os.walk
+    participant p22 as Path (src/llm_wiki_cli/services…versions.py:_walk_sources)
+    participant p23 as is_agent_worktree_path
+    participant p24 as _normalized_rel_parts
+    participant p25 as isinstance (src/llm_wiki_cli/config.py:_normalized_rel_parts)
+    participant p26 as path.as_posix
+    p0-->>p1: Path(…).resolve
+    p0-->>p2: Path (src/llm_wiki_cli/services…ependency_version_details)
     p0->>p3: _snapshot_sources
-    p3-->>p4: set
-    p3-->>p5: relative_to
+    p3-->>p4: set (src/llm_wiki_cli/services…ions.py:_snapshot_sources)
+    p3-->>p5: marker.abs_path.relative_to
     p3->>p6: _dependency_source_names
-    p6-->>p7: startswith
-    p6-->>p8: endswith
-    p3-->>p9: add
-    p3-->>p10: sorted
+    p6-->>p7: value.startswith
+    p6-->>p8: value.endswith
+    p3-->>p9: paths.add
+    p3-->>p10: sorted (src/llm_wiki_cli/services…ions.py:_snapshot_sources)
     p3->>p11: _source_path
-    p11-->>p12: as_posix
-    p11-->>p5: relative_to
-    p3-->>p13: get
-    p3-->>p9: add
-    p3-->>p14: is_file
-    p3-->>p9: add
-    p3-->>p15: list
-    p3-->>p7: startswith
-    p3-->>p14: is_file
-    p3-->>p9: add
-    p3-->>p10: sorted
+    p11-->>p12: path.relative_to(…).as_posix
+    p11-->>p13: path.relative_to
+    p3-->>p14: snapshot.files_by_language.get
+    p3-->>p15: candidate_directories.add
+    p3-->>p16: cargo.is_file
+    p3-->>p9: paths.add
+    p3-->>p17: list
+    p3-->>p18: manifest.name.startswith
+    p3-->>p19: sibling.is_file
+    p3-->>p9: paths.add
+    p3-->>p10: sorted (src/llm_wiki_cli/services…ions.py:_snapshot_sources)
     p3->>p11: _source_path
-    p0->>p16: _walk_sources
-    p16-->>p17: walk
-    p16-->>p2: Path
-    p16->>p18: is_agent_worktree_path
-    p18->>p19: _normalized_rel_parts
-    p19-->>p20: isinstance
-    p19-->>p12: as_posix
+    p0->>p20: _walk_sources
+    p20-->>p21: os.walk
+    p20-->>p22: Path (src/llm_wiki_cli/services…versions.py:_walk_sources)
+    p20->>p23: is_agent_worktree_path
+    p23->>p24: _normalized_rel_parts
+    p24-->>p25: isinstance (src/llm_wiki_cli/config.py:_normalized_rel_parts)
+    p24-->>p26: path.as_posix
 ```
 
 > Call sequence diagram shows 30 of 119 interactions; 89 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -70,27 +76,27 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. build_dependency_version_details"]
-    s2["2. resolve"]
-    s3["3. Path"]
+    s2["2. Path(…).resolve"]
+    s3["3. Path (src/llm_wiki_cli/services…ependency_version_details)"]
     s4["4. _snapshot_sources"]
-    s5["5. set"]
-    s6["6. relative_to"]
+    s5["5. set (src/llm_wiki_cli/services…ions.py:_snapshot_sources)"]
+    s6["6. marker.abs_path.relative_to"]
     s7["7. _dependency_source_names"]
-    s8["8. startswith"]
-    s9["9. endswith"]
-    s10["10. add"]
-    s11["11. sorted"]
+    s8["8. value.startswith"]
+    s9["9. value.endswith"]
+    s10["10. paths.add"]
+    s11["11. sorted (src/llm_wiki_cli/services…ions.py:_snapshot_sources)"]
     s12["12. _source_path"]
-    s1 -. "Path(project_root).resolve(data not statically known)" .-> s2
-    s1 -. "Path(project_root)" .-> s3
+    s1 -. "Path(…).resolve(data not statically known)" .-> s2
+    s1 -. "Path (src/llm_wiki_cli/services…ependency_version_details)(project_root)" .-> s3
     s1 -->|"_snapshot_sources(root, source_snapshot)"| s4
-    s4 -. "set(data not statically known)" .-> s5
+    s4 -. "set (src/llm_wiki_cli/services…ions.py:_snapshot_sources)(data not statically known)" .-> s5
     s4 -. "marker.abs_path.relative_to(root)" .-> s6
     s4 -->|"_dependency_source_names([...])"| s7
     s7 -. "value.startswith('requirements')" .-> s8
     s7 -. "value.endswith('.txt')" .-> s9
     s4 -. "paths.add(marker.abs_path)" .-> s10
-    s4 -. "sorted(paths, key=...)" .-> s11
+    s4 -. "sorted (src/llm_wiki_cli/services…ions.py:_snapshot_sources)(paths, key=...)" .-> s11
     s4 -->|"_source_path(root, path)"| s12
     b0["mutation reasons.add"]
     s1 -. "mutation reasons.add" .-> b0
@@ -128,32 +134,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `build_dependency_version_details` | `project_root: str \| Path`, `source_snapshot: SourceSnapshot \| None` | `DEPENDENCY_VERSION_DETAILS_SCHEMA_VERSION` | - | `{...}` |
-| `resolve` | - | - | - | - |
-| `Path` | - | - | - | - |
+| `Path(…).resolve` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…ependency_version_details)` | - | - | - | - |
 | `_snapshot_sources` | `root: Path`, `snapshot: SourceSnapshot` | - | - | `sorted(...)`, `sorted(...)` |
-| `set` | - | - | - | - |
-| `relative_to` | - | - | - | - |
+| `set (src/llm_wiki_cli/services…ions.py:_snapshot_sources)` | - | - | - | - |
+| `marker.abs_path.relative_to` | - | - | - | - |
 | `_dependency_source_names` | `files: Iterable[str]` | `_SOURCE_NAMES` | - | `...` |
-| `startswith` | - | - | - | - |
-| `endswith` | - | - | - | - |
-| `add` | - | - | - | - |
-| `sorted` | - | - | - | - |
+| `value.startswith` | - | - | - | - |
+| `value.endswith` | - | - | - | - |
+| `paths.add` | - | - | - | - |
+| `sorted (src/llm_wiki_cli/services…ions.py:_snapshot_sources)` | - | - | - | - |
 | `_source_path` | `root: Path`, `path: Path` | - | - | `...` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_dependency_version_details | resolve | 1437 | `Path(project_root).resolve(data not statically known)` |
-| build_dependency_version_details | Path | 1437 | `Path(project_root)` |
+| build_dependency_version_details | Path(…).resolve | 1437 | `Path(project_root).resolve(data not statically known)` |
+| build_dependency_version_details | Path (src/llm_wiki_cli/services…ependency_version_details) | 1437 | `Path(project_root)` |
 | build_dependency_version_details | _snapshot_sources | 1439 | `_snapshot_sources(root, source_snapshot)` |
-| _snapshot_sources | set | 161 | `set(data not statically known)` |
-| _snapshot_sources | relative_to | 164 | `marker.abs_path.relative_to(root)` |
+| _snapshot_sources | set (src/llm_wiki_cli/services…ions.py:_snapshot_sources) | 161 | `set(data not statically known)` |
+| _snapshot_sources | marker.abs_path.relative_to | 164 | `marker.abs_path.relative_to(root)` |
 | _snapshot_sources | _dependency_source_names | 167 | `_dependency_source_names([...])` |
-| _dependency_source_names | startswith | 156 | `value.startswith('requirements')` |
-| _dependency_source_names | endswith | 156 | `value.endswith('.txt')` |
-| _snapshot_sources | add | 170 | `paths.add(marker.abs_path)` |
-| _snapshot_sources | sorted | 173 | `sorted(paths, key=...)` |
+| _dependency_source_names | value.startswith | 156 | `value.startswith('requirements')` |
+| _dependency_source_names | value.endswith | 156 | `value.endswith('.txt')` |
+| _snapshot_sources | paths.add | 170 | `paths.add(marker.abs_path)` |
+| _snapshot_sources | sorted (src/llm_wiki_cli/services…ions.py:_snapshot_sources) | 173 | `sorted(paths, key=...)` |
 | _snapshot_sources | _source_path | 173 | `_source_path(root, path)` |
 
 ### Boundary effects
@@ -177,7 +183,7 @@ flowchart LR
 | unresolved_call | `_snapshot_sources` | `marker.abs_path.relative_to` | 164 |
 | unresolved_call | `_dependency_source_names` | `value.startswith` | 156 |
 | unresolved_call | `_dependency_source_names` | `value.endswith` | 156 |
-| unresolved_call | `_snapshot_sources` | `sorted` | 173 |
+| external_call | `_snapshot_sources` | `sorted` | 173 |
 | step_limit | `build_dependency_version_details` | `first 12 steps` | 0 |
 
 ## Behavior

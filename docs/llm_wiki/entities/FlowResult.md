@@ -1,6 +1,6 @@
 # _FlowResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4162`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4340`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

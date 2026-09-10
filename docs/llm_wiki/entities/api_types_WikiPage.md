@@ -11,8 +11,8 @@ One registry-backed wiki page.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `kind` | `str` | *required* | — |
 | `id` | `str` | *required* | — |
 | `label` | `str` | *required* | — |

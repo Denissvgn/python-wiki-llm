@@ -10,8 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as format_table_row
-    participant p1 as join
-    p0-->>p1: join
+    participant p1 as ' | '.join
+    p0-->>p1: ' | '.join
 ```
 
 ## Data flow
@@ -20,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. format_table_row"]
-    s2["2. join"]
+    s2["2. ' | '.join"]
     s1 -. "' | '.join(cells)" .-> s2
     click s1 "../modules/markdown_sections.md"
 ```
@@ -30,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `format_table_row` | `cells: Iterable[str]` | - | - | `...` |
-| `join` | - | - | - | - |
+| `' \| '.join` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| format_table_row | join | 506 | `' \| '.join(cells)` |
+| format_table_row | ' \| '.join | 506 | `' \| '.join(cells)` |
 
 ### Boundary effects
 

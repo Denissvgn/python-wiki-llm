@@ -64,5 +64,6 @@ flowchart LR
 | `record_calibration_agent_result` | type_reference | [api](../modules/api.md) | — |
 | `_record_p0_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |
 | `_validate_result_import_bindings` | type_reference | [controller](../modules/controller.md) | — |
+| `P0CalibrationAgentResult.from_dict` | call | [controller](../modules/controller.md) | 1 |
 | `P0CalibrationAgentResult.from_dict` | type_reference | [controller](../modules/controller.md) | — |
 | `record_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |

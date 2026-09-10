@@ -25,17 +25,17 @@ flowchart LR
     n0["TeamConfigError (src/llm_wiki_cli/services/team.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/commands/generate_prompt_cmd.py"]
-    n3["src/llm_wiki_cli/commands/trigger_cmd.py"]
-    n4["src/llm_wiki_cli/services/lint_service.py"]
-    n5["_ensure_string_list (src/llm_wiki_cli/services/team.py)"]
-    n6["_reject_unknown_keys (src/llm_wiki_cli/services/team.py)"]
-    n7["_required_path_states (src/llm_wiki_cli/services/team.py)"]
-    n8["_resolve_required_path (src/llm_wiki_cli/services/team.py)"]
-    n9["_validate_required_relative_path (src/llm_wiki_cli/services/team.py)"]
-    n10["build_team_issues (src/llm_wiki_cli/services/team.py)"]
-    n11["load_team_config (src/llm_wiki_cli/services/team.py)"]
-    n12["resolve_team_policy (src/llm_wiki_cli/services/team.py)"]
-    n13["team_config_issue (src/llm_wiki_cli/services/team.py)"]
+    n3["_run_check (src/llm_wiki_cli/commands/team_cmd.py)"]
+    n4["src/llm_wiki_cli/commands/trigger_cmd.py"]
+    n5["src/llm_wiki_cli/services/lint_service.py"]
+    n6["_ensure_string_list (src/llm_wiki_cli/services/team.py)"]
+    n7["_reject_unknown_keys (src/llm_wiki_cli/services/team.py)"]
+    n8["_required_path_states (src/llm_wiki_cli/services/team.py)"]
+    n9["_resolve_required_path (src/llm_wiki_cli/services/team.py)"]
+    n10["_validate_required_relative_path (src/llm_wiki_cli/services/team.py)"]
+    n11["build_team_issues (src/llm_wiki_cli/services/team.py)"]
+    n12["load_team_config (src/llm_wiki_cli/services/team.py)"]
+    n13["resolve_team_policy (src/llm_wiki_cli/services/team.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -51,9 +51,9 @@ flowchart LR
     n13 --> n0
     click n0 "../modules/team.md"
     click n2 "../modules/generate_prompt_cmd.md"
-    click n3 "../modules/trigger_cmd.md"
-    click n4 "../modules/lint_service.md"
-    click n5 "../modules/team.md"
+    click n3 "../modules/team_cmd.md"
+    click n4 "../modules/trigger_cmd.md"
+    click n5 "../modules/lint_service.md"
     click n6 "../modules/team.md"
     click n7 "../modules/team.md"
     click n8 "../modules/team.md"
@@ -81,6 +81,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `generate_prompt_cmd` | import | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
+| `_run_check` | call | [team_cmd](../modules/team_cmd.md) | 1 |
 | `trigger_cmd` | import | [trigger_cmd](../modules/trigger_cmd.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
 | `_ensure_string_list` | call | [team](../modules/team.md) | 1 |
@@ -91,6 +92,5 @@ flowchart LR
 | `build_team_issues` | call | [team](../modules/team.md) | 1 |
 | `load_team_config` | call | [team](../modules/team.md) | 3 |
 | `resolve_team_policy` | call | [team](../modules/team.md) | 3 |
-| `team_config_issue` | type_reference | [team](../modules/team.md) | — |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

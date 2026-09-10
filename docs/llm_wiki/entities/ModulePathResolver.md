@@ -1,6 +1,6 @@
 # ModulePathResolver
 
-**Location:** `src/llm_wiki_cli/services/imports.py:41`
+**Location:** `src/llm_wiki_cli/services/imports.py:43`
 **Kind:** Class
 **Bases:** —
 **Module:** [imports](../modules/imports.md)
@@ -22,6 +22,7 @@ Indexed module import resolver for a fixed inventory.
 | `haskell_module_lookup` | `dict[str, frozenset[str]]` | *required* | — |
 | `go_module_scopes` | `tuple[_GoModuleScope, ...]` | *required* | — |
 | `ts_path_aliases` | `tuple[_TsPathAliasRule, ...]` | *required* | — |
+| `python_modules` | `PythonModuleIndex \| None` | `None` | — |
 
 ## Methods
 
@@ -51,20 +52,23 @@ flowchart LR
     n1["_build_relationships (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n2["build_module_path_resolver (src/llm_wiki_cli/services/imports.py)"]
     n3["ModulePathResolver.build (src/llm_wiki_cli/services/imports.py)"]
+    n4["_PythonCallResolver.__init__ (src/llm_wiki_cli/services/python_calls.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/imports.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/imports.md"
     click n3 "../modules/imports.md"
+    click n4 "../modules/python_calls.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [imports](../modules/imports.md) | 14 | `go_module_scopes`, `go_package_lookup`, `haskell_module_lookup`, `inventory`, `language_lookup`, `lookup`, `ts_path_aliases` |
+| [imports](../modules/imports.md) | 14 | `go_module_scopes`, `go_package_lookup`, `haskell_module_lookup`, `inventory`, `language_lookup`, `lookup`, `python_modules`, `ts_path_aliases` |
 
 ### References
 
@@ -72,4 +76,6 @@ flowchart LR
 |---|---|---|---:|
 | `_build_relationships` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `build_module_path_resolver` | type_reference | [imports](../modules/imports.md) | — |
+| `ModulePathResolver.build` | call | [imports](../modules/imports.md) | 1 |
 | `ModulePathResolver.build` | type_reference | [imports](../modules/imports.md) | — |
+| `_PythonCallResolver.__init__` | type_reference | [python_calls](../modules/python_calls.md) | — |

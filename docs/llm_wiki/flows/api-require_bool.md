@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_bool` | `isinstance` | 772 |
+| external_call | `require_bool` | `isinstance` | 772 |
 
 ## Behavior
 

@@ -15,50 +15,52 @@ sequenceDiagram
     participant p3 as isinstance
     participant p4 as ConceptIdentityError
     participant p5 as len
-    participant p6 as strip
-    participant p7 as any
-    participant p8 as isspace
-    participant p9 as normalize
-    participant p10 as startswith
-    participant p11 as category
-    participant p12 as fullmatch
-    participant p13 as casefold
+    participant p6 as value.strip
+    participant p7 as any (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p8 as character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p9 as unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p10 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p11 as unicodedata.category (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p12 as _BUNDLE_ID_RE.fullmatch
+    participant p13 as text.casefold
     participant p14 as _looks_absolute_path
-    participant p15 as match
-    participant p16 as _contains_uri_userinfo
-    participant p17 as urlsplit
-    participant p18 as validate_concept_kind
-    participant p19 as validate_natural_key
+    participant p15 as value.startswith
+    participant p16 as _WINDOWS_ABSOLUTE_RE.match
+    participant p17 as _contains_uri_userinfo
+    participant p18 as urlsplit
+    participant p19 as validate_concept_kind
+    participant p20 as _QUALIFIED_KIND_RE.fullmatch
+    participant p21 as validate_natural_key
     p0->>p1: validate_bundle_id
     p1->>p2: _machine_text
     p2-->>p3: isinstance
     p2->>p4: ConceptIdentityError
     p2-->>p5: len
     p2->>p4: ConceptIdentityError
-    p2-->>p6: strip
-    p2-->>p7: any
-    p2-->>p8: isspace
+    p2-->>p6: value.strip
+    p2-->>p7: any (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p2-->>p8: character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)
     p2->>p4: ConceptIdentityError
-    p2-->>p9: normalize
+    p2-->>p9: unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)
     p2->>p4: ConceptIdentityError
-    p2-->>p7: any
-    p2-->>p10: startswith
-    p2-->>p11: category
+    p2-->>p7: any (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p2-->>p10: unicodedata.category(…).startswith (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p2-->>p11: unicodedata.category (src/llm_wiki_cli/services…_identity.py:_machine_text)
     p2->>p4: ConceptIdentityError
-    p1-->>p12: fullmatch
-    p1-->>p13: casefold
+    p1-->>p12: _BUNDLE_ID_RE.fullmatch
+    p1-->>p13: text.casefold
     p1->>p14: _looks_absolute_path
-    p14-->>p10: startswith
-    p14-->>p15: match
-    p1->>p16: _contains_uri_userinfo
-    p16-->>p17: urlsplit
+    p14-->>p15: value.startswith
+    p14-->>p16: _WINDOWS_ABSOLUTE_RE.match
+    p1->>p17: _contains_uri_userinfo
+    p17-->>p18: urlsplit
     p1->>p4: ConceptIdentityError
-    p0->>p18: validate_concept_kind
-    p18->>p2: _machine_text
-    p18-->>p12: fullmatch
-    p18->>p4: ConceptIdentityError
-    p0->>p19: validate_natural_key
+    p0->>p19: validate_concept_kind
     p19->>p2: _machine_text
+    p19-->>p20: _QUALIFIED_KIND_RE.fullmatch
+    p19->>p4: ConceptIdentityError
+    p0->>p21: validate_natural_key
+    p21->>p2: _machine_text
 ```
 
 > Call sequence diagram shows 30 of 77 interactions; 47 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -75,11 +77,11 @@ flowchart LR
     s5["5. ConceptIdentityError"]
     s6["6. len"]
     s7["7. ConceptIdentityError"]
-    s8["8. strip"]
-    s9["9. any"]
-    s10["10. isspace"]
+    s8["8. value.strip"]
+    s9["9. any (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
+    s10["10. character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
     s11["11. ConceptIdentityError"]
-    s12["12. normalize"]
+    s12["12. unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
     s1 -->|"validate_bundle_id(bundle_id)"| s2
     s2 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s3
     s3 -. "isinstance(value, str)" .-> s4
@@ -87,10 +89,10 @@ flowchart LR
     s3 -. "len(value)" .-> s6
     s3 -->|"ConceptIdentityError(field, ...)"| s7
     s3 -. "value.strip(data not statically known)" .-> s8
-    s3 -. "any(...)" .-> s9
-    s3 -. "character.isspace(data not statically known)" .-> s10
+    s3 -. "any (src/llm_wiki_cli/services…_identity.py:_machine_text)(...)" .-> s9
+    s3 -. "character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)(data not statically known)" .-> s10
     s3 -->|"ConceptIdentityError(field, 'must not contain whitespace')"| s11
-    s3 -. "unicodedata.normalize('NFC', value)" .-> s12
+    s3 -. "unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)('NFC', value)" .-> s12
     click s1 "../modules/concept_identity.md"
     click s2 "../modules/concept_identity.md"
     click s3 "../modules/concept_identity.md"
@@ -110,11 +112,11 @@ flowchart LR
 | `ConceptIdentityError` | - | - | - | - |
 | `len` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `isspace` | - | - | - | - |
+| `value.strip` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
+| `character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `normalize` | - | - | - | - |
+| `unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
 
 ### Call data
 
@@ -126,11 +128,11 @@ flowchart LR
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
 | _machine_text | len | 914 | `len(value)` |
 | _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | strip | 916 | `value.strip(data not statically known)` |
-| _machine_text | any | 916 | `any(...)` |
-| _machine_text | isspace | 916 | `character.isspace(data not statically known)` |
+| _machine_text | value.strip | 916 | `value.strip(data not statically known)` |
+| _machine_text | any (src/llm_wiki_cli/services…_identity.py:_machine_text) | 916 | `any(...)` |
+| _machine_text | character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text) | 916 | `character.isspace(data not statically known)` |
 | _machine_text | ConceptIdentityError | 917 | `ConceptIdentityError(field, 'must not contain whitespace')` |
-| _machine_text | normalize | 918 | `unicodedata.normalize('NFC', value)` |
+| _machine_text | unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text) | 918 | `unicodedata.normalize('NFC', value)` |
 
 ### Boundary effects
 
@@ -140,9 +142,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_machine_text` | `isinstance` | 912 |
+| external_call | `_machine_text` | `isinstance` | 912 |
 | unresolved_call | `_machine_text` | `value.strip` | 916 |
-| unresolved_call | `_machine_text` | `any` | 916 |
+| external_call | `_machine_text` | `any` | 916 |
 | unresolved_call | `_machine_text` | `character.isspace` | 916 |
 | external_call | `_machine_text` | `unicodedata.normalize` | 918 |
 | step_limit | `derive_concept_uid` | `first 12 steps` | 0 |

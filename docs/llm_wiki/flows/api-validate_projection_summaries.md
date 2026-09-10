@@ -18,47 +18,51 @@
 ```mermaid
 sequenceDiagram
     participant p0 as validate_projection_summaries
-    participant p1 as isinstance
+    participant p1 as isinstance (src/llm_wiki_cli/services…date_projection_summaries)
     participant p2 as KnowledgeProjectionError
-    participant p3 as fullmatch
+    participant p3 as re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)
     participant p4 as _validate_projection_structure
-    participant p5 as _require_sha256
-    participant p6 as require_sha256
-    participant p7 as require_trimmed_text
-    participant p8 as require_nonempty_text
-    participant p9 as strip
-    participant p10 as any
-    participant p11 as ord
-    p0-->>p1: isinstance
+    participant p5 as isinstance (src/llm_wiki_cli/services…date_projection_structure)
+    participant p6 as _require_sha256
+    participant p7 as require_sha256
+    participant p8 as isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
+    participant p9 as require_trimmed_text
+    participant p10 as require_nonempty_text
+    participant p11 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p12 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p13 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p14 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p15 as _SHA256_RE.fullmatch
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
     p0->>p2: KnowledgeProjectionError
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance
-    p0-->>p3: fullmatch
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
+    p0-->>p3: re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)
     p0->>p2: KnowledgeProjectionError
     p0->>p4: _validate_projection_structure
-    p4-->>p1: isinstance
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…date_projection_structure)
     p4->>p2: KnowledgeProjectionError
     p4->>p2: KnowledgeProjectionError
-    p4-->>p1: isinstance
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…date_projection_structure)
     p4->>p2: KnowledgeProjectionError
-    p4->>p5: _require_sha256
-    p5->>p6: require_sha256
-    p6-->>p1: isinstance
-    p6->>p7: require_trimmed_text
-    p7->>p8: require_nonempty_text
-    p8-->>p1: isinstance
-    p8-->>p9: strip
-    p8-->>p10: any
-    p8-->>p11: ord
-    p8-->>p11: ord
-    p6-->>p3: fullmatch
-    p5->>p2: KnowledgeProjectionError
+    p4->>p6: _require_sha256
+    p6->>p7: require_sha256
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
+    p7->>p9: require_trimmed_text
+    p9->>p10: require_nonempty_text
+    p10-->>p11: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p10-->>p12: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p10-->>p13: any (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p7-->>p15: _SHA256_RE.fullmatch
+    p6->>p2: KnowledgeProjectionError
 ```
 
 > Call sequence diagram shows 30 of 688 interactions; 658 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -71,28 +75,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. validate_projection_summaries"]
-    s2["2. isinstance"]
+    s2["2. isinstance (src/llm_wiki_cli/services…date_projection_summaries)"]
     s3["3. KnowledgeProjectionError"]
     s4["4. KnowledgeProjectionError"]
-    s5["5. isinstance"]
+    s5["5. isinstance (src/llm_wiki_cli/services…date_projection_summaries)"]
     s6["6. KnowledgeProjectionError"]
-    s7["7. isinstance"]
+    s7["7. isinstance (src/llm_wiki_cli/services…date_projection_summaries)"]
     s8["8. KnowledgeProjectionError"]
-    s9["9. isinstance"]
+    s9["9. isinstance (src/llm_wiki_cli/services…date_projection_summaries)"]
     s10["10. KnowledgeProjectionError"]
-    s11["11. isinstance"]
-    s12["12. fullmatch"]
-    s1 -. "isinstance(projection, KnowledgeProjection)" .-> s2
+    s11["11. isinstance (src/llm_wiki_cli/services…date_projection_summaries)"]
+    s12["12. re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)"]
+    s1 -. "isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection, KnowledgeProjection)" .-> s2
     s1 -->|"KnowledgeProjectionError('projection-type-invalid', 'projection', 'must be a KnowledgeProjection')"| s3
     s1 -->|"KnowledgeProjectionError('projection-schema-invalid', 'schema_version', ...)"| s4
-    s1 -. "isinstance(projection.bundle, Mapping)" .-> s5
+    s1 -. "isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.bundle, Mapping)" .-> s5
     s1 -->|"KnowledgeProjectionError('projection-bundle-invalid', 'bundle', 'must be a mapping')"| s6
-    s1 -. "isinstance(projection.concepts, Mapping)" .-> s7
+    s1 -. "isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.concepts, Mapping)" .-> s7
     s1 -->|"KnowledgeProjectionError('projection-concepts-invalid', 'concepts', 'must be a canonical-path mapping')"| s8
-    s1 -. "isinstance(projection.profile, KnowledgeProjectionProfile)" .-> s9
+    s1 -. "isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.profile, KnowledgeProjectionProfile)" .-> s9
     s1 -->|"KnowledgeProjectionError('projection-profile-invalid', 'profile', #34;must be 'internal' or 'public-portable'#34;)"| s10
-    s1 -. "isinstance(projection.source_knowledge_hash, str)" .-> s11
-    s1 -. "re.fullmatch('sha256:[0-9a-f]{64}', projection.source_knowledge_hash)" .-> s12
+    s1 -. "isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.source_knowledge_hash, str)" .-> s11
+    s1 -. "re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)('sha256:[0-9a-f]{64}', projection.source_knowledge_hash)" .-> s12
     b0["mutation details.append"]
     s1 -. "mutation details.append" .-> b0
     b1["mutation details.append"]
@@ -116,33 +120,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `validate_projection_summaries` | `projection: KnowledgeProjection`, `canonical_paths: Sequence[str]` | `KnowledgeProjection`, `PROJECTION_SCHEMA_VERSION`, `PROJECTION_SCHEMA_VERSION`, `Mapping`, `Mapping`, `KnowledgeProjectionProfile`, `Sequence`, `ConceptIdentityError` | `seen_uids[...]`, `summaries[...]` | `summaries` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…date_projection_summaries)` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…date_projection_summaries)` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…date_projection_summaries)` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…date_projection_summaries)` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…date_projection_summaries)` | - | - | - | - |
+| `re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_projection_summaries | isinstance | 528 | `isinstance(projection, KnowledgeProjection)` |
+| validate_projection_summaries | isinstance (src/llm_wiki_cli/services…date_projection_summaries) | 528 | `isinstance(projection, KnowledgeProjection)` |
 | validate_projection_summaries | KnowledgeProjectionError | 529 | `KnowledgeProjectionError('projection-type-invalid', 'projection', 'must be a KnowledgeProjection')` |
 | validate_projection_summaries | KnowledgeProjectionError | 535 | `KnowledgeProjectionError('projection-schema-invalid', 'schema_version', ...)` |
-| validate_projection_summaries | isinstance | 540 | `isinstance(projection.bundle, Mapping)` |
+| validate_projection_summaries | isinstance (src/llm_wiki_cli/services…date_projection_summaries) | 540 | `isinstance(projection.bundle, Mapping)` |
 | validate_projection_summaries | KnowledgeProjectionError | 541 | `KnowledgeProjectionError('projection-bundle-invalid', 'bundle', 'must be a mapping')` |
-| validate_projection_summaries | isinstance | 546 | `isinstance(projection.concepts, Mapping)` |
+| validate_projection_summaries | isinstance (src/llm_wiki_cli/services…date_projection_summaries) | 546 | `isinstance(projection.concepts, Mapping)` |
 | validate_projection_summaries | KnowledgeProjectionError | 547 | `KnowledgeProjectionError('projection-concepts-invalid', 'concepts', 'must be a canonical-path mapping')` |
-| validate_projection_summaries | isinstance | 552 | `isinstance(projection.profile, KnowledgeProjectionProfile)` |
+| validate_projection_summaries | isinstance (src/llm_wiki_cli/services…date_projection_summaries) | 552 | `isinstance(projection.profile, KnowledgeProjectionProfile)` |
 | validate_projection_summaries | KnowledgeProjectionError | 553 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
-| validate_projection_summaries | isinstance | 559 | `isinstance(projection.source_knowledge_hash, str)` |
-| validate_projection_summaries | fullmatch | 560 | `re.fullmatch('sha256:[0-9a-f]{64}', projection.source_knowledge_hash)` |
+| validate_projection_summaries | isinstance (src/llm_wiki_cli/services…date_projection_summaries) | 559 | `isinstance(projection.source_knowledge_hash, str)` |
+| validate_projection_summaries | re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries) | 560 | `re.fullmatch('sha256:[0-9a-f]{64}', projection.source_knowledge_hash)` |
 
 ### Boundary effects
 
@@ -156,11 +160,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_projection_summaries` | `isinstance` | 528 |
-| unresolved_call | `validate_projection_summaries` | `isinstance` | 540 |
-| unresolved_call | `validate_projection_summaries` | `isinstance` | 546 |
-| unresolved_call | `validate_projection_summaries` | `isinstance` | 552 |
-| unresolved_call | `validate_projection_summaries` | `isinstance` | 559 |
+| external_call | `validate_projection_summaries` | `isinstance` | 528 |
+| external_call | `validate_projection_summaries` | `isinstance` | 540 |
+| external_call | `validate_projection_summaries` | `isinstance` | 546 |
+| external_call | `validate_projection_summaries` | `isinstance` | 552 |
+| external_call | `validate_projection_summaries` | `isinstance` | 559 |
 | external_call | `validate_projection_summaries` | `re.fullmatch` | 560 |
 | step_limit | `validate_projection_summaries` | `first 12 steps` | 0 |
 | truncated_flow | `validate_projection_summaries` | `depth limit` | 0 |

@@ -59,4 +59,5 @@ flowchart LR
 |---|---|---|---:|
 | `create_oci_admission_probe_environment` | call | [broker](../modules/broker.md) | 1 |
 | `OciAdmissionProbeEnvironment.__init__` | type_reference | [broker](../modules/broker.md) | — |
+| `OciProbeSentinel.from_dict` | call | [broker](../modules/broker.md) | 1 |
 | `OciProbeSentinel.from_dict` | type_reference | [broker](../modules/broker.md) | — |

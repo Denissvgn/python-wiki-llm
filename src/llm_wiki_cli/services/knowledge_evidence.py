@@ -52,6 +52,7 @@ _LOCATION_ONLY_KEYS = frozenset({"line", "end_line", "decorator_line"})
 _ENTITY_NONSTRUCTURAL_KEYS = _LOCATION_ONLY_KEYS | frozenset(
     {
         "calls",
+        "call_bindings",
         "data_effects",
         "description",
         "docstring",

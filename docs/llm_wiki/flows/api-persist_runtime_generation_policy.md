@@ -101,10 +101,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_validate_runtime_policy` | `sorted` | 1181 |
-| unresolved_call | `_validate_runtime_policy` | `min` | 1186 |
-| unresolved_call | `_validate_runtime_policy` | `isinstance` | 1193 |
-| unresolved_call | `_validate_runtime_policy` | `isinstance` | 1199 |
+| external_call | `_validate_runtime_policy` | `sorted` | 1181 |
+| external_call | `_validate_runtime_policy` | `min` | 1186 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1193 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1199 |
 
 ## Behavior
 

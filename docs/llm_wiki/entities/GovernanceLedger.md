@@ -97,4 +97,4 @@ flowchart LR
 | `add_alias` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `add_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 
-> References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.
+> References: showing 12 of 29 logical references; 17 omitted by the 12-row generated summary limit.

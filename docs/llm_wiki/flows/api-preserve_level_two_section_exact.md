@@ -10,20 +10,21 @@
 ```mermaid
 sequenceDiagram
     participant p0 as preserve_level_two_section_exact
-    participant p1 as compile
-    participant p2 as escape
-    participant p3 as search
-    participant p4 as group
-    participant p5 as start
-    participant p6 as (end)
-    p0-->>p1: compile
-    p0-->>p2: escape
-    p0-->>p3: search
-    p0-->>p3: search
-    p0-->>p4: group
-    p0-->>p4: group
-    p0-->>p5: start
-    p0-->>p6: (end)
+    participant p1 as re.compile
+    participant p2 as re.escape
+    participant p3 as pattern.search
+    participant p4 as old_match.group
+    participant p5 as new_match.group
+    participant p6 as new_match.start
+    participant p7 as new_match.end
+    p0-->>p1: re.compile
+    p0-->>p2: re.escape
+    p0-->>p3: pattern.search
+    p0-->>p3: pattern.search
+    p0-->>p4: old_match.group
+    p0-->>p5: new_match.group
+    p0-->>p6: new_match.start
+    p0-->>p7: new_match.end
 ```
 
 ## Data flow
@@ -32,14 +33,14 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. preserve_level_two_section_exact"]
-    s2["2. compile"]
-    s3["3. escape"]
-    s4["4. search"]
-    s5["5. search"]
-    s6["6. group"]
-    s7["7. group"]
-    s8["8. start"]
-    s9["9. end"]
+    s2["2. re.compile"]
+    s3["3. re.escape"]
+    s4["4. pattern.search"]
+    s5["5. pattern.search"]
+    s6["6. old_match.group"]
+    s7["7. new_match.group"]
+    s8["8. new_match.start"]
+    s9["9. new_match.end"]
     s1 -. "re.compile(...)" .-> s2
     s1 -. "re.escape(heading)" .-> s3
     s1 -. "pattern.search(existing)" .-> s4
@@ -56,27 +57,27 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `preserve_level_two_section_exact` | `existing: str`, `generated: str`, `heading: str` | - | - | `generated`, `generated`, `...` |
-| `compile` | - | - | - | - |
-| `escape` | - | - | - | - |
-| `search` | - | - | - | - |
-| `search` | - | - | - | - |
-| `group` | - | - | - | - |
-| `group` | - | - | - | - |
-| `start` | - | - | - | - |
-| `end` | - | - | - | - |
+| `re.compile` | - | - | - | - |
+| `re.escape` | - | - | - | - |
+| `pattern.search` | - | - | - | - |
+| `pattern.search` | - | - | - | - |
+| `old_match.group` | - | - | - | - |
+| `new_match.group` | - | - | - | - |
+| `new_match.start` | - | - | - | - |
+| `new_match.end` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| preserve_level_two_section_exact | compile | 720 | `re.compile(...)` |
-| preserve_level_two_section_exact | escape | 721 | `re.escape(heading)` |
-| preserve_level_two_section_exact | search | 724 | `pattern.search(existing)` |
-| preserve_level_two_section_exact | search | 725 | `pattern.search(generated)` |
-| preserve_level_two_section_exact | group | 728 | `old_match.group(0)` |
-| preserve_level_two_section_exact | group | 729 | `new_match.group(0)` |
-| preserve_level_two_section_exact | start | 732 | `new_match.start(data not statically known)` |
-| preserve_level_two_section_exact | end | 734 | `new_match.end(data not statically known)` |
+| preserve_level_two_section_exact | re.compile | 720 | `re.compile(...)` |
+| preserve_level_two_section_exact | re.escape | 721 | `re.escape(heading)` |
+| preserve_level_two_section_exact | pattern.search | 724 | `pattern.search(existing)` |
+| preserve_level_two_section_exact | pattern.search | 725 | `pattern.search(generated)` |
+| preserve_level_two_section_exact | old_match.group | 728 | `old_match.group(0)` |
+| preserve_level_two_section_exact | new_match.group | 729 | `new_match.group(0)` |
+| preserve_level_two_section_exact | new_match.start | 732 | `new_match.start(data not statically known)` |
+| preserve_level_two_section_exact | new_match.end | 734 | `new_match.end(data not statically known)` |
 
 ### Boundary effects
 

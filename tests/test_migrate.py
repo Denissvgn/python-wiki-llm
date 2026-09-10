@@ -14,6 +14,8 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, migrate_cmd
+
+
 from llm_wiki_cli.commands.migrate_cmd import (
     ExistingPage,
     TargetPage,
@@ -62,6 +64,23 @@ skip_no_ts = pytest.mark.skipif(
     not (NODE_AVAILABLE and TYPESCRIPT_READY),
     reason="Node.js/ts-morph dependencies not available",
 )
+
+
+def test_legacy_workflow_link_references_do_not_create_or_guess_workflows():
+    inventory = {
+        "schema.py": {"classes": [{"name": "Result"}], "functions": []},
+        "app.py": {
+            "classes": [],
+            "imports": [{"module": "schema", "name": "Result", "type": "from"}],
+            "functions": [{"name": "publish", "params": [{"name": "value", "type": "Result"}]}],
+        },
+    }
+    assert migrate_cmd.get_call_graph(inventory) == {}
+    assert migrate_cmd._workflow_link_sources(inventory, {}) == {
+        "publish": {"app.py", "schema.py"}
+    }
+    inventory["other.py"] = {"classes": [], "functions": [{"name": "publish"}]}
+    assert "publish" not in migrate_cmd._workflow_link_sources(inventory, {})
 
 
 def _make_args(**kwargs):

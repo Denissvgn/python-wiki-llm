@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as get_concept
-    p0-->>p0: get_concept
+    participant p1 as service.get_concept
+    p0-->>p1: service.get_concept
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. get_concept"]
-    s2["2. get_concept"]
+    s2["2. service.get_concept"]
     s1 -. "service.get_concept(locator_or_exact_route, limit=limit)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `get_concept` | `locator_or_exact_route: str`, `limit: int` | - | - | `service.get_concept(...)` |
-| `get_concept` | - | - | - | - |
+| `service.get_concept` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_concept | get_concept | 1175 | `service.get_concept(locator_or_exact_route, limit=limit)` |
+| get_concept | service.get_concept | 1175 | `service.get_concept(locator_or_exact_route, limit=limit)` |
 
 ### Boundary effects
 

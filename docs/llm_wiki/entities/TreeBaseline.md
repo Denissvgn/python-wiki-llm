@@ -87,4 +87,4 @@ flowchart LR
 | `source_snapshot_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
 | `source_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
 
-> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.
+> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

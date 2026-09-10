@@ -11,53 +11,55 @@
 sequenceDiagram
     participant p0 as load_and_evaluate_verification_receipt
     participant p1 as load_verification_receipt
-    participant p2 as Path
+    participant p2 as Path (src/llm_wiki_cli/services…load_verification_receipt)
     participant p3 as first_unsafe_path_component
-    participant p4 as fspath
-    participant p5 as abspath
-    participant p6 as is_absolute
-    participant p7 as cwd
-    participant p8 as list
-    participant p9 as pop
-    participant p10 as lstat
-    participant p11 as getattr
-    participant p12 as S_ISLNK
-    participant p13 as bool
-    participant p14 as trusted_symlink_owner
-    participant p15 as callable
-    participant p16 as readlink
-    participant p17 as VerificationReceiptError
-    participant p18 as is_symlink
+    participant p4 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p5 as os.fspath
+    participant p6 as os.path.abspath
+    participant p7 as lexical.is_absolute
+    participant p8 as Path.cwd
+    participant p9 as list (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p10 as pending_parts.pop
+    participant p11 as current.lstat
+    participant p12 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p13 as stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p14 as bool
+    participant p15 as trusted_symlink_owner
+    participant p16 as callable
+    participant p17 as os.readlink
+    participant p18 as link_target.is_absolute
+    participant p19 as VerificationReceiptError
+    participant p20 as root.is_symlink
     p0->>p1: load_verification_receipt
-    p1-->>p2: Path
+    p1-->>p2: Path (src/llm_wiki_cli/services…load_verification_receipt)
     p1->>p3: first_unsafe_path_component
-    p3-->>p2: Path
-    p3-->>p4: fspath
-    p3-->>p2: Path
-    p3-->>p5: abspath
-    p3-->>p6: is_absolute
-    p3-->>p7: cwd
-    p3-->>p2: Path
-    p3-->>p8: list
-    p3-->>p9: pop
-    p3-->>p10: lstat
-    p3-->>p11: getattr
-    p3-->>p11: getattr
-    p3-->>p12: S_ISLNK
-    p3-->>p13: bool
-    p3-->>p13: bool
-    p3-->>p11: getattr
-    p3-->>p14: trusted_symlink_owner
-    p3-->>p15: callable
-    p3-->>p11: getattr
-    p3-->>p2: Path
-    p3-->>p2: Path
-    p3-->>p16: readlink
-    p3-->>p6: is_absolute
-    p3-->>p2: Path
-    p3-->>p8: list
-    p1->>p17: VerificationReceiptError
-    p1-->>p18: is_symlink
+    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p5: os.fspath
+    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p6: os.path.abspath
+    p3-->>p7: lexical.is_absolute
+    p3-->>p8: Path.cwd
+    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p9: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p10: pending_parts.pop
+    p3-->>p11: current.lstat
+    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p13: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p14: bool
+    p3-->>p14: bool
+    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p15: trusted_symlink_owner
+    p3-->>p16: callable
+    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p17: os.readlink
+    p3-->>p18: link_target.is_absolute
+    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p3-->>p9: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p1->>p19: VerificationReceiptError
+    p1-->>p20: root.is_symlink
 ```
 
 > Call sequence diagram shows 30 of 247 interactions; 217 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -71,27 +73,27 @@ sequenceDiagram
 flowchart LR
     s1["1. load_and_evaluate_verification_receipt"]
     s2["2. load_verification_receipt"]
-    s3["3. Path"]
+    s3["3. Path (src/llm_wiki_cli/services…load_verification_receipt)"]
     s4["4. first_unsafe_path_component"]
-    s5["5. Path"]
-    s6["6. fspath"]
-    s7["7. Path"]
-    s8["8. abspath"]
-    s9["9. is_absolute"]
-    s10["10. cwd"]
-    s11["11. Path"]
-    s12["12. list"]
+    s5["5. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s6["6. os.fspath"]
+    s7["7. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s8["8. os.path.abspath"]
+    s9["9. lexical.is_absolute"]
+    s10["10. Path.cwd"]
+    s11["11. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s12["12. list (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
     s1 -->|"load_verification_receipt(wiki_dir, missing_ok=missing_ok)"| s2
-    s2 -. "Path(wiki_dir)" .-> s3
+    s2 -. "Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)" .-> s3
     s2 -->|"first_unsafe_path_component(root)"| s4
-    s4 -. "Path(os.fspath(...))" .-> s5
+    s4 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))" .-> s5
     s4 -. "os.fspath(path)" .-> s6
-    s4 -. "Path(os.path.abspath(...))" .-> s7
+    s4 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))" .-> s7
     s4 -. "os.path.abspath(lexical)" .-> s8
     s4 -. "lexical.is_absolute(data not statically known)" .-> s9
     s4 -. "Path.cwd(data not statically known)" .-> s10
-    s4 -. "Path(absolute.anchor)" .-> s11
-    s4 -. "list(...)" .-> s12
+    s4 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(absolute.anchor)" .-> s11
+    s4 -. "list (src/llm_wiki_cli/services…rst_unsafe_path_component)(...)" .-> s12
     b0["mutation pending_parts.pop"]
     s4 -. "mutation pending_parts.pop" .-> b0
     click s1 "../modules/verification_contracts.md"
@@ -107,32 +109,32 @@ flowchart LR
 |---|---|---|---|---|
 | `load_and_evaluate_verification_receipt` | `wiki_dir: str \| Path`, `context: VerificationContext`, `missing_ok: bool` | - | - | `None`, `evaluate_verification_receipt(...)` |
 | `load_verification_receipt` | `wiki_dir: str \| Path`, `missing_ok: bool` | - | - | `None`, `deserialize_verification_receipt(...)` |
-| `Path` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
-| `Path` | - | - | - | - |
-| `fspath` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
-| `is_absolute` | - | - | - | - |
-| `cwd` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `list` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `os.fspath` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `os.path.abspath` | - | - | - | - |
+| `lexical.is_absolute` | - | - | - | - |
+| `Path.cwd` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `list (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | load_and_evaluate_verification_receipt | load_verification_receipt | 1087 | `load_verification_receipt(wiki_dir, missing_ok=missing_ok)` |
-| load_verification_receipt | Path | 956 | `Path(wiki_dir)` |
+| load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 956 | `Path(wiki_dir)` |
 | load_verification_receipt | first_unsafe_path_component | 957 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path | 50 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | fspath | 50 | `os.fspath(path)` |
-| first_unsafe_path_component | Path | 58 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | abspath | 58 | `os.path.abspath(lexical)` |
-| first_unsafe_path_component | is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | cwd | 65 | `Path.cwd(data not statically known)` |
-| first_unsafe_path_component | Path | 66 | `Path(absolute.anchor)` |
-| first_unsafe_path_component | list | 67 | `list(...)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath | 50 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 58 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath | 58 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | lexical.is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
+| first_unsafe_path_component | Path.cwd | 65 | `Path.cwd(data not statically known)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 66 | `Path(absolute.anchor)` |
+| first_unsafe_path_component | list (src/llm_wiki_cli/services…rst_unsafe_path_component) | 67 | `list(...)` |
 
 ### Boundary effects
 

@@ -16,6 +16,22 @@ from llm_wiki_cli.services.diagrams import (
 
 
 class TestSequenceDiagram:
+    def test_display_labels_do_not_merge_distinct_participant_ids(self):
+        interactions = [
+            {
+                "from": "internal:a",
+                "to": "internal:b",
+                "from_label": "run",
+                "to_label": "run",
+                "label": "run",
+            }
+        ]
+        out = sequence_diagram(interactions)
+        assert "participant p0 as run" in out
+        assert "participant p1 as run" in out
+        assert "p0->>p1: run" in out
+        assert "internal:" not in out
+
     def test_renders_fenced_mermaid_block(self):
         out = sequence_diagram([{"from": "a", "to": "b", "label": "b"}])
         assert out.startswith("```mermaid\nsequenceDiagram")
@@ -255,6 +271,28 @@ class TestFlowchart:
 
 
 class TestDataFlowDiagram:
+    def test_compact_call_labels_keep_distinct_transfer_evidence(self):
+        from copy import deepcopy
+
+        data = {
+            "steps": [{"index": 1, "symbol": "run"}, {"index": 2, "symbol": "build"}],
+            "transfers": [
+                {
+                    "from_step": 1,
+                    "to_step": 2,
+                    "kind": "unresolved",
+                    "call": f"factory(configuration={value}).build()",
+                    "call_label": "factory(…).build()",
+                }
+                for value in ("first", "second", "first")
+            ],
+        }
+        before = deepcopy(data)
+        diagram = data_flow_diagram(data)
+        assert diagram.count('s1 -. "factory(…).build()" .-> s2') == 2
+        assert "configuration=" not in diagram
+        assert data == before
+
     def test_renders_labeled_lr_diagram_with_links_and_styled_boundaries(self):
         data_flow = {
             "steps": [

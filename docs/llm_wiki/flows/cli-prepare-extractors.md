@@ -22,51 +22,54 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
+    participant p1 as getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
     participant p2 as _dedupe_languages
-    participant p3 as set
-    participant p4 as append
-    participant p5 as add
-    participant p6 as bool
+    participant p3 as set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)
+    participant p4 as result.append
+    participant p5 as seen.add
+    participant p6 as bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
     participant p7 as validate_source_root
     participant p8 as validate_path
     participant p9 as PathValidationError
-    participant p10 as resolve
-    participant p11 as cwd
-    participant p12 as relative_to
-    participant p13 as expanduser
-    participant p14 as Path
-    participant p15 as is_absolute
-    participant p16 as is_dir
-    p0-->>p1: getattr
-    p0-->>p1: getattr
+    participant p10 as (…).resolve
+    participant p11 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p12 as Path.cwd().resolve
+    participant p13 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    participant p14 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p15 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p16 as candidate.is_absolute
+    participant p17 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p18 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p19 as resolved.is_dir
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
     p0->>p2: _dedupe_languages
-    p2-->>p3: set
-    p2-->>p4: append
-    p2-->>p5: add
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p6: bool
-    p0-->>p1: getattr
-    p0-->>p6: bool
-    p0-->>p1: getattr
-    p0-->>p1: getattr
+    p2-->>p3: set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)
+    p2-->>p4: result.append
+    p2-->>p5: seen.add
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    p0-->>p6: bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    p0-->>p6: bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
     p0->>p7: validate_source_root
     p7->>p8: validate_path
     p8->>p9: PathValidationError
-    p8-->>p10: resolve
-    p8-->>p11: cwd
-    p8-->>p10: resolve
-    p8-->>p11: cwd
-    p8-->>p12: relative_to
+    p8-->>p10: (…).resolve
+    p8-->>p11: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p8-->>p12: Path.cwd().resolve
+    p8-->>p11: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p8-->>p13: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     p8->>p9: PathValidationError
-    p7-->>p13: expanduser
-    p7-->>p14: Path
-    p7-->>p15: is_absolute
-    p7-->>p11: cwd
-    p7-->>p10: resolve
+    p7-->>p14: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    p7-->>p15: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p7-->>p16: candidate.is_absolute
+    p7-->>p17: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p7-->>p18: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
     p7->>p9: PathValidationError
-    p7-->>p16: is_dir
+    p7-->>p19: resolved.is_dir
     p7->>p9: PathValidationError
 ```
 
@@ -80,28 +83,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. run"]
-    s2["2. getattr"]
-    s3["3. getattr"]
+    s2["2. getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)"]
+    s3["3. getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)"]
     s4["4. _dedupe_languages"]
-    s5["5. set"]
-    s6["6. append"]
-    s7["7. add"]
-    s8["8. getattr"]
-    s9["9. getattr"]
-    s10["10. bool"]
-    s11["11. getattr"]
-    s12["12. bool"]
-    s1 -. "getattr(args, 'src_dir', '.')" .-> s2
-    s1 -. "getattr(args, 'cache_dir', None)" .-> s3
+    s5["5. set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)"]
+    s6["6. result.append"]
+    s7["7. seen.add"]
+    s8["8. getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)"]
+    s9["9. getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)"]
+    s10["10. bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)"]
+    s11["11. getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)"]
+    s12["12. bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)"]
+    s1 -. "getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'src_dir', '.')" .-> s2
+    s1 -. "getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'cache_dir', None)" .-> s3
     s1 -->|"_dedupe_languages(getattr(...))"| s4
-    s4 -. "set(data not statically known)" .-> s5
+    s4 -. "set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)(data not statically known)" .-> s5
     s4 -. "result.append(value)" .-> s6
     s4 -. "seen.add(value)" .-> s7
-    s1 -. "getattr(args, 'language', None)" .-> s8
-    s1 -. "getattr(args, 'source_selection', None)" .-> s9
-    s1 -. "bool(getattr(...))" .-> s10
-    s1 -. "getattr(args, 'allow_external_src', False)" .-> s11
-    s1 -. "bool(getattr(...))" .-> s12
+    s1 -. "getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'language', None)" .-> s8
+    s1 -. "getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'source_selection', None)" .-> s9
+    s1 -. "bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(getattr(...))" .-> s10
+    s1 -. "getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'allow_external_src', False)" .-> s11
+    s1 -. "bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(getattr(...))" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -136,33 +139,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | `sys`, `sys`, `sys` | - | `none`, `none` |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | - | - | - | - |
 | `_dedupe_languages` | `values: list[str] \| None` | - | - | `[...]`, `result` |
-| `set` | - | - | - | - |
-| `append` | - | - | - | - |
-| `add` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `bool` | - | - | - | - |
+| `set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)` | - | - | - | - |
+| `result.append` | - | - | - | - |
+| `seen.add` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | - | - | - | - |
+| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | - | - | - | - |
+| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 75 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 76 | `getattr(args, 'cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 75 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 76 | `getattr(args, 'cache_dir', None)` |
 | run | _dedupe_languages | 77 | `_dedupe_languages(getattr(...))` |
-| _dedupe_languages | set | 24 | `set(data not statically known)` |
-| _dedupe_languages | append | 28 | `result.append(value)` |
-| _dedupe_languages | add | 29 | `seen.add(value)` |
-| run | getattr | 77 | `getattr(args, 'language', None)` |
-| run | getattr | 78 | `getattr(args, 'source_selection', None)` |
-| run | bool | 79 | `bool(getattr(...))` |
-| run | getattr | 79 | `getattr(args, 'allow_external_src', False)` |
-| run | bool | 80 | `bool(getattr(...))` |
+| _dedupe_languages | set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages) | 24 | `set(data not statically known)` |
+| _dedupe_languages | result.append | 28 | `result.append(value)` |
+| _dedupe_languages | seen.add | 29 | `seen.add(value)` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 77 | `getattr(args, 'language', None)` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 78 | `getattr(args, 'source_selection', None)` |
+| run | bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 79 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 79 | `getattr(args, 'allow_external_src', False)` |
+| run | bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 80 | `bool(getattr(...))` |
 
 ### Boundary effects
 
@@ -181,11 +184,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 75 |
-| unresolved_call | `run` | `getattr` | 76 |
-| unresolved_call | `run` | `getattr` | 77 |
-| unresolved_call | `run` | `getattr` | 78 |
-| unresolved_call | `run` | `getattr` | 79 |
+| external_call | `run` | `getattr` | 75 |
+| external_call | `run` | `getattr` | 76 |
+| external_call | `run` | `getattr` | 77 |
+| external_call | `run` | `getattr` | 78 |
+| external_call | `run` | `getattr` | 79 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

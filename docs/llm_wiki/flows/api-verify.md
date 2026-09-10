@@ -11,50 +11,55 @@
 sequenceDiagram
     participant p0 as verify
     participant p1 as build_verification_receipt
-    participant p2 as isinstance
-    participant p3 as TypeError
-    participant p4 as tuple
+    participant p2 as isinstance (src/llm_wiki_cli/services…build_verification_receipt)
+    participant p3 as TypeError (src/llm_wiki_cli/services…build_verification_receipt)
+    participant p4 as tuple (src/llm_wiki_cli/services…build_verification_receipt)
     participant p5 as VerificationContractError
     participant p6 as any
     participant p7 as all
     participant p8 as VerificationReceipt
     participant p9 as run_verification
-    participant p10 as _selected_contracts
-    participant p11 as sorted
-    participant p12 as len
-    participant p13 as set
-    participant p14 as UnknownVerificationCheckerError
-    participant p15 as _checker_id
+    participant p10 as isinstance (src/llm_wiki_cli/services…tracts.py:run_verification)
+    participant p11 as TypeError (src/llm_wiki_cli/services…tracts.py:run_verification)
+    participant p12 as _selected_contracts
+    participant p13 as isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    participant p14 as tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    participant p15 as sorted
+    participant p16 as len
+    participant p17 as set
+    participant p18 as UnknownVerificationCheckerError
+    participant p19 as _checker_id
+    participant p20 as isinstance (src/llm_wiki_cli/services…n_contracts.py:_checker_id)
     p0->>p1: build_verification_receipt
-    p1-->>p2: isinstance
-    p1-->>p3: TypeError
-    p1-->>p4: tuple
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…build_verification_receipt)
+    p1-->>p3: TypeError (src/llm_wiki_cli/services…build_verification_receipt)
+    p1-->>p4: tuple (src/llm_wiki_cli/services…build_verification_receipt)
     p1->>p5: VerificationContractError
     p1-->>p6: any
-    p1-->>p2: isinstance
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…build_verification_receipt)
     p1->>p5: VerificationContractError
     p1-->>p7: all
     p1->>p8: VerificationReceipt
     p0->>p9: run_verification
-    p9-->>p2: isinstance
-    p9-->>p3: TypeError
-    p9->>p10: _selected_contracts
-    p10-->>p2: isinstance
-    p10->>p5: VerificationContractError
-    p10-->>p4: tuple
-    p10-->>p11: sorted
-    p10-->>p4: tuple
-    p10->>p5: VerificationContractError
-    p10-->>p12: len
-    p10->>p5: VerificationContractError
-    p10-->>p12: len
-    p10-->>p12: len
-    p10-->>p13: set
-    p10->>p5: VerificationContractError
-    p10-->>p2: isinstance
-    p10->>p14: UnknownVerificationCheckerError
-    p10->>p15: _checker_id
-    p15-->>p2: isinstance
+    p9-->>p10: isinstance (src/llm_wiki_cli/services…tracts.py:run_verification)
+    p9-->>p11: TypeError (src/llm_wiki_cli/services…tracts.py:run_verification)
+    p9->>p12: _selected_contracts
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    p12->>p5: VerificationContractError
+    p12-->>p14: tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    p12-->>p15: sorted
+    p12-->>p14: tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    p12->>p5: VerificationContractError
+    p12-->>p16: len
+    p12->>p5: VerificationContractError
+    p12-->>p16: len
+    p12-->>p16: len
+    p12-->>p17: set
+    p12->>p5: VerificationContractError
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    p12->>p18: UnknownVerificationCheckerError
+    p12->>p19: _checker_id
+    p19-->>p20: isinstance (src/llm_wiki_cli/services…n_contracts.py:_checker_id)
 ```
 
 > Call sequence diagram shows 30 of 39 interactions; 9 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -66,26 +71,26 @@ sequenceDiagram
 flowchart LR
     s1["1. verify"]
     s2["2. build_verification_receipt"]
-    s3["3. isinstance"]
-    s4["4. TypeError"]
-    s5["5. tuple"]
+    s3["3. isinstance (src/llm_wiki_cli/services…build_verification_receipt)"]
+    s4["4. TypeError (src/llm_wiki_cli/services…build_verification_receipt)"]
+    s5["5. tuple (src/llm_wiki_cli/services…build_verification_receipt)"]
     s6["6. VerificationContractError"]
     s7["7. any"]
-    s8["8. isinstance"]
+    s8["8. isinstance (src/llm_wiki_cli/services…build_verification_receipt)"]
     s9["9. VerificationContractError"]
     s10["10. all"]
     s11["11. VerificationReceipt"]
     s12["12. run_verification"]
     s1 -->|"build_verification_receipt(context, run_verification(...))"| s2
-    s2 -. "isinstance(context, VerificationContext)" .-> s3
-    s2 -. "TypeError('context must be a VerificationContext')" .-> s4
-    s2 -. "tuple(checks)" .-> s5
+    s2 -. "isinstance (src/llm_wiki_cli/services…build_verification_receipt)(context, VerificationContext)" .-> s3
+    s2 -. "TypeError (src/llm_wiki_cli/services…build_verification_receipt)('context must be a VerificationContext')" .-> s4
+    s2 -. "tuple (src/llm_wiki_cli/services…build_verification_receipt)(checks)" .-> s5
     s2 -->|"VerificationContractError('checks must not be empty')"| s6
     s2 -. "any(...)" .-> s7
-    s2 -. "isinstance(check, VerificationCheckResult)" .-> s8
+    s2 -. "isinstance (src/llm_wiki_cli/services…build_verification_receipt)(check, VerificationCheckResult)" .-> s8
     s2 -->|"VerificationContractError('checks must contain VerificationCheckResult values')"| s9
     s2 -. "all(...)" .-> s10
-    s2 -->|"VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash…"| s11
+    s2 -->|"VerificationReceipt(…)"| s11
     s1 -->|"run_verification(context, checker_ids)"| s12
     click s1 "../modules/verification_contracts.md"
     click s2 "../modules/verification_contracts.md"
@@ -101,12 +106,12 @@ flowchart LR
 |---|---|---|---|---|
 | `verify` | `context: VerificationContext`, `checker_ids: Sequence[str] \| None` | - | - | `build_verification_receipt(...)` |
 | `build_verification_receipt` | `context: VerificationContext`, `checks: Sequence[VerificationCheckResult]` | `VerificationContext`, `VerificationCheckResult`, `VerificationResult`, `VerificationResult`, `VerificationResult` | - | `VerificationReceipt(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `tuple` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…build_verification_receipt)` | - | - | - | - |
+| `tuple (src/llm_wiki_cli/services…build_verification_receipt)` | - | - | - | - |
 | `VerificationContractError` | - | - | - | - |
 | `any` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | - | - | - | - |
 | `VerificationContractError` | - | - | - | - |
 | `all` | - | - | - | - |
 | `VerificationReceipt` | - | - | - | - |
@@ -117,12 +122,12 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | verify | build_verification_receipt | 770 | `build_verification_receipt(context, run_verification(...))` |
-| build_verification_receipt | isinstance | 731 | `isinstance(context, VerificationContext)` |
-| build_verification_receipt | TypeError | 732 | `TypeError('context must be a VerificationContext')` |
-| build_verification_receipt | tuple | 733 | `tuple(checks)` |
+| build_verification_receipt | isinstance (src/llm_wiki_cli/services…build_verification_receipt) | 731 | `isinstance(context, VerificationContext)` |
+| build_verification_receipt | TypeError (src/llm_wiki_cli/services…build_verification_receipt) | 732 | `TypeError('context must be a VerificationContext')` |
+| build_verification_receipt | tuple (src/llm_wiki_cli/services…build_verification_receipt) | 733 | `tuple(checks)` |
 | build_verification_receipt | VerificationContractError | 735 | `VerificationContractError('checks must not be empty')` |
 | build_verification_receipt | any | 736 | `any(...)` |
-| build_verification_receipt | isinstance | 737 | `isinstance(check, VerificationCheckResult)` |
+| build_verification_receipt | isinstance (src/llm_wiki_cli/services…build_verification_receipt) | 737 | `isinstance(check, VerificationCheckResult)` |
 | build_verification_receipt | VerificationContractError | 740 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
 | build_verification_receipt | all | 745 | `all(...)` |
 | build_verification_receipt | VerificationReceipt | 751 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
@@ -136,11 +141,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_verification_receipt` | `isinstance` | 731 |
-| unresolved_call | `build_verification_receipt` | `TypeError` | 732 |
-| unresolved_call | `build_verification_receipt` | `any` | 736 |
-| unresolved_call | `build_verification_receipt` | `isinstance` | 737 |
-| unresolved_call | `build_verification_receipt` | `all` | 745 |
+| external_call | `build_verification_receipt` | `isinstance` | 731 |
+| external_call | `build_verification_receipt` | `TypeError` | 732 |
+| external_call | `build_verification_receipt` | `any` | 736 |
+| external_call | `build_verification_receipt` | `isinstance` | 737 |
+| external_call | `build_verification_receipt` | `all` | 745 |
 | step_limit | `verify` | `first 12 steps` | 0 |
 
 ## Behavior

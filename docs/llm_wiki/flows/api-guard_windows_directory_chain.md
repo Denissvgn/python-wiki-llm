@@ -11,55 +11,59 @@
 sequenceDiagram
     participant p0 as guard_windows_directory_chain
     participant p1 as WindowsDirectoryGuardError
-    participant p2 as Path
-    participant p3 as abspath
-    participant p4 as fspath
-    participant p5 as append
+    participant p2 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p3 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p4 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p5 as handles.append
     participant p6 as _open_windows_directory_guard
-    participant p7 as WinDLL
+    participant p7 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
     participant p8 as create_file
     participant p9 as _windows_api_path
-    participant p10 as startswith
-    participant p11 as HANDLE
-    participant p12 as get_last_error
-    participant p13 as WinError
-    participant p14 as _WindowsDirectoryGuardUnavailableError
-    participant p15 as _ByHandleFileInformation
-    participant p16 as get_information
-    participant p17 as byref
-    participant p18 as _close_windows_handle
-    participant p19 as close_handle
-    participant p20 as int
+    participant p10 as os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    participant p11 as os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    participant p12 as value.startswith
+    participant p13 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p14 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p15 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p16 as _WindowsDirectoryGuardUnavailableError
+    participant p17 as _ByHandleFileInformation
+    participant p18 as get_information
+    participant p19 as ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p20 as _close_windows_handle
+    participant p21 as ctypes.WinDLL (src/llm_wiki_cli/services….py:_close_windows_handle)
+    participant p22 as close_handle
+    participant p23 as wintypes.HANDLE (src/llm_wiki_cli/services….py:_close_windows_handle)
+    participant p24 as int (src/llm_wiki_cli/services…n_windows_directory_guard)
     p0->>p1: WindowsDirectoryGuardError
-    p0-->>p2: Path
-    p0-->>p3: abspath
-    p0-->>p4: fspath
+    p0-->>p2: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p0-->>p3: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p0-->>p4: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
     p0->>p1: WindowsDirectoryGuardError
-    p0-->>p2: Path
-    p0-->>p5: append
+    p0-->>p2: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p0-->>p5: handles.append
     p0->>p6: _open_windows_directory_guard
-    p6-->>p7: WinDLL
+    p6-->>p7: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
     p6-->>p8: create_file
     p6->>p9: _windows_api_path
-    p9-->>p3: abspath
-    p9-->>p4: fspath
-    p9-->>p10: startswith
-    p9-->>p10: startswith
-    p6-->>p11: HANDLE
-    p6-->>p12: get_last_error
-    p6-->>p13: WinError
-    p6->>p14: _WindowsDirectoryGuardUnavailableError
+    p9-->>p10: os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    p9-->>p11: os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    p9-->>p12: value.startswith
+    p9-->>p12: value.startswith
+    p6-->>p13: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p6-->>p15: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p6->>p16: _WindowsDirectoryGuardUnavailableError
     p6->>p1: WindowsDirectoryGuardError
-    p6-->>p15: _ByHandleFileInformation
-    p6-->>p16: get_information
-    p6-->>p17: byref
-    p6-->>p13: WinError
-    p6-->>p12: get_last_error
-    p6->>p18: _close_windows_handle
-    p18-->>p7: WinDLL
-    p18-->>p19: close_handle
-    p18-->>p11: HANDLE
-    p6-->>p20: int
+    p6-->>p17: _ByHandleFileInformation
+    p6-->>p18: get_information
+    p6-->>p19: ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p6-->>p15: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p6->>p20: _close_windows_handle
+    p20-->>p21: ctypes.WinDLL (src/llm_wiki_cli/services….py:_close_windows_handle)
+    p20-->>p22: close_handle
+    p20-->>p23: wintypes.HANDLE (src/llm_wiki_cli/services….py:_close_windows_handle)
+    p6-->>p24: int (src/llm_wiki_cli/services…n_windows_directory_guard)
 ```
 
 > Call sequence diagram shows 30 of 212 interactions; 182 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -71,25 +75,25 @@ sequenceDiagram
 flowchart LR
     s1["1. guard_windows_directory_chain"]
     s2["2. WindowsDirectoryGuardError"]
-    s3["3. Path"]
-    s4["4. abspath"]
-    s5["5. fspath"]
+    s3["3. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s4["4. os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s5["5. os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
     s6["6. WindowsDirectoryGuardError"]
-    s7["7. Path"]
-    s8["8. append"]
+    s7["7. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s8["8. handles.append"]
     s9["9. _open_windows_directory_guard"]
-    s10["10. WinDLL"]
+    s10["10. ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)"]
     s11["11. create_file"]
     s12["12. _windows_api_path"]
     s1 -->|"WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')"| s2
-    s1 -. "Path(os.path.abspath(...))" .-> s3
-    s1 -. "os.path.abspath(os.fspath(...))" .-> s4
-    s1 -. "os.fspath(root)" .-> s5
+    s1 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(os.path.abspath(...))" .-> s3
+    s1 -. "os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)(os.fspath(...))" .-> s4
+    s1 -. "os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)(root)" .-> s5
     s1 -->|"WindowsDirectoryGuardError(...)"| s6
-    s1 -. "Path(root_path.anchor)" .-> s7
+    s1 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(root_path.anchor)" .-> s7
     s1 -. "handles.append(_open_windows_directory_guard(...))" .-> s8
     s1 -->|"_open_windows_directory_guard(current)"| s9
-    s9 -. "ctypes.WinDLL('kernel32', use_last_error=True)" .-> s10
+    s9 -. "ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)('kernel32', use_last_error=True)" .-> s10
     s9 -. "create_file(_windows_api_path(...), desired_access, ..., None, _OPEN_EXISTING, ..., None)" .-> s11
     s9 -->|"_windows_api_path(path)"| s12
     b0["mutation handles.append"]
@@ -115,14 +119,14 @@ flowchart LR
 |---|---|---|---|---|
 | `guard_windows_directory_chain` | `root: Path`, `relative_components: Sequence[str]`, `create_missing: bool`, `require_restrictive_dacl: bool` | `os`, `WindowsDurabilityError` | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
-| `fspath` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `append` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `handles.append` | - | - | - | - |
 | `_open_windows_directory_guard` | `path: Path`, `require_restrictive_dacl: bool` | `_FILE_LIST_DIRECTORY`, `_FILE_READ_ATTRIBUTES`, `_READ_CONTROL`, `_FILE_SHARE_READ`, `_FILE_SHARE_WRITE`, `_OPEN_EXISTING`, `_FILE_FLAG_BACKUP_SEMANTICS`, `_FILE_FLAG_OPEN_REPARSE_POINT` | `create_file.argtypes`, `create_file.restype`, `get_information.argtypes`, `get_information.restype` | `int(...)` |
-| `WinDLL` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)` | - | - | - | - |
 | `create_file` | - | - | - | - |
 | `_windows_api_path` | `path: Path` | - | - | `value`, `...`, `...` |
 
@@ -131,14 +135,14 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
-| guard_windows_directory_chain | Path | 174 | `Path(os.path.abspath(...))` |
-| guard_windows_directory_chain | abspath | 174 | `os.path.abspath(os.fspath(...))` |
-| guard_windows_directory_chain | fspath | 174 | `os.fspath(root)` |
+| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
+| guard_windows_directory_chain | os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
+| guard_windows_directory_chain | os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.fspath(root)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 176 | `WindowsDirectoryGuardError(...)` |
-| guard_windows_directory_chain | Path | 179 | `Path(root_path.anchor)` |
-| guard_windows_directory_chain | append | 182 | `handles.append(_open_windows_directory_guard(...))` |
+| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 179 | `Path(root_path.anchor)` |
+| guard_windows_directory_chain | handles.append | 182 | `handles.append(_open_windows_directory_guard(...))` |
 | guard_windows_directory_chain | _open_windows_directory_guard | 182 | `_open_windows_directory_guard(current)` |
-| _open_windows_directory_guard | WinDLL | 235 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _open_windows_directory_guard | ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard) | 235 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
 | _open_windows_directory_guard | create_file | 259 | `create_file(_windows_api_path(...), desired_access, ..., None, _OPEN_EXISTING, ..., None)` |
 | _open_windows_directory_guard | _windows_api_path | 260 | `_windows_api_path(path)` |
 

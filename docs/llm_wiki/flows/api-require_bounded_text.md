@@ -12,13 +12,13 @@ sequenceDiagram
     participant p0 as require_bounded_text
     participant p1 as isinstance
     participant p2 as len
-    participant p3 as strip
+    participant p3 as value.strip
     participant p4 as any
     participant p5 as ord
     p0-->>p1: isinstance
     p0-->>p2: len
     p0-->>p2: len
-    p0-->>p3: strip
+    p0-->>p3: value.strip
     p0-->>p4: any
     p0-->>p5: ord
     p0-->>p5: ord
@@ -33,7 +33,7 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. len"]
     s4["4. len"]
-    s5["5. strip"]
+    s5["5. value.strip"]
     s6["6. any"]
     s7["7. ord"]
     s8["8. ord"]
@@ -55,7 +55,7 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `any` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `ord` | - | - | - | - |
@@ -67,7 +67,7 @@ flowchart LR
 | require_bounded_text | isinstance | 605 | `isinstance(value, str)` |
 | require_bounded_text | len | 606 | `len(value)` |
 | require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | strip | 608 | `value.strip(data not statically known)` |
+| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
 | require_bounded_text | any | 611 | `any(...)` |
 | require_bounded_text | ord | 612 | `ord(character)` |
 | require_bounded_text | ord | 613 | `ord(character)` |
@@ -80,11 +80,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_bounded_text` | `isinstance` | 605 |
+| external_call | `require_bounded_text` | `isinstance` | 605 |
 | unresolved_call | `require_bounded_text` | `value.strip` | 608 |
-| unresolved_call | `require_bounded_text` | `any` | 611 |
-| unresolved_call | `require_bounded_text` | `ord` | 612 |
-| unresolved_call | `require_bounded_text` | `ord` | 613 |
+| external_call | `require_bounded_text` | `any` | 611 |
+| external_call | `require_bounded_text` | `ord` | 612 |
+| external_call | `require_bounded_text` | `ord` | 613 |
 
 ## Behavior
 

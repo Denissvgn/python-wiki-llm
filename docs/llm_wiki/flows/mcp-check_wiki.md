@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as check_wiki
-    p0-->>p0: check_wiki
+    participant p1 as service.check_wiki
+    p0-->>p1: service.check_wiki
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. check_wiki"]
-    s2["2. check_wiki"]
+    s2["2. service.check_wiki"]
     s1 -. "service.check_wiki(strict=strict, format=format, knowledge_drift_report=knowledge_drift_report)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `check_wiki` | `strict: bool`, `format: str`, `knowledge_drift_report: bool` | - | - | `service.check_wiki(...)` |
-| `check_wiki` | - | - | - | - |
+| `service.check_wiki` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| check_wiki | check_wiki | 1294 | `service.check_wiki(strict=strict, format=format, knowledge_drift_report=knowledge_drift_report)` |
+| check_wiki | service.check_wiki | 1294 | `service.check_wiki(strict=strict, format=format, knowledge_drift_report=knowledge_drift_report)` |
 
 ### Boundary effects
 

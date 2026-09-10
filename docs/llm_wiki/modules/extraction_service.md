@@ -33,6 +33,8 @@ and explicit extractor status, cache, plugin, and source-snapshot metadata.
 | `.packages` | `discover_packages`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
 | `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
+| `.python_calls` | `PythonCallContext`, `resolve_python_call` |
+| `.python_imports` | `is_python_source` |
 | `.python_observations` | `data_effect_sidecar`, `import_sidecar`, `partition_sidecars`, `valid_cached_sidecars` |
 | `.resource_diagnostics` | `format_resource_failure` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
@@ -71,24 +73,24 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (19) |
-| Outbound | `src` (23) |
+| Outbound | `src` (25) |
 
-> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 135 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 143 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 168 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 200 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 220 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 245 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 258 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 269 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 289 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 3019 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 137 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 145 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 170 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 202 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 222 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 247 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 260 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 271 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 291 | — | — |
+| [_ComposeParserState](../entities/ComposeParserState.md) | 3110 | — | — |
 
 ## Functions
 
@@ -167,21 +169,20 @@ flowchart LR
 | `_resolve_import_candidates` | `(imp: dict, filepath: str, symbol_to_files: dict[str, set[str]], module_resolver) -> set[str]` | — | — |
 | `_resolve_imported_symbols` | `(filepath: str, imports: list[dict], symbol_to_files: dict[str, set[str]], module_resolver) -> dict[str, tuple[str, str]]` | — | — |
 | `_iter_callable_components` | `(data: dict)` | — | — |
-| `_function_references_symbol` | `(fn: dict, visible_name: str) -> bool` | — | — |
-| `_referenced_import_chain` | `(fn: dict, imported_symbols: dict[str, tuple[str, str]]) -> tuple[set[str], list[str]]` | — | — |
+| `_workflow_call_chain` | `(fn: dict, filepath: str, data: dict, class_name: str \| None, imported_candidates: dict[str, tuple[tuple[str, str], ...]], inventory: dict, module_resolver) -> tuple[set[str], list[str], list[dict]]` | — | Project direct, resolved body calls in their captured source order. |
 | `_workflow_name` | `(fn_name: str, module_name: str) -> str` | — | — |
 | `_workflow_entry` | `(filepath: str, module_name: str, fn: dict, touched_module_paths: set[str], chain: list[str]) -> tuple[str, dict]` | — | — |
-| `_workflow_entries_for_file` | `(filepath: str, data: dict, imported_symbols: dict[str, tuple[str, str]]) -> dict[str, dict]` | — | — |
+| `_workflow_entries_for_file` | `(filepath: str, data: dict, inventory: dict, symbol_to_files: dict[str, set[str]], module_resolver) -> dict[str, dict]` | — | — |
 | `get_call_graph` | `(inventory: dict) -> dict` | — | Build cross-module call chains from a deep inventory. |
 | `_file_local_symbols` | `(data: dict) -> set[str]` | — | Names of functions and classes defined in a single file entry. |
 | `_caller_components` | `(data: dict)` | — | Yield ``(caller_symbol, fn, class_name)`` for every callable in a file. |
 | `_attr_root` | `(attr: str) -> str` | — | — |
 | `_self_method_target` | `(call: dict, class_name: str \| None, data: dict, filepath: str) -> tuple[str, str] \| None` | — | Resolve a ``self.x`` / ``cls.x`` call to a method of the same class. |
 | `_call_uses_import` | `(name: str, attr: str, imported_names: set[str]) -> bool` | — | — |
-| `_resolve_call` | `(call: dict, filepath: str, class_name: str \| None, data: dict, imported_internal: dict[str, tuple[str, str]], imported_names: set[str], local_symbols: set[str], symbol_to_files: dict[str, set[str]]) -> tuple[str \| None, str, str]` | — | Return ``(to_file, to_symbol, kind)`` for a single call record. |
+| `_resolve_call` | `(call: dict, filepath: str, class_name: str \| None, data: dict, imported_internal: dict[str, tuple[str, str]], imported_names: set[str], local_symbols: set[str], symbol_to_files: dict[str, set[str]], *, python_context: PythonCallContext \| None = None) -> tuple[str \| None, str, str]` | — | Return ``(to_file, to_symbol, kind)`` for a single call record. |
 | `_edges_for_file` | `(filepath: str, data: dict, symbol_to_files: dict[str, set[str]], module_resolver) -> list[dict]` | — | Resolve the call edges that originate in a single file entry. |
 | `_detailed_import_candidates` | `(filepath: str, imports: list[dict], symbol_to_files: dict[str, set[str]], module_resolver) -> dict[str, tuple[tuple[str, str], ...]]` | — | Index every internal import candidate without collapsing ambiguity. |
-| `_resolve_call_observation` | `(call: dict, filepath: str, class_name: str \| None, data: dict, imported_candidates: dict[str, tuple[tuple[str, str], ...]], imported_names: set[str], local_symbols: set[str], symbol_to_files: dict[str, set[str]]) -> tuple[str \| None, str, str, list[dict]]` | — | Resolve one call while retaining every ambiguous internal candidate. |
+| `_resolve_call_observation` | `(call: dict, filepath: str, class_name: str \| None, data: dict, imported_candidates: dict[str, tuple[tuple[str, str], ...]], imported_names: set[str], local_symbols: set[str], symbol_to_files: dict[str, set[str]], *, python_context: PythonCallContext \| None = None) -> tuple[str \| None, str, str, list[dict]]` | — | Resolve one call while retaining every ambiguous internal candidate. |
 | `_call_observations_for_file` | `(filepath: str, data: dict, symbol_to_files: dict[str, set[str]], module_resolver) -> list[dict]` | — | — |
 | `resolve_call_observations` | `(inventory: dict) -> dict` | — | Return deterministic, versioned call observations with honest ambiguity. |
 | `resolve_call_edges` | `(inventory: dict) -> list[dict]` | — | Resolve captured ``calls`` records into caller→callee edges. |

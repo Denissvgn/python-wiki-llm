@@ -12,6 +12,7 @@ from pathlib import PurePosixPath
 from typing import Iterable, Mapping, Optional
 
 from .imports import build_module_path_resolver
+from .python_imports import is_python_source
 from .validation import positive_int_or_none
 
 _RELATION_LIMIT = 12
@@ -112,9 +113,12 @@ def _imported_class_bindings(
         source_name = imp.get("name")
         if not source_name:
             continue
+        module_candidates = resolver.candidates(imp.get("module", ""), filepath)
+        if is_python_source(filepath, data) and len(module_candidates) != 1:
+            continue
         candidates = [
             candidate
-            for candidate in resolver.candidates(imp.get("module", ""), filepath)
+            for candidate in module_candidates
             if (candidate, source_name) in by_key
         ]
         if len(candidates) == 1:
@@ -137,9 +141,10 @@ def _resolve_base_key(
     if not base:
         return None
     leaf = base.replace("::", ".").rsplit(".", 1)[-1]
+    python = is_python_source(filepath, resolver.inventory.get(filepath))
 
     same_file = (filepath, leaf)
-    if same_file in by_key:
+    if same_file in by_key and (not python or "." not in base):
         return same_file
 
     if leaf in imported:
@@ -147,18 +152,47 @@ def _resolve_base_key(
 
     if "." in base or "::" in base:
         module, _, name = base.replace("::", ".").rpartition(".")
+        if python:
+            module = _python_imported_module(
+                module, resolver.inventory.get(filepath, {})
+            )
+            if module is None:
+                return None
+        module_candidates = resolver.candidates(module, filepath)
+        if python and len(module_candidates) != 1:
+            return None
         candidates = [
-            candidate
-            for candidate in resolver.candidates(module, filepath)
-            if (candidate, name) in by_key
+            candidate for candidate in module_candidates if (candidate, name) in by_key
         ]
         if len(candidates) == 1:
             return candidates[0], name
 
+    if python:
+        return None
     candidates = by_name.get(leaf, [])
     if len(candidates) == 1:
         return candidates[0]
     return None
+
+
+def _python_imported_module(module: str, data: Mapping) -> str | None:
+    root, separator, rest = module.partition(".")
+    matches = set()
+    for record in data.get("imports", []):
+        if record.get("scope") == "deferred":
+            continue
+        source = record.get("module", "")
+        name = record.get("name", "")
+        if record.get("type") == "import":
+            visible = name.split(".", 1)[0]
+            resolved = source if name != source else visible
+        else:
+            visible = record.get("alias") or name
+            joiner = "" if source.endswith(".") else "."
+            resolved = f"{source}{joiner}{name}"
+        if visible == root:
+            matches.add(f"{resolved}.{rest}" if separator else resolved)
+    return next(iter(matches)) if len(matches) == 1 else None
 
 
 def _resolved_bases(

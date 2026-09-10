@@ -34,12 +34,9 @@ _Auto-generated from `DocumentationAgentPacket` in `src/llm_wiki_cli/services/do
 flowchart LR
     n0["DocumentationAgentPacket (src/llm_wiki_cli/services/documentation_run/contracts.py)"]
     n1["src/llm_wiki_cli/services/documentation_run/__init__.py"]
-    n2["build_documentation_agent_packet (src/llm_wiki_cli/services/documentation_run/packet.py)"]
     n1 --> n0
-    n2 --> n0
     click n0 "../modules/documentation_run_contracts.md"
     click n1 "../modules/documentation_run___init__.md"
-    click n2 "../modules/packet.md"
 ```
 
 ### Summary
@@ -53,4 +50,3 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
-| `build_documentation_agent_packet` | call | [packet](../modules/packet.md) | 1 |

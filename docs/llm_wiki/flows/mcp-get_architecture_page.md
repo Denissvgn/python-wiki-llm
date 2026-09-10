@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as get_architecture_page
-    p0-->>p0: get_architecture_page
+    participant p1 as service.get_architecture_page
+    p0-->>p1: service.get_architecture_page
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. get_architecture_page"]
-    s2["2. get_architecture_page"]
+    s2["2. service.get_architecture_page"]
     s1 -. "service.get_architecture_page(page)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `get_architecture_page` | `page: str` | - | - | `service.get_architecture_page(...)` |
-| `get_architecture_page` | - | - | - | - |
+| `service.get_architecture_page` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_architecture_page | get_architecture_page | 1157 | `service.get_architecture_page(page)` |
+| get_architecture_page | service.get_architecture_page | 1157 | `service.get_architecture_page(page)` |
 
 ### Boundary effects
 

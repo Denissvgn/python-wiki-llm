@@ -2,7 +2,35 @@
 
 **Entry point:** `extract_source` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md)
+**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), [config](../modules/config.md), and 21 more
+
+**Complete modules touched:**
+
+- [api](../modules/api.md)
+- [api_contracts](../modules/api_contracts.md)
+- [common](../modules/common.md)
+- [config](../modules/config.md)
+- [data_flow](../modules/data_flow.md)
+- [dependency_versions](../modules/dependency_versions.md)
+- [entrypoints](../modules/entrypoints.md)
+- [extraction_jobs](../modules/extraction_jobs.md)
+- [extraction_service](../modules/extraction_service.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
+- [imports](../modules/imports.md)
+- [inventory_cache](../modules/inventory_cache.md)
+- [io](../modules/io.md)
+- [packages](../modules/packages.md)
+- [plugins](../modules/plugins.md)
+- [progress](../modules/progress.md)
+- [python_calls](../modules/python_calls.md)
+- [python_contracts](../modules/python_contracts.md)
+- [python_imports](../modules/python_imports.md)
+- [python_observations](../modules/python_observations.md)
+- [resource_diagnostics](../modules/resource_diagnostics.md)
+- [services_dependencies](../modules/services_dependencies.md)
+- [source_selection](../modules/source_selection.md)
+- [source_snapshot](../modules/source_snapshot.md)
+- [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -11,38 +39,63 @@
 sequenceDiagram
     participant p0 as extract_source
     participant p1 as build_extract_payload
-    participant p2 as _caused_by
-    participant p3 as set
-    participant p4 as id
-    participant p5 as isinstance
-    participant p6 as add
-    participant p7 as WorkspaceStateError
-    participant p8 as str
-    participant p9 as _path_error_field
-    participant p10 as PathPolicyError
-    participant p11 as InvalidRequestError
-    participant p12 as cast
-    p0-->>p1: build_extract_payload
-    p0->>p2: _caused_by
-    p2-->>p3: set
-    p2-->>p4: id
-    p2-->>p5: isinstance
-    p2-->>p6: add
-    p2-->>p4: id
-    p0->>p7: WorkspaceStateError
-    p0-->>p8: str
-    p0->>p9: _path_error_field
-    p0-->>p8: str
-    p0-->>p10: PathPolicyError
-    p0-->>p8: str
-    p0->>p9: _path_error_field
-    p0-->>p8: str
-    p0->>p7: WorkspaceStateError
-    p0-->>p8: str
-    p0->>p11: InvalidRequestError
-    p0-->>p8: str
-    p0-->>p12: cast
+    participant p2 as validate_source_root
+    participant p3 as validate_path
+    participant p4 as PathValidationError
+    participant p5 as (…).resolve
+    participant p6 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p7 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    participant p8 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    participant p9 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p10 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p11 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p12 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p13 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p14 as resolved.is_dir
+    participant p15 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p16 as windows_current_user_sid
+    participant p17 as WindowsSecurityGuardError
+    participant p18 as _current_windows_user_sid
+    participant p19 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p20 as ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p21 as wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p22 as open_process_token
+    participant p23 as get_current_process
+    p0->>p1: build_extract_payload
+    p1->>p2: validate_source_root
+    p2->>p3: validate_path
+    p3->>p4: PathValidationError
+    p3-->>p5: (…).resolve
+    p3-->>p6: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p3-->>p7: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    p3-->>p6: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p3-->>p8: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    p3->>p4: PathValidationError
+    p2-->>p9: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    p2-->>p10: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p2-->>p11: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    p2-->>p12: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p2-->>p13: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    p2->>p4: PathValidationError
+    p2-->>p14: resolved.is_dir
+    p2->>p4: PathValidationError
+    p2-->>p10: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p2-->>p15: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    p2->>p16: windows_current_user_sid
+    p16->>p17: WindowsSecurityGuardError
+    p16->>p18: _current_windows_user_sid
+    p18-->>p19: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p18-->>p19: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p18-->>p20: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p18-->>p20: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p18-->>p21: wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p18-->>p22: open_process_token
+    p18-->>p23: get_current_process
 ```
+
+> Call sequence diagram shows 30 of 2594 interactions; 2564 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -51,35 +104,33 @@ sequenceDiagram
 flowchart LR
     s1["1. extract_source"]
     s2["2. build_extract_payload"]
-    s3["3. _caused_by"]
-    s4["4. set"]
-    s5["5. id"]
-    s6["6. isinstance"]
-    s7["7. add"]
-    s8["8. id"]
-    s9["9. WorkspaceStateError"]
-    s10["10. str"]
-    s11["11. _path_error_field"]
-    s12["12. str"]
-    s1 -. "extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow…" .-> s2
-    s1 -->|"_caused_by(exc, OSError)"| s3
-    s3 -. "set(data not statically known)" .-> s4
-    s3 -. "id(current)" .-> s5
-    s3 -. "isinstance(current, expected)" .-> s6
-    s3 -. "seen.add(id(...))" .-> s7
-    s3 -. "id(current)" .-> s8
-    s1 -->|"WorkspaceStateError(str(...), code='workspace-state-error', details={...})"| s9
-    s1 -. "str(exc)" .-> s10
-    s1 -->|"_path_error_field(str(...))"| s11
-    s1 -. "str(exc)" .-> s12
-    b0["mutation seen.add"]
-    s3 -. "mutation seen.add" .-> b0
+    s3["3. validate_source_root"]
+    s4["4. validate_path"]
+    s5["5. PathValidationError"]
+    s6["6. (…).resolve"]
+    s7["7. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s8["8. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
+    s9["9. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s10["10. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
+    s11["11. PathValidationError"]
+    s12["12. Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)"]
+    s1 -->|"build_extract_payload(…)"| s2
+    s2 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s3
+    s3 -->|"validate_path(path, label)"| s4
+    s4 -->|"PathValidationError(...)"| s5
+    s4 -. "(…).resolve(data not statically known)" .-> s6
+    s4 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s7
+    s4 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
+    s4 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
+    s4 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s10
+    s4 -->|"PathValidationError(...)"| s11
+    s3 -. "Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)(data not statically known)" .-> s12
     click s1 "../modules/api.md"
-    click s3 "../modules/api.md"
-    click s9 "../modules/api.md"
-    click s11 "../modules/api.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
+    click s2 "../modules/extraction_service.md"
+    click s3 "../modules/config.md"
+    click s4 "../modules/config.md"
+    click s5 "../modules/config.md"
+    click s11 "../modules/config.md"
 ```
 
 ### Step data
@@ -87,48 +138,50 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `extract_source` | `src_dir: str`, `changed: bool`, `summary: bool`, `deep: bool`, `paths: list[str] \| None`, `package: str \| None`, `include_empty: bool`, `allow_external_src: bool` | `PathValidationError`, `extract_cmd`, `ExtractSourceResult` | - | `cast(...)` |
-| `build_extract_payload` | - | - | - | - |
-| `_caused_by` | `exc: BaseException`, `expected: type[BaseException]` | - | - | `True`, `False` |
-| `set` | - | - | - | - |
-| `id` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `add` | - | - | - | - |
-| `id` | - | - | - | - |
-| `WorkspaceStateError` | - | - | - | - |
-| `str` | - | - | - | - |
-| `_path_error_field` | `message: str` | - | - | `'src_dir'`, `'wiki_dir'`, `'path'` |
-| `str` | - | - | - | - |
+| `build_extract_payload` | `src_dir: str`, `changed: bool`, `summary: bool`, `deep: bool`, `paths: list[str] \| None`, `package_filter: str \| None`, `include_empty: bool`, `helper_cache_dir: str \| None` | `EXTRACT_SCHEMA_VERSION`, `DEFAULT_FLOW_DEPTH`, `EXTRACT_SCHEMA_VERSION` | `empty_output[...]`, `empty_output[...]`, `empty_output[...]`, `empty_output[...]`, `output[...]`, `output[...]`, `output[...]`, `output[...]` | `ExtractPayloadResult(...)`, `ExtractPayloadResult(...)` |
+| `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
+| `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
+| `PathValidationError` | - | - | - | - |
+| `(…).resolve` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `PathValidationError` | - | - | - | - |
+| `Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | extract_source | build_extract_payload | 704 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| extract_source | _caused_by | 717 | `_caused_by(exc, OSError)` |
-| _caused_by | set | 490 | `set(data not statically known)` |
-| _caused_by | id | 491 | `id(current)` |
-| _caused_by | isinstance | 492 | `isinstance(current, expected)` |
-| _caused_by | add | 494 | `seen.add(id(...))` |
-| _caused_by | id | 494 | `id(current)` |
-| extract_source | WorkspaceStateError | 718 | `WorkspaceStateError(str(...), code='workspace-state-error', details={...})` |
-| extract_source | str | 719 | `str(exc)` |
-| extract_source | _path_error_field | 721 | `_path_error_field(str(...))` |
-| extract_source | str | 721 | `str(exc)` |
+| build_extract_payload | validate_source_root | 1985 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| validate_source_root | validate_path | 158 | `validate_path(path, label)` |
+| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
+| validate_source_root | Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root) | 161 | `Path(path).expanduser(data not statically known)` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| mutation | `seen.add` | `_caused_by` | 494 |
+*No boundary effects detected.*
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `extract_source` | `extract_cmd.build_extract_payload` | 704 |
-| unresolved_call | `_caused_by` | `id` | 491 |
-| unresolved_call | `_caused_by` | `isinstance` | 492 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
+| external_call | `validate_path` | `Path.cwd` | 133 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| external_call | `validate_path` | `Path.cwd` | 134 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
+| unresolved_call | `validate_source_root` | `Path(path).expanduser` | 161 |
 | step_limit | `extract_source` | `first 12 steps` | 0 |
+| truncated_flow | `extract_source` | `depth limit` | 0 |
 
 ## Behavior
 

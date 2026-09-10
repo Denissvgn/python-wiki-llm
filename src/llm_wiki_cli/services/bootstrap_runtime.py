@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import io
 import json
 import re
@@ -55,6 +56,8 @@ from .diagrams import (
     GENERATED_DIAGRAM_CHAR_LIMIT,
     GENERATED_DIAGRAM_LINE_LIMIT,
     GENERATED_DIAGRAM_NODE_LIMIT,
+    _DISPLAY_LABEL_LIMIT,
+    _normalize_display_text,
     data_flow_diagram,
     flowchart,
     resolve_diagram_style,
@@ -68,6 +71,7 @@ from .entrypoints import (
     read_console_scripts,
 )
 from .imports import ModulePathResolver, build_module_path_resolver
+from .python_imports import is_python_source
 from .infrastructure_inventory import (
     RUNTIME_CONFIG_TYPES,
     get_yaml_infrastructure_inventory,
@@ -519,6 +523,8 @@ def _build_relationships(
             module_candidates = module_resolver.candidates(
                 imp.get("module", ""), filepath
             )
+            if is_python_source(filepath, data) and len(module_candidates) != 1:
+                continue
             if module_candidates:
                 candidates &= module_candidates
             candidates.discard(filepath)
@@ -1729,6 +1735,30 @@ def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
         lines.append("")
         return
 
+    if class_info.get("model_kind") == "typeddict":
+        lines.extend(
+            [
+                "| Name | Type | Presence | Description |",
+                "|------|------|----------|-------------|",
+            ]
+        )
+        for attribute in attributes:
+            required = attribute.get("required")
+            presence = (
+                "required"
+                if required is True
+                else "optional"
+                if required is False
+                else "unknown"
+            )
+            lines.append(
+                f"| `{_table_text(attribute.get('name'))}` | "
+                f"{_table_inline_code(attribute.get('type'))} | *{presence}* | "
+                f"{_table_text(attribute.get('description'))} |"
+            )
+        lines.append("")
+        return
+
     enriched = class_info.get("model_kind") == "pydantic" or any(
         any(
             key in attribute
@@ -2343,6 +2373,11 @@ def _generate_workflow_md(
     entry = wf["entry"]
     modules = _workflow_module_refs(wf, module_page_map)
     chain = wf.get("chain", [])
+    if wf.get("call_sites"):
+        chain = [
+            f"{(module_page_map or {}).get(site['file'], _module_name_from_path(site['file']))}.{site['symbol']}"
+            for site in wf["call_sites"]
+        ]
     docstring = wf.get("docstring", "")
 
     lines = [
@@ -2462,6 +2497,105 @@ def _append_flow_module_summary(
     lines.extend(f"- {link}" for link in links)
 
 
+def _compact_flow_target(expression: str, fallback: str) -> str:
+    """Elide receiver arguments using syntax alone, without inferring a type."""
+    if "(" not in expression and "[" not in expression:
+        return expression
+    # Expressions come from source or legacy inventories. Bound parser work and
+    # walk only the receiver spine, never argument subtrees or application code.
+    if len(expression) > 8192:
+        return fallback
+    try:
+        node = ast.parse(expression, mode="eval").body
+    except (SyntaxError, ValueError, RecursionError):
+        return fallback
+    suffixes: list[str] = []
+    for _ in range(32):
+        if isinstance(node, ast.Name):
+            return node.id + "".join(reversed(suffixes))
+        if isinstance(node, ast.Attribute):
+            suffixes.append("." + node.attr)
+            node = node.value
+        elif isinstance(node, ast.Call):
+            suffixes.append("(…)" if node.args or node.keywords else "()")
+            node = node.func
+        elif isinstance(node, ast.Subscript):
+            suffixes.append("[…]")
+            node = node.value
+        else:
+            break
+    return "(…)" + "".join(reversed(suffixes)) if suffixes else fallback
+
+
+def _flow_display_label(label: str, *, limit: int, context: str = "") -> str:
+    """Reserve the end of a callable and its disambiguator before Mermaid caps."""
+
+    def clip(text: str, budget: int) -> str:
+        if len(text) <= budget:
+            return text
+        head = (budget - 1) // 2
+        return text[:head] + "…" + text[-(budget - head - 1) :]
+
+    label = _normalize_display_text(label, replacements="#;%", limit=None)
+    if label == "end":
+        label = "(end)"
+    suffix = ""
+    if context:
+        context = _normalize_display_text(context, replacements="#;%", limit=None)
+        suffix = f" ({clip(context, limit // 3)})"
+    return clip(label, limit - len(suffix)) + suffix
+
+
+def _flow_actors(flow: dict) -> list[tuple[str, str]]:
+    """Return stable participant identities and unambiguous display labels."""
+    actors: list[str] = []
+    descriptions: dict[str, tuple[str, str]] = {}
+    scopes: dict[int, dict] = {}
+    identities_by_label: dict[str, set[str]] = defaultdict(set)
+    # Leave room for data-flow step numbers and compact call parentheses.
+    limit = _DISPLAY_LABEL_LIMIT - max(3, len(str(len(flow.get("steps", [])))) + 2)
+    for step in flow.get("steps", []):
+        depth = step["depth"]
+        symbol = step["symbol"]
+        if step["kind"] in {"external", "unresolved"}:
+            edge = step.get("edge", {})
+            caller = edge.get("from") or scopes.get(depth - 1, {})
+            label = edge.get("name") or symbol
+            identity = json.dumps(
+                [step["kind"], caller.get("file"), caller.get("symbol"), label]
+            )
+            context = f"{caller.get('file') or '?'}:{caller.get('symbol') or '?'}"
+            if identity not in descriptions:
+                label = _compact_flow_target(label, symbol)
+        else:
+            label = symbol
+            identity = json.dumps(["internal", step.get("file"), symbol])
+            context = step.get("file") or "?"
+        actors.append(identity)
+        if identity not in descriptions:
+            descriptions[identity] = (label, context)
+            identities_by_label[_flow_display_label(label, limit=limit)].add(identity)
+        scopes[depth] = step
+        for deeper in [known for known in scopes if known > depth]:
+            del scopes[deeper]
+    labels: dict[str, str] = {}
+    used: set[str] = set()
+    ordinals: dict[str, int] = defaultdict(int)
+    for identity, (label, context) in sorted(descriptions.items()):
+        display = _flow_display_label(label, limit=limit)
+        if len(identities_by_label[display]) > 1:
+            display = _flow_display_label(label, limit=limit, context=context)
+        candidate = display
+        while candidate in used:
+            ordinals[display] += 1
+            candidate = _flow_display_label(
+                label, limit=limit, context=f"{context}, {ordinals[display]}"
+            )
+        used.add(candidate)
+        labels[identity] = candidate
+    return [(identity, labels[identity]) for identity in actors]
+
+
 def _flow_interactions(flow: dict) -> list[dict]:
     """Convert depth-tagged flow steps into caller→callee sequence interactions.
 
@@ -2470,25 +2604,64 @@ def _flow_interactions(flow: dict) -> list[dict]:
     calls are marked ``dashed``.
     """
     interactions: list[dict] = []
-    stack: dict[int, str] = {}
-    for step in flow.get("steps", []):
+    stack: dict[int, tuple[str, str]] = {}
+    for step, actor in zip(flow.get("steps", []), _flow_actors(flow)):
         depth = step["depth"]
-        symbol = step["symbol"]
         if depth == 0:
-            stack = {0: symbol}
+            stack = {0: actor}
             continue
+        caller = stack.get(depth - 1, ("?", "?"))
         interactions.append(
             {
-                "from": stack.get(depth - 1, "?"),
-                "to": symbol,
-                "label": symbol,
+                "from": caller[0],
+                "to": actor[0],
+                "from_label": caller[1],
+                "to_label": actor[1],
+                "label": actor[1],
                 "dashed": step["kind"] in ("external", "unresolved"),
             }
         )
-        stack[depth] = symbol
+        stack[depth] = actor
         for deeper in [d for d in stack if d > depth]:
             del stack[deeper]
     return interactions
+
+
+def _flow_data_display(flow: dict, data_flow: Mapping) -> dict:
+    """Apply the same labels to display copies without changing analysis data."""
+    labels = {index: actor[1] for index, actor in enumerate(_flow_actors(flow), 1)}
+    targets = {
+        index: step.get("edge", {}).get("name") or step.get("symbol")
+        for index, step in enumerate(flow.get("steps", []), 1)
+    }
+    transfers = []
+    for transfer in data_flow.get("transfers", []):
+        target_index = transfer.get("to_step")
+        label = labels.get(target_index, transfer.get("to"))
+        display = {
+            **transfer,
+            "from": labels.get(transfer.get("from_step"), transfer.get("from")),
+            "to": label,
+        }
+        call = str(transfer.get("call") or "")
+        target = targets.get(target_index)
+        if label and call and (len(call) > _DISPLAY_LABEL_LIMIT or label != target):
+            arguments = (
+                call[len(target) :] if target and call.startswith(target + "(") else ""
+            )
+            candidate = label + (arguments or "(…)")
+            if len(candidate) > _DISPLAY_LABEL_LIMIT:
+                candidate = label + "(…)"
+            display["call_label"] = candidate
+        transfers.append(display)
+    return {
+        **data_flow,
+        "steps": [
+            {**step, "symbol": labels.get(step.get("index"), step.get("symbol"))}
+            for step in data_flow.get("steps", [])
+        ],
+        "transfers": transfers,
+    }
 
 
 _FLOW_SEQUENCE_INTERACTION_LIMIT = 30
@@ -2801,7 +2974,11 @@ def _generate_flow_md(
                 flow_id=entry.get("id"),
                 category=entry.get("category"),
             )
-        lines.extend(_generate_data_flow_section(data_flow, page_map, diagram_style))
+        lines.extend(
+            _generate_data_flow_section(
+                _flow_data_display(flow, data_flow), page_map, diagram_style
+            )
+        )
 
     api_contract_section = render_flow_api_contract_section(
         api_contract_operations or []
@@ -2829,6 +3006,7 @@ def _preserve_level_two_section(existing: str, generated: str, heading: str) -> 
 
 
 # ── Architecture pages: dependencies + load order ──────────
+
 
 def _dependency_module_link(filepath: str, module_page_map: Mapping[str, str]) -> str:
     """Markdown link from an architecture page (wiki root) to a module page."""

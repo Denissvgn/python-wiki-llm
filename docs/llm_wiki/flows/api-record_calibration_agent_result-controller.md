@@ -2,10 +2,11 @@
 
 **Entry point:** `record_calibration_agent_result` (`api`)
 **Source:** [controller](../modules/controller.md)
-**Modules touched:** [calibration_contracts](../modules/calibration_contracts.md), [controller](../modules/controller.md), [documentation_policy](../modules/documentation_policy.md), [host_broker](../modules/host_broker.md), and 2 more
+**Modules touched:** [broker](../modules/broker.md), [calibration_contracts](../modules/calibration_contracts.md), [controller](../modules/controller.md), [documentation_policy](../modules/documentation_policy.md), and 3 more
 
 **Complete modules touched:**
 
+- [broker](../modules/broker.md)
 - [calibration_contracts](../modules/calibration_contracts.md)
 - [controller](../modules/controller.md)
 - [documentation_policy](../modules/documentation_policy.md)
@@ -20,60 +21,56 @@
 sequenceDiagram
     participant p0 as record_calibration_agent_result
     participant p1 as _record_p0_calibration_agent_result
-    participant p2 as isinstance
-    participant p3 as from_dict
-    participant p4 as _open_store
-    participant p5 as ProtectedArtifactStore
-    participant p6 as P0CalibrationIntegrityError
-    participant p7 as str
-    participant p8 as lock
-    participant p9 as _load_run_locked
-    participant p10 as exists
-    participant p11 as _load_emergency_rejection
-    participant p12 as read_json
-    participant p13 as _require_exact_fields
-    participant p14 as require_exact_fields
-    participant p15 as set
-    participant p16 as tuple
-    participant p17 as sorted
-    participant p18 as invalid_error
-    participant p19 as error_factory
-    participant p20 as P0CalibrationSchemaError
-    participant p21 as title
-    participant p22 as AssertionError
+    participant p2 as isinstance (src/llm_wiki_cli/services…_calibration_agent_result)
+    participant p3 as P0CalibrationDispatchReceipt.from_dict
+    participant p4 as _json_round_trip
+    participant p5 as isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)
+    participant p6 as P0CalibrationSchemaError
+    participant p7 as json.dumps
+    participant p8 as json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)
+    participant p9 as _validate_dispatch_receipt
+    participant p10 as payload.get (src/llm_wiki_cli/services…validate_dispatch_receipt)
+    participant p11 as _require_uuid
+    participant p12 as require_uuid
+    participant p13 as require_trimmed_text
+    participant p14 as str (src/llm_wiki_cli/services…alidation.py:require_uuid)
+    participant p15 as uuid.UUID
+    participant p16 as _portable_id
+    participant p17 as _require_text
+    participant p18 as _PORTABLE_ID_RE.fullmatch
     p0->>p1: _record_p0_calibration_agent_result
-    p1-->>p2: isinstance
-    p1-->>p3: from_dict
-    p1-->>p2: isinstance
-    p1-->>p3: from_dict
-    p1->>p4: _open_store
-    p4->>p5: ProtectedArtifactStore
-    p4->>p6: P0CalibrationIntegrityError
-    p4-->>p7: str
-    p1-->>p8: lock
-    p1->>p9: _load_run_locked
-    p9-->>p10: exists
-    p9->>p11: _load_emergency_rejection
-    p11-->>p12: read_json
-    p11->>p13: _require_exact_fields
-    p13->>p14: require_exact_fields
-    p14-->>p2: isinstance
-    p14-->>p7: str
-    p14-->>p15: set
-    p14-->>p15: set
-    p14-->>p15: set
-    p14-->>p16: tuple
-    p14-->>p17: sorted
-    p14-->>p16: tuple
-    p14-->>p17: sorted
-    p14-->>p18: invalid_error
-    p14-->>p19: error_factory
-    p13->>p20: P0CalibrationSchemaError
-    p13-->>p21: title
-    p13-->>p22: AssertionError
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…_calibration_agent_result)
+    p1->>p3: P0CalibrationDispatchReceipt.from_dict
+    p3->>p4: _json_round_trip
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)
+    p4->>p6: P0CalibrationSchemaError
+    p4-->>p7: json.dumps
+    p4-->>p8: json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)
+    p4->>p6: P0CalibrationSchemaError
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)
+    p4->>p6: P0CalibrationSchemaError
+    p3->>p9: _validate_dispatch_receipt
+    p9-->>p10: payload.get (src/llm_wiki_cli/services…validate_dispatch_receipt)
+    p9->>p6: P0CalibrationSchemaError
+    p9->>p11: _require_uuid
+    p11->>p12: require_uuid
+    p12->>p13: require_trimmed_text
+    p12-->>p14: str (src/llm_wiki_cli/services…alidation.py:require_uuid)
+    p12-->>p15: uuid.UUID
+    p11->>p6: P0CalibrationSchemaError
+    p11->>p6: P0CalibrationSchemaError
+    p11->>p6: P0CalibrationSchemaError
+    p9-->>p10: payload.get (src/llm_wiki_cli/services…validate_dispatch_receipt)
+    p9->>p16: _portable_id
+    p16->>p17: _require_text
+    p17->>p13: require_trimmed_text
+    p17->>p6: P0CalibrationSchemaError
+    p16-->>p18: _PORTABLE_ID_RE.fullmatch
+    p16->>p6: P0CalibrationSchemaError
+    p9-->>p10: payload.get (src/llm_wiki_cli/services…validate_dispatch_receipt)
 ```
 
-> Call sequence diagram shows 30 of 1413 interactions; 1383 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1721 interactions; 1691 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -84,27 +81,27 @@ sequenceDiagram
 flowchart LR
     s1["1. record_calibration_agent_result"]
     s2["2. _record_p0_calibration_agent_result"]
-    s3["3. isinstance"]
-    s4["4. from_dict"]
-    s5["5. isinstance"]
-    s6["6. from_dict"]
-    s7["7. _open_store"]
-    s8["8. ProtectedArtifactStore"]
-    s9["9. P0CalibrationIntegrityError"]
-    s10["10. str"]
-    s11["11. lock"]
-    s12["12. _load_run_locked"]
+    s3["3. isinstance (src/llm_wiki_cli/services…_calibration_agent_result)"]
+    s4["4. P0CalibrationDispatchReceipt.from_dict"]
+    s5["5. _json_round_trip"]
+    s6["6. isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)"]
+    s7["7. P0CalibrationSchemaError"]
+    s8["8. json.dumps"]
+    s9["9. json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)"]
+    s10["10. P0CalibrationSchemaError"]
+    s11["11. isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)"]
+    s12["12. P0CalibrationSchemaError"]
     s1 -->|"_record_p0_calibration_agent_result(root, dispatch_receipt=dispatch_receipt, result=result, allow_local_dispatch=False)"| s2
-    s2 -. "isinstance(dispatch_receipt, P0CalibrationDispatchReceipt)" .-> s3
-    s2 -. "P0CalibrationDispatchReceipt.from_dict(dispatch_receipt)" .-> s4
-    s2 -. "isinstance(result, P0CalibrationAgentResult)" .-> s5
-    s2 -. "P0CalibrationAgentResult.from_dict(result)" .-> s6
-    s2 -->|"_open_store(root)"| s7
-    s7 -->|"ProtectedArtifactStore(root)"| s8
-    s7 -->|"P0CalibrationIntegrityError(str(...))"| s9
-    s7 -. "str(exc)" .-> s10
-    s2 -. "store.lock(data not statically known)" .-> s11
-    s2 -->|"_load_run_locked(store)"| s12
+    s2 -. "isinstance (src/llm_wiki_cli/services…_calibration_agent_result)(dispatch_receipt, P0CalibrationDispatchReceipt)" .-> s3
+    s2 -->|"P0CalibrationDispatchReceipt.from_dict(dispatch_receipt)"| s4
+    s4 -->|"_json_round_trip(payload)"| s5
+    s5 -. "isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)(payload, Mapping)" .-> s6
+    s5 -->|"P0CalibrationSchemaError('Calibration payload must be an object.')"| s7
+    s5 -. "json.dumps(payload, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(...))" .-> s8
+    s5 -. "json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)(encoded)" .-> s9
+    s5 -->|"P0CalibrationSchemaError(...)"| s10
+    s5 -. "isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)(normalized, dict)" .-> s11
+    s5 -->|"P0CalibrationSchemaError('Calibration payload must be an object.')"| s12
     b0["mutation broker_authentication_artifacts.append"]
     s2 -. "mutation broker_authentication_artifacts.append" .-> b0
     b1["mutation active.pop"]
@@ -115,9 +112,10 @@ flowchart LR
     s2 -. "mutation active.pop" .-> b3
     click s1 "../modules/controller.md"
     click s2 "../modules/controller.md"
+    click s4 "../modules/controller.md"
+    click s5 "../modules/controller.md"
     click s7 "../modules/controller.md"
-    click s8 "../modules/protected_artifacts.md"
-    click s9 "../modules/controller.md"
+    click s10 "../modules/controller.md"
     click s12 "../modules/controller.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
@@ -132,32 +130,32 @@ flowchart LR
 |---|---|---|---|---|
 | `record_calibration_agent_result` | `root: str \| Path`, `dispatch_receipt: P0CalibrationDispatchReceipt \| Mapping[str, Any]`, `result: P0CalibrationAgentResult \| Mapping[str, Any]` | - | - | `_record_p0_calibration_agent_result(...)` |
 | `_record_p0_calibration_agent_result` | `root: str \| Path`, `dispatch_receipt: P0CalibrationDispatchReceipt \| Mapping[str, Any]`, `result: P0CalibrationAgentResult \| Mapping[str, Any]`, `allow_local_dispatch: bool` | `P0CalibrationDispatchReceipt`, `P0CalibrationAgentResult`, `Mapping`, `CALIBRATION_TERMINAL_STATES`, `CALIBRATION_ROLES`, `Mapping`, `_MAX_RESULT_BYTES`, `_ExternalBrokerAuthenticationUnavailable` | `recorded[...]`, `roles[...]`, `receipts[...]`, `results[...]`, `artifacts[...]`, `artifacts[...]`, `receipt_authentications[...]`, `artifacts[...]` | `run`, `_commit_transition(...)`, `_commit_transition(...)` |
-| `isinstance` | - | - | - | - |
-| `from_dict` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `from_dict` | - | - | - | - |
-| `_open_store` | `root: str \| Path` | `ProtectedArtifactError` | - | `ProtectedArtifactStore(...)` |
-| `ProtectedArtifactStore` | - | - | - | - |
-| `P0CalibrationIntegrityError` | - | - | - | - |
-| `str` | - | - | - | - |
-| `lock` | - | - | - | - |
-| `_load_run_locked` | `store: ProtectedArtifactStore` | `P0CalibrationRecoveryError`, `P0CalibrationError`, `ProtectedArtifactError`, `ProtectedArtifactError`, `CALIBRATION_TERMINAL_STATES`, `P0CalibrationError`, `ProtectedArtifactError` | - | `_load_emergency_rejection(...)`, `_block_ambiguous_recovery(...)`, `_persist_emergency_rejection(...)`, `_terminal_transition_locked(...)`, `run`, `_persist_emergency_rejection(...)` |
+| `isinstance (src/llm_wiki_cli/services…_calibration_agent_result)` | - | - | - | - |
+| `P0CalibrationDispatchReceipt.from_dict` | `payload: Mapping[str, Any]` | - | - | `cls(...)` |
+| `_json_round_trip` | `payload: Mapping[str, Any]` | `Mapping` | - | `normalized` |
+| `isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)` | - | - | - | - |
+| `P0CalibrationSchemaError` | - | - | - | - |
+| `json.dumps` | - | - | - | - |
+| `json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)` | - | - | - | - |
+| `P0CalibrationSchemaError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)` | - | - | - | - |
+| `P0CalibrationSchemaError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | record_calibration_agent_result | _record_p0_calibration_agent_result | 2610 | `_record_p0_calibration_agent_result(root, dispatch_receipt=dispatch_receipt, result=result, allow_local_dispatch=False)` |
-| _record_p0_calibration_agent_result | isinstance | 2627 | `isinstance(dispatch_receipt, P0CalibrationDispatchReceipt)` |
-| _record_p0_calibration_agent_result | from_dict | 2628 | `P0CalibrationDispatchReceipt.from_dict(dispatch_receipt)` |
-| _record_p0_calibration_agent_result | isinstance | 2632 | `isinstance(result, P0CalibrationAgentResult)` |
-| _record_p0_calibration_agent_result | from_dict | 2633 | `P0CalibrationAgentResult.from_dict(result)` |
-| _record_p0_calibration_agent_result | _open_store | 2635 | `_open_store(root)` |
-| _open_store | ProtectedArtifactStore | 5824 | `ProtectedArtifactStore(root)` |
-| _open_store | P0CalibrationIntegrityError | 5826 | `P0CalibrationIntegrityError(str(...))` |
-| _open_store | str | 5826 | `str(exc)` |
-| _record_p0_calibration_agent_result | lock | 2636 | `store.lock(data not statically known)` |
-| _record_p0_calibration_agent_result | _load_run_locked | 2637 | `_load_run_locked(store)` |
+| _record_p0_calibration_agent_result | isinstance (src/llm_wiki_cli/services…_calibration_agent_result) | 2627 | `isinstance(dispatch_receipt, P0CalibrationDispatchReceipt)` |
+| _record_p0_calibration_agent_result | P0CalibrationDispatchReceipt.from_dict | 2628 | `P0CalibrationDispatchReceipt.from_dict(dispatch_receipt)` |
+| P0CalibrationDispatchReceipt.from_dict | _json_round_trip | 452 | `_json_round_trip(payload)` |
+| _json_round_trip | isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip) | 6865 | `isinstance(payload, Mapping)` |
+| _json_round_trip | P0CalibrationSchemaError | 6866 | `P0CalibrationSchemaError('Calibration payload must be an object.')` |
+| _json_round_trip | json.dumps | 6868 | `json.dumps(payload, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(...))` |
+| _json_round_trip | json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip) | 6875 | `json.loads(encoded)` |
+| _json_round_trip | P0CalibrationSchemaError | 6877 | `P0CalibrationSchemaError(...)` |
+| _json_round_trip | isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip) | 6880 | `isinstance(normalized, dict)` |
+| _json_round_trip | P0CalibrationSchemaError | 6881 | `P0CalibrationSchemaError('Calibration payload must be an object.')` |
 
 ### Boundary effects
 
@@ -172,11 +170,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_record_p0_calibration_agent_result` | `isinstance` | 2627 |
-| unresolved_call | `_record_p0_calibration_agent_result` | `P0CalibrationDispatchReceipt.from_dict` | 2628 |
-| unresolved_call | `_record_p0_calibration_agent_result` | `isinstance` | 2632 |
-| unresolved_call | `_record_p0_calibration_agent_result` | `P0CalibrationAgentResult.from_dict` | 2633 |
-| unresolved_call | `_record_p0_calibration_agent_result` | `store.lock` | 2636 |
+| external_call | `_record_p0_calibration_agent_result` | `isinstance` | 2627 |
+| external_call | `_json_round_trip` | `isinstance` | 6865 |
+| external_call | `_json_round_trip` | `json.dumps` | 6868 |
+| external_call | `_json_round_trip` | `json.loads` | 6875 |
+| external_call | `_json_round_trip` | `isinstance` | 6880 |
 | step_limit | `record_calibration_agent_result` | `first 12 steps` | 0 |
 | truncated_flow | `record_calibration_agent_result` | `depth limit` | 0 |
 

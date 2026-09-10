@@ -61,10 +61,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_sequence` | `isinstance` | 752 |
-| unresolved_call | `require_sequence` | `isinstance` | 753 |
-| unresolved_call | `require_sequence` | `isinstance` | 754 |
-| unresolved_call | `require_sequence` | `isinstance` | 757 |
+| external_call | `require_sequence` | `isinstance` | 752 |
+| external_call | `require_sequence` | `isinstance` | 753 |
+| external_call | `require_sequence` | `isinstance` | 754 |
+| external_call | `require_sequence` | `isinstance` | 757 |
 
 ## Behavior
 

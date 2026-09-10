@@ -11,8 +11,8 @@ _Auto-generated from `DoctorFreshness` in `src/llm_wiki_cli/api_types.py`._
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `evaluated` | `bool` | *required* | — |
 | `disclosure` | `str` | *required* | — |
 | `concepts` | `int` | *required* | — |

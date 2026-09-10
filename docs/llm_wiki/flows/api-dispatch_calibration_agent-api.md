@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_call_calibration_controller` | `getattr` | 2516 |
+| external_call | `_call_calibration_controller` | `getattr` | 2516 |
 
 ## Behavior
 

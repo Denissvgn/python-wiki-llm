@@ -456,9 +456,9 @@
     "path_policy_digest": "sha256:03d1fbb27b8c9ead12ce030f9c65a625897b2367cbb26549bd74d7610ffc1025",
     "golden": {
       "path": "tests/fixtures/context-packet-v1.json",
-      "bytes": 2377,
-      "sha256": "fd3a0bcdb730788cfb0cb91921b9d95709dba12ef2d7490449da9132238f5300",
-      "packet_id": "sha256:3bb79c1563ef80704b37c821a2a45f73ab95e632b25ebd822fa220c3839579d2"
+      "bytes": 2439,
+      "sha256": "ec452b277b7455e1634cbf594d8297043f743c5013f55c37e625a3c0fec1b145",
+      "packet_id": "sha256:b6e68dd1a547424c715682e42bef4381ae99dd2544597dcdc043c649ac5f3c75"
     }
   }
 }

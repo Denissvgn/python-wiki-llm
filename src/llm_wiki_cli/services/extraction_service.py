@@ -61,6 +61,8 @@ from .entrypoints import (
 from .entrypoints import get_entry_points as get_entry_points  # noqa: F401
 from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from .imports import build_module_path_resolver
+from .python_imports import is_python_source
+from .python_calls import PythonCallContext, resolve_python_call
 from .python_observations import (
     data_effect_sidecar,
     import_sidecar,
@@ -1240,6 +1242,7 @@ def _update_inventory_cache_entries(
         raw_entry = deepcopy(extracted.get(rel_path, {}))
         if raw_entry:
             raw_entry.pop("package", None)
+            raw_entry.pop("python_import_scope", None)
         context.updated_cache_files[rel_path] = make_cache_entry(
             source_file, file_hash, raw_entry
         )
@@ -1265,6 +1268,11 @@ def _merge_inventory_results(
     packages = discover_packages(
         str(context.request.src_dir), source_snapshot=context.source_snapshot
     )
+    stamp_inventory_packages(
+        inventory,
+        packages,
+        source_paths=context.source_snapshot.language_paths("python"),
+    )
     if context.registry.get("python") == EXTRACTOR_REGISTRY["python"]:
         from ..extractors.python_contracts import finalize_inventory_model_kinds
 
@@ -1277,7 +1285,6 @@ def _merge_inventory_results(
         finalize_inventory_model_kinds(
             python_inventory, module_candidates=resolver.candidates
         )
-    stamp_inventory_packages(inventory, packages)
     return inventory
 
 
@@ -2391,6 +2398,11 @@ def _resolve_import_candidates(
     candidates = set(symbol_to_files.get(source_name, set()))
     module_candidates = module_resolver.candidates(imp.get("module", ""), filepath)
 
+    if is_python_source(filepath, module_resolver.inventory.get(filepath)):
+        # Names do not prove an import when its declared module is unavailable.
+        # Do not narrow multiple roots merely because a symbol appears in one.
+        return module_candidates
+
     if candidates and module_candidates:
         candidates &= module_candidates
     elif not candidates and module_candidates:
@@ -2426,39 +2438,89 @@ def _iter_callable_components(data: dict):
         yield from cls.get("methods", [])
 
 
-def _function_references_symbol(fn: dict, visible_name: str) -> bool:
-    referenced = False
-    for param in fn.get("params", []):
-        if visible_name in param.get("type", ""):
-            referenced = True
-    if visible_name in fn.get("return_type", ""):
-        referenced = True
-    for decorator in fn.get("decorators", []):
-        if visible_name in decorator:
-            referenced = True
-    if visible_name in fn.get("docstring", ""):
-        referenced = True
-    return referenced
-
-
-def _referenced_import_chain(
+def _workflow_call_chain(
     fn: dict,
-    imported_symbols: dict[str, tuple[str, str]],
-) -> tuple[set[str], list[str]]:
+    filepath: str,
+    data: dict,
+    class_name: str | None,
+    imported_candidates: dict[str, tuple[tuple[str, str], ...]],
+    inventory: dict,
+    module_resolver,
+) -> tuple[set[str], list[str], list[dict]]:
+    """Project direct, resolved body calls in their captured source order."""
     touched_module_paths: set[str] = set()
     chain: list[str] = []
-    for visible_name, (src_path, source_name) in imported_symbols.items():
-        if _function_references_symbol(fn, visible_name):
-            touched_module_paths.add(src_path)
-            chain.append(f"{_module_name(src_path)}.{source_name}")
-    return touched_module_paths, chain
+    call_sites: list[dict] = []
+    parameter_names = {param.get("name") for param in fn.get("params", [])}
+    python = is_python_source(filepath, data)
+    for call_index, call in enumerate(fn.get("calls", [])):
+        attr = call.get("attr", "")
+        visible_name = _attr_root(attr) if attr else call["name"]
+        if not python and (
+            visible_name in parameter_names
+            or (
+                attr
+                and (
+                    len(attr.split(".")) != 2
+                    or not all(part.isidentifier() for part in attr.split("."))
+                )
+            )
+        ):
+            continue
+        target_file, target_symbol, kind, _ = _resolve_call_observation(
+            call,
+            filepath,
+            class_name,
+            data,
+            imported_candidates,
+            set(imported_candidates),
+            _file_local_symbols(data),
+            {},
+            python_context=PythonCallContext(
+                fn, call_index, module_resolver, class_name
+            )
+            if python
+            else None,
+        )
+        if kind != "internal" or target_file is None or target_file == filepath:
+            continue
+        target_data = inventory[target_file]
+        symbols = _file_local_symbols(target_data)
+        if python:
+            symbols.update(
+                f"{cls['name']}.{method['name']}"
+                for cls in target_data.get("classes", [])
+                for method in cls.get("methods", [])
+            )
+        if attr and not python:
+            imported = imported_candidates.get(visible_name, ())
+            owner = imported[0][1] if len(imported) == 1 else ""
+            for cls in target_data.get("classes", []):
+                if cls["name"] == owner and any(
+                    method["name"] == call["name"] for method in cls.get("methods", [])
+                ):
+                    target_symbol = f"{owner}.{call['name']}"
+                    symbols.add(target_symbol)
+        if target_symbol not in symbols:
+            continue
+        touched_module_paths.add(target_file)
+        chain.append(f"{_module_name(target_file)}.{target_symbol}")
+        call_sites.append(
+            {
+                "file": target_file,
+                "symbol": target_symbol,
+                "line": call.get("line", 0),
+                "call": attr or call["name"],
+            }
+        )
+    return touched_module_paths, chain, call_sites
 
 
 def _workflow_name(fn_name: str, module_name: str) -> str:
     workflow_name = fn_name.lstrip("_")
     if workflow_name == "run":
         return f"{module_name}_flow"
-    return workflow_name
+    return workflow_name.replace(".", "_")
 
 
 def _workflow_entry(
@@ -2484,20 +2546,28 @@ def _workflow_entry(
 def _workflow_entries_for_file(
     filepath: str,
     data: dict,
-    imported_symbols: dict[str, tuple[str, str]],
+    inventory: dict,
+    symbol_to_files: dict[str, set[str]],
+    module_resolver,
 ) -> dict[str, dict]:
     module_name = _module_name(filepath)
     workflows: dict[str, dict] = {}
-    for fn in _iter_callable_components(data):
-        touched_module_paths, chain = _referenced_import_chain(fn, imported_symbols)
+    imported = _detailed_import_candidates(
+        filepath, data.get("imports", []), symbol_to_files, module_resolver
+    )
+    for caller_symbol, fn, class_name in _caller_components(data):
+        touched_module_paths, chain, call_sites = _workflow_call_chain(
+            fn, filepath, data, class_name, imported, inventory, module_resolver
+        )
         if len(touched_module_paths) >= _WORKFLOW_MODULE_THRESHOLD:
             workflow_name, workflow = _workflow_entry(
                 filepath,
                 module_name,
-                fn,
+                {**fn, "name": caller_symbol},
                 touched_module_paths,
                 chain,
             )
+            workflow["call_sites"] = call_sites
             workflows[workflow_name] = workflow
     return workflows
 
@@ -2505,8 +2575,9 @@ def _workflow_entries_for_file(
 def get_call_graph(inventory: dict) -> dict:
     """Build cross-module call chains from a deep inventory.
 
-    Detects functions that import and reference symbols from 3+ other
-    project-internal modules — these are workflow candidates.
+    Detects functions with resolved body calls into 3+ other project modules.
+    Signatures and prose are not execution evidence. Chains retain captured
+    source order, which is not a claim about runtime branching or evaluation.
 
     Returns a dict of workflow_name -> {entry, chain, modules_touched}.
     """
@@ -2517,16 +2588,11 @@ def get_call_graph(inventory: dict) -> dict:
     for filepath, data in inventory.items():
         if _is_test_file(filepath):
             continue
-        imported_symbols = _resolve_imported_symbols(
-            filepath,
-            data.get("imports", []),
-            symbol_to_files,
-            module_resolver,
-        )
-        if imported_symbols:
-            workflows.update(
-                _workflow_entries_for_file(filepath, data, imported_symbols)
+        workflows.update(
+            _workflow_entries_for_file(
+                filepath, data, inventory, symbol_to_files, module_resolver
             )
+        )
 
     return workflows
 
@@ -2548,7 +2614,10 @@ def _caller_components(data: dict):
     ``Class.method`` for methods; ``class_name`` is ``None`` for functions.
     """
     if data.get("main_block_calls"):
-        yield "__main__", {"calls": data["main_block_calls"]}, None
+        info = {"calls": data["main_block_calls"]}
+        if "main_block_call_bindings" in data:
+            info["call_bindings"] = data["main_block_call_bindings"]
+        yield "__main__", info, None
     for fn in data.get("functions", []):
         yield fn["name"], fn, None
     for cls in data.get("classes", []):
@@ -2590,8 +2659,15 @@ def _resolve_call(
     imported_names: set[str],
     local_symbols: set[str],
     symbol_to_files: dict[str, set[str]],
+    *,
+    python_context: PythonCallContext | None = None,
 ) -> tuple[str | None, str, str]:
     """Return ``(to_file, to_symbol, kind)`` for a single call record."""
+    if python_context is not None:
+        target, symbol, kind, _ = resolve_python_call(
+            call, filepath, data, python_context
+        )
+        return target, symbol, "unresolved" if kind == "ambiguous" else kind
     name = call["name"]
     attr = call.get("attr", "")
 
@@ -2603,7 +2679,7 @@ def _resolve_call(
         return to_file, source_name, "internal"
     if not attr and name in local_symbols:
         return filepath, name, "internal"
-    if not attr:
+    if not attr and not is_python_source(filepath, data):
         candidates = symbol_to_files.get(name, set())
         if len(candidates) == 1:
             return next(iter(candidates)), name, "internal"
@@ -2632,7 +2708,7 @@ def _edges_for_file(
 
     edges: list[dict] = []
     for caller_symbol, fn, class_name in _caller_components(data):
-        for call in fn.get("calls", []):
+        for call_index, call in enumerate(fn.get("calls", [])):
             to_file, to_symbol, kind = _resolve_call(
                 call,
                 filepath,
@@ -2642,6 +2718,11 @@ def _edges_for_file(
                 imported_names,
                 local_symbols,
                 symbol_to_files,
+                python_context=(
+                    PythonCallContext(fn, call_index, module_resolver, class_name)
+                    if is_python_source(filepath, data)
+                    else None
+                ),
             )
             edge = {
                 "from": {"file": filepath, "symbol": caller_symbol},
@@ -2701,8 +2782,13 @@ def _resolve_call_observation(
     imported_names: set[str],
     local_symbols: set[str],
     symbol_to_files: dict[str, set[str]],
+    *,
+    python_context: PythonCallContext | None = None,
 ) -> tuple[str | None, str, str, list[dict]]:
     """Resolve one call while retaining every ambiguous internal candidate."""
+
+    if python_context is not None:
+        return resolve_python_call(call, filepath, data, python_context)
 
     name = call["name"]
     attr = call.get("attr", "")
@@ -2728,7 +2814,7 @@ def _resolve_call_observation(
 
     if not attr and name in local_symbols:
         return filepath, name, "internal", []
-    if not attr:
+    if not attr and not is_python_source(filepath, data):
         candidates = sorted(symbol_to_files.get(name, set()))
         if len(candidates) == 1:
             return candidates[0], name, "internal", []
@@ -2766,7 +2852,7 @@ def _call_observations_for_file(
     local_symbols = _file_local_symbols(data)
     observations: list[dict] = []
     for caller_symbol, fn, class_name in _caller_components(data):
-        for call in fn.get("calls", []):
+        for call_index, call in enumerate(fn.get("calls", [])):
             to_file, to_symbol, kind, candidates = _resolve_call_observation(
                 call,
                 filepath,
@@ -2776,6 +2862,11 @@ def _call_observations_for_file(
                 imported_names,
                 local_symbols,
                 symbol_to_files,
+                python_context=(
+                    PythonCallContext(fn, call_index, module_resolver, class_name)
+                    if is_python_source(filepath, data)
+                    else None
+                ),
             )
             raw_line = call.get("line")
             observation = {

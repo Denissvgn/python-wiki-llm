@@ -2,70 +2,7 @@
 
 **Entry point:** `record_documentation_agent_result` (`api`)
 **Source:** [record](../modules/record.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 56 more
-
-**Complete modules touched:**
-
-- [api_contracts](../modules/api_contracts.md)
-- [bootstrap_runtime](../modules/bootstrap_runtime.md)
-- [common](../modules/common.md)
-- [config](../modules/config.md)
-- [context_service](../modules/context_service.md)
-- [data_flow](../modules/data_flow.md)
-- [documentation_claim_evidence](../modules/documentation_claim_evidence.md)
-- [documentation_native](../modules/documentation_native.md)
-- [documentation_policy](../modules/documentation_policy.md)
-- [documentation_queries](../modules/documentation_queries.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
-- [documentation_review](../modules/documentation_review.md)
-- [documentation_run_contracts](../modules/documentation_run_contracts.md)
-- [documentation_run_schema](../modules/documentation_run_schema.md)
-- [documentation_wiki_input](../modules/documentation_wiki_input.md)
-- [entrypoints](../modules/entrypoints.md)
-- [extraction_service](../modules/extraction_service.md)
-- [filesystem_guard](../modules/filesystem_guard.md)
-- [immutable](../modules/immutable.md)
-- [imports](../modules/imports.md)
-- [infrastructure_inventory](../modules/infrastructure_inventory.md)
-- [infrastructure_sync](../modules/infrastructure_sync.md)
-- [integrity](../modules/integrity.md)
-- [inventory_cache](../modules/inventory_cache.md)
-- [io](../modules/io.md)
-- [knowledge_artifacts](../modules/knowledge_artifacts.md)
-- [knowledge_consumption](../modules/knowledge_consumption.md)
-- [knowledge_envelope](../modules/knowledge_envelope.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_freshness](../modules/knowledge_freshness.md)
-- [knowledge_generation](../modules/knowledge_generation.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
-- [knowledge_graph](../modules/knowledge_graph.md)
-- [knowledge_index](../modules/knowledge_index.md)
-- [knowledge_loader](../modules/knowledge_loader.md)
-- [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_observability](../modules/knowledge_observability.md)
-- [knowledge_orchestration](../modules/knowledge_orchestration.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_verification](../modules/knowledge_verification.md)
-- [lint_service](../modules/lint_service.md)
-- [paths](../modules/paths.md)
-- [plugins](../modules/plugins.md)
-- [progress](../modules/progress.md)
-- [record](../modules/record.md)
-- [refresh](../modules/refresh.md)
-- [runtime_output](../modules/runtime_output.md)
-- [section_ownership](../modules/section_ownership.md)
-- [services_dependencies](../modules/services_dependencies.md)
-- [source_selection](../modules/source_selection.md)
-- [source_snapshot](../modules/source_snapshot.md)
-- [sync_analysis](../modules/sync_analysis.md)
-- [team](../modules/team.md)
-- [validation](../modules/validation.md)
-- [verification_contracts](../modules/verification_contracts.md)
-- [wiki_lifecycle](../modules/wiki_lifecycle.md)
-- [wiki_media](../modules/wiki_media.md)
-- [wiki_surface](../modules/wiki_surface.md)
-- [wiki_surface_index](../modules/wiki_surface_index.md)
-- [workspace](../modules/workspace.md)
+**Modules touched:** [record](../modules/record.md)
 
 ## Call sequence
 
@@ -74,55 +11,59 @@
 sequenceDiagram
     participant p0 as record_documentation_agent_result
     participant p1 as _resolve_workspace_root_argument
-    participant p2 as Path
-    participant p3 as abspath
-    participant p4 as fspath
-    participant p5 as expanduser
-    participant p6 as lexists
-    participant p7 as lstat
-    participant p8 as DocumentationIntegrityError
-    participant p9 as bool
-    participant p10 as getattr
-    participant p11 as S_ISLNK
-    participant p12 as S_ISDIR
-    participant p13 as resolve
-    participant p14 as _assert_existing_workspace_layout_safe
-    participant p15 as _assert_safe_workspace_directory
-    p0->>p1: _resolve_workspace_root_argument
-    p1-->>p2: Path
-    p1-->>p3: abspath
-    p1-->>p4: fspath
-    p1-->>p5: expanduser
-    p1-->>p2: Path
-    p1-->>p6: lexists
-    p1-->>p7: lstat
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p9: bool
-    p1-->>p10: getattr
-    p1-->>p9: bool
-    p1-->>p10: getattr
-    p1-->>p11: S_ISLNK
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p12: S_ISDIR
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p13: resolve
-    p1-->>p6: lexists
-    p1->>p14: _assert_existing_workspace_layout_safe
-    p14-->>p6: lexists
-    p14->>p15: _assert_safe_workspace_directory
-    p15-->>p7: lstat
-    p15->>p8: DocumentationIntegrityError
-    p15-->>p9: bool
-    p15-->>p10: getattr
-    p15-->>p9: bool
-    p15-->>p10: getattr
-    p15-->>p11: S_ISLNK
-    p15->>p8: DocumentationIntegrityError
+    participant p2 as load_documentation_run
+    participant p3 as DocumentationAgentResult.from_dict
+    participant p4 as isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p5 as result.to_dict
+    participant p6 as DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p7 as run.stage_attempts.get
+    participant p8 as result_path.exists
+    participant p9 as _verify_stage_dispatch_integrity
+    participant p10 as _block_run_for_integrity
+    participant p11 as DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p12 as _verify_read_only_inputs
+    participant p13 as str (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p14 as run.evidence.get (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p15 as _read_json (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p16 as _workspace_path (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p17 as TreeBaseline.from_dict
+    participant p18 as capture_tree_baseline
+    participant p19 as _changed_paths
+    participant p20 as set (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p21 as sorted (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p1: _resolve_workspace_root_argument
+    p0-->>p2: load_documentation_run
+    p0-->>p3: DocumentationAgentResult.from_dict
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p5: result.to_dict
+    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p7: run.stage_attempts.get
+    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p8: result_path.exists
+    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p9: _verify_stage_dispatch_integrity
+    p0-->>p10: _block_run_for_integrity
+    p0-->>p11: DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p12: _verify_read_only_inputs
+    p0-->>p10: _block_run_for_integrity
+    p0-->>p13: str (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p14: run.evidence.get (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p11: DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p15: _read_json (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p16: _workspace_path (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p17: TreeBaseline.from_dict
+    p0-->>p18: capture_tree_baseline
+    p0-->>p19: _changed_paths
+    p0-->>p20: set (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p20: set (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p10: _block_run_for_integrity
+    p0-->>p11: DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p21: sorted (src/llm_wiki_cli/services…ocumentation_agent_result)
+    p0-->>p15: _read_json (src/llm_wiki_cli/services…ocumentation_agent_result)
 ```
 
-> Call sequence diagram shows 30 of 5611 interactions; 5581 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
-
-> Trace truncated at the depth limit; deeper calls are omitted.
+> Call sequence diagram shows 30 of 458 interactions; 428 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -131,27 +72,27 @@ sequenceDiagram
 flowchart LR
     s1["1. record_documentation_agent_result"]
     s2["2. _resolve_workspace_root_argument"]
-    s3["3. Path"]
-    s4["4. abspath"]
-    s5["5. fspath"]
-    s6["6. expanduser"]
-    s7["7. Path"]
-    s8["8. lexists"]
-    s9["9. lstat"]
-    s10["10. DocumentationIntegrityError"]
-    s11["11. bool"]
-    s12["12. getattr"]
-    s1 -->|"_resolve_workspace_root_argument(workspace)"| s2
-    s2 -. "Path(os.path.abspath(...))" .-> s3
-    s2 -. "os.path.abspath(os.fspath(...))" .-> s4
-    s2 -. "os.fspath(...)" .-> s5
-    s2 -. "Path(workspace).expanduser(data not statically known)" .-> s6
-    s2 -. "Path(workspace)" .-> s7
-    s2 -. "os.path.lexists(requested)" .-> s8
-    s2 -. "requested.lstat(data not statically known)" .-> s9
-    s2 -->|"DocumentationIntegrityError(...)"| s10
-    s2 -. "bool(getattr(...))" .-> s11
-    s2 -. "getattr(entry_stat, 'st_reparse_tag', 0)" .-> s12
+    s3["3. load_documentation_run"]
+    s4["4. DocumentationAgentResult.from_dict"]
+    s5["5. isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)"]
+    s6["6. result.to_dict"]
+    s7["7. DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)"]
+    s8["8. DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)"]
+    s9["9. run.stage_attempts.get"]
+    s10["10. DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)"]
+    s11["11. result_path.exists"]
+    s12["12. DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)"]
+    s1 -. "_resolve_workspace_root_argument(workspace)" .-> s2
+    s1 -. "load_documentation_run(workspace_root)" .-> s3
+    s1 -. "DocumentationAgentResult.from_dict(...)" .-> s4
+    s1 -. "isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)(result, DocumentationAgentResult)" .-> s5
+    s1 -. "result.to_dict(data not statically known)" .-> s6
+    s1 -. "DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)('Agent result run_id does not match the workspace.')" .-> s7
+    s1 -. "DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)(...)" .-> s8
+    s1 -. "run.stage_attempts.get(normalized.stage, 0)" .-> s9
+    s1 -. "DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)('Agent result requires a previously recorded stage packet attempt.')" .-> s10
+    s1 -. "result_path.exists(data not statically known)" .-> s11
+    s1 -. "DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)(…)" .-> s12
     b0["filesystem_read result_path.read_bytes"]
     s1 -. "filesystem_read result_path.read_bytes" .-> b0
     b1["mutation run.validation_results.append"]
@@ -159,8 +100,6 @@ flowchart LR
     b2["mutation run.validation_results.append"]
     s1 -. "mutation run.validation_results.append" .-> b2
     click s1 "../modules/record.md"
-    click s2 "../modules/workspace.md"
-    click s10 "../modules/documentation_run_contracts.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -172,33 +111,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `record_documentation_agent_result` | `workspace: str \| Path`, `result: DocumentationAgentResult \| Mapping[str, Any]` | - | - | `run`, `run`, `run`, `run`, `run`, `run`, `run` |
-| `_resolve_workspace_root_argument` | `workspace: str \| Path` | - | - | `resolved` |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
-| `fspath` | - | - | - | - |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `lexists` | - | - | - | - |
-| `lstat` | - | - | - | - |
-| `DocumentationIntegrityError` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `_resolve_workspace_root_argument` | - | - | - | - |
+| `load_documentation_run` | - | - | - | - |
+| `DocumentationAgentResult.from_dict` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)` | - | - | - | - |
+| `result.to_dict` | - | - | - | - |
+| `DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)` | - | - | - | - |
+| `DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)` | - | - | - | - |
+| `run.stage_attempts.get` | - | - | - | - |
+| `DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)` | - | - | - | - |
+| `result_path.exists` | - | - | - | - |
+| `DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | record_documentation_agent_result | _resolve_workspace_root_argument | 781 | `_resolve_workspace_root_argument(workspace)` |
-| _resolve_workspace_root_argument | Path | 102 | `Path(os.path.abspath(...))` |
-| _resolve_workspace_root_argument | abspath | 102 | `os.path.abspath(os.fspath(...))` |
-| _resolve_workspace_root_argument | fspath | 102 | `os.fspath(...)` |
-| _resolve_workspace_root_argument | expanduser | 102 | `Path(workspace).expanduser(data not statically known)` |
-| _resolve_workspace_root_argument | Path | 102 | `Path(workspace)` |
-| _resolve_workspace_root_argument | lexists | 103 | `os.path.lexists(requested)` |
-| _resolve_workspace_root_argument | lstat | 105 | `requested.lstat(data not statically known)` |
-| _resolve_workspace_root_argument | DocumentationIntegrityError | 107 | `DocumentationIntegrityError(...)` |
-| _resolve_workspace_root_argument | bool | 110 | `bool(getattr(...))` |
-| _resolve_workspace_root_argument | getattr | 110 | `getattr(entry_stat, 'st_reparse_tag', 0)` |
+| record_documentation_agent_result | load_documentation_run | 782 | `load_documentation_run(workspace_root)` |
+| record_documentation_agent_result | DocumentationAgentResult.from_dict | 783 | `DocumentationAgentResult.from_dict(...)` |
+| record_documentation_agent_result | isinstance (src/llm_wiki_cli/services…ocumentation_agent_result) | 784 | `isinstance(result, DocumentationAgentResult)` |
+| record_documentation_agent_result | result.to_dict | 784 | `result.to_dict(data not statically known)` |
+| record_documentation_agent_result | DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result) | 787 | `DocumentationSchemaError('Agent result run_id does not match the workspace.')` |
+| record_documentation_agent_result | DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result) | 791 | `DocumentationSchemaError(...)` |
+| record_documentation_agent_result | run.stage_attempts.get | 795 | `run.stage_attempts.get(normalized.stage, 0)` |
+| record_documentation_agent_result | DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result) | 797 | `DocumentationSchemaError('Agent result requires a previously recorded stage packet attempt.')` |
+| record_documentation_agent_result | result_path.exists | 802 | `result_path.exists(data not statically known)` |
+| record_documentation_agent_result | DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result) | 803 | `DocumentationSchemaError('This stage-packet attempt already has a result; build a new packet before recording another result.')` |
 
 ### Boundary effects
 
@@ -212,14 +151,18 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_resolve_workspace_root_argument` | `os.path.abspath` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `os.fspath` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `Path(workspace).expanduser` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `os.path.lexists` | 103 |
-| unresolved_call | `_resolve_workspace_root_argument` | `requested.lstat` | 105 |
-| unresolved_call | `_resolve_workspace_root_argument` | `getattr` | 110 |
+| unresolved_call | `record_documentation_agent_result` | `_resolve_workspace_root_argument` | 781 |
+| unresolved_call | `record_documentation_agent_result` | `load_documentation_run` | 782 |
+| unresolved_call | `record_documentation_agent_result` | `DocumentationAgentResult.from_dict` | 783 |
+| unresolved_call | `record_documentation_agent_result` | `isinstance` | 784 |
+| unresolved_call | `record_documentation_agent_result` | `result.to_dict` | 784 |
+| unresolved_call | `record_documentation_agent_result` | `DocumentationSchemaError` | 787 |
+| unresolved_call | `record_documentation_agent_result` | `DocumentationSchemaError` | 791 |
+| unresolved_call | `record_documentation_agent_result` | `run.stage_attempts.get` | 795 |
+| unresolved_call | `record_documentation_agent_result` | `DocumentationSchemaError` | 797 |
+| unresolved_call | `record_documentation_agent_result` | `result_path.exists` | 802 |
+| unresolved_call | `record_documentation_agent_result` | `DocumentationSchemaError` | 803 |
 | step_limit | `record_documentation_agent_result` | `first 12 steps` | 0 |
-| truncated_flow | `record_documentation_agent_result` | `depth limit` | 0 |
 
 ## Behavior
 

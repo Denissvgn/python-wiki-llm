@@ -209,6 +209,10 @@ CALIBRATION_CONTROLLER_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 OCI_MAX_PACKET_BYTES = CALIBRATION_MAX_PACKET_BYTES
 
 EXTRACT_ADDITIVE_FIELDS = {
+    "call_bindings",
+    "main_block_call_bindings",
+    "python_bindings",
+    "python_import_scope",
     "calls[].args",
     "calls[].kwargs",
     "classes[].attributes[].alias",
@@ -225,6 +229,7 @@ EXTRACT_ADDITIVE_FIELDS = {
     "classes[].attributes[].unknowns",
     "classes[].attributes[].validation_alias",
     "classes[].attributes[].value",
+    "classes[].class_keywords",
     "classes[].inferred",
     "classes[].kind",
     "classes[].literal_values",

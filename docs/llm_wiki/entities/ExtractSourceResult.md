@@ -11,15 +11,15 @@ Top-level ``extract_source`` payload.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `docker` | `dict[str, Any]` | *required* | — |
-| `unsupported_sources` | `dict[str, Any]` | *required* | — |
-| `entrypoints` | `list[dict[str, Any]]` | *required* | — |
-| `data_flows` | `list[dict[str, Any]]` | *required* | — |
-| `dependencies` | `dict[str, Any]` | *required* | — |
-| `api_contracts` | `dict[str, Any]` | *required* | — |
-| `warnings` | `list[str]` | *required* | — |
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
+| `docker` | `dict[str, Any]` | *optional* | — |
+| `unsupported_sources` | `dict[str, Any]` | *optional* | — |
+| `entrypoints` | `list[dict[str, Any]]` | *optional* | — |
+| `data_flows` | `list[dict[str, Any]]` | *optional* | — |
+| `dependencies` | `dict[str, Any]` | *optional* | — |
+| `api_contracts` | `dict[str, Any]` | *optional* | — |
+| `warnings` | `list[str]` | *optional* | — |
 
 ## Methods
 

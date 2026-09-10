@@ -57,5 +57,6 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_validate_native_marker` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `ManifestArtifactHashes.from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 | `ManifestArtifactHashes.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `SyncManifest.with_artifact_hashes` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |

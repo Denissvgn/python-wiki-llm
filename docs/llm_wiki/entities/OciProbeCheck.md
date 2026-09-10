@@ -54,4 +54,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `OciProbeCheck.from_dict` | call | [broker](../modules/broker.md) | 1 |
 | `OciProbeCheck.from_dict` | type_reference | [broker](../modules/broker.md) | — |

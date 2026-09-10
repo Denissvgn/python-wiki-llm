@@ -9,41 +9,44 @@
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
-    participant p0 as build_p0_calibration_shadow
-    participant p1 as validate_flow_evidence_census
-    participant p2 as get
-    participant p3 as DocumentationCalibrationError
-    participant p4 as isinstance
-    p0->>p0: build_p0_calibration_shadow
-    p0->>p1: validate_flow_evidence_census
-    p1-->>p2: get
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p2: get
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p2: get
-    p1-->>p4: isinstance
-    p1-->>p4: isinstance
-    p1-->>p2: get
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p2: get
-    p1-->>p2: get
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p2: get
-    p1-->>p2: get
-    p1-->>p2: get
-    p1-->>p4: isinstance
-    p1-->>p4: isinstance
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p4: isinstance
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p4: isinstance
-    p1->>p3: DocumentationCalibrationError
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p2: get
-    p1->>p3: DocumentationCalibrationError
-    p1-->>p4: isinstance
-    p1-->>p2: get
-    p1-->>p2: get
+    participant p0 as build_p0_calibration_shadow (src/llm_wiki_cli/services…ation_run/dependencies.py)
+    participant p1 as build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)
+    participant p2 as validate_flow_evidence_census
+    participant p3 as payload.get
+    participant p4 as DocumentationCalibrationError
+    participant p5 as isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    participant p6 as population.get
+    participant p7 as item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p0->>p1: build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)
+    p1->>p2: validate_flow_evidence_census
+    p2-->>p3: payload.get
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p3: payload.get
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p3: payload.get
+    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2-->>p6: population.get
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p6: population.get
+    p2-->>p6: population.get
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p3: payload.get
+    p2-->>p3: payload.get
+    p2-->>p3: payload.get
+    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2->>p4: DocumentationCalibrationError
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p7: item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2->>p4: DocumentationCalibrationError
+    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2-->>p7: item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p2-->>p7: item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
 ```
 
 > Call sequence diagram shows 30 of 185 interactions; 155 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -53,27 +56,27 @@ sequenceDiagram
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
 ```mermaid
 flowchart LR
-    s1["1. build_p0_calibration_shadow"]
-    s2["2. build_p0_calibration_shadow"]
+    s1["1. build_p0_calibration_shadow (src/llm_wiki_cli/services…ation_run/dependencies.py)"]
+    s2["2. build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)"]
     s3["3. validate_flow_evidence_census"]
-    s4["4. get"]
+    s4["4. payload.get"]
     s5["5. DocumentationCalibrationError"]
-    s6["6. get"]
+    s6["6. payload.get"]
     s7["7. DocumentationCalibrationError"]
-    s8["8. get"]
-    s9["9. isinstance"]
-    s10["10. isinstance"]
-    s11["11. get"]
+    s8["8. payload.get"]
+    s9["9. isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)"]
+    s10["10. isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)"]
+    s11["11. population.get"]
     s12["12. DocumentationCalibrationError"]
-    s1 -->|"implementation(worklist, census, candidate_records=candidate_records, policy_version=policy_version)"| s2
+    s1 -->|"build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)(…)"| s2
     s2 -->|"validate_flow_evidence_census(census)"| s3
     s3 -. "payload.get('schema_version')" .-> s4
     s3 -->|"DocumentationCalibrationError('Unsupported flow-census schema_version.')"| s5
     s3 -. "payload.get('priority_blind')" .-> s6
     s3 -->|"DocumentationCalibrationError('Flow census must remain priority_blind.')"| s7
     s3 -. "payload.get('population')" .-> s8
-    s3 -. "isinstance(population, Mapping)" .-> s9
-    s3 -. "isinstance(population.get(...), bool)" .-> s10
+    s3 -. "isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)(population, Mapping)" .-> s9
+    s3 -. "isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)(population.get(...), bool)" .-> s10
     s3 -. "population.get('complete')" .-> s11
     s3 -->|"DocumentationCalibrationError('Flow census population is malformed.')"| s12
     b0["mutation structural_controls.append"]
@@ -104,33 +107,33 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_p0_calibration_shadow` | `worklist: Mapping[str, Any]`, `census: Mapping[str, Any]`, `candidate_records: Optional[Iterable[Mapping[str, Any]]]`, `policy_version: str` | - | - | `implementation(...)` |
-| `build_p0_calibration_shadow` | `worklist: Mapping[str, Any]`, `census: Mapping[str, Any]`, `candidate_records: Optional[Iterable[Mapping[str, Any]]]`, `policy_version: str` | `Mapping`, `Mapping`, `_CALIBRATION_PRIORITIES`, `P0_CALIBRATION_SHADOW_SCHEMA_VERSION` | `current_by_flow[...]`, `candidates[...]` | `{...}` |
+| `build_p0_calibration_shadow (src/llm_wiki_cli/services…ation_run/dependencies.py)` | `worklist: Mapping[str, Any]`, `census: Mapping[str, Any]`, `candidate_records: Optional[Iterable[Mapping[str, Any]]]`, `policy_version: str` | - | - | `implementation(...)` |
+| `build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)` | `worklist: Mapping[str, Any]`, `census: Mapping[str, Any]`, `candidate_records: Optional[Iterable[Mapping[str, Any]]]`, `policy_version: str` | `Mapping`, `Mapping`, `_CALIBRATION_PRIORITIES`, `P0_CALIBRATION_SHADOW_SCHEMA_VERSION` | `current_by_flow[...]`, `candidates[...]` | `{...}` |
 | `validate_flow_evidence_census` | `payload: Mapping[str, Any]` | `P0_FLOW_CENSUS_SCHEMA_VERSION`, `Mapping`, `Mapping`, `_SOURCE_PROVENANCE`, `Mapping`, `Mapping`, `Mapping`, `Mapping` | - | - |
-| `get` | - | - | - | - |
+| `payload.get` | - | - | - | - |
 | `DocumentationCalibrationError` | - | - | - | - |
-| `get` | - | - | - | - |
+| `payload.get` | - | - | - | - |
 | `DocumentationCalibrationError` | - | - | - | - |
-| `get` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `get` | - | - | - | - |
+| `payload.get` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)` | - | - | - | - |
+| `population.get` | - | - | - | - |
 | `DocumentationCalibrationError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_p0_calibration_shadow | build_p0_calibration_shadow | 165 | `implementation(worklist, census, candidate_records=candidate_records, policy_version=policy_version)` |
-| build_p0_calibration_shadow | validate_flow_evidence_census | 381 | `validate_flow_evidence_census(census)` |
-| validate_flow_evidence_census | get | 237 | `payload.get('schema_version')` |
+| build_p0_calibration_shadow (src/llm_wiki_cli/services…ation_run/dependencies.py) | build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py) | 165 | `implementation(worklist, census, candidate_records=candidate_records, policy_version=policy_version)` |
+| build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py) | validate_flow_evidence_census | 381 | `validate_flow_evidence_census(census)` |
+| validate_flow_evidence_census | payload.get | 237 | `payload.get('schema_version')` |
 | validate_flow_evidence_census | DocumentationCalibrationError | 238 | `DocumentationCalibrationError('Unsupported flow-census schema_version.')` |
-| validate_flow_evidence_census | get | 239 | `payload.get('priority_blind')` |
+| validate_flow_evidence_census | payload.get | 239 | `payload.get('priority_blind')` |
 | validate_flow_evidence_census | DocumentationCalibrationError | 240 | `DocumentationCalibrationError('Flow census must remain priority_blind.')` |
-| validate_flow_evidence_census | get | 241 | `payload.get('population')` |
-| validate_flow_evidence_census | isinstance | 242 | `isinstance(population, Mapping)` |
-| validate_flow_evidence_census | isinstance | 242 | `isinstance(population.get(...), bool)` |
-| validate_flow_evidence_census | get | 243 | `population.get('complete')` |
+| validate_flow_evidence_census | payload.get | 241 | `payload.get('population')` |
+| validate_flow_evidence_census | isinstance (src/llm_wiki_cli/services…date_flow_evidence_census) | 242 | `isinstance(population, Mapping)` |
+| validate_flow_evidence_census | isinstance (src/llm_wiki_cli/services…date_flow_evidence_census) | 242 | `isinstance(population.get(...), bool)` |
+| validate_flow_evidence_census | population.get | 243 | `population.get('complete')` |
 | validate_flow_evidence_census | DocumentationCalibrationError | 245 | `DocumentationCalibrationError('Flow census population is malformed.')` |
 
 ### Boundary effects
@@ -150,7 +153,7 @@ flowchart LR
 | unresolved_call | `validate_flow_evidence_census` | `payload.get` | 237 |
 | unresolved_call | `validate_flow_evidence_census` | `payload.get` | 239 |
 | unresolved_call | `validate_flow_evidence_census` | `payload.get` | 241 |
-| unresolved_call | `validate_flow_evidence_census` | `isinstance` | 242 |
+| external_call | `validate_flow_evidence_census` | `isinstance` | 242 |
 | unresolved_call | `validate_flow_evidence_census` | `population.get` | 243 |
 | step_limit | `build_p0_calibration_shadow` | `first 12 steps` | 0 |
 

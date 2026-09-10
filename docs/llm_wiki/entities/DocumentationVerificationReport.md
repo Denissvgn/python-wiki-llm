@@ -36,12 +36,9 @@ _Auto-generated from `DocumentationVerificationReport` in `src/llm_wiki_cli/serv
 flowchart LR
     n0["DocumentationVerificationReport (src/llm_wiki_cli/services/documentation_run/contracts.py)"]
     n1["src/llm_wiki_cli/services/documentation_run/__init__.py"]
-    n2["verify_documentation_run (src/llm_wiki_cli/services/documentation_run/verify.py)"]
     n1 --> n0
-    n2 --> n0
     click n0 "../modules/documentation_run_contracts.md"
     click n1 "../modules/documentation_run___init__.md"
-    click n2 "../modules/verify.md"
 ```
 
 ### Summary
@@ -55,4 +52,3 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
-| `verify_documentation_run` | call | [verify](../modules/verify.md) | 1 |

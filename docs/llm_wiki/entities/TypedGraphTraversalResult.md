@@ -11,8 +11,8 @@ _Auto-generated from `TypedGraphTraversalResult` in `src/llm_wiki_cli/api_types.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `direction` | `str` | *required* | — |
 | `kinds` | `list[str]` | *required* | — |
 | `origins` | `list[str]` | *required* | — |

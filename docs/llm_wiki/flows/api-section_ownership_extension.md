@@ -12,24 +12,24 @@ sequenceDiagram
     participant p0 as section_ownership_extension
     participant p1 as serialize_section_ownership
     participant p2 as sorted
-    participant p3 as casefold
+    participant p3 as page.page_locator.casefold
     participant p4 as set
     participant p5 as ValueError
-    participant p6 as add
+    participant p6 as seen.add
     participant p7 as len
-    participant p8 as to_payload
+    participant p8 as page.to_payload
     p0->>p1: serialize_section_ownership
     p1-->>p2: sorted
-    p1-->>p3: casefold
+    p1-->>p3: page.page_locator.casefold
     p1-->>p4: set
     p1-->>p5: ValueError
-    p1-->>p6: add
+    p1-->>p6: seen.add
     p1-->>p2: sorted
     p1-->>p7: len
     p1-->>p7: len
     p1-->>p4: set
     p1-->>p5: ValueError
-    p1-->>p8: to_payload
+    p1-->>p8: page.to_payload
 ```
 
 ## Data flow
@@ -40,10 +40,10 @@ flowchart LR
     s1["1. section_ownership_extension"]
     s2["2. serialize_section_ownership"]
     s3["3. sorted"]
-    s4["4. casefold"]
+    s4["4. page.page_locator.casefold"]
     s5["5. set"]
     s6["6. ValueError"]
-    s7["7. add"]
+    s7["7. seen.add"]
     s8["8. sorted"]
     s9["9. len"]
     s10["10. len"]
@@ -75,10 +75,10 @@ flowchart LR
 | `section_ownership_extension` | `pages: Iterable[PageSectionObservations]` | `SECTION_OWNERSHIP_EXTENSION_KEY` | - | `{...}` |
 | `serialize_section_ownership` | `pages: Iterable[PageSectionObservations]` | `SECTION_OWNERSHIP_SCHEMA_VERSION` | - | `{...}` |
 | `sorted` | - | - | - | - |
-| `casefold` | - | - | - | - |
+| `page.page_locator.casefold` | - | - | - | - |
 | `set` | - | - | - | - |
 | `ValueError` | - | - | - | - |
-| `add` | - | - | - | - |
+| `seen.add` | - | - | - | - |
 | `sorted` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
@@ -91,10 +91,10 @@ flowchart LR
 |---|---|---:|---|
 | section_ownership_extension | serialize_section_ownership | 1141 | `serialize_section_ownership(pages)` |
 | serialize_section_ownership | sorted | 616 | `sorted(pages, key=...)` |
-| serialize_section_ownership | casefold | 618 | `page.page_locator.casefold(data not statically known)` |
+| serialize_section_ownership | page.page_locator.casefold | 618 | `page.page_locator.casefold(data not statically known)` |
 | serialize_section_ownership | set | 620 | `set(data not statically known)` |
 | serialize_section_ownership | ValueError | 623 | `ValueError(...)` |
-| serialize_section_ownership | add | 624 | `seen.add(page.page_locator)` |
+| serialize_section_ownership | seen.add | 624 | `seen.add(page.page_locator)` |
 | serialize_section_ownership | sorted | 626 | `sorted(ordinals)` |
 | serialize_section_ownership | len | 626 | `len(ordinals)` |
 | serialize_section_ownership | len | 626 | `len(set(...))` |
@@ -111,11 +111,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `serialize_section_ownership` | `sorted` | 616 |
+| external_call | `serialize_section_ownership` | `sorted` | 616 |
 | unresolved_call | `serialize_section_ownership` | `page.page_locator.casefold` | 618 |
-| unresolved_call | `serialize_section_ownership` | `ValueError` | 623 |
-| unresolved_call | `serialize_section_ownership` | `sorted` | 626 |
-| unresolved_call | `serialize_section_ownership` | `ValueError` | 627 |
+| external_call | `serialize_section_ownership` | `ValueError` | 623 |
+| external_call | `serialize_section_ownership` | `sorted` | 626 |
+| external_call | `serialize_section_ownership` | `ValueError` | 627 |
 | step_limit | `section_ownership_extension` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -88,6 +88,6 @@ flowchart LR
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `extraction_job_request_from_args` | call | [extraction_jobs](../modules/extraction_jobs.md) | 1 |
 | `extraction_job_request_from_args` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) | — |
-| `ExtractionJobRequest.parse` | type_reference | [extraction_jobs](../modules/extraction_jobs.md) | — |
+| `ExtractionJobRequest.parse` | call | [extraction_jobs](../modules/extraction_jobs.md) | 2 |
 
-> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.
+> References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.

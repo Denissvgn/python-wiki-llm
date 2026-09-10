@@ -13,49 +13,50 @@
 sequenceDiagram
     participant p0 as main
     participant p1 as _arguments
-    participant p2 as ArgumentParser
-    participant p3 as add_subparsers
-    participant p4 as add_parser
-    participant p5 as add_argument
-    participant p6 as parse_args
-    participant p7 as load_ci_check_payload
-    participant p8 as Path
-    participant p9 as is_symlink
-    participant p10 as is_file
-    participant p11 as CiCheckReportError
-    participant p12 as read_text
-    participant p13 as loads
-    participant p14 as validate_ci_check_payload
+    participant p2 as argparse.ArgumentParser
+    participant p3 as parser.add_subparsers
+    participant p4 as commands.add_parser
+    participant p5 as validate.add_argument
+    participant p6 as summary.add_argument
+    participant p7 as parser.parse_args
+    participant p8 as load_ci_check_payload
+    participant p9 as Path (src/llm_wiki_cli/services….py:load_ci_check_payload)
+    participant p10 as report_path.is_symlink
+    participant p11 as report_path.is_file
+    participant p12 as CiCheckReportError
+    participant p13 as report_path.read_text
+    participant p14 as json.loads
+    participant p15 as validate_ci_check_payload
     p0->>p1: _arguments
-    p1-->>p2: ArgumentParser
-    p1-->>p3: add_subparsers
-    p1-->>p4: add_parser
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p4: add_parser
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p5: add_argument
-    p1-->>p6: parse_args
-    p0->>p7: load_ci_check_payload
-    p7-->>p8: Path
-    p7-->>p9: is_symlink
-    p7-->>p10: is_file
-    p7->>p11: CiCheckReportError
-    p7-->>p12: read_text
-    p7-->>p13: loads
-    p7->>p11: CiCheckReportError
-    p7->>p14: validate_ci_check_payload
+    p1-->>p2: argparse.ArgumentParser
+    p1-->>p3: parser.add_subparsers
+    p1-->>p4: commands.add_parser
+    p1-->>p5: validate.add_argument
+    p1-->>p5: validate.add_argument
+    p1-->>p5: validate.add_argument
+    p1-->>p4: commands.add_parser
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p6: summary.add_argument
+    p1-->>p7: parser.parse_args
+    p0->>p8: load_ci_check_payload
+    p8-->>p9: Path (src/llm_wiki_cli/services….py:load_ci_check_payload)
+    p8-->>p10: report_path.is_symlink
+    p8-->>p11: report_path.is_file
+    p8->>p12: CiCheckReportError
+    p8-->>p13: report_path.read_text
+    p8-->>p14: json.loads
+    p8->>p12: CiCheckReportError
+    p8->>p15: validate_ci_check_payload
 ```
 
 > Call sequence diagram shows 30 of 382 interactions; 352 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -67,16 +68,16 @@ sequenceDiagram
 flowchart LR
     s1["1. main"]
     s2["2. _arguments"]
-    s3["3. ArgumentParser"]
-    s4["4. add_subparsers"]
-    s5["5. add_parser"]
-    s6["6. add_argument"]
-    s7["7. add_argument"]
-    s8["8. add_argument"]
-    s9["9. add_parser"]
-    s10["10. add_argument"]
-    s11["11. add_argument"]
-    s12["12. add_argument"]
+    s3["3. argparse.ArgumentParser"]
+    s4["4. parser.add_subparsers"]
+    s5["5. commands.add_parser"]
+    s6["6. validate.add_argument"]
+    s7["7. validate.add_argument"]
+    s8["8. validate.add_argument"]
+    s9["9. commands.add_parser"]
+    s10["10. summary.add_argument"]
+    s11["11. summary.add_argument"]
+    s12["12. summary.add_argument"]
     s1 -->|"_arguments(argv)"| s2
     s2 -. "argparse.ArgumentParser(data not statically known)" .-> s3
     s2 -. "parser.add_subparsers(dest='action', required=True)" .-> s4
@@ -102,32 +103,32 @@ flowchart LR
 |---|---|---|---|---|
 | `main` | `argv: Sequence[str] \| None` | `CiCheckReportError` | - | `0`, `0` |
 | `_arguments` | `argv: Sequence[str] \| None` | - | - | `parser.parse_args(...)` |
-| `ArgumentParser` | - | - | - | - |
-| `add_subparsers` | - | - | - | - |
-| `add_parser` | - | - | - | - |
-| `add_argument` | - | - | - | - |
-| `add_argument` | - | - | - | - |
-| `add_argument` | - | - | - | - |
-| `add_parser` | - | - | - | - |
-| `add_argument` | - | - | - | - |
-| `add_argument` | - | - | - | - |
-| `add_argument` | - | - | - | - |
+| `argparse.ArgumentParser` | - | - | - | - |
+| `parser.add_subparsers` | - | - | - | - |
+| `commands.add_parser` | - | - | - | - |
+| `validate.add_argument` | - | - | - | - |
+| `validate.add_argument` | - | - | - | - |
+| `validate.add_argument` | - | - | - | - |
+| `commands.add_parser` | - | - | - | - |
+| `summary.add_argument` | - | - | - | - |
+| `summary.add_argument` | - | - | - | - |
+| `summary.add_argument` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | main | _arguments | 1450 | `_arguments(argv)` |
-| _arguments | ArgumentParser | 1424 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | add_subparsers | 1425 | `parser.add_subparsers(dest='action', required=True)` |
-| _arguments | add_parser | 1426 | `commands.add_parser('validate')` |
-| _arguments | add_argument | 1427 | `validate.add_argument('--report', required=True)` |
-| _arguments | add_argument | 1428 | `validate.add_argument('--cli-exit', required=True, type=int)` |
-| _arguments | add_argument | 1429 | `validate.add_argument('--schema', choices=(...))` |
-| _arguments | add_parser | 1431 | `commands.add_parser('render-summary')` |
-| _arguments | add_argument | 1432 | `summary.add_argument('--report')` |
-| _arguments | add_argument | 1433 | `summary.add_argument('--cli-exit', required=True, type=int)` |
-| _arguments | add_argument | 1434 | `summary.add_argument('--result', choices=(...), required=True)` |
+| _arguments | argparse.ArgumentParser | 1424 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | parser.add_subparsers | 1425 | `parser.add_subparsers(dest='action', required=True)` |
+| _arguments | commands.add_parser | 1426 | `commands.add_parser('validate')` |
+| _arguments | validate.add_argument | 1427 | `validate.add_argument('--report', required=True)` |
+| _arguments | validate.add_argument | 1428 | `validate.add_argument('--cli-exit', required=True, type=int)` |
+| _arguments | validate.add_argument | 1429 | `validate.add_argument('--schema', choices=(...))` |
+| _arguments | commands.add_parser | 1431 | `commands.add_parser('render-summary')` |
+| _arguments | summary.add_argument | 1432 | `summary.add_argument('--report')` |
+| _arguments | summary.add_argument | 1433 | `summary.add_argument('--cli-exit', required=True, type=int)` |
+| _arguments | summary.add_argument | 1434 | `summary.add_argument('--result', choices=(...), required=True)` |
 
 ### Boundary effects
 

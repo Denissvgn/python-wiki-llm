@@ -811,6 +811,18 @@
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
     },
     {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge[False]",
+      "owner_lane": "toolchains",
+      "reason": "requires an already prepared TypeScript helper"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge[True]",
+      "owner_lane": "toolchains",
+      "reason": "requires an already prepared TypeScript helper"
+    },
+    {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_documentation_calibration_oci_integration.py::test_real_docker_probe_and_worker_are_isolated",
       "owner_lane": "oci",
@@ -1655,6 +1667,18 @@
       "node_id": "tests/test_uninstall.py::TestUninstallRemovesHooks::test_remove_wiki_rejects_case_aliases_of_protected_roots[.llm-wiki/skills-.LLM-WIKI/SKILLS]",
       "owner_lane": "core-windows-3.13",
       "reason": "filesystem is case-sensitive; no case alias exists"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge[False]",
+      "owner_lane": "toolchains",
+      "reason": "requires an already prepared TypeScript helper"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge[True]",
+      "owner_lane": "toolchains",
+      "reason": "requires an already prepared TypeScript helper"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -2561,6 +2585,18 @@
       "node_id": "tests/test_ts_extract.py::TestTypeScriptExtractorFixes::test_tsconfig_walk_up",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge[False]",
+      "owner_lane": "toolchains",
+      "reason": "requires an already prepared TypeScript helper"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge[True]",
+      "owner_lane": "toolchains",
+      "reason": "requires an already prepared TypeScript helper"
     },
     {
       "lane": "core-windows-3.13",

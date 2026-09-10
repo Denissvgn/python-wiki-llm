@@ -10,10 +10,10 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_existing_directory
-    participant p1 as exists
-    participant p2 as is_dir
-    p0-->>p1: exists
-    p0-->>p2: is_dir
+    participant p1 as path.exists
+    participant p2 as path.is_dir
+    p0-->>p1: path.exists
+    p0-->>p2: path.is_dir
 ```
 
 ## Data flow
@@ -22,8 +22,8 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. require_existing_directory"]
-    s2["2. exists"]
-    s3["3. is_dir"]
+    s2["2. path.exists"]
+    s3["3. path.is_dir"]
     s1 -. "path.exists(data not statically known)" .-> s2
     s1 -. "path.is_dir(data not statically known)" .-> s3
     click s1 "../modules/validation.md"
@@ -34,15 +34,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_existing_directory` | `path: Path`, `error: Exception` | - | - | - |
-| `exists` | - | - | - | - |
-| `is_dir` | - | - | - | - |
+| `path.exists` | - | - | - | - |
+| `path.is_dir` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_existing_directory | exists | 533 | `path.exists(data not statically known)` |
-| require_existing_directory | is_dir | 533 | `path.is_dir(data not statically known)` |
+| require_existing_directory | path.exists | 533 | `path.exists(data not statically known)` |
+| require_existing_directory | path.is_dir | 533 | `path.is_dir(data not statically known)` |
 
 ### Boundary effects
 

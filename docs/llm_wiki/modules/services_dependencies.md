@@ -41,6 +41,8 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | `..extractors.common` | `executes_at_import` |
 | `.dependency_versions` | `build_dependency_version_details` |
 | `.imports` | `build_module_path_resolver` |
+| `.python_imports` | `is_python_source` |
+| `.python_stdlib` | `python_stdlib_module_names` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
 | `.validation` | `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
 | `__future__` | `annotations` |
@@ -51,7 +53,6 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
-| `sys` | `sys` |
 | `tomli` | `tomllib` |
 | `tomllib` | `tomllib` |
 | `typing` | `Callable`, `Mapping`, `Optional` |
@@ -75,7 +76,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (11) |
-| Outbound | `src` (6) |
+| Outbound | `src` (8) |
 
 ### External packages
 
@@ -83,15 +84,15 @@ flowchart LR
 |---|---:|---:|
 | python | 1 | 0 |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ManifestScope](../entities/ManifestScope.md) | 757 | — | A scoped dependency manifest rooted at a project-relative directory. |
-| [_Manifest](../entities/Manifest.md) | 771 | — | A language's declared dependencies, parsed from its manifest. |
-| [_LanguagePlugin](../entities/LanguagePlugin.md) | 793 | — | A manifest parser + import classifier for one language family. |
+| [_ManifestScope](../entities/ManifestScope.md) | 763 | — | A scoped dependency manifest rooted at a project-relative directory. |
+| [_Manifest](../entities/Manifest.md) | 777 | — | A language's declared dependencies, parsed from its manifest. |
+| [_LanguagePlugin](../entities/LanguagePlugin.md) | 799 | — | A manifest parser + import classifier for one language family. |
 
 ## Functions
 
@@ -115,7 +116,6 @@ flowchart LR
 | `topological_order` | `(graph: dict, *, import_time_only: bool = False) -> dict` | — | Order modules so each loads after the internal modules it imports. |
 | `_factory_kind` | `(name: str) -> str` | — | Classify a function name as a ``"factory"``, ``"wiring"`` helper, or ``""``. |
 | `detect_side_effects` | `(inventory: dict) -> dict` | — | List import-time side effects and factory/wiring functions per module. |
-| `_python_stdlib` | `() -> frozenset[str]` | — | — |
 | `_normalize_python` | `(name: str) -> str` | — | PEP 503 normalization: lowercase, runs of ``-``/``_``/``.`` → ``-``. |
 | `_pep508_name` | `(spec: str) -> str` | — | Distribution name from a PEP 508 requirement (drops version/markers/extras). |
 | `_snapshot_package_marker_paths` | `(project_root: Path, source_snapshot: SourceSnapshot, predicate: Callable[[str], bool]) -> list[Path]` | — | — |

@@ -10,57 +10,60 @@
 ```mermaid
 sequenceDiagram
     participant p0 as guarded_tree_manifest
-    participant p1 as Path
-    participant p2 as is_absolute
-    participant p3 as OSError
+    participant p1 as Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)
+    participant p2 as target.is_absolute
+    participant p3 as OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)
     participant p4 as guard_windows_directory_chain
     participant p5 as WindowsDirectoryGuardError
-    participant p6 as abspath
-    participant p7 as fspath
-    participant p8 as append
-    participant p9 as _open_windows_directory_guard
-    participant p10 as WinDLL
-    participant p11 as create_file
-    participant p12 as _windows_api_path
-    participant p13 as startswith
-    participant p14 as HANDLE
-    participant p15 as get_last_error
-    participant p16 as WinError
-    participant p17 as _WindowsDirectoryGuardUnavailableError
-    participant p18 as _ByHandleFileInformation
-    participant p19 as get_information
-    participant p20 as byref
-    participant p21 as _close_windows_handle
-    p0-->>p1: Path
-    p0-->>p2: is_absolute
-    p0-->>p3: OSError
+    participant p6 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p7 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p8 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p9 as handles.append
+    participant p10 as _open_windows_directory_guard
+    participant p11 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p12 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p13 as _windows_api_path
+    participant p14 as os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    participant p15 as os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    participant p16 as value.startswith
+    participant p17 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p18 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p19 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p20 as _WindowsDirectoryGuardUnavailableError
+    participant p21 as _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p22 as get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p23 as ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p24 as _close_windows_handle
+    p0-->>p1: Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)
+    p0-->>p2: target.is_absolute
+    p0-->>p3: OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)
     p0->>p4: guard_windows_directory_chain
     p4->>p5: WindowsDirectoryGuardError
-    p4-->>p1: Path
-    p4-->>p6: abspath
-    p4-->>p7: fspath
+    p4-->>p6: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p4-->>p7: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p4-->>p8: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
     p4->>p5: WindowsDirectoryGuardError
-    p4-->>p1: Path
-    p4-->>p8: append
-    p4->>p9: _open_windows_directory_guard
-    p9-->>p10: WinDLL
-    p9-->>p11: create_file
-    p9->>p12: _windows_api_path
-    p12-->>p6: abspath
-    p12-->>p7: fspath
-    p12-->>p13: startswith
-    p12-->>p13: startswith
-    p9-->>p14: HANDLE
-    p9-->>p15: get_last_error
-    p9-->>p16: WinError
-    p9->>p17: _WindowsDirectoryGuardUnavailableError
-    p9->>p5: WindowsDirectoryGuardError
-    p9-->>p18: _ByHandleFileInformation
-    p9-->>p19: get_information
-    p9-->>p20: byref
-    p9-->>p16: WinError
-    p9-->>p15: get_last_error
-    p9->>p21: _close_windows_handle
+    p4-->>p6: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    p4-->>p9: handles.append
+    p4->>p10: _open_windows_directory_guard
+    p10-->>p11: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10-->>p12: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10->>p13: _windows_api_path
+    p13-->>p14: os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    p13-->>p15: os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
+    p13-->>p16: value.startswith
+    p13-->>p16: value.startswith
+    p10-->>p17: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10-->>p18: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10-->>p19: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10->>p20: _WindowsDirectoryGuardUnavailableError
+    p10->>p5: WindowsDirectoryGuardError
+    p10-->>p21: _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10-->>p22: get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10-->>p23: ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10-->>p19: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10-->>p18: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p10->>p24: _close_windows_handle
 ```
 
 > Call sequence diagram shows 30 of 335 interactions; 305 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -71,27 +74,27 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. guarded_tree_manifest"]
-    s2["2. Path"]
-    s3["3. is_absolute"]
-    s4["4. OSError"]
+    s2["2. Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)"]
+    s3["3. target.is_absolute"]
+    s4["4. OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)"]
     s5["5. guard_windows_directory_chain"]
     s6["6. WindowsDirectoryGuardError"]
-    s7["7. Path"]
-    s8["8. abspath"]
-    s9["9. fspath"]
+    s7["7. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s8["8. os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s9["9. os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)"]
     s10["10. WindowsDirectoryGuardError"]
-    s11["11. Path"]
-    s12["12. append"]
-    s1 -. "Path(path)" .-> s2
+    s11["11. Path (src/llm_wiki_cli/services…d_windows_directory_chain)"]
+    s12["12. handles.append"]
+    s1 -. "Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)(path)" .-> s2
     s1 -. "target.is_absolute(data not statically known)" .-> s3
-    s1 -. "OSError(...)" .-> s4
+    s1 -. "OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)(...)" .-> s4
     s1 -->|"guard_windows_directory_chain(Path(...), ...)"| s5
     s5 -->|"WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')"| s6
-    s5 -. "Path(os.path.abspath(...))" .-> s7
-    s5 -. "os.path.abspath(os.fspath(...))" .-> s8
-    s5 -. "os.fspath(root)" .-> s9
+    s5 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(os.path.abspath(...))" .-> s7
+    s5 -. "os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)(os.fspath(...))" .-> s8
+    s5 -. "os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)(root)" .-> s9
     s5 -->|"WindowsDirectoryGuardError(...)"| s10
-    s5 -. "Path(root_path.anchor)" .-> s11
+    s5 -. "Path (src/llm_wiki_cli/services…d_windows_directory_chain)(root_path.anchor)" .-> s11
     s5 -. "handles.append(_open_windows_directory_guard(...))" .-> s12
     b0["mutation handles.append"]
     s5 -. "mutation handles.append" .-> b0
@@ -114,33 +117,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `guarded_tree_manifest` | `path: Path` | `os`, `os`, `os`, `os` | - | `_guarded_tree_manifest_windows_path(...)`, `_guarded_tree_manifest_posix_fd(...)` |
-| `Path` | - | - | - | - |
-| `is_absolute` | - | - | - | - |
-| `OSError` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)` | - | - | - | - |
+| `target.is_absolute` | - | - | - | - |
+| `OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)` | - | - | - | - |
 | `guard_windows_directory_chain` | `root: Path`, `relative_components: Sequence[str]`, `create_missing: bool`, `require_restrictive_dacl: bool` | `os`, `WindowsDurabilityError` | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
-| `fspath` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
 | `WindowsDirectoryGuardError` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `append` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…d_windows_directory_chain)` | - | - | - | - |
+| `handles.append` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| guarded_tree_manifest | Path | 1509 | `Path(path)` |
-| guarded_tree_manifest | is_absolute | 1510 | `target.is_absolute(data not statically known)` |
-| guarded_tree_manifest | OSError | 1511 | `OSError(...)` |
+| guarded_tree_manifest | Path (src/llm_wiki_cli/services….py:guarded_tree_manifest) | 1509 | `Path(path)` |
+| guarded_tree_manifest | target.is_absolute | 1510 | `target.is_absolute(data not statically known)` |
+| guarded_tree_manifest | OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest) | 1511 | `OSError(...)` |
 | guarded_tree_manifest | guard_windows_directory_chain | 1513 | `guard_windows_directory_chain(Path(...), ...)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
-| guard_windows_directory_chain | Path | 174 | `Path(os.path.abspath(...))` |
-| guard_windows_directory_chain | abspath | 174 | `os.path.abspath(os.fspath(...))` |
-| guard_windows_directory_chain | fspath | 174 | `os.fspath(root)` |
+| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
+| guard_windows_directory_chain | os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
+| guard_windows_directory_chain | os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.fspath(root)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 176 | `WindowsDirectoryGuardError(...)` |
-| guard_windows_directory_chain | Path | 179 | `Path(root_path.anchor)` |
-| guard_windows_directory_chain | append | 182 | `handles.append(_open_windows_directory_guard(...))` |
+| guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 179 | `Path(root_path.anchor)` |
+| guard_windows_directory_chain | handles.append | 182 | `handles.append(_open_windows_directory_guard(...))` |
 
 ### Boundary effects
 
@@ -155,7 +158,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `guarded_tree_manifest` | `target.is_absolute` | 1510 |
-| unresolved_call | `guarded_tree_manifest` | `OSError` | 1511 |
+| external_call | `guarded_tree_manifest` | `OSError` | 1511 |
 | external_call | `guard_windows_directory_chain` | `os.path.abspath` | 174 |
 | external_call | `guard_windows_directory_chain` | `os.fspath` | 174 |
 | step_limit | `guarded_tree_manifest` | `first 12 steps` | 0 |

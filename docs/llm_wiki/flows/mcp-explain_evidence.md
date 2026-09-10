@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as explain_evidence
-    p0-->>p0: explain_evidence
+    participant p1 as service.explain_evidence
+    p0-->>p1: service.explain_evidence
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. explain_evidence"]
-    s2["2. explain_evidence"]
+    s2["2. service.explain_evidence"]
     s1 -. "service.explain_evidence(locator_or_exact_route, limit=limit)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `explain_evidence` | `locator_or_exact_route: str`, `limit: int` | - | - | `service.explain_evidence(...)` |
-| `explain_evidence` | - | - | - | - |
+| `service.explain_evidence` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| explain_evidence | explain_evidence | 1232 | `service.explain_evidence(locator_or_exact_route, limit=limit)` |
+| explain_evidence | service.explain_evidence | 1232 | `service.explain_evidence(locator_or_exact_route, limit=limit)` |
 
 ### Boundary effects
 

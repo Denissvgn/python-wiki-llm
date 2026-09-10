@@ -97,4 +97,4 @@ flowchart LR
 | `_build_label_field_contract` | type_reference | [controller](../modules/controller.md) | — |
 | `_build_optimizer_search_contract` | type_reference | [controller](../modules/controller.md) | — |
 
-> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

@@ -12,12 +12,12 @@ sequenceDiagram
     participant p0 as serialize_knowledge_projection
     participant p1 as isinstance
     participant p2 as TypeError
-    participant p3 as dumps
-    participant p4 as to_payload
+    participant p3 as json.dumps
+    participant p4 as projection.to_payload
     p0-->>p1: isinstance
     p0-->>p2: TypeError
-    p0-->>p3: dumps
-    p0-->>p4: to_payload
+    p0-->>p3: json.dumps
+    p0-->>p4: projection.to_payload
 ```
 
 ## Data flow
@@ -28,8 +28,8 @@ flowchart LR
     s1["1. serialize_knowledge_projection"]
     s2["2. isinstance"]
     s3["3. TypeError"]
-    s4["4. dumps"]
-    s5["5. to_payload"]
+    s4["4. json.dumps"]
+    s5["5. projection.to_payload"]
     s1 -. "isinstance(projection, KnowledgeProjection)" .-> s2
     s1 -. "TypeError('projection must be a KnowledgeProjection')" .-> s3
     s1 -. "json.dumps(projection.to_payload(...), ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)" .-> s4
@@ -44,8 +44,8 @@ flowchart LR
 | `serialize_knowledge_projection` | `projection: KnowledgeProjection` | `KnowledgeProjection` | - | `...` |
 | `isinstance` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `dumps` | - | - | - | - |
-| `to_payload` | - | - | - | - |
+| `json.dumps` | - | - | - | - |
+| `projection.to_payload` | - | - | - | - |
 
 ### Call data
 
@@ -53,8 +53,8 @@ flowchart LR
 |---|---|---:|---|
 | serialize_knowledge_projection | isinstance | 388 | `isinstance(projection, KnowledgeProjection)` |
 | serialize_knowledge_projection | TypeError | 389 | `TypeError('projection must be a KnowledgeProjection')` |
-| serialize_knowledge_projection | dumps | 391 | `json.dumps(projection.to_payload(...), ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
-| serialize_knowledge_projection | to_payload | 392 | `projection.to_payload(data not statically known)` |
+| serialize_knowledge_projection | json.dumps | 391 | `json.dumps(projection.to_payload(...), ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| serialize_knowledge_projection | projection.to_payload | 392 | `projection.to_payload(data not statically known)` |
 
 ### Boundary effects
 
@@ -64,8 +64,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `serialize_knowledge_projection` | `isinstance` | 388 |
-| unresolved_call | `serialize_knowledge_projection` | `TypeError` | 389 |
+| external_call | `serialize_knowledge_projection` | `isinstance` | 388 |
+| external_call | `serialize_knowledge_projection` | `TypeError` | 389 |
 | external_call | `serialize_knowledge_projection` | `json.dumps` | 391 |
 | unresolved_call | `serialize_knowledge_projection` | `projection.to_payload` | 392 |
 

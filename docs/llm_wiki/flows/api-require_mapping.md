@@ -11,10 +11,10 @@
 sequenceDiagram
     participant p0 as require_mapping
     participant p1 as isinstance
-    participant p2 as encode
+    participant p2 as key.encode
     p0-->>p1: isinstance
     p0-->>p1: isinstance
-    p0-->>p2: encode
+    p0-->>p2: key.encode
 ```
 
 ## Data flow
@@ -25,7 +25,7 @@ flowchart LR
     s1["1. require_mapping"]
     s2["2. isinstance"]
     s3["3. isinstance"]
-    s4["4. encode"]
+    s4["4. key.encode"]
     s1 -. "isinstance(value, Mapping)" .-> s2
     s1 -. "isinstance(key, str)" .-> s3
     s1 -. "key.encode('utf-8')" .-> s4
@@ -39,7 +39,7 @@ flowchart LR
 | `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `key.encode` | - | - | - | - |
 
 ### Call data
 
@@ -47,7 +47,7 @@ flowchart LR
 |---|---|---:|---|
 | require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance | 731 | `isinstance(key, str)` |
-| require_mapping | encode | 736 | `key.encode('utf-8')` |
+| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -57,8 +57,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_mapping` | `isinstance` | 727 |
-| unresolved_call | `require_mapping` | `isinstance` | 731 |
+| external_call | `require_mapping` | `isinstance` | 727 |
+| external_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |
 
 ## Behavior

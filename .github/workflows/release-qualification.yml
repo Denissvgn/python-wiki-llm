@@ -897,6 +897,7 @@ jobs:
           tests/test_extract.py
           tests/test_lint.py
           tests/test_documentation_dogfood.py
+          tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge
           -p no:cacheprovider --strict-config --strict-markers
           -W error -o xfail_strict=true --durations=20
           --junitxml=../evidence/toolchains.xml
