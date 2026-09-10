@@ -1,0 +1,23 @@
+__all__ = ["run"]
+
+
+class _Builder:
+    def __init__(self, **options):
+        self.options = options
+
+    def build(self):
+        return self.options
+
+
+def run():
+    return _Builder(
+        configuration_option_0=0,
+        configuration_option_1=1,
+        configuration_option_2=2,
+        configuration_option_3=3,
+        configuration_option_4=4,
+        configuration_option_5=5,
+        configuration_option_6=6,
+        configuration_option_7=7,
+        configuration_option_8=8,
+    ).build()

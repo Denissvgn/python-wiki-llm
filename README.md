@@ -714,6 +714,11 @@ Sequence participants distinguish same-named functions in different modules
 and calls through different receivers. A delegated call such as
 `service.check_wiki()` stays distinct from a `check_wiki` wrapper; genuine
 self-calls retain their self-arrows.
+Calls on returned objects use compact labels such as `ReportBuilder(…).build`
+in both diagrams. Matching compact labels receive context or a number to keep
+their targets distinct. Full captured calls remain in the evidence tables;
+dashed arrows identify external or unresolved calls, including methods whose
+receiver type is unknown.
 Workflow pages require resolved body calls into at least three other project
 modules. Their sequences follow captured source order, without claiming runtime
 branching or evaluation order. Type annotations and docstrings do not create

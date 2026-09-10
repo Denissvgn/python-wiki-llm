@@ -3563,6 +3563,92 @@ class TestSyncIndexCustomSections:
 
 
 class TestSyncFlowRegeneration:
+    @pytest.mark.parametrize("legacy", [False, True], ids=["fresh", "legacy"])
+    @pytest.mark.parametrize(
+        "skip_data_flow", [False, True], ids=["data-flow", "sequence-only"]
+    )
+    def test_compact_call_labels_refresh_and_converge(
+        self, tmp_path, monkeypatch, legacy, skip_data_flow
+    ):
+        from llm_wiki_cli.services.doctor_service import build_doctor_report
+
+        fixtures = Path(__file__).parent / "fixtures"
+        proj, wiki = self._new_project(tmp_path, "helper_a")
+        source = (fixtures / "flow-call-result-source.txt").read_bytes()
+        (proj / "svc.py").write_bytes(source)
+        monkeypatch.chdir(proj)
+        real_render = bootstrap_cmd._generate_flow_md
+
+        def legacy_render(flow, *args, **kwargs):
+            if flow["entry"]["id"] != "api-run":
+                return real_render(flow, *args, **kwargs)
+            markdown = (fixtures / "flow-call-result-legacy.md").read_text(encoding="utf-8")
+            if skip_data_flow:
+                markdown = (
+                    markdown.split("## Data flow", 1)[0]
+                    + "## Behavior"
+                    + markdown.split("## Behavior", 1)[1]
+                )
+            return markdown
+
+        with monkeypatch.context() as setup:
+            if legacy:
+                setup.setattr(bootstrap_cmd, "_generate_flow_md", legacy_render)
+            bootstrap_cmd.run(
+                _make_bootstrap_args(
+                    src_dir=str(proj),
+                    wiki_dir=str(wiki),
+                    skip_data_flow=skip_data_flow,
+                )
+            )
+        page = wiki / "flows" / "api-run.md"
+        markdown = page.read_text(encoding="utf-8")
+        diagram = markdown.split("```mermaid", 1)[1].split("```", 1)[0]
+        assert ("_Builder(…).build" in diagram) is not legacy
+        if legacy:
+            page.write_text(
+                sync_cmd._replace_section_body(
+                    markdown, "Behavior", "Reviewed: builds the configured report."
+                ),
+                encoding="utf-8",
+            )
+
+        def snapshot():
+            paths = [
+                wiki / SERVICE_MANIFEST_FILENAME,
+                wiki / KNOWLEDGE_INDEX_FILENAME,
+                wiki / SURFACE_INDEX_FILENAME,
+                *(wiki / "flows").glob("*.md"),
+            ]
+            return {
+                path.name: (path.read_bytes(), path.stat().st_mtime_ns) for path in paths
+            }
+
+        before = snapshot()
+        sync_cmd.run(_make_sync_args(src_dir=str(proj), wiki_dir=str(wiki), jobs=1))
+        refreshed = page.read_text(encoding="utf-8")
+        blocks = re.findall(r"```mermaid\n(.*?)\n```", refreshed, flags=re.DOTALL)
+        assert len(blocks) == (1 if skip_data_flow else 2)
+        assert all("_Builder(…).build" in block for block in blocks)
+        if legacy:
+            assert "Reviewed: builds the configured report." in refreshed
+            assert before[page.name][0] != page.read_bytes()
+        else:
+            assert snapshot() == before  # Direct bootstrap -> first sync.
+        loaded = load_knowledge_state(wiki)
+        assert loaded.status == KnowledgeLoadState.VALID
+        stable = snapshot()
+        for options in ({}, {"no_cache": True}, {"rebuild_knowledge": True}):
+            sync_cmd.run(
+                _make_sync_args(src_dir=str(proj), wiki_dir=str(wiki), jobs=1, **options)
+            )
+            assert snapshot() == stable
+        assert (proj / "svc.py").read_bytes() == source
+        report = build_doctor_report(
+            src_dir=str(proj), wiki_dir=str(wiki), strict=True, parallel_jobs=1
+        )
+        assert report.exit_code == 0
+
     def _hide_api_run_detector_result(self, monkeypatch):
         real_detect = sync_cmd._detect_sync_entry_points
 

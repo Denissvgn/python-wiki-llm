@@ -65,21 +65,21 @@ GENERATED_DIAGRAM_LINE_LIMIT = 80
 GENERATED_DIAGRAM_CHAR_LIMIT = 6000
 
 
-def _normalize_display_text(value: Any, *, replacements: str = "") -> str:
-    """Return bounded NFC text with controls and whitespace collapsed."""
+def _normalize_display_text(
+    value: Any, *, replacements: str = "", limit: int | None = _DISPLAY_LABEL_LIMIT
+) -> str:
+    """Return NFC text with controls/whitespace collapsed and an optional cap."""
     normalized = unicodedata.normalize("NFC", str(value))
     replacement_chars = set(replacements)
     cleaned = "".join(
         " "
-        if char in replacement_chars
-        or char.isspace()
-        or not char.isprintable()
+        if char in replacement_chars or char.isspace() or not char.isprintable()
         else char
         for char in normalized
     )
     cleaned = re.sub(r"\s+", " ", cleaned).strip() or "unknown"
-    if len(cleaned) > _DISPLAY_LABEL_LIMIT:
-        cleaned = cleaned[: _DISPLAY_LABEL_LIMIT - 1].rstrip() + "…"
+    if limit is not None and len(cleaned) > limit:
+        cleaned = cleaned[: limit - 1].rstrip() + "…"
     return cleaned
 
 
@@ -515,9 +515,16 @@ def data_flow_diagram(
         )
         if not src or not dst:
             continue
-        label = transfer.get("call") or transfer.get("kind") or "data"
+        raw_label = transfer.get("call") or transfer.get("kind") or "data"
+        label = transfer.get("call_label") or raw_label
         dashed = transfer.get("kind") in {"external", "unresolved"}
-        edge_key = (src, dst, _normalize_display_text(label), dashed)
+        # Compact display text must not merge transfers with different evidence.
+        identity_label = (
+            str(raw_label)
+            if transfer.get("call_label")
+            else _normalize_display_text(raw_label)
+        )
+        edge_key = (src, dst, identity_label, dashed)
         if edge_key in seen_edges:
             continue
         seen_edges.add(edge_key)

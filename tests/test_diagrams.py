@@ -271,6 +271,28 @@ class TestFlowchart:
 
 
 class TestDataFlowDiagram:
+    def test_compact_call_labels_keep_distinct_transfer_evidence(self):
+        from copy import deepcopy
+
+        data = {
+            "steps": [{"index": 1, "symbol": "run"}, {"index": 2, "symbol": "build"}],
+            "transfers": [
+                {
+                    "from_step": 1,
+                    "to_step": 2,
+                    "kind": "unresolved",
+                    "call": f"factory(configuration={value}).build()",
+                    "call_label": "factory(…).build()",
+                }
+                for value in ("first", "second", "first")
+            ],
+        }
+        before = deepcopy(data)
+        diagram = data_flow_diagram(data)
+        assert diagram.count('s1 -. "factory(…).build()" .-> s2') == 2
+        assert "configuration=" not in diagram
+        assert data == before
+
     def test_renders_labeled_lr_diagram_with_links_and_styled_boundaries(self):
         data_flow = {
             "steps": [
