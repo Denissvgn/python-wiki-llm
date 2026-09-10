@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,101 @@ from llm_wiki_cli.services.api_contracts import (
 )
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"path": None},
+        {"path": ""},
+        {"method": None},
+        {"method": ""},
+        {"method": "UNKNOWN"},
+        {"unknowns": [{"field": "method", "reason": "not_statically_resolvable"}]},
+        {"unknowns": [{"field": "path", "reason": "not_statically_resolvable"}]},
+    ],
+)
+def test_unresolved_operations_do_not_become_resolved_routes(changes):
+    operation = {
+        "handler": {"file": "app.py", "symbol": "items"},
+        "method": "GET",
+        "path": "/items",
+        "operation_id": None,
+        **changes,
+    }
+    contract = {"operations": [operation]}
+    before = deepcopy(contract)
+    entries = attach_routes_to_entry_points(
+        [{"id": "http-items", "file": "app.py", "symbol": "items", "category": "http"}],
+        contract,
+    )
+    assert entries[0]["id"] == "http-items"
+    assert "routes" not in entries[0]
+    assert contract == before
+
+
+def test_route_filter_preserves_mixed_routes_and_normalizes_optional_id():
+    handler = {"file": "app.py", "symbol": "items"}
+    contract = {
+        "operations": [
+            {"handler": handler, "method": "GET", "path": None},
+            {"handler": handler, "method": "GET", "path": "/", "operation_id": ""},
+            {
+                "handler": handler,
+                "method": "POST",
+                "path": "/items",
+                "operation_id": "create",
+            },
+        ]
+    }
+    entries = attach_routes_to_entry_points(
+        [{"file": "app.py", "symbol": "items", "category": "http"}], contract
+    )
+    assert entries[0]["routes"] == [
+        {"method": "GET", "path": "/", "operation_id": None},
+        {"method": "POST", "path": "/items", "operation_id": "create"},
+    ]
+
+
+def test_unknown_route_does_not_erase_handler_ambiguity():
+    contract = {
+        "operations": [
+            {
+                "handler": {
+                    "file": "app.py",
+                    "symbol": "health",
+                    "qualname": "first.health",
+                },
+                "method": "GET",
+                "path": None,
+            },
+            {
+                "handler": {
+                    "file": "app.py",
+                    "symbol": "health",
+                    "qualname": "second.health",
+                },
+                "method": "GET",
+                "path": "/health",
+            },
+        ]
+    }
+    entries = attach_routes_to_entry_points(
+        [
+            {"file": "app.py", "symbol": "health", "category": "http"},
+            {
+                "file": "app.py",
+                "symbol": "first.health",
+                "category": "http",
+                "routes": [{"path": None}],
+            },
+            {"file": "app.py", "symbol": "second.health", "category": "http"},
+        ],
+        contract,
+    )
+    assert "routes" not in entries[0]
+    assert "routes" not in entries[1]
+    assert entries[2]["routes"][0]["path"] == "/health"
 
 
 def _inventory(root: Path, files: dict[str, str]) -> dict:
