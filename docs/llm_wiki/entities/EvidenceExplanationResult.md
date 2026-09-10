@@ -11,8 +11,8 @@ _Auto-generated from `EvidenceExplanationResult` in `src/llm_wiki_cli/api_types.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `evidence` | `dict[str, Any] \| None` | *required* | — |
 
 ## Methods

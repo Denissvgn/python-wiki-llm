@@ -11,8 +11,8 @@ _Auto-generated from `DoctorVerificationReceipt` in `src/llm_wiki_cli/api_types.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `state` | `str` | *required* | — |
 | `reason` | `str` | *required* | — |
 | `recorded_result` | `str \| None` | *required* | — |

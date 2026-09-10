@@ -2,7 +2,7 @@
 
 **Entry point:** `compare_generated_ownership` (`api`)
 **Source:** [integrity](../modules/integrity.md)
-**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [integrity](../modules/integrity.md)
+**Modules touched:** [integrity](../modules/integrity.md)
 
 ## Call sequence
 
@@ -11,63 +11,64 @@
 sequenceDiagram
     participant p0 as compare_generated_ownership
     participant p1 as capture_generated_ownership
-    participant p2 as resolve
-    participant p3 as expanduser
+    participant p2 as Path(…).expanduser().resolve
+    participant p3 as Path(…).expanduser
     participant p4 as Path
-    participant p5 as is_symlink
+    participant p5 as path.is_symlink
     participant p6 as DocumentationIntegrityError
-    participant p7 as is_file
+    participant p7 as path.is_file
     participant p8 as hash_bytes
-    participant p9 as hexdigest
-    participant p10 as sha256
-    participant p11 as read_bytes
-    participant p12 as sorted
-    participant p13 as rglob
-    participant p14 as as_posix
-    participant p15 as relative_to
-    participant p16 as read_text
-    participant p17 as _generated_sections
-    participant p18 as splitlines
-    participant p19 as enumerate
-    participant p20 as startswith
-    participant p21 as append
-    participant p22 as len
-    participant p23 as join
-    participant p24 as lower
-    participant p25 as strip
+    participant p9 as path.read_bytes
+    participant p10 as sorted (src/llm_wiki_cli/services…apture_generated_ownership)
+    participant p11 as root.rglob
+    participant p12 as path.relative_to(…).as_posix
+    participant p13 as path.relative_to
+    participant p14 as path.read_text
+    participant p15 as _generated_sections
+    participant p16 as text.splitlines
+    participant p17 as enumerate
+    participant p18 as line.startswith
+    participant p19 as starts.append
+    participant p20 as len
+    participant p21 as ''.join
+    participant p22 as lines[…][…].strip().lower
+    participant p23 as lines[…][…].strip
+    participant p24 as re.sub(…).strip
+    participant p25 as re.sub
+    participant p26 as str
     p0->>p1: capture_generated_ownership
-    p1-->>p2: resolve
-    p1-->>p3: expanduser
+    p1-->>p2: Path(…).expanduser().resolve
+    p1-->>p3: Path(…).expanduser
     p1-->>p4: Path
-    p1-->>p5: is_symlink
-    p1->>p6: DocumentationIntegrityError
-    p1-->>p7: is_file
-    p1->>p8: hash_bytes
-    p8-->>p9: hexdigest
-    p8-->>p10: sha256
-    p1-->>p11: read_bytes
-    p1-->>p12: sorted
-    p1-->>p13: rglob
-    p1-->>p5: is_symlink
-    p1-->>p7: is_file
-    p1->>p6: DocumentationIntegrityError
-    p1-->>p14: as_posix
-    p1-->>p15: relative_to
-    p1-->>p16: read_text
-    p1->>p17: _generated_sections
-    p17-->>p18: splitlines
-    p17-->>p19: enumerate
-    p17-->>p20: startswith
-    p17-->>p21: append
-    p17-->>p22: len
-    p17-->>p19: enumerate
-    p17-->>p23: join
-    p17-->>p24: lower
-    p17-->>p25: strip
-    p17-->>p25: strip
+    p1-->>p5: path.is_symlink
+    p1-->>p6: DocumentationIntegrityError
+    p1-->>p7: path.is_file
+    p1-->>p8: hash_bytes
+    p1-->>p9: path.read_bytes
+    p1-->>p10: sorted (src/llm_wiki_cli/services…apture_generated_ownership)
+    p1-->>p11: root.rglob
+    p1-->>p5: path.is_symlink
+    p1-->>p7: path.is_file
+    p1-->>p6: DocumentationIntegrityError
+    p1-->>p12: path.relative_to(…).as_posix
+    p1-->>p13: path.relative_to
+    p1-->>p14: path.read_text
+    p1->>p15: _generated_sections
+    p15-->>p16: text.splitlines
+    p15-->>p17: enumerate
+    p15-->>p18: line.startswith
+    p15-->>p19: starts.append
+    p15-->>p20: len
+    p15-->>p17: enumerate
+    p15-->>p21: ''.join
+    p15-->>p22: lines[…][…].strip().lower
+    p15-->>p23: lines[…][…].strip
+    p15-->>p24: re.sub(…).strip
+    p15-->>p25: re.sub
+    p15-->>p26: str
 ```
 
-> Call sequence diagram shows 30 of 45 interactions; 15 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 43 interactions; 13 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -76,35 +77,33 @@ sequenceDiagram
 flowchart LR
     s1["1. compare_generated_ownership"]
     s2["2. capture_generated_ownership"]
-    s3["3. resolve"]
-    s4["4. expanduser"]
+    s3["3. Path(…).expanduser().resolve"]
+    s4["4. Path(…).expanduser"]
     s5["5. Path"]
-    s6["6. is_symlink"]
+    s6["6. path.is_symlink"]
     s7["7. DocumentationIntegrityError"]
-    s8["8. is_file"]
+    s8["8. path.is_file"]
     s9["9. hash_bytes"]
-    s10["10. hexdigest"]
-    s11["11. sha256"]
-    s12["12. read_bytes"]
+    s10["10. path.read_bytes"]
+    s11["11. sorted (src/llm_wiki_cli/services…apture_generated_ownership)"]
+    s12["12. root.rglob"]
     s1 -->|"capture_generated_ownership(wiki_root)"| s2
-    s2 -. "Path(wiki_root).expanduser().resolve(data not statically known)" .-> s3
-    s2 -. "Path(wiki_root).expanduser(data not statically known)" .-> s4
+    s2 -. "Path(…).expanduser().resolve(data not statically known)" .-> s3
+    s2 -. "Path(…).expanduser(data not statically known)" .-> s4
     s2 -. "Path(wiki_root)" .-> s5
     s2 -. "path.is_symlink(data not statically known)" .-> s6
-    s2 -->|"DocumentationIntegrityError(...)"| s7
+    s2 -. "DocumentationIntegrityError(...)" .-> s7
     s2 -. "path.is_file(data not statically known)" .-> s8
-    s2 -->|"hash_bytes(path.read_bytes(...))"| s9
-    s9 -. "hashlib.sha256(data).hexdigest(data not statically known)" .-> s10
-    s9 -. "hashlib.sha256(data)" .-> s11
-    s2 -. "path.read_bytes(data not statically known)" .-> s12
+    s2 -. "hash_bytes(path.read_bytes(...))" .-> s9
+    s2 -. "path.read_bytes(data not statically known)" .-> s10
+    s2 -. "sorted (src/llm_wiki_cli/services…apture_generated_ownership)(root.rglob(...))" .-> s11
+    s2 -. "root.rglob('*.md')" .-> s12
     b0["filesystem_read path.read_bytes"]
     s2 -. "filesystem_read path.read_bytes" .-> b0
     b1["filesystem_read path.read_text"]
     s2 -. "filesystem_read path.read_text" .-> b1
     click s1 "../modules/integrity.md"
     click s2 "../modules/integrity.md"
-    click s7 "../modules/documentation_run_contracts.md"
-    click s9 "../modules/documentation_policy.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -116,32 +115,32 @@ flowchart LR
 |---|---|---|---|---|
 | `compare_generated_ownership` | `baseline: Mapping[str, str]`, `wiki_root: str \| Path` | - | - | `{...}` |
 | `capture_generated_ownership` | `wiki_root: str \| Path` | - | `fingerprints[...]` | `fingerprints` |
-| `resolve` | - | - | - | - |
-| `expanduser` | - | - | - | - |
+| `Path(…).expanduser().resolve` | - | - | - | - |
+| `Path(…).expanduser` | - | - | - | - |
 | `Path` | - | - | - | - |
-| `is_symlink` | - | - | - | - |
+| `path.is_symlink` | - | - | - | - |
 | `DocumentationIntegrityError` | - | - | - | - |
-| `is_file` | - | - | - | - |
-| `hash_bytes` | `data: bytes` | - | - | `...` |
-| `hexdigest` | - | - | - | - |
-| `sha256` | - | - | - | - |
-| `read_bytes` | - | - | - | - |
+| `path.is_file` | - | - | - | - |
+| `hash_bytes` | - | - | - | - |
+| `path.read_bytes` | - | - | - | - |
+| `sorted (src/llm_wiki_cli/services…apture_generated_ownership)` | - | - | - | - |
+| `root.rglob` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | compare_generated_ownership | capture_generated_ownership | 44 | `capture_generated_ownership(wiki_root)` |
-| capture_generated_ownership | resolve | 13 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
-| capture_generated_ownership | expanduser | 13 | `Path(wiki_root).expanduser(data not statically known)` |
+| capture_generated_ownership | Path(…).expanduser().resolve | 13 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
+| capture_generated_ownership | Path(…).expanduser | 13 | `Path(wiki_root).expanduser(data not statically known)` |
 | capture_generated_ownership | Path | 13 | `Path(wiki_root)` |
-| capture_generated_ownership | is_symlink | 23 | `path.is_symlink(data not statically known)` |
+| capture_generated_ownership | path.is_symlink | 23 | `path.is_symlink(data not statically known)` |
 | capture_generated_ownership | DocumentationIntegrityError | 24 | `DocumentationIntegrityError(...)` |
-| capture_generated_ownership | is_file | 27 | `path.is_file(data not statically known)` |
+| capture_generated_ownership | path.is_file | 27 | `path.is_file(data not statically known)` |
 | capture_generated_ownership | hash_bytes | 28 | `hash_bytes(path.read_bytes(...))` |
-| hash_bytes | hexdigest | 520 | `hashlib.sha256(data).hexdigest(data not statically known)` |
-| hash_bytes | sha256 | 520 | `hashlib.sha256(data)` |
-| capture_generated_ownership | read_bytes | 28 | `path.read_bytes(data not statically known)` |
+| capture_generated_ownership | path.read_bytes | 28 | `path.read_bytes(data not statically known)` |
+| capture_generated_ownership | sorted (src/llm_wiki_cli/services…apture_generated_ownership) | 29 | `sorted(root.rglob(...))` |
+| capture_generated_ownership | root.rglob | 29 | `root.rglob('*.md')` |
 
 ### Boundary effects
 
@@ -157,9 +156,10 @@ flowchart LR
 | unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser().resolve` | 13 |
 | unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser` | 13 |
 | unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 23 |
+| unresolved_call | `capture_generated_ownership` | `DocumentationIntegrityError` | 24 |
 | unresolved_call | `capture_generated_ownership` | `path.is_file` | 27 |
-| external_call | `hash_bytes` | `hashlib.sha256(data).hexdigest` | 520 |
-| external_call | `hash_bytes` | `hashlib.sha256` | 520 |
+| unresolved_call | `capture_generated_ownership` | `sorted` | 29 |
+| unresolved_call | `capture_generated_ownership` | `root.rglob` | 29 |
 | step_limit | `compare_generated_ownership` | `first 12 steps` | 0 |
 
 ## Behavior

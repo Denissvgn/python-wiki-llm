@@ -1,6 +1,6 @@
 # InventoryCache
 
-**Location:** `src/llm_wiki_cli/services/inventory_cache.py:344`
+**Location:** `src/llm_wiki_cli/services/inventory_cache.py:349`
 **Kind:** Class
 **Bases:** —
 **Module:** [inventory_cache](../modules/inventory_cache.md)

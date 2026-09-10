@@ -56,4 +56,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
+| `DocumentationModelEscalationRule.from_dict` | call | [documentation_model_policy](../modules/documentation_model_policy.md) | 1 |
 | `DocumentationModelEscalationRule.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |

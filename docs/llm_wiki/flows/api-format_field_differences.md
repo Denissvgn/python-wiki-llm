@@ -12,17 +12,18 @@ sequenceDiagram
     participant p0 as format_field_differences
     participant p1 as tuple
     participant p2 as str
-    participant p3 as append
-    participant p4 as join
+    participant p3 as detail.append
+    participant p4 as ', '.join
+    participant p5 as ' '.join
     p0-->>p1: tuple
     p0-->>p2: str
     p0-->>p1: tuple
     p0-->>p2: str
-    p0-->>p3: append
-    p0-->>p4: join
-    p0-->>p3: append
-    p0-->>p4: join
-    p0-->>p4: join
+    p0-->>p3: detail.append
+    p0-->>p4: ', '.join
+    p0-->>p3: detail.append
+    p0-->>p4: ', '.join
+    p0-->>p5: ' '.join
 ```
 
 ## Data flow
@@ -35,11 +36,11 @@ flowchart LR
     s3["3. str"]
     s4["4. tuple"]
     s5["5. str"]
-    s6["6. append"]
-    s7["7. join"]
-    s8["8. append"]
-    s9["9. join"]
-    s10["10. join"]
+    s6["6. detail.append"]
+    s7["7. ', '.join"]
+    s8["8. detail.append"]
+    s9["9. ', '.join"]
+    s10["10. ' '.join"]
     s1 -. "tuple(...)" .-> s2
     s1 -. "str(value)" .-> s3
     s1 -. "tuple(...)" .-> s4
@@ -48,7 +49,7 @@ flowchart LR
     s1 -. "', '.join(missing_values)" .-> s7
     s1 -. "detail.append(...)" .-> s8
     s1 -. "', '.join(unknown_values)" .-> s9
-    s1 -. "'; '.join(detail)" .-> s10
+    s1 -. "' '.join(detail)" .-> s10
     b0["mutation detail.append"]
     s1 -. "mutation detail.append" .-> b0
     b1["mutation detail.append"]
@@ -68,11 +69,11 @@ flowchart LR
 | `str` | - | - | - | - |
 | `tuple` | - | - | - | - |
 | `str` | - | - | - | - |
-| `append` | - | - | - | - |
-| `join` | - | - | - | - |
-| `append` | - | - | - | - |
-| `join` | - | - | - | - |
-| `join` | - | - | - | - |
+| `detail.append` | - | - | - | - |
+| `', '.join` | - | - | - | - |
+| `detail.append` | - | - | - | - |
+| `', '.join` | - | - | - | - |
+| `' '.join` | - | - | - | - |
 
 ### Call data
 
@@ -82,11 +83,11 @@ flowchart LR
 | format_field_differences | str | 57 | `str(value)` |
 | format_field_differences | tuple | 58 | `tuple(...)` |
 | format_field_differences | str | 58 | `str(value)` |
-| format_field_differences | append | 60 | `detail.append(...)` |
-| format_field_differences | join | 60 | `', '.join(missing_values)` |
-| format_field_differences | append | 62 | `detail.append(...)` |
-| format_field_differences | join | 62 | `', '.join(unknown_values)` |
-| format_field_differences | join | 63 | `'; '.join(detail)` |
+| format_field_differences | detail.append | 60 | `detail.append(...)` |
+| format_field_differences | ', '.join | 60 | `', '.join(missing_values)` |
+| format_field_differences | detail.append | 62 | `detail.append(...)` |
+| format_field_differences | ', '.join | 62 | `', '.join(unknown_values)` |
+| format_field_differences | ' '.join | 63 | `'; '.join(detail)` |
 
 ### Boundary effects
 

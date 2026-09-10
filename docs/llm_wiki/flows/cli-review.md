@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [review_cmd](../modules/review_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 19 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 21 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
@@ -26,6 +27,7 @@
 - [review_cmd](../modules/review_cmd.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
@@ -36,57 +38,60 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
-    participant p2 as bool
+    participant p1 as getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
+    participant p2 as bool (src/llm_wiki_cli/commands/review_cmd.py:run)
     participant p3 as validate_source_root
     participant p4 as validate_path
     participant p5 as PathValidationError
-    participant p6 as resolve
-    participant p7 as cwd
-    participant p8 as relative_to
-    participant p9 as expanduser
-    participant p10 as Path
-    participant p11 as is_absolute
-    participant p12 as is_dir
-    participant p13 as abspath
-    participant p14 as windows_current_user_sid
-    participant p15 as WindowsSecurityGuardError
-    participant p16 as _current_windows_user_sid
-    participant p17 as WinDLL
-    participant p18 as POINTER
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p1: getattr
-    p0-->>p2: bool
-    p0-->>p1: getattr
+    participant p6 as (…).resolve
+    participant p7 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p8 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    participant p9 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    participant p10 as Path(…).expanduser
+    participant p11 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p12 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p13 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p14 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p15 as resolved.is_dir
+    participant p16 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p17 as windows_current_user_sid
+    participant p18 as WindowsSecurityGuardError
+    participant p19 as _current_windows_user_sid
+    participant p20 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p21 as ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
+    p0-->>p2: bool (src/llm_wiki_cli/commands/review_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
     p0->>p3: validate_source_root
     p3->>p4: validate_path
     p4->>p5: PathValidationError
-    p4-->>p6: resolve
-    p4-->>p7: cwd
-    p4-->>p6: resolve
-    p4-->>p7: cwd
-    p4-->>p8: relative_to
+    p4-->>p6: (…).resolve
+    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p4-->>p8: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p4-->>p9: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     p4->>p5: PathValidationError
-    p3-->>p9: expanduser
-    p3-->>p10: Path
-    p3-->>p11: is_absolute
-    p3-->>p7: cwd
-    p3-->>p6: resolve
+    p3-->>p10: Path(…).expanduser
+    p3-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p3-->>p12: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    p3-->>p13: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p3-->>p14: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
     p3->>p5: PathValidationError
-    p3-->>p12: is_dir
+    p3-->>p15: resolved.is_dir
     p3->>p5: PathValidationError
-    p3-->>p10: Path
-    p3-->>p13: abspath
-    p3->>p14: windows_current_user_sid
-    p14->>p15: WindowsSecurityGuardError
-    p14->>p16: _current_windows_user_sid
-    p16-->>p17: WinDLL
-    p16-->>p17: WinDLL
-    p16-->>p18: POINTER
+    p3-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p3-->>p16: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    p3->>p17: windows_current_user_sid
+    p17->>p18: WindowsSecurityGuardError
+    p17->>p19: _current_windows_user_sid
+    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p19-->>p21: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 1302 interactions; 1272 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1462 interactions; 1432 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -96,28 +101,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. run"]
-    s2["2. getattr"]
-    s3["3. getattr"]
-    s4["4. getattr"]
-    s5["5. bool"]
-    s6["6. getattr"]
+    s2["2. getattr (src/llm_wiki_cli/commands/review_cmd.py:run)"]
+    s3["3. getattr (src/llm_wiki_cli/commands/review_cmd.py:run)"]
+    s4["4. getattr (src/llm_wiki_cli/commands/review_cmd.py:run)"]
+    s5["5. bool (src/llm_wiki_cli/commands/review_cmd.py:run)"]
+    s6["6. getattr (src/llm_wiki_cli/commands/review_cmd.py:run)"]
     s7["7. validate_source_root"]
     s8["8. validate_path"]
     s9["9. PathValidationError"]
-    s10["10. resolve"]
-    s11["11. cwd"]
-    s12["12. resolve"]
-    s1 -. "getattr(args, 'src_dir', '.')" .-> s2
-    s1 -. "getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s3
-    s1 -. "getattr(args, 'format', 'markdown')" .-> s4
-    s1 -. "bool(getattr(...))" .-> s5
-    s1 -. "getattr(args, 'allow_external_src', False)" .-> s6
+    s10["10. (…).resolve"]
+    s11["11. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s12["12. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
+    s1 -. "getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'src_dir', '.')" .-> s2
+    s1 -. "getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s3
+    s1 -. "getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'format', 'markdown')" .-> s4
+    s1 -. "bool (src/llm_wiki_cli/commands/review_cmd.py:run)(getattr(...))" .-> s5
+    s1 -. "getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'allow_external_src', False)" .-> s6
     s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external)"| s7
     s7 -->|"validate_path(path, label)"| s8
     s8 -->|"PathValidationError(...)"| s9
-    s8 -. "(Path.cwd() / path).resolve(data not statically known)" .-> s10
-    s8 -. "Path.cwd(data not statically known)" .-> s11
-    s8 -. "Path.cwd().resolve(data not statically known)" .-> s12
+    s8 -. "(…).resolve(data not statically known)" .-> s10
+    s8 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
+    s8 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -136,33 +141,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | `DEFAULT_WIKI_DIR` | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
+| `bool (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
-| `resolve` | - | - | - | - |
-| `cwd` | - | - | - | - |
-| `resolve` | - | - | - | - |
+| `(…).resolve` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 588 | `getattr(args, 'src_dir', '.')` |
-| run | getattr | 589 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr | 590 | `getattr(args, 'format', 'markdown')` |
-| run | bool | 591 | `bool(getattr(...))` |
-| run | getattr | 591 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 588 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 589 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 590 | `getattr(args, 'format', 'markdown')` |
+| run | bool (src/llm_wiki_cli/commands/review_cmd.py:run) | 591 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 591 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 592 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | cwd | 133 | `Path.cwd(data not statically known)` |
-| validate_path | resolve | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd().resolve(data not statically known)` |
 
 ### Boundary effects
 
@@ -175,13 +180,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 588 |
-| unresolved_call | `run` | `getattr` | 589 |
-| unresolved_call | `run` | `getattr` | 590 |
-| unresolved_call | `run` | `getattr` | 591 |
+| external_call | `run` | `getattr` | 588 |
+| external_call | `run` | `getattr` | 589 |
+| external_call | `run` | `getattr` | 590 |
+| external_call | `run` | `getattr` | 591 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
-| external_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

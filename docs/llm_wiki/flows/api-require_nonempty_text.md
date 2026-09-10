@@ -11,11 +11,11 @@
 sequenceDiagram
     participant p0 as require_nonempty_text
     participant p1 as isinstance
-    participant p2 as strip
+    participant p2 as value.strip
     participant p3 as any
     participant p4 as ord
     p0-->>p1: isinstance
-    p0-->>p2: strip
+    p0-->>p2: value.strip
     p0-->>p3: any
     p0-->>p4: ord
     p0-->>p4: ord
@@ -28,7 +28,7 @@ sequenceDiagram
 flowchart LR
     s1["1. require_nonempty_text"]
     s2["2. isinstance"]
-    s3["3. strip"]
+    s3["3. value.strip"]
     s4["4. any"]
     s5["5. ord"]
     s6["6. ord"]
@@ -46,7 +46,7 @@ flowchart LR
 |---|---|---|---|---|
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `any` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `ord` | - | - | - | - |
@@ -56,7 +56,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_nonempty_text | isinstance | 574 | `isinstance(value, str)` |
-| require_nonempty_text | strip | 576 | `value.strip(data not statically known)` |
+| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
 | require_nonempty_text | any | 582 | `any(...)` |
 | require_nonempty_text | ord | 583 | `ord(character)` |
 | require_nonempty_text | ord | 584 | `ord(character)` |
@@ -69,11 +69,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_nonempty_text` | `isinstance` | 574 |
+| external_call | `require_nonempty_text` | `isinstance` | 574 |
 | unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| unresolved_call | `require_nonempty_text` | `any` | 582 |
-| unresolved_call | `require_nonempty_text` | `ord` | 583 |
-| unresolved_call | `require_nonempty_text` | `ord` | 584 |
+| external_call | `require_nonempty_text` | `any` | 582 |
+| external_call | `require_nonempty_text` | `ord` | 583 |
+| external_call | `require_nonempty_text` | `ord` | 584 |
 
 ## Behavior
 

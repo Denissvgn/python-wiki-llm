@@ -18,53 +18,55 @@
 ```mermaid
 sequenceDiagram
     participant p0 as typed_graph_from_knowledge_extensions
-    participant p1 as isinstance
+    participant p1 as isinstance (src/llm_wiki_cli/services…from_knowledge_extensions)
     participant p2 as KnowledgeGraphError
-    participant p3 as get
+    participant p3 as extensions.get
     participant p4 as validate_typed_graph
     participant p5 as _object
     participant p6 as require_mapping
-    participant p7 as encode
-    participant p8 as dict
-    participant p9 as _only_fields
-    participant p10 as require_exact_fields
-    participant p11 as str
-    participant p12 as set
-    participant p13 as tuple
-    participant p14 as sorted
-    participant p15 as invalid_error
-    participant p16 as error_factory
-    participant p17 as _normalise_input_hashes
-    p0-->>p1: isinstance
+    participant p7 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    participant p8 as key.encode
+    participant p9 as dict
+    participant p10 as _only_fields
+    participant p11 as require_exact_fields
+    participant p12 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p13 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p14 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p15 as tuple
+    participant p16 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p17 as invalid_error
+    participant p18 as error_factory
+    participant p19 as _normalise_input_hashes
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…from_knowledge_extensions)
     p0->>p2: KnowledgeGraphError
-    p0-->>p3: get
+    p0-->>p3: extensions.get
     p0->>p4: validate_typed_graph
     p4->>p5: _object
     p5->>p6: require_mapping
-    p6-->>p1: isinstance
-    p6-->>p1: isinstance
-    p6-->>p7: encode
+    p6-->>p7: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p6-->>p7: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p6-->>p8: key.encode
     p5->>p2: KnowledgeGraphError
     p5->>p2: KnowledgeGraphError
-    p5-->>p8: dict
-    p4->>p9: _only_fields
-    p9->>p10: require_exact_fields
-    p10-->>p1: isinstance
-    p10-->>p11: str
-    p10-->>p12: set
-    p10-->>p12: set
-    p10-->>p12: set
-    p10-->>p13: tuple
-    p10-->>p14: sorted
-    p10-->>p13: tuple
-    p10-->>p14: sorted
-    p10-->>p15: invalid_error
-    p10-->>p16: error_factory
-    p9->>p2: KnowledgeGraphError
-    p9->>p2: KnowledgeGraphError
-    p9->>p2: KnowledgeGraphError
+    p5-->>p9: dict
+    p4->>p10: _only_fields
+    p10->>p11: require_exact_fields
+    p11-->>p12: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p11-->>p13: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p11-->>p14: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p11-->>p14: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p11-->>p14: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p11-->>p15: tuple
+    p11-->>p16: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p11-->>p15: tuple
+    p11-->>p16: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p11-->>p17: invalid_error
+    p11-->>p18: error_factory
+    p10->>p2: KnowledgeGraphError
+    p10->>p2: KnowledgeGraphError
+    p10->>p2: KnowledgeGraphError
     p4->>p2: KnowledgeGraphError
-    p4->>p17: _normalise_input_hashes
+    p4->>p19: _normalise_input_hashes
 ```
 
 > Call sequence diagram shows 30 of 415 interactions; 385 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -77,25 +79,25 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. typed_graph_from_knowledge_extensions"]
-    s2["2. isinstance"]
+    s2["2. isinstance (src/llm_wiki_cli/services…from_knowledge_extensions)"]
     s3["3. KnowledgeGraphError"]
-    s4["4. get"]
+    s4["4. extensions.get"]
     s5["5. validate_typed_graph"]
     s6["6. _object"]
     s7["7. require_mapping"]
-    s8["8. isinstance"]
-    s9["9. isinstance"]
-    s10["10. encode"]
+    s8["8. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s9["9. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
+    s10["10. key.encode"]
     s11["11. KnowledgeGraphError"]
     s12["12. KnowledgeGraphError"]
-    s1 -. "isinstance(extensions, Mapping)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_cli/services…from_knowledge_extensions)(extensions, Mapping)" .-> s2
     s1 -->|"KnowledgeGraphError('extensions', 'must be an object')"| s3
     s1 -. "extensions.get(TYPED_GRAPH_EXTENSION_KEY)" .-> s4
     s1 -->|"validate_typed_graph(value, concept_kinds=concept_kinds)"| s5
     s5 -->|"_object(payload, 'typed_graph')"| s6
     s6 -->|"require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))"| s7
-    s7 -. "isinstance(value, Mapping)" .-> s8
-    s7 -. "isinstance(key, str)" .-> s9
+    s7 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s8
+    s7 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s9
     s7 -. "key.encode('utf-8')" .-> s10
     s6 -->|"KnowledgeGraphError(path, 'must be an object')"| s11
     s6 -->|"KnowledgeGraphError(path, 'object keys must be strings')"| s12
@@ -132,15 +134,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `typed_graph_from_knowledge_extensions` | `extensions: Mapping[str, Any]`, `concept_kinds: Mapping[str, str] \| None` | `Mapping`, `TYPED_GRAPH_EXTENSION_KEY` | - | `None`, `validate_typed_graph(...)` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…from_knowledge_extensions)` | - | - | - | - |
 | `KnowledgeGraphError` | - | - | - | - |
-| `get` | - | - | - | - |
+| `extensions.get` | - | - | - | - |
 | `validate_typed_graph` | `payload: object`, `concept_kinds: Mapping[str, str] \| None` | `TYPED_GRAPH_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION` | - | `{...}` |
 | `_object` | `value: object`, `path: str` | - | - | `dict(...)` |
 | `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
+| `key.encode` | - | - | - | - |
 | `KnowledgeGraphError` | - | - | - | - |
 | `KnowledgeGraphError` | - | - | - | - |
 
@@ -148,15 +150,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| typed_graph_from_knowledge_extensions | isinstance | 517 | `isinstance(extensions, Mapping)` |
+| typed_graph_from_knowledge_extensions | isinstance (src/llm_wiki_cli/services…from_knowledge_extensions) | 517 | `isinstance(extensions, Mapping)` |
 | typed_graph_from_knowledge_extensions | KnowledgeGraphError | 518 | `KnowledgeGraphError('extensions', 'must be an object')` |
-| typed_graph_from_knowledge_extensions | get | 519 | `extensions.get(TYPED_GRAPH_EXTENSION_KEY)` |
+| typed_graph_from_knowledge_extensions | extensions.get | 519 | `extensions.get(TYPED_GRAPH_EXTENSION_KEY)` |
 | typed_graph_from_knowledge_extensions | validate_typed_graph | 522 | `validate_typed_graph(value, concept_kinds=concept_kinds)` |
 | validate_typed_graph | _object | 408 | `_object(payload, 'typed_graph')` |
 | _object | require_mapping | 2283 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
-| require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance | 731 | `isinstance(key, str)` |
-| require_mapping | encode | 736 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
+| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
 | _object | KnowledgeGraphError | 2285 | `KnowledgeGraphError(path, 'must be an object')` |
 | _object | KnowledgeGraphError | 2287 | `KnowledgeGraphError(path, 'object keys must be strings')` |
 
@@ -175,10 +177,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `typed_graph_from_knowledge_extensions` | `isinstance` | 517 |
+| external_call | `typed_graph_from_knowledge_extensions` | `isinstance` | 517 |
 | unresolved_call | `typed_graph_from_knowledge_extensions` | `extensions.get` | 519 |
-| unresolved_call | `require_mapping` | `isinstance` | 727 |
-| unresolved_call | `require_mapping` | `isinstance` | 731 |
+| external_call | `require_mapping` | `isinstance` | 727 |
+| external_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |
 | step_limit | `typed_graph_from_knowledge_extensions` | `first 12 steps` | 0 |
 | truncated_flow | `typed_graph_from_knowledge_extensions` | `depth limit` | 0 |

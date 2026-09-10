@@ -11,9 +11,9 @@ _Auto-generated from `_SourceSelectionOptions` in `src/llm_wiki_cli/services/mcp
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `source_selection` | `str` | *required* | — |
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
+| `source_selection` | `str` | *optional* | — |
 
 ## Methods
 

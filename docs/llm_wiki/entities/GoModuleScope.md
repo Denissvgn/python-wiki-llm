@@ -1,6 +1,6 @@
 # _GoModuleScope
 
-**Location:** `src/llm_wiki_cli/services/imports.py:33`
+**Location:** `src/llm_wiki_cli/services/imports.py:35`
 **Kind:** Class
 **Bases:** —
 **Module:** [imports](../modules/imports.md)

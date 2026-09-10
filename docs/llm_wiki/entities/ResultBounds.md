@@ -11,8 +11,8 @@ Exact size disclosure for one bounded result collection.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `total` | `int` | *required* | — |
 | `returned` | `int` | *required* | — |
 | `truncated` | `bool` | *required* | — |

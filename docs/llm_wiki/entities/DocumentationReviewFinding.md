@@ -86,6 +86,7 @@ flowchart LR
 | `_normalise_record` | call | [documentation_review](../modules/documentation_review.md) | 1 |
 | `_normalise_record` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
 | `_validate_finding` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `DocumentationReviewFinding.from_dict` | call | [documentation_review](../modules/documentation_review.md) | 1 |
 | `DocumentationReviewFinding.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
 | `DocumentationReviewLedger.unresolved_findings` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
 | `normalize_review_findings` | type_reference | [documentation_review](../modules/documentation_review.md) | — |

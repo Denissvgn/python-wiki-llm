@@ -51,7 +51,7 @@ flowchart LR
     s1 -. "isinstance(check, VerificationCheckResult)" .-> s7
     s1 -->|"VerificationContractError('checks must contain VerificationCheckResult values')"| s8
     s1 -. "all(...)" .-> s9
-    s1 -->|"VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash…"| s10
+    s1 -->|"VerificationReceipt(…)"| s10
     click s1 "../modules/verification_contracts.md"
     click s5 "../modules/verification_contracts.md"
     click s8 "../modules/verification_contracts.md"
@@ -95,11 +95,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_verification_receipt` | `isinstance` | 731 |
-| unresolved_call | `build_verification_receipt` | `TypeError` | 732 |
-| unresolved_call | `build_verification_receipt` | `any` | 736 |
-| unresolved_call | `build_verification_receipt` | `isinstance` | 737 |
-| unresolved_call | `build_verification_receipt` | `all` | 745 |
+| external_call | `build_verification_receipt` | `isinstance` | 731 |
+| external_call | `build_verification_receipt` | `TypeError` | 732 |
+| external_call | `build_verification_receipt` | `any` | 736 |
+| external_call | `build_verification_receipt` | `isinstance` | 737 |
+| external_call | `build_verification_receipt` | `all` | 745 |
 
 ## Behavior
 

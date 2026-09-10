@@ -20,53 +20,56 @@
 ```mermaid
 sequenceDiagram
     participant p0 as load_governance
-    participant p1 as Path
+    participant p1 as Path (src/llm_wiki_cli/services…rnance.py:load_governance)
     participant p2 as first_unsafe_path_component
-    participant p3 as fspath
-    participant p4 as abspath
-    participant p5 as is_absolute
-    participant p6 as cwd
-    participant p7 as list
-    participant p8 as pop
-    participant p9 as lstat
-    participant p10 as getattr
-    participant p11 as S_ISLNK
-    participant p12 as bool
-    participant p13 as trusted_symlink_owner
-    participant p14 as callable
-    participant p15 as readlink
-    participant p16 as GovernanceError
-    participant p17 as _read_governance_bytes
-    p0-->>p1: Path
+    participant p3 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p4 as os.fspath
+    participant p5 as os.path.abspath
+    participant p6 as lexical.is_absolute
+    participant p7 as Path.cwd
+    participant p8 as list
+    participant p9 as pending_parts.pop
+    participant p10 as current.lstat
+    participant p11 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p12 as stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p13 as bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p14 as trusted_symlink_owner
+    participant p15 as callable
+    participant p16 as os.readlink
+    participant p17 as link_target.is_absolute
+    participant p18 as GovernanceError
+    participant p19 as _read_governance_bytes
+    participant p20 as path.lstat
+    p0-->>p1: Path (src/llm_wiki_cli/services…rnance.py:load_governance)
     p0->>p2: first_unsafe_path_component
-    p2-->>p1: Path
-    p2-->>p3: fspath
-    p2-->>p1: Path
-    p2-->>p4: abspath
-    p2-->>p5: is_absolute
-    p2-->>p6: cwd
-    p2-->>p1: Path
-    p2-->>p7: list
-    p2-->>p8: pop
-    p2-->>p9: lstat
-    p2-->>p10: getattr
-    p2-->>p10: getattr
-    p2-->>p11: S_ISLNK
-    p2-->>p12: bool
-    p2-->>p12: bool
-    p2-->>p10: getattr
-    p2-->>p13: trusted_symlink_owner
-    p2-->>p14: callable
-    p2-->>p10: getattr
-    p2-->>p1: Path
-    p2-->>p1: Path
-    p2-->>p15: readlink
-    p2-->>p5: is_absolute
-    p2-->>p1: Path
-    p2-->>p7: list
-    p0->>p16: GovernanceError
-    p0->>p17: _read_governance_bytes
-    p17-->>p9: lstat
+    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p4: os.fspath
+    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p5: os.path.abspath
+    p2-->>p6: lexical.is_absolute
+    p2-->>p7: Path.cwd
+    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p8: list
+    p2-->>p9: pending_parts.pop
+    p2-->>p10: current.lstat
+    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p12: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p13: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p13: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p14: trusted_symlink_owner
+    p2-->>p15: callable
+    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p16: os.readlink
+    p2-->>p17: link_target.is_absolute
+    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p2-->>p8: list
+    p0->>p18: GovernanceError
+    p0->>p19: _read_governance_bytes
+    p19-->>p20: path.lstat
 ```
 
 > Call sequence diagram shows 30 of 472 interactions; 442 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -79,26 +82,26 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. load_governance"]
-    s2["2. Path"]
+    s2["2. Path (src/llm_wiki_cli/services…rnance.py:load_governance)"]
     s3["3. first_unsafe_path_component"]
-    s4["4. Path"]
-    s5["5. fspath"]
-    s6["6. Path"]
-    s7["7. abspath"]
-    s8["8. is_absolute"]
-    s9["9. cwd"]
-    s10["10. Path"]
+    s4["4. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s5["5. os.fspath"]
+    s6["6. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s7["7. os.path.abspath"]
+    s8["8. lexical.is_absolute"]
+    s9["9. Path.cwd"]
+    s10["10. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
     s11["11. list"]
-    s12["12. pop"]
-    s1 -. "Path(wiki_dir)" .-> s2
+    s12["12. pending_parts.pop"]
+    s1 -. "Path (src/llm_wiki_cli/services…rnance.py:load_governance)(wiki_dir)" .-> s2
     s1 -->|"first_unsafe_path_component(root)"| s3
-    s3 -. "Path(os.fspath(...))" .-> s4
+    s3 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))" .-> s4
     s3 -. "os.fspath(path)" .-> s5
-    s3 -. "Path(os.path.abspath(...))" .-> s6
+    s3 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))" .-> s6
     s3 -. "os.path.abspath(lexical)" .-> s7
     s3 -. "lexical.is_absolute(data not statically known)" .-> s8
     s3 -. "Path.cwd(data not statically known)" .-> s9
-    s3 -. "Path(absolute.anchor)" .-> s10
+    s3 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(absolute.anchor)" .-> s10
     s3 -. "list(...)" .-> s11
     s3 -. "pending_parts.pop(0)" .-> s12
     b0["mutation pending_parts.pop"]
@@ -114,33 +117,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `load_governance` | `wiki_dir: str \| Path`, `expected_bundle_id: str \| None` | `GOVERNANCE_FILENAME`, `GOVERNANCE_FILENAME` | - | `GovernanceLoadResult(...)` |
-| `Path` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rnance.py:load_governance)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
-| `Path` | - | - | - | - |
-| `fspath` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
-| `is_absolute` | - | - | - | - |
-| `cwd` | - | - | - | - |
-| `Path` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `os.fspath` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `os.path.abspath` | - | - | - | - |
+| `lexical.is_absolute` | - | - | - | - |
+| `Path.cwd` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 | `list` | - | - | - | - |
-| `pop` | - | - | - | - |
+| `pending_parts.pop` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_governance | Path | 765 | `Path(wiki_dir)` |
+| load_governance | Path (src/llm_wiki_cli/services…rnance.py:load_governance) | 765 | `Path(wiki_dir)` |
 | load_governance | first_unsafe_path_component | 766 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path | 50 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | fspath | 50 | `os.fspath(path)` |
-| first_unsafe_path_component | Path | 58 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | abspath | 58 | `os.path.abspath(lexical)` |
-| first_unsafe_path_component | is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | cwd | 65 | `Path.cwd(data not statically known)` |
-| first_unsafe_path_component | Path | 66 | `Path(absolute.anchor)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath | 50 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 58 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath | 58 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | lexical.is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
+| first_unsafe_path_component | Path.cwd | 65 | `Path.cwd(data not statically known)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 66 | `Path(absolute.anchor)` |
 | first_unsafe_path_component | list | 67 | `list(...)` |
-| first_unsafe_path_component | pop | 70 | `pending_parts.pop(0)` |
+| first_unsafe_path_component | pending_parts.pop | 70 | `pending_parts.pop(0)` |
 
 ### Boundary effects
 

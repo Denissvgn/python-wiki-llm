@@ -53,4 +53,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_build_oci_run_command` | type_reference | [broker](../modules/broker.md) | — |
+| `OciImageCommand.from_dict` | call | [broker](../modules/broker.md) | 1 |
 | `OciImageCommand.from_dict` | type_reference | [broker](../modules/broker.md) | — |

@@ -11,25 +11,26 @@
 sequenceDiagram
     participant p0 as require_string_tuple
     participant p1 as require_sequence
-    participant p2 as isinstance
+    participant p2 as isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
     participant p3 as len
     participant p4 as tuple
     participant p5 as require_string
-    participant p6 as encode
-    participant p7 as item_parser
+    participant p6 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p7 as value.encode
+    participant p8 as item_parser
     p0->>p1: require_sequence
-    p1-->>p2: isinstance
-    p1-->>p2: isinstance
-    p1-->>p2: isinstance
-    p1-->>p2: isinstance
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
     p0-->>p3: len
     p0-->>p3: len
     p0-->>p4: tuple
     p0->>p5: require_string
-    p5-->>p2: isinstance
-    p5-->>p6: encode
+    p5-->>p6: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    p5-->>p7: value.encode
     p0-->>p4: tuple
-    p0-->>p7: item_parser
+    p0-->>p8: item_parser
 ```
 
 ## Data flow
@@ -39,26 +40,26 @@ sequenceDiagram
 flowchart LR
     s1["1. require_string_tuple"]
     s2["2. require_sequence"]
-    s3["3. isinstance"]
-    s4["4. isinstance"]
-    s5["5. isinstance"]
-    s6["6. isinstance"]
+    s3["3. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
+    s5["5. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
+    s6["6. isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)"]
     s7["7. len"]
     s8["8. len"]
     s9["9. tuple"]
     s10["10. require_string"]
-    s11["11. isinstance"]
-    s12["12. encode"]
+    s11["11. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
+    s12["12. value.encode"]
     s1 -->|"require_sequence(value, error=error, container_type=container_type)"| s2
-    s2 -. "isinstance(value, (...))" .-> s3
-    s2 -. "isinstance(value, Mapping)" .-> s4
-    s2 -. "isinstance(value, container_type)" .-> s5
-    s2 -. "isinstance(value, Sequence)" .-> s6
+    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, (...))" .-> s3
+    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Mapping)" .-> s4
+    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, container_type)" .-> s5
+    s2 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Sequence)" .-> s6
     s1 -. "len(items)" .-> s7
     s1 -. "len(items)" .-> s8
     s1 -. "tuple(...)" .-> s9
     s1 -->|"require_string(item, error=...)"| s10
-    s10 -. "isinstance(value, str)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s11
     s10 -. "value.encode('utf-8')" .-> s12
     click s1 "../modules/validation.md"
     click s2 "../modules/validation.md"
@@ -71,32 +72,32 @@ flowchart LR
 |---|---|---|---|---|
 | `require_string_tuple` | `value: object`, `error: Exception`, `item_error: Exception \| None`, `minimum: int`, `maximum: int \| None`, `container_type: type[object] \| tuple[type[object], ...]`, `item_parser: Callable[[object], str] \| None` | - | - | `tuple(...)`, `tuple(...)` |
 | `require_sequence` | `value: object`, `error: Exception`, `container_type: type[object] \| tuple[type[object], ...]`, `reject_mapping: bool` | `Mapping`, `Sequence` | - | `value` |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `tuple` | - | - | - | - |
 | `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
-| `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
+| `value.encode` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_string_tuple | require_sequence | 971 | `require_sequence(value, error=error, container_type=container_type)` |
-| require_sequence | isinstance | 752 | `isinstance(value, (...))` |
-| require_sequence | isinstance | 753 | `isinstance(value, Mapping)` |
-| require_sequence | isinstance | 754 | `isinstance(value, container_type)` |
-| require_sequence | isinstance | 757 | `isinstance(value, Sequence)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 752 | `isinstance(value, (...))` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 753 | `isinstance(value, Mapping)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 754 | `isinstance(value, container_type)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 757 | `isinstance(value, Sequence)` |
 | require_string_tuple | len | 976 | `len(items)` |
 | require_string_tuple | len | 977 | `len(items)` |
 | require_string_tuple | tuple | 981 | `tuple(...)` |
 | require_string_tuple | require_string | 982 | `require_string(item, error=...)` |
-| require_string | isinstance | 706 | `isinstance(value, str)` |
-| require_string | encode | 710 | `value.encode('utf-8')` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 706 | `isinstance(value, str)` |
+| require_string | value.encode | 710 | `value.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -106,11 +107,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_sequence` | `isinstance` | 752 |
-| unresolved_call | `require_sequence` | `isinstance` | 753 |
-| unresolved_call | `require_sequence` | `isinstance` | 754 |
-| unresolved_call | `require_sequence` | `isinstance` | 757 |
-| unresolved_call | `require_string` | `isinstance` | 706 |
+| external_call | `require_sequence` | `isinstance` | 752 |
+| external_call | `require_sequence` | `isinstance` | 753 |
+| external_call | `require_sequence` | `isinstance` | 754 |
+| external_call | `require_sequence` | `isinstance` | 757 |
+| external_call | `require_string` | `isinstance` | 706 |
 | unresolved_call | `require_string` | `value.encode` | 710 |
 | step_limit | `require_string_tuple` | `first 12 steps` | 0 |
 

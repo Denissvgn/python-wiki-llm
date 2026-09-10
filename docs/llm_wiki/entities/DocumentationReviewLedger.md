@@ -48,7 +48,6 @@ flowchart LR
     n5["DocumentationReviewLedger.from_dict (src/llm_wiki_cli/services/documentation_review.py)"]
     n6["reconcile_review_ledger (src/llm_wiki_cli/services/documentation_review.py)"]
     n7["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n8["_record_review_ledger_iteration (src/llm_wiki_cli/services/documentation_run/record.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -56,7 +55,6 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
-    n8 --> n0
     click n0 "../modules/documentation_review.md"
     click n1 "../modules/documentation_review.md"
     click n2 "../modules/documentation_review.md"
@@ -65,7 +63,6 @@ flowchart LR
     click n5 "../modules/documentation_review.md"
     click n6 "../modules/documentation_review.md"
     click n7 "../modules/documentation_run_dependencies.md"
-    click n8 "../modules/record.md"
 ```
 
 ### Summary
@@ -83,7 +80,7 @@ flowchart LR
 | `apply_review_loop` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
 | `create_review_ledger` | call | [documentation_review](../modules/documentation_review.md) | 1 |
 | `create_review_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
+| `DocumentationReviewLedger.from_dict` | call | [documentation_review](../modules/documentation_review.md) | 1 |
 | `DocumentationReviewLedger.from_dict` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
 | `reconcile_review_ledger` | type_reference | [documentation_review](../modules/documentation_review.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
-| `_record_review_ledger_iteration` | call | [record](../modules/record.md) | 1 |

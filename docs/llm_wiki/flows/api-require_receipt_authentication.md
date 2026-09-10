@@ -11,37 +11,39 @@
 sequenceDiagram
     participant p0 as require_receipt_authentication
     participant p1 as require_process_host_broker_authenticator
-    participant p2 as get
+    participant p2 as _HOST_BROKER_AUTHENTICATOR.get
     participant p3 as HostBrokerAuthenticationUnavailable
-    participant p4 as isinstance
+    participant p4 as isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
     participant p5 as _require_bounded_text
     participant p6 as require_bounded_text
-    participant p7 as len
-    participant p8 as strip
-    participant p9 as any
-    participant p10 as ord
-    participant p11 as HostBrokerAuthenticationError
-    participant p12 as authenticate_receipt
+    participant p7 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
+    participant p8 as len
+    participant p9 as value.strip
+    participant p10 as any
+    participant p11 as ord
+    participant p12 as HostBrokerAuthenticationError
+    participant p13 as authenticator.authenticate_receipt
+    participant p14 as isinstance (src/llm_wiki_cli/services…ire_receipt_authentication)
     p0->>p1: require_process_host_broker_authenticator
-    p1-->>p2: get
+    p1-->>p2: _HOST_BROKER_AUTHENTICATOR.get
     p1->>p3: HostBrokerAuthenticationUnavailable
-    p1-->>p4: isinstance
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
     p1->>p3: HostBrokerAuthenticationUnavailable
     p1->>p5: _require_bounded_text
     p5->>p6: require_bounded_text
-    p6-->>p4: isinstance
-    p6-->>p7: len
-    p6-->>p7: len
-    p6-->>p8: strip
-    p6-->>p9: any
-    p6-->>p10: ord
-    p6-->>p10: ord
-    p5->>p11: HostBrokerAuthenticationError
-    p0-->>p12: authenticate_receipt
-    p0->>p11: HostBrokerAuthenticationError
-    p0-->>p4: isinstance
-    p0->>p11: HostBrokerAuthenticationError
-    p0->>p11: HostBrokerAuthenticationError
+    p6-->>p7: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
+    p6-->>p8: len
+    p6-->>p8: len
+    p6-->>p9: value.strip
+    p6-->>p10: any
+    p6-->>p11: ord
+    p6-->>p11: ord
+    p5->>p12: HostBrokerAuthenticationError
+    p0-->>p13: authenticator.authenticate_receipt
+    p0->>p12: HostBrokerAuthenticationError
+    p0-->>p14: isinstance (src/llm_wiki_cli/services…ire_receipt_authentication)
+    p0->>p12: HostBrokerAuthenticationError
+    p0->>p12: HostBrokerAuthenticationError
 ```
 
 ## Data flow
@@ -51,24 +53,24 @@ sequenceDiagram
 flowchart LR
     s1["1. require_receipt_authentication"]
     s2["2. require_process_host_broker_authenticator"]
-    s3["3. get"]
+    s3["3. _HOST_BROKER_AUTHENTICATOR.get"]
     s4["4. HostBrokerAuthenticationUnavailable"]
-    s5["5. isinstance"]
+    s5["5. isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)"]
     s6["6. HostBrokerAuthenticationUnavailable"]
     s7["7. _require_bounded_text"]
     s8["8. require_bounded_text"]
-    s9["9. isinstance"]
+    s9["9. isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)"]
     s10["10. len"]
     s11["11. len"]
-    s12["12. strip"]
+    s12["12. value.strip"]
     s1 -->|"require_process_host_broker_authenticator(data not statically known)"| s2
     s2 -. "_HOST_BROKER_AUTHENTICATOR.get(data not statically known)" .-> s3
     s2 -->|"HostBrokerAuthenticationUnavailable('External admission requires a separately authenticated host broker; this process has no host authenticator.')"| s4
-    s2 -. "isinstance(authenticator, HostBrokerAuthenticator)" .-> s5
+    s2 -. "isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)(authenticator, HostBrokerAuthenticator)" .-> s5
     s2 -->|"HostBrokerAuthenticationUnavailable('The process host broker authenticator is malformed.')"| s6
     s2 -->|"_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')"| s7
     s7 -->|"require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))"| s8
-    s8 -. "isinstance(value, str)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)(value, str)" .-> s9
     s8 -. "len(value)" .-> s10
     s8 -. "len(value)" .-> s11
     s8 -. "value.strip(data not statically known)" .-> s12
@@ -86,32 +88,32 @@ flowchart LR
 |---|---|---|---|---|
 | `require_receipt_authentication` | `cohort_id: str`, `execution_manifest: Mapping[str, Any]`, `attestation: Mapping[str, Any]`, `receipt: Mapping[str, Any]`, `receipt_hash: str`, `result: Mapping[str, Any]`, `result_hash: str` | `HostBrokerAuthenticationProof` | - | `proof` |
 | `require_process_host_broker_authenticator` | - | `HostBrokerAuthenticator` | - | `authenticator` |
-| `get` | - | - | - | - |
+| `_HOST_BROKER_AUTHENTICATOR.get` | - | - | - | - |
 | `HostBrokerAuthenticationUnavailable` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)` | - | - | - | - |
 | `HostBrokerAuthenticationUnavailable` | - | - | - | - |
 | `_require_bounded_text` | `value: Any`, `label: str` | - | - | `require_bounded_text(...)` |
 | `require_bounded_text` | `value: object`, `maximum: int`, `error: Exception`, `minimum: int`, `control_error: Exception \| None`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `value` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_receipt_authentication | require_process_host_broker_authenticator | 294 | `require_process_host_broker_authenticator(data not statically known)` |
-| require_process_host_broker_authenticator | get | 234 | `_HOST_BROKER_AUTHENTICATOR.get(data not statically known)` |
+| require_process_host_broker_authenticator | _HOST_BROKER_AUTHENTICATOR.get | 234 | `_HOST_BROKER_AUTHENTICATOR.get(data not statically known)` |
 | require_process_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 236 | `HostBrokerAuthenticationUnavailable('External admission requires a separately authenticated host broker; this process has no host authenticator.')` |
-| require_process_host_broker_authenticator | isinstance | 240 | `isinstance(authenticator, HostBrokerAuthenticator)` |
+| require_process_host_broker_authenticator | isinstance (src/llm_wiki_cli/services…_host_broker_authenticator) | 240 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | require_process_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 241 | `HostBrokerAuthenticationUnavailable('The process host broker authenticator is malformed.')` |
 | require_process_host_broker_authenticator | _require_bounded_text | 244 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance | 605 | `isinstance(value, str)` |
+| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 605 | `isinstance(value, str)` |
 | require_bounded_text | len | 606 | `len(value)` |
 | require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | strip | 608 | `value.strip(data not statically known)` |
+| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -122,8 +124,8 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `require_process_host_broker_authenticator` | `_HOST_BROKER_AUTHENTICATOR.get` | 234 |
-| unresolved_call | `require_process_host_broker_authenticator` | `isinstance` | 240 |
-| unresolved_call | `require_bounded_text` | `isinstance` | 605 |
+| external_call | `require_process_host_broker_authenticator` | `isinstance` | 240 |
+| external_call | `require_bounded_text` | `isinstance` | 605 |
 | unresolved_call | `require_bounded_text` | `value.strip` | 608 |
 | step_limit | `require_receipt_authentication` | `first 12 steps` | 0 |
 

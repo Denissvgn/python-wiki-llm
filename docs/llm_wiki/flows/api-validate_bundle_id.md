@@ -14,40 +14,41 @@ sequenceDiagram
     participant p2 as isinstance
     participant p3 as ConceptIdentityError
     participant p4 as len
-    participant p5 as strip
+    participant p5 as value.strip
     participant p6 as any
-    participant p7 as isspace
-    participant p8 as normalize
-    participant p9 as startswith
-    participant p10 as category
-    participant p11 as fullmatch
-    participant p12 as casefold
+    participant p7 as character.isspace
+    participant p8 as unicodedata.normalize
+    participant p9 as unicodedata.category(…).startswith
+    participant p10 as unicodedata.category
+    participant p11 as _BUNDLE_ID_RE.fullmatch
+    participant p12 as text.casefold
     participant p13 as _looks_absolute_path
-    participant p14 as match
-    participant p15 as _contains_uri_userinfo
-    participant p16 as urlsplit
+    participant p14 as value.startswith
+    participant p15 as _WINDOWS_ABSOLUTE_RE.match
+    participant p16 as _contains_uri_userinfo
+    participant p17 as urlsplit
     p0->>p1: _machine_text
     p1-->>p2: isinstance
     p1->>p3: ConceptIdentityError
     p1-->>p4: len
     p1->>p3: ConceptIdentityError
-    p1-->>p5: strip
+    p1-->>p5: value.strip
     p1-->>p6: any
-    p1-->>p7: isspace
+    p1-->>p7: character.isspace
     p1->>p3: ConceptIdentityError
-    p1-->>p8: normalize
+    p1-->>p8: unicodedata.normalize
     p1->>p3: ConceptIdentityError
     p1-->>p6: any
-    p1-->>p9: startswith
-    p1-->>p10: category
+    p1-->>p9: unicodedata.category(…).startswith
+    p1-->>p10: unicodedata.category
     p1->>p3: ConceptIdentityError
-    p0-->>p11: fullmatch
-    p0-->>p12: casefold
+    p0-->>p11: _BUNDLE_ID_RE.fullmatch
+    p0-->>p12: text.casefold
     p0->>p13: _looks_absolute_path
-    p13-->>p9: startswith
-    p13-->>p14: match
-    p0->>p15: _contains_uri_userinfo
-    p15-->>p16: urlsplit
+    p13-->>p14: value.startswith
+    p13-->>p15: _WINDOWS_ABSOLUTE_RE.match
+    p0->>p16: _contains_uri_userinfo
+    p16-->>p17: urlsplit
     p0->>p3: ConceptIdentityError
 ```
 
@@ -62,11 +63,11 @@ flowchart LR
     s4["4. ConceptIdentityError"]
     s5["5. len"]
     s6["6. ConceptIdentityError"]
-    s7["7. strip"]
+    s7["7. value.strip"]
     s8["8. any"]
-    s9["9. isspace"]
+    s9["9. character.isspace"]
     s10["10. ConceptIdentityError"]
-    s11["11. normalize"]
+    s11["11. unicodedata.normalize"]
     s12["12. ConceptIdentityError"]
     s1 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s2
     s2 -. "isinstance(value, str)" .-> s3
@@ -97,11 +98,11 @@ flowchart LR
 | `ConceptIdentityError` | - | - | - | - |
 | `len` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `any` | - | - | - | - |
-| `isspace` | - | - | - | - |
+| `character.isspace` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `normalize` | - | - | - | - |
+| `unicodedata.normalize` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 
 ### Call data
@@ -113,11 +114,11 @@ flowchart LR
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
 | _machine_text | len | 914 | `len(value)` |
 | _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | strip | 916 | `value.strip(data not statically known)` |
+| _machine_text | value.strip | 916 | `value.strip(data not statically known)` |
 | _machine_text | any | 916 | `any(...)` |
-| _machine_text | isspace | 916 | `character.isspace(data not statically known)` |
+| _machine_text | character.isspace | 916 | `character.isspace(data not statically known)` |
 | _machine_text | ConceptIdentityError | 917 | `ConceptIdentityError(field, 'must not contain whitespace')` |
-| _machine_text | normalize | 918 | `unicodedata.normalize('NFC', value)` |
+| _machine_text | unicodedata.normalize | 918 | `unicodedata.normalize('NFC', value)` |
 | _machine_text | ConceptIdentityError | 919 | `ConceptIdentityError(field, 'must use Unicode NFC normalization')` |
 
 ### Boundary effects
@@ -128,9 +129,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_machine_text` | `isinstance` | 912 |
+| external_call | `_machine_text` | `isinstance` | 912 |
 | unresolved_call | `_machine_text` | `value.strip` | 916 |
-| unresolved_call | `_machine_text` | `any` | 916 |
+| external_call | `_machine_text` | `any` | 916 |
 | unresolved_call | `_machine_text` | `character.isspace` | 916 |
 | external_call | `_machine_text` | `unicodedata.normalize` | 918 |
 | step_limit | `validate_bundle_id` | `first 12 steps` | 0 |

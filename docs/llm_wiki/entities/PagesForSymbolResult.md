@@ -11,8 +11,8 @@ _Auto-generated from `PagesForSymbolResult` in `src/llm_wiki_cli/api_types.py`._
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `symbol` | `dict[str, Any] \| None` | *required* | — |
 | `pages` | `list[dict[str, Any]]` | *required* | — |
 

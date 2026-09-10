@@ -2,27 +2,7 @@
 
 **Entry point:** `verify_documentation_run` (`api`)
 **Source:** [verify](../modules/verify.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_policy](../modules/documentation_policy.md), [documentation_review](../modules/documentation_review.md), and 13 more
-
-**Complete modules touched:**
-
-- [common](../modules/common.md)
-- [config](../modules/config.md)
-- [documentation_policy](../modules/documentation_policy.md)
-- [documentation_review](../modules/documentation_review.md)
-- [documentation_run_contracts](../modules/documentation_run_contracts.md)
-- [documentation_run_schema](../modules/documentation_run_schema.md)
-- [documentation_wiki_input](../modules/documentation_wiki_input.md)
-- [filesystem_guard](../modules/filesystem_guard.md)
-- [integrity](../modules/integrity.md)
-- [io](../modules/io.md)
-- [record](../modules/record.md)
-- [source_selection](../modules/source_selection.md)
-- [source_snapshot](../modules/source_snapshot.md)
-- [validation](../modules/validation.md)
-- [verify](../modules/verify.md)
-- [wiki_media](../modules/wiki_media.md)
-- [workspace](../modules/workspace.md)
+**Modules touched:** [verify](../modules/verify.md)
 
 ## Call sequence
 
@@ -31,55 +11,55 @@
 sequenceDiagram
     participant p0 as verify_documentation_run
     participant p1 as _resolve_workspace_root_argument
-    participant p2 as Path
-    participant p3 as abspath
-    participant p4 as fspath
-    participant p5 as expanduser
-    participant p6 as lexists
-    participant p7 as lstat
-    participant p8 as DocumentationIntegrityError
-    participant p9 as bool
-    participant p10 as getattr
-    participant p11 as S_ISLNK
-    participant p12 as S_ISDIR
-    participant p13 as resolve
-    participant p14 as _assert_existing_workspace_layout_safe
-    participant p15 as _assert_safe_workspace_directory
-    p0->>p1: _resolve_workspace_root_argument
-    p1-->>p2: Path
-    p1-->>p3: abspath
-    p1-->>p4: fspath
-    p1-->>p5: expanduser
-    p1-->>p2: Path
-    p1-->>p6: lexists
-    p1-->>p7: lstat
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p9: bool
-    p1-->>p10: getattr
-    p1-->>p9: bool
-    p1-->>p10: getattr
-    p1-->>p11: S_ISLNK
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p12: S_ISDIR
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p13: resolve
-    p1-->>p6: lexists
-    p1->>p14: _assert_existing_workspace_layout_safe
-    p14-->>p6: lexists
-    p14->>p15: _assert_safe_workspace_directory
-    p15-->>p7: lstat
-    p15->>p8: DocumentationIntegrityError
-    p15-->>p9: bool
-    p15-->>p10: getattr
-    p15-->>p9: bool
-    p15-->>p10: getattr
-    p15-->>p11: S_ISLNK
-    p15->>p8: DocumentationIntegrityError
+    participant p2 as load_documentation_run
+    participant p3 as list
+    participant p4 as checks.extend
+    participant p5 as _verify_read_only_inputs
+    participant p6 as checks.append
+    participant p7 as str
+    participant p8 as run.evidence.get
+    participant p9 as _read_json
+    participant p10 as _workspace_path
+    participant p11 as compare_generated_ownership
+    participant p12 as generated_payload.get
+    participant p13 as any
+    participant p14 as generated_diff.values
+    participant p15 as bool
+    participant p16 as readiness.get
+    participant p17 as evidence_payload.get
+    p0-->>p1: _resolve_workspace_root_argument
+    p0-->>p2: load_documentation_run
+    p0-->>p3: list
+    p0-->>p4: checks.extend
+    p0-->>p5: _verify_read_only_inputs
+    p0-->>p6: checks.append
+    p0-->>p7: str
+    p0-->>p8: run.evidence.get
+    p0-->>p9: _read_json
+    p0-->>p10: _workspace_path
+    p0-->>p11: compare_generated_ownership
+    p0-->>p12: generated_payload.get
+    p0-->>p6: checks.append
+    p0-->>p13: any
+    p0-->>p14: generated_diff.values
+    p0-->>p9: _read_json
+    p0-->>p10: _workspace_path
+    p0-->>p6: checks.append
+    p0-->>p15: bool
+    p0-->>p16: readiness.get
+    p0-->>p16: readiness.get
+    p0-->>p16: readiness.get
+    p0-->>p8: run.evidence.get
+    p0-->>p6: checks.append
+    p0-->>p9: _read_json
+    p0-->>p10: _workspace_path
+    p0-->>p6: checks.append
+    p0-->>p15: bool
+    p0-->>p17: evidence_payload.get
+    p0-->>p17: evidence_payload.get
 ```
 
-> Call sequence diagram shows 30 of 1870 interactions; 1840 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
-
-> Trace truncated at the depth limit; deeper calls are omitted.
+> Call sequence diagram shows 30 of 79 interactions; 49 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -88,27 +68,27 @@ sequenceDiagram
 flowchart LR
     s1["1. verify_documentation_run"]
     s2["2. _resolve_workspace_root_argument"]
-    s3["3. Path"]
-    s4["4. abspath"]
-    s5["5. fspath"]
-    s6["6. expanduser"]
-    s7["7. Path"]
-    s8["8. lexists"]
-    s9["9. lstat"]
-    s10["10. DocumentationIntegrityError"]
-    s11["11. bool"]
-    s12["12. getattr"]
-    s1 -->|"_resolve_workspace_root_argument(workspace)"| s2
-    s2 -. "Path(os.path.abspath(...))" .-> s3
-    s2 -. "os.path.abspath(os.fspath(...))" .-> s4
-    s2 -. "os.fspath(...)" .-> s5
-    s2 -. "Path(workspace).expanduser(data not statically known)" .-> s6
-    s2 -. "Path(workspace)" .-> s7
-    s2 -. "os.path.lexists(requested)" .-> s8
-    s2 -. "requested.lstat(data not statically known)" .-> s9
-    s2 -->|"DocumentationIntegrityError(...)"| s10
-    s2 -. "bool(getattr(...))" .-> s11
-    s2 -. "getattr(entry_stat, 'st_reparse_tag', 0)" .-> s12
+    s3["3. load_documentation_run"]
+    s4["4. list"]
+    s5["5. checks.extend"]
+    s6["6. _verify_read_only_inputs"]
+    s7["7. checks.append"]
+    s8["8. str"]
+    s9["9. run.evidence.get"]
+    s10["10. _read_json"]
+    s11["11. _workspace_path"]
+    s12["12. compare_generated_ownership"]
+    s1 -. "_resolve_workspace_root_argument(workspace)" .-> s2
+    s1 -. "load_documentation_run(workspace_root)" .-> s3
+    s1 -. "list(run.verdict_limitations)" .-> s4
+    s1 -. "checks.extend(_verify_read_only_inputs(...))" .-> s5
+    s1 -. "_verify_read_only_inputs(workspace_root, run)" .-> s6
+    s1 -. "checks.append({...})" .-> s7
+    s1 -. "str(exc)" .-> s8
+    s1 -. "run.evidence.get('generated_ownership')" .-> s9
+    s1 -. "_read_json(_workspace_path(...))" .-> s10
+    s1 -. "_workspace_path(workspace_root, generated_path)" .-> s11
+    s1 -. "compare_generated_ownership(generated_payload.get(...), ...)" .-> s12
     b0["mutation checks.extend"]
     s1 -. "mutation checks.extend" .-> b0
     b1["mutation checks.append"]
@@ -126,8 +106,6 @@ flowchart LR
     b7["mutation checks.append"]
     s1 -. "mutation checks.append" .-> b7
     click s1 "../modules/verify.md"
-    click s2 "../modules/workspace.md"
-    click s10 "../modules/documentation_run_contracts.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -144,33 +122,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `verify_documentation_run` | `workspace: str \| Path`, `advance: bool` | - | `run.evidence[...]`, `run.validation_results` | `report` |
-| `_resolve_workspace_root_argument` | `workspace: str \| Path` | - | - | `resolved` |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
-| `fspath` | - | - | - | - |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `lexists` | - | - | - | - |
-| `lstat` | - | - | - | - |
-| `DocumentationIntegrityError` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `_resolve_workspace_root_argument` | - | - | - | - |
+| `load_documentation_run` | - | - | - | - |
+| `list` | - | - | - | - |
+| `checks.extend` | - | - | - | - |
+| `_verify_read_only_inputs` | - | - | - | - |
+| `checks.append` | - | - | - | - |
+| `str` | - | - | - | - |
+| `run.evidence.get` | - | - | - | - |
+| `_read_json` | - | - | - | - |
+| `_workspace_path` | - | - | - | - |
+| `compare_generated_ownership` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | verify_documentation_run | _resolve_workspace_root_argument | 20 | `_resolve_workspace_root_argument(workspace)` |
-| _resolve_workspace_root_argument | Path | 102 | `Path(os.path.abspath(...))` |
-| _resolve_workspace_root_argument | abspath | 102 | `os.path.abspath(os.fspath(...))` |
-| _resolve_workspace_root_argument | fspath | 102 | `os.fspath(...)` |
-| _resolve_workspace_root_argument | expanduser | 102 | `Path(workspace).expanduser(data not statically known)` |
-| _resolve_workspace_root_argument | Path | 102 | `Path(workspace)` |
-| _resolve_workspace_root_argument | lexists | 103 | `os.path.lexists(requested)` |
-| _resolve_workspace_root_argument | lstat | 105 | `requested.lstat(data not statically known)` |
-| _resolve_workspace_root_argument | DocumentationIntegrityError | 107 | `DocumentationIntegrityError(...)` |
-| _resolve_workspace_root_argument | bool | 110 | `bool(getattr(...))` |
-| _resolve_workspace_root_argument | getattr | 110 | `getattr(entry_stat, 'st_reparse_tag', 0)` |
+| verify_documentation_run | load_documentation_run | 21 | `load_documentation_run(workspace_root)` |
+| verify_documentation_run | list | 23 | `list(run.verdict_limitations)` |
+| verify_documentation_run | checks.extend | 25 | `checks.extend(_verify_read_only_inputs(...))` |
+| verify_documentation_run | _verify_read_only_inputs | 25 | `_verify_read_only_inputs(workspace_root, run)` |
+| verify_documentation_run | checks.append | 27 | `checks.append({...})` |
+| verify_documentation_run | str | 27 | `str(exc)` |
+| verify_documentation_run | run.evidence.get | 29 | `run.evidence.get('generated_ownership')` |
+| verify_documentation_run | _read_json | 31 | `_read_json(_workspace_path(...))` |
+| verify_documentation_run | _workspace_path | 31 | `_workspace_path(workspace_root, generated_path)` |
+| verify_documentation_run | compare_generated_ownership | 32 | `compare_generated_ownership(generated_payload.get(...), ...)` |
 
 ### Boundary effects
 
@@ -189,14 +167,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_resolve_workspace_root_argument` | `os.path.abspath` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `os.fspath` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `Path(workspace).expanduser` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `os.path.lexists` | 103 |
-| unresolved_call | `_resolve_workspace_root_argument` | `requested.lstat` | 105 |
-| unresolved_call | `_resolve_workspace_root_argument` | `getattr` | 110 |
+| unresolved_call | `verify_documentation_run` | `_resolve_workspace_root_argument` | 20 |
+| unresolved_call | `verify_documentation_run` | `load_documentation_run` | 21 |
+| unresolved_call | `verify_documentation_run` | `run.evidence.get` | 29 |
+| unresolved_call | `verify_documentation_run` | `_read_json` | 31 |
+| unresolved_call | `verify_documentation_run` | `_workspace_path` | 31 |
+| unresolved_call | `verify_documentation_run` | `compare_generated_ownership` | 32 |
 | step_limit | `verify_documentation_run` | `first 12 steps` | 0 |
-| truncated_flow | `verify_documentation_run` | `depth limit` | 0 |
 
 ## Behavior
 

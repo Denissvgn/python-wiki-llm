@@ -10,16 +10,16 @@
 ```mermaid
 sequenceDiagram
     participant p0 as retained_concept_page_paths
-    participant p1 as is_dir
-    participant p2 as extend
-    participant p3 as glob
-    participant p4 as is_file
+    participant p1 as root.is_dir
+    participant p2 as paths.extend
+    participant p3 as root.glob
+    participant p4 as path.is_file
     participant p5 as tuple
     participant p6 as sorted
-    p0-->>p1: is_dir
-    p0-->>p2: extend
-    p0-->>p3: glob
-    p0-->>p4: is_file
+    p0-->>p1: root.is_dir
+    p0-->>p2: paths.extend
+    p0-->>p3: root.glob
+    p0-->>p4: path.is_file
     p0-->>p5: tuple
     p0-->>p6: sorted
 ```
@@ -30,10 +30,10 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. retained_concept_page_paths"]
-    s2["2. is_dir"]
-    s3["3. extend"]
-    s4["4. glob"]
-    s5["5. is_file"]
+    s2["2. root.is_dir"]
+    s3["3. paths.extend"]
+    s4["4. root.glob"]
+    s5["5. path.is_file"]
     s6["6. tuple"]
     s7["7. sorted"]
     s1 -. "root.is_dir(data not statically known)" .-> s2
@@ -54,10 +54,10 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `retained_concept_page_paths` | `wiki_dir: Path` | - | - | `tuple(...)` |
-| `is_dir` | - | - | - | - |
-| `extend` | - | - | - | - |
-| `glob` | - | - | - | - |
-| `is_file` | - | - | - | - |
+| `root.is_dir` | - | - | - | - |
+| `paths.extend` | - | - | - | - |
+| `root.glob` | - | - | - | - |
+| `path.is_file` | - | - | - | - |
 | `tuple` | - | - | - | - |
 | `sorted` | - | - | - | - |
 
@@ -65,10 +65,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| retained_concept_page_paths | is_dir | 706 | `root.is_dir(data not statically known)` |
-| retained_concept_page_paths | extend | 708 | `paths.extend(...)` |
-| retained_concept_page_paths | glob | 709 | `root.glob('*.md')` |
-| retained_concept_page_paths | is_file | 709 | `path.is_file(data not statically known)` |
+| retained_concept_page_paths | root.is_dir | 706 | `root.is_dir(data not statically known)` |
+| retained_concept_page_paths | paths.extend | 708 | `paths.extend(...)` |
+| retained_concept_page_paths | root.glob | 709 | `root.glob('*.md')` |
+| retained_concept_page_paths | path.is_file | 709 | `path.is_file(data not statically known)` |
 | retained_concept_page_paths | tuple | 711 | `tuple(sorted(...))` |
 | retained_concept_page_paths | sorted | 711 | `sorted(paths)` |
 
@@ -85,7 +85,7 @@ flowchart LR
 | unresolved_call | `retained_concept_page_paths` | `root.is_dir` | 706 |
 | unresolved_call | `retained_concept_page_paths` | `root.glob` | 709 |
 | unresolved_call | `retained_concept_page_paths` | `path.is_file` | 709 |
-| unresolved_call | `retained_concept_page_paths` | `sorted` | 711 |
+| external_call | `retained_concept_page_paths` | `sorted` | 711 |
 
 ## Behavior
 

@@ -11,50 +11,53 @@
 sequenceDiagram
     participant p0 as open_windows_guarded_lock_file
     participant p1 as WindowsFileGuardError
-    participant p2 as WinDLL
+    participant p2 as ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)
     participant p3 as _private_windows_security_attributes
-    participant p4 as POINTER
-    participant p5 as _current_windows_user_sid
-    participant p6 as HANDLE
-    participant p7 as open_process_token
-    participant p8 as get_current_process
-    participant p9 as byref
-    participant p10 as WinError
-    participant p11 as get_last_error
-    participant p12 as WindowsSecurityGuardError
-    participant p13 as DWORD
-    participant p14 as get_token_information
-    participant p15 as create_string_buffer
+    participant p4 as ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
+    participant p5 as ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)
+    participant p6 as _current_windows_user_sid
+    participant p7 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p8 as ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p9 as wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p10 as open_process_token
+    participant p11 as get_current_process
+    participant p12 as ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p13 as ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p14 as ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p15 as WindowsSecurityGuardError
+    participant p16 as wintypes.DWORD (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p17 as get_token_information
+    participant p18 as ctypes.create_string_buffer
     p0->>p1: WindowsFileGuardError
-    p0-->>p2: WinDLL
+    p0-->>p2: ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)
     p0->>p3: _private_windows_security_attributes
-    p3-->>p2: WinDLL
-    p3-->>p2: WinDLL
-    p3-->>p4: POINTER
-    p3-->>p4: POINTER
-    p3->>p5: _current_windows_user_sid
-    p5-->>p2: WinDLL
-    p5-->>p2: WinDLL
-    p5-->>p4: POINTER
-    p5-->>p4: POINTER
-    p5-->>p6: HANDLE
-    p5-->>p7: open_process_token
-    p5-->>p8: get_current_process
-    p5-->>p9: byref
-    p5-->>p10: WinError
-    p5-->>p11: get_last_error
-    p5->>p12: WindowsSecurityGuardError
-    p5-->>p13: DWORD
-    p5-->>p14: get_token_information
-    p5-->>p9: byref
-    p5-->>p10: WinError
-    p5-->>p11: get_last_error
-    p5->>p12: WindowsSecurityGuardError
-    p5-->>p15: create_string_buffer
-    p5-->>p14: get_token_information
-    p5-->>p9: byref
-    p5-->>p10: WinError
-    p5-->>p11: get_last_error
+    p3-->>p4: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
+    p3-->>p4: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
+    p3-->>p5: ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)
+    p3-->>p5: ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)
+    p3->>p6: _current_windows_user_sid
+    p6-->>p7: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p7: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p8: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p8: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p9: wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p10: open_process_token
+    p6-->>p11: get_current_process
+    p6-->>p12: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p13: ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6->>p15: WindowsSecurityGuardError
+    p6-->>p16: wintypes.DWORD (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p17: get_token_information
+    p6-->>p12: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p13: ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6->>p15: WindowsSecurityGuardError
+    p6-->>p18: ctypes.create_string_buffer
+    p6-->>p17: get_token_information
+    p6-->>p12: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p13: ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
 > Call sequence diagram shows 30 of 169 interactions; 139 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -66,27 +69,27 @@ sequenceDiagram
 flowchart LR
     s1["1. open_windows_guarded_lock_file"]
     s2["2. WindowsFileGuardError"]
-    s3["3. WinDLL"]
+    s3["3. ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)"]
     s4["4. _private_windows_security_attributes"]
-    s5["5. WinDLL"]
-    s6["6. WinDLL"]
-    s7["7. POINTER"]
-    s8["8. POINTER"]
+    s5["5. ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)"]
+    s6["6. ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)"]
+    s7["7. ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)"]
+    s8["8. ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)"]
     s9["9. _current_windows_user_sid"]
-    s10["10. WinDLL"]
-    s11["11. WinDLL"]
-    s12["12. POINTER"]
+    s10["10. ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)"]
+    s11["11. ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)"]
+    s12["12. ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)"]
     s1 -->|"WindowsFileGuardError('Guarded Windows lock files are unavailable on this platform.')"| s2
-    s1 -. "ctypes.WinDLL('kernel32', use_last_error=True)" .-> s3
+    s1 -. "ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)('kernel32', use_last_error=True)" .-> s3
     s1 -->|"_private_windows_security_attributes(directory=False)"| s4
-    s4 -. "ctypes.WinDLL('advapi32', use_last_error=True)" .-> s5
-    s4 -. "ctypes.WinDLL('kernel32', use_last_error=True)" .-> s6
-    s4 -. "ctypes.POINTER(wintypes.LPVOID)" .-> s7
-    s4 -. "ctypes.POINTER(wintypes.DWORD)" .-> s8
+    s4 -. "ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('advapi32', use_last_error=True)" .-> s5
+    s4 -. "ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('kernel32', use_last_error=True)" .-> s6
+    s4 -. "ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)(wintypes.LPVOID)" .-> s7
+    s4 -. "ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)(wintypes.DWORD)" .-> s8
     s4 -->|"_current_windows_user_sid(data not statically known)"| s9
-    s9 -. "ctypes.WinDLL('advapi32', use_last_error=True)" .-> s10
-    s9 -. "ctypes.WinDLL('kernel32', use_last_error=True)" .-> s11
-    s9 -. "ctypes.POINTER(wintypes.HANDLE)" .-> s12
+    s9 -. "ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)('advapi32', use_last_error=True)" .-> s10
+    s9 -. "ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)('kernel32', use_last_error=True)" .-> s11
+    s9 -. "ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)(wintypes.HANDLE)" .-> s12
     click s1 "../modules/filesystem_guard.md"
     click s2 "../modules/filesystem_guard.md"
     click s4 "../modules/filesystem_guard.md"
@@ -99,32 +102,32 @@ flowchart LR
 |---|---|---|---|---|
 | `open_windows_guarded_lock_file` | `path: Path` | `os`, `os` | `create_file.argtypes`, `create_file.restype` | `(...)` |
 | `WindowsFileGuardError` | - | - | - | - |
-| `WinDLL` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)` | - | - | - | - |
 | `_private_windows_security_attributes` | `directory: bool` | - | `convert.argtypes`, `convert.restype`, `local_free.argtypes`, `local_free.restype` | - |
-| `WinDLL` | - | - | - | - |
-| `WinDLL` | - | - | - | - |
-| `POINTER` | - | - | - | - |
-| `POINTER` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
+| `ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
+| `ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)` | - | - | - | - |
 | `_current_windows_user_sid` | - | `ctypes` | `open_process_token.argtypes`, `open_process_token.restype`, `get_token_information.argtypes`, `get_token_information.restype`, `get_current_process.argtypes`, `get_current_process.restype` | `_windows_sid_string(...)` |
-| `WinDLL` | - | - | - | - |
-| `WinDLL` | - | - | - | - |
-| `POINTER` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)` | - | - | - | - |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)` | - | - | - | - |
+| `ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | open_windows_guarded_lock_file | WindowsFileGuardError | 613 | `WindowsFileGuardError('Guarded Windows lock files are unavailable on this platform.')` |
-| open_windows_guarded_lock_file | WinDLL | 618 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| open_windows_guarded_lock_file | ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file) | 618 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
 | open_windows_guarded_lock_file | _private_windows_security_attributes | 632 | `_private_windows_security_attributes(directory=False)` |
-| _private_windows_security_attributes | WinDLL | 943 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _private_windows_security_attributes | WinDLL | 944 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _private_windows_security_attributes | POINTER | 949 | `ctypes.POINTER(wintypes.LPVOID)` |
-| _private_windows_security_attributes | POINTER | 950 | `ctypes.POINTER(wintypes.DWORD)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 943 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 944 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 949 | `ctypes.POINTER(wintypes.LPVOID)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 950 | `ctypes.POINTER(wintypes.DWORD)` |
 | _private_windows_security_attributes | _current_windows_user_sid | 964 | `_current_windows_user_sid(data not statically known)` |
-| _current_windows_user_sid | WinDLL | 992 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _current_windows_user_sid | WinDLL | 993 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _current_windows_user_sid | POINTER | 998 | `ctypes.POINTER(wintypes.HANDLE)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 992 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 993 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid) | 998 | `ctypes.POINTER(wintypes.HANDLE)` |
 
 ### Boundary effects
 

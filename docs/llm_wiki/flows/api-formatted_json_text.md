@@ -10,8 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as formatted_json_text
-    participant p1 as dumps
-    p0-->>p1: dumps
+    participant p1 as json.dumps
+    p0-->>p1: json.dumps
 ```
 
 ## Data flow
@@ -20,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. formatted_json_text"]
-    s2["2. dumps"]
+    s2["2. json.dumps"]
     s1 -. "json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)" .-> s2
     click s1 "../modules/knowledge_evidence.md"
 ```
@@ -30,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `formatted_json_text` | `value: Any` | - | - | `...` |
-| `dumps` | - | - | - | - |
+| `json.dumps` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| formatted_json_text | dumps | 177 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| formatted_json_text | json.dumps | 178 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `formatted_json_text` | `json.dumps` | 177 |
+| external_call | `formatted_json_text` | `json.dumps` | 178 |
 
 ## Behavior
 

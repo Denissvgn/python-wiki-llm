@@ -53,7 +53,6 @@ flowchart LR
     n9["OciDispatchReceipt.create (src/llm_wiki_cli/services/calibration/broker.py)"]
     n10["OciRuntimeConfig.from_dict (src/llm_wiki_cli/services/calibration/broker.py)"]
     n11["OciRuntimeConfig.from_execution_manifest (src/llm_wiki_cli/services/calibration/broker.py)"]
-    n12["src/llm_wiki_cli/services/calibration/controller.py"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -65,7 +64,6 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
-    n12 --> n0
     click n0 "../modules/broker.md"
     click n1 "../modules/broker.md"
     click n2 "../modules/broker.md"
@@ -78,7 +76,6 @@ flowchart LR
     click n9 "../modules/broker.md"
     click n10 "../modules/broker.md"
     click n11 "../modules/broker.md"
-    click n12 "../modules/controller.md"
 ```
 
 ### Summary
@@ -100,6 +97,8 @@ flowchart LR
 | `dispatch_oci_agent` | type_reference | [broker](../modules/broker.md) | — |
 | `execute_oci_admission_probe` | type_reference | [broker](../modules/broker.md) | — |
 | `OciDispatchReceipt.create` | type_reference | [broker](../modules/broker.md) | — |
+| `OciRuntimeConfig.from_dict` | call | [broker](../modules/broker.md) | 1 |
 | `OciRuntimeConfig.from_dict` | type_reference | [broker](../modules/broker.md) | — |
 | `OciRuntimeConfig.from_execution_manifest` | type_reference | [broker](../modules/broker.md) | — |
-| `controller` | import | [controller](../modules/controller.md) | — |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

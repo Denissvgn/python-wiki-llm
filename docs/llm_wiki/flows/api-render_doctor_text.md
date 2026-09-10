@@ -10,29 +10,32 @@
 ```mermaid
 sequenceDiagram
     participant p0 as render_doctor_text
-    participant p1 as to_payload
-    participant p2 as isinstance
+    participant p1 as report.to_payload
+    participant p2 as isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)
     participant p3 as _format_counts
-    participant p4 as join
-    participant p5 as append
-    participant p6 as extend
-    p0-->>p1: to_payload
-    p0-->>p2: isinstance
-    p0-->>p2: isinstance
-    p0-->>p2: isinstance
-    p0-->>p2: isinstance
-    p0-->>p2: isinstance
-    p0-->>p2: isinstance
+    participant p4 as isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)
+    participant p5 as ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)
+    participant p6 as lines.append
+    participant p7 as lines.extend
+    participant p8 as ', '.join (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    participant p9 as '\n'.join
+    p0-->>p1: report.to_payload
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)
     p0->>p3: _format_counts
-    p3-->>p2: isinstance
-    p3-->>p4: join
-    p0-->>p5: append
-    p0-->>p6: extend
-    p0-->>p5: append
-    p0-->>p4: join
-    p0-->>p5: append
-    p0-->>p4: join
-    p0-->>p4: join
+    p3-->>p4: isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)
+    p3-->>p5: ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)
+    p0-->>p6: lines.append
+    p0-->>p7: lines.extend
+    p0-->>p6: lines.append
+    p0-->>p8: ', '.join (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    p0-->>p6: lines.append
+    p0-->>p8: ', '.join (src/llm_wiki_cli/services…vice.py:render_doctor_text)
+    p0-->>p9: '\n'.join
 ```
 
 ## Data flow
@@ -41,27 +44,27 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. render_doctor_text"]
-    s2["2. to_payload"]
-    s3["3. isinstance"]
-    s4["4. isinstance"]
-    s5["5. isinstance"]
-    s6["6. isinstance"]
-    s7["7. isinstance"]
-    s8["8. isinstance"]
+    s2["2. report.to_payload"]
+    s3["3. isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)"]
+    s5["5. isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)"]
+    s6["6. isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)"]
+    s7["7. isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)"]
+    s8["8. isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)"]
     s9["9. _format_counts"]
-    s10["10. isinstance"]
-    s11["11. join"]
-    s12["12. append"]
+    s10["10. isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)"]
+    s11["11. ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)"]
+    s12["12. lines.append"]
     s1 -. "report.to_payload(data not statically known)" .-> s2
-    s1 -. "isinstance(availability, Mapping)" .-> s3
-    s1 -. "isinstance(freshness, Mapping)" .-> s4
-    s1 -. "isinstance(snapshot, Mapping)" .-> s5
-    s1 -. "isinstance(governance, Mapping)" .-> s6
-    s1 -. "isinstance(drift, Mapping)" .-> s7
-    s1 -. "isinstance(verification, Mapping)" .-> s8
+    s1 -. "isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)(availability, Mapping)" .-> s3
+    s1 -. "isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)(freshness, Mapping)" .-> s4
+    s1 -. "isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)(snapshot, Mapping)" .-> s5
+    s1 -. "isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)(governance, Mapping)" .-> s6
+    s1 -. "isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)(drift, Mapping)" .-> s7
+    s1 -. "isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)(verification, Mapping)" .-> s8
     s1 -->|"_format_counts(freshness[...])"| s9
-    s9 -. "isinstance(value, Mapping)" .-> s10
-    s9 -. "', '.join(...)" .-> s11
+    s9 -. "isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)(value, Mapping)" .-> s10
+    s9 -. "', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)(...)" .-> s11
     s1 -. "lines.append(...)" .-> s12
     b0["mutation lines.append"]
     s1 -. "mutation lines.append" .-> b0
@@ -85,33 +88,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `render_doctor_text` | `report: DoctorReport` | `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping` | - | `...` |
-| `to_payload` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `report.to_payload` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text)` | - | - | - | - |
 | `_format_counts` | `value: object` | `Mapping`, `_FRESHNESS_STATES` | - | `None`, `...` |
-| `isinstance` | - | - | - | - |
-| `join` | - | - | - | - |
-| `append` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)` | - | - | - | - |
+| `', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)` | - | - | - | - |
+| `lines.append` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_doctor_text | to_payload | 219 | `report.to_payload(data not statically known)` |
-| render_doctor_text | isinstance | 226 | `isinstance(availability, Mapping)` |
-| render_doctor_text | isinstance | 227 | `isinstance(freshness, Mapping)` |
-| render_doctor_text | isinstance | 228 | `isinstance(snapshot, Mapping)` |
-| render_doctor_text | isinstance | 229 | `isinstance(governance, Mapping)` |
-| render_doctor_text | isinstance | 230 | `isinstance(drift, Mapping)` |
-| render_doctor_text | isinstance | 231 | `isinstance(verification, Mapping)` |
+| render_doctor_text | report.to_payload | 219 | `report.to_payload(data not statically known)` |
+| render_doctor_text | isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text) | 226 | `isinstance(availability, Mapping)` |
+| render_doctor_text | isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text) | 227 | `isinstance(freshness, Mapping)` |
+| render_doctor_text | isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text) | 228 | `isinstance(snapshot, Mapping)` |
+| render_doctor_text | isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text) | 229 | `isinstance(governance, Mapping)` |
+| render_doctor_text | isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text) | 230 | `isinstance(drift, Mapping)` |
+| render_doctor_text | isinstance (src/llm_wiki_cli/services…vice.py:render_doctor_text) | 231 | `isinstance(verification, Mapping)` |
 | render_doctor_text | _format_counts | 233 | `_format_counts(freshness[...])` |
-| _format_counts | isinstance | 651 | `isinstance(value, Mapping)` |
-| _format_counts | join | 653 | `', '.join(...)` |
-| render_doctor_text | append | 244 | `lines.append(...)` |
+| _format_counts | isinstance (src/llm_wiki_cli/services…_service.py:_format_counts) | 651 | `isinstance(value, Mapping)` |
+| _format_counts | ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts) | 653 | `', '.join(...)` |
+| render_doctor_text | lines.append | 244 | `lines.append(...)` |
 
 ### Boundary effects
 
@@ -127,13 +130,13 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `render_doctor_text` | `report.to_payload` | 219 |
-| unresolved_call | `render_doctor_text` | `isinstance` | 226 |
-| unresolved_call | `render_doctor_text` | `isinstance` | 227 |
-| unresolved_call | `render_doctor_text` | `isinstance` | 228 |
-| unresolved_call | `render_doctor_text` | `isinstance` | 229 |
-| unresolved_call | `render_doctor_text` | `isinstance` | 230 |
-| unresolved_call | `render_doctor_text` | `isinstance` | 231 |
-| unresolved_call | `_format_counts` | `isinstance` | 651 |
+| external_call | `render_doctor_text` | `isinstance` | 226 |
+| external_call | `render_doctor_text` | `isinstance` | 227 |
+| external_call | `render_doctor_text` | `isinstance` | 228 |
+| external_call | `render_doctor_text` | `isinstance` | 229 |
+| external_call | `render_doctor_text` | `isinstance` | 230 |
+| external_call | `render_doctor_text` | `isinstance` | 231 |
+| external_call | `_format_counts` | `isinstance` | 651 |
 | unresolved_call | `_format_counts` | `', '.join` | 653 |
 | step_limit | `render_doctor_text` | `first 12 steps` | 0 |
 

@@ -11,8 +11,8 @@ _Auto-generated from `_ContextRequired` in `src/llm_wiki_cli/api_types.py`._
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `budget` | `int` | *required* | — |
 | `used` | `int` | *required* | — |
 | `truncated` | `bool` | *required* | — |

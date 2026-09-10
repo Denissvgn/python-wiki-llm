@@ -11,8 +11,8 @@ Counts returned with a wiki-page listing.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `total` | `int` | *required* | — |
 | `by_kind` | `dict[str, int]` | *required* | — |
 | `architecture_pages` | `int` | *required* | — |

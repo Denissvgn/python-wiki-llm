@@ -11,51 +11,59 @@
 sequenceDiagram
     participant p0 as compute_sync_diff
     participant p1 as SyncDiff
-    participant p2 as items
-    participant p3 as get
-    participant p4 as add
-    participant p5 as setdefault
-    participant p6 as set
-    participant p7 as len
-    participant p8 as next
-    participant p9 as iter
-    participant p10 as append
-    participant p11 as hash_file
-    participant p12 as sha256_bytes
-    participant p13 as hexdigest
-    participant p14 as sha256
-    participant p15 as read_bytes
-    participant p16 as Path
+    participant p2 as manifest.sources.items
+    participant p3 as info.get
+    participant p4 as old_cls_to_files.setdefault(…).add
+    participant p5 as old_cls_to_files.setdefault
+    participant p6 as set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p7 as inventory.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p8 as file_data.get
+    participant p9 as new_cls_to_files.setdefault(…).add
+    participant p10 as new_cls_to_files.setdefault
+    participant p11 as old_cls_to_files.items
+    participant p12 as new_cls_to_files.get
+    participant p13 as len (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p14 as next (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p15 as iter
+    participant p16 as diff.new_files.append
+    participant p17 as hash_file
+    participant p18 as sha256_bytes
+    participant p19 as hashlib.sha256(…).hexdigest
+    participant p20 as hashlib.sha256
+    participant p21 as path.read_bytes
+    participant p22 as Path (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p23 as manifest.sources[…].get
+    participant p24 as diff.unchanged_files.append
     p0->>p1: SyncDiff
-    p0-->>p2: items
-    p0-->>p3: get
-    p0-->>p4: add
-    p0-->>p5: setdefault
-    p0-->>p6: set
-    p0-->>p2: items
-    p0-->>p3: get
-    p0-->>p4: add
-    p0-->>p5: setdefault
-    p0-->>p6: set
-    p0-->>p2: items
-    p0-->>p3: get
-    p0-->>p6: set
-    p0-->>p7: len
-    p0-->>p7: len
-    p0-->>p8: next
-    p0-->>p9: iter
-    p0-->>p8: next
-    p0-->>p9: iter
-    p0-->>p2: items
-    p0-->>p10: append
-    p0->>p11: hash_file
-    p11->>p12: sha256_bytes
-    p12-->>p13: hexdigest
-    p12-->>p14: sha256
-    p11-->>p15: read_bytes
-    p0-->>p16: Path
-    p0-->>p3: get
-    p0-->>p10: append
+    p0-->>p2: manifest.sources.items
+    p0-->>p3: info.get
+    p0-->>p4: old_cls_to_files.setdefault(…).add
+    p0-->>p5: old_cls_to_files.setdefault
+    p0-->>p6: set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p7: inventory.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p8: file_data.get
+    p0-->>p9: new_cls_to_files.setdefault(…).add
+    p0-->>p10: new_cls_to_files.setdefault
+    p0-->>p6: set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p11: old_cls_to_files.items
+    p0-->>p12: new_cls_to_files.get
+    p0-->>p6: set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p13: len (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p13: len (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p14: next (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p15: iter
+    p0-->>p14: next (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p15: iter
+    p0-->>p7: inventory.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p16: diff.new_files.append
+    p0->>p17: hash_file
+    p17->>p18: sha256_bytes
+    p18-->>p19: hashlib.sha256(…).hexdigest
+    p18-->>p20: hashlib.sha256
+    p17-->>p21: path.read_bytes
+    p0-->>p22: Path (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p23: manifest.sources[…].get
+    p0-->>p24: diff.unchanged_files.append
 ```
 
 > Call sequence diagram shows 30 of 140 interactions; 110 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -69,27 +77,27 @@ sequenceDiagram
 flowchart LR
     s1["1. compute_sync_diff"]
     s2["2. SyncDiff"]
-    s3["3. items"]
-    s4["4. get"]
-    s5["5. add"]
-    s6["6. setdefault"]
-    s7["7. set"]
-    s8["8. items"]
-    s9["9. get"]
-    s10["10. add"]
-    s11["11. setdefault"]
-    s12["12. set"]
+    s3["3. manifest.sources.items"]
+    s4["4. info.get"]
+    s5["5. old_cls_to_files.setdefault(…).add"]
+    s6["6. old_cls_to_files.setdefault"]
+    s7["7. set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)"]
+    s8["8. inventory.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)"]
+    s9["9. file_data.get"]
+    s10["10. new_cls_to_files.setdefault(…).add"]
+    s11["11. new_cls_to_files.setdefault"]
+    s12["12. set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)"]
     s1 -->|"SyncDiff(data not statically known)"| s2
     s1 -. "manifest.sources.items(data not statically known)" .-> s3
     s1 -. "info.get('entities', [...])" .-> s4
-    s1 -. "old_cls_to_files.setdefault(class_name, set()).add(filepath)" .-> s5
+    s1 -. "old_cls_to_files.setdefault(…).add(filepath)" .-> s5
     s1 -. "old_cls_to_files.setdefault(class_name, set(...))" .-> s6
-    s1 -. "set(data not statically known)" .-> s7
-    s1 -. "inventory.items(data not statically known)" .-> s8
+    s1 -. "set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)(data not statically known)" .-> s7
+    s1 -. "inventory.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)(data not statically known)" .-> s8
     s1 -. "file_data.get('classes', [...])" .-> s9
-    s1 -. "new_cls_to_files.setdefault(class_record['name'], set()).add(filepath)" .-> s10
+    s1 -. "new_cls_to_files.setdefault(…).add(filepath)" .-> s10
     s1 -. "new_cls_to_files.setdefault(class_record[...], set(...))" .-> s11
-    s1 -. "set(data not statically known)" .-> s12
+    s1 -. "set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)(data not statically known)" .-> s12
     b0["mutation diff.new_files.append"]
     s1 -. "mutation diff.new_files.append" .-> b0
     b1["mutation diff.unchanged_files.append"]
@@ -116,32 +124,32 @@ flowchart LR
 |---|---|---|---|---|
 | `compute_sync_diff` | `manifest: SyncManifest`, `inventory: dict`, `src_dir: str`, `entity_page_cache: dict[tuple[str, str], str] \| None`, `module_page_map: dict[str, str] \| None`, `source_content_hashes: Mapping[str, str] \| None` | - | `diff.moved_entities[...]`, `diff.renamed_module_pages[...]` | `diff` |
 | `SyncDiff` | - | - | - | - |
-| `items` | - | - | - | - |
-| `get` | - | - | - | - |
-| `add` | - | - | - | - |
-| `setdefault` | - | - | - | - |
-| `set` | - | - | - | - |
-| `items` | - | - | - | - |
-| `get` | - | - | - | - |
-| `add` | - | - | - | - |
-| `setdefault` | - | - | - | - |
-| `set` | - | - | - | - |
+| `manifest.sources.items` | - | - | - | - |
+| `info.get` | - | - | - | - |
+| `old_cls_to_files.setdefault(…).add` | - | - | - | - |
+| `old_cls_to_files.setdefault` | - | - | - | - |
+| `set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)` | - | - | - | - |
+| `inventory.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)` | - | - | - | - |
+| `file_data.get` | - | - | - | - |
+| `new_cls_to_files.setdefault(…).add` | - | - | - | - |
+| `new_cls_to_files.setdefault` | - | - | - | - |
+| `set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | compute_sync_diff | SyncDiff | 58 | `SyncDiff(data not statically known)` |
-| compute_sync_diff | items | 61 | `manifest.sources.items(data not statically known)` |
-| compute_sync_diff | get | 62 | `info.get('entities', [...])` |
-| compute_sync_diff | add | 63 | `old_cls_to_files.setdefault(class_name, set()).add(filepath)` |
-| compute_sync_diff | setdefault | 63 | `old_cls_to_files.setdefault(class_name, set(...))` |
-| compute_sync_diff | set | 63 | `set(data not statically known)` |
-| compute_sync_diff | items | 66 | `inventory.items(data not statically known)` |
-| compute_sync_diff | get | 67 | `file_data.get('classes', [...])` |
-| compute_sync_diff | add | 68 | `new_cls_to_files.setdefault(class_record['name'], set()).add(filepath)` |
-| compute_sync_diff | setdefault | 68 | `new_cls_to_files.setdefault(class_record[...], set(...))` |
-| compute_sync_diff | set | 68 | `set(data not statically known)` |
+| compute_sync_diff | manifest.sources.items | 61 | `manifest.sources.items(data not statically known)` |
+| compute_sync_diff | info.get | 62 | `info.get('entities', [...])` |
+| compute_sync_diff | old_cls_to_files.setdefault(…).add | 63 | `old_cls_to_files.setdefault(class_name, set()).add(filepath)` |
+| compute_sync_diff | old_cls_to_files.setdefault | 63 | `old_cls_to_files.setdefault(class_name, set(...))` |
+| compute_sync_diff | set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff) | 63 | `set(data not statically known)` |
+| compute_sync_diff | inventory.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff) | 66 | `inventory.items(data not statically known)` |
+| compute_sync_diff | file_data.get | 67 | `file_data.get('classes', [...])` |
+| compute_sync_diff | new_cls_to_files.setdefault(…).add | 68 | `new_cls_to_files.setdefault(class_record['name'], set()).add(filepath)` |
+| compute_sync_diff | new_cls_to_files.setdefault | 68 | `new_cls_to_files.setdefault(class_record[...], set(...))` |
+| compute_sync_diff | set (src/llm_wiki_cli/services…ysis.py:compute_sync_diff) | 68 | `set(data not statically known)` |
 
 ### Boundary effects
 

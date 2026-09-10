@@ -10,27 +10,27 @@
 ```mermaid
 sequenceDiagram
     participant p0 as require_portable_path_component
-    participant p1 as encode
+    participant p1 as component.encode
     participant p2 as SharedValidationError
-    participant p3 as normalize
+    participant p3 as unicodedata.normalize
     participant p4 as any
     participant p5 as ord
-    participant p6 as endswith
-    participant p7 as casefold
-    participant p8 as split
-    p0-->>p1: encode
+    participant p6 as component.endswith
+    participant p7 as component.split(…)[…].casefold
+    participant p8 as component.split
+    p0-->>p1: component.encode
     p0->>p2: SharedValidationError
-    p0-->>p3: normalize
+    p0-->>p3: unicodedata.normalize
     p0->>p2: SharedValidationError
     p0-->>p4: any
     p0-->>p5: ord
     p0-->>p5: ord
     p0->>p2: SharedValidationError
-    p0-->>p6: endswith
+    p0-->>p6: component.endswith
     p0-->>p4: any
     p0->>p2: SharedValidationError
-    p0-->>p7: casefold
-    p0-->>p8: split
+    p0-->>p7: component.split(…)[…].casefold
+    p0-->>p8: component.split
     p0->>p2: SharedValidationError
 ```
 
@@ -40,15 +40,15 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. require_portable_path_component"]
-    s2["2. encode"]
+    s2["2. component.encode"]
     s3["3. SharedValidationError"]
-    s4["4. normalize"]
+    s4["4. unicodedata.normalize"]
     s5["5. SharedValidationError"]
     s6["6. any"]
     s7["7. ord"]
     s8["8. ord"]
     s9["9. SharedValidationError"]
-    s10["10. endswith"]
+    s10["10. component.endswith"]
     s11["11. any"]
     s12["12. SharedValidationError"]
     s1 -. "component.encode('utf-8')" .-> s2
@@ -74,15 +74,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `require_portable_path_component` | `component: str`, `context: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `utf8_error: Exception \| None`, `control_error: Exception \| None`, `non_nfc_error: Exception \| None`, `nonportable_error: Exception \| None` | `_WINDOWS_FORBIDDEN_PATH_CHARS`, `_WINDOWS_RESERVED_NAMES` | - | `component` |
-| `encode` | - | - | - | - |
+| `component.encode` | - | - | - | - |
 | `SharedValidationError` | - | - | - | - |
-| `normalize` | - | - | - | - |
+| `unicodedata.normalize` | - | - | - | - |
 | `SharedValidationError` | - | - | - | - |
 | `any` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `SharedValidationError` | - | - | - | - |
-| `endswith` | - | - | - | - |
+| `component.endswith` | - | - | - | - |
 | `any` | - | - | - | - |
 | `SharedValidationError` | - | - | - | - |
 
@@ -90,15 +90,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_portable_path_component | encode | 93 | `component.encode('utf-8')` |
+| require_portable_path_component | component.encode | 93 | `component.encode('utf-8')` |
 | require_portable_path_component | SharedValidationError | 95 | `SharedValidationError(...)` |
-| require_portable_path_component | normalize | 100 | `unicodedata.normalize('NFC', component)` |
+| require_portable_path_component | unicodedata.normalize | 100 | `unicodedata.normalize('NFC', component)` |
 | require_portable_path_component | SharedValidationError | 102 | `SharedValidationError(...)` |
 | require_portable_path_component | any | 105 | `any(...)` |
 | require_portable_path_component | ord | 106 | `ord(character)` |
 | require_portable_path_component | ord | 107 | `ord(character)` |
 | require_portable_path_component | SharedValidationError | 110 | `SharedValidationError(...)` |
-| require_portable_path_component | endswith | 113 | `component.endswith((...))` |
+| require_portable_path_component | component.endswith | 113 | `component.endswith((...))` |
 | require_portable_path_component | any | 113 | `any(...)` |
 | require_portable_path_component | SharedValidationError | 117 | `SharedValidationError(...)` |
 
@@ -112,11 +112,11 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `require_portable_path_component` | `component.encode` | 93 |
 | external_call | `require_portable_path_component` | `unicodedata.normalize` | 100 |
-| unresolved_call | `require_portable_path_component` | `any` | 105 |
-| unresolved_call | `require_portable_path_component` | `ord` | 106 |
-| unresolved_call | `require_portable_path_component` | `ord` | 107 |
+| external_call | `require_portable_path_component` | `any` | 105 |
+| external_call | `require_portable_path_component` | `ord` | 106 |
+| external_call | `require_portable_path_component` | `ord` | 107 |
 | unresolved_call | `require_portable_path_component` | `component.endswith` | 113 |
-| unresolved_call | `require_portable_path_component` | `any` | 113 |
+| external_call | `require_portable_path_component` | `any` | 113 |
 | step_limit | `require_portable_path_component` | `first 12 steps` | 0 |
 
 ## Behavior

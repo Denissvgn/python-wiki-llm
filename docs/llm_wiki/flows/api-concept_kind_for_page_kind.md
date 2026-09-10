@@ -60,7 +60,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `concept_kind_for_page_kind` | `isinstance` | 485 |
+| external_call | `concept_kind_for_page_kind` | `isinstance` | 485 |
 
 ## Behavior
 

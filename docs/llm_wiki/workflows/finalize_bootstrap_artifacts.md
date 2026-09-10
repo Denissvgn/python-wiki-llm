@@ -1,23 +1,24 @@
 # finalize_bootstrap_artifacts
 
 **Entry point:** `bootstrap_runtime._finalize_bootstrap_artifacts`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [extraction_service](../modules/extraction_service.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [knowledge_reuse](../modules/knowledge_reuse.md), [wiki_surface_index](../modules/wiki_surface_index.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `io.io`
-2. `knowledge_artifacts.KnowledgeCommitResult`
-3. `sync_manifest.SyncManifest`
-4. `extraction_service.InventoryResult`
+1. `wiki_surface_index.evaluate_surface_index`
+2. `knowledge_orchestration.collect_runtime_repository_evidence`
+3. `knowledge_orchestration.runtime_generation_options`
+4. `knowledge_reuse.build_reuse_input_basis`
+5. `knowledge_orchestration.finalize_runtime_knowledge`
+6. `knowledge_orchestration.RuntimeKnowledgeInputs`
 
 ## Touches
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
-- [extraction_service](../modules/extraction_service.md)
-- [io](../modules/io.md)
-- [knowledge_artifacts](../modules/knowledge_artifacts.md)
-- [sync_manifest](../modules/sync_manifest.md)
+- [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [wiki_surface_index](../modules/wiki_surface_index.md)
 
 ## Behavior
 

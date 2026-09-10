@@ -12,12 +12,12 @@ sequenceDiagram
     participant p0 as require_enum_value
     participant p1 as require_string
     participant p2 as isinstance
-    participant p3 as encode
+    participant p3 as value.encode
     participant p4 as enum_type
     participant p5 as choice_error
     p0->>p1: require_string
     p1-->>p2: isinstance
-    p1-->>p3: encode
+    p1-->>p3: value.encode
     p0-->>p4: enum_type
     p0-->>p5: choice_error
 ```
@@ -30,7 +30,7 @@ flowchart LR
     s1["1. require_enum_value"]
     s2["2. require_string"]
     s3["3. isinstance"]
-    s4["4. encode"]
+    s4["4. value.encode"]
     s5["5. enum_type"]
     s6["6. choice_error"]
     s1 -->|"require_string(value, error=text_error)"| s2
@@ -49,7 +49,7 @@ flowchart LR
 | `require_enum_value` | `value: object`, `enum_type: Callable[[str], _EnumValue]`, `text_error: Exception`, `choice_error: Callable[[], Exception]` | - | - | `enum_type(...)` |
 | `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
 | `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `value.encode` | - | - | - | - |
 | `enum_type` | - | - | - | - |
 | `choice_error` | - | - | - | - |
 
@@ -59,7 +59,7 @@ flowchart LR
 |---|---|---:|---|
 | require_enum_value | require_string | 1069 | `require_string(value, error=text_error)` |
 | require_string | isinstance | 706 | `isinstance(value, str)` |
-| require_string | encode | 710 | `value.encode('utf-8')` |
+| require_string | value.encode | 710 | `value.encode('utf-8')` |
 | require_enum_value | enum_type | 1071 | `enum_type(parsed)` |
 | require_enum_value | choice_error | 1073 | `choice_error(data not statically known)` |
 
@@ -71,7 +71,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_string` | `isinstance` | 706 |
+| external_call | `require_string` | `isinstance` | 706 |
 | unresolved_call | `require_string` | `value.encode` | 710 |
 | unresolved_call | `require_enum_value` | `enum_type` | 1071 |
 | unresolved_call | `require_enum_value` | `choice_error` | 1073 |

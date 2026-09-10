@@ -9,56 +9,59 @@
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
-    participant p0 as derive_concept_uid
-    participant p1 as validate_bundle_id
-    participant p2 as _machine_text
-    participant p3 as isinstance
-    participant p4 as ConceptIdentityError
-    participant p5 as len
-    participant p6 as strip
-    participant p7 as any
-    participant p8 as isspace
-    participant p9 as normalize
-    participant p10 as startswith
-    participant p11 as category
-    participant p12 as fullmatch
-    participant p13 as casefold
-    participant p14 as _looks_absolute_path
-    participant p15 as match
-    participant p16 as _contains_uri_userinfo
-    participant p17 as urlsplit
-    participant p18 as validate_concept_kind
-    participant p19 as validate_natural_key
-    p0->>p0: derive_concept_uid
-    p0->>p1: validate_bundle_id
-    p1->>p2: _machine_text
-    p2-->>p3: isinstance
-    p2->>p4: ConceptIdentityError
-    p2-->>p5: len
-    p2->>p4: ConceptIdentityError
-    p2-->>p6: strip
-    p2-->>p7: any
-    p2-->>p8: isspace
-    p2->>p4: ConceptIdentityError
-    p2-->>p9: normalize
-    p2->>p4: ConceptIdentityError
-    p2-->>p7: any
-    p2-->>p10: startswith
-    p2-->>p11: category
-    p2->>p4: ConceptIdentityError
-    p1-->>p12: fullmatch
-    p1-->>p13: casefold
-    p1->>p14: _looks_absolute_path
-    p14-->>p10: startswith
-    p14-->>p15: match
-    p1->>p16: _contains_uri_userinfo
-    p16-->>p17: urlsplit
-    p1->>p4: ConceptIdentityError
-    p0->>p18: validate_concept_kind
-    p18->>p2: _machine_text
-    p18-->>p12: fullmatch
-    p18->>p4: ConceptIdentityError
-    p0->>p19: validate_natural_key
+    participant p0 as derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p1 as derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)
+    participant p2 as validate_bundle_id
+    participant p3 as _machine_text
+    participant p4 as isinstance
+    participant p5 as ConceptIdentityError
+    participant p6 as len
+    participant p7 as value.strip
+    participant p8 as any (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p9 as character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p10 as unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p11 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p12 as unicodedata.category (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p13 as _BUNDLE_ID_RE.fullmatch
+    participant p14 as text.casefold
+    participant p15 as _looks_absolute_path
+    participant p16 as value.startswith
+    participant p17 as _WINDOWS_ABSOLUTE_RE.match
+    participant p18 as _contains_uri_userinfo
+    participant p19 as urlsplit
+    participant p20 as validate_concept_kind
+    participant p21 as _QUALIFIED_KIND_RE.fullmatch
+    participant p22 as validate_natural_key
+    p0->>p1: derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)
+    p1->>p2: validate_bundle_id
+    p2->>p3: _machine_text
+    p3-->>p4: isinstance
+    p3->>p5: ConceptIdentityError
+    p3-->>p6: len
+    p3->>p5: ConceptIdentityError
+    p3-->>p7: value.strip
+    p3-->>p8: any (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p3-->>p9: character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p3->>p5: ConceptIdentityError
+    p3-->>p10: unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p3->>p5: ConceptIdentityError
+    p3-->>p8: any (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p3-->>p11: unicodedata.category(…).startswith (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p3-->>p12: unicodedata.category (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p3->>p5: ConceptIdentityError
+    p2-->>p13: _BUNDLE_ID_RE.fullmatch
+    p2-->>p14: text.casefold
+    p2->>p15: _looks_absolute_path
+    p15-->>p16: value.startswith
+    p15-->>p17: _WINDOWS_ABSOLUTE_RE.match
+    p2->>p18: _contains_uri_userinfo
+    p18-->>p19: urlsplit
+    p2->>p5: ConceptIdentityError
+    p1->>p20: validate_concept_kind
+    p20->>p3: _machine_text
+    p20-->>p21: _QUALIFIED_KIND_RE.fullmatch
+    p20->>p5: ConceptIdentityError
+    p1->>p22: validate_natural_key
 ```
 
 > Call sequence diagram shows 30 of 79 interactions; 49 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -68,19 +71,19 @@ sequenceDiagram
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
 ```mermaid
 flowchart LR
-    s1["1. derive_concept_uid"]
-    s2["2. derive_concept_uid"]
+    s1["1. derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    s2["2. derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)"]
     s3["3. validate_bundle_id"]
     s4["4. _machine_text"]
     s5["5. isinstance"]
     s6["6. ConceptIdentityError"]
     s7["7. len"]
     s8["8. ConceptIdentityError"]
-    s9["9. strip"]
-    s10["10. any"]
-    s11["11. isspace"]
+    s9["9. value.strip"]
+    s10["10. any (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
+    s11["11. character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)"]
     s12["12. ConceptIdentityError"]
-    s1 -->|"_derive_identity_uid(bundle_id, concept_kind, natural_key)"| s2
+    s1 -->|"derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)(bundle_id, concept_kind, natural_key)"| s2
     s2 -->|"validate_bundle_id(bundle_id)"| s3
     s3 -->|"_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)"| s4
     s4 -. "isinstance(value, str)" .-> s5
@@ -88,8 +91,8 @@ flowchart LR
     s4 -. "len(value)" .-> s7
     s4 -->|"ConceptIdentityError(field, ...)"| s8
     s4 -. "value.strip(data not statically known)" .-> s9
-    s4 -. "any(...)" .-> s10
-    s4 -. "character.isspace(data not statically known)" .-> s11
+    s4 -. "any (src/llm_wiki_cli/services…_identity.py:_machine_text)(...)" .-> s10
+    s4 -. "character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)(data not statically known)" .-> s11
     s4 -->|"ConceptIdentityError(field, 'must not contain whitespace')"| s12
     click s1 "../modules/knowledge_governance.md"
     click s2 "../modules/concept_identity.md"
@@ -104,33 +107,33 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `derive_concept_uid` | `bundle_id: str`, `concept_kind: str`, `natural_key: str` | `ConceptIdentityError` | - | `_derive_identity_uid(...)` |
-| `derive_concept_uid` | `bundle_id: object`, `concept_kind: object`, `natural_key: object` | `CONCEPT_UID_HEX_LENGTH` | - | `...` |
+| `derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)` | `bundle_id: str`, `concept_kind: str`, `natural_key: str` | `ConceptIdentityError` | - | `_derive_identity_uid(...)` |
+| `derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)` | `bundle_id: object`, `concept_kind: object`, `natural_key: object` | `CONCEPT_UID_HEX_LENGTH` | - | `...` |
 | `validate_bundle_id` | `value: object` | `_MAX_BUNDLE_ID_LENGTH` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
 | `isinstance` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 | `len` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `isspace` | - | - | - | - |
+| `value.strip` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
+| `character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)` | - | - | - | - |
 | `ConceptIdentityError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| derive_concept_uid | derive_concept_uid | 407 | `_derive_identity_uid(bundle_id, concept_kind, natural_key)` |
-| derive_concept_uid | validate_bundle_id | 504 | `validate_bundle_id(bundle_id)` |
+| derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py) | derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py) | 407 | `_derive_identity_uid(bundle_id, concept_kind, natural_key)` |
+| derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py) | validate_bundle_id | 504 | `validate_bundle_id(bundle_id)` |
 | validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance | 912 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
 | _machine_text | len | 914 | `len(value)` |
 | _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | strip | 916 | `value.strip(data not statically known)` |
-| _machine_text | any | 916 | `any(...)` |
-| _machine_text | isspace | 916 | `character.isspace(data not statically known)` |
+| _machine_text | value.strip | 916 | `value.strip(data not statically known)` |
+| _machine_text | any (src/llm_wiki_cli/services…_identity.py:_machine_text) | 916 | `any(...)` |
+| _machine_text | character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text) | 916 | `character.isspace(data not statically known)` |
 | _machine_text | ConceptIdentityError | 917 | `ConceptIdentityError(field, 'must not contain whitespace')` |
 
 ### Boundary effects
@@ -141,9 +144,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_machine_text` | `isinstance` | 912 |
+| external_call | `_machine_text` | `isinstance` | 912 |
 | unresolved_call | `_machine_text` | `value.strip` | 916 |
-| unresolved_call | `_machine_text` | `any` | 916 |
+| external_call | `_machine_text` | `any` | 916 |
 | unresolved_call | `_machine_text` | `character.isspace` | 916 |
 | step_limit | `derive_concept_uid` | `first 12 steps` | 0 |
 

@@ -69,4 +69,5 @@ flowchart LR
 | `_status_from_run` | call | [controller](../modules/controller.md) | 1 |
 | `_status_from_run` | type_reference | [controller](../modules/controller.md) | — |
 | `get_calibration_run_status` | type_reference | [controller](../modules/controller.md) | — |
+| `P0CalibrationStatus.from_dict` | call | [controller](../modules/controller.md) | 1 |
 | `P0CalibrationStatus.from_dict` | type_reference | [controller](../modules/controller.md) | — |

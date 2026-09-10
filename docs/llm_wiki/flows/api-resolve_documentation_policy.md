@@ -19,54 +19,56 @@
 sequenceDiagram
     participant p0 as resolve_documentation_policy
     participant p1 as _resolve_path
-    participant p2 as resolve
-    participant p3 as expanduser
-    participant p4 as Path
+    participant p2 as Path(…).expanduser().resolve
+    participant p3 as Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
+    participant p4 as Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
     participant p5 as DocumentationPolicyError
     participant p6 as _resolve_optional_root
     participant p7 as _resolve_existing_directory
-    participant p8 as _lstat
-    participant p9 as lstat
-    participant p10 as _assert_safe_directory
-    participant p11 as S_ISLNK
-    participant p12 as _is_windows_reparse_point
-    participant p13 as int
-    participant p14 as getattr
-    participant p15 as bool
-    participant p16 as S_ISDIR
-    participant p17 as _assert_same_file_identity
-    participant p18 as windows_object_identity
-    participant p19 as windows_object_identity_from_values
+    participant p8 as Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
+    participant p9 as Path (src/llm_wiki_cli/services…esolve_existing_directory)
+    participant p10 as _lstat
+    participant p11 as os.lstat
+    participant p12 as _assert_safe_directory
+    participant p13 as stat.S_ISLNK (src/llm_wiki_cli/services…py:_assert_safe_directory)
+    participant p14 as _is_windows_reparse_point
+    participant p15 as int (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    participant p16 as getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    participant p17 as bool (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    participant p18 as stat.S_ISDIR (src/llm_wiki_cli/services…py:_assert_safe_directory)
+    participant p19 as _assert_same_file_identity
+    participant p20 as windows_object_identity
+    participant p21 as windows_object_identity_from_values
     p0->>p1: _resolve_path
-    p1-->>p2: resolve
-    p1-->>p3: expanduser
-    p1-->>p4: Path
+    p1-->>p2: Path(…).expanduser().resolve
+    p1-->>p3: Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
+    p1-->>p4: Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
     p1->>p5: DocumentationPolicyError
     p0->>p6: _resolve_optional_root
     p6->>p7: _resolve_existing_directory
-    p7-->>p3: expanduser
-    p7-->>p4: Path
-    p7->>p8: _lstat
-    p8-->>p9: lstat
-    p8->>p5: DocumentationPolicyError
-    p7->>p10: _assert_safe_directory
-    p10-->>p11: S_ISLNK
+    p7-->>p8: Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
+    p7-->>p9: Path (src/llm_wiki_cli/services…esolve_existing_directory)
+    p7->>p10: _lstat
+    p10-->>p11: os.lstat
     p10->>p5: DocumentationPolicyError
-    p10->>p12: _is_windows_reparse_point
-    p12-->>p13: int
-    p12-->>p14: getattr
-    p12-->>p13: int
-    p12-->>p14: getattr
-    p12-->>p15: bool
-    p10->>p5: DocumentationPolicyError
-    p10-->>p16: S_ISDIR
-    p10->>p5: DocumentationPolicyError
+    p7->>p12: _assert_safe_directory
+    p12-->>p13: stat.S_ISLNK (src/llm_wiki_cli/services…py:_assert_safe_directory)
+    p12->>p5: DocumentationPolicyError
+    p12->>p14: _is_windows_reparse_point
+    p14-->>p15: int (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p14-->>p16: getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p14-->>p15: int (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p14-->>p16: getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p14-->>p17: bool (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p12->>p5: DocumentationPolicyError
+    p12-->>p18: stat.S_ISDIR (src/llm_wiki_cli/services…py:_assert_safe_directory)
+    p12->>p5: DocumentationPolicyError
     p7->>p1: _resolve_path
-    p7->>p8: _lstat
-    p7->>p10: _assert_safe_directory
-    p7->>p17: _assert_same_file_identity
-    p17->>p18: windows_object_identity
-    p18->>p19: windows_object_identity_from_values
+    p7->>p10: _lstat
+    p7->>p12: _assert_safe_directory
+    p7->>p19: _assert_same_file_identity
+    p19->>p20: windows_object_identity
+    p20->>p21: windows_object_identity_from_values
 ```
 
 > Call sequence diagram shows 30 of 233 interactions; 203 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -80,25 +82,25 @@ sequenceDiagram
 flowchart LR
     s1["1. resolve_documentation_policy"]
     s2["2. _resolve_path"]
-    s3["3. resolve"]
-    s4["4. expanduser"]
-    s5["5. Path"]
+    s3["3. Path(…).expanduser().resolve"]
+    s4["4. Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)"]
+    s5["5. Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)"]
     s6["6. DocumentationPolicyError"]
     s7["7. _resolve_optional_root"]
     s8["8. _resolve_existing_directory"]
-    s9["9. expanduser"]
-    s10["10. Path"]
+    s9["9. Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)"]
+    s10["10. Path (src/llm_wiki_cli/services…esolve_existing_directory)"]
     s11["11. _lstat"]
-    s12["12. lstat"]
+    s12["12. os.lstat"]
     s1 -->|"_resolve_path(workspace_root)"| s2
-    s2 -. "Path(path).expanduser().resolve(strict=False)" .-> s3
-    s2 -. "Path(path).expanduser(data not statically known)" .-> s4
-    s2 -. "Path(path)" .-> s5
+    s2 -. "Path(…).expanduser().resolve(strict=False)" .-> s3
+    s2 -. "Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)(data not statically known)" .-> s4
+    s2 -. "Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)(path)" .-> s5
     s2 -->|"DocumentationPolicyError(...)"| s6
     s1 -->|"_resolve_optional_root(source_root, 'source root')"| s7
     s7 -->|"_resolve_existing_directory(path, label)"| s8
-    s8 -. "Path(path).expanduser(data not statically known)" .-> s9
-    s8 -. "Path(path)" .-> s10
+    s8 -. "Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)(data not statically known)" .-> s9
+    s8 -. "Path (src/llm_wiki_cli/services…esolve_existing_directory)(path)" .-> s10
     s8 -->|"_lstat(candidate, context=label)"| s11
     s11 -. "os.lstat(path)" .-> s12
     click s1 "../modules/documentation_policy.md"
@@ -115,32 +117,32 @@ flowchart LR
 |---|---|---|---|---|
 | `resolve_documentation_policy` | `workspace_root: str \| Path`, `source_root: str \| Path \| None`, `source_selection: str \| Path \| None`, `input_wiki_root: str \| Path \| None`, `helper_cache_root: str \| Path \| None`, `capture_root: str \| Path \| None`, `trust_source_plugins: bool`, `live_service_url: str \| None` | `SourceSelectionError` | - | `DocumentationMutationPolicy(...)` |
 | `_resolve_path` | `path: str \| Path` | - | - | `...` |
-| `resolve` | - | - | - | - |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
+| `Path(…).expanduser().resolve` | - | - | - | - |
+| `Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)` | - | - | - | - |
 | `DocumentationPolicyError` | - | - | - | - |
 | `_resolve_optional_root` | `path: str \| Path \| None`, `label: str` | - | - | `None`, `_resolve_existing_directory(...)` |
 | `_resolve_existing_directory` | `path: str \| Path`, `label: str` | - | - | `resolved` |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
+| `Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…esolve_existing_directory)` | - | - | - | - |
 | `_lstat` | `path: Path`, `context: str` | - | - | `os.lstat(...)` |
-| `lstat` | - | - | - | - |
+| `os.lstat` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | resolve_documentation_policy | _resolve_path | 217 | `_resolve_path(workspace_root)` |
-| _resolve_path | resolve | 983 | `Path(path).expanduser().resolve(strict=False)` |
-| _resolve_path | expanduser | 983 | `Path(path).expanduser(data not statically known)` |
-| _resolve_path | Path | 983 | `Path(path)` |
+| _resolve_path | Path(…).expanduser().resolve | 983 | `Path(path).expanduser().resolve(strict=False)` |
+| _resolve_path | Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path) | 983 | `Path(path).expanduser(data not statically known)` |
+| _resolve_path | Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path) | 983 | `Path(path)` |
 | _resolve_path | DocumentationPolicyError | 985 | `DocumentationPolicyError(...)` |
 | resolve_documentation_policy | _resolve_optional_root | 218 | `_resolve_optional_root(source_root, 'source root')` |
 | _resolve_optional_root | _resolve_existing_directory | 974 | `_resolve_existing_directory(path, label)` |
-| _resolve_existing_directory | expanduser | 948 | `Path(path).expanduser(data not statically known)` |
-| _resolve_existing_directory | Path | 948 | `Path(path)` |
+| _resolve_existing_directory | Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory) | 948 | `Path(path).expanduser(data not statically known)` |
+| _resolve_existing_directory | Path (src/llm_wiki_cli/services…esolve_existing_directory) | 948 | `Path(path)` |
 | _resolve_existing_directory | _lstat | 949 | `_lstat(candidate, context=label)` |
-| _lstat | lstat | 782 | `os.lstat(path)` |
+| _lstat | os.lstat | 782 | `os.lstat(path)` |
 
 ### Boundary effects
 

@@ -14,14 +14,14 @@ sequenceDiagram
     participant p2 as TypeError
     participant p3 as dict
     participant p4 as tuple
-    participant p5 as fromkeys
+    participant p5 as dict.fromkeys
     participant p6 as PreparedRuntimeGenerationOptions
     p0-->>p1: isinstance
     p0-->>p2: TypeError
     p0-->>p3: dict
     p0-->>p3: dict
     p0-->>p4: tuple
-    p0-->>p5: fromkeys
+    p0-->>p5: dict.fromkeys
     p0->>p6: PreparedRuntimeGenerationOptions
 ```
 
@@ -36,7 +36,7 @@ flowchart LR
     s4["4. dict"]
     s5["5. dict"]
     s6["6. tuple"]
-    s7["7. fromkeys"]
+    s7["7. dict.fromkeys"]
     s8["8. PreparedRuntimeGenerationOptions"]
     s1 -. "isinstance(inventory_complete, bool)" .-> s2
     s1 -. "TypeError('inventory_complete must be a boolean')" .-> s3
@@ -59,7 +59,7 @@ flowchart LR
 | `dict` | - | - | - | - |
 | `dict` | - | - | - | - |
 | `tuple` | - | - | - | - |
-| `fromkeys` | - | - | - | - |
+| `dict.fromkeys` | - | - | - | - |
 | `PreparedRuntimeGenerationOptions` | - | - | - | - |
 
 ### Call data
@@ -71,7 +71,7 @@ flowchart LR
 | prepare_runtime_generation_options | dict | 319 | `dict(generation_options)` |
 | prepare_runtime_generation_options | dict | 321 | `dict(generation_option_defaults)` |
 | prepare_runtime_generation_options | tuple | 323 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | fromkeys | 324 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | dict.fromkeys | 324 | `dict.fromkeys((...))` |
 | prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 326 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
 
 ### Boundary effects
@@ -82,9 +82,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `prepare_runtime_generation_options` | `isinstance` | 317 |
-| unresolved_call | `prepare_runtime_generation_options` | `TypeError` | 318 |
-| unresolved_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 324 |
+| external_call | `prepare_runtime_generation_options` | `isinstance` | 317 |
+| external_call | `prepare_runtime_generation_options` | `TypeError` | 318 |
+| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 324 |
 
 ## Behavior
 

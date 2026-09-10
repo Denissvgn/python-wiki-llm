@@ -11,14 +11,14 @@ Top-level JSON context payload.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `graphs` | `dict[str, Any]` | *required* | — |
-| `knowledge` | `ContextKnowledgeResult \| dict[str, Any]` | *required* | — |
-| `typed_graph` | `dict[str, Any]` | *required* | — |
-| `surface` | `dict[str, Any]` | *required* | — |
-| `ranking_policy` | `RankingPolicy \| dict[str, Any]` | *required* | — |
-| `warnings` | `list[str]` | *required* | — |
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
+| `graphs` | `dict[str, Any]` | *optional* | — |
+| `knowledge` | `ContextKnowledgeResult \| dict[str, Any]` | *optional* | — |
+| `typed_graph` | `dict[str, Any]` | *optional* | — |
+| `surface` | `dict[str, Any]` | *optional* | — |
+| `ranking_policy` | `RankingPolicy \| dict[str, Any]` | *optional* | — |
+| `warnings` | `list[str]` | *optional* | — |
 
 ## Methods
 

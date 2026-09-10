@@ -19,7 +19,7 @@ content is preserved under a Legacy Notes section.
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `..services.bootstrap_runtime` | `_build_relationships`, `_generate_docker_md`, `_generate_entity_md`, `_generate_index_md`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `..services.concept_identity` | `AliasType`, `identity_coordinate_key` |
-| `..services.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures` |
+| `..services.extraction_service` | `InventoryResult`, `_workflow_name`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures` |
 | `..services.io` | `read_md`, `write_json_atomic`, `write_md` |
 | `..services.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `ArtifactWriteState` |
 | `..services.knowledge_envelope` | `RepositoryEvidence` |
@@ -74,10 +74,10 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExistingPage](../entities/ExistingPage.md) | 112 | — | A currently active wiki page before migration. |
-| [TargetPage](../entities/TargetPage.md) | 128 | — | A canonical page generated from the current source inventory. |
-| [MigrationPlan](../entities/MigrationPlan.md) | 141 | — | Computed migration operations, shared by apply and dry-run paths. |
-| [MigrationChunk](../entities/MigrationChunk.md) | 169 | — | A bounded subset of currently pending migration work. |
+| [ExistingPage](../entities/ExistingPage.md) | 113 | — | A currently active wiki page before migration. |
+| [TargetPage](../entities/TargetPage.md) | 129 | — | A canonical page generated from the current source inventory. |
+| [MigrationPlan](../entities/MigrationPlan.md) | 142 | — | Computed migration operations, shared by apply and dry-run paths. |
+| [MigrationChunk](../entities/MigrationChunk.md) | 170 | — | A bounded subset of currently pending migration work. |
 
 ## Functions
 
@@ -101,6 +101,7 @@ flowchart LR
 | `_list_flows` | `(wiki_dir: Path) -> list[dict]` | — | — |
 | `_list_architecture_pages` | `(wiki_dir: Path) -> list[dict]` | — | — |
 | `_build_workflow_link_maps` | `(wiki_dir: Path, inventory: dict, module_page_map: dict[str, str]) -> dict[str, dict[str, str]]` | — | Return per-workflow rewrites for raw module-stem links. |
+| `_workflow_link_sources` | `(inventory: dict, module_page_map: dict[str, str]) -> dict[str, set[str]]` | — | Keep legacy type-reference link repair separate from workflow detection. |
 | `_unique` | `(values: list[TargetPage]) -> TargetPage \| None` | — | — |
 | `_build_match_lookups` | `(targets: list[TargetPage]) -> dict[str, dict]` | — | — |
 | `_match_existing_page` | `(page: ExistingPage, lookups: dict[str, dict]) -> TargetPage \| None` | — | — |

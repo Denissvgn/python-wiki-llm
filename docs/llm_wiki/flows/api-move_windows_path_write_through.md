@@ -11,32 +11,32 @@
 sequenceDiagram
     participant p0 as move_windows_path_write_through
     participant p1 as WindowsDurabilityError
-    participant p2 as WinDLL
+    participant p2 as ctypes.WinDLL
     participant p3 as move_file
     participant p4 as _windows_api_path
-    participant p5 as abspath
-    participant p6 as fspath
-    participant p7 as startswith
+    participant p5 as os.path.abspath
+    participant p6 as os.fspath
+    participant p7 as value.startswith
     participant p8 as Path
-    participant p9 as get_last_error
+    participant p9 as ctypes.get_last_error
     participant p10 as FileExistsError
-    participant p11 as strerror
-    participant p12 as WinError
+    participant p11 as os.strerror
+    participant p12 as ctypes.WinError
     p0->>p1: WindowsDurabilityError
-    p0-->>p2: WinDLL
+    p0-->>p2: ctypes.WinDLL
     p0-->>p3: move_file
     p0->>p4: _windows_api_path
-    p4-->>p5: abspath
-    p4-->>p6: fspath
-    p4-->>p7: startswith
-    p4-->>p7: startswith
+    p4-->>p5: os.path.abspath
+    p4-->>p6: os.fspath
+    p4-->>p7: value.startswith
+    p4-->>p7: value.startswith
     p0-->>p8: Path
     p0->>p4: _windows_api_path
     p0-->>p8: Path
-    p0-->>p9: get_last_error
+    p0-->>p9: ctypes.get_last_error
     p0-->>p10: FileExistsError
-    p0-->>p11: strerror
-    p0-->>p12: WinError
+    p0-->>p11: os.strerror
+    p0-->>p12: ctypes.WinError
     p0->>p1: WindowsDurabilityError
 ```
 
@@ -47,13 +47,13 @@ sequenceDiagram
 flowchart LR
     s1["1. move_windows_path_write_through"]
     s2["2. WindowsDurabilityError"]
-    s3["3. WinDLL"]
+    s3["3. ctypes.WinDLL"]
     s4["4. move_file"]
     s5["5. _windows_api_path"]
-    s6["6. abspath"]
-    s7["7. fspath"]
-    s8["8. startswith"]
-    s9["9. startswith"]
+    s6["6. os.path.abspath"]
+    s7["7. os.fspath"]
+    s8["8. value.startswith"]
+    s9["9. value.startswith"]
     s10["10. Path"]
     s11["11. _windows_api_path"]
     s12["12. Path"]
@@ -80,13 +80,13 @@ flowchart LR
 |---|---|---|---|---|
 | `move_windows_path_write_through` | `source: Path`, `target: Path`, `replace_existing: bool` | `os` | `move_file.argtypes`, `move_file.restype` | - |
 | `WindowsDurabilityError` | - | - | - | - |
-| `WinDLL` | - | - | - | - |
+| `ctypes.WinDLL` | - | - | - | - |
 | `move_file` | - | - | - | - |
 | `_windows_api_path` | `path: Path` | - | - | `value`, `...`, `...` |
-| `abspath` | - | - | - | - |
-| `fspath` | - | - | - | - |
-| `startswith` | - | - | - | - |
-| `startswith` | - | - | - | - |
+| `os.path.abspath` | - | - | - | - |
+| `os.fspath` | - | - | - | - |
+| `value.startswith` | - | - | - | - |
+| `value.startswith` | - | - | - | - |
 | `Path` | - | - | - | - |
 | `_windows_api_path` | `path: Path` | - | - | `value`, `...`, `...` |
 | `Path` | - | - | - | - |
@@ -96,13 +96,13 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | move_windows_path_write_through | WindowsDurabilityError | 689 | `WindowsDurabilityError('Write-through Windows moves are unavailable on this platform.')` |
-| move_windows_path_write_through | WinDLL | 694 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| move_windows_path_write_through | ctypes.WinDLL | 694 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
 | move_windows_path_write_through | move_file | 701 | `move_file(_windows_api_path(...), _windows_api_path(...), flags)` |
 | move_windows_path_write_through | _windows_api_path | 702 | `_windows_api_path(Path(...))` |
-| _windows_api_path | abspath | 1298 | `os.path.abspath(os.fspath(...))` |
-| _windows_api_path | fspath | 1298 | `os.fspath(path)` |
-| _windows_api_path | startswith | 1299 | `value.startswith('\\\\?\\')` |
-| _windows_api_path | startswith | 1301 | `value.startswith('\\\\')` |
+| _windows_api_path | os.path.abspath | 1298 | `os.path.abspath(os.fspath(...))` |
+| _windows_api_path | os.fspath | 1298 | `os.fspath(path)` |
+| _windows_api_path | value.startswith | 1299 | `value.startswith('\\\\?\\')` |
+| _windows_api_path | value.startswith | 1301 | `value.startswith('\\\\')` |
 | move_windows_path_write_through | Path | 702 | `Path(source)` |
 | move_windows_path_write_through | _windows_api_path | 703 | `_windows_api_path(Path(...))` |
 | move_windows_path_write_through | Path | 703 | `Path(target)` |

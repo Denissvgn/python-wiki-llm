@@ -12,7 +12,7 @@ sequenceDiagram
     participant p0 as redact_credentials
     participant p1 as apply
     participant p2 as str
-    participant p3 as group
+    participant p3 as match.group
     p0-->>p1: apply
     p0-->>p1: apply
     p0-->>p1: apply
@@ -22,10 +22,10 @@ sequenceDiagram
     p0-->>p1: apply
     p0-->>p1: apply
     p0-->>p2: str
-    p0-->>p3: group
+    p0-->>p3: match.group
     p0-->>p1: apply
     p0-->>p2: str
-    p0-->>p3: group
+    p0-->>p3: match.group
 ```
 
 ## Data flow
@@ -43,7 +43,7 @@ flowchart LR
     s8["8. apply"]
     s9["9. apply"]
     s10["10. str"]
-    s11["11. group"]
+    s11["11. match.group"]
     s12["12. apply"]
     s1 -. "apply(PRIVATE_KEY_BLOCK_RE, REDACTED_CREDENTIAL)" .-> s2
     s1 -. "apply(pattern, REDACTED_CREDENTIAL)" .-> s3
@@ -73,7 +73,7 @@ flowchart LR
 | `apply` | - | - | - | - |
 | `apply` | - | - | - | - |
 | `str` | - | - | - | - |
-| `group` | - | - | - | - |
+| `match.group` | - | - | - | - |
 | `apply` | - | - | - | - |
 
 ### Call data
@@ -89,7 +89,7 @@ flowchart LR
 | redact_credentials | apply | 333 | `apply(_REDACTION_SENSITIVE_NATURAL_LANGUAGE_RE, _assignment_replacement)` |
 | redact_credentials | apply | 334 | `apply(_REDACTABLE_URI_USERINFO_RE, ...)` |
 | redact_credentials | str | 336 | `str(match.group(...))` |
-| redact_credentials | group | 336 | `match.group('scheme')` |
+| redact_credentials | match.group | 336 | `match.group('scheme')` |
 | redact_credentials | apply | 338 | `apply(_REDACTABLE_PROJECTION_URI_USERINFO_RE, ...)` |
 
 ### Boundary effects

@@ -11,17 +11,17 @@
 sequenceDiagram
     participant p0 as attach_fastapi_declarations
     participant p1 as extract_fastapi_declarations
-    participant p2 as parse
+    participant p2 as ast.parse
     participant p3 as _FastAPIScanner
-    participant p4 as visit
-    participant p5 as result
-    participant p6 as setdefault
+    participant p4 as scanner.visit
+    participant p5 as scanner.result
+    participant p6 as file_entry.setdefault
     p0->>p1: extract_fastapi_declarations
-    p1-->>p2: parse
+    p1-->>p2: ast.parse
     p1->>p3: _FastAPIScanner
-    p1-->>p4: visit
-    p1-->>p5: result
-    p0-->>p6: setdefault
+    p1-->>p4: scanner.visit
+    p1-->>p5: scanner.result
+    p0-->>p6: file_entry.setdefault
 ```
 
 ## Data flow
@@ -31,11 +31,11 @@ sequenceDiagram
 flowchart LR
     s1["1. attach_fastapi_declarations"]
     s2["2. extract_fastapi_declarations"]
-    s3["3. parse"]
+    s3["3. ast.parse"]
     s4["4. _FastAPIScanner"]
-    s5["5. visit"]
-    s6["6. result"]
-    s7["7. setdefault"]
+    s5["5. scanner.visit"]
+    s6["6. scanner.result"]
+    s7["7. file_entry.setdefault"]
     s1 -->|"extract_fastapi_declarations(source, filepath=filepath)"| s2
     s2 -. "ast.parse(source, filename=...)" .-> s3
     s2 -->|"_FastAPIScanner(tree, filepath)"| s4
@@ -53,22 +53,22 @@ flowchart LR
 |---|---|---|---|---|
 | `attach_fastapi_declarations` | `file_entry: dict[str, Any]`, `source: str`, `filepath: str` | - | - | `file_entry` |
 | `extract_fastapi_declarations` | `source: str`, `filepath: str` | - | - | `{...}`, `scanner.result(...)` |
-| `parse` | - | - | - | - |
+| `ast.parse` | - | - | - | - |
 | `_FastAPIScanner` | - | - | - | - |
-| `visit` | - | - | - | - |
-| `result` | - | - | - | - |
-| `setdefault` | - | - | - | - |
+| `scanner.visit` | - | - | - | - |
+| `scanner.result` | - | - | - | - |
+| `file_entry.setdefault` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | attach_fastapi_declarations | extract_fastapi_declarations | 489 | `extract_fastapi_declarations(source, filepath=filepath)` |
-| extract_fastapi_declarations | parse | 474 | `ast.parse(source, filename=...)` |
+| extract_fastapi_declarations | ast.parse | 474 | `ast.parse(source, filename=...)` |
 | extract_fastapi_declarations | _FastAPIScanner | 477 | `_FastAPIScanner(tree, filepath)` |
-| extract_fastapi_declarations | visit | 478 | `scanner.visit(tree)` |
-| extract_fastapi_declarations | result | 479 | `scanner.result(data not statically known)` |
-| attach_fastapi_declarations | setdefault | 491 | `file_entry.setdefault('frameworks', {...})` |
+| extract_fastapi_declarations | scanner.visit | 478 | `scanner.visit(tree)` |
+| extract_fastapi_declarations | scanner.result | 479 | `scanner.result(data not statically known)` |
+| attach_fastapi_declarations | file_entry.setdefault | 491 | `file_entry.setdefault('frameworks', {...})` |
 
 ### Boundary effects
 

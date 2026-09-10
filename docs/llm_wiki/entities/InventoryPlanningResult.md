@@ -1,6 +1,6 @@
 # _InventoryPlanningResult
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:289`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:291`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)

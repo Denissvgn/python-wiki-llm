@@ -10,44 +10,45 @@
 ```mermaid
 sequenceDiagram
     participant p0 as hash_source_snapshot
-    participant p1 as set
+    participant p1 as set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
     participant p2 as enumerate
     participant p3 as isinstance
     participant p4 as KnowledgeEnvelopeError
-    participant p5 as add
-    participant p6 as append
-    participant p7 as sort
+    participant p5 as seen_paths.add
+    participant p6 as records.append
+    participant p7 as records.sort
     participant p8 as _hash_structured
-    participant p9 as values
+    participant p9 as payload.values
     participant p10 as _validate_json_tree
-    participant p11 as walk
-    participant p12 as sha256_bytes
-    participant p13 as hexdigest
-    participant p14 as sha256
-    participant p15 as canonical_json_bytes
-    participant p16 as encode
-    participant p17 as canonical_json_text
-    participant p18 as dumps
-    p0-->>p1: set
+    participant p11 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    participant p12 as walk
+    participant p13 as sha256_bytes
+    participant p14 as hashlib.sha256(…).hexdigest
+    participant p15 as hashlib.sha256
+    participant p16 as canonical_json_bytes
+    participant p17 as canonical_json_text(…).encode
+    participant p18 as canonical_json_text
+    participant p19 as json.dumps
+    p0-->>p1: set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
     p0-->>p2: enumerate
     p0-->>p3: isinstance
     p0->>p4: KnowledgeEnvelopeError
     p0->>p4: KnowledgeEnvelopeError
-    p0-->>p5: add
-    p0-->>p6: append
-    p0-->>p7: sort
+    p0-->>p5: seen_paths.add
+    p0-->>p6: records.append
+    p0-->>p7: records.sort
     p0->>p8: _hash_structured
-    p8-->>p9: values
+    p8-->>p9: payload.values
     p8->>p10: _validate_json_tree
-    p10-->>p1: set
-    p10-->>p11: walk
-    p8->>p12: sha256_bytes
-    p12-->>p13: hexdigest
-    p12-->>p14: sha256
-    p8->>p15: canonical_json_bytes
-    p15-->>p16: encode
-    p15->>p17: canonical_json_text
-    p17-->>p18: dumps
+    p10-->>p11: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    p10-->>p12: walk
+    p8->>p13: sha256_bytes
+    p13-->>p14: hashlib.sha256(…).hexdigest
+    p13-->>p15: hashlib.sha256
+    p8->>p16: canonical_json_bytes
+    p16-->>p17: canonical_json_text(…).encode
+    p16->>p18: canonical_json_text
+    p18-->>p19: json.dumps
     p8->>p4: KnowledgeEnvelopeError
 ```
 
@@ -57,18 +58,18 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. hash_source_snapshot"]
-    s2["2. set"]
+    s2["2. set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)"]
     s3["3. enumerate"]
     s4["4. isinstance"]
     s5["5. KnowledgeEnvelopeError"]
     s6["6. KnowledgeEnvelopeError"]
-    s7["7. add"]
-    s8["8. append"]
-    s9["9. sort"]
+    s7["7. seen_paths.add"]
+    s8["8. records.append"]
+    s9["9. records.sort"]
     s10["10. _hash_structured"]
-    s11["11. values"]
+    s11["11. payload.values"]
     s12["12. _validate_json_tree"]
-    s1 -. "set(data not statically known)" .-> s2
+    s1 -. "set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)(data not statically known)" .-> s2
     s1 -. "enumerate(inputs)" .-> s3
     s1 -. "isinstance(item, ConsumedInput)" .-> s4
     s1 -->|"KnowledgeEnvelopeError(..., 'must be a ConsumedInput')"| s5
@@ -101,32 +102,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `hash_source_snapshot` | `inputs: Iterable[ConsumedInput]` | `ConsumedInput`, `SOURCE_SNAPSHOT_DOMAIN` | - | `_hash_structured(...)` |
-| `set` | - | - | - | - |
+| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | - | - | - | - |
 | `enumerate` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `add` | - | - | - | - |
-| `append` | - | - | - | - |
-| `sort` | - | - | - | - |
+| `seen_paths.add` | - | - | - | - |
+| `records.append` | - | - | - | - |
+| `records.sort` | - | - | - | - |
 | `_hash_structured` | `domain: str`, `payload: Mapping[str, Any]`, `field_name: str` | `KnowledgeEnvelopeError` | - | `sha256_bytes(...)` |
-| `values` | - | - | - | - |
+| `payload.values` | - | - | - | - |
 | `_validate_json_tree` | `value: object`, `field_name: str` | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_source_snapshot | set | 734 | `set(data not statically known)` |
+| hash_source_snapshot | set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot) | 734 | `set(data not statically known)` |
 | hash_source_snapshot | enumerate | 735 | `enumerate(inputs)` |
 | hash_source_snapshot | isinstance | 736 | `isinstance(item, ConsumedInput)` |
 | hash_source_snapshot | KnowledgeEnvelopeError | 737 | `KnowledgeEnvelopeError(..., 'must be a ConsumedInput')` |
 | hash_source_snapshot | KnowledgeEnvelopeError | 742 | `KnowledgeEnvelopeError(..., ...)` |
-| hash_source_snapshot | add | 746 | `seen_paths.add(item.path)` |
-| hash_source_snapshot | append | 747 | `records.append({...})` |
-| hash_source_snapshot | sort | 754 | `records.sort(key=...)` |
+| hash_source_snapshot | seen_paths.add | 746 | `seen_paths.add(item.path)` |
+| hash_source_snapshot | records.append | 747 | `records.append({...})` |
+| hash_source_snapshot | records.sort | 754 | `records.sort(key=...)` |
 | hash_source_snapshot | _hash_structured | 755 | `_hash_structured(SOURCE_SNAPSHOT_DOMAIN, {...}, 'source_inputs')` |
-| _hash_structured | values | 1604 | `payload.values(data not statically known)` |
+| _hash_structured | payload.values | 1604 | `payload.values(data not statically known)` |
 | _hash_structured | _validate_json_tree | 1605 | `_validate_json_tree(value, field_name)` |
 
 ### Boundary effects
@@ -141,8 +142,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_source_snapshot` | `enumerate` | 735 |
-| unresolved_call | `hash_source_snapshot` | `isinstance` | 736 |
+| external_call | `hash_source_snapshot` | `enumerate` | 735 |
+| external_call | `hash_source_snapshot` | `isinstance` | 736 |
 | unresolved_call | `_hash_structured` | `payload.values` | 1604 |
 | step_limit | `hash_source_snapshot` | `first 12 steps` | 0 |
 

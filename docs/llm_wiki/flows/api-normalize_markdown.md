@@ -10,9 +10,10 @@
 ```mermaid
 sequenceDiagram
     participant p0 as normalize_markdown
-    participant p1 as replace
-    p0-->>p1: replace
-    p0-->>p1: replace
+    participant p1 as text.replace(…).replace
+    participant p2 as text.replace
+    p0-->>p1: text.replace(…).replace
+    p0-->>p2: text.replace
 ```
 
 ## Data flow
@@ -21,9 +22,9 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. normalize_markdown"]
-    s2["2. replace"]
-    s3["3. replace"]
-    s1 -. "text.replace('\r\n', '\n').replace('\r', '\n')" .-> s2
+    s2["2. text.replace(…).replace"]
+    s3["3. text.replace"]
+    s1 -. "text.replace(…).replace('\r', '\n')" .-> s2
     s1 -. "text.replace('\r\n', '\n')" .-> s3
     click s1 "../modules/markdown_sections.md"
 ```
@@ -33,15 +34,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `normalize_markdown` | `text: str` | - | - | `...` |
-| `replace` | - | - | - | - |
-| `replace` | - | - | - | - |
+| `text.replace(…).replace` | - | - | - | - |
+| `text.replace` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_markdown | replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| normalize_markdown | replace | 81 | `text.replace('\r\n', '\n')` |
+| normalize_markdown | text.replace(…).replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| normalize_markdown | text.replace | 81 | `text.replace('\r\n', '\n')` |
 
 ### Boundary effects
 
@@ -51,8 +52,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
-| external_call | `normalize_markdown` | `text.replace` | 81 |
+| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
+| unresolved_call | `normalize_markdown` | `text.replace` | 81 |
 
 ## Behavior
 

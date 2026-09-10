@@ -11,8 +11,8 @@ _Auto-generated from `ConceptResult` in `src/llm_wiki_cli/api_types.py`._
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `knowledge` | `KnowledgeStatus \| dict[str, Any]` | *required* | — |
 | `concept` | `dict[str, Any] \| None` | *required* | — |
 | `total` | `int` | *required* | — |

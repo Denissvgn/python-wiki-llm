@@ -11,23 +11,23 @@
 sequenceDiagram
     participant p0 as serialize_section_ownership
     participant p1 as sorted
-    participant p2 as casefold
+    participant p2 as page.page_locator.casefold
     participant p3 as set
     participant p4 as ValueError
-    participant p5 as add
+    participant p5 as seen.add
     participant p6 as len
-    participant p7 as to_payload
+    participant p7 as page.to_payload
     p0-->>p1: sorted
-    p0-->>p2: casefold
+    p0-->>p2: page.page_locator.casefold
     p0-->>p3: set
     p0-->>p4: ValueError
-    p0-->>p5: add
+    p0-->>p5: seen.add
     p0-->>p1: sorted
     p0-->>p6: len
     p0-->>p6: len
     p0-->>p3: set
     p0-->>p4: ValueError
-    p0-->>p7: to_payload
+    p0-->>p7: page.to_payload
 ```
 
 ## Data flow
@@ -37,16 +37,16 @@ sequenceDiagram
 flowchart LR
     s1["1. serialize_section_ownership"]
     s2["2. sorted"]
-    s3["3. casefold"]
+    s3["3. page.page_locator.casefold"]
     s4["4. set"]
     s5["5. ValueError"]
-    s6["6. add"]
+    s6["6. seen.add"]
     s7["7. sorted"]
     s8["8. len"]
     s9["9. len"]
     s10["10. set"]
     s11["11. ValueError"]
-    s12["12. to_payload"]
+    s12["12. page.to_payload"]
     s1 -. "sorted(pages, key=...)" .-> s2
     s1 -. "page.page_locator.casefold(data not statically known)" .-> s3
     s1 -. "set(data not statically known)" .-> s4
@@ -71,32 +71,32 @@ flowchart LR
 |---|---|---|---|---|
 | `serialize_section_ownership` | `pages: Iterable[PageSectionObservations]` | `SECTION_OWNERSHIP_SCHEMA_VERSION` | - | `{...}` |
 | `sorted` | - | - | - | - |
-| `casefold` | - | - | - | - |
+| `page.page_locator.casefold` | - | - | - | - |
 | `set` | - | - | - | - |
 | `ValueError` | - | - | - | - |
-| `add` | - | - | - | - |
+| `seen.add` | - | - | - | - |
 | `sorted` | - | - | - | - |
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `set` | - | - | - | - |
 | `ValueError` | - | - | - | - |
-| `to_payload` | - | - | - | - |
+| `page.to_payload` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | serialize_section_ownership | sorted | 616 | `sorted(pages, key=...)` |
-| serialize_section_ownership | casefold | 618 | `page.page_locator.casefold(data not statically known)` |
+| serialize_section_ownership | page.page_locator.casefold | 618 | `page.page_locator.casefold(data not statically known)` |
 | serialize_section_ownership | set | 620 | `set(data not statically known)` |
 | serialize_section_ownership | ValueError | 623 | `ValueError(...)` |
-| serialize_section_ownership | add | 624 | `seen.add(page.page_locator)` |
+| serialize_section_ownership | seen.add | 624 | `seen.add(page.page_locator)` |
 | serialize_section_ownership | sorted | 626 | `sorted(ordinals)` |
 | serialize_section_ownership | len | 626 | `len(ordinals)` |
 | serialize_section_ownership | len | 626 | `len(set(...))` |
 | serialize_section_ownership | set | 626 | `set(ordinals)` |
 | serialize_section_ownership | ValueError | 627 | `ValueError(...)` |
-| serialize_section_ownership | to_payload | 632 | `page.to_payload(data not statically known)` |
+| serialize_section_ownership | page.to_payload | 632 | `page.to_payload(data not statically known)` |
 
 ### Boundary effects
 
@@ -108,11 +108,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `serialize_section_ownership` | `sorted` | 616 |
+| external_call | `serialize_section_ownership` | `sorted` | 616 |
 | unresolved_call | `serialize_section_ownership` | `page.page_locator.casefold` | 618 |
-| unresolved_call | `serialize_section_ownership` | `ValueError` | 623 |
-| unresolved_call | `serialize_section_ownership` | `sorted` | 626 |
-| unresolved_call | `serialize_section_ownership` | `ValueError` | 627 |
+| external_call | `serialize_section_ownership` | `ValueError` | 623 |
+| external_call | `serialize_section_ownership` | `sorted` | 626 |
+| external_call | `serialize_section_ownership` | `ValueError` | 627 |
 | unresolved_call | `serialize_section_ownership` | `page.to_payload` | 632 |
 
 ## Behavior

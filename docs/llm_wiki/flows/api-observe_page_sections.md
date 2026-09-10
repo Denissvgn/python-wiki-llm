@@ -11,55 +11,62 @@
 sequenceDiagram
     participant p0 as observe_page_sections
     participant p1 as _coerce_page_kind
-    participant p2 as isinstance
+    participant p2 as isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)
     participant p3 as PageKind
-    participant p4 as ValueError
+    participant p4 as ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)
     participant p5 as parse_markdown_document
-    participant p6 as TypeError
-    participant p7 as normalize_markdown
-    participant p8 as replace
-    participant p9 as list
-    participant p10 as _iter_structural_headings
-    participant p11 as splitlines
-    participant p12 as _frontmatter_extent
-    participant p13 as strip
-    participant p14 as removeprefix
-    participant p15 as _line_content
-    participant p16 as endswith
-    participant p17 as enumerate
-    participant p18 as len
-    participant p19 as fullmatch
-    participant p20 as escape
+    participant p6 as isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)
+    participant p7 as TypeError
+    participant p8 as ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)
+    participant p9 as normalize_markdown
+    participant p10 as text.replace(…).replace
+    participant p11 as text.replace
+    participant p12 as list (src/llm_wiki_cli/services…y:parse_markdown_document)
+    participant p13 as _iter_structural_headings
+    participant p14 as markdown.splitlines
+    participant p15 as _frontmatter_extent
+    participant p16 as _line_content(…).removeprefix(…).strip
+    participant p17 as _line_content(…).removeprefix
+    participant p18 as _line_content
+    participant p19 as line.endswith
+    participant p20 as enumerate (src/llm_wiki_cli/services…ns.py:_frontmatter_extent)
+    participant p21 as _line_content(…).strip
+    participant p22 as len (src/llm_wiki_cli/services…ns.py:_frontmatter_extent)
+    participant p23 as enumerate (src/llm_wiki_cli/services…_iter_structural_headings)
+    participant p24 as len (src/llm_wiki_cli/services…_iter_structural_headings)
+    participant p25 as re.fullmatch (src/llm_wiki_cli/services…_iter_structural_headings)
+    participant p26 as re.escape
+    participant p27 as _FENCE_OPEN_RE.fullmatch
     p0->>p1: _coerce_page_kind
-    p1-->>p2: isinstance
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)
     p1->>p3: PageKind
-    p1-->>p4: ValueError
+    p1-->>p4: ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)
     p0->>p5: parse_markdown_document
-    p5-->>p2: isinstance
-    p5-->>p6: TypeError
-    p5-->>p2: isinstance
-    p5-->>p4: ValueError
-    p5->>p7: normalize_markdown
-    p7-->>p8: replace
-    p7-->>p8: replace
-    p5-->>p9: list
-    p5->>p10: _iter_structural_headings
-    p10-->>p11: splitlines
-    p10->>p12: _frontmatter_extent
-    p12-->>p13: strip
-    p12-->>p14: removeprefix
-    p12->>p15: _line_content
-    p15-->>p16: endswith
-    p12-->>p17: enumerate
-    p12-->>p13: strip
-    p12->>p15: _line_content
-    p12-->>p18: len
-    p10-->>p17: enumerate
-    p10->>p15: _line_content
-    p10-->>p18: len
-    p10-->>p19: fullmatch
-    p10-->>p20: escape
-    p10-->>p19: fullmatch
+    p5-->>p6: isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)
+    p5-->>p7: TypeError
+    p5-->>p6: isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)
+    p5-->>p8: ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)
+    p5->>p9: normalize_markdown
+    p9-->>p10: text.replace(…).replace
+    p9-->>p11: text.replace
+    p5-->>p12: list (src/llm_wiki_cli/services…y:parse_markdown_document)
+    p5->>p13: _iter_structural_headings
+    p13-->>p14: markdown.splitlines
+    p13->>p15: _frontmatter_extent
+    p15-->>p16: _line_content(…).removeprefix(…).strip
+    p15-->>p17: _line_content(…).removeprefix
+    p15->>p18: _line_content
+    p18-->>p19: line.endswith
+    p15-->>p20: enumerate (src/llm_wiki_cli/services…ns.py:_frontmatter_extent)
+    p15-->>p21: _line_content(…).strip
+    p15->>p18: _line_content
+    p15-->>p22: len (src/llm_wiki_cli/services…ns.py:_frontmatter_extent)
+    p13-->>p23: enumerate (src/llm_wiki_cli/services…_iter_structural_headings)
+    p13->>p18: _line_content
+    p13-->>p24: len (src/llm_wiki_cli/services…_iter_structural_headings)
+    p13-->>p25: re.fullmatch (src/llm_wiki_cli/services…_iter_structural_headings)
+    p13-->>p26: re.escape
+    p13-->>p27: _FENCE_OPEN_RE.fullmatch
 ```
 
 > Call sequence diagram shows 30 of 174 interactions; 144 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -71,27 +78,27 @@ sequenceDiagram
 flowchart LR
     s1["1. observe_page_sections"]
     s2["2. _coerce_page_kind"]
-    s3["3. isinstance"]
+    s3["3. isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)"]
     s4["4. PageKind"]
-    s5["5. ValueError"]
+    s5["5. ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)"]
     s6["6. parse_markdown_document"]
-    s7["7. isinstance"]
+    s7["7. isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)"]
     s8["8. TypeError"]
-    s9["9. isinstance"]
-    s10["10. ValueError"]
+    s9["9. isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)"]
+    s10["10. ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)"]
     s11["11. normalize_markdown"]
-    s12["12. replace"]
+    s12["12. text.replace(…).replace"]
     s1 -->|"_coerce_page_kind(page_kind)"| s2
-    s2 -. "isinstance(page_kind, PageKind)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)(page_kind, PageKind)" .-> s3
     s2 -->|"PageKind(page_kind)"| s4
-    s2 -. "ValueError(...)" .-> s5
+    s2 -. "ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)(...)" .-> s5
     s1 -->|"parse_markdown_document(markdown, page_locator)"| s6
-    s6 -. "isinstance(markdown, str)" .-> s7
+    s6 -. "isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)(markdown, str)" .-> s7
     s6 -. "TypeError('markdown must be a string')" .-> s8
-    s6 -. "isinstance(page_locator, str)" .-> s9
-    s6 -. "ValueError('page_locator must be a non-empty string')" .-> s10
+    s6 -. "isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)(page_locator, str)" .-> s9
+    s6 -. "ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)('page_locator must be a non-empty string')" .-> s10
     s6 -->|"normalize_markdown(markdown)"| s11
-    s11 -. "text.replace('\r\n', '\n').replace('\r', '\n')" .-> s12
+    s11 -. "text.replace(…).replace('\r', '\n')" .-> s12
     b0["mutation observations.append"]
     s1 -. "mutation observations.append" .-> b0
     b1["mutation stack.pop"]
@@ -124,32 +131,32 @@ flowchart LR
 |---|---|---|---|---|
 | `observe_page_sections` | `markdown: str`, `page_locator: str`, `page_kind: PageKind \| str`, `index_preserved: bool` | - | `canonical_occurrences[...]`, `ownership_by_locator[...]` | `PageSectionObservations(...)` |
 | `_coerce_page_kind` | `page_kind: PageKind \| str` | `PageKind` | - | `page_kind`, `PageKind(...)` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | - | - | - | - |
 | `PageKind` | - | - | - | - |
-| `ValueError` | - | - | - | - |
+| `ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | - | - | - | - |
 | `parse_markdown_document` | `markdown: str`, `page_locator: str` | `SECTION_ORDER_DOMAIN` | `occurrences[...]` | `MarkdownSectionDocument(...)` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `ValueError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | - | - | - | - |
+| `ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)` | - | - | - | - |
 | `normalize_markdown` | `text: str` | - | - | `...` |
-| `replace` | - | - | - | - |
+| `text.replace(…).replace` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | observe_page_sections | _coerce_page_kind | 543 | `_coerce_page_kind(page_kind)` |
-| _coerce_page_kind | isinstance | 266 | `isinstance(page_kind, PageKind)` |
+| _coerce_page_kind | isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 266 | `isinstance(page_kind, PageKind)` |
 | _coerce_page_kind | PageKind | 269 | `PageKind(page_kind)` |
-| _coerce_page_kind | ValueError | 271 | `ValueError(...)` |
+| _coerce_page_kind | ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 271 | `ValueError(...)` |
 | observe_page_sections | parse_markdown_document | 544 | `parse_markdown_document(markdown, page_locator)` |
-| parse_markdown_document | isinstance | 325 | `isinstance(markdown, str)` |
+| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 325 | `isinstance(markdown, str)` |
 | parse_markdown_document | TypeError | 326 | `TypeError('markdown must be a string')` |
-| parse_markdown_document | isinstance | 327 | `isinstance(page_locator, str)` |
-| parse_markdown_document | ValueError | 328 | `ValueError('page_locator must be a non-empty string')` |
+| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 327 | `isinstance(page_locator, str)` |
+| parse_markdown_document | ValueError (src/llm_wiki_cli/services…y:parse_markdown_document) | 328 | `ValueError('page_locator must be a non-empty string')` |
 | parse_markdown_document | normalize_markdown | 330 | `normalize_markdown(markdown)` |
-| normalize_markdown | replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| normalize_markdown | text.replace(…).replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
 
 ### Boundary effects
 
@@ -166,13 +173,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_coerce_page_kind` | `isinstance` | 266 |
-| unresolved_call | `_coerce_page_kind` | `ValueError` | 271 |
-| unresolved_call | `parse_markdown_document` | `isinstance` | 325 |
-| unresolved_call | `parse_markdown_document` | `TypeError` | 326 |
-| unresolved_call | `parse_markdown_document` | `isinstance` | 327 |
-| unresolved_call | `parse_markdown_document` | `ValueError` | 328 |
-| external_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
+| external_call | `_coerce_page_kind` | `isinstance` | 266 |
+| external_call | `_coerce_page_kind` | `ValueError` | 271 |
+| external_call | `parse_markdown_document` | `isinstance` | 325 |
+| external_call | `parse_markdown_document` | `TypeError` | 326 |
+| external_call | `parse_markdown_document` | `isinstance` | 327 |
+| external_call | `parse_markdown_document` | `ValueError` | 328 |
+| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
 | step_limit | `observe_page_sections` | `first 12 steps` | 0 |
 
 ## Behavior

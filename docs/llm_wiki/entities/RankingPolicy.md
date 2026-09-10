@@ -11,8 +11,8 @@ Disclosure for optional current-first budget ranking.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `requested` | `bool` | *required* | — |
 | `policy` | `str` | *required* | — |
 | `scope` | `str` | *required* | — |

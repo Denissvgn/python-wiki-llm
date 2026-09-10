@@ -14,37 +14,40 @@ sequenceDiagram
     participant p2 as SyncManifestError
     participant p3 as SourceSelectionPruneResult
     participant p4 as set
-    participant p5 as update
-    participant p6 as values
+    participant p5 as source_paths.update
+    participant p6 as manifest.page_source_mappings.values
     participant p7 as tuple
     participant p8 as sorted
     participant p9 as is_selected
-    participant p10 as items
+    participant p10 as manifest.page_source_mappings.items
     participant p11 as replace
-    participant p12 as _validate_operational_state
+    participant p12 as manifest.sources.items
+    participant p13 as manifest.evidence_baselines.items
+    participant p14 as manifest.tombstones.items
+    participant p15 as pruned._validate_operational_state
     p0-->>p1: isinstance
     p0->>p2: SyncManifestError
     p0->>p3: SourceSelectionPruneResult
     p0->>p2: SyncManifestError
     p0-->>p4: set
-    p0-->>p5: update
-    p0-->>p6: values
+    p0-->>p5: source_paths.update
+    p0-->>p6: manifest.page_source_mappings.values
     p0-->>p7: tuple
     p0-->>p8: sorted
     p0-->>p9: is_selected
     p0->>p3: SourceSelectionPruneResult
     p0-->>p4: set
-    p0-->>p10: items
+    p0-->>p10: manifest.page_source_mappings.items
     p0-->>p7: tuple
     p0-->>p8: sorted
     p0-->>p4: set
     p0-->>p4: set
     p0-->>p4: set
     p0-->>p11: replace
-    p0-->>p10: items
-    p0-->>p10: items
-    p0-->>p10: items
-    p0-->>p12: _validate_operational_state
+    p0-->>p12: manifest.sources.items
+    p0-->>p13: manifest.evidence_baselines.items
+    p0-->>p14: manifest.tombstones.items
+    p0-->>p15: pruned._validate_operational_state
     p0->>p3: SourceSelectionPruneResult
 ```
 
@@ -59,8 +62,8 @@ flowchart LR
     s4["4. SourceSelectionPruneResult"]
     s5["5. SyncManifestError"]
     s6["6. set"]
-    s7["7. update"]
-    s8["8. values"]
+    s7["7. source_paths.update"]
+    s8["8. manifest.page_source_mappings.values"]
     s9["9. tuple"]
     s10["10. sorted"]
     s11["11. is_selected"]
@@ -97,8 +100,8 @@ flowchart LR
 | `SourceSelectionPruneResult` | - | - | - | - |
 | `SyncManifestError` | - | - | - | - |
 | `set` | - | - | - | - |
-| `update` | - | - | - | - |
-| `values` | - | - | - | - |
+| `source_paths.update` | - | - | - | - |
+| `manifest.page_source_mappings.values` | - | - | - | - |
 | `tuple` | - | - | - | - |
 | `sorted` | - | - | - | - |
 | `is_selected` | - | - | - | - |
@@ -113,8 +116,8 @@ flowchart LR
 | prune_manifest_for_source_selection | SourceSelectionPruneResult | 1617 | `SourceSelectionPruneResult(manifest, (...), (...))` |
 | prune_manifest_for_source_selection | SyncManifestError | 1626 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
 | prune_manifest_for_source_selection | set | 1638 | `set(manifest.sources)` |
-| prune_manifest_for_source_selection | update | 1639 | `source_paths.update(...)` |
-| prune_manifest_for_source_selection | values | 1640 | `manifest.page_source_mappings.values(data not statically known)` |
+| prune_manifest_for_source_selection | source_paths.update | 1639 | `source_paths.update(...)` |
+| prune_manifest_for_source_selection | manifest.page_source_mappings.values | 1640 | `manifest.page_source_mappings.values(data not statically known)` |
 | prune_manifest_for_source_selection | tuple | 1642 | `tuple(sorted(...))` |
 | prune_manifest_for_source_selection | sorted | 1643 | `sorted(...)` |
 | prune_manifest_for_source_selection | is_selected | 1643 | `is_selected(path)` |
@@ -130,9 +133,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `prune_manifest_for_source_selection` | `isinstance` | 1614 |
+| external_call | `prune_manifest_for_source_selection` | `isinstance` | 1614 |
 | unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1640 |
-| unresolved_call | `prune_manifest_for_source_selection` | `sorted` | 1643 |
+| external_call | `prune_manifest_for_source_selection` | `sorted` | 1643 |
 | unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1643 |
 | step_limit | `prune_manifest_for_source_selection` | `first 12 steps` | 0 |
 

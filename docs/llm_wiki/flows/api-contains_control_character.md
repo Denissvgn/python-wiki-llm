@@ -57,9 +57,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `contains_control_character` | `any` | 643 |
-| unresolved_call | `contains_control_character` | `ord` | 644 |
-| unresolved_call | `contains_control_character` | `ord` | 645 |
+| external_call | `contains_control_character` | `any` | 643 |
+| external_call | `contains_control_character` | `ord` | 644 |
+| external_call | `contains_control_character` | `ord` | 645 |
 
 ## Behavior
 

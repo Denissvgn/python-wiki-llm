@@ -77,5 +77,6 @@ flowchart LR
 | `_resolve_override` | call | [documentation_model_policy](../modules/documentation_model_policy.md) | 1 |
 | `_resolve_override` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
 | `_selection` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
+| `DocumentationModelRoute.from_dict` | call | [documentation_model_policy](../modules/documentation_model_policy.md) | 1 |
 | `DocumentationModelRoute.from_dict` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |
 | `DocumentationModelRoutingPolicy.route_for_reference` | type_reference | [documentation_model_policy](../modules/documentation_model_policy.md) | — |

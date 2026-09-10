@@ -13,50 +13,52 @@ sequenceDiagram
     participant p1 as isinstance
     participant p2 as _default_path_error
     participant p3 as SharedValidationError
-    participant p4 as fspath
-    participant p5 as encode
-    participant p6 as replace
+    participant p4 as os.fspath
+    participant p5 as raw.encode
+    participant p6 as raw.replace
     participant p7 as PurePosixPath
-    participant p8 as is_absolute
-    participant p9 as match
-    participant p10 as as_posix
-    participant p11 as strip
-    participant p12 as endswith
-    participant p13 as casefold
-    participant p14 as require_portable_path_component
-    participant p15 as normalize
-    participant p16 as any
-    participant p17 as ord
+    participant p8 as path.is_absolute
+    participant p9 as _WINDOWS_ABSOLUTE_RE.match
+    participant p10 as path.as_posix
+    participant p11 as normalized.strip
+    participant p12 as canonical.casefold().endswith
+    participant p13 as canonical.casefold
+    participant p14 as required_suffix.casefold
+    participant p15 as require_portable_path_component
+    participant p16 as component.encode
+    participant p17 as unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)
+    participant p18 as any
+    participant p19 as ord
     p0-->>p1: isinstance
     p0->>p2: _default_path_error
     p2->>p3: SharedValidationError
-    p0-->>p4: fspath
+    p0-->>p4: os.fspath
     p0-->>p1: isinstance
     p0->>p2: _default_path_error
-    p0-->>p5: encode
+    p0-->>p5: raw.encode
     p0->>p2: _default_path_error
     p0->>p2: _default_path_error
-    p0-->>p6: replace
+    p0-->>p6: raw.replace
     p0-->>p7: PurePosixPath
-    p0-->>p8: is_absolute
-    p0-->>p9: match
+    p0-->>p8: path.is_absolute
+    p0-->>p9: _WINDOWS_ABSOLUTE_RE.match
     p0->>p2: _default_path_error
     p0->>p2: _default_path_error
-    p0-->>p10: as_posix
-    p0-->>p11: strip
-    p0-->>p12: endswith
-    p0-->>p13: casefold
-    p0-->>p13: casefold
+    p0-->>p10: path.as_posix
+    p0-->>p11: normalized.strip
+    p0-->>p12: canonical.casefold().endswith
+    p0-->>p13: canonical.casefold
+    p0-->>p14: required_suffix.casefold
     p0->>p2: _default_path_error
-    p0->>p14: require_portable_path_component
-    p14-->>p5: encode
-    p14->>p3: SharedValidationError
-    p14-->>p15: normalize
-    p14->>p3: SharedValidationError
-    p14-->>p16: any
-    p14-->>p17: ord
-    p14-->>p17: ord
-    p14->>p3: SharedValidationError
+    p0->>p15: require_portable_path_component
+    p15-->>p16: component.encode
+    p15->>p3: SharedValidationError
+    p15-->>p17: unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)
+    p15->>p3: SharedValidationError
+    p15-->>p18: any
+    p15-->>p19: ord
+    p15-->>p19: ord
+    p15->>p3: SharedValidationError
 ```
 
 > Call sequence diagram shows 30 of 42 interactions; 12 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -70,13 +72,13 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. _default_path_error"]
     s4["4. SharedValidationError"]
-    s5["5. fspath"]
+    s5["5. os.fspath"]
     s6["6. isinstance"]
     s7["7. _default_path_error"]
-    s8["8. encode"]
+    s8["8. raw.encode"]
     s9["9. _default_path_error"]
     s10["10. _default_path_error"]
-    s11["11. replace"]
+    s11["11. raw.replace"]
     s12["12. PurePosixPath"]
     s1 -. "isinstance(value, (...))" .-> s2
     s1 -->|"_default_path_error(value)"| s3
@@ -105,13 +107,13 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `SharedValidationError` | - | - | - | - |
-| `fspath` | - | - | - | - |
+| `os.fspath` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
-| `encode` | - | - | - | - |
+| `raw.encode` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
-| `replace` | - | - | - | - |
+| `raw.replace` | - | - | - | - |
 | `PurePosixPath` | - | - | - | - |
 
 ### Call data
@@ -121,13 +123,13 @@ flowchart LR
 | require_portable_relative_path | isinstance | 170 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 171 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 67 | `SharedValidationError(...)` |
-| require_portable_relative_path | fspath | 172 | `os.fspath(value)` |
+| require_portable_relative_path | os.fspath | 172 | `os.fspath(value)` |
 | require_portable_relative_path | isinstance | 173 | `isinstance(raw, str)` |
 | require_portable_relative_path | _default_path_error | 174 | `_default_path_error(value)` |
-| require_portable_relative_path | encode | 176 | `raw.encode('utf-8')` |
+| require_portable_relative_path | raw.encode | 176 | `raw.encode('utf-8')` |
 | require_portable_relative_path | _default_path_error | 179 | `_default_path_error(raw)` |
 | require_portable_relative_path | _default_path_error | 182 | `_default_path_error(raw)` |
-| require_portable_relative_path | replace | 183 | `raw.replace('\\', '/')` |
+| require_portable_relative_path | raw.replace | 183 | `raw.replace('\\', '/')` |
 | require_portable_relative_path | PurePosixPath | 184 | `PurePosixPath(normalized)` |
 
 ### Boundary effects
@@ -138,9 +140,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_portable_relative_path` | `isinstance` | 170 |
+| external_call | `require_portable_relative_path` | `isinstance` | 170 |
 | external_call | `require_portable_relative_path` | `os.fspath` | 172 |
-| unresolved_call | `require_portable_relative_path` | `isinstance` | 173 |
+| external_call | `require_portable_relative_path` | `isinstance` | 173 |
 | unresolved_call | `require_portable_relative_path` | `raw.encode` | 176 |
 | unresolved_call | `require_portable_relative_path` | `raw.replace` | 183 |
 | external_call | `require_portable_relative_path` | `PurePosixPath` | 184 |

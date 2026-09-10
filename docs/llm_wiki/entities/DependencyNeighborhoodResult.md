@@ -11,8 +11,8 @@ _Auto-generated from `DependencyNeighborhoodResult` in `src/llm_wiki_cli/api_typ
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `path` | `str \| None` | *required* | — |
 | `inbound` | `list[str]` | *required* | — |
 | `outbound` | `list[str]` | *required* | — |

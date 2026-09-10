@@ -11,8 +11,8 @@ _Auto-generated from `DoctorSnapshotParity` in `src/llm_wiki_cli/api_types.py`._
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `state` | `str` | *required* | — |
 | `issue_count` | `int` | *required* | — |
 | `reasons` | `list[str]` | *required* | — |

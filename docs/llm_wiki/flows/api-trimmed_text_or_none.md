@@ -11,9 +11,9 @@
 sequenceDiagram
     participant p0 as trimmed_text_or_none
     participant p1 as isinstance
-    participant p2 as strip
+    participant p2 as value.strip
     p0-->>p1: isinstance
-    p0-->>p2: strip
+    p0-->>p2: value.strip
 ```
 
 ## Data flow
@@ -23,7 +23,7 @@ sequenceDiagram
 flowchart LR
     s1["1. trimmed_text_or_none"]
     s2["2. isinstance"]
-    s3["3. strip"]
+    s3["3. value.strip"]
     s1 -. "isinstance(value, str)" .-> s2
     s1 -. "value.strip(data not statically known)" .-> s3
     click s1 "../modules/validation.md"
@@ -35,14 +35,14 @@ flowchart LR
 |---|---|---|---|---|
 | `trimmed_text_or_none` | `value: object`, `error: Exception \| None` | - | - | `None`, `...` |
 | `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | trimmed_text_or_none | isinstance | 917 | `isinstance(value, str)` |
-| trimmed_text_or_none | strip | 921 | `value.strip(data not statically known)` |
+| trimmed_text_or_none | value.strip | 921 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `trimmed_text_or_none` | `isinstance` | 917 |
+| external_call | `trimmed_text_or_none` | `isinstance` | 917 |
 | unresolved_call | `trimmed_text_or_none` | `value.strip` | 921 |
 
 ## Behavior

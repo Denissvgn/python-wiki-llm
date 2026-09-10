@@ -11,14 +11,15 @@
 sequenceDiagram
     participant p0 as require_string_list
     participant p1 as require_list
-    participant p2 as isinstance
+    participant p2 as isinstance (src/llm_wiki_cli/services/validation.py:require_list)
     participant p3 as require_string
-    participant p4 as encode
+    participant p4 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p5 as value.encode
     p0->>p1: require_list
-    p1-->>p2: isinstance
+    p1-->>p2: isinstance (src/llm_wiki_cli/services/validation.py:require_list)
     p0->>p3: require_string
-    p3-->>p2: isinstance
-    p3-->>p4: encode
+    p3-->>p4: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    p3-->>p5: value.encode
 ```
 
 ## Data flow
@@ -28,14 +29,14 @@ sequenceDiagram
 flowchart LR
     s1["1. require_string_list"]
     s2["2. require_list"]
-    s3["3. isinstance"]
+    s3["3. isinstance (src/llm_wiki_cli/services/validation.py:require_list)"]
     s4["4. require_string"]
-    s5["5. isinstance"]
-    s6["6. encode"]
+    s5["5. isinstance (src/llm_wiki_cli/services…lidation.py:require_string)"]
+    s6["6. value.encode"]
     s1 -->|"require_list(value, error=error)"| s2
-    s2 -. "isinstance(value, list)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_cli/services/validation.py:require_list)(value, list)" .-> s3
     s1 -->|"require_string(item, error=error)"| s4
-    s4 -. "isinstance(value, str)" .-> s5
+    s4 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)" .-> s5
     s4 -. "value.encode('utf-8')" .-> s6
     click s1 "../modules/validation.md"
     click s2 "../modules/validation.md"
@@ -48,20 +49,20 @@ flowchart LR
 |---|---|---|---|---|
 | `require_string_list` | `value: object`, `error: Exception` | - | - | `items` |
 | `require_list` | `value: object`, `error: Exception` | - | - | `value` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services/validation.py:require_list)` | - | - | - | - |
 | `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
-| `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | - | - | - | - |
+| `value.encode` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | require_string_list | require_list | 953 | `require_list(value, error=error)` |
-| require_list | isinstance | 764 | `isinstance(value, list)` |
+| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 764 | `isinstance(value, list)` |
 | require_string_list | require_string | 955 | `require_string(item, error=error)` |
-| require_string | isinstance | 706 | `isinstance(value, str)` |
-| require_string | encode | 710 | `value.encode('utf-8')` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 706 | `isinstance(value, str)` |
+| require_string | value.encode | 710 | `value.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -71,8 +72,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_list` | `isinstance` | 764 |
-| unresolved_call | `require_string` | `isinstance` | 706 |
+| external_call | `require_list` | `isinstance` | 764 |
+| external_call | `require_string` | `isinstance` | 706 |
 | unresolved_call | `require_string` | `value.encode` | 710 |
 
 ## Behavior

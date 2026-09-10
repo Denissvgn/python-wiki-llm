@@ -11,8 +11,8 @@ Deterministic disclosure of work selected for a query.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `scope` | `Literal['snapshot-index-only', 'targeted-extraction', 'full-inventory']` | *required* | — |
 | `full_inventory_performed` | `bool` | *required* | — |
 | `supplied_paths` | `int` | *required* | — |

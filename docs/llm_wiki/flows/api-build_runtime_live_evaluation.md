@@ -22,48 +22,51 @@
 ```mermaid
 sequenceDiagram
     participant p0 as build_runtime_live_evaluation
-    participant p1 as isinstance
-    participant p2 as TypeError
-    participant p3 as dict
-    participant p4 as items
-    participant p5 as hashes_for
-    participant p6 as sorted
-    participant p7 as set
-    participant p8 as get
+    participant p1 as isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    participant p2 as TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    participant p3 as dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    participant p4 as inputs.infrastructure_inventory.items
+    participant p5 as inputs.source_snapshot.hashes_for
+    participant p6 as sorted (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    participant p7 as set (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    participant p8 as inputs.source_snapshot.captured_content_hashes.get
     participant p9 as _producer_evidence
-    participant p10 as _plugin_extractors_by_language
-    participant p11 as enumerate
-    participant p12 as KnowledgeGenerationError
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p3: dict
-    p0-->>p3: dict
-    p0-->>p4: items
-    p0-->>p3: dict
-    p0-->>p5: hashes_for
-    p0-->>p6: sorted
-    p0-->>p7: set
-    p0-->>p8: get
+    participant p10 as dict (src/llm_wiki_cli/services…ion.py:_producer_evidence)
+    participant p11 as _plugin_extractors_by_language
+    participant p12 as enumerate (src/llm_wiki_cli/services…in_extractors_by_language)
+    participant p13 as isinstance (src/llm_wiki_cli/services…in_extractors_by_language)
+    participant p14 as KnowledgeGenerationError
+    participant p15 as component.get (src/llm_wiki_cli/services…in_extractors_by_language)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p3: dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p3: dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p4: inputs.infrastructure_inventory.items
+    p0-->>p3: dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p5: inputs.source_snapshot.hashes_for
+    p0-->>p6: sorted (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p7: set (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    p0-->>p8: inputs.source_snapshot.captured_content_hashes.get
     p0->>p9: _producer_evidence
-    p9-->>p3: dict
-    p9->>p10: _plugin_extractors_by_language
-    p10-->>p11: enumerate
-    p10-->>p1: isinstance
-    p10->>p12: KnowledgeGenerationError
-    p10-->>p8: get
-    p10-->>p8: get
-    p10-->>p8: get
-    p10-->>p8: get
+    p9-->>p10: dict (src/llm_wiki_cli/services…ion.py:_producer_evidence)
+    p9->>p11: _plugin_extractors_by_language
+    p11-->>p12: enumerate (src/llm_wiki_cli/services…in_extractors_by_language)
+    p11-->>p13: isinstance (src/llm_wiki_cli/services…in_extractors_by_language)
+    p11->>p14: KnowledgeGenerationError
+    p11-->>p15: component.get (src/llm_wiki_cli/services…in_extractors_by_language)
+    p11-->>p15: component.get (src/llm_wiki_cli/services…in_extractors_by_language)
+    p11-->>p15: component.get (src/llm_wiki_cli/services…in_extractors_by_language)
+    p11-->>p15: component.get (src/llm_wiki_cli/services…in_extractors_by_language)
 ```
 
 > Call sequence diagram shows 30 of 491 interactions; 461 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -76,28 +79,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. build_runtime_live_evaluation"]
-    s2["2. isinstance"]
-    s3["3. TypeError"]
-    s4["4. isinstance"]
-    s5["5. TypeError"]
-    s6["6. isinstance"]
-    s7["7. TypeError"]
-    s8["8. isinstance"]
-    s9["9. TypeError"]
-    s10["10. isinstance"]
-    s11["11. TypeError"]
-    s12["12. isinstance"]
-    s1 -. "isinstance(inputs, RuntimeLiveEvaluationInputs)" .-> s2
-    s1 -. "TypeError('inputs must be a RuntimeLiveEvaluationInputs')" .-> s3
-    s1 -. "isinstance(inputs.knowledge, KnowledgeIndex)" .-> s4
-    s1 -. "TypeError('inputs.knowledge must be a KnowledgeIndex')" .-> s5
-    s1 -. "isinstance(inputs.manifest, SyncManifest)" .-> s6
-    s1 -. "TypeError('inputs.manifest must be a SyncManifest')" .-> s7
-    s1 -. "isinstance(inputs.source_snapshot, SourceSnapshot)" .-> s8
-    s1 -. "TypeError('inputs.source_snapshot must be a SourceSnapshot')" .-> s9
-    s1 -. "isinstance(inputs.inventory, Mapping)" .-> s10
-    s1 -. "TypeError('inputs.inventory must be a mapping')" .-> s11
-    s1 -. "isinstance(inputs.infrastructure_inventory, Mapping)" .-> s12
+    s2["2. isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s3["3. TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s5["5. TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s6["6. isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s7["7. TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s8["8. isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s9["9. TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s10["10. isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s11["11. TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s12["12. isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)"]
+    s1 -. "isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs, RuntimeLiveEvaluationInputs)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs must be a RuntimeLiveEvaluationInputs')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.knowledge, KnowledgeIndex)" .-> s4
+    s1 -. "TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.knowledge must be a KnowledgeIndex')" .-> s5
+    s1 -. "isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.manifest, SyncManifest)" .-> s6
+    s1 -. "TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.manifest must be a SyncManifest')" .-> s7
+    s1 -. "isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.source_snapshot, SourceSnapshot)" .-> s8
+    s1 -. "TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.source_snapshot must be a SourceSnapshot')" .-> s9
+    s1 -. "isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.inventory, Mapping)" .-> s10
+    s1 -. "TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.inventory must be a mapping')" .-> s11
+    s1 -. "isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.infrastructure_inventory, Mapping)" .-> s12
     click s1 "../modules/knowledge_orchestration.md"
 ```
 
@@ -106,33 +109,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `build_runtime_live_evaluation` | `inputs: RuntimeLiveEvaluationInputs` | `RuntimeLiveEvaluationInputs`, `KnowledgeIndex`, `SyncManifest`, `SourceSnapshot`, `Mapping`, `Mapping`, `ObservationScope`, `__version__` | `source_hashes[...]` | `LiveKnowledgeEvaluation(...)` |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_live_evaluation | isinstance | 534 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
-| build_runtime_live_evaluation | TypeError | 535 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
-| build_runtime_live_evaluation | isinstance | 536 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
-| build_runtime_live_evaluation | TypeError | 537 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
-| build_runtime_live_evaluation | isinstance | 538 | `isinstance(inputs.manifest, SyncManifest)` |
-| build_runtime_live_evaluation | TypeError | 539 | `TypeError('inputs.manifest must be a SyncManifest')` |
-| build_runtime_live_evaluation | isinstance | 540 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
-| build_runtime_live_evaluation | TypeError | 541 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
-| build_runtime_live_evaluation | isinstance | 542 | `isinstance(inputs.inventory, Mapping)` |
-| build_runtime_live_evaluation | TypeError | 543 | `TypeError('inputs.inventory must be a mapping')` |
-| build_runtime_live_evaluation | isinstance | 544 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 534 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 535 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 536 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 537 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 538 | `isinstance(inputs.manifest, SyncManifest)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 539 | `TypeError('inputs.manifest must be a SyncManifest')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 540 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 541 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 542 | `isinstance(inputs.inventory, Mapping)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 543 | `TypeError('inputs.inventory must be a mapping')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 544 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
 
 ### Boundary effects
 
@@ -142,17 +145,17 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 534 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 535 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 536 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 537 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 538 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 539 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 540 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 541 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 542 |
-| unresolved_call | `build_runtime_live_evaluation` | `TypeError` | 543 |
-| unresolved_call | `build_runtime_live_evaluation` | `isinstance` | 544 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 534 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 535 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 536 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 537 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 538 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 539 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 540 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 541 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 542 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 543 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 544 |
 | step_limit | `build_runtime_live_evaluation` | `first 12 steps` | 0 |
 
 ## Behavior

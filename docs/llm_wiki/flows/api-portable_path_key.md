@@ -10,10 +10,10 @@
 ```mermaid
 sequenceDiagram
     participant p0 as portable_path_key
-    participant p1 as casefold
-    participant p2 as normalize
-    p0-->>p1: casefold
-    p0-->>p2: normalize
+    participant p1 as unicodedata.normalize(…).casefold
+    participant p2 as unicodedata.normalize
+    p0-->>p1: unicodedata.normalize(…).casefold
+    p0-->>p2: unicodedata.normalize
 ```
 
 ## Data flow
@@ -22,9 +22,9 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. portable_path_key"]
-    s2["2. casefold"]
-    s3["3. normalize"]
-    s1 -. "unicodedata.normalize('NFC', value).casefold(data not statically known)" .-> s2
+    s2["2. unicodedata.normalize(…).casefold"]
+    s3["3. unicodedata.normalize"]
+    s1 -. "unicodedata.normalize(…).casefold(data not statically known)" .-> s2
     s1 -. "unicodedata.normalize('NFC', value)" .-> s3
     click s1 "../modules/validation.md"
 ```
@@ -34,15 +34,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `portable_path_key` | `value: str` | - | - | `...` |
-| `casefold` | - | - | - | - |
-| `normalize` | - | - | - | - |
+| `unicodedata.normalize(…).casefold` | - | - | - | - |
+| `unicodedata.normalize` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| portable_path_key | casefold | 412 | `unicodedata.normalize('NFC', value).casefold(data not statically known)` |
-| portable_path_key | normalize | 412 | `unicodedata.normalize('NFC', value)` |
+| portable_path_key | unicodedata.normalize(…).casefold | 412 | `unicodedata.normalize('NFC', value).casefold(data not statically known)` |
+| portable_path_key | unicodedata.normalize | 412 | `unicodedata.normalize('NFC', value)` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `portable_path_key` | `unicodedata.normalize('NFC', value).casefold` | 412 |
+| unresolved_call | `portable_path_key` | `unicodedata.normalize('NFC', value).casefold` | 412 |
 | external_call | `portable_path_key` | `unicodedata.normalize` | 412 |
 
 ## Behavior

@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as get_context
-    p0-->>p0: get_context
+    participant p1 as service.get_context
+    p0-->>p1: service.get_context
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. get_context"]
-    s2["2. get_context"]
+    s2["2. service.get_context"]
     s1 -. "service.get_context(**=options)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `get_context` | `budget_tokens: int`, `focus: list[str] \| None`, `format: str`, `filters: dict \| None`, `prefer_fresh: bool`, `knowledge_mode: KnowledgeMode \| None` | - | `options[...]` | `service.get_context(...)` |
-| `get_context` | - | - | - | - |
+| `service.get_context` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_context | get_context | 1260 | `service.get_context(**=options)` |
+| get_context | service.get_context | 1260 | `service.get_context(**=options)` |
 
 ### Boundary effects
 

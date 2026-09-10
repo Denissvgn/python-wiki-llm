@@ -10,9 +10,10 @@
 ```mermaid
 sequenceDiagram
     participant p0 as machine_verification_summary
-    participant p1 as to_payload
-    p0-->>p1: to_payload
-    p0-->>p1: to_payload
+    participant p1 as diagnostic.to_payload
+    participant p2 as check.diagnostic_coverage.to_payload
+    p0-->>p1: diagnostic.to_payload
+    p0-->>p2: check.diagnostic_coverage.to_payload
 ```
 
 ## Data flow
@@ -21,8 +22,8 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. machine_verification_summary"]
-    s2["2. to_payload"]
-    s3["3. to_payload"]
+    s2["2. diagnostic.to_payload"]
+    s3["3. check.diagnostic_coverage.to_payload"]
     s1 -. "diagnostic.to_payload(data not statically known)" .-> s2
     s1 -. "check.diagnostic_coverage.to_payload(data not statically known)" .-> s3
     click s1 "../modules/knowledge_verification.md"
@@ -33,15 +34,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `machine_verification_summary` | `receipt: VerificationReceipt`, `valid: bool`, `reasons: list[str]` | `VerificationResult` | - | `{...}` |
-| `to_payload` | - | - | - | - |
-| `to_payload` | - | - | - | - |
+| `diagnostic.to_payload` | - | - | - | - |
+| `check.diagnostic_coverage.to_payload` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| machine_verification_summary | to_payload | 252 | `diagnostic.to_payload(data not statically known)` |
-| machine_verification_summary | to_payload | 254 | `check.diagnostic_coverage.to_payload(data not statically known)` |
+| machine_verification_summary | diagnostic.to_payload | 252 | `diagnostic.to_payload(data not statically known)` |
+| machine_verification_summary | check.diagnostic_coverage.to_payload | 254 | `check.diagnostic_coverage.to_payload(data not statically known)` |
 
 ### Boundary effects
 

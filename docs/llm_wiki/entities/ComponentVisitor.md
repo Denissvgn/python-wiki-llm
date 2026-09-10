@@ -1,6 +1,6 @@
 # ComponentVisitor
 
-**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1037`
+**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1058`
 **Kind:** Class
 **Bases:** `ast.NodeVisitor`
 **Module:** [python_extractor](../modules/python_extractor.md)
@@ -17,7 +17,7 @@ _Auto-generated from `ComponentVisitor` in `src/llm_wiki_cli/extractors/python_e
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(deep: bool = False, module_globals: set[str] \| None = None, module_import_aliases: dict[str, str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None)` | — | — |
+| `__init__` | `(deep: bool = False, module_globals: set[str] \| None = None, module_import_aliases: dict[str, str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None, call_binding_facts: dict[int, dict] \| None = None)` | — | — |
 | `_import_scope` | `() -> str` | — | Classify where an import sits, or ``""`` when it runs at import time. |
 | `_record_import` | `(record: dict, node: ast.Import \| ast.ImportFrom) -> None` | — | Retain the legacy import shape and optional source-location sidecar. |
 | `visit_Import` | `(node)` | — | — |

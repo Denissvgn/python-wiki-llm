@@ -2,7 +2,17 @@
 
 **Entry point:** `build_api_contracts` (`api`)
 **Source:** [api_contracts](../modules/api_contracts.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [imports](../modules/imports.md), [source_selection](../modules/source_selection.md), [validation](../modules/validation.md)
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [config](../modules/config.md), [imports](../modules/imports.md), [packages](../modules/packages.md), and 3 more
+
+**Complete modules touched:**
+
+- [api_contracts](../modules/api_contracts.md)
+- [config](../modules/config.md)
+- [imports](../modules/imports.md)
+- [packages](../modules/packages.md)
+- [python_imports](../modules/python_imports.md)
+- [source_selection](../modules/source_selection.md)
+- [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -12,52 +22,56 @@ sequenceDiagram
     participant p0 as build_api_contracts
     participant p1 as load_openapi_document
     participant p2 as _resolve_openapi_path
-    participant p3 as resolve
-    participant p4 as Path
-    participant p5 as expanduser
-    participant p6 as is_absolute
-    participant p7 as as_posix
-    participant p8 as relative_to
-    participant p9 as abspath
+    participant p3 as Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path)
+    participant p4 as Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)
+    participant p5 as Path(…).expanduser
+    participant p6 as candidate.is_absolute
+    participant p7 as Path(…).relative_to(…).as_posix
+    participant p8 as Path(…).relative_to
+    participant p9 as os.path.abspath
     participant p10 as ApiContractError
-    participant p11 as path_is_selected
-    participant p12 as _selection_path
-    participant p13 as _require_selection_path
-    participant p14 as require_repository_relative_path
-    participant p15 as SourceSelectionError
+    participant p11 as candidate.resolve
+    participant p12 as resolved.relative_to(…).as_posix
+    participant p13 as resolved.relative_to
+    participant p14 as source_snapshot.root.resolve
+    participant p15 as path_is_selected
+    participant p16 as _selection_path
+    participant p17 as _require_selection_path
+    participant p18 as require_repository_relative_path
+    participant p19 as SourceSelectionError
     p0->>p1: load_openapi_document
     p1->>p2: _resolve_openapi_path
-    p2-->>p3: resolve
-    p2-->>p4: Path
-    p2-->>p5: expanduser
-    p2-->>p4: Path
-    p2-->>p6: is_absolute
-    p2-->>p7: as_posix
-    p2-->>p8: relative_to
-    p2-->>p4: Path
-    p2-->>p9: abspath
+    p2-->>p3: Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path)
+    p2-->>p4: Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)
+    p2-->>p5: Path(…).expanduser
+    p2-->>p4: Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)
+    p2-->>p6: candidate.is_absolute
+    p2-->>p7: Path(…).relative_to(…).as_posix
+    p2-->>p8: Path(…).relative_to
+    p2-->>p4: Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)
+    p2-->>p9: os.path.abspath
     p2->>p10: ApiContractError
-    p2-->>p3: resolve
-    p2-->>p7: as_posix
-    p2-->>p8: relative_to
+    p2-->>p11: candidate.resolve
+    p2-->>p12: resolved.relative_to(…).as_posix
+    p2-->>p13: resolved.relative_to
     p2->>p10: ApiContractError
-    p2-->>p3: resolve
+    p2-->>p14: source_snapshot.root.resolve
     p2->>p10: ApiContractError
-    p2->>p11: path_is_selected
-    p11->>p12: _selection_path
-    p12->>p13: _require_selection_path
-    p13->>p14: require_repository_relative_path
-    p13->>p15: SourceSelectionError
-    p13->>p15: SourceSelectionError
-    p13->>p15: SourceSelectionError
-    p13->>p15: SourceSelectionError
-    p13->>p15: SourceSelectionError
-    p13->>p15: SourceSelectionError
-    p13->>p15: SourceSelectionError
-    p12->>p15: SourceSelectionError
+    p2->>p15: path_is_selected
+    p15->>p16: _selection_path
+    p16->>p17: _require_selection_path
+    p17->>p18: require_repository_relative_path
+    p17->>p19: SourceSelectionError
+    p17->>p19: SourceSelectionError
+    p17->>p19: SourceSelectionError
+    p17->>p19: SourceSelectionError
+    p17->>p19: SourceSelectionError
+    p17->>p19: SourceSelectionError
+    p17->>p19: SourceSelectionError
+    p16->>p19: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 573 interactions; 543 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 892 interactions; 862 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -69,25 +83,25 @@ flowchart LR
     s1["1. build_api_contracts"]
     s2["2. load_openapi_document"]
     s3["3. _resolve_openapi_path"]
-    s4["4. resolve"]
-    s5["5. Path"]
-    s6["6. expanduser"]
-    s7["7. Path"]
-    s8["8. is_absolute"]
-    s9["9. as_posix"]
-    s10["10. relative_to"]
-    s11["11. Path"]
-    s12["12. abspath"]
+    s4["4. Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path)"]
+    s5["5. Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)"]
+    s6["6. Path(…).expanduser"]
+    s7["7. Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)"]
+    s8["8. candidate.is_absolute"]
+    s9["9. Path(…).relative_to(…).as_posix"]
+    s10["10. Path(…).relative_to"]
+    s11["11. Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)"]
+    s12["12. os.path.abspath"]
     s1 -->|"load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)"| s2
     s2 -->|"_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)"| s3
-    s3 -. "Path(source_root).resolve(data not statically known)" .-> s4
-    s3 -. "Path(source_root)" .-> s5
-    s3 -. "Path(path).expanduser(data not statically known)" .-> s6
-    s3 -. "Path(path)" .-> s7
+    s3 -. "Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path)(data not statically known)" .-> s4
+    s3 -. "Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)(source_root)" .-> s5
+    s3 -. "Path(…).expanduser(data not statically known)" .-> s6
+    s3 -. "Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)(path)" .-> s7
     s3 -. "candidate.is_absolute(data not statically known)" .-> s8
-    s3 -. "Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)" .-> s9
-    s3 -. "Path(os.path.abspath(candidate)).relative_to(root)" .-> s10
-    s3 -. "Path(os.path.abspath(...))" .-> s11
+    s3 -. "Path(…).relative_to(…).as_posix(data not statically known)" .-> s9
+    s3 -. "Path(…).relative_to(root)" .-> s10
+    s3 -. "Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)(os.path.abspath(...))" .-> s11
     s3 -. "os.path.abspath(candidate)" .-> s12
     b0["filesystem_read resolved.read_bytes"]
     s2 -. "filesystem_read resolved.read_bytes" .-> b0
@@ -105,15 +119,15 @@ flowchart LR
 | `build_api_contracts` | `inventory: Mapping[str, Mapping[str, Any]]`, `openapi_file: str \| Path \| None`, `source_root: str \| Path`, `source_snapshot: SourceSnapshot \| None` | - | - | `static`, `_reconcile_openapi(...)` |
 | `load_openapi_document` | `path: str \| Path`, `source_root: str \| Path`, `source_snapshot: SourceSnapshot \| None` | `_OPENAPI_INPUT_LIMIT`, `json`, `json`, `yaml`, `Mapping`, `Mapping` | - | `{...}` |
 | `_resolve_openapi_path` | `path: str \| Path`, `source_root: str \| Path`, `source_snapshot: SourceSnapshot \| None` | `SourceSelectionError` | - | `(...)` |
-| `resolve` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `is_absolute` | - | - | - | - |
-| `as_posix` | - | - | - | - |
-| `relative_to` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
+| `Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | - | - | - | - |
+| `Path(…).expanduser` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | - | - | - | - |
+| `candidate.is_absolute` | - | - | - | - |
+| `Path(…).relative_to(…).as_posix` | - | - | - | - |
+| `Path(…).relative_to` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services….py:_resolve_openapi_path)` | - | - | - | - |
+| `os.path.abspath` | - | - | - | - |
 
 ### Call data
 
@@ -121,15 +135,15 @@ flowchart LR
 |---|---|---:|---|
 | build_api_contracts | load_openapi_document | 1819 | `load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)` |
 | load_openapi_document | _resolve_openapi_path | 1259 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
-| _resolve_openapi_path | resolve | 1187 | `Path(source_root).resolve(data not statically known)` |
-| _resolve_openapi_path | Path | 1187 | `Path(source_root)` |
-| _resolve_openapi_path | expanduser | 1188 | `Path(path).expanduser(data not statically known)` |
-| _resolve_openapi_path | Path | 1188 | `Path(path)` |
-| _resolve_openapi_path | is_absolute | 1189 | `candidate.is_absolute(data not statically known)` |
-| _resolve_openapi_path | as_posix | 1192 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
-| _resolve_openapi_path | relative_to | 1192 | `Path(os.path.abspath(candidate)).relative_to(root)` |
-| _resolve_openapi_path | Path | 1192 | `Path(os.path.abspath(...))` |
-| _resolve_openapi_path | abspath | 1192 | `os.path.abspath(candidate)` |
+| _resolve_openapi_path | Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1187 | `Path(source_root).resolve(data not statically known)` |
+| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1187 | `Path(source_root)` |
+| _resolve_openapi_path | Path(…).expanduser | 1188 | `Path(path).expanduser(data not statically known)` |
+| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1188 | `Path(path)` |
+| _resolve_openapi_path | candidate.is_absolute | 1189 | `candidate.is_absolute(data not statically known)` |
+| _resolve_openapi_path | Path(…).relative_to(…).as_posix | 1192 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
+| _resolve_openapi_path | Path(…).relative_to | 1192 | `Path(os.path.abspath(candidate)).relative_to(root)` |
+| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1192 | `Path(os.path.abspath(...))` |
+| _resolve_openapi_path | os.path.abspath | 1192 | `os.path.abspath(candidate)` |
 
 ### Boundary effects
 

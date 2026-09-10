@@ -11,51 +11,56 @@
 sequenceDiagram
     participant p0 as run
     participant p1 as _mcp_service_export
-    participant p2 as get
-    participant p3 as globals
-    participant p4 as getattr
-    participant p5 as bool
-    participant p6 as validate_source_root
-    participant p7 as validate_path
-    participant p8 as PathValidationError
-    participant p9 as resolve
-    participant p10 as cwd
-    participant p11 as relative_to
-    participant p12 as expanduser
-    participant p13 as Path
-    participant p14 as is_absolute
-    participant p15 as is_dir
-    participant p16 as abspath
+    participant p2 as globals().get
+    participant p3 as globals (src/llm_wiki_cli/commands…md.py:_mcp_service_export)
+    participant p4 as getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)
+    participant p5 as globals (src/llm_wiki_cli/commands…py:_mcp_service_export, 1)
+    participant p6 as getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    participant p7 as bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    participant p8 as validate_source_root
+    participant p9 as validate_path
+    participant p10 as PathValidationError
+    participant p11 as (…).resolve
+    participant p12 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p13 as Path.cwd().resolve
+    participant p14 as resolved.relative_to
+    participant p15 as Path(…).expanduser
+    participant p16 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p17 as candidate.is_absolute
+    participant p18 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p19 as candidate.resolve
+    participant p20 as resolved.is_dir
+    participant p21 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
     p0->>p1: _mcp_service_export
-    p1-->>p2: get
-    p1-->>p3: globals
-    p1-->>p4: getattr
-    p1-->>p3: globals
+    p1-->>p2: globals().get
+    p1-->>p3: globals (src/llm_wiki_cli/commands…md.py:_mcp_service_export)
+    p1-->>p4: getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)
+    p1-->>p5: globals (src/llm_wiki_cli/commands…py:_mcp_service_export, 1)
     p0->>p1: _mcp_service_export
     p0->>p1: _mcp_service_export
     p0->>p1: _mcp_service_export
-    p0-->>p4: getattr
-    p0-->>p5: bool
-    p0-->>p4: getattr
-    p0->>p6: validate_source_root
-    p6->>p7: validate_path
-    p7->>p8: PathValidationError
-    p7-->>p9: resolve
-    p7-->>p10: cwd
-    p7-->>p9: resolve
-    p7-->>p10: cwd
-    p7-->>p11: relative_to
-    p7->>p8: PathValidationError
-    p6-->>p12: expanduser
-    p6-->>p13: Path
-    p6-->>p14: is_absolute
-    p6-->>p10: cwd
-    p6-->>p9: resolve
-    p6->>p8: PathValidationError
-    p6-->>p15: is_dir
-    p6->>p8: PathValidationError
-    p6-->>p13: Path
-    p6-->>p16: abspath
+    p0-->>p6: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    p0-->>p7: bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    p0-->>p6: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    p0->>p8: validate_source_root
+    p8->>p9: validate_path
+    p9->>p10: PathValidationError
+    p9-->>p11: (…).resolve
+    p9-->>p12: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p9-->>p13: Path.cwd().resolve
+    p9-->>p12: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p9-->>p14: resolved.relative_to
+    p9->>p10: PathValidationError
+    p8-->>p15: Path(…).expanduser
+    p8-->>p16: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p8-->>p17: candidate.is_absolute
+    p8-->>p18: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p8-->>p19: candidate.resolve
+    p8->>p10: PathValidationError
+    p8-->>p20: resolved.is_dir
+    p8->>p10: PathValidationError
+    p8-->>p16: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p8-->>p21: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
 ```
 
 > Call sequence diagram shows 30 of 127 interactions; 97 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -67,27 +72,27 @@ sequenceDiagram
 flowchart LR
     s1["1. run"]
     s2["2. _mcp_service_export"]
-    s3["3. get"]
-    s4["4. globals"]
-    s5["5. getattr"]
-    s6["6. globals"]
+    s3["3. globals().get"]
+    s4["4. globals (src/llm_wiki_cli/commands…md.py:_mcp_service_export)"]
+    s5["5. getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)"]
+    s6["6. globals (src/llm_wiki_cli/commands…py:_mcp_service_export, 1)"]
     s7["7. _mcp_service_export"]
     s8["8. _mcp_service_export"]
     s9["9. _mcp_service_export"]
-    s10["10. getattr"]
-    s11["11. bool"]
-    s12["12. getattr"]
+    s10["10. getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)"]
+    s11["11. bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)"]
+    s12["12. getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)"]
     s1 -->|"_mcp_service_export('McpServerConfig')"| s2
     s2 -. "globals().get(name, _MISSING)" .-> s3
-    s2 -. "globals(data not statically known)" .-> s4
-    s2 -. "getattr(mcp_server, name)" .-> s5
-    s2 -. "globals(data not statically known)" .-> s6
+    s2 -. "globals (src/llm_wiki_cli/commands…md.py:_mcp_service_export)(data not statically known)" .-> s4
+    s2 -. "getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)(mcp_server, name)" .-> s5
+    s2 -. "globals (src/llm_wiki_cli/commands…py:_mcp_service_export, 1)(data not statically known)" .-> s6
     s1 -->|"_mcp_service_export('MCPDependencyError')"| s7
     s1 -->|"_mcp_service_export('McpWikiError')"| s8
     s1 -->|"_mcp_service_export('run_mcp_server')"| s9
-    s1 -. "getattr(args, 'src_dir', '.')" .-> s10
-    s1 -. "bool(getattr(...))" .-> s11
-    s1 -. "getattr(args, 'allow_external_src', False)" .-> s12
+    s1 -. "getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'src_dir', '.')" .-> s10
+    s1 -. "bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)(getattr(...))" .-> s11
+    s1 -. "getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allow_external_src', False)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     click s1 "../modules/mcp_cmd.md"
@@ -105,32 +110,32 @@ flowchart LR
 |---|---|---|---|---|
 | `run` | `args` | `sys` | - | - |
 | `_mcp_service_export` | `name: str` | `_MISSING`, `_MISSING` | - | `value`, `value` |
-| `get` | - | - | - | - |
-| `globals` | - | - | - | - |
-| `getattr` | - | - | - | - |
-| `globals` | - | - | - | - |
+| `globals().get` | - | - | - | - |
+| `globals (src/llm_wiki_cli/commands…md.py:_mcp_service_export)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)` | - | - | - | - |
+| `globals (src/llm_wiki_cli/commands…py:_mcp_service_export, 1)` | - | - | - | - |
 | `_mcp_service_export` | `name: str` | `_MISSING`, `_MISSING` | - | `value`, `value` |
 | `_mcp_service_export` | `name: str` | `_MISSING`, `_MISSING` | - | `value`, `value` |
 | `_mcp_service_export` | `name: str` | `_MISSING`, `_MISSING` | - | `value`, `value` |
-| `getattr` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)` | - | - | - | - |
+| `bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | _mcp_service_export | 45 | `_mcp_service_export('McpServerConfig')` |
-| _mcp_service_export | get | 23 | `globals().get(name, _MISSING)` |
-| _mcp_service_export | globals | 23 | `globals(data not statically known)` |
-| _mcp_service_export | getattr | 28 | `getattr(mcp_server, name)` |
-| _mcp_service_export | globals | 29 | `globals(data not statically known)` |
+| _mcp_service_export | globals().get | 23 | `globals().get(name, _MISSING)` |
+| _mcp_service_export | globals (src/llm_wiki_cli/commands…md.py:_mcp_service_export) | 23 | `globals(data not statically known)` |
+| _mcp_service_export | getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export) | 28 | `getattr(mcp_server, name)` |
+| _mcp_service_export | globals (src/llm_wiki_cli/commands…py:_mcp_service_export, 1) | 29 | `globals(data not statically known)` |
 | run | _mcp_service_export | 46 | `_mcp_service_export('MCPDependencyError')` |
 | run | _mcp_service_export | 47 | `_mcp_service_export('McpWikiError')` |
 | run | _mcp_service_export | 48 | `_mcp_service_export('run_mcp_server')` |
-| run | getattr | 50 | `getattr(args, 'src_dir', '.')` |
-| run | bool | 51 | `bool(getattr(...))` |
-| run | getattr | 51 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 50 | `getattr(args, 'src_dir', '.')` |
+| run | bool (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 51 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run) | 51 | `getattr(args, 'allow_external_src', False)` |
 
 ### Boundary effects
 
@@ -143,11 +148,11 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `_mcp_service_export` | `globals().get` | 23 |
-| unresolved_call | `_mcp_service_export` | `globals` | 23 |
-| unresolved_call | `_mcp_service_export` | `getattr` | 28 |
+| external_call | `_mcp_service_export` | `globals` | 23 |
+| external_call | `_mcp_service_export` | `getattr` | 28 |
 | unresolved_call | `_mcp_service_export` | `globals` | 29 |
-| unresolved_call | `run` | `getattr` | 50 |
-| unresolved_call | `run` | `getattr` | 51 |
+| external_call | `run` | `getattr` | 50 |
+| external_call | `run` | `getattr` | 51 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

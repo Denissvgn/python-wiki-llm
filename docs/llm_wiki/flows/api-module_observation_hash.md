@@ -12,48 +12,54 @@ sequenceDiagram
     participant p0 as module_observation_hash
     participant p1 as _validate_inventory_complete
     participant p2 as require_bool
-    participant p3 as isinstance
+    participant p3 as isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)
     participant p4 as TypeError
     participant p5 as normalize_module_observation
     participant p6 as _normalize_module_observation
     participant p7 as _inventory_language
-    participant p8 as _InventoryNormalizationError
-    participant p9 as get
-    participant p10 as _record_array
-    participant p11 as all
-    participant p12 as _validate_import_record
-    participant p13 as _validate_optional_strings
-    participant p14 as require_string
+    participant p8 as isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
+    participant p9 as _InventoryNormalizationError
+    participant p10 as file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)
+    participant p11 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p12 as _record_array
+    participant p13 as isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
+    participant p14 as all (src/llm_wiki_cli/services…evidence.py:_record_array)
+    participant p15 as _validate_import_record
+    participant p16 as record.get (src/llm_wiki_cli/services…y:_validate_import_record)
+    participant p17 as isinstance (src/llm_wiki_cli/services…y:_validate_import_record)
+    participant p18 as _validate_optional_strings
+    participant p19 as require_string
+    participant p20 as isinstance (src/llm_wiki_cli/services…idation.py:require_string)
     p0->>p1: _validate_inventory_complete
     p1->>p2: require_bool
-    p2-->>p3: isinstance
+    p2-->>p3: isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)
     p1-->>p4: TypeError
     p0->>p5: normalize_module_observation
     p5->>p6: _normalize_module_observation
     p6->>p7: _inventory_language
-    p7-->>p3: isinstance
-    p7->>p8: _InventoryNormalizationError
-    p7-->>p9: get
-    p7-->>p3: isinstance
-    p7->>p8: _InventoryNormalizationError
-    p7->>p8: _InventoryNormalizationError
-    p6-->>p3: isinstance
-    p6->>p10: _record_array
-    p10->>p8: _InventoryNormalizationError
-    p10-->>p3: isinstance
-    p10->>p8: _InventoryNormalizationError
-    p10-->>p11: all
-    p10-->>p3: isinstance
-    p10->>p8: _InventoryNormalizationError
-    p6->>p10: _record_array
-    p6->>p10: _record_array
-    p6->>p12: _validate_import_record
-    p12-->>p9: get
-    p12-->>p3: isinstance
-    p12->>p8: _InventoryNormalizationError
-    p12->>p13: _validate_optional_strings
-    p13->>p14: require_string
-    p14-->>p3: isinstance
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
+    p7->>p9: _InventoryNormalizationError
+    p7-->>p10: file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
+    p7->>p9: _InventoryNormalizationError
+    p7->>p9: _InventoryNormalizationError
+    p6-->>p11: isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    p6->>p12: _record_array
+    p12->>p9: _InventoryNormalizationError
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
+    p12->>p9: _InventoryNormalizationError
+    p12-->>p14: all (src/llm_wiki_cli/services…evidence.py:_record_array)
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
+    p12->>p9: _InventoryNormalizationError
+    p6->>p12: _record_array
+    p6->>p12: _record_array
+    p6->>p15: _validate_import_record
+    p15-->>p16: record.get (src/llm_wiki_cli/services…y:_validate_import_record)
+    p15-->>p17: isinstance (src/llm_wiki_cli/services…y:_validate_import_record)
+    p15->>p9: _InventoryNormalizationError
+    p15->>p18: _validate_optional_strings
+    p18->>p19: require_string
+    p19-->>p20: isinstance (src/llm_wiki_cli/services…idation.py:require_string)
 ```
 
 > Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -68,26 +74,26 @@ flowchart LR
     s1["1. module_observation_hash"]
     s2["2. _validate_inventory_complete"]
     s3["3. require_bool"]
-    s4["4. isinstance"]
+    s4["4. isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)"]
     s5["5. TypeError"]
     s6["6. normalize_module_observation"]
     s7["7. _normalize_module_observation"]
     s8["8. _inventory_language"]
-    s9["9. isinstance"]
+    s9["9. isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)"]
     s10["10. _InventoryNormalizationError"]
-    s11["11. get"]
-    s12["12. isinstance"]
+    s11["11. file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)"]
+    s12["12. isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)"]
     s1 -->|"_validate_inventory_complete(inventory_complete)"| s2
     s2 -->|"require_bool(inventory_complete, error=TypeError(...))"| s3
-    s3 -. "isinstance(value, bool)" .-> s4
+    s3 -. "isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)(value, bool)" .-> s4
     s2 -. "TypeError('inventory_complete must be a boolean')" .-> s5
     s1 -->|"normalize_module_observation(file_data)"| s6
     s6 -->|"_normalize_module_observation(file_data)"| s7
     s7 -->|"_inventory_language(file_data)"| s8
-    s8 -. "isinstance(file_data, Mapping)" .-> s9
+    s8 -. "isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)(file_data, Mapping)" .-> s9
     s8 -->|"_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)"| s10
-    s8 -. "file_data.get('language')" .-> s11
-    s8 -. "isinstance(language, str)" .-> s12
+    s8 -. "file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)('language')" .-> s11
+    s8 -. "isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)(language, str)" .-> s12
     b0["mutation class_summaries.append"]
     s7 -. "mutation class_summaries.append" .-> b0
     b1["mutation function_summaries.append"]
@@ -117,50 +123,50 @@ flowchart LR
 | `module_observation_hash` | `file_data: Mapping[str, Any]`, `inventory_complete: bool` | - | - | `None`, `_hash_normalized_observation(...)` |
 | `_validate_inventory_complete` | `inventory_complete: object` | - | - | - |
 | `require_bool` | `value: object`, `error: Exception` | - | - | `value` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
 | `normalize_module_observation` | `file_data: Mapping[str, Any]` | `_InventoryNormalizationError` | - | `_normalize_module_observation(...)`, `None` |
 | `_normalize_module_observation` | `file_data: Mapping[str, Any] \| None` | `Mapping`, `_MODULE_ENTITY_FIELDS`, `_MODULE_NONSTRUCTURAL_KEYS`, `_MODULE_FUNCTION_FIELDS`, `_MODULE_NONSTRUCTURAL_KEYS`, `MODULE_OBSERVATION_SCOPE`, `_MODULE_NONSTRUCTURAL_KEYS`, `UNKNOWN_INVALID_INVENTORY` | `seen_names[...]`, `summary[...]`, `payload[...]`, `payload[...]`, `payload[...]`, `payload[...]` | `payload` |
 | `_inventory_language` | `file_data: Mapping[str, Any] \| None` | `Mapping`, `UNKNOWN_INVALID_INVENTORY`, `UNKNOWN_INVALID_INVENTORY`, `_SUPPORTED_OBSERVATION_LANGUAGES`, `UNKNOWN_UNSUPPORTED_LANGUAGE` | - | `language` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | - | - | - | - |
 | `_InventoryNormalizationError` | - | - | - | - |
-| `get` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| module_observation_hash | _validate_inventory_complete | 254 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 851 | `require_bool(inventory_complete, error=TypeError(...))` |
-| require_bool | isinstance | 772 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 853 | `TypeError('inventory_complete must be a boolean')` |
-| module_observation_hash | normalize_module_observation | 257 | `normalize_module_observation(file_data)` |
-| normalize_module_observation | _normalize_module_observation | 218 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 425 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance | 541 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _InventoryNormalizationError | 542 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
-| _inventory_language | get | 543 | `file_data.get('language')` |
-| _inventory_language | isinstance | 544 | `isinstance(language, str)` |
+| module_observation_hash | _validate_inventory_complete | 255 | `_validate_inventory_complete(inventory_complete)` |
+| _validate_inventory_complete | require_bool | 852 | `require_bool(inventory_complete, error=TypeError(...))` |
+| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 772 | `isinstance(value, bool)` |
+| _validate_inventory_complete | TypeError | 854 | `TypeError('inventory_complete must be a boolean')` |
+| module_observation_hash | normalize_module_observation | 258 | `normalize_module_observation(file_data)` |
+| normalize_module_observation | _normalize_module_observation | 219 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 426 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 542 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _InventoryNormalizationError | 543 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
+| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 544 | `file_data.get('language')` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 545 | `isinstance(language, str)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 445 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 450 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 479 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 494 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 446 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 451 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 480 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 495 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_bool` | `isinstance` | 772 |
-| unresolved_call | `_validate_inventory_complete` | `TypeError` | 853 |
-| unresolved_call | `_inventory_language` | `isinstance` | 541 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 543 |
-| unresolved_call | `_inventory_language` | `isinstance` | 544 |
+| external_call | `require_bool` | `isinstance` | 772 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 854 |
+| external_call | `_inventory_language` | `isinstance` | 542 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 544 |
+| external_call | `_inventory_language` | `isinstance` | 545 |
 | step_limit | `module_observation_hash` | `first 12 steps` | 0 |
 | truncated_flow | `module_observation_hash` | `depth limit` | 0 |
 

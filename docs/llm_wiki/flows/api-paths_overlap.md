@@ -11,9 +11,9 @@
 sequenceDiagram
     participant p0 as paths_overlap
     participant p1 as path_is_within
-    participant p2 as relative_to
+    participant p2 as path.relative_to
     p0->>p1: path_is_within
-    p1-->>p2: relative_to
+    p1-->>p2: path.relative_to
     p0->>p1: path_is_within
 ```
 
@@ -24,7 +24,7 @@ sequenceDiagram
 flowchart LR
     s1["1. paths_overlap"]
     s2["2. path_is_within"]
-    s3["3. relative_to"]
+    s3["3. path.relative_to"]
     s4["4. path_is_within"]
     s1 -->|"path_is_within(left, right)"| s2
     s2 -. "path.relative_to(root)" .-> s3
@@ -40,7 +40,7 @@ flowchart LR
 |---|---|---|---|---|
 | `paths_overlap` | `left: Path`, `right: Path` | - | - | `...` |
 | `path_is_within` | `path: Path`, `root: Path` | - | - | `False`, `True` |
-| `relative_to` | - | - | - | - |
+| `path.relative_to` | - | - | - | - |
 | `path_is_within` | `path: Path`, `root: Path` | - | - | `False`, `True` |
 
 ### Call data
@@ -48,7 +48,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | paths_overlap | path_is_within | 441 | `path_is_within(left, right)` |
-| path_is_within | relative_to | 432 | `path.relative_to(root)` |
+| path_is_within | path.relative_to | 432 | `path.relative_to(root)` |
 | paths_overlap | path_is_within | 441 | `path_is_within(right, left)` |
 
 ### Boundary effects

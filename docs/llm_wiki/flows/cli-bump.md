@@ -13,52 +13,55 @@ sequenceDiagram
     participant p1 as getattr
     participant p2 as find_version_file
     participant p3 as Path
-    participant p4 as exists
+    participant p4 as candidate.exists
     participant p5 as print
-    participant p6 as exit
+    participant p6 as sys.exit
     participant p7 as read_version
-    participant p8 as read_text
+    participant p8 as path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)
     participant p9 as _read_pyproject_version
-    participant p10 as loads
+    participant p10 as tomllib.loads
     participant p11 as isinstance
-    participant p12 as get
-    participant p13 as match
-    participant p14 as _table_body
-    participant p15 as _table_bounds
-    participant p16 as finditer
-    participant p17 as strip
-    participant p18 as group
-    participant p19 as (end)
+    participant p12 as data.get
+    participant p13 as project.get
+    participant p14 as VERSION_RE.match (src/llm_wiki_cli/services…y:_read_pyproject_version)
+    participant p15 as data.get(…).get
+    participant p16 as poetry.get
+    participant p17 as _table_body
+    participant p18 as _table_bounds
+    participant p19 as _TABLE_RE.finditer
+    participant p20 as match.group(…).strip
+    participant p21 as match.group (src/llm_wiki_cli/services…rsioning.py:_table_bounds)
+    participant p22 as match.end
     p0-->>p1: getattr
     p0->>p2: find_version_file
     p2-->>p3: Path
-    p2-->>p4: exists
+    p2-->>p4: candidate.exists
     p0-->>p5: print
-    p0-->>p6: exit
+    p0-->>p6: sys.exit
     p0->>p7: read_version
-    p7-->>p8: read_text
+    p7-->>p8: path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)
     p7->>p9: _read_pyproject_version
-    p9-->>p10: loads
+    p9-->>p10: tomllib.loads
     p9-->>p11: isinstance
-    p9-->>p12: get
+    p9-->>p12: data.get
     p9-->>p11: isinstance
-    p9-->>p12: get
-    p9-->>p12: get
+    p9-->>p13: project.get
+    p9-->>p13: project.get
     p9-->>p11: isinstance
-    p9-->>p13: match
+    p9-->>p14: VERSION_RE.match (src/llm_wiki_cli/services…y:_read_pyproject_version)
     p9-->>p11: isinstance
-    p9-->>p12: get
-    p9-->>p12: get
+    p9-->>p15: data.get(…).get
+    p9-->>p12: data.get
     p9-->>p11: isinstance
-    p9-->>p12: get
+    p9-->>p16: poetry.get
     p9-->>p11: isinstance
-    p9-->>p13: match
-    p9->>p14: _table_body
-    p14->>p15: _table_bounds
-    p15-->>p16: finditer
-    p15-->>p17: strip
-    p15-->>p18: group
-    p15-->>p19: (end)
+    p9-->>p14: VERSION_RE.match (src/llm_wiki_cli/services…y:_read_pyproject_version)
+    p9->>p17: _table_body
+    p17->>p18: _table_bounds
+    p18-->>p19: _TABLE_RE.finditer
+    p18-->>p20: match.group(…).strip
+    p18-->>p21: match.group (src/llm_wiki_cli/services…rsioning.py:_table_bounds)
+    p18-->>p22: match.end
 ```
 
 > Call sequence diagram shows 30 of 99 interactions; 69 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -72,13 +75,13 @@ flowchart LR
     s2["2. getattr"]
     s3["3. find_version_file"]
     s4["4. Path"]
-    s5["5. exists"]
+    s5["5. candidate.exists"]
     s6["6. print"]
-    s7["7. exit"]
+    s7["7. sys.exit"]
     s8["8. read_version"]
-    s9["9. read_text"]
+    s9["9. path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)"]
     s10["10. _read_pyproject_version"]
-    s11["11. loads"]
+    s11["11. tomllib.loads"]
     s12["12. isinstance"]
     s1 -. "getattr(args, 'root', '.')" .-> s2
     s1 -->|"find_version_file(root)"| s3
@@ -87,7 +90,7 @@ flowchart LR
     s1 -. "print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')" .-> s6
     s1 -. "sys.exit(1)" .-> s7
     s1 -->|"read_version(version_file)"| s8
-    s8 -. "path.read_text(encoding='utf-8')" .-> s9
+    s8 -. "path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)(encoding='utf-8')" .-> s9
     s8 -->|"_read_pyproject_version(content)"| s10
     s10 -. "tomllib.loads(text)" .-> s11
     s10 -. "isinstance(data, dict)" .-> s12
@@ -130,13 +133,13 @@ flowchart LR
 | `getattr` | - | - | - | - |
 | `find_version_file` | `root: str` | `VERSION_PATTERNS` | - | `candidate`, `None` |
 | `Path` | - | - | - | - |
-| `exists` | - | - | - | - |
+| `candidate.exists` | - | - | - | - |
 | `print` | - | - | - | - |
-| `exit` | - | - | - | - |
+| `sys.exit` | - | - | - | - |
 | `read_version` | `path: Path` | `VERSION_PATTERNS` | - | `_read_pyproject_version(...)`, `g`, `None` |
-| `read_text` | - | - | - | - |
+| `path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)` | - | - | - | - |
 | `_read_pyproject_version` | `text: str` | - | - | `None`, `version`, `version`, `None`, `version`, `_static_version_from_body(...)`, `None` |
-| `loads` | - | - | - | - |
+| `tomllib.loads` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 
 ### Call data
@@ -146,13 +149,13 @@ flowchart LR
 | run | getattr | 14 | `getattr(args, 'root', '.')` |
 | run | find_version_file | 15 | `find_version_file(root)` |
 | find_version_file | Path | 31 | `Path(root)` |
-| find_version_file | exists | 34 | `candidate.exists(data not statically known)` |
+| find_version_file | candidate.exists | 34 | `candidate.exists(data not statically known)` |
 | run | print | 18 | `print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')` |
-| run | exit | 21 | `sys.exit(1)` |
+| run | sys.exit | 21 | `sys.exit(1)` |
 | run | read_version | 23 | `read_version(version_file)` |
-| read_version | read_text | 41 | `path.read_text(encoding='utf-8')` |
+| read_version | path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version) | 41 | `path.read_text(encoding='utf-8')` |
 | read_version | _read_pyproject_version | 43 | `_read_pyproject_version(content)` |
-| _read_pyproject_version | loads | 90 | `tomllib.loads(text)` |
+| _read_pyproject_version | tomllib.loads | 90 | `tomllib.loads(text)` |
 | _read_pyproject_version | isinstance | 93 | `isinstance(data, dict)` |
 
 ### Boundary effects
@@ -172,12 +175,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 14 |
+| external_call | `run` | `getattr` | 14 |
 | unresolved_call | `find_version_file` | `candidate.exists` | 34 |
 | external_call | `run` | `sys.exit` | 21 |
 | unresolved_call | `read_version` | `path.read_text` | 41 |
-| external_call | `_read_pyproject_version` | `tomllib.loads` | 90 |
-| unresolved_call | `_read_pyproject_version` | `isinstance` | 93 |
+| unresolved_call | `_read_pyproject_version` | `tomllib.loads` | 90 |
+| external_call | `_read_pyproject_version` | `isinstance` | 93 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -11,55 +11,59 @@
 sequenceDiagram
     participant p0 as select_repository_identity
     participant p1 as validate_configured_public_identity
-    participant p2 as isinstance
+    participant p2 as isinstance (src/llm_wiki_cli/services…configured_public_identity)
     participant p3 as KnowledgeEnvelopeError
-    participant p4 as strip
-    participant p5 as fullmatch
-    participant p6 as endswith
-    participant p7 as casefold
+    participant p4 as value.strip (src/llm_wiki_cli/services…configured_public_identity)
+    participant p5 as _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)
+    participant p6 as value.casefold().endswith
+    participant p7 as value.casefold
     participant p8 as _remote_mapping
-    participant p9 as items
-    participant p10 as len
-    participant p11 as next
-    participant p12 as iter
-    participant p13 as get
-    participant p14 as normalize_vcs_remote
-    participant p15 as any
-    participant p16 as ord
-    participant p17 as startswith
-    participant p18 as match
-    participant p19 as search
-    participant p20 as _normalize_scheme_remote
+    participant p9 as isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
+    participant p10 as value.items
+    participant p11 as len
+    participant p12 as next
+    participant p13 as iter
+    participant p14 as remotes.get
+    participant p15 as isinstance (src/llm_wiki_cli/services…select_repository_identity)
+    participant p16 as normalize_vcs_remote
+    participant p17 as isinstance (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p18 as value.strip (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p19 as any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p20 as ord
+    participant p21 as value.startswith
+    participant p22 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p23 as _MALFORMED_PERCENT_RE.search
+    participant p24 as _normalize_scheme_remote
     p0->>p1: validate_configured_public_identity
-    p1-->>p2: isinstance
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…configured_public_identity)
     p1->>p3: KnowledgeEnvelopeError
-    p1-->>p4: strip
-    p1-->>p5: fullmatch
-    p1-->>p6: endswith
-    p1-->>p7: casefold
+    p1-->>p4: value.strip (src/llm_wiki_cli/services…configured_public_identity)
+    p1-->>p5: _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)
+    p1-->>p6: value.casefold().endswith
+    p1-->>p7: value.casefold
     p1->>p3: KnowledgeEnvelopeError
     p0->>p8: _remote_mapping
-    p8-->>p2: isinstance
+    p8-->>p9: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
     p8->>p3: KnowledgeEnvelopeError
-    p8-->>p9: items
-    p8-->>p2: isinstance
+    p8-->>p10: value.items
+    p8-->>p9: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
     p8->>p3: KnowledgeEnvelopeError
-    p8-->>p2: isinstance
+    p8-->>p9: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
     p8->>p3: KnowledgeEnvelopeError
-    p0-->>p10: len
-    p0-->>p11: next
-    p0-->>p12: iter
-    p0-->>p13: get
-    p0-->>p2: isinstance
-    p0->>p14: normalize_vcs_remote
-    p14-->>p2: isinstance
-    p14-->>p4: strip
-    p14-->>p15: any
-    p14-->>p16: ord
-    p14-->>p17: startswith
-    p14-->>p18: match
-    p14-->>p19: search
-    p14->>p20: _normalize_scheme_remote
+    p0-->>p11: len
+    p0-->>p12: next
+    p0-->>p13: iter
+    p0-->>p14: remotes.get
+    p0-->>p15: isinstance (src/llm_wiki_cli/services…select_repository_identity)
+    p0->>p16: normalize_vcs_remote
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    p16-->>p18: value.strip (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    p16-->>p19: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    p16-->>p20: ord
+    p16-->>p21: value.startswith
+    p16-->>p22: _WINDOWS_DRIVE_PREFIX_RE.match
+    p16-->>p23: _MALFORMED_PERCENT_RE.search
+    p16->>p24: _normalize_scheme_remote
 ```
 
 > Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -71,26 +75,26 @@ sequenceDiagram
 flowchart LR
     s1["1. select_repository_identity"]
     s2["2. validate_configured_public_identity"]
-    s3["3. isinstance"]
+    s3["3. isinstance (src/llm_wiki_cli/services…configured_public_identity)"]
     s4["4. KnowledgeEnvelopeError"]
-    s5["5. strip"]
-    s6["6. fullmatch"]
-    s7["7. endswith"]
-    s8["8. casefold"]
+    s5["5. value.strip (src/llm_wiki_cli/services…configured_public_identity)"]
+    s6["6. _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)"]
+    s7["7. value.casefold().endswith"]
+    s8["8. value.casefold"]
     s9["9. KnowledgeEnvelopeError"]
     s10["10. _remote_mapping"]
-    s11["11. isinstance"]
+    s11["11. isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)"]
     s12["12. KnowledgeEnvelopeError"]
     s1 -->|"validate_configured_public_identity(configured_public_identity)"| s2
-    s2 -. "isinstance(value, str)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_cli/services…configured_public_identity)(value, str)" .-> s3
     s2 -->|"KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')"| s4
-    s2 -. "value.strip(data not statically known)" .-> s5
-    s2 -. "_REPOSITORY_IDENTITY_RE.fullmatch(value)" .-> s6
+    s2 -. "value.strip (src/llm_wiki_cli/services…configured_public_identity)(data not statically known)" .-> s5
+    s2 -. "_REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)(value)" .-> s6
     s2 -. "value.casefold().endswith('.git')" .-> s7
     s2 -. "value.casefold(data not statically known)" .-> s8
-    s2 -->|"KnowledgeEnvelopeError('configured_public_identity', #34;must be a normalized public namespace path without scheme, credentials, port, query, fragment, dot segmen…"| s9
+    s2 -->|"KnowledgeEnvelopeError(…)"| s9
     s1 -->|"_remote_mapping(vcs_remotes)"| s10
-    s10 -. "isinstance(value, Mapping)" .-> s11
+    s10 -. "isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)(value, Mapping)" .-> s11
     s10 -->|"KnowledgeEnvelopeError('vcs_remotes', 'must be an object')"| s12
     click s1 "../modules/knowledge_envelope.md"
     click s2 "../modules/knowledge_envelope.md"
@@ -106,15 +110,15 @@ flowchart LR
 |---|---|---|---|---|
 | `select_repository_identity` | `configured_public_identity: str \| None`, `vcs_remotes: Mapping[str, str \| None]`, `upstream_remote: str \| None` | `RepositoryIdentitySource`, `RepositoryIdentitySource`, `RepositoryIdentitySource`, `RepositoryIdentitySource` | - | `(...)`, `(...)`, `(...)`, `(...)` |
 | `validate_configured_public_identity` | `value: object` | - | - | `value` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…configured_public_identity)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
-| `endswith` | - | - | - | - |
-| `casefold` | - | - | - | - |
+| `value.strip (src/llm_wiki_cli/services…configured_public_identity)` | - | - | - | - |
+| `_REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)` | - | - | - | - |
+| `value.casefold().endswith` | - | - | - | - |
+| `value.casefold` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `_remote_mapping` | `value: Mapping[str, str \| None]` | `Mapping` | `result[...]` | `result` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 
 ### Call data
@@ -122,15 +126,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | select_repository_identity | validate_configured_public_identity | 658 | `validate_configured_public_identity(configured_public_identity)` |
-| validate_configured_public_identity | isinstance | 687 | `isinstance(value, str)` |
+| validate_configured_public_identity | isinstance (src/llm_wiki_cli/services…configured_public_identity) | 687 | `isinstance(value, str)` |
 | validate_configured_public_identity | KnowledgeEnvelopeError | 688 | `KnowledgeEnvelopeError('configured_public_identity', 'must be a qualified public namespace path')` |
-| validate_configured_public_identity | strip | 693 | `value.strip(data not statically known)` |
-| validate_configured_public_identity | fullmatch | 694 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
-| validate_configured_public_identity | endswith | 695 | `value.casefold().endswith('.git')` |
-| validate_configured_public_identity | casefold | 695 | `value.casefold(data not statically known)` |
+| validate_configured_public_identity | value.strip (src/llm_wiki_cli/services…configured_public_identity) | 693 | `value.strip(data not statically known)` |
+| validate_configured_public_identity | _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity) | 694 | `_REPOSITORY_IDENTITY_RE.fullmatch(value)` |
+| validate_configured_public_identity | value.casefold().endswith | 695 | `value.casefold().endswith('.git')` |
+| validate_configured_public_identity | value.casefold | 695 | `value.casefold(data not statically known)` |
 | validate_configured_public_identity | KnowledgeEnvelopeError | 697 | `KnowledgeEnvelopeError('configured_public_identity', "must be a normalized public namespace path without scheme, credentials, port, query, fragment, dot segment, or '.git' suffix")` |
 | select_repository_identity | _remote_mapping | 663 | `_remote_mapping(vcs_remotes)` |
-| _remote_mapping | isinstance | 1429 | `isinstance(value, Mapping)` |
+| _remote_mapping | isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping) | 1429 | `isinstance(value, Mapping)` |
 | _remote_mapping | KnowledgeEnvelopeError | 1430 | `KnowledgeEnvelopeError('vcs_remotes', 'must be an object')` |
 
 ### Boundary effects
@@ -141,12 +145,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_configured_public_identity` | `isinstance` | 687 |
+| external_call | `validate_configured_public_identity` | `isinstance` | 687 |
 | unresolved_call | `validate_configured_public_identity` | `value.strip` | 693 |
 | unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 694 |
 | unresolved_call | `validate_configured_public_identity` | `value.casefold().endswith` | 695 |
 | unresolved_call | `validate_configured_public_identity` | `value.casefold` | 695 |
-| unresolved_call | `_remote_mapping` | `isinstance` | 1429 |
+| external_call | `_remote_mapping` | `isinstance` | 1429 |
 | step_limit | `select_repository_identity` | `first 12 steps` | 0 |
 
 ## Behavior

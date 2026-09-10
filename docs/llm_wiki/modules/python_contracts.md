@@ -68,8 +68,14 @@ flowchart LR
 | `normalized_bases` | `(node: ast.ClassDef, import_aliases: Mapping[str, str]) -> list[str]` | — | — |
 | `class_kind` | `(node: ast.ClassDef, import_aliases: Mapping[str, str]) -> str` | — | — |
 | `is_pydantic_model` | `(node: ast.ClassDef, import_aliases: Mapping[str, str]) -> bool` | — | — |
-| `finalize_model_kinds` | `(classes: list[dict]) -> None` | — | Propagate Pydantic model classification through local subclasses. |
-| `finalize_inventory_model_kinds` | `(inventory: Mapping[str, dict], *, module_candidates: Callable[[str, str], set[str]] \| None = None) -> None` | — | Propagate Pydantic model identity through imported local base classes. |
+| `is_typed_dict` | `(node: ast.ClassDef, import_aliases: Mapping[str, str]) -> bool` | — | — |
+| `finalize_model_kinds` | `(classes: list[dict]) -> None` | — | Propagate known model classification through local subclasses. |
+| `_finalize_local_model_kind` | `(classes: list[dict], model_kind: str) -> None` | — | — |
+| `finalize_inventory_model_kinds` | `(inventory: Mapping[str, dict], *, module_candidates: Callable[[str, str], set[str]] \| None = None) -> None` | — | Resolve imported model bases and apply declared TypedDict key contracts. |
+| `_finalize_inventory_model_kind` | `(inventory: Mapping[str, dict], model_kind: str, module_candidates: Callable[[str, str], set[str]] \| None) -> None` | — | — |
+| `_inventory_import_aliases` | `(imports: list[dict]) -> dict[str, str]` | — | — |
+| `_typed_dict_required_override` | `(annotation: ast.AST, aliases: Mapping[str, str]) -> bool \| None` | — | — |
+| `_apply_typed_dict_presence` | `(item: dict, aliases: Mapping[str, str]) -> None` | — | — |
 | `extract_enum_attributes` | `(node: ast.ClassDef) -> list[dict]` | — | Extract declared Enum member expressions without executing them. |
 | `_config_entry` | `(name: str, value: ast.AST, source: str, line: int) -> dict` | — | — |
 | `_config_entries_from_call` | `(call: ast.Call, source: str) -> list[dict]` | — | — |

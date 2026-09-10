@@ -21,7 +21,7 @@ sequenceDiagram
 flowchart LR
     s1["1. assemble_documentation_query_service"]
     s2["2. service_factory"]
-    s1 -. "service_factory(inventory, call_edges=call_edges, flows=flows, data_flows=data_flows, dependency_analysis=dependency_analysis, surface_index=surface_index, lim…" .-> s2
+    s1 -. "service_factory(…)" .-> s2
     click s1 "../modules/documentation_query_builder.md"
 ```
 

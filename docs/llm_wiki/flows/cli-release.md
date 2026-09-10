@@ -11,49 +11,54 @@
 sequenceDiagram
     participant p0 as run
     participant p1 as getattr
-    participant p2 as Path
-    participant p3 as exists
+    participant p2 as Path (src/llm_wiki_cli/commands/release_cmd.py:run)
+    participant p3 as changelog_path.exists
     participant p4 as print
-    participant p5 as exit
+    participant p5 as sys.exit
     participant p6 as find_version_file
-    participant p7 as read_version
-    participant p8 as read_text
-    participant p9 as _read_pyproject_version
-    participant p10 as loads
-    participant p11 as isinstance
-    participant p12 as get
-    participant p13 as match
-    participant p14 as _table_body
+    participant p7 as Path (src/llm_wiki_cli/services…ning.py:find_version_file)
+    participant p8 as candidate.exists
+    participant p9 as read_version
+    participant p10 as path.read_text
+    participant p11 as _read_pyproject_version
+    participant p12 as tomllib.loads
+    participant p13 as isinstance
+    participant p14 as data.get
+    participant p15 as project.get
+    participant p16 as VERSION_RE.match (src/llm_wiki_cli/services…y:_read_pyproject_version)
+    participant p17 as data.get(…).get
+    participant p18 as poetry.get
+    participant p19 as _table_body
     p0-->>p1: getattr
-    p0-->>p2: Path
+    p0-->>p2: Path (src/llm_wiki_cli/commands/release_cmd.py:run)
     p0-->>p1: getattr
-    p0-->>p3: exists
+    p0-->>p3: changelog_path.exists
     p0-->>p4: print
-    p0-->>p5: exit
+    p0-->>p5: sys.exit
     p0->>p6: find_version_file
-    p6-->>p2: Path
-    p6-->>p3: exists
+    p6-->>p7: Path (src/llm_wiki_cli/services…ning.py:find_version_file)
+    p6-->>p8: candidate.exists
     p0-->>p4: print
-    p0-->>p5: exit
-    p0->>p7: read_version
-    p7-->>p8: read_text
-    p7->>p9: _read_pyproject_version
-    p9-->>p10: loads
-    p9-->>p11: isinstance
-    p9-->>p12: get
-    p9-->>p11: isinstance
-    p9-->>p12: get
-    p9-->>p12: get
-    p9-->>p11: isinstance
-    p9-->>p13: match
-    p9-->>p11: isinstance
-    p9-->>p12: get
-    p9-->>p12: get
-    p9-->>p11: isinstance
-    p9-->>p12: get
-    p9-->>p11: isinstance
-    p9-->>p13: match
-    p9->>p14: _table_body
+    p0-->>p5: sys.exit
+    p0->>p9: read_version
+    p9-->>p10: path.read_text
+    p9->>p11: _read_pyproject_version
+    p11-->>p12: tomllib.loads
+    p11-->>p13: isinstance
+    p11-->>p14: data.get
+    p11-->>p13: isinstance
+    p11-->>p15: project.get
+    p11-->>p15: project.get
+    p11-->>p13: isinstance
+    p11-->>p16: VERSION_RE.match (src/llm_wiki_cli/services…y:_read_pyproject_version)
+    p11-->>p13: isinstance
+    p11-->>p17: data.get(…).get
+    p11-->>p14: data.get
+    p11-->>p13: isinstance
+    p11-->>p18: poetry.get
+    p11-->>p13: isinstance
+    p11-->>p16: VERSION_RE.match (src/llm_wiki_cli/services…y:_read_pyproject_version)
+    p11->>p19: _table_body
 ```
 
 > Call sequence diagram shows 30 of 100 interactions; 70 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -65,24 +70,24 @@ sequenceDiagram
 flowchart LR
     s1["1. run"]
     s2["2. getattr"]
-    s3["3. Path"]
+    s3["3. Path (src/llm_wiki_cli/commands/release_cmd.py:run)"]
     s4["4. getattr"]
-    s5["5. exists"]
+    s5["5. changelog_path.exists"]
     s6["6. print"]
-    s7["7. exit"]
+    s7["7. sys.exit"]
     s8["8. find_version_file"]
-    s9["9. Path"]
-    s10["10. exists"]
+    s9["9. Path (src/llm_wiki_cli/services…ning.py:find_version_file)"]
+    s10["10. candidate.exists"]
     s11["11. print"]
-    s12["12. exit"]
+    s12["12. sys.exit"]
     s1 -. "getattr(args, 'root', '.')" .-> s2
-    s1 -. "Path(getattr(...))" .-> s3
+    s1 -. "Path (src/llm_wiki_cli/commands/release_cmd.py:run)(getattr(...))" .-> s3
     s1 -. "getattr(args, 'changelog', 'CHANGELOG.md')" .-> s4
     s1 -. "changelog_path.exists(data not statically known)" .-> s5
     s1 -. "print(...)" .-> s6
     s1 -. "sys.exit(1)" .-> s7
     s1 -->|"find_version_file(root)"| s8
-    s8 -. "Path(root)" .-> s9
+    s8 -. "Path (src/llm_wiki_cli/services…ning.py:find_version_file)(root)" .-> s9
     s8 -. "candidate.exists(data not statically known)" .-> s10
     s1 -. "print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')" .-> s11
     s1 -. "sys.exit(1)" .-> s12
@@ -121,32 +126,32 @@ flowchart LR
 |---|---|---|---|---|
 | `run` | `args` | `sys`, `subprocess`, `sys`, `sys` | - | `none` |
 | `getattr` | - | - | - | - |
-| `Path` | - | - | - | - |
+| `Path (src/llm_wiki_cli/commands/release_cmd.py:run)` | - | - | - | - |
 | `getattr` | - | - | - | - |
-| `exists` | - | - | - | - |
+| `changelog_path.exists` | - | - | - | - |
 | `print` | - | - | - | - |
-| `exit` | - | - | - | - |
+| `sys.exit` | - | - | - | - |
 | `find_version_file` | `root: str` | `VERSION_PATTERNS` | - | `candidate`, `None` |
-| `Path` | - | - | - | - |
-| `exists` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…ning.py:find_version_file)` | - | - | - | - |
+| `candidate.exists` | - | - | - | - |
 | `print` | - | - | - | - |
-| `exit` | - | - | - | - |
+| `sys.exit` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | getattr | 118 | `getattr(args, 'root', '.')` |
-| run | Path | 119 | `Path(getattr(...))` |
+| run | Path (src/llm_wiki_cli/commands/release_cmd.py:run) | 119 | `Path(getattr(...))` |
 | run | getattr | 119 | `getattr(args, 'changelog', 'CHANGELOG.md')` |
-| run | exists | 121 | `changelog_path.exists(data not statically known)` |
+| run | changelog_path.exists | 121 | `changelog_path.exists(data not statically known)` |
 | run | print | 122 | `print(...)` |
-| run | exit | 123 | `sys.exit(1)` |
+| run | sys.exit | 123 | `sys.exit(1)` |
 | run | find_version_file | 126 | `find_version_file(root)` |
-| find_version_file | Path | 31 | `Path(root)` |
-| find_version_file | exists | 34 | `candidate.exists(data not statically known)` |
+| find_version_file | Path (src/llm_wiki_cli/services…ning.py:find_version_file) | 31 | `Path(root)` |
+| find_version_file | candidate.exists | 34 | `candidate.exists(data not statically known)` |
 | run | print | 128 | `print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')` |
-| run | exit | 131 | `sys.exit(1)` |
+| run | sys.exit | 131 | `sys.exit(1)` |
 
 ### Boundary effects
 
@@ -165,8 +170,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 118 |
-| unresolved_call | `run` | `getattr` | 119 |
+| external_call | `run` | `getattr` | 118 |
+| external_call | `run` | `getattr` | 119 |
 | unresolved_call | `run` | `changelog_path.exists` | 121 |
 | external_call | `run` | `sys.exit` | 123 |
 | unresolved_call | `find_version_file` | `candidate.exists` | 34 |

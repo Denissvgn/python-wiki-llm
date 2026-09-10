@@ -14,52 +14,53 @@ sequenceDiagram
     participant p2 as _text
     participant p3 as require_trimmed_text
     participant p4 as require_nonempty_text
-    participant p5 as isinstance
-    participant p6 as strip
-    participant p7 as any
-    participant p8 as ord
+    participant p5 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p6 as value.strip
+    participant p7 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p8 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p9 as DocumentationClaimEvidenceError
-    participant p10 as fullmatch
+    participant p10 as _SAFE_ID_RE.fullmatch
     participant p11 as _portable_path
     participant p12 as require_portable_relative_path
-    participant p13 as _default_path_error
-    participant p14 as SharedValidationError
-    participant p15 as fspath
-    participant p16 as encode
-    participant p17 as replace
-    participant p18 as PurePosixPath
-    participant p19 as is_absolute
-    participant p20 as match
+    participant p13 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    participant p14 as _default_path_error
+    participant p15 as SharedValidationError
+    participant p16 as os.fspath
+    participant p17 as raw.encode
+    participant p18 as raw.replace
+    participant p19 as PurePosixPath
+    participant p20 as path.is_absolute
+    participant p21 as _WINDOWS_ABSOLUTE_RE.match
     p0->>p1: _identifier
     p1->>p2: _text
     p2->>p3: require_trimmed_text
     p3->>p4: require_nonempty_text
-    p4-->>p5: isinstance
-    p4-->>p6: strip
-    p4-->>p7: any
-    p4-->>p8: ord
-    p4-->>p8: ord
+    p4-->>p5: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p4-->>p6: value.strip
+    p4-->>p7: any (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p4-->>p8: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p4-->>p8: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
     p2->>p9: DocumentationClaimEvidenceError
-    p1-->>p10: fullmatch
+    p1-->>p10: _SAFE_ID_RE.fullmatch
     p1->>p9: DocumentationClaimEvidenceError
     p0->>p11: _portable_path
     p11->>p2: _text
     p11->>p9: DocumentationClaimEvidenceError
     p11->>p12: require_portable_relative_path
-    p12-->>p5: isinstance
-    p12->>p13: _default_path_error
-    p13->>p14: SharedValidationError
-    p12-->>p15: fspath
-    p12-->>p5: isinstance
-    p12->>p13: _default_path_error
-    p12-->>p16: encode
-    p12->>p13: _default_path_error
-    p12->>p13: _default_path_error
-    p12-->>p17: replace
-    p12-->>p18: PurePosixPath
-    p12-->>p19: is_absolute
-    p12-->>p20: match
-    p12->>p13: _default_path_error
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    p12->>p14: _default_path_error
+    p14->>p15: SharedValidationError
+    p12-->>p16: os.fspath
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    p12->>p14: _default_path_error
+    p12-->>p17: raw.encode
+    p12->>p14: _default_path_error
+    p12->>p14: _default_path_error
+    p12-->>p18: raw.replace
+    p12-->>p19: PurePosixPath
+    p12-->>p20: path.is_absolute
+    p12-->>p21: _WINDOWS_ABSOLUTE_RE.match
+    p12->>p14: _default_path_error
 ```
 
 > Call sequence diagram shows 30 of 258 interactions; 228 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -76,22 +77,22 @@ flowchart LR
     s3["3. _text"]
     s4["4. require_trimmed_text"]
     s5["5. require_nonempty_text"]
-    s6["6. isinstance"]
-    s7["7. strip"]
-    s8["8. any"]
-    s9["9. ord"]
-    s10["10. ord"]
+    s6["6. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
+    s7["7. value.strip"]
+    s8["8. any (src/llm_wiki_cli/services….py:require_nonempty_text)"]
+    s9["9. ord (src/llm_wiki_cli/services….py:require_nonempty_text)"]
+    s10["10. ord (src/llm_wiki_cli/services….py:require_nonempty_text)"]
     s11["11. DocumentationClaimEvidenceError"]
-    s12["12. fullmatch"]
+    s12["12. _SAFE_ID_RE.fullmatch"]
     s1 -->|"_identifier(claim_id, 'claim_id')"| s2
     s2 -->|"_text(value, field_name)"| s3
     s3 -->|"require_trimmed_text(value, error=DocumentationClaimEvidenceError(...))"| s4
     s4 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
-    s5 -. "isinstance(value, str)" .-> s6
+    s5 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s6
     s5 -. "value.strip(data not statically known)" .-> s7
-    s5 -. "any(...)" .-> s8
-    s5 -. "ord(character)" .-> s9
-    s5 -. "ord(character)" .-> s10
+    s5 -. "any (src/llm_wiki_cli/services….py:require_nonempty_text)(...)" .-> s8
+    s5 -. "ord (src/llm_wiki_cli/services….py:require_nonempty_text)(character)" .-> s9
+    s5 -. "ord (src/llm_wiki_cli/services….py:require_nonempty_text)(character)" .-> s10
     s3 -->|"DocumentationClaimEvidenceError(...)"| s11
     s2 -. "_SAFE_ID_RE.fullmatch(text)" .-> s12
     click s1 "../modules/documentation_claim_evidence.md"
@@ -111,13 +112,13 @@ flowchart LR
 | `_text` | `value: object`, `field_name: str` | - | - | `require_trimmed_text(...)` |
 | `require_trimmed_text` | `value: object`, `error: Exception`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
-| `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
+| `value.strip` | - | - | - | - |
+| `any (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
+| `ord (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
+| `ord (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
 | `DocumentationClaimEvidenceError` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
+| `_SAFE_ID_RE.fullmatch` | - | - | - | - |
 
 ### Call data
 
@@ -127,13 +128,13 @@ flowchart LR
 | _identifier | _text | 1362 | `_text(value, field_name)` |
 | _text | require_trimmed_text | 1390 | `require_trimmed_text(value, error=DocumentationClaimEvidenceError(...))` |
 | require_trimmed_text | require_nonempty_text | 658 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance | 574 | `isinstance(value, str)` |
-| require_nonempty_text | strip | 576 | `value.strip(data not statically known)` |
-| require_nonempty_text | any | 582 | `any(...)` |
-| require_nonempty_text | ord | 583 | `ord(character)` |
-| require_nonempty_text | ord | 584 | `ord(character)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 574 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
+| require_nonempty_text | any (src/llm_wiki_cli/services….py:require_nonempty_text) | 582 | `any(...)` |
+| require_nonempty_text | ord (src/llm_wiki_cli/services….py:require_nonempty_text) | 583 | `ord(character)` |
+| require_nonempty_text | ord (src/llm_wiki_cli/services….py:require_nonempty_text) | 584 | `ord(character)` |
 | _text | DocumentationClaimEvidenceError | 1392 | `DocumentationClaimEvidenceError(...)` |
-| _identifier | fullmatch | 1363 | `_SAFE_ID_RE.fullmatch(text)` |
+| _identifier | _SAFE_ID_RE.fullmatch | 1363 | `_SAFE_ID_RE.fullmatch(text)` |
 
 ### Boundary effects
 
@@ -143,11 +144,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_nonempty_text` | `isinstance` | 574 |
+| external_call | `require_nonempty_text` | `isinstance` | 574 |
 | unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| unresolved_call | `require_nonempty_text` | `any` | 582 |
-| unresolved_call | `require_nonempty_text` | `ord` | 583 |
-| unresolved_call | `require_nonempty_text` | `ord` | 584 |
+| external_call | `require_nonempty_text` | `any` | 582 |
+| external_call | `require_nonempty_text` | `ord` | 583 |
+| external_call | `require_nonempty_text` | `ord` | 584 |
 | unresolved_call | `_identifier` | `_SAFE_ID_RE.fullmatch` | 1363 |
 | step_limit | `qualify_claim_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `qualify_claim_evidence` | `depth limit` | 0 |

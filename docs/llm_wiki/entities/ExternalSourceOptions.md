@@ -11,9 +11,9 @@ _Auto-generated from `_ExternalSourceOptions` in `src/llm_wiki_cli/services/mcp_
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `allow_external_src` | `bool` | *required* | — |
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
+| `allow_external_src` | `bool` | *optional* | — |
 
 ## Methods
 

@@ -11,8 +11,8 @@ Serialized-byte bound with its independent hard limit.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `limit` | `int` | *required* | — |
 
 ## Methods

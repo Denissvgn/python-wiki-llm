@@ -11,9 +11,9 @@
 sequenceDiagram
     participant p0 as is_valid_sha256
     participant p1 as isinstance
-    participant p2 as fullmatch
+    participant p2 as _SHA256_RE.fullmatch
     p0-->>p1: isinstance
-    p0-->>p2: fullmatch
+    p0-->>p2: _SHA256_RE.fullmatch
 ```
 
 ## Data flow
@@ -23,7 +23,7 @@ sequenceDiagram
 flowchart LR
     s1["1. is_valid_sha256"]
     s2["2. isinstance"]
-    s3["3. fullmatch"]
+    s3["3. _SHA256_RE.fullmatch"]
     s1 -. "isinstance(value, str)" .-> s2
     s1 -. "_SHA256_RE.fullmatch(value)" .-> s3
     click s1 "../modules/knowledge_evidence.md"
@@ -35,14 +35,14 @@ flowchart LR
 |---|---|---|---|---|
 | `is_valid_sha256` | `value: object` | - | - | `...` |
 | `isinstance` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
+| `_SHA256_RE.fullmatch` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_valid_sha256 | isinstance | 152 | `isinstance(value, str)` |
-| is_valid_sha256 | fullmatch | 152 | `_SHA256_RE.fullmatch(value)` |
+| is_valid_sha256 | isinstance | 153 | `isinstance(value, str)` |
+| is_valid_sha256 | _SHA256_RE.fullmatch | 153 | `_SHA256_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -52,8 +52,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `is_valid_sha256` | `isinstance` | 152 |
-| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 152 |
+| external_call | `is_valid_sha256` | `isinstance` | 153 |
+| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 153 |
 
 ## Behavior
 

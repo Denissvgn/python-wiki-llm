@@ -2,49 +2,21 @@
 
 **Entry point:** `export_documentation_run` (`api`)
 **Source:** [export](../modules/export.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [documentation_policy](../modules/documentation_policy.md), and 35 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [export](../modules/export.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), and 7 more
 
 **Complete modules touched:**
 
-- [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
-- [config](../modules/config.md)
-- [documentation_policy](../modules/documentation_policy.md)
-- [documentation_review](../modules/documentation_review.md)
-- [documentation_run_contracts](../modules/documentation_run_contracts.md)
-- [documentation_run_schema](../modules/documentation_run_schema.md)
-- [documentation_wiki_input](../modules/documentation_wiki_input.md)
 - [export](../modules/export.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [immutable](../modules/immutable.md)
-- [integrity](../modules/integrity.md)
 - [io](../modules/io.md)
-- [knowledge_artifacts](../modules/knowledge_artifacts.md)
-- [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_freshness](../modules/knowledge_freshness.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
-- [knowledge_graph](../modules/knowledge_graph.md)
-- [knowledge_index](../modules/knowledge_index.md)
-- [knowledge_loader](../modules/knowledge_loader.md)
-- [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_projection](../modules/knowledge_projection.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
-- [knowledge_verification](../modules/knowledge_verification.md)
-- [record](../modules/record.md)
-- [section_ownership](../modules/section_ownership.md)
 - [site_export](../modules/site_export.md)
 - [site_html_check](../modules/site_html_check.md)
-- [source_selection](../modules/source_selection.md)
-- [source_snapshot](../modules/source_snapshot.md)
 - [validation](../modules/validation.md)
-- [verification_contracts](../modules/verification_contracts.md)
-- [verify](../modules/verify.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
-- [workspace](../modules/workspace.md)
 
 ## Call sequence
 
@@ -53,53 +25,64 @@
 sequenceDiagram
     participant p0 as export_documentation_run
     participant p1 as _resolve_workspace_root_argument
-    participant p2 as Path
-    participant p3 as abspath
-    participant p4 as fspath
-    participant p5 as expanduser
-    participant p6 as lexists
-    participant p7 as lstat
-    participant p8 as DocumentationIntegrityError
-    participant p9 as bool
-    participant p10 as getattr
-    participant p11 as S_ISLNK
-    participant p12 as S_ISDIR
-    participant p13 as resolve
-    participant p14 as _assert_existing_workspace_layout_safe
-    participant p15 as _assert_safe_workspace_directory
-    p0->>p1: _resolve_workspace_root_argument
-    p1-->>p2: Path
-    p1-->>p3: abspath
-    p1-->>p4: fspath
-    p1-->>p5: expanduser
-    p1-->>p2: Path
-    p1-->>p6: lexists
-    p1-->>p7: lstat
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p9: bool
-    p1-->>p10: getattr
-    p1-->>p9: bool
-    p1-->>p10: getattr
-    p1-->>p11: S_ISLNK
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p12: S_ISDIR
-    p1->>p8: DocumentationIntegrityError
-    p1-->>p13: resolve
-    p1-->>p6: lexists
-    p1->>p14: _assert_existing_workspace_layout_safe
-    p14-->>p6: lexists
-    p14->>p15: _assert_safe_workspace_directory
-    p15-->>p7: lstat
-    p15->>p8: DocumentationIntegrityError
-    p15-->>p9: bool
-    p15-->>p10: getattr
-    p15-->>p9: bool
-    p15-->>p10: getattr
-    p15-->>p11: S_ISLNK
-    p15->>p8: DocumentationIntegrityError
+    participant p2 as load_documentation_run
+    participant p3 as _verify_read_only_inputs
+    participant p4 as run.evidence.get
+    participant p5 as DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)
+    participant p6 as _read_json
+    participant p7 as _workspace_path
+    participant p8 as compare_generated_ownership
+    participant p9 as generated_payload.get
+    participant p10 as any (src/llm_wiki_cli/services…:export_documentation_run)
+    participant p11 as generated_diff.values
+    participant p12 as DocumentationTransitionError
+    participant p13 as _assert_documentation_export_projection_policy
+    participant p14 as str (src/llm_wiki_cli/services…:export_documentation_run)
+    participant p15 as _load_documentation_knowledge_projection
+    participant p16 as export_site_mirror
+    participant p17 as _validate_format
+    participant p18 as ', '.join (src/llm_wiki_cli/services…xport.py:_validate_format)
+    participant p19 as sorted (src/llm_wiki_cli/services…xport.py:_validate_format)
+    participant p20 as SiteExportError
+    participant p21 as _validate_file_friendly
+    participant p22 as _validate_profile
+    participant p23 as ', '.join (src/llm_wiki_cli/services…port.py:_validate_profile)
+    participant p24 as sorted (src/llm_wiki_cli/services…port.py:_validate_profile)
+    participant p25 as _validate_export_site_name
+    participant p26 as site_name.strip (src/llm_wiki_cli/services…validate_export_site_name)
+    p0-->>p1: _resolve_workspace_root_argument
+    p0-->>p2: load_documentation_run
+    p0-->>p3: _verify_read_only_inputs
+    p0-->>p4: run.evidence.get
+    p0-->>p5: DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)
+    p0-->>p6: _read_json
+    p0-->>p7: _workspace_path
+    p0-->>p8: compare_generated_ownership
+    p0-->>p9: generated_payload.get
+    p0-->>p10: any (src/llm_wiki_cli/services…:export_documentation_run)
+    p0-->>p11: generated_diff.values
+    p0-->>p5: DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)
+    p0-->>p12: DocumentationTransitionError
+    p0-->>p13: _assert_documentation_export_projection_policy
+    p0-->>p14: str (src/llm_wiki_cli/services…:export_documentation_run)
+    p0-->>p14: str (src/llm_wiki_cli/services…:export_documentation_run)
+    p0-->>p15: _load_documentation_knowledge_projection
+    p0->>p16: export_site_mirror
+    p16->>p17: _validate_format
+    p17-->>p18: ', '.join (src/llm_wiki_cli/services…xport.py:_validate_format)
+    p17-->>p19: sorted (src/llm_wiki_cli/services…xport.py:_validate_format)
+    p17->>p20: SiteExportError
+    p16->>p21: _validate_file_friendly
+    p21->>p20: SiteExportError
+    p16->>p22: _validate_profile
+    p22-->>p23: ', '.join (src/llm_wiki_cli/services…port.py:_validate_profile)
+    p22-->>p24: sorted (src/llm_wiki_cli/services…port.py:_validate_profile)
+    p22->>p20: SiteExportError
+    p16->>p25: _validate_export_site_name
+    p25-->>p26: site_name.strip (src/llm_wiki_cli/services…validate_export_site_name)
 ```
 
-> Call sequence diagram shows 30 of 4440 interactions; 4410 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1743 interactions; 1713 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -110,34 +93,32 @@ sequenceDiagram
 flowchart LR
     s1["1. export_documentation_run"]
     s2["2. _resolve_workspace_root_argument"]
-    s3["3. Path"]
-    s4["4. abspath"]
-    s5["5. fspath"]
-    s6["6. expanduser"]
-    s7["7. Path"]
-    s8["8. lexists"]
-    s9["9. lstat"]
-    s10["10. DocumentationIntegrityError"]
-    s11["11. bool"]
-    s12["12. getattr"]
-    s1 -->|"_resolve_workspace_root_argument(workspace)"| s2
-    s2 -. "Path(os.path.abspath(...))" .-> s3
-    s2 -. "os.path.abspath(os.fspath(...))" .-> s4
-    s2 -. "os.fspath(...)" .-> s5
-    s2 -. "Path(workspace).expanduser(data not statically known)" .-> s6
-    s2 -. "Path(workspace)" .-> s7
-    s2 -. "os.path.lexists(requested)" .-> s8
-    s2 -. "requested.lstat(data not statically known)" .-> s9
-    s2 -->|"DocumentationIntegrityError(...)"| s10
-    s2 -. "bool(getattr(...))" .-> s11
-    s2 -. "getattr(entry_stat, 'st_reparse_tag', 0)" .-> s12
+    s3["3. load_documentation_run"]
+    s4["4. _verify_read_only_inputs"]
+    s5["5. run.evidence.get"]
+    s6["6. DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)"]
+    s7["7. _read_json"]
+    s8["8. _workspace_path"]
+    s9["9. compare_generated_ownership"]
+    s10["10. generated_payload.get"]
+    s11["11. any (src/llm_wiki_cli/services…:export_documentation_run)"]
+    s12["12. generated_diff.values"]
+    s1 -. "_resolve_workspace_root_argument(workspace)" .-> s2
+    s1 -. "load_documentation_run(workspace_root)" .-> s3
+    s1 -. "_verify_read_only_inputs(workspace_root, run)" .-> s4
+    s1 -. "run.evidence.get('generated_ownership')" .-> s5
+    s1 -. "DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)('Workspace export requires generated-ownership evidence.')" .-> s6
+    s1 -. "_read_json(_workspace_path(...))" .-> s7
+    s1 -. "_workspace_path(workspace_root, generated_path)" .-> s8
+    s1 -. "compare_generated_ownership(generated_payload.get(...), ...)" .-> s9
+    s1 -. "generated_payload.get('fingerprints', {...})" .-> s10
+    s1 -. "any (src/llm_wiki_cli/services…:export_documentation_run)(generated_diff.values(...))" .-> s11
+    s1 -. "generated_diff.values(data not statically known)" .-> s12
     b0["mutation run.verdict_limitations.append"]
     s1 -. "mutation run.verdict_limitations.append" .-> b0
     b1["mutation run.verdict_limitations.remove"]
     s1 -. "mutation run.verdict_limitations.remove" .-> b1
     click s1 "../modules/export.md"
-    click s2 "../modules/workspace.md"
-    click s10 "../modules/documentation_run_contracts.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -148,33 +129,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `export_documentation_run` | `workspace: str \| Path`, `build: bool`, `builder_command: Iterable[str] \| None`, `knowledge_mode: str \| None`, `knowledge_public_repository_identity: str \| None` | - | `export_payload[...]`, `run.evidence[...]`, `run.evidence[...]`, `check_payload[...]`, `run.evidence[...]`, `run.evidence[...]` | `final_report` |
-| `_resolve_workspace_root_argument` | `workspace: str \| Path` | - | - | `resolved` |
-| `Path` | - | - | - | - |
-| `abspath` | - | - | - | - |
-| `fspath` | - | - | - | - |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
-| `lexists` | - | - | - | - |
-| `lstat` | - | - | - | - |
-| `DocumentationIntegrityError` | - | - | - | - |
-| `bool` | - | - | - | - |
-| `getattr` | - | - | - | - |
+| `_resolve_workspace_root_argument` | - | - | - | - |
+| `load_documentation_run` | - | - | - | - |
+| `_verify_read_only_inputs` | - | - | - | - |
+| `run.evidence.get` | - | - | - | - |
+| `DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)` | - | - | - | - |
+| `_read_json` | - | - | - | - |
+| `_workspace_path` | - | - | - | - |
+| `compare_generated_ownership` | - | - | - | - |
+| `generated_payload.get` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…:export_documentation_run)` | - | - | - | - |
+| `generated_diff.values` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | export_documentation_run | _resolve_workspace_root_argument | 477 | `_resolve_workspace_root_argument(workspace)` |
-| _resolve_workspace_root_argument | Path | 102 | `Path(os.path.abspath(...))` |
-| _resolve_workspace_root_argument | abspath | 102 | `os.path.abspath(os.fspath(...))` |
-| _resolve_workspace_root_argument | fspath | 102 | `os.fspath(...)` |
-| _resolve_workspace_root_argument | expanduser | 102 | `Path(workspace).expanduser(data not statically known)` |
-| _resolve_workspace_root_argument | Path | 102 | `Path(workspace)` |
-| _resolve_workspace_root_argument | lexists | 103 | `os.path.lexists(requested)` |
-| _resolve_workspace_root_argument | lstat | 105 | `requested.lstat(data not statically known)` |
-| _resolve_workspace_root_argument | DocumentationIntegrityError | 107 | `DocumentationIntegrityError(...)` |
-| _resolve_workspace_root_argument | bool | 110 | `bool(getattr(...))` |
-| _resolve_workspace_root_argument | getattr | 110 | `getattr(entry_stat, 'st_reparse_tag', 0)` |
+| export_documentation_run | load_documentation_run | 478 | `load_documentation_run(workspace_root)` |
+| export_documentation_run | _verify_read_only_inputs | 479 | `_verify_read_only_inputs(workspace_root, run)` |
+| export_documentation_run | run.evidence.get | 480 | `run.evidence.get('generated_ownership')` |
+| export_documentation_run | DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run) | 482 | `DocumentationIntegrityError('Workspace export requires generated-ownership evidence.')` |
+| export_documentation_run | _read_json | 485 | `_read_json(_workspace_path(...))` |
+| export_documentation_run | _workspace_path | 485 | `_workspace_path(workspace_root, generated_path)` |
+| export_documentation_run | compare_generated_ownership | 486 | `compare_generated_ownership(generated_payload.get(...), ...)` |
+| export_documentation_run | generated_payload.get | 487 | `generated_payload.get('fingerprints', {...})` |
+| export_documentation_run | any (src/llm_wiki_cli/services…:export_documentation_run) | 490 | `any(generated_diff.values(...))` |
+| export_documentation_run | generated_diff.values | 490 | `generated_diff.values(data not statically known)` |
 
 ### Boundary effects
 
@@ -187,14 +168,18 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_resolve_workspace_root_argument` | `os.path.abspath` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `os.fspath` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `Path(workspace).expanduser` | 102 |
-| unresolved_call | `_resolve_workspace_root_argument` | `os.path.lexists` | 103 |
-| unresolved_call | `_resolve_workspace_root_argument` | `requested.lstat` | 105 |
-| unresolved_call | `_resolve_workspace_root_argument` | `getattr` | 110 |
+| unresolved_call | `export_documentation_run` | `_resolve_workspace_root_argument` | 477 |
+| unresolved_call | `export_documentation_run` | `load_documentation_run` | 478 |
+| unresolved_call | `export_documentation_run` | `_verify_read_only_inputs` | 479 |
+| unresolved_call | `export_documentation_run` | `run.evidence.get` | 480 |
+| unresolved_call | `export_documentation_run` | `DocumentationIntegrityError` | 482 |
+| unresolved_call | `export_documentation_run` | `_read_json` | 485 |
+| unresolved_call | `export_documentation_run` | `_workspace_path` | 485 |
+| unresolved_call | `export_documentation_run` | `compare_generated_ownership` | 486 |
+| unresolved_call | `export_documentation_run` | `generated_payload.get` | 487 |
+| unresolved_call | `export_documentation_run` | `any` | 490 |
+| unresolved_call | `export_documentation_run` | `generated_diff.values` | 490 |
 | step_limit | `export_documentation_run` | `first 12 steps` | 0 |
-| truncated_flow | `export_documentation_run` | `depth limit` | 0 |
 
 ## Behavior
 

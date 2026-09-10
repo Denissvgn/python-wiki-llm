@@ -11,8 +11,8 @@ _Auto-generated from `ConceptSectionsResult` in `src/llm_wiki_cli/api_types.py`.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `section_ownership` | `dict[str, Any]` | *required* | — |
 | `ownership` | `str \| None` | *required* | — |
 | `sections` | `list[dict[str, Any]]` | *required* | — |

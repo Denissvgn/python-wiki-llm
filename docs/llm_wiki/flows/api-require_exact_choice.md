@@ -12,11 +12,11 @@ sequenceDiagram
     participant p0 as require_exact_choice
     participant p1 as require_string
     participant p2 as isinstance
-    participant p3 as encode
+    participant p3 as value.encode
     participant p4 as frozenset
     p0->>p1: require_string
     p1-->>p2: isinstance
-    p1-->>p3: encode
+    p1-->>p3: value.encode
     p0-->>p4: frozenset
 ```
 
@@ -28,7 +28,7 @@ flowchart LR
     s1["1. require_exact_choice"]
     s2["2. require_string"]
     s3["3. isinstance"]
-    s4["4. encode"]
+    s4["4. value.encode"]
     s5["5. frozenset"]
     s1 -->|"require_string(value, error=error)"| s2
     s2 -. "isinstance(value, str)" .-> s3
@@ -45,7 +45,7 @@ flowchart LR
 | `require_exact_choice` | `value: object`, `choices: Iterable[str]`, `error: Exception` | - | - | `parsed` |
 | `require_string` | `value: object`, `error: Exception`, `utf8_error: Exception \| None` | - | - | `value` |
 | `isinstance` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `value.encode` | - | - | - | - |
 | `frozenset` | - | - | - | - |
 
 ### Call data
@@ -54,7 +54,7 @@ flowchart LR
 |---|---|---:|---|
 | require_exact_choice | require_string | 1054 | `require_string(value, error=error)` |
 | require_string | isinstance | 706 | `isinstance(value, str)` |
-| require_string | encode | 710 | `value.encode('utf-8')` |
+| require_string | value.encode | 710 | `value.encode('utf-8')` |
 | require_exact_choice | frozenset | 1055 | `frozenset(choices)` |
 
 ### Boundary effects
@@ -65,9 +65,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_string` | `isinstance` | 706 |
+| external_call | `require_string` | `isinstance` | 706 |
 | unresolved_call | `require_string` | `value.encode` | 710 |
-| unresolved_call | `require_exact_choice` | `frozenset` | 1055 |
+| external_call | `require_exact_choice` | `frozenset` | 1055 |
 
 ## Behavior
 

@@ -10,8 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as fresh_no_follow_stat
-    participant p1 as stat
-    p0-->>p1: stat
+    participant p1 as os.stat
+    p0-->>p1: os.stat
 ```
 
 ## Data flow
@@ -20,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. fresh_no_follow_stat"]
-    s2["2. stat"]
+    s2["2. os.stat"]
     s1 -. "os.stat(path, follow_symlinks=False)" .-> s2
     click s1 "../modules/filesystem_guard.md"
 ```
@@ -30,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `fresh_no_follow_stat` | `path: str \| Path` | - | - | `os.stat(...)` |
-| `stat` | - | - | - | - |
+| `os.stat` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| fresh_no_follow_stat | stat | 93 | `os.stat(path, follow_symlinks=False)` |
+| fresh_no_follow_stat | os.stat | 93 | `os.stat(path, follow_symlinks=False)` |
 
 ### Boundary effects
 

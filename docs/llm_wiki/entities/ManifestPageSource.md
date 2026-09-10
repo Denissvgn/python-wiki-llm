@@ -69,6 +69,7 @@ flowchart LR
 | `_legacy_operational_state` | call | [sync_manifest](../modules/sync_manifest.md) | 3 |
 | `_legacy_operational_state` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `_put_page_mapping` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
+| `ManifestPageSource.from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 | `ManifestPageSource.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `SyncManifest._validate_basis_mapping` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `SyncManifest.build_from_inventory` | call | [sync_manifest](../modules/sync_manifest.md) | 2 |

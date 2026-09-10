@@ -10,10 +10,10 @@
 ```mermaid
 sequenceDiagram
     participant p0 as hash_bytes
-    participant p1 as hexdigest
-    participant p2 as sha256
-    p0-->>p1: hexdigest
-    p0-->>p2: sha256
+    participant p1 as hashlib.sha256(…).hexdigest
+    participant p2 as hashlib.sha256
+    p0-->>p1: hashlib.sha256(…).hexdigest
+    p0-->>p2: hashlib.sha256
 ```
 
 ## Data flow
@@ -22,9 +22,9 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. hash_bytes"]
-    s2["2. hexdigest"]
-    s3["3. sha256"]
-    s1 -. "hashlib.sha256(data).hexdigest(data not statically known)" .-> s2
+    s2["2. hashlib.sha256(…).hexdigest"]
+    s3["3. hashlib.sha256"]
+    s1 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s2
     s1 -. "hashlib.sha256(data)" .-> s3
     click s1 "../modules/documentation_policy.md"
 ```
@@ -34,15 +34,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `hash_bytes` | `data: bytes` | - | - | `...` |
-| `hexdigest` | - | - | - | - |
-| `sha256` | - | - | - | - |
+| `hashlib.sha256(…).hexdigest` | - | - | - | - |
+| `hashlib.sha256` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_bytes | hexdigest | 520 | `hashlib.sha256(data).hexdigest(data not statically known)` |
-| hash_bytes | sha256 | 520 | `hashlib.sha256(data)` |
+| hash_bytes | hashlib.sha256(…).hexdigest | 520 | `hashlib.sha256(data).hexdigest(data not statically known)` |
+| hash_bytes | hashlib.sha256 | 520 | `hashlib.sha256(data)` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `hash_bytes` | `hashlib.sha256(data).hexdigest` | 520 |
+| unresolved_call | `hash_bytes` | `hashlib.sha256(data).hexdigest` | 520 |
 | external_call | `hash_bytes` | `hashlib.sha256` | 520 |
 
 ## Behavior

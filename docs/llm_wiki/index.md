@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 533 | [Open section](#entities) |
-| Modules | 159 | [Open section](#modules) |
-| Workflows | 15 | [Open section](#workflows) |
-| Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 436 | [Open section](#entry-point-flows) |
+| Entities | 540 | [Open section](#entities) |
+| Modules | 163 | [Open section](#modules) |
+| Workflows | 102 | [Open section](#workflows) |
+| Guides | 15 | [Open section](#guides) |
+| Entry-point flows | 437 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -31,6 +31,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ArtifactValidation](entities/ArtifactValidation.md)
 - [ArtifactWriteState](entities/ArtifactWriteState.md)
 - [AssetIndex](entities/AssetIndex.md)
+- [BindingAnalyzer](entities/BindingAnalyzer.md)
 - [BootstrapContractError](entities/BootstrapContractError.md)
 - [BootstrapExtractionError](entities/BootstrapExtractionError.md)
 - [BootstrapGenerationResult](entities/BootstrapGenerationResult.md)
@@ -400,7 +401,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ProtectedArtifactStore](entities/ProtectedArtifactStore.md)
 - [ProtocolEnrichmentSession](entities/ProtocolEnrichmentSession.md)
 - [ProtocolRequestError](entities/ProtocolRequestError.md)
+- [PythonBindings](entities/PythonBindings.md)
+- [PythonCallContext](entities/PythonCallContext.md)
+- [PythonCallResolver](entities/PythonCallResolver.md)
 - [PythonExtractor](entities/PythonExtractor.md)
+- [PythonImportScope](entities/PythonImportScope.md)
+- [PythonModuleIndex](entities/PythonModuleIndex.md)
 - [QualifiedContextPacket](entities/QualifiedContextPacket.md)
 - [QueryCostDisclosure](entities/QueryCostDisclosure.md)
 - [RankingPolicy](entities/RankingPolicy.md)
@@ -450,6 +456,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SchemaCleanup](entities/SchemaCleanup.md)
 - [SchemaCleanupReceipt](entities/SchemaCleanupReceipt.md)
 - [SchemaRenderProfile](entities/SchemaRenderProfile.md)
+- [ScopeNames](entities/ScopeNames.md)
 - [SectionCondition](entities/SectionCondition.md)
 - [SectionObservation](entities/SectionObservation.md)
 - [SectionOwnership](entities/SectionOwnership.md)
@@ -664,9 +671,13 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) - `src/llm_wiki_cli/commands/prepare_extractors_cmd.py`
 - [progress](modules/progress.md) - Bounded command-local phase events; services are silent without a caller sink.
 - [protected_artifacts](modules/protected_artifacts.md) - Protected, bounded artifact storage for controller-owned lifecycle state.
+- [python_bindings](modules/python_bindings.md) - Conservative syntax-only binding facts for captured Python calls.
+- [python_calls](modules/python_calls.md) - Shared Python call resolution using captured lexical binding evidence.
 - [python_contracts](modules/python_contracts.md) - Pure AST helpers for reconstructable Python declaration contracts.
 - [python_extractor](modules/python_extractor.md) - Python AST extractor for agent-wiki-cli.
+- [python_imports](modules/python_imports.md) - Pure Python import-root indexing over an already selected inventory.
 - [python_observations](modules/python_observations.md) - Canonical Python observation envelopes and per-source cache validation.
+- [python_stdlib](modules/python_stdlib.md) - Shared, interpreter-compatible Python standard-library module names.
 - [record](modules/record.md) - Documentation-run record services.
 - [redaction](modules/redaction.md) - Shared best-effort redaction for credential-like text.
 - [refresh](modules/refresh.md) - Documentation-run refresh services.
@@ -716,24 +727,120 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 ## Workflows
 
+- [McpWikiService_get_status](workflows/McpWikiService_get_status.md) - entry: `mcp_server.McpWikiService.get_status`
+- [SourceSnapshot_path_is_effectively_selected](workflows/SourceSnapshot_path_is_effectively_selected.md) - entry: `source_snapshot.SourceSnapshot.path_is_effectively_selected`
+- [SourceSnapshot_with_captured_inventory_paths](workflows/SourceSnapshot_with_captured_inventory_paths.md) - entry: `source_snapshot.SourceSnapshot.with_captured_inventory_paths`
+- [SyncManifest__validate_operational_state](workflows/SyncManifest__validate_operational_state.md) - entry: `sync_manifest.SyncManifest._validate_operational_state`
 - [append_log](workflows/append_log.md) - entry: `sync_cmd._append_log`
-- [apply_diff](workflows/apply_diff.md) - entry: `sync_cmd._apply_diff`
-- [apply_sync_changes](workflows/apply_sync_changes.md) - entry: `sync_cmd._apply_sync_changes`
-- [build_apply_diff_context](workflows/build_apply_diff_context.md) - entry: `sync_cmd._build_apply_diff_context`
+- [apply_entity_page](workflows/apply_entity_page.md) - entry: `sync_cmd._apply_entity_page`
+- [apply_module_page](workflows/apply_module_page.md) - entry: `sync_cmd._apply_module_page`
+- [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
+- [build_context_impl](workflows/build_context_impl.md) - entry: `context_service._build_context_impl`
 - [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
+- [build_dependency_graph](workflows/build_dependency_graph.md) - entry: `dependencies.build_dependency_graph`
+- [build_extract_payload](workflows/build_extract_payload.md) - entry: `extraction_service.build_extract_payload`
+- [build_generated_section_context](workflows/build_generated_section_context.md) - entry: `sync_cmd._build_generated_section_context`
+- [build_knowledge_generation_plan](workflows/build_knowledge_generation_plan.md) - entry: `knowledge_generation._build_knowledge_generation_plan`
+- [build_live_documentation_query_service](workflows/build_live_documentation_query_service.md) - entry: `documentation_query_builder.build_live_documentation_query_service`
+- [build_migration_plan](workflows/build_migration_plan.md) - entry: `migrate_cmd._build_migration_plan`
+- [build_protocol_enrichment_from_captured_read](workflows/build_protocol_enrichment_from_captured_read.md) - entry: `context_packet._build_protocol_enrichment_from_captured_read`
+- [build_reuse_input_basis](workflows/build_reuse_input_basis.md) - entry: `knowledge_reuse.build_reuse_input_basis`
+- [build_runtime_knowledge_plan](workflows/build_runtime_knowledge_plan.md) - entry: `knowledge_orchestration.build_runtime_knowledge_plan`
+- [build_runtime_live_evaluation](workflows/build_runtime_live_evaluation.md) - entry: `knowledge_orchestration.build_runtime_live_evaluation`
+- [build_surface_index_pages](workflows/build_surface_index_pages.md) - entry: `review_cmd._build_surface_index_pages`
+- [build_sync_graph_observations](workflows/build_sync_graph_observations.md) - entry: `sync_cmd._build_sync_graph_observations`
+- [build_sync_prompt](workflows/build_sync_prompt.md) - entry: `trigger_cmd._build_sync_prompt`
+- [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
+- [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet.capture_context_read`
+- [capture_protocol_enrichment_session](workflows/capture_protocol_enrichment_session.md) - entry: `context_service._capture_protocol_enrichment_session`
+- [captured_query_service](workflows/captured_query_service.md) - entry: `context_packet._captured_query_service`
+- [check_data_flow_diagnostics](workflows/check_data_flow_diagnostics.md) - entry: `lint_service._check_data_flow_diagnostics`
+- [check_site_mirror](workflows/check_site_mirror.md) - entry: `site_export.check_site_mirror`
+- [check_sync_manifest](workflows/check_sync_manifest.md) - entry: `lint_service._check_sync_manifest`
+- [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
+- [ci_check_cmd_flow](workflows/ci_check_cmd_flow.md) - entry: `ci_check_cmd.run`
+- [clean_agent_schemas](workflows/clean_agent_schemas.md) - entry: `uninstall_cmd._clean_agent_schemas`
 - [collect_lint_inputs](workflows/collect_lint_inputs.md) - entry: `lint_service._collect_lint_inputs`
-- [exit_if_large_unforced_diff](workflows/exit_if_large_unforced_diff.md) - entry: `sync_cmd._exit_if_large_unforced_diff`
-- [finalize_bootstrap](workflows/finalize_bootstrap.md) - entry: `bootstrap_runtime._finalize_bootstrap`
+- [collect_runtime](workflows/collect_runtime.md) - entry: `documentation_native._collect_runtime`
+- [committed_artifact_snapshot](workflows/committed_artifact_snapshot.md) - entry: `knowledge_cmd._committed_artifact_snapshot`
+- [current_coverage](workflows/current_coverage.md) - entry: `metrics.current_coverage`
+- [current_markdown](workflows/current_markdown.md) - entry: `knowledge_loader._current_markdown`
+- [discover_infrastructure_plan](workflows/discover_infrastructure_plan.md) - entry: `sync_cmd._discover_infrastructure_plan`
+- [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
-- [generate_dependencies_md](workflows/generate_dependencies_md.md) - entry: `bootstrap_runtime._generate_dependencies_md`
-- [get_inventory](workflows/get_inventory.md) - entry: `context_service.get_inventory`
-- [print_dry_run_plan](workflows/print_dry_run_plan.md) - entry: `sync_cmd._print_dry_run_plan`
-- [runtime_live_concept_bases](workflows/runtime_live_concept_bases.md) - entry: `knowledge_orchestration._runtime_live_concept_bases`
-- [sync_reuse_input_basis](workflows/sync_reuse_input_basis.md) - entry: `sync_cmd._sync_reuse_input_basis`
+- [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
+- [generate_prompt_cmd_flow](workflows/generate_prompt_cmd_flow.md) - entry: `generate_prompt_cmd.run`
+- [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
+- [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
+- [knowledge_projection](workflows/knowledge_projection.md) - entry: `obsidian_cmd._knowledge_projection`
+- [lint_service_flow](workflows/lint_service_flow.md) - entry: `lint_service.run`
+- [load_control_workspace](workflows/load_control_workspace.md) - entry: `controller._load_control_workspace`
+- [load_knowledge_projection](workflows/load_knowledge_projection.md) - entry: `site_cmd._load_knowledge_projection`
+- [load_machine_verification_read_view](workflows/load_machine_verification_read_view.md) - entry: `knowledge_verification.load_machine_verification_read_view`
+- [load_snapshot_knowledge_observability](workflows/load_snapshot_knowledge_observability.md) - entry: `knowledge_observability.load_snapshot_knowledge_observability`
+- [manifest_content](workflows/manifest_content.md) - entry: `team._manifest_content`
+- [merge_explicit_consumed_input](workflows/merge_explicit_consumed_input.md) - entry: `knowledge_orchestration._merge_explicit_consumed_input`
+- [merge_inventory_results](workflows/merge_inventory_results.md) - entry: `extraction_service._merge_inventory_results`
+- [persist_report](workflows/persist_report.md) - entry: `ci_check_cmd._persist_report`
+- [planned_generated_surface_prune](workflows/planned_generated_surface_prune.md) - entry: `sync_cmd._planned_generated_surface_prune`
+- [plugins_cmd_flow](workflows/plugins_cmd_flow.md) - entry: `plugins_cmd.run`
+- [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
+- [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
+- [preflight_lint_source_selection](workflows/preflight_lint_source_selection.md) - entry: `lint_service._preflight_lint_source_selection`
+- [preflight_review_source_selection](workflows/preflight_review_source_selection.md) - entry: `review_cmd._preflight_review_source_selection`
+- [preflight_team_source_selection](workflows/preflight_team_source_selection.md) - entry: `team_cmd._preflight_team_source_selection`
+- [preflight_trigger_source_selection](workflows/preflight_trigger_source_selection.md) - entry: `trigger_cmd._preflight_trigger_source_selection`
+- [preflight_wiki_removal](workflows/preflight_wiki_removal.md) - entry: `uninstall_cmd._preflight_wiki_removal`
+- [prepare_extractors_cmd_flow](workflows/prepare_extractors_cmd_flow.md) - entry: `prepare_extractors_cmd.run`
+- [prepare_migration_governance_plan](workflows/prepare_migration_governance_plan.md) - entry: `migrate_cmd._prepare_migration_governance_plan`
+- [prepare_sync_run](workflows/prepare_sync_run.md) - entry: `sync_cmd._prepare_sync_run`
+- [print_managed_lifecycle](workflows/print_managed_lifecycle.md) - entry: `status_cmd._print_managed_lifecycle`
+- [projected_commit_plan](workflows/projected_commit_plan.md) - entry: `knowledge_cmd._projected_commit_plan`
+- [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
+- [rebuild_surface_only_index](workflows/rebuild_surface_only_index.md) - entry: `sync_cmd._rebuild_surface_only_index`
+- [record_source_file](workflows/record_source_file.md) - entry: `source_snapshot._record_source_file`
+- [refresh_documentation_native_projection](workflows/refresh_documentation_native_projection.md) - entry: `documentation_native.refresh_documentation_native_projection`
+- [refresh_entity_relationship_sections](workflows/refresh_entity_relationship_sections.md) - entry: `sync_cmd._refresh_entity_relationship_sections`
+- [refresh_module_dependency_sections](workflows/refresh_module_dependency_sections.md) - entry: `sync_cmd._refresh_module_dependency_sections`
+- [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_cmd._regenerate_dependency_pages`
+- [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_cmd._regenerate_flow_pages`
+- [regenerate_workflow_pages](workflows/regenerate_workflow_pages.md) - entry: `sync_cmd._regenerate_workflow_pages`
+- [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
+- [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`
+- [run_packet_output](workflows/run_packet_output.md) - entry: `context_service._run_packet_output`
+- [run_report_checks](workflows/run_report_checks.md) - entry: `lint_service._run_report_checks`
+- [run_status](workflows/run_status.md) - entry: `knowledge_cmd._run_status`
+- [run_verify](workflows/run_verify.md) - entry: `knowledge_cmd._run_verify`
+- [runtime_flow_entries](workflows/runtime_flow_entries.md) - entry: `documentation_native._runtime_flow_entries`
+- [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
+- [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
+- [sync_run_options_from_args](workflows/sync_run_options_from_args.md) - entry: `sync_cmd._sync_run_options_from_args`
 - [try_sync_knowledge_reuse](workflows/try_sync_knowledge_reuse.md) - entry: `sync_cmd._try_sync_knowledge_reuse`
+- [upgrade_cmd_flow](workflows/upgrade_cmd_flow.md) - entry: `upgrade_cmd.run`
+- [validate_builder_link](workflows/validate_builder_link.md) - entry: `knowledge_index._validate_builder_link`
+- [validate_default_selection_contract](workflows/validate_default_selection_contract.md) - entry: `ci_installer._validate_default_selection_contract`
+- [validate_knowledge_artifacts](workflows/validate_knowledge_artifacts.md) - entry: `knowledge_artifacts.validate_knowledge_artifacts`
+- [validate_live_query_source_selection](workflows/validate_live_query_source_selection.md) - entry: `documentation_query_builder.validate_live_query_source_selection`
+- [validate_obsidian_export_source_selection](workflows/validate_obsidian_export_source_selection.md) - entry: `obsidian.validate_obsidian_export_source_selection`
+- [validated_prompt_snapshot](workflows/validated_prompt_snapshot.md) - entry: `generate_prompt_cmd._validated_prompt_snapshot`
+- [validated_reserved_extensions](workflows/validated_reserved_extensions.md) - entry: `knowledge_model._validated_reserved_extensions`
+- [validated_source](workflows/validated_source.md) - entry: `knowledge_projection._validated_source`
+- [wiki_input_hashes](workflows/wiki_input_hashes.md) - entry: `knowledge_reuse.wiki_input_hashes`
+- [write_bootstrap_api_contract_page](workflows/write_bootstrap_api_contract_page.md) - entry: `bootstrap_runtime._write_bootstrap_api_contract_page`
+- [write_bootstrap_flow_pages](workflows/write_bootstrap_flow_pages.md) - entry: `bootstrap_runtime._write_bootstrap_flow_pages`
+- [write_bootstrap_infrastructure_pages](workflows/write_bootstrap_infrastructure_pages.md) - entry: `bootstrap_runtime._write_bootstrap_infrastructure_pages`
 
 ## Guides
 
+- [Archived workflow: apply_diff](guides/archived-workflow-apply_diff.md)
+- [Archived workflow: apply_sync_changes](guides/archived-workflow-apply_sync_changes.md)
+- [Archived workflow: build_apply_diff_context](guides/archived-workflow-build_apply_diff_context.md)
+- [Archived workflow: exit_if_large_unforced_diff](guides/archived-workflow-exit_if_large_unforced_diff.md)
+- [Archived workflow: finalize_bootstrap](guides/archived-workflow-finalize_bootstrap.md)
+- [Archived workflow: generate_dependencies_md](guides/archived-workflow-generate_dependencies_md.md)
+- [Archived workflow: get_inventory](guides/archived-workflow-get_inventory.md)
+- [Archived workflow: print_dry_run_plan](guides/archived-workflow-print_dry_run_plan.md)
+- [Archived workflow: runtime_live_concept_bases](guides/archived-workflow-runtime_live_concept_bases.md)
 - [CLI and Python API](guides/cli-and-python-api.md)
 - [Getting Started](guides/getting-started.md)
 - [Integrations](guides/integrations.md)
@@ -1190,6 +1297,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 **process**
 
 - [process-ci_report](flows/process-ci_report.md) - entry: `main`
+- [process-cli](flows/process-cli.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
 

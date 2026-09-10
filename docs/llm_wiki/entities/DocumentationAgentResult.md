@@ -69,4 +69,5 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `__init__` | import | [documentation_run___init__](../modules/documentation_run___init__.md) | — |
+| `DocumentationAgentResult.from_dict` | call | [documentation_run_contracts](../modules/documentation_run_contracts.md) | 1 |
 | `DocumentationAgentResult.from_dict` | type_reference | [documentation_run_contracts](../modules/documentation_run_contracts.md) | — |

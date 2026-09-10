@@ -2,10 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [trigger_cmd](../modules/trigger_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_query_builder](../modules/documentation_query_builder.md), [extraction_jobs](../modules/extraction_jobs.md), and 23 more
+**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 27 more
 
 **Complete modules touched:**
 
+- [circuit_breaker](../modules/circuit_breaker.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
@@ -23,12 +24,15 @@
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
+- [python_calls](../modules/python_calls.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
 - [redaction](../modules/redaction.md)
 - [secure_file](../modules/secure_file.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [sync_manifest](../modules/sync_manifest.md)
 - [team](../modules/team.md)
 - [trigger_cmd](../modules/trigger_cmd.md)
 - [validation](../modules/validation.md)
@@ -40,59 +44,65 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
+    participant p1 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)
     participant p2 as reset_breaker
-    participant p3 as print
-    participant p4 as exit
-    participant p5 as WikiLock
-    participant p6 as _lock_wait_seconds
-    participant p7 as get
-    participant p8 as strip
-    participant p9 as float
-    participant p10 as ValueError
-    participant p11 as isfinite
-    participant p12 as _run_sync
-    participant p13 as validate_path
-    participant p14 as PathValidationError
-    participant p15 as resolve
-    participant p16 as cwd
-    participant p17 as relative_to
-    participant p18 as _validated_trigger_source
-    participant p19 as str
-    participant p20 as bool
-    p0-->>p1: getattr
-    p0-->>p2: reset_breaker
-    p0-->>p3: print
-    p0-->>p3: print
-    p0-->>p3: print
-    p0-->>p3: print
-    p0-->>p4: exit
-    p0->>p5: WikiLock
-    p0->>p6: _lock_wait_seconds
-    p6-->>p7: get
-    p6-->>p8: strip
-    p6-->>p9: float
-    p6-->>p10: ValueError
-    p6-->>p11: isfinite
-    p6-->>p10: ValueError
-    p0->>p12: _run_sync
-    p12-->>p1: getattr
-    p12->>p13: validate_path
-    p13->>p14: PathValidationError
-    p13-->>p15: resolve
-    p13-->>p16: cwd
-    p13-->>p15: resolve
-    p13-->>p16: cwd
-    p13-->>p17: relative_to
-    p13->>p14: PathValidationError
-    p12->>p18: _validated_trigger_source
-    p18-->>p19: str
-    p18-->>p1: getattr
-    p18-->>p20: bool
-    p18-->>p1: getattr
+    participant p3 as save_state
+    participant p4 as _state_path
+    participant p5 as tempfile.mkstemp
+    participant p6 as os.fdopen
+    participant p7 as json.dump
+    participant p8 as os.replace
+    participant p9 as os.unlink
+    participant p10 as dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)
+    participant p11 as print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    participant p12 as sys.exit
+    participant p13 as WikiLock
+    participant p14 as _lock_wait_seconds
+    participant p15 as os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    participant p16 as raw_value.strip
+    participant p17 as float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    participant p18 as ValueError (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    participant p19 as math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    participant p20 as _run_sync
+    participant p21 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
+    participant p22 as validate_path
+    participant p23 as PathValidationError
+    participant p24 as (…).resolve
+    participant p25 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p26 as Path.cwd().resolve
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    p0->>p2: reset_breaker
+    p2->>p3: save_state
+    p3->>p4: _state_path
+    p3-->>p5: tempfile.mkstemp
+    p3-->>p6: os.fdopen
+    p3-->>p7: json.dump
+    p3-->>p8: os.replace
+    p3-->>p9: os.unlink
+    p2-->>p10: dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)
+    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    p0-->>p12: sys.exit
+    p0->>p13: WikiLock
+    p0->>p14: _lock_wait_seconds
+    p14-->>p15: os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    p14-->>p16: raw_value.strip
+    p14-->>p17: float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    p14-->>p18: ValueError (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    p14-->>p19: math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    p14-->>p18: ValueError (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    p0->>p20: _run_sync
+    p20-->>p21: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
+    p20->>p22: validate_path
+    p22->>p23: PathValidationError
+    p22-->>p24: (…).resolve
+    p22-->>p25: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p22-->>p26: Path.cwd().resolve
 ```
 
-> Call sequence diagram shows 30 of 1105 interactions; 1075 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1340 interactions; 1310 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -102,28 +112,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. run"]
-    s2["2. getattr"]
+    s2["2. getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)"]
     s3["3. reset_breaker"]
-    s4["4. print"]
-    s5["5. print"]
-    s6["6. print"]
-    s7["7. print"]
-    s8["8. exit"]
-    s9["9. WikiLock"]
-    s10["10. _lock_wait_seconds"]
-    s11["11. get"]
-    s12["12. strip"]
-    s1 -. "getattr(args, 'reset_breaker', False)" .-> s2
-    s1 -. "circuit_breaker.reset_breaker(GIT_DIR)" .-> s3
-    s1 -. "print('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')" .-> s4
-    s1 -. "print(...)" .-> s5
-    s1 -. "print(#34;To use trigger-agent, you must specify a CLI-native agent like 'claude' or 'aider'.#34;)" .-> s6
-    s1 -. "print('Example: llm-wiki trigger-agent --agent claude')" .-> s7
-    s1 -. "sys.exit(1)" .-> s8
-    s1 -->|"WikiLock(GIT_DIR, wait_seconds=_lock_wait_seconds(...))"| s9
-    s1 -->|"_lock_wait_seconds(data not statically known)"| s10
-    s10 -. "os.environ.get('LLM_WIKI_LOCK_WAIT')" .-> s11
-    s10 -. "raw_value.strip(data not statically known)" .-> s12
+    s4["4. save_state"]
+    s5["5. _state_path"]
+    s6["6. tempfile.mkstemp"]
+    s7["7. os.fdopen"]
+    s8["8. json.dump"]
+    s9["9. os.replace"]
+    s10["10. os.unlink"]
+    s11["11. dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)"]
+    s12["12. print (src/llm_wiki_cli/commands/trigger_cmd.py:run)"]
+    s1 -. "getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)(args, 'reset_breaker', False)" .-> s2
+    s1 -->|"reset_breaker(GIT_DIR)"| s3
+    s3 -->|"save_state(git_dir, dict(...))"| s4
+    s4 -->|"_state_path(git_dir)"| s5
+    s4 -. "tempfile.mkstemp(dir=git_dir, suffix='.tmp')" .-> s6
+    s4 -. "os.fdopen(fd, 'w')" .-> s7
+    s4 -. "json.dump(state, f, indent=2)" .-> s8
+    s4 -. "os.replace(tmp, path)" .-> s9
+    s4 -. "os.unlink(tmp)" .-> s10
+    s3 -. "dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)(_DEFAULT_STATE)" .-> s11
+    s1 -. "print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -134,11 +144,12 @@ flowchart LR
     s1 -. "output print" .-> b3
     b4["output print"]
     s1 -. "output print" .-> b4
-    b5["environment_read os.environ.get"]
-    s10 -. "environment_read os.environ.get" .-> b5
+    b5["filesystem_write os.unlink"]
+    s4 -. "filesystem_write os.unlink" .-> b5
     click s1 "../modules/trigger_cmd.md"
-    click s9 "../modules/lockfile.md"
-    click s10 "../modules/trigger_cmd.md"
+    click s3 "../modules/circuit_breaker.md"
+    click s4 "../modules/circuit_breaker.md"
+    click s5 "../modules/circuit_breaker.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -153,33 +164,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | `GIT_DIR`, `IDE_AGENTS`, `GIT_DIR`, `LockAcquisitionError` | - | `none` |
-| `getattr` | - | - | - | - |
-| `reset_breaker` | - | - | - | - |
-| `print` | - | - | - | - |
-| `print` | - | - | - | - |
-| `print` | - | - | - | - |
-| `print` | - | - | - | - |
-| `exit` | - | - | - | - |
-| `WikiLock` | - | - | - | - |
-| `_lock_wait_seconds` | - | - | - | `0.0`, `wait_seconds` |
-| `get` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | - | - | - | - |
+| `reset_breaker` | `git_dir: Path` | `_DEFAULT_STATE` | - | - |
+| `save_state` | `git_dir: Path`, `state: dict` | - | - | - |
+| `_state_path` | `git_dir: Path` | `_STATE_FILE` | - | `...` |
+| `tempfile.mkstemp` | - | - | - | - |
+| `os.fdopen` | - | - | - | - |
+| `json.dump` | - | - | - | - |
+| `os.replace` | - | - | - | - |
+| `os.unlink` | - | - | - | - |
+| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | - | - | - | - |
+| `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr | 41 | `getattr(args, 'reset_breaker', False)` |
+| run | getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 41 | `getattr(args, 'reset_breaker', False)` |
 | run | reset_breaker | 42 | `circuit_breaker.reset_breaker(GIT_DIR)` |
-| run | print | 43 | `print('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')` |
-| run | print | 47 | `print(...)` |
-| run | print | 48 | `print("To use trigger-agent, you must specify a CLI-native agent like 'claude' or 'aider'.")` |
-| run | print | 51 | `print('Example: llm-wiki trigger-agent --agent claude')` |
-| run | exit | 52 | `sys.exit(1)` |
-| run | WikiLock | 56 | `WikiLock(GIT_DIR, wait_seconds=_lock_wait_seconds(...))` |
-| run | _lock_wait_seconds | 56 | `_lock_wait_seconds(data not statically known)` |
-| _lock_wait_seconds | get | 481 | `os.environ.get('LLM_WIKI_LOCK_WAIT')` |
-| _lock_wait_seconds | strip | 482 | `raw_value.strip(data not statically known)` |
+| reset_breaker | save_state | 139 | `save_state(git_dir, dict(...))` |
+| save_state | _state_path | 55 | `_state_path(git_dir)` |
+| save_state | tempfile.mkstemp | 56 | `tempfile.mkstemp(dir=git_dir, suffix='.tmp')` |
+| save_state | os.fdopen | 58 | `os.fdopen(fd, 'w')` |
+| save_state | json.dump | 59 | `json.dump(state, f, indent=2)` |
+| save_state | os.replace | 60 | `os.replace(tmp, path)` |
+| save_state | os.unlink | 63 | `os.unlink(tmp)` |
+| reset_breaker | dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker) | 139 | `dict(_DEFAULT_STATE)` |
+| run | print (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 43 | `print('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')` |
 
 ### Boundary effects
 
@@ -190,16 +201,17 @@ flowchart LR
 | output | `print` | `run` | 48 |
 | output | `print` | `run` | 51 |
 | output | `print` | `run` | 59 |
-| environment_read | `os.environ.get` | `_lock_wait_seconds` | 481 |
+| filesystem_write | `os.unlink` | `save_state` | 63 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `getattr` | 41 |
-| external_call | `run` | `circuit_breaker.reset_breaker` | 42 |
-| external_call | `run` | `sys.exit` | 52 |
-| unresolved_call | `_lock_wait_seconds` | `raw_value.strip` | 482 |
+| external_call | `run` | `getattr` | 41 |
+| external_call | `save_state` | `tempfile.mkstemp` | 56 |
+| external_call | `save_state` | `os.fdopen` | 58 |
+| external_call | `save_state` | `json.dump` | 59 |
+| external_call | `save_state` | `os.replace` | 60 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

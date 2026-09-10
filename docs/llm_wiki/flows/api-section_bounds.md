@@ -10,29 +10,33 @@
 ```mermaid
 sequenceDiagram
     participant p0 as section_bounds
-    participant p1 as casefold
+    participant p1 as heading.casefold
     participant p2 as enumerate
-    participant p3 as match
-    participant p4 as strip
+    participant p3 as _LEGACY_HEADING_RE.match
+    participant p4 as line.strip
     participant p5 as len
-    participant p6 as group
-    participant p7 as range
-    p0-->>p1: casefold
+    participant p6 as match.group
+    participant p7 as match.group(…).strip().casefold
+    participant p8 as match.group(…).strip
+    participant p9 as range
+    participant p10 as lines[…].strip
+    participant p11 as next_match.group
+    p0-->>p1: heading.casefold
     p0-->>p2: enumerate
-    p0-->>p3: match
-    p0-->>p4: strip
+    p0-->>p3: _LEGACY_HEADING_RE.match
+    p0-->>p4: line.strip
     p0-->>p5: len
-    p0-->>p6: group
-    p0-->>p1: casefold
-    p0-->>p4: strip
-    p0-->>p6: group
+    p0-->>p6: match.group
+    p0-->>p7: match.group(…).strip().casefold
+    p0-->>p8: match.group(…).strip
+    p0-->>p6: match.group
     p0-->>p5: len
-    p0-->>p7: range
+    p0-->>p9: range
     p0-->>p5: len
-    p0-->>p3: match
-    p0-->>p4: strip
+    p0-->>p3: _LEGACY_HEADING_RE.match
+    p0-->>p10: lines[…].strip
     p0-->>p5: len
-    p0-->>p6: group
+    p0-->>p11: next_match.group
 ```
 
 ## Data flow
@@ -41,15 +45,15 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. section_bounds"]
-    s2["2. casefold"]
+    s2["2. heading.casefold"]
     s3["3. enumerate"]
-    s4["4. match"]
-    s5["5. strip"]
+    s4["4. _LEGACY_HEADING_RE.match"]
+    s5["5. line.strip"]
     s6["6. len"]
-    s7["7. group"]
-    s8["8. casefold"]
-    s9["9. strip"]
-    s10["10. group"]
+    s7["7. match.group"]
+    s8["8. match.group(…).strip().casefold"]
+    s9["9. match.group(…).strip"]
+    s10["10. match.group"]
     s11["11. len"]
     s12["12. range"]
     s1 -. "heading.casefold(data not statically known)" .-> s2
@@ -58,8 +62,8 @@ flowchart LR
     s1 -. "line.strip(data not statically known)" .-> s5
     s1 -. "len(match.group(...))" .-> s6
     s1 -. "match.group(1)" .-> s7
-    s1 -. "match.group(2).strip().casefold(data not statically known)" .-> s8
-    s1 -. "match.group(2).strip(data not statically known)" .-> s9
+    s1 -. "match.group(…).strip().casefold(data not statically known)" .-> s8
+    s1 -. "match.group(…).strip(data not statically known)" .-> s9
     s1 -. "match.group(2)" .-> s10
     s1 -. "len(lines)" .-> s11
     s1 -. "range(..., len(...))" .-> s12
@@ -71,15 +75,15 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `section_bounds` | `lines: list[str]`, `heading: str` | - | - | `(...)`, `None` |
-| `casefold` | - | - | - | - |
+| `heading.casefold` | - | - | - | - |
 | `enumerate` | - | - | - | - |
-| `match` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `_LEGACY_HEADING_RE.match` | - | - | - | - |
+| `line.strip` | - | - | - | - |
 | `len` | - | - | - | - |
-| `group` | - | - | - | - |
-| `casefold` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `group` | - | - | - | - |
+| `match.group` | - | - | - | - |
+| `match.group(…).strip().casefold` | - | - | - | - |
+| `match.group(…).strip` | - | - | - | - |
+| `match.group` | - | - | - | - |
 | `len` | - | - | - | - |
 | `range` | - | - | - | - |
 
@@ -87,15 +91,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| section_bounds | casefold | 661 | `heading.casefold(data not statically known)` |
+| section_bounds | heading.casefold | 661 | `heading.casefold(data not statically known)` |
 | section_bounds | enumerate | 662 | `enumerate(lines)` |
-| section_bounds | match | 663 | `_LEGACY_HEADING_RE.match(line.strip(...))` |
-| section_bounds | strip | 663 | `line.strip(data not statically known)` |
+| section_bounds | _LEGACY_HEADING_RE.match | 663 | `_LEGACY_HEADING_RE.match(line.strip(...))` |
+| section_bounds | line.strip | 663 | `line.strip(data not statically known)` |
 | section_bounds | len | 666 | `len(match.group(...))` |
-| section_bounds | group | 666 | `match.group(1)` |
-| section_bounds | casefold | 667 | `match.group(2).strip().casefold(data not statically known)` |
-| section_bounds | strip | 667 | `match.group(2).strip(data not statically known)` |
-| section_bounds | group | 667 | `match.group(2)` |
+| section_bounds | match.group | 666 | `match.group(1)` |
+| section_bounds | match.group(…).strip().casefold | 667 | `match.group(2).strip().casefold(data not statically known)` |
+| section_bounds | match.group(…).strip | 667 | `match.group(2).strip(data not statically known)` |
+| section_bounds | match.group | 667 | `match.group(2)` |
 | section_bounds | len | 670 | `len(lines)` |
 | section_bounds | range | 671 | `range(..., len(...))` |
 
@@ -108,14 +112,14 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `section_bounds` | `heading.casefold` | 661 |
-| unresolved_call | `section_bounds` | `enumerate` | 662 |
+| external_call | `section_bounds` | `enumerate` | 662 |
 | unresolved_call | `section_bounds` | `_LEGACY_HEADING_RE.match` | 663 |
 | unresolved_call | `section_bounds` | `line.strip` | 663 |
 | unresolved_call | `section_bounds` | `match.group` | 666 |
 | unresolved_call | `section_bounds` | `match.group(2).strip().casefold` | 667 |
 | unresolved_call | `section_bounds` | `match.group(2).strip` | 667 |
 | unresolved_call | `section_bounds` | `match.group` | 667 |
-| unresolved_call | `section_bounds` | `range` | 671 |
+| external_call | `section_bounds` | `range` | 671 |
 | step_limit | `section_bounds` | `first 12 steps` | 0 |
 
 ## Behavior

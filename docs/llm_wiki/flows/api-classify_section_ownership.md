@@ -15,17 +15,17 @@ sequenceDiagram
     participant p3 as PageKind
     participant p4 as ValueError
     participant p5 as _top_level_policy
-    participant p6 as casefold
-    participant p7 as fullmatch
-    participant p8 as match
+    participant p6 as title.casefold
+    participant p7 as _LOG_DATE_HEADING_RE.fullmatch
+    participant p8 as _HTTP_OPERATION_HEADING_RE.match
     p0->>p1: _coerce_page_kind
     p1-->>p2: isinstance
     p1->>p3: PageKind
     p1-->>p4: ValueError
     p0->>p5: _top_level_policy
-    p5-->>p6: casefold
-    p5-->>p7: fullmatch
-    p5-->>p8: match
+    p5-->>p6: title.casefold
+    p5-->>p7: _LOG_DATE_HEADING_RE.fullmatch
+    p5-->>p8: _HTTP_OPERATION_HEADING_RE.match
 ```
 
 ## Data flow
@@ -39,9 +39,9 @@ flowchart LR
     s4["4. PageKind"]
     s5["5. ValueError"]
     s6["6. _top_level_policy"]
-    s7["7. casefold"]
-    s8["8. fullmatch"]
-    s9["9. match"]
+    s7["7. title.casefold"]
+    s8["8. _LOG_DATE_HEADING_RE.fullmatch"]
+    s9["9. _HTTP_OPERATION_HEADING_RE.match"]
     s1 -->|"_coerce_page_kind(page_kind)"| s2
     s2 -. "isinstance(page_kind, PageKind)" .-> s3
     s2 -->|"PageKind(page_kind)"| s4
@@ -66,9 +66,9 @@ flowchart LR
 | `PageKind` | - | - | - | - |
 | `ValueError` | - | - | - | - |
 | `_top_level_policy` | `page_kind: PageKind`, `title: str`, `canonical_occurrence: int`, `index_preserved: bool` | `PageKind`, `SectionOwnership`, `PageKind`, `SectionOwnership`, `SectionOwnership`, `PageKind`, `_INDEX_GENERATED_HEADINGS`, `SectionOwnership` | - | `SectionOwnership.SEMANTIC`, `SectionOwnership.GENERATED`, `SectionOwnership.UNKNOWN`, `...`, `...`, `...`, `...`, `...` |
-| `casefold` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
-| `match` | - | - | - | - |
+| `title.casefold` | - | - | - | - |
+| `_LOG_DATE_HEADING_RE.fullmatch` | - | - | - | - |
+| `_HTTP_OPERATION_HEADING_RE.match` | - | - | - | - |
 
 ### Call data
 
@@ -79,9 +79,9 @@ flowchart LR
 | _coerce_page_kind | PageKind | 269 | `PageKind(page_kind)` |
 | _coerce_page_kind | ValueError | 271 | `ValueError(...)` |
 | classify_section_ownership | _top_level_policy | 442 | `_top_level_policy(kind, section.title, occurrence, index_preserved=index_preserved)` |
-| _top_level_policy | casefold | 281 | `title.casefold(data not statically known)` |
-| _top_level_policy | fullmatch | 286 | `_LOG_DATE_HEADING_RE.fullmatch(title)` |
-| _top_level_policy | match | 384 | `_HTTP_OPERATION_HEADING_RE.match(title)` |
+| _top_level_policy | title.casefold | 281 | `title.casefold(data not statically known)` |
+| _top_level_policy | _LOG_DATE_HEADING_RE.fullmatch | 286 | `_LOG_DATE_HEADING_RE.fullmatch(title)` |
+| _top_level_policy | _HTTP_OPERATION_HEADING_RE.match | 384 | `_HTTP_OPERATION_HEADING_RE.match(title)` |
 
 ### Boundary effects
 
@@ -91,8 +91,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_coerce_page_kind` | `isinstance` | 266 |
-| unresolved_call | `_coerce_page_kind` | `ValueError` | 271 |
+| external_call | `_coerce_page_kind` | `isinstance` | 266 |
+| external_call | `_coerce_page_kind` | `ValueError` | 271 |
 | unresolved_call | `_top_level_policy` | `title.casefold` | 281 |
 | unresolved_call | `_top_level_policy` | `_LOG_DATE_HEADING_RE.fullmatch` | 286 |
 | unresolved_call | `_top_level_policy` | `_HTTP_OPERATION_HEADING_RE.match` | 384 |

@@ -37,18 +37,15 @@ flowchart LR
     n2["compare_source_snapshot_baseline (src/llm_wiki_cli/services/documentation_policy.py)"]
     n3["compare_tree_baseline (src/llm_wiki_cli/services/documentation_policy.py)"]
     n4["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n5["_compare_bound_source_baseline (src/llm_wiki_cli/services/documentation_run/workspace.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
-    n5 --> n0
     click n0 "../modules/documentation_policy.md"
     click n1 "../modules/documentation_policy.md"
     click n2 "../modules/documentation_policy.md"
     click n3 "../modules/documentation_policy.md"
     click n4 "../modules/documentation_run_dependencies.md"
-    click n5 "../modules/workspace.md"
 ```
 
 ### Summary
@@ -68,4 +65,3 @@ flowchart LR
 | `compare_tree_baseline` | call | [documentation_policy](../modules/documentation_policy.md) | 1 |
 | `compare_tree_baseline` | type_reference | [documentation_policy](../modules/documentation_policy.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
-| `_compare_bound_source_baseline` | call | [workspace](../modules/workspace.md) | 1 |

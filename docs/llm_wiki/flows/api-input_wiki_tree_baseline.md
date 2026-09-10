@@ -11,50 +11,52 @@
 sequenceDiagram
     participant p0 as input_wiki_tree_baseline
     participant p1 as capture_tree_baseline
-    participant p2 as items
+    participant p2 as limits.items
     participant p3 as isinstance
     participant p4 as DocumentationPolicyError
     participant p5 as _resolve_existing_directory
-    participant p6 as expanduser
-    participant p7 as Path
+    participant p6 as Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
+    participant p7 as Path (src/llm_wiki_cli/services…esolve_existing_directory)
     participant p8 as _lstat
-    participant p9 as lstat
+    participant p9 as os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)
     participant p10 as _assert_safe_directory
-    participant p11 as S_ISLNK
+    participant p11 as stat.S_ISLNK (src/llm_wiki_cli/services…py:_assert_safe_directory)
     participant p12 as _is_windows_reparse_point
-    participant p13 as int
-    participant p14 as getattr
+    participant p13 as int (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    participant p14 as getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
     participant p15 as bool
-    participant p16 as S_ISDIR
+    participant p16 as stat.S_ISDIR (src/llm_wiki_cli/services…py:_assert_safe_directory)
     participant p17 as _resolve_path
-    participant p18 as resolve
+    participant p18 as Path(…).expanduser().resolve
+    participant p19 as Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
+    participant p20 as Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
     p0->>p1: capture_tree_baseline
-    p1-->>p2: items
+    p1-->>p2: limits.items
     p1-->>p3: isinstance
     p1-->>p3: isinstance
     p1->>p4: DocumentationPolicyError
     p1->>p5: _resolve_existing_directory
-    p5-->>p6: expanduser
-    p5-->>p7: Path
+    p5-->>p6: Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
+    p5-->>p7: Path (src/llm_wiki_cli/services…esolve_existing_directory)
     p5->>p8: _lstat
-    p8-->>p9: lstat
+    p8-->>p9: os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)
     p8->>p4: DocumentationPolicyError
     p5->>p10: _assert_safe_directory
-    p10-->>p11: S_ISLNK
+    p10-->>p11: stat.S_ISLNK (src/llm_wiki_cli/services…py:_assert_safe_directory)
     p10->>p4: DocumentationPolicyError
     p10->>p12: _is_windows_reparse_point
-    p12-->>p13: int
-    p12-->>p14: getattr
-    p12-->>p13: int
-    p12-->>p14: getattr
+    p12-->>p13: int (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p12-->>p14: getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p12-->>p13: int (src/llm_wiki_cli/services…_is_windows_reparse_point)
+    p12-->>p14: getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
     p12-->>p15: bool
     p10->>p4: DocumentationPolicyError
-    p10-->>p16: S_ISDIR
+    p10-->>p16: stat.S_ISDIR (src/llm_wiki_cli/services…py:_assert_safe_directory)
     p10->>p4: DocumentationPolicyError
     p5->>p17: _resolve_path
-    p17-->>p18: resolve
-    p17-->>p6: expanduser
-    p17-->>p7: Path
+    p17-->>p18: Path(…).expanduser().resolve
+    p17-->>p19: Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
+    p17-->>p20: Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
     p17->>p4: DocumentationPolicyError
     p5->>p8: _lstat
     p5->>p10: _assert_safe_directory
@@ -71,15 +73,15 @@ sequenceDiagram
 flowchart LR
     s1["1. input_wiki_tree_baseline"]
     s2["2. capture_tree_baseline"]
-    s3["3. items"]
+    s3["3. limits.items"]
     s4["4. isinstance"]
     s5["5. isinstance"]
     s6["6. DocumentationPolicyError"]
     s7["7. _resolve_existing_directory"]
-    s8["8. expanduser"]
-    s9["9. Path"]
+    s8["8. Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)"]
+    s9["9. Path (src/llm_wiki_cli/services…esolve_existing_directory)"]
     s10["10. _lstat"]
-    s11["11. lstat"]
+    s11["11. os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)"]
     s12["12. DocumentationPolicyError"]
     s1 -->|"capture_tree_baseline(root, display='input_wiki')"| s2
     s2 -. "limits.items(data not statically known)" .-> s3
@@ -87,10 +89,10 @@ flowchart LR
     s2 -. "isinstance(value, int)" .-> s5
     s2 -->|"DocumentationPolicyError(...)"| s6
     s2 -->|"_resolve_existing_directory(root, display)"| s7
-    s7 -. "Path(path).expanduser(data not statically known)" .-> s8
-    s7 -. "Path(path)" .-> s9
+    s7 -. "Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)(data not statically known)" .-> s8
+    s7 -. "Path (src/llm_wiki_cli/services…esolve_existing_directory)(path)" .-> s9
     s7 -->|"_lstat(candidate, context=label)"| s10
-    s10 -. "os.lstat(path)" .-> s11
+    s10 -. "os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)(path)" .-> s11
     s10 -->|"DocumentationPolicyError(...)"| s12
     click s1 "../modules/documentation_policy.md"
     click s2 "../modules/documentation_policy.md"
@@ -106,15 +108,15 @@ flowchart LR
 |---|---|---|---|---|
 | `input_wiki_tree_baseline` | `root: str \| Path` | - | - | `capture_tree_baseline(...)` |
 | `capture_tree_baseline` | `root: str \| Path`, `display: str`, `excluded_directories: Iterable[str]`, `max_files: int`, `max_file_bytes: int`, `max_total_bytes: int` | - | `file_hashes[...]` | `TreeBaseline(...)` |
-| `items` | - | - | - | - |
+| `limits.items` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `DocumentationPolicyError` | - | - | - | - |
 | `_resolve_existing_directory` | `path: str \| Path`, `label: str` | - | - | `resolved` |
-| `expanduser` | - | - | - | - |
-| `Path` | - | - | - | - |
+| `Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…esolve_existing_directory)` | - | - | - | - |
 | `_lstat` | `path: Path`, `context: str` | - | - | `os.lstat(...)` |
-| `lstat` | - | - | - | - |
+| `os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)` | - | - | - | - |
 | `DocumentationPolicyError` | - | - | - | - |
 
 ### Call data
@@ -122,15 +124,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | input_wiki_tree_baseline | capture_tree_baseline | 516 | `capture_tree_baseline(root, display='input_wiki')` |
-| capture_tree_baseline | items | 304 | `limits.items(data not statically known)` |
+| capture_tree_baseline | limits.items | 304 | `limits.items(data not statically known)` |
 | capture_tree_baseline | isinstance | 305 | `isinstance(value, bool)` |
 | capture_tree_baseline | isinstance | 305 | `isinstance(value, int)` |
 | capture_tree_baseline | DocumentationPolicyError | 306 | `DocumentationPolicyError(...)` |
 | capture_tree_baseline | _resolve_existing_directory | 308 | `_resolve_existing_directory(root, display)` |
-| _resolve_existing_directory | expanduser | 948 | `Path(path).expanduser(data not statically known)` |
-| _resolve_existing_directory | Path | 948 | `Path(path)` |
+| _resolve_existing_directory | Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory) | 948 | `Path(path).expanduser(data not statically known)` |
+| _resolve_existing_directory | Path (src/llm_wiki_cli/services…esolve_existing_directory) | 948 | `Path(path)` |
 | _resolve_existing_directory | _lstat | 949 | `_lstat(candidate, context=label)` |
-| _lstat | lstat | 782 | `os.lstat(path)` |
+| _lstat | os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat) | 782 | `os.lstat(path)` |
 | _lstat | DocumentationPolicyError | 784 | `DocumentationPolicyError(...)` |
 
 ### Boundary effects
@@ -142,7 +144,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `capture_tree_baseline` | `limits.items` | 304 |
-| unresolved_call | `capture_tree_baseline` | `isinstance` | 305 |
+| external_call | `capture_tree_baseline` | `isinstance` | 305 |
 | unresolved_call | `_resolve_existing_directory` | `Path(path).expanduser` | 948 |
 | external_call | `_lstat` | `os.lstat` | 782 |
 | step_limit | `input_wiki_tree_baseline` | `first 12 steps` | 0 |

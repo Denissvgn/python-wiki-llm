@@ -25,7 +25,7 @@ flowchart LR
     s2["2. cast"]
     s3["3. _export_documentation_run_impl"]
     s1 -. "cast(DocumentationExportResult, _export_documentation_run_impl(...))" .-> s2
-    s1 -. "_export_documentation_run_impl(workspace, build=build, builder_command=builder_command, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=kno…" .-> s3
+    s1 -. "_export_documentation_run_impl(…)" .-> s3
     click s1 "../modules/api.md"
 ```
 

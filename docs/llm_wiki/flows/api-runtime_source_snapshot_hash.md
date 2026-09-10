@@ -18,59 +18,61 @@
 sequenceDiagram
     participant p0 as runtime_source_snapshot_hash
     participant p1 as hash_source_snapshot
-    participant p2 as set
+    participant p2 as set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
     participant p3 as enumerate
-    participant p4 as isinstance
+    participant p4 as isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
     participant p5 as KnowledgeEnvelopeError
-    participant p6 as add
-    participant p7 as append
-    participant p8 as sort
+    participant p6 as seen_paths.add
+    participant p7 as records.append
+    participant p8 as records.sort
     participant p9 as _hash_structured
-    participant p10 as values
+    participant p10 as payload.values
     participant p11 as _validate_json_tree
-    participant p12 as walk
-    participant p13 as sha256_bytes
-    participant p14 as hexdigest
-    participant p15 as sha256
-    participant p16 as canonical_json_bytes
-    participant p17 as encode
-    participant p18 as canonical_json_text
-    participant p19 as dumps
-    participant p20 as runtime_consumed_inputs
-    participant p21 as TypeError
-    participant p22 as to_consumed_inputs
-    participant p23 as _merge_explicit_consumed_input
-    participant p24 as KnowledgeGenerationError
+    participant p12 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    participant p13 as walk
+    participant p14 as sha256_bytes
+    participant p15 as hashlib.sha256(…).hexdigest
+    participant p16 as hashlib.sha256
+    participant p17 as canonical_json_bytes
+    participant p18 as canonical_json_text(…).encode
+    participant p19 as canonical_json_text
+    participant p20 as json.dumps
+    participant p21 as runtime_consumed_inputs
+    participant p22 as isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
+    participant p23 as TypeError
+    participant p24 as source_snapshot.to_consumed_inputs
+    participant p25 as _merge_explicit_consumed_input
+    participant p26 as KnowledgeGenerationError
     p0->>p1: hash_source_snapshot
-    p1-->>p2: set
+    p1-->>p2: set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
     p1-->>p3: enumerate
-    p1-->>p4: isinstance
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
     p1->>p5: KnowledgeEnvelopeError
     p1->>p5: KnowledgeEnvelopeError
-    p1-->>p6: add
-    p1-->>p7: append
-    p1-->>p8: sort
+    p1-->>p6: seen_paths.add
+    p1-->>p7: records.append
+    p1-->>p8: records.sort
     p1->>p9: _hash_structured
-    p9-->>p10: values
+    p9-->>p10: payload.values
     p9->>p11: _validate_json_tree
-    p11-->>p2: set
-    p11-->>p12: walk
-    p9->>p13: sha256_bytes
-    p13-->>p14: hexdigest
-    p13-->>p15: sha256
-    p9->>p16: canonical_json_bytes
-    p16-->>p17: encode
-    p16->>p18: canonical_json_text
-    p18-->>p19: dumps
+    p11-->>p12: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    p11-->>p13: walk
+    p9->>p14: sha256_bytes
+    p14-->>p15: hashlib.sha256(…).hexdigest
+    p14-->>p16: hashlib.sha256
+    p9->>p17: canonical_json_bytes
+    p17-->>p18: canonical_json_text(…).encode
+    p17->>p19: canonical_json_text
+    p19-->>p20: json.dumps
     p9->>p5: KnowledgeEnvelopeError
-    p0->>p20: runtime_consumed_inputs
-    p20-->>p4: isinstance
-    p20-->>p21: TypeError
-    p20-->>p4: isinstance
-    p20-->>p21: TypeError
-    p20-->>p22: to_consumed_inputs
-    p20->>p23: _merge_explicit_consumed_input
-    p23->>p24: KnowledgeGenerationError
+    p0->>p21: runtime_consumed_inputs
+    p21-->>p22: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
+    p21-->>p23: TypeError
+    p21-->>p22: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
+    p21-->>p23: TypeError
+    p21-->>p24: source_snapshot.to_consumed_inputs
+    p21->>p25: _merge_explicit_consumed_input
+    p25->>p26: KnowledgeGenerationError
 ```
 
 > Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -82,20 +84,20 @@ sequenceDiagram
 flowchart LR
     s1["1. runtime_source_snapshot_hash"]
     s2["2. hash_source_snapshot"]
-    s3["3. set"]
+    s3["3. set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)"]
     s4["4. enumerate"]
-    s5["5. isinstance"]
+    s5["5. isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)"]
     s6["6. KnowledgeEnvelopeError"]
     s7["7. KnowledgeEnvelopeError"]
-    s8["8. add"]
-    s9["9. append"]
-    s10["10. sort"]
+    s8["8. seen_paths.add"]
+    s9["9. records.append"]
+    s10["10. records.sort"]
     s11["11. _hash_structured"]
-    s12["12. values"]
+    s12["12. payload.values"]
     s1 -->|"hash_source_snapshot(runtime_consumed_inputs(...))"| s2
-    s2 -. "set(data not statically known)" .-> s3
+    s2 -. "set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)(data not statically known)" .-> s3
     s2 -. "enumerate(inputs)" .-> s4
-    s2 -. "isinstance(item, ConsumedInput)" .-> s5
+    s2 -. "isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)(item, ConsumedInput)" .-> s5
     s2 -->|"KnowledgeEnvelopeError(..., 'must be a ConsumedInput')"| s6
     s2 -->|"KnowledgeEnvelopeError(..., ...)"| s7
     s2 -. "seen_paths.add(item.path)" .-> s8
@@ -126,32 +128,32 @@ flowchart LR
 |---|---|---|---|---|
 | `runtime_source_snapshot_hash` | `source_snapshot: SourceSnapshot`, `generation_inputs: Mapping[str, object]`, `plugin_lock_path: str \| None`, `plugin_lock_hash: str \| None` | - | - | `hash_source_snapshot(...)` |
 | `hash_source_snapshot` | `inputs: Iterable[ConsumedInput]` | `ConsumedInput`, `SOURCE_SNAPSHOT_DOMAIN` | - | `_hash_structured(...)` |
-| `set` | - | - | - | - |
+| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | - | - | - | - |
 | `enumerate` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `add` | - | - | - | - |
-| `append` | - | - | - | - |
-| `sort` | - | - | - | - |
+| `seen_paths.add` | - | - | - | - |
+| `records.append` | - | - | - | - |
+| `records.sort` | - | - | - | - |
 | `_hash_structured` | `domain: str`, `payload: Mapping[str, Any]`, `field_name: str` | `KnowledgeEnvelopeError` | - | `sha256_bytes(...)` |
-| `values` | - | - | - | - |
+| `payload.values` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_source_snapshot_hash | hash_source_snapshot | 1440 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
-| hash_source_snapshot | set | 734 | `set(data not statically known)` |
+| runtime_source_snapshot_hash | hash_source_snapshot | 1450 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
+| hash_source_snapshot | set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot) | 734 | `set(data not statically known)` |
 | hash_source_snapshot | enumerate | 735 | `enumerate(inputs)` |
-| hash_source_snapshot | isinstance | 736 | `isinstance(item, ConsumedInput)` |
+| hash_source_snapshot | isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot) | 736 | `isinstance(item, ConsumedInput)` |
 | hash_source_snapshot | KnowledgeEnvelopeError | 737 | `KnowledgeEnvelopeError(..., 'must be a ConsumedInput')` |
 | hash_source_snapshot | KnowledgeEnvelopeError | 742 | `KnowledgeEnvelopeError(..., ...)` |
-| hash_source_snapshot | add | 746 | `seen_paths.add(item.path)` |
-| hash_source_snapshot | append | 747 | `records.append({...})` |
-| hash_source_snapshot | sort | 754 | `records.sort(key=...)` |
+| hash_source_snapshot | seen_paths.add | 746 | `seen_paths.add(item.path)` |
+| hash_source_snapshot | records.append | 747 | `records.append({...})` |
+| hash_source_snapshot | records.sort | 754 | `records.sort(key=...)` |
 | hash_source_snapshot | _hash_structured | 755 | `_hash_structured(SOURCE_SNAPSHOT_DOMAIN, {...}, 'source_inputs')` |
-| _hash_structured | values | 1604 | `payload.values(data not statically known)` |
+| _hash_structured | payload.values | 1604 | `payload.values(data not statically known)` |
 
 ### Boundary effects
 
@@ -165,8 +167,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_source_snapshot` | `enumerate` | 735 |
-| unresolved_call | `hash_source_snapshot` | `isinstance` | 736 |
+| external_call | `hash_source_snapshot` | `enumerate` | 735 |
+| external_call | `hash_source_snapshot` | `isinstance` | 736 |
 | unresolved_call | `_hash_structured` | `payload.values` | 1604 |
 | step_limit | `runtime_source_snapshot_hash` | `first 12 steps` | 0 |
 

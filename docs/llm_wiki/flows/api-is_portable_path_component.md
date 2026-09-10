@@ -11,28 +11,28 @@
 sequenceDiagram
     participant p0 as is_portable_path_component
     participant p1 as require_portable_path_component
-    participant p2 as encode
+    participant p2 as component.encode
     participant p3 as SharedValidationError
-    participant p4 as normalize
+    participant p4 as unicodedata.normalize
     participant p5 as any
     participant p6 as ord
-    participant p7 as endswith
-    participant p8 as casefold
-    participant p9 as split
+    participant p7 as component.endswith
+    participant p8 as component.split(…)[…].casefold
+    participant p9 as component.split
     p0->>p1: require_portable_path_component
-    p1-->>p2: encode
+    p1-->>p2: component.encode
     p1->>p3: SharedValidationError
-    p1-->>p4: normalize
+    p1-->>p4: unicodedata.normalize
     p1->>p3: SharedValidationError
     p1-->>p5: any
     p1-->>p6: ord
     p1-->>p6: ord
     p1->>p3: SharedValidationError
-    p1-->>p7: endswith
+    p1-->>p7: component.endswith
     p1-->>p5: any
     p1->>p3: SharedValidationError
-    p1-->>p8: casefold
-    p1-->>p9: split
+    p1-->>p8: component.split(…)[…].casefold
+    p1-->>p9: component.split
     p1->>p3: SharedValidationError
 ```
 
@@ -43,15 +43,15 @@ sequenceDiagram
 flowchart LR
     s1["1. is_portable_path_component"]
     s2["2. require_portable_path_component"]
-    s3["3. encode"]
+    s3["3. component.encode"]
     s4["4. SharedValidationError"]
-    s5["5. normalize"]
+    s5["5. unicodedata.normalize"]
     s6["6. SharedValidationError"]
     s7["7. any"]
     s8["8. ord"]
     s9["9. ord"]
     s10["10. SharedValidationError"]
-    s11["11. endswith"]
+    s11["11. component.endswith"]
     s12["12. any"]
     s1 -->|"require_portable_path_component(component)"| s2
     s2 -. "component.encode('utf-8')" .-> s3
@@ -77,15 +77,15 @@ flowchart LR
 |---|---|---|---|---|
 | `is_portable_path_component` | `component: str` | `SharedValidationError` | - | `False`, `True` |
 | `require_portable_path_component` | `component: str`, `context: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `utf8_error: Exception \| None`, `control_error: Exception \| None`, `non_nfc_error: Exception \| None`, `nonportable_error: Exception \| None` | `_WINDOWS_FORBIDDEN_PATH_CHARS`, `_WINDOWS_RESERVED_NAMES` | - | `component` |
-| `encode` | - | - | - | - |
+| `component.encode` | - | - | - | - |
 | `SharedValidationError` | - | - | - | - |
-| `normalize` | - | - | - | - |
+| `unicodedata.normalize` | - | - | - | - |
 | `SharedValidationError` | - | - | - | - |
 | `any` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `SharedValidationError` | - | - | - | - |
-| `endswith` | - | - | - | - |
+| `component.endswith` | - | - | - | - |
 | `any` | - | - | - | - |
 
 ### Call data
@@ -93,15 +93,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | is_portable_path_component | require_portable_path_component | 131 | `require_portable_path_component(component)` |
-| require_portable_path_component | encode | 93 | `component.encode('utf-8')` |
+| require_portable_path_component | component.encode | 93 | `component.encode('utf-8')` |
 | require_portable_path_component | SharedValidationError | 95 | `SharedValidationError(...)` |
-| require_portable_path_component | normalize | 100 | `unicodedata.normalize('NFC', component)` |
+| require_portable_path_component | unicodedata.normalize | 100 | `unicodedata.normalize('NFC', component)` |
 | require_portable_path_component | SharedValidationError | 102 | `SharedValidationError(...)` |
 | require_portable_path_component | any | 105 | `any(...)` |
 | require_portable_path_component | ord | 106 | `ord(character)` |
 | require_portable_path_component | ord | 107 | `ord(character)` |
 | require_portable_path_component | SharedValidationError | 110 | `SharedValidationError(...)` |
-| require_portable_path_component | endswith | 113 | `component.endswith((...))` |
+| require_portable_path_component | component.endswith | 113 | `component.endswith((...))` |
 | require_portable_path_component | any | 113 | `any(...)` |
 
 ### Boundary effects
@@ -114,11 +114,11 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `require_portable_path_component` | `component.encode` | 93 |
 | external_call | `require_portable_path_component` | `unicodedata.normalize` | 100 |
-| unresolved_call | `require_portable_path_component` | `any` | 105 |
-| unresolved_call | `require_portable_path_component` | `ord` | 106 |
-| unresolved_call | `require_portable_path_component` | `ord` | 107 |
+| external_call | `require_portable_path_component` | `any` | 105 |
+| external_call | `require_portable_path_component` | `ord` | 106 |
+| external_call | `require_portable_path_component` | `ord` | 107 |
 | unresolved_call | `require_portable_path_component` | `component.endswith` | 113 |
-| unresolved_call | `require_portable_path_component` | `any` | 113 |
+| external_call | `require_portable_path_component` | `any` | 113 |
 | step_limit | `is_portable_path_component` | `first 12 steps` | 0 |
 
 ## Behavior

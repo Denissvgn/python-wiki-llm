@@ -11,49 +11,53 @@
 sequenceDiagram
     participant p0 as plugin_producer_inputs
     participant p1 as enumerate
-    participant p2 as isinstance
+    participant p2 as isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)
     participant p3 as KnowledgeEnvelopeError
-    participant p4 as get
-    participant p5 as fullmatch
-    participant p6 as strip
-    participant p7 as any
+    participant p4 as component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p5 as _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p6 as version.strip
+    participant p7 as any (src/llm_wiki_cli/services….py:plugin_producer_inputs)
     participant p8 as ord
     participant p9 as _reject_machine_local_paths
-    participant p10 as set
+    participant p10 as set (src/llm_wiki_cli/services…reject_machine_local_paths)
     participant p11 as walk
-    participant p12 as setdefault
-    participant p13 as add
-    participant p14 as _safe_plugin_component_metadata
+    participant p12 as grouped.setdefault
+    participant p13 as set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p14 as entry[…].add (src/llm_wiki_cli/services…:plugin_producer_inputs, 1)
+    participant p15 as _safe_plugin_component_metadata
+    participant p16 as component.get (src/llm_wiki_cli/services…_plugin_component_metadata)
+    participant p17 as isinstance (src/llm_wiki_cli/services…_plugin_component_metadata)
+    participant p18 as _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services…_plugin_component_metadata)
     p0-->>p1: enumerate
-    p0-->>p2: isinstance
+    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)
     p0->>p3: KnowledgeEnvelopeError
-    p0-->>p4: get
-    p0-->>p2: isinstance
-    p0-->>p5: fullmatch
+    p0-->>p4: component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p5: _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)
     p0->>p3: KnowledgeEnvelopeError
-    p0-->>p4: get
-    p0-->>p2: isinstance
+    p0-->>p4: component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)
     p0->>p3: KnowledgeEnvelopeError
-    p0-->>p2: isinstance
-    p0-->>p6: strip
-    p0-->>p7: any
+    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p6: version.strip
+    p0-->>p7: any (src/llm_wiki_cli/services….py:plugin_producer_inputs)
     p0-->>p8: ord
     p0->>p3: KnowledgeEnvelopeError
     p0->>p9: _reject_machine_local_paths
-    p9-->>p10: set
+    p9-->>p10: set (src/llm_wiki_cli/services…reject_machine_local_paths)
     p9-->>p11: walk
-    p0-->>p12: setdefault
-    p0-->>p10: set
-    p0-->>p10: set
-    p0-->>p13: add
-    p0->>p14: _safe_plugin_component_metadata
-    p14-->>p4: get
-    p14-->>p4: get
-    p14-->>p2: isinstance
-    p14->>p3: KnowledgeEnvelopeError
-    p14-->>p2: isinstance
-    p14-->>p5: fullmatch
-    p14->>p3: KnowledgeEnvelopeError
+    p0-->>p12: grouped.setdefault
+    p0-->>p13: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p13: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p14: entry[…].add (src/llm_wiki_cli/services…:plugin_producer_inputs, 1)
+    p0->>p15: _safe_plugin_component_metadata
+    p15-->>p16: component.get (src/llm_wiki_cli/services…_plugin_component_metadata)
+    p15-->>p16: component.get (src/llm_wiki_cli/services…_plugin_component_metadata)
+    p15-->>p17: isinstance (src/llm_wiki_cli/services…_plugin_component_metadata)
+    p15->>p3: KnowledgeEnvelopeError
+    p15-->>p17: isinstance (src/llm_wiki_cli/services…_plugin_component_metadata)
+    p15-->>p18: _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services…_plugin_component_metadata)
+    p15->>p3: KnowledgeEnvelopeError
 ```
 
 > Call sequence diagram shows 30 of 68 interactions; 38 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -65,27 +69,27 @@ sequenceDiagram
 flowchart LR
     s1["1. plugin_producer_inputs"]
     s2["2. enumerate"]
-    s3["3. isinstance"]
+    s3["3. isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)"]
     s4["4. KnowledgeEnvelopeError"]
-    s5["5. get"]
-    s6["6. isinstance"]
-    s7["7. fullmatch"]
+    s5["5. component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)"]
+    s6["6. isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)"]
+    s7["7. _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)"]
     s8["8. KnowledgeEnvelopeError"]
-    s9["9. get"]
-    s10["10. isinstance"]
+    s9["9. component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)"]
+    s10["10. isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)"]
     s11["11. KnowledgeEnvelopeError"]
-    s12["12. isinstance"]
+    s12["12. isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)"]
     s1 -. "enumerate(components)" .-> s2
-    s1 -. "isinstance(component, Mapping)" .-> s3
+    s1 -. "isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(component, Mapping)" .-> s3
     s1 -->|"KnowledgeEnvelopeError(..., 'must be an object')"| s4
-    s1 -. "component.get('plugin_id')" .-> s5
-    s1 -. "isinstance(plugin_id, str)" .-> s6
-    s1 -. "_COMPONENT_ID_RE.fullmatch(plugin_id)" .-> s7
+    s1 -. "component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)('plugin_id')" .-> s5
+    s1 -. "isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(plugin_id, str)" .-> s6
+    s1 -. "_COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)(plugin_id)" .-> s7
     s1 -->|"KnowledgeEnvelopeError(..., 'must be a normalized stable plugin ID')"| s8
-    s1 -. "component.get('plugin_version')" .-> s9
-    s1 -. "isinstance(version, str)" .-> s10
+    s1 -. "component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)('plugin_version')" .-> s9
+    s1 -. "isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(version, str)" .-> s10
     s1 -->|"KnowledgeEnvelopeError(..., 'must be a string when available')"| s11
-    s1 -. "isinstance(version, str)" .-> s12
+    s1 -. "isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(version, str)" .-> s12
     b0["mutation results.append"]
     s1 -. "mutation results.append" .-> b0
     click s1 "../modules/knowledge_envelope.md"
@@ -102,32 +106,32 @@ flowchart LR
 |---|---|---|---|---|
 | `plugin_producer_inputs` | `components: Iterable[Mapping[str, Any]]`, `plugin_configurations: Mapping[str, Mapping[str, Any] \| None] \| None`, `plugin_limitations: Mapping[str, Iterable[str]] \| None` | `Mapping`, `Mapping` | - | `tuple(...)` |
 | `enumerate` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `get` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `fullmatch` | - | - | - | - |
+| `component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | - | - | - | - |
+| `_COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `get` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | plugin_producer_inputs | enumerate | 1015 | `enumerate(components)` |
-| plugin_producer_inputs | isinstance | 1016 | `isinstance(component, Mapping)` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1016 | `isinstance(component, Mapping)` |
 | plugin_producer_inputs | KnowledgeEnvelopeError | 1017 | `KnowledgeEnvelopeError(..., 'must be an object')` |
-| plugin_producer_inputs | get | 1021 | `component.get('plugin_id')` |
-| plugin_producer_inputs | isinstance | 1023 | `isinstance(plugin_id, str)` |
-| plugin_producer_inputs | fullmatch | 1024 | `_COMPONENT_ID_RE.fullmatch(plugin_id)` |
+| plugin_producer_inputs | component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1021 | `component.get('plugin_id')` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1023 | `isinstance(plugin_id, str)` |
+| plugin_producer_inputs | _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1024 | `_COMPONENT_ID_RE.fullmatch(plugin_id)` |
 | plugin_producer_inputs | KnowledgeEnvelopeError | 1026 | `KnowledgeEnvelopeError(..., 'must be a normalized stable plugin ID')` |
-| plugin_producer_inputs | get | 1030 | `component.get('plugin_version')` |
-| plugin_producer_inputs | isinstance | 1031 | `isinstance(version, str)` |
+| plugin_producer_inputs | component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1030 | `component.get('plugin_version')` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1031 | `isinstance(version, str)` |
 | plugin_producer_inputs | KnowledgeEnvelopeError | 1032 | `KnowledgeEnvelopeError(..., 'must be a string when available')` |
-| plugin_producer_inputs | isinstance | 1036 | `isinstance(version, str)` |
+| plugin_producer_inputs | isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs) | 1036 | `isinstance(version, str)` |
 
 ### Boundary effects
 
@@ -139,14 +143,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `plugin_producer_inputs` | `enumerate` | 1015 |
-| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1016 |
+| external_call | `plugin_producer_inputs` | `enumerate` | 1015 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1016 |
 | unresolved_call | `plugin_producer_inputs` | `component.get` | 1021 |
-| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1023 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1023 |
 | unresolved_call | `plugin_producer_inputs` | `_COMPONENT_ID_RE.fullmatch` | 1024 |
 | unresolved_call | `plugin_producer_inputs` | `component.get` | 1030 |
-| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1031 |
-| unresolved_call | `plugin_producer_inputs` | `isinstance` | 1036 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1031 |
+| external_call | `plugin_producer_inputs` | `isinstance` | 1036 |
 | step_limit | `plugin_producer_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

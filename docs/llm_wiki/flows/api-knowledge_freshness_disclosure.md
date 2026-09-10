@@ -15,13 +15,13 @@ sequenceDiagram
     participant p3 as _freshness_disclosure
     participant p4 as sum
     participant p5 as int
-    participant p6 as values
+    participant p6 as view.freshness.counts.values
     p0-->>p1: isinstance
     p0-->>p2: TypeError
     p0->>p3: _freshness_disclosure
     p0-->>p4: sum
     p0-->>p5: int
-    p0-->>p6: values
+    p0-->>p6: view.freshness.counts.values
 ```
 
 ## Data flow
@@ -35,7 +35,7 @@ flowchart LR
     s4["4. _freshness_disclosure"]
     s5["5. sum"]
     s6["6. int"]
-    s7["7. values"]
+    s7["7. view.freshness.counts.values"]
     s1 -. "isinstance(view, KnowledgeReadView)" .-> s2
     s1 -. "TypeError('view must be a KnowledgeReadView')" .-> s3
     s1 -->|"_freshness_disclosure(evaluated=True, concepts_evaluated=sum(...))"| s4
@@ -56,7 +56,7 @@ flowchart LR
 | `_freshness_disclosure` | `evaluated: bool`, `concepts_evaluated: int` | `UNEVALUATED_FRESHNESS_DISCLOSURE` | - | `UNEVALUATED_FRESHNESS_DISCLOSURE`, `...` |
 | `sum` | - | - | - | - |
 | `int` | - | - | - | - |
-| `values` | - | - | - | - |
+| `view.freshness.counts.values` | - | - | - | - |
 
 ### Call data
 
@@ -67,7 +67,7 @@ flowchart LR
 | knowledge_freshness_disclosure | _freshness_disclosure | 453 | `_freshness_disclosure(evaluated=True, concepts_evaluated=sum(...))` |
 | knowledge_freshness_disclosure | sum | 455 | `sum(...)` |
 | knowledge_freshness_disclosure | int | 455 | `int(count)` |
-| knowledge_freshness_disclosure | values | 455 | `view.freshness.counts.values(data not statically known)` |
+| knowledge_freshness_disclosure | view.freshness.counts.values | 455 | `view.freshness.counts.values(data not statically known)` |
 
 ### Boundary effects
 
@@ -77,9 +77,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `knowledge_freshness_disclosure` | `isinstance` | 448 |
-| unresolved_call | `knowledge_freshness_disclosure` | `TypeError` | 449 |
-| unresolved_call | `knowledge_freshness_disclosure` | `sum` | 455 |
+| external_call | `knowledge_freshness_disclosure` | `isinstance` | 448 |
+| external_call | `knowledge_freshness_disclosure` | `TypeError` | 449 |
+| external_call | `knowledge_freshness_disclosure` | `sum` | 455 |
 | unresolved_call | `knowledge_freshness_disclosure` | `view.freshness.counts.values` | 455 |
 
 ## Behavior

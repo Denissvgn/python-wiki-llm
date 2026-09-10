@@ -10,55 +10,62 @@
 ```mermaid
 sequenceDiagram
     participant p0 as parse_markdown_document
-    participant p1 as isinstance
+    participant p1 as isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
     participant p2 as TypeError
-    participant p3 as ValueError
+    participant p3 as ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)
     participant p4 as normalize_markdown
-    participant p5 as replace
-    participant p6 as list
-    participant p7 as _iter_structural_headings
-    participant p8 as splitlines
-    participant p9 as _frontmatter_extent
-    participant p10 as strip
-    participant p11 as removeprefix
-    participant p12 as _line_content
-    participant p13 as endswith
-    participant p14 as enumerate
-    participant p15 as len
-    participant p16 as fullmatch
-    participant p17 as escape
-    participant p18 as groups
-    participant p19 as _atx_heading
-    p0-->>p1: isinstance
+    participant p5 as text.replace(…).replace
+    participant p6 as text.replace
+    participant p7 as list
+    participant p8 as _iter_structural_headings
+    participant p9 as markdown.splitlines
+    participant p10 as _frontmatter_extent
+    participant p11 as _line_content(…).removeprefix(…).strip
+    participant p12 as _line_content(…).removeprefix
+    participant p13 as _line_content
+    participant p14 as line.endswith
+    participant p15 as enumerate (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
+    participant p16 as _line_content(…).strip
+    participant p17 as len (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
+    participant p18 as enumerate (src/llm_wiki_cli/services…:_iter_structural_headings)
+    participant p19 as len (src/llm_wiki_cli/services…:_iter_structural_headings)
+    participant p20 as re.fullmatch
+    participant p21 as re.escape
+    participant p22 as _FENCE_OPEN_RE.fullmatch
+    participant p23 as opening.groups
+    participant p24 as _atx_heading
+    participant p25 as _ATX_HEADING_RE.fullmatch
+    participant p26 as match.groups
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
     p0-->>p2: TypeError
-    p0-->>p1: isinstance
-    p0-->>p3: ValueError
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
+    p0-->>p3: ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)
     p0->>p4: normalize_markdown
-    p4-->>p5: replace
-    p4-->>p5: replace
-    p0-->>p6: list
-    p0->>p7: _iter_structural_headings
-    p7-->>p8: splitlines
-    p7->>p9: _frontmatter_extent
-    p9-->>p10: strip
-    p9-->>p11: removeprefix
-    p9->>p12: _line_content
-    p12-->>p13: endswith
-    p9-->>p14: enumerate
-    p9-->>p10: strip
-    p9->>p12: _line_content
-    p9-->>p15: len
-    p7-->>p14: enumerate
-    p7->>p12: _line_content
-    p7-->>p15: len
-    p7-->>p16: fullmatch
-    p7-->>p17: escape
-    p7-->>p16: fullmatch
-    p7-->>p18: groups
-    p7-->>p15: len
-    p7->>p19: _atx_heading
-    p19-->>p16: fullmatch
-    p19-->>p18: groups
+    p4-->>p5: text.replace(…).replace
+    p4-->>p6: text.replace
+    p0-->>p7: list
+    p0->>p8: _iter_structural_headings
+    p8-->>p9: markdown.splitlines
+    p8->>p10: _frontmatter_extent
+    p10-->>p11: _line_content(…).removeprefix(…).strip
+    p10-->>p12: _line_content(…).removeprefix
+    p10->>p13: _line_content
+    p13-->>p14: line.endswith
+    p10-->>p15: enumerate (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
+    p10-->>p16: _line_content(…).strip
+    p10->>p13: _line_content
+    p10-->>p17: len (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
+    p8-->>p18: enumerate (src/llm_wiki_cli/services…:_iter_structural_headings)
+    p8->>p13: _line_content
+    p8-->>p19: len (src/llm_wiki_cli/services…:_iter_structural_headings)
+    p8-->>p20: re.fullmatch
+    p8-->>p21: re.escape
+    p8-->>p22: _FENCE_OPEN_RE.fullmatch
+    p8-->>p23: opening.groups
+    p8-->>p19: len (src/llm_wiki_cli/services…:_iter_structural_headings)
+    p8->>p24: _atx_heading
+    p24-->>p25: _ATX_HEADING_RE.fullmatch
+    p24-->>p26: match.groups
 ```
 
 > Call sequence diagram shows 30 of 85 interactions; 55 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -69,23 +76,23 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. parse_markdown_document"]
-    s2["2. isinstance"]
+    s2["2. isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)"]
     s3["3. TypeError"]
-    s4["4. isinstance"]
-    s5["5. ValueError"]
+    s4["4. isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)"]
+    s5["5. ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)"]
     s6["6. normalize_markdown"]
-    s7["7. replace"]
-    s8["8. replace"]
+    s7["7. text.replace(…).replace"]
+    s8["8. text.replace"]
     s9["9. list"]
     s10["10. _iter_structural_headings"]
-    s11["11. splitlines"]
+    s11["11. markdown.splitlines"]
     s12["12. _frontmatter_extent"]
-    s1 -. "isinstance(markdown, str)" .-> s2
+    s1 -. "isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(markdown, str)" .-> s2
     s1 -. "TypeError('markdown must be a string')" .-> s3
-    s1 -. "isinstance(page_locator, str)" .-> s4
-    s1 -. "ValueError('page_locator must be a non-empty string')" .-> s5
+    s1 -. "isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(page_locator, str)" .-> s4
+    s1 -. "ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)('page_locator must be a non-empty string')" .-> s5
     s1 -->|"normalize_markdown(markdown)"| s6
-    s6 -. "text.replace('\r\n', '\n').replace('\r', '\n')" .-> s7
+    s6 -. "text.replace(…).replace('\r', '\n')" .-> s7
     s6 -. "text.replace('\r\n', '\n')" .-> s8
     s1 -. "list(_iter_structural_headings(...))" .-> s9
     s1 -->|"_iter_structural_headings(normalized)"| s10
@@ -118,32 +125,32 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `parse_markdown_document` | `markdown: str`, `page_locator: str` | `SECTION_ORDER_DOMAIN` | `occurrences[...]` | `MarkdownSectionDocument(...)` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | - | - | - | - |
 | `TypeError` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `ValueError` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | - | - | - | - |
+| `ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)` | - | - | - | - |
 | `normalize_markdown` | `text: str` | - | - | `...` |
-| `replace` | - | - | - | - |
-| `replace` | - | - | - | - |
+| `text.replace(…).replace` | - | - | - | - |
+| `text.replace` | - | - | - | - |
 | `list` | - | - | - | - |
 | `_iter_structural_headings` | `markdown: str` | - | - | - |
-| `splitlines` | - | - | - | - |
+| `markdown.splitlines` | - | - | - | - |
 | `_frontmatter_extent` | `lines: list[str]` | - | - | `0`, `0`, `...`, `len(...)` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| parse_markdown_document | isinstance | 325 | `isinstance(markdown, str)` |
+| parse_markdown_document | isinstance (src/llm_wiki_cli/services…py:parse_markdown_document) | 325 | `isinstance(markdown, str)` |
 | parse_markdown_document | TypeError | 326 | `TypeError('markdown must be a string')` |
-| parse_markdown_document | isinstance | 327 | `isinstance(page_locator, str)` |
-| parse_markdown_document | ValueError | 328 | `ValueError('page_locator must be a non-empty string')` |
+| parse_markdown_document | isinstance (src/llm_wiki_cli/services…py:parse_markdown_document) | 327 | `isinstance(page_locator, str)` |
+| parse_markdown_document | ValueError (src/llm_wiki_cli/services…py:parse_markdown_document) | 328 | `ValueError('page_locator must be a non-empty string')` |
 | parse_markdown_document | normalize_markdown | 330 | `normalize_markdown(markdown)` |
-| normalize_markdown | replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| normalize_markdown | replace | 81 | `text.replace('\r\n', '\n')` |
+| normalize_markdown | text.replace(…).replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| normalize_markdown | text.replace | 81 | `text.replace('\r\n', '\n')` |
 | parse_markdown_document | list | 331 | `list(_iter_structural_headings(...))` |
 | parse_markdown_document | _iter_structural_headings | 331 | `_iter_structural_headings(normalized)` |
-| _iter_structural_headings | splitlines | 251 | `markdown.splitlines(keepends=True)` |
+| _iter_structural_headings | markdown.splitlines | 251 | `markdown.splitlines(keepends=True)` |
 | _iter_structural_headings | _frontmatter_extent | 252 | `_frontmatter_extent(lines)` |
 
 ### Boundary effects
@@ -160,12 +167,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `parse_markdown_document` | `isinstance` | 325 |
-| unresolved_call | `parse_markdown_document` | `TypeError` | 326 |
-| unresolved_call | `parse_markdown_document` | `isinstance` | 327 |
-| unresolved_call | `parse_markdown_document` | `ValueError` | 328 |
-| external_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
-| external_call | `normalize_markdown` | `text.replace` | 81 |
+| external_call | `parse_markdown_document` | `isinstance` | 325 |
+| external_call | `parse_markdown_document` | `TypeError` | 326 |
+| external_call | `parse_markdown_document` | `isinstance` | 327 |
+| external_call | `parse_markdown_document` | `ValueError` | 328 |
+| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
+| unresolved_call | `normalize_markdown` | `text.replace` | 81 |
 | unresolved_call | `_iter_structural_headings` | `markdown.splitlines` | 251 |
 | step_limit | `parse_markdown_document` | `first 12 steps` | 0 |
 

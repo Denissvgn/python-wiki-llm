@@ -11,8 +11,8 @@ Stable details attached to required-mode interface failures.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `code` | `str` | *required* | — |
 | `field` | `str` | *required* | — |
 | `mode` | `str` | *required* | — |

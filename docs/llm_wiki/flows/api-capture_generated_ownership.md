@@ -2,7 +2,7 @@
 
 **Entry point:** `capture_generated_ownership` (`api`)
 **Source:** [integrity](../modules/integrity.md)
-**Modules touched:** [documentation_policy](../modules/documentation_policy.md), [documentation_run_contracts](../modules/documentation_run_contracts.md), [integrity](../modules/integrity.md)
+**Modules touched:** [integrity](../modules/integrity.md)
 
 ## Call sequence
 
@@ -10,64 +10,65 @@
 ```mermaid
 sequenceDiagram
     participant p0 as capture_generated_ownership
-    participant p1 as resolve
-    participant p2 as expanduser
+    participant p1 as Path(…).expanduser().resolve
+    participant p2 as Path(…).expanduser
     participant p3 as Path
-    participant p4 as is_symlink
+    participant p4 as path.is_symlink
     participant p5 as DocumentationIntegrityError
-    participant p6 as is_file
+    participant p6 as path.is_file
     participant p7 as hash_bytes
-    participant p8 as hexdigest
-    participant p9 as sha256
-    participant p10 as read_bytes
-    participant p11 as sorted
-    participant p12 as rglob
-    participant p13 as as_posix
-    participant p14 as relative_to
-    participant p15 as read_text
-    participant p16 as _generated_sections
-    participant p17 as splitlines
-    participant p18 as enumerate
-    participant p19 as startswith
-    participant p20 as append
-    participant p21 as len
-    participant p22 as join
-    participant p23 as lower
-    participant p24 as strip
-    participant p25 as sub
-    p0-->>p1: resolve
-    p0-->>p2: expanduser
+    participant p8 as path.read_bytes
+    participant p9 as sorted
+    participant p10 as root.rglob
+    participant p11 as path.relative_to(…).as_posix
+    participant p12 as path.relative_to
+    participant p13 as path.read_text
+    participant p14 as _generated_sections
+    participant p15 as text.splitlines
+    participant p16 as enumerate
+    participant p17 as line.startswith
+    participant p18 as starts.append
+    participant p19 as len
+    participant p20 as ''.join
+    participant p21 as lines[…][…].strip().lower
+    participant p22 as lines[…][…].strip
+    participant p23 as re.sub(…).strip
+    participant p24 as re.sub
+    participant p25 as str
+    participant p26 as sections.append
+    p0-->>p1: Path(…).expanduser().resolve
+    p0-->>p2: Path(…).expanduser
     p0-->>p3: Path
-    p0-->>p4: is_symlink
-    p0->>p5: DocumentationIntegrityError
-    p0-->>p6: is_file
-    p0->>p7: hash_bytes
-    p7-->>p8: hexdigest
-    p7-->>p9: sha256
-    p0-->>p10: read_bytes
-    p0-->>p11: sorted
-    p0-->>p12: rglob
-    p0-->>p4: is_symlink
-    p0-->>p6: is_file
-    p0->>p5: DocumentationIntegrityError
-    p0-->>p13: as_posix
-    p0-->>p14: relative_to
-    p0-->>p15: read_text
-    p0->>p16: _generated_sections
-    p16-->>p17: splitlines
-    p16-->>p18: enumerate
-    p16-->>p19: startswith
-    p16-->>p20: append
-    p16-->>p21: len
-    p16-->>p18: enumerate
-    p16-->>p22: join
-    p16-->>p23: lower
-    p16-->>p24: strip
-    p16-->>p24: strip
-    p16-->>p25: sub
+    p0-->>p4: path.is_symlink
+    p0-->>p5: DocumentationIntegrityError
+    p0-->>p6: path.is_file
+    p0-->>p7: hash_bytes
+    p0-->>p8: path.read_bytes
+    p0-->>p9: sorted
+    p0-->>p10: root.rglob
+    p0-->>p4: path.is_symlink
+    p0-->>p6: path.is_file
+    p0-->>p5: DocumentationIntegrityError
+    p0-->>p11: path.relative_to(…).as_posix
+    p0-->>p12: path.relative_to
+    p0-->>p13: path.read_text
+    p0->>p14: _generated_sections
+    p14-->>p15: text.splitlines
+    p14-->>p16: enumerate
+    p14-->>p17: line.startswith
+    p14-->>p18: starts.append
+    p14-->>p19: len
+    p14-->>p16: enumerate
+    p14-->>p20: ''.join
+    p14-->>p21: lines[…][…].strip().lower
+    p14-->>p22: lines[…][…].strip
+    p14-->>p23: re.sub(…).strip
+    p14-->>p24: re.sub
+    p14-->>p25: str
+    p14-->>p26: sections.append
 ```
 
-> Call sequence diagram shows 30 of 34 interactions; 4 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -75,35 +76,33 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. capture_generated_ownership"]
-    s2["2. resolve"]
-    s3["3. expanduser"]
+    s2["2. Path(…).expanduser().resolve"]
+    s3["3. Path(…).expanduser"]
     s4["4. Path"]
-    s5["5. is_symlink"]
+    s5["5. path.is_symlink"]
     s6["6. DocumentationIntegrityError"]
-    s7["7. is_file"]
+    s7["7. path.is_file"]
     s8["8. hash_bytes"]
-    s9["9. hexdigest"]
-    s10["10. sha256"]
-    s11["11. read_bytes"]
-    s12["12. sorted"]
-    s1 -. "Path(wiki_root).expanduser().resolve(data not statically known)" .-> s2
-    s1 -. "Path(wiki_root).expanduser(data not statically known)" .-> s3
+    s9["9. path.read_bytes"]
+    s10["10. sorted"]
+    s11["11. root.rglob"]
+    s12["12. path.is_symlink"]
+    s1 -. "Path(…).expanduser().resolve(data not statically known)" .-> s2
+    s1 -. "Path(…).expanduser(data not statically known)" .-> s3
     s1 -. "Path(wiki_root)" .-> s4
     s1 -. "path.is_symlink(data not statically known)" .-> s5
-    s1 -->|"DocumentationIntegrityError(...)"| s6
+    s1 -. "DocumentationIntegrityError(...)" .-> s6
     s1 -. "path.is_file(data not statically known)" .-> s7
-    s1 -->|"hash_bytes(path.read_bytes(...))"| s8
-    s8 -. "hashlib.sha256(data).hexdigest(data not statically known)" .-> s9
-    s8 -. "hashlib.sha256(data)" .-> s10
-    s1 -. "path.read_bytes(data not statically known)" .-> s11
-    s1 -. "sorted(root.rglob(...))" .-> s12
+    s1 -. "hash_bytes(path.read_bytes(...))" .-> s8
+    s1 -. "path.read_bytes(data not statically known)" .-> s9
+    s1 -. "sorted(root.rglob(...))" .-> s10
+    s1 -. "root.rglob('*.md')" .-> s11
+    s1 -. "path.is_symlink(data not statically known)" .-> s12
     b0["filesystem_read path.read_bytes"]
     s1 -. "filesystem_read path.read_bytes" .-> b0
     b1["filesystem_read path.read_text"]
     s1 -. "filesystem_read path.read_text" .-> b1
     click s1 "../modules/integrity.md"
-    click s6 "../modules/documentation_run_contracts.md"
-    click s8 "../modules/documentation_policy.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -114,33 +113,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `capture_generated_ownership` | `wiki_root: str \| Path` | - | `fingerprints[...]` | `fingerprints` |
-| `resolve` | - | - | - | - |
-| `expanduser` | - | - | - | - |
+| `Path(…).expanduser().resolve` | - | - | - | - |
+| `Path(…).expanduser` | - | - | - | - |
 | `Path` | - | - | - | - |
-| `is_symlink` | - | - | - | - |
+| `path.is_symlink` | - | - | - | - |
 | `DocumentationIntegrityError` | - | - | - | - |
-| `is_file` | - | - | - | - |
-| `hash_bytes` | `data: bytes` | - | - | `...` |
-| `hexdigest` | - | - | - | - |
-| `sha256` | - | - | - | - |
-| `read_bytes` | - | - | - | - |
+| `path.is_file` | - | - | - | - |
+| `hash_bytes` | - | - | - | - |
+| `path.read_bytes` | - | - | - | - |
 | `sorted` | - | - | - | - |
+| `root.rglob` | - | - | - | - |
+| `path.is_symlink` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_generated_ownership | resolve | 13 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
-| capture_generated_ownership | expanduser | 13 | `Path(wiki_root).expanduser(data not statically known)` |
+| capture_generated_ownership | Path(…).expanduser().resolve | 13 | `Path(wiki_root).expanduser().resolve(data not statically known)` |
+| capture_generated_ownership | Path(…).expanduser | 13 | `Path(wiki_root).expanduser(data not statically known)` |
 | capture_generated_ownership | Path | 13 | `Path(wiki_root)` |
-| capture_generated_ownership | is_symlink | 23 | `path.is_symlink(data not statically known)` |
+| capture_generated_ownership | path.is_symlink | 23 | `path.is_symlink(data not statically known)` |
 | capture_generated_ownership | DocumentationIntegrityError | 24 | `DocumentationIntegrityError(...)` |
-| capture_generated_ownership | is_file | 27 | `path.is_file(data not statically known)` |
+| capture_generated_ownership | path.is_file | 27 | `path.is_file(data not statically known)` |
 | capture_generated_ownership | hash_bytes | 28 | `hash_bytes(path.read_bytes(...))` |
-| hash_bytes | hexdigest | 520 | `hashlib.sha256(data).hexdigest(data not statically known)` |
-| hash_bytes | sha256 | 520 | `hashlib.sha256(data)` |
-| capture_generated_ownership | read_bytes | 28 | `path.read_bytes(data not statically known)` |
+| capture_generated_ownership | path.read_bytes | 28 | `path.read_bytes(data not statically known)` |
 | capture_generated_ownership | sorted | 29 | `sorted(root.rglob(...))` |
+| capture_generated_ownership | root.rglob | 29 | `root.rglob('*.md')` |
+| capture_generated_ownership | path.is_symlink | 30 | `path.is_symlink(data not statically known)` |
 
 ### Boundary effects
 
@@ -156,10 +155,11 @@ flowchart LR
 | unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser().resolve` | 13 |
 | unresolved_call | `capture_generated_ownership` | `Path(wiki_root).expanduser` | 13 |
 | unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 23 |
+| unresolved_call | `capture_generated_ownership` | `DocumentationIntegrityError` | 24 |
 | unresolved_call | `capture_generated_ownership` | `path.is_file` | 27 |
-| external_call | `hash_bytes` | `hashlib.sha256(data).hexdigest` | 520 |
-| external_call | `hash_bytes` | `hashlib.sha256` | 520 |
 | unresolved_call | `capture_generated_ownership` | `sorted` | 29 |
+| unresolved_call | `capture_generated_ownership` | `root.rglob` | 29 |
+| unresolved_call | `capture_generated_ownership` | `path.is_symlink` | 30 |
 | step_limit | `capture_generated_ownership` | `first 12 steps` | 0 |
 
 ## Behavior

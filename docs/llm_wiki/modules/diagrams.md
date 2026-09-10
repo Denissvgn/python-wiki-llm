@@ -64,7 +64,7 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_normalize_display_text` | `(value: Any, *, replacements: str = '') -> str` | — | Return bounded NFC text with controls and whitespace collapsed. |
+| `_normalize_display_text` | `(value: Any, *, replacements: str = '', limit: int \| None = _DISPLAY_LABEL_LIMIT) -> str` | — | Return NFC text with controls/whitespace collapsed and an optional cap. |
 | `_flowchart_label` | `(value: Any) -> str` | — | Serialize arbitrary display text for a quoted Mermaid flowchart label. |
 | `_sequence_text` | `(value: Any) -> str` | — | Serialize a participant or message for Mermaid sequence syntax. |
 | `_sanitize_href` | `(href: str) -> str` | — | Return a safe encoded relative reference, or ``""`` when invalid. |

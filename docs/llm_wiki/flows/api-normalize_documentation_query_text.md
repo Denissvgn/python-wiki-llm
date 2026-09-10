@@ -11,16 +11,16 @@
 sequenceDiagram
     participant p0 as normalize_documentation_query_text
     participant p1 as isinstance
-    participant p2 as strip
+    participant p2 as value.strip
     participant p3 as DocumentationQueryError
     participant p4 as len
-    participant p5 as encode
+    participant p5 as selected.encode
     p0-->>p1: isinstance
-    p0-->>p2: strip
+    p0-->>p2: value.strip
     p0->>p3: DocumentationQueryError
-    p0-->>p2: strip
+    p0-->>p2: value.strip
     p0-->>p4: len
-    p0-->>p5: encode
+    p0-->>p5: selected.encode
     p0->>p3: DocumentationQueryError
 ```
 
@@ -31,11 +31,11 @@ sequenceDiagram
 flowchart LR
     s1["1. normalize_documentation_query_text"]
     s2["2. isinstance"]
-    s3["3. strip"]
+    s3["3. value.strip"]
     s4["4. DocumentationQueryError"]
-    s5["5. strip"]
+    s5["5. value.strip"]
     s6["6. len"]
-    s7["7. encode"]
+    s7["7. selected.encode"]
     s8["8. DocumentationQueryError"]
     s1 -. "isinstance(value, str)" .-> s2
     s1 -. "value.strip(data not statically known)" .-> s3
@@ -55,11 +55,11 @@ flowchart LR
 |---|---|---|---|---|
 | `normalize_documentation_query_text` | `value: object`, `field: str` | `QUERY_IDENTITY_BYTE_LIMIT`, `QUERY_IDENTITY_BYTE_LIMIT` | - | `selected` |
 | `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `len` | - | - | - | - |
-| `encode` | - | - | - | - |
+| `selected.encode` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
 
 ### Call data
@@ -67,11 +67,11 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | normalize_documentation_query_text | isinstance | 60 | `isinstance(value, str)` |
-| normalize_documentation_query_text | strip | 60 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | value.strip | 60 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 61 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | strip | 62 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | value.strip | 62 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | len | 63 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | encode | 63 | `selected.encode('utf-8')` |
+| normalize_documentation_query_text | selected.encode | 63 | `selected.encode('utf-8')` |
 | normalize_documentation_query_text | DocumentationQueryError | 64 | `DocumentationQueryError(...)` |
 
 ### Boundary effects
@@ -82,7 +82,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `normalize_documentation_query_text` | `isinstance` | 60 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |
 | unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 63 |

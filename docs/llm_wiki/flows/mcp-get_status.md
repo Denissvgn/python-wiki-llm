@@ -10,7 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as get_status
-    p0-->>p0: get_status
+    participant p1 as service.get_status
+    p0-->>p1: service.get_status
 ```
 
 ## Data flow
@@ -19,7 +20,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. get_status"]
-    s2["2. get_status"]
+    s2["2. service.get_status"]
     s1 -. "service.get_status(data not statically known)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
@@ -29,13 +30,13 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `get_status` | - | - | - | `service.get_status(...)` |
-| `get_status` | - | - | - | - |
+| `service.get_status` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_status | get_status | 1303 | `service.get_status(data not statically known)` |
+| get_status | service.get_status | 1303 | `service.get_status(data not statically known)` |
 
 ### Boundary effects
 

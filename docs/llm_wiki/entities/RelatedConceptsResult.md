@@ -11,8 +11,8 @@ _Auto-generated from `RelatedConceptsResult` in `src/llm_wiki_cli/api_types.py`.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `direction` | `str` | *required* | — |
 | `kinds` | `list[str]` | *required* | — |
 | `relationships` | `list[dict[str, Any]]` | *required* | — |

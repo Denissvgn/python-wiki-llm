@@ -11,8 +11,8 @@ _Auto-generated from `FlowForEntrypointResult` in `src/llm_wiki_cli/api_types.py
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `flow` | `dict[str, Any] \| None` | *required* | — |
 
 ## Methods

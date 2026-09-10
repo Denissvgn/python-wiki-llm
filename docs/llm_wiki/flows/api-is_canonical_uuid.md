@@ -15,22 +15,22 @@ sequenceDiagram
     participant p3 as require_trimmed_text
     participant p4 as require_nonempty_text
     participant p5 as isinstance
-    participant p6 as strip
+    participant p6 as value.strip
     participant p7 as any
     participant p8 as ord
     participant p9 as str
-    participant p10 as UUID
+    participant p10 as uuid.UUID
     p0->>p1: SharedValidationError
     p0->>p2: require_uuid
     p2->>p3: require_trimmed_text
     p3->>p4: require_nonempty_text
     p4-->>p5: isinstance
-    p4-->>p6: strip
+    p4-->>p6: value.strip
     p4-->>p7: any
     p4-->>p8: ord
     p4-->>p8: ord
     p2-->>p9: str
-    p2-->>p10: UUID
+    p2-->>p10: uuid.UUID
 ```
 
 ## Data flow
@@ -44,12 +44,12 @@ flowchart LR
     s4["4. require_trimmed_text"]
     s5["5. require_nonempty_text"]
     s6["6. isinstance"]
-    s7["7. strip"]
+    s7["7. value.strip"]
     s8["8. any"]
     s9["9. ord"]
     s10["10. ord"]
     s11["11. str"]
-    s12["12. UUID"]
+    s12["12. uuid.UUID"]
     s1 -->|"SharedValidationError('value must be a canonical UUID')"| s2
     s1 -->|"require_uuid(value, text_error=error, uuid_error=error, canonical_error=error)"| s3
     s3 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s4
@@ -78,12 +78,12 @@ flowchart LR
 | `require_trimmed_text` | `value: object`, `error: Exception`, `reject_control_characters: bool` | - | - | `require_nonempty_text(...)` |
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `value.strip` | - | - | - | - |
 | `any` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `ord` | - | - | - | - |
 | `str` | - | - | - | - |
-| `UUID` | - | - | - | - |
+| `uuid.UUID` | - | - | - | - |
 
 ### Call data
 
@@ -94,12 +94,12 @@ flowchart LR
 | require_uuid | require_trimmed_text | 1126 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
 | require_trimmed_text | require_nonempty_text | 658 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
 | require_nonempty_text | isinstance | 574 | `isinstance(value, str)` |
-| require_nonempty_text | strip | 576 | `value.strip(data not statically known)` |
+| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
 | require_nonempty_text | any | 582 | `any(...)` |
 | require_nonempty_text | ord | 583 | `ord(character)` |
 | require_nonempty_text | ord | 584 | `ord(character)` |
 | require_uuid | str | 1132 | `str(uuid.UUID(...))` |
-| require_uuid | UUID | 1132 | `uuid.UUID(parsed)` |
+| require_uuid | uuid.UUID | 1132 | `uuid.UUID(parsed)` |
 
 ### Boundary effects
 
@@ -109,11 +109,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_nonempty_text` | `isinstance` | 574 |
+| external_call | `require_nonempty_text` | `isinstance` | 574 |
 | unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| unresolved_call | `require_nonempty_text` | `any` | 582 |
-| unresolved_call | `require_nonempty_text` | `ord` | 583 |
-| unresolved_call | `require_nonempty_text` | `ord` | 584 |
+| external_call | `require_nonempty_text` | `any` | 582 |
+| external_call | `require_nonempty_text` | `ord` | 583 |
+| external_call | `require_nonempty_text` | `ord` | 584 |
 | external_call | `require_uuid` | `uuid.UUID` | 1132 |
 
 ## Behavior

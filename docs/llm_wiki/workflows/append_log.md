@@ -1,23 +1,23 @@
 # append_log
 
 **Entry point:** `sync_cmd._append_log`
-**Modules involved:** [infrastructure_sync](../modules/infrastructure_sync.md), [source_snapshot](../modules/source_snapshot.md), [sync_analysis](../modules/sync_analysis.md), [sync_cmd](../modules/sync_cmd.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [io](../modules/io.md), [paths](../modules/paths.md), [sync_cmd](../modules/sync_cmd.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `infrastructure_sync.InfrastructureSyncPlan`
-2. `source_snapshot.SourceSnapshot`
-3. `sync_manifest.SourceSelectionPruneResult`
-4. `sync_analysis.SyncDiff`
+1. `bootstrap_runtime._source_snapshot_log_lines`
+2. `paths.portable_source_root_label`
+3. `io.read_md`
+4. `io.write_md`
+5. `io.write_md`
 
 ## Touches
 
-- [infrastructure_sync](../modules/infrastructure_sync.md)
-- [source_snapshot](../modules/source_snapshot.md)
-- [sync_analysis](../modules/sync_analysis.md)
+- [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [io](../modules/io.md)
+- [paths](../modules/paths.md)
 - [sync_cmd](../modules/sync_cmd.md)
-- [sync_manifest](../modules/sync_manifest.md)
 
 ## Behavior
 

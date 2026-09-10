@@ -11,8 +11,8 @@ Markdown rendering plus its source context payload.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name | Type | Presence | Description |
+|------|------|----------|-------------|
 | `content` | `str` | *required* | — |
 | `payload` | `ContextPayload` | *required* | — |
 | `warnings` | `list[str]` | *required* | — |

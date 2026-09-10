@@ -12,13 +12,13 @@ sequenceDiagram
     participant p0 as filtered_trimmed_text_list
     participant p1 as isinstance
     participant p2 as sorted
-    participant p3 as strip
+    participant p3 as item.strip
     p0-->>p1: isinstance
     p0-->>p1: isinstance
     p0-->>p2: sorted
-    p0-->>p3: strip
+    p0-->>p3: item.strip
     p0-->>p1: isinstance
-    p0-->>p3: strip
+    p0-->>p3: item.strip
 ```
 
 ## Data flow
@@ -30,9 +30,9 @@ flowchart LR
     s2["2. isinstance"]
     s3["3. isinstance"]
     s4["4. sorted"]
-    s5["5. strip"]
+    s5["5. item.strip"]
     s6["6. isinstance"]
-    s7["7. strip"]
+    s7["7. item.strip"]
     s1 -. "isinstance(value, Sequence)" .-> s2
     s1 -. "isinstance(value, (...))" .-> s3
     s1 -. "sorted(...)" .-> s4
@@ -50,9 +50,9 @@ flowchart LR
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `sorted` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `item.strip` | - | - | - | - |
 | `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
+| `item.strip` | - | - | - | - |
 
 ### Call data
 
@@ -61,9 +61,9 @@ flowchart LR
 | filtered_trimmed_text_list | isinstance | 936 | `isinstance(value, Sequence)` |
 | filtered_trimmed_text_list | isinstance | 936 | `isinstance(value, (...))` |
 | filtered_trimmed_text_list | sorted | 938 | `sorted(...)` |
-| filtered_trimmed_text_list | strip | 939 | `item.strip(data not statically known)` |
+| filtered_trimmed_text_list | item.strip | 939 | `item.strip(data not statically known)` |
 | filtered_trimmed_text_list | isinstance | 939 | `isinstance(item, str)` |
-| filtered_trimmed_text_list | strip | 939 | `item.strip(data not statically known)` |
+| filtered_trimmed_text_list | item.strip | 939 | `item.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -73,10 +73,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `filtered_trimmed_text_list` | `isinstance` | 936 |
-| unresolved_call | `filtered_trimmed_text_list` | `sorted` | 938 |
+| external_call | `filtered_trimmed_text_list` | `isinstance` | 936 |
+| external_call | `filtered_trimmed_text_list` | `sorted` | 938 |
 | unresolved_call | `filtered_trimmed_text_list` | `item.strip` | 939 |
-| unresolved_call | `filtered_trimmed_text_list` | `isinstance` | 939 |
+| external_call | `filtered_trimmed_text_list` | `isinstance` | 939 |
 
 ## Behavior
 

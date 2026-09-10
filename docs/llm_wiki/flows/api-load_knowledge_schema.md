@@ -10,16 +10,16 @@
 ```mermaid
 sequenceDiagram
     participant p0 as load_knowledge_schema
-    participant p1 as joinpath
-    participant p2 as files
-    participant p3 as loads
-    participant p4 as read_text
+    participant p1 as resources.files(…).joinpath
+    participant p2 as resources.files
+    participant p3 as json.loads
+    participant p4 as resource.read_text
     participant p5 as KnowledgeModelError
     participant p6 as isinstance
-    p0-->>p1: joinpath
-    p0-->>p2: files
-    p0-->>p3: loads
-    p0-->>p4: read_text
+    p0-->>p1: resources.files(…).joinpath
+    p0-->>p2: resources.files
+    p0-->>p3: json.loads
+    p0-->>p4: resource.read_text
     p0->>p5: KnowledgeModelError
     p0-->>p6: isinstance
     p0->>p5: KnowledgeModelError
@@ -31,14 +31,14 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. load_knowledge_schema"]
-    s2["2. joinpath"]
-    s3["3. files"]
-    s4["4. loads"]
-    s5["5. read_text"]
+    s2["2. resources.files(…).joinpath"]
+    s3["3. resources.files"]
+    s4["4. json.loads"]
+    s5["5. resource.read_text"]
     s6["6. KnowledgeModelError"]
     s7["7. isinstance"]
     s8["8. KnowledgeModelError"]
-    s1 -. "resources.files('llm_wiki_cli.schemas').joinpath(KNOWLEDGE_SCHEMA_FILENAME)" .-> s2
+    s1 -. "resources.files(…).joinpath(KNOWLEDGE_SCHEMA_FILENAME)" .-> s2
     s1 -. "resources.files('llm_wiki_cli.schemas')" .-> s3
     s1 -. "json.loads(resource.read_text(...))" .-> s4
     s1 -. "resource.read_text(encoding='utf-8')" .-> s5
@@ -59,10 +59,10 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `load_knowledge_schema` | - | `KNOWLEDGE_SCHEMA_FILENAME`, `json`, `KNOWLEDGE_SCHEMA_FILENAME` | - | `payload` |
-| `joinpath` | - | - | - | - |
-| `files` | - | - | - | - |
-| `loads` | - | - | - | - |
-| `read_text` | - | - | - | - |
+| `resources.files(…).joinpath` | - | - | - | - |
+| `resources.files` | - | - | - | - |
+| `json.loads` | - | - | - | - |
+| `resource.read_text` | - | - | - | - |
 | `KnowledgeModelError` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `KnowledgeModelError` | - | - | - | - |
@@ -71,10 +71,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_schema | joinpath | 706 | `resources.files('llm_wiki_cli.schemas').joinpath(KNOWLEDGE_SCHEMA_FILENAME)` |
-| load_knowledge_schema | files | 706 | `resources.files('llm_wiki_cli.schemas')` |
-| load_knowledge_schema | loads | 709 | `json.loads(resource.read_text(...))` |
-| load_knowledge_schema | read_text | 709 | `resource.read_text(encoding='utf-8')` |
+| load_knowledge_schema | resources.files(…).joinpath | 706 | `resources.files('llm_wiki_cli.schemas').joinpath(KNOWLEDGE_SCHEMA_FILENAME)` |
+| load_knowledge_schema | resources.files | 706 | `resources.files('llm_wiki_cli.schemas')` |
+| load_knowledge_schema | json.loads | 709 | `json.loads(resource.read_text(...))` |
+| load_knowledge_schema | resource.read_text | 709 | `resource.read_text(encoding='utf-8')` |
 | load_knowledge_schema | KnowledgeModelError | 717 | `KnowledgeModelError('schema', ...)` |
 | load_knowledge_schema | isinstance | 720 | `isinstance(payload, dict)` |
 | load_knowledge_schema | KnowledgeModelError | 721 | `KnowledgeModelError('schema', 'packaged schema must be a JSON object')` |
@@ -89,9 +89,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_knowledge_schema` | `resources.files('llm_wiki_cli.schemas').joinpath` | 706 |
+| unresolved_call | `load_knowledge_schema` | `resources.files('llm_wiki_cli.schemas').joinpath` | 706 |
 | external_call | `load_knowledge_schema` | `resources.files` | 706 |
-| unresolved_call | `load_knowledge_schema` | `isinstance` | 720 |
+| external_call | `load_knowledge_schema` | `isinstance` | 720 |
 
 ## Behavior
 

@@ -11,52 +11,54 @@
 sequenceDiagram
     participant p0 as validate_infrastructure_generation_input
     participant p1 as _prior_infrastructure_state
-    participant p2 as isinstance
+    participant p2 as isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)
     participant p3 as InfrastructureSyncError
-    participant p4 as get
-    participant p5 as deepcopy
-    participant p6 as dict
+    participant p4 as value.get
+    participant p5 as deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)
+    participant p6 as dict (src/llm_wiki_cli/services…rior_infrastructure_state)
     participant p7 as _record_mapping
-    participant p8 as items
-    participant p9 as _valid_repository_path
-    participant p10 as PurePosixPath
-    participant p11 as is_portable_relative_path
-    participant p12 as require_portable_relative_path
-    participant p13 as _default_path_error
-    participant p14 as SharedValidationError
-    participant p15 as fspath
-    participant p16 as encode
-    participant p17 as replace
+    participant p8 as isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)
+    participant p9 as value.items
+    participant p10 as _valid_repository_path
+    participant p11 as PurePosixPath (src/llm_wiki_cli/services…py:_valid_repository_path)
+    participant p12 as is_portable_relative_path
+    participant p13 as require_portable_relative_path
+    participant p14 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    participant p15 as _default_path_error
+    participant p16 as SharedValidationError
+    participant p17 as os.fspath
+    participant p18 as raw.encode
+    participant p19 as raw.replace
     p0->>p1: _prior_infrastructure_state
-    p1-->>p2: isinstance
-    p1-->>p2: isinstance
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)
     p1->>p3: InfrastructureSyncError
-    p1-->>p4: get
+    p1-->>p4: value.get
     p1->>p3: InfrastructureSyncError
-    p1-->>p4: get
-    p1-->>p5: deepcopy
-    p1-->>p6: dict
+    p1-->>p4: value.get
+    p1-->>p5: deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)
+    p1-->>p6: dict (src/llm_wiki_cli/services…rior_infrastructure_state)
     p0->>p7: _record_mapping
-    p7-->>p2: isinstance
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)
     p7->>p3: InfrastructureSyncError
-    p7-->>p8: items
-    p7-->>p2: isinstance
-    p7-->>p2: isinstance
+    p7-->>p9: value.items
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)
     p7->>p3: InfrastructureSyncError
-    p7->>p9: _valid_repository_path
-    p9-->>p10: PurePosixPath
-    p9->>p11: is_portable_relative_path
-    p11->>p12: require_portable_relative_path
-    p12-->>p2: isinstance
-    p12->>p13: _default_path_error
-    p13->>p14: SharedValidationError
-    p12-->>p15: fspath
-    p12-->>p2: isinstance
-    p12->>p13: _default_path_error
-    p12-->>p16: encode
-    p12->>p13: _default_path_error
-    p12->>p13: _default_path_error
-    p12-->>p17: replace
+    p7->>p10: _valid_repository_path
+    p10-->>p11: PurePosixPath (src/llm_wiki_cli/services…py:_valid_repository_path)
+    p10->>p12: is_portable_relative_path
+    p12->>p13: require_portable_relative_path
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    p13->>p15: _default_path_error
+    p15->>p16: SharedValidationError
+    p13-->>p17: os.fspath
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    p13->>p15: _default_path_error
+    p13-->>p18: raw.encode
+    p13->>p15: _default_path_error
+    p13->>p15: _default_path_error
+    p13-->>p19: raw.replace
 ```
 
 > Call sequence diagram shows 30 of 100 interactions; 70 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -68,27 +70,27 @@ sequenceDiagram
 flowchart LR
     s1["1. validate_infrastructure_generation_input"]
     s2["2. _prior_infrastructure_state"]
-    s3["3. isinstance"]
-    s4["4. isinstance"]
+    s3["3. isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)"]
     s5["5. InfrastructureSyncError"]
-    s6["6. get"]
+    s6["6. value.get"]
     s7["7. InfrastructureSyncError"]
-    s8["8. get"]
-    s9["9. deepcopy"]
-    s10["10. dict"]
+    s8["8. value.get"]
+    s9["9. deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)"]
+    s10["10. dict (src/llm_wiki_cli/services…rior_infrastructure_state)"]
     s11["11. _record_mapping"]
-    s12["12. isinstance"]
+    s12["12. isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)"]
     s1 -->|"_prior_infrastructure_state(generation_inputs)"| s2
-    s2 -. "isinstance(generation_inputs, Mapping)" .-> s3
-    s2 -. "isinstance(value, Mapping)" .-> s4
+    s2 -. "isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)(generation_inputs, Mapping)" .-> s3
+    s2 -. "isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)(value, Mapping)" .-> s4
     s2 -->|"InfrastructureSyncError('generation_inputs.infrastructure must be an object.')"| s5
     s2 -. "value.get('schema_version')" .-> s6
     s2 -->|"InfrastructureSyncError(...)"| s7
     s2 -. "value.get('schema_version')" .-> s8
-    s2 -. "deepcopy(dict(...))" .-> s9
-    s2 -. "dict(value)" .-> s10
+    s2 -. "deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)(dict(...))" .-> s9
+    s2 -. "dict (src/llm_wiki_cli/services…rior_infrastructure_state)(value)" .-> s10
     s1 -->|"_record_mapping(state.get(...), field_name='sources')"| s11
-    s11 -. "isinstance(value, Mapping)" .-> s12
+    s11 -. "isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)(value, Mapping)" .-> s12
     click s1 "../modules/infrastructure_sync.md"
     click s2 "../modules/infrastructure_sync.md"
     click s5 "../modules/infrastructure_sync.md"
@@ -102,32 +104,32 @@ flowchart LR
 |---|---|---|---|---|
 | `validate_infrastructure_generation_input` | `generation_inputs: Mapping[str, object] \| None` | - | - | `none` |
 | `_prior_infrastructure_state` | `generation_inputs: Mapping[str, object] \| None` | `Mapping`, `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `Mapping`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION` | - | `{...}`, `{...}`, `deepcopy(...)` |
-| `isinstance` | - | - | - | - |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)` | - | - | - | - |
 | `InfrastructureSyncError` | - | - | - | - |
-| `get` | - | - | - | - |
+| `value.get` | - | - | - | - |
 | `InfrastructureSyncError` | - | - | - | - |
-| `get` | - | - | - | - |
-| `deepcopy` | - | - | - | - |
-| `dict` | - | - | - | - |
+| `value.get` | - | - | - | - |
+| `deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)` | - | - | - | - |
+| `dict (src/llm_wiki_cli/services…rior_infrastructure_state)` | - | - | - | - |
 | `_record_mapping` | `value: object`, `field_name: str` | `Mapping`, `Mapping`, `Mapping`, `INFRASTRUCTURE_DISCOVERY_ROOT` | `result[...]` | `{...}`, `result` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_infrastructure_generation_input | _prior_infrastructure_state | 244 | `_prior_infrastructure_state(generation_inputs)` |
-| _prior_infrastructure_state | isinstance | 107 | `isinstance(generation_inputs, Mapping)` |
-| _prior_infrastructure_state | isinstance | 112 | `isinstance(value, Mapping)` |
+| _prior_infrastructure_state | isinstance (src/llm_wiki_cli/services…rior_infrastructure_state) | 107 | `isinstance(generation_inputs, Mapping)` |
+| _prior_infrastructure_state | isinstance (src/llm_wiki_cli/services…rior_infrastructure_state) | 112 | `isinstance(value, Mapping)` |
 | _prior_infrastructure_state | InfrastructureSyncError | 113 | `InfrastructureSyncError('generation_inputs.infrastructure must be an object.')` |
-| _prior_infrastructure_state | get | 116 | `value.get('schema_version')` |
+| _prior_infrastructure_state | value.get | 116 | `value.get('schema_version')` |
 | _prior_infrastructure_state | InfrastructureSyncError | 117 | `InfrastructureSyncError(...)` |
-| _prior_infrastructure_state | get | 119 | `value.get('schema_version')` |
-| _prior_infrastructure_state | deepcopy | 121 | `deepcopy(dict(...))` |
-| _prior_infrastructure_state | dict | 121 | `dict(value)` |
+| _prior_infrastructure_state | value.get | 119 | `value.get('schema_version')` |
+| _prior_infrastructure_state | deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state) | 121 | `deepcopy(dict(...))` |
+| _prior_infrastructure_state | dict (src/llm_wiki_cli/services…rior_infrastructure_state) | 121 | `dict(value)` |
 | validate_infrastructure_generation_input | _record_mapping | 247 | `_record_mapping(state.get(...), field_name='sources')` |
-| _record_mapping | isinstance | 149 | `isinstance(value, Mapping)` |
+| _record_mapping | isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping) | 149 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
@@ -137,12 +139,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_prior_infrastructure_state` | `isinstance` | 107 |
-| unresolved_call | `_prior_infrastructure_state` | `isinstance` | 112 |
+| external_call | `_prior_infrastructure_state` | `isinstance` | 107 |
+| external_call | `_prior_infrastructure_state` | `isinstance` | 112 |
 | unresolved_call | `_prior_infrastructure_state` | `value.get` | 116 |
 | unresolved_call | `_prior_infrastructure_state` | `value.get` | 119 |
 | external_call | `_prior_infrastructure_state` | `deepcopy` | 121 |
-| unresolved_call | `_record_mapping` | `isinstance` | 149 |
+| external_call | `_record_mapping` | `isinstance` | 149 |
 | step_limit | `validate_infrastructure_generation_input` | `first 12 steps` | 0 |
 
 ## Behavior

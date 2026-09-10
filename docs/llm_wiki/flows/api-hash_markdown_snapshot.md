@@ -10,56 +10,59 @@
 ```mermaid
 sequenceDiagram
     participant p0 as hash_markdown_snapshot
-    participant p1 as isinstance
+    participant p1 as isinstance (src/llm_wiki_cli/services….py:hash_markdown_snapshot)
     participant p2 as KnowledgeEnvelopeError
-    participant p3 as set
-    participant p4 as items
+    participant p3 as set (src/llm_wiki_cli/services….py:hash_markdown_snapshot)
+    participant p4 as pages.items
     participant p5 as _repository_relative_path
     participant p6 as require_repository_relative_path
-    participant p7 as strip
-    participant p8 as any
-    participant p9 as ord
-    participant p10 as startswith
-    participant p11 as match
-    participant p12 as split
-    participant p13 as PurePosixPath
-    participant p14 as normpath
-    participant p15 as require_portable_relative_path
-    participant p16 as _default_path_error
-    participant p17 as SharedValidationError
-    participant p18 as fspath
-    participant p19 as encode
-    participant p20 as replace
-    p0-->>p1: isinstance
+    participant p7 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p8 as value.strip
+    participant p9 as any (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p10 as ord (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p11 as value.startswith
+    participant p12 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p13 as value.split
+    participant p14 as PurePosixPath (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p15 as posixpath.normpath
+    participant p16 as require_portable_relative_path
+    participant p17 as isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p18 as _default_path_error
+    participant p19 as SharedValidationError
+    participant p20 as os.fspath
+    participant p21 as raw.encode
+    participant p22 as raw.replace
+    participant p23 as PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services….py:hash_markdown_snapshot)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p3: set
-    p0-->>p4: items
+    p0-->>p3: set (src/llm_wiki_cli/services….py:hash_markdown_snapshot)
+    p0-->>p4: pages.items
     p0->>p5: _repository_relative_path
     p5->>p6: require_repository_relative_path
-    p6-->>p1: isinstance
-    p6-->>p7: strip
-    p6-->>p8: any
-    p6-->>p9: ord
-    p6-->>p9: ord
-    p6-->>p10: startswith
-    p6-->>p10: startswith
-    p6-->>p11: match
-    p6-->>p12: split
-    p6-->>p13: PurePosixPath
-    p6-->>p8: any
-    p6-->>p14: normpath
-    p6->>p15: require_portable_relative_path
-    p15-->>p1: isinstance
-    p15->>p16: _default_path_error
-    p16->>p17: SharedValidationError
-    p15-->>p18: fspath
-    p15-->>p1: isinstance
-    p15->>p16: _default_path_error
-    p15-->>p19: encode
-    p15->>p16: _default_path_error
-    p15->>p16: _default_path_error
-    p15-->>p20: replace
-    p15-->>p13: PurePosixPath
+    p6-->>p7: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
+    p6-->>p8: value.strip
+    p6-->>p9: any (src/llm_wiki_cli/services…e_repository_relative_path)
+    p6-->>p10: ord (src/llm_wiki_cli/services…e_repository_relative_path)
+    p6-->>p10: ord (src/llm_wiki_cli/services…e_repository_relative_path)
+    p6-->>p11: value.startswith
+    p6-->>p11: value.startswith
+    p6-->>p12: _WINDOWS_DRIVE_PREFIX_RE.match
+    p6-->>p13: value.split
+    p6-->>p14: PurePosixPath (src/llm_wiki_cli/services…e_repository_relative_path)
+    p6-->>p9: any (src/llm_wiki_cli/services…e_repository_relative_path)
+    p6-->>p15: posixpath.normpath
+    p6->>p16: require_portable_relative_path
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
+    p16->>p18: _default_path_error
+    p18->>p19: SharedValidationError
+    p16-->>p20: os.fspath
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
+    p16->>p18: _default_path_error
+    p16-->>p21: raw.encode
+    p16->>p18: _default_path_error
+    p16->>p18: _default_path_error
+    p16-->>p22: raw.replace
+    p16-->>p23: PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)
 ```
 
 > Call sequence diagram shows 30 of 94 interactions; 64 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
@@ -70,28 +73,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. hash_markdown_snapshot"]
-    s2["2. isinstance"]
+    s2["2. isinstance (src/llm_wiki_cli/services….py:hash_markdown_snapshot)"]
     s3["3. KnowledgeEnvelopeError"]
-    s4["4. set"]
-    s5["5. items"]
+    s4["4. set (src/llm_wiki_cli/services….py:hash_markdown_snapshot)"]
+    s5["5. pages.items"]
     s6["6. _repository_relative_path"]
     s7["7. require_repository_relative_path"]
-    s8["8. isinstance"]
-    s9["9. strip"]
-    s10["10. any"]
-    s11["11. ord"]
-    s12["12. ord"]
-    s1 -. "isinstance(pages, Mapping)" .-> s2
+    s8["8. isinstance (src/llm_wiki_cli/services…e_repository_relative_path)"]
+    s9["9. value.strip"]
+    s10["10. any (src/llm_wiki_cli/services…e_repository_relative_path)"]
+    s11["11. ord (src/llm_wiki_cli/services…e_repository_relative_path)"]
+    s12["12. ord (src/llm_wiki_cli/services…e_repository_relative_path)"]
+    s1 -. "isinstance (src/llm_wiki_cli/services….py:hash_markdown_snapshot)(pages, Mapping)" .-> s2
     s1 -->|"KnowledgeEnvelopeError('markdown_pages', 'must be an object')"| s3
-    s1 -. "set(data not statically known)" .-> s4
+    s1 -. "set (src/llm_wiki_cli/services….py:hash_markdown_snapshot)(data not statically known)" .-> s4
     s1 -. "pages.items(data not statically known)" .-> s5
     s1 -->|"_repository_relative_path(path, 'markdown_pages.path')"| s6
-    s6 -->|"require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeErro…"| s7
-    s7 -. "isinstance(value, str)" .-> s8
+    s6 -->|"require_repository_relative_path(…)"| s7
+    s7 -. "isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)" .-> s8
     s7 -. "value.strip(data not statically known)" .-> s9
-    s7 -. "any(...)" .-> s10
-    s7 -. "ord(character)" .-> s11
-    s7 -. "ord(character)" .-> s12
+    s7 -. "any (src/llm_wiki_cli/services…e_repository_relative_path)(...)" .-> s10
+    s7 -. "ord (src/llm_wiki_cli/services…e_repository_relative_path)(character)" .-> s11
+    s7 -. "ord (src/llm_wiki_cli/services…e_repository_relative_path)(character)" .-> s12
     b0["mutation seen.add"]
     s1 -. "mutation seen.add" .-> b0
     b1["mutation records.append"]
@@ -113,33 +116,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `hash_markdown_snapshot` | `pages: Mapping[str, str \| bytes]` | `Mapping`, `MARKDOWN_SNAPSHOT_DOMAIN` | - | `_hash_structured(...)` |
-| `isinstance` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services….py:hash_markdown_snapshot)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `set` | - | - | - | - |
-| `items` | - | - | - | - |
+| `set (src/llm_wiki_cli/services….py:hash_markdown_snapshot)` | - | - | - | - |
+| `pages.items` | - | - | - | - |
 | `_repository_relative_path` | `value: object`, `field_name: str` | - | - | `require_repository_relative_path(...)` |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `require_portable_relative_path(...)` |
-| `isinstance` | - | - | - | - |
-| `strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | - | - | - | - |
+| `value.strip` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…e_repository_relative_path)` | - | - | - | - |
+| `ord (src/llm_wiki_cli/services…e_repository_relative_path)` | - | - | - | - |
+| `ord (src/llm_wiki_cli/services…e_repository_relative_path)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_markdown_snapshot | isinstance | 784 | `isinstance(pages, Mapping)` |
+| hash_markdown_snapshot | isinstance (src/llm_wiki_cli/services….py:hash_markdown_snapshot) | 784 | `isinstance(pages, Mapping)` |
 | hash_markdown_snapshot | KnowledgeEnvelopeError | 785 | `KnowledgeEnvelopeError('markdown_pages', 'must be an object')` |
-| hash_markdown_snapshot | set | 787 | `set(data not statically known)` |
-| hash_markdown_snapshot | items | 788 | `pages.items(data not statically known)` |
+| hash_markdown_snapshot | set (src/llm_wiki_cli/services….py:hash_markdown_snapshot) | 787 | `set(data not statically known)` |
+| hash_markdown_snapshot | pages.items | 788 | `pages.items(data not statically known)` |
 | hash_markdown_snapshot | _repository_relative_path | 789 | `_repository_relative_path(path, 'markdown_pages.path')` |
 | _repository_relative_path | require_repository_relative_path | 1501 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
-| require_repository_relative_path | isinstance | 256 | `isinstance(value, str)` |
-| require_repository_relative_path | strip | 258 | `value.strip(data not statically known)` |
-| require_repository_relative_path | any | 260 | `any(...)` |
-| require_repository_relative_path | ord | 261 | `ord(character)` |
-| require_repository_relative_path | ord | 262 | `ord(character)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 256 | `isinstance(value, str)` |
+| require_repository_relative_path | value.strip | 258 | `value.strip(data not statically known)` |
+| require_repository_relative_path | any (src/llm_wiki_cli/services…e_repository_relative_path) | 260 | `any(...)` |
+| require_repository_relative_path | ord (src/llm_wiki_cli/services…e_repository_relative_path) | 261 | `ord(character)` |
+| require_repository_relative_path | ord (src/llm_wiki_cli/services…e_repository_relative_path) | 262 | `ord(character)` |
 
 ### Boundary effects
 
@@ -153,13 +156,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `hash_markdown_snapshot` | `isinstance` | 784 |
+| external_call | `hash_markdown_snapshot` | `isinstance` | 784 |
 | unresolved_call | `hash_markdown_snapshot` | `pages.items` | 788 |
-| unresolved_call | `require_repository_relative_path` | `isinstance` | 256 |
+| external_call | `require_repository_relative_path` | `isinstance` | 256 |
 | unresolved_call | `require_repository_relative_path` | `value.strip` | 258 |
-| unresolved_call | `require_repository_relative_path` | `any` | 260 |
-| unresolved_call | `require_repository_relative_path` | `ord` | 261 |
-| unresolved_call | `require_repository_relative_path` | `ord` | 262 |
+| external_call | `require_repository_relative_path` | `any` | 260 |
+| external_call | `require_repository_relative_path` | `ord` | 261 |
+| external_call | `require_repository_relative_path` | `ord` | 262 |
 | step_limit | `hash_markdown_snapshot` | `first 12 steps` | 0 |
 
 ## Behavior

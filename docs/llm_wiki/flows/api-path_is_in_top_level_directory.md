@@ -10,12 +10,14 @@
 ```mermaid
 sequenceDiagram
     participant p0 as path_is_in_top_level_directory
-    participant p1 as relative_to
-    participant p2 as resolve
-    p0-->>p1: relative_to
-    p0-->>p1: relative_to
-    p0-->>p2: resolve
-    p0-->>p2: resolve
+    participant p1 as path.relative_to
+    participant p2 as path.resolve().relative_to
+    participant p3 as path.resolve
+    participant p4 as root.resolve
+    p0-->>p1: path.relative_to
+    p0-->>p2: path.resolve().relative_to
+    p0-->>p3: path.resolve
+    p0-->>p4: root.resolve
 ```
 
 ## Data flow
@@ -24,10 +26,10 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. path_is_in_top_level_directory"]
-    s2["2. relative_to"]
-    s3["3. relative_to"]
-    s4["4. resolve"]
-    s5["5. resolve"]
+    s2["2. path.relative_to"]
+    s3["3. path.resolve().relative_to"]
+    s4["4. path.resolve"]
+    s5["5. root.resolve"]
     s1 -. "path.relative_to(root)" .-> s2
     s1 -. "path.resolve().relative_to(root.resolve(...))" .-> s3
     s1 -. "path.resolve(data not statically known)" .-> s4
@@ -40,19 +42,19 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `path_is_in_top_level_directory` | `path: Path`, `root: Path`, `directory: str` | - | - | `False`, `...` |
-| `relative_to` | - | - | - | - |
-| `relative_to` | - | - | - | - |
-| `resolve` | - | - | - | - |
-| `resolve` | - | - | - | - |
+| `path.relative_to` | - | - | - | - |
+| `path.resolve().relative_to` | - | - | - | - |
+| `path.resolve` | - | - | - | - |
+| `root.resolve` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| path_is_in_top_level_directory | relative_to | 461 | `path.relative_to(root)` |
-| path_is_in_top_level_directory | relative_to | 464 | `path.resolve().relative_to(root.resolve(...))` |
-| path_is_in_top_level_directory | resolve | 464 | `path.resolve(data not statically known)` |
-| path_is_in_top_level_directory | resolve | 464 | `path.resolve(data not statically known)` |
+| path_is_in_top_level_directory | path.relative_to | 461 | `path.relative_to(root)` |
+| path_is_in_top_level_directory | path.resolve().relative_to | 464 | `path.resolve().relative_to(root.resolve(...))` |
+| path_is_in_top_level_directory | path.resolve | 464 | `path.resolve(data not statically known)` |
+| path_is_in_top_level_directory | root.resolve | 464 | `path.resolve(data not statically known)` |
 
 ### Boundary effects
 
