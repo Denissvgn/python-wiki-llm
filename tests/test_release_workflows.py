@@ -1026,6 +1026,39 @@ def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
     assert audit.get("continue-on-error") is None
 
 
+def test_javascript_migration_skips_have_executable_toolchain_ownership() -> None:
+    workflow = _yaml("release-qualification.yml")
+    selector = (
+        "tests/test_verified_bug_migrations.py::"
+        "test_javascript_health_refresh_and_first_sync_converge"
+    )
+    entries = json.loads(
+        (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")
+    )["entries"]
+    actual = {
+        (entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+        for entry in entries
+        if entry["node_id"].startswith(selector)
+    }
+    lanes = {
+        lane["lane"]
+        for lane in workflow["jobs"]["core"]["strategy"]["matrix"]["include"]
+    }
+    assert actual == {
+        (
+            lane,
+            f"{selector}[{legacy}]",
+            "toolchains",
+            "requires an already prepared TypeScript helper",
+        )
+        for lane in lanes
+        for legacy in (False, True)
+    }
+    suites = _named_step(workflow["jobs"]["toolchains"], "Run toolchain owner suites")
+    assert selector in shlex.split(suites["run"])
+    assert suites["env"]["LLM_WIKI_CACHE_DIR"] == "${{ runner.temp }}/extractor-cache"
+
+
 def test_release_runners_and_ci_runners_are_explicit() -> None:
     for name in (
         "ci.yml",
