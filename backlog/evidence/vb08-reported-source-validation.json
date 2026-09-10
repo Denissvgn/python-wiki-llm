@@ -1,0 +1,21 @@
+{
+  "source_path": "/mnt/data/projects/decompileAnyToPython/src/any2py/recovery/builder.py",
+  "source_sha256": "bebfe3c86f4d117164aa9096e9af87e251f7aee018017d13882ee642030c184d",
+  "matches_reviewed_source": true,
+  "source_bytes_unchanged": true,
+  "analysis_unchanged_from_review": {
+    "raw_calls": true,
+    "call_bindings": true,
+    "edges": true,
+    "observations": true
+  },
+  "sequence_participant_count_before": 3,
+  "sequence_participant_count_after": 3,
+  "method_visible_before": false,
+  "method_visible_after": true,
+  "evidence_retains_full_expression": true,
+  "diagrams": [
+    "sequenceDiagram\n    participant p0 as build_recovery_report\n    participant p1 as _ReportBuilder(…).build\n    participant p2 as _ReportBuilder\n    p0-->>p1: _ReportBuilder(…).build\n    p0->>p2: _ReportBuilder",
+    "flowchart LR\n    s1[\"1. build_recovery_report\"]\n    s2[\"2. _ReportBuilder(…).build\"]\n    s3[\"3. _ReportBuilder\"]\n    s1 -. \"_ReportBuilder(…).build(data not statically known)\" .-> s2\n    s1 -->|\"_ReportBuilder(…)\"| s3"
+  ]
+}
