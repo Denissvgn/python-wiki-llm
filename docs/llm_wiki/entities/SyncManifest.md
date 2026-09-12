@@ -48,15 +48,15 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/knowledge_cmd.py"]
     n2["_manifest_needs_write (src/llm_wiki_cli/commands/migrate_cmd.py)"]
     n3["_manifest_payload (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n4["src/llm_wiki_cli/commands/review_cmd.py"]
-    n5["_apply_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n6["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n7["_build_apply_diff_context (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n8["_build_manifest_from_inventory (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n9["_build_surface_initialization_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n10["_compute_sync_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n11["_exit_if_large_unforced_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n12["_governance_moves_for_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n4["_apply_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n5["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n6["_build_apply_diff_context (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n7["_build_manifest_from_inventory (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n8["_build_surface_initialization_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n9["_compute_sync_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n10["_exit_if_large_unforced_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n11["_governance_moves_for_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n12["_invalid_manifest_hash_paths (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -73,7 +73,7 @@ flowchart LR
     click n1 "../modules/knowledge_cmd.md"
     click n2 "../modules/migrate_cmd.md"
     click n3 "../modules/migrate_cmd.md"
-    click n4 "../modules/review_cmd.md"
+    click n4 "../modules/sync_cmd.md"
     click n5 "../modules/sync_cmd.md"
     click n6 "../modules/sync_cmd.md"
     click n7 "../modules/sync_cmd.md"
@@ -97,7 +97,6 @@ flowchart LR
 | `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
 | `_manifest_needs_write` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_manifest_payload` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `review_cmd` | import | [review_cmd](../modules/review_cmd.md) | — |
 | `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
@@ -106,5 +105,6 @@ flowchart LR
 | `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_governance_moves_for_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_invalid_manifest_hash_paths` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
 > References: showing 12 of 88 logical references; 76 omitted by the 12-row generated summary limit.

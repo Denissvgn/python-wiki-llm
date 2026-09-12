@@ -146,12 +146,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| install_ci_workflow | normalize_action_ref | 292 | `normalize_action_ref(action_ref)` |
+| install_ci_workflow | normalize_action_ref | 295 | `normalize_action_ref(action_ref)` |
 | normalize_action_ref | isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref) | 63 | `isinstance(value, str)` |
 | normalize_action_ref | _ACTION_REF_RE.fullmatch | 63 | `_ACTION_REF_RE.fullmatch(value)` |
 | normalize_action_ref | InstallCiError | 64 | `InstallCiError('--action-ref must be exactly 40 hexadecimal characters')` |
 | normalize_action_ref | value.lower | 65 | `value.lower(data not statically known)` |
-| install_ci_workflow | _portable_project_path | 293 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
+| install_ci_workflow | _portable_project_path | 296 | `_portable_project_path(src_dir, label='--src-dir', allow_root=True)` |
 | _portable_project_path | _without_github_expression | 100 | `_without_github_expression(_validated_project_path(...), label=label)` |
 | _without_github_expression | InstallCiError | 93 | `InstallCiError(...)` |
 | _portable_project_path | _validated_project_path | 101 | `_validated_project_path(value, label=label)` |
@@ -162,7 +162,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `target.read_bytes` | `install_ci_workflow` | 323 |
+| filesystem_read | `target.read_bytes` | `install_ci_workflow` | 326 |
 
 ### Static analysis gaps
 

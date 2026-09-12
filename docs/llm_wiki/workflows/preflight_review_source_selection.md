@@ -1,7 +1,7 @@
 # preflight_review_source_selection
 
-**Entry point:** `review_cmd._preflight_review_source_selection`
-**Modules involved:** [review_cmd](../modules/review_cmd.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md)
+**Entry point:** `review_service._preflight_review_source_selection`
+**Modules involved:** [review_service](../modules/review_service.md), [source_selection](../modules/source_selection.md), [source_snapshot](../modules/source_snapshot.md), [sync_manifest](../modules/sync_manifest.md)
 
 ## Sequence
 
@@ -14,11 +14,11 @@
 
 ## Touches
 
-- [review_cmd](../modules/review_cmd.md)
+- [review_service](../modules/review_service.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
 
 ## Behavior
 
-This workflow starts at `review_cmd._preflight_review_source_selection`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `review_service._preflight_review_source_selection`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

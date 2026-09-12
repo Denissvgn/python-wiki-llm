@@ -563,3 +563,44 @@ Append-only chronological log.
 - Dependency pages initialized: 0
 - Surface policy updated: no
 - Generated surface pages retired: 1
+
+## 2026-09-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.0.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:bdbd674b81ea14562e7c8627665365cd56aa910848f6b305533601cfa3309112`
+- Pages created: 32
+- Pages updated: 117
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1127
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: `ReviewFinding` (src/llm_wiki_cli/commands/review_cmd.py → src/llm_wiki_cli/services/review_service.py)
+- Flow pages initialized: 4 (api=1, cli=3)
+- Workflow pages created: 10
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Infrastructure added: 0
+- Infrastructure changed: 0
+- Infrastructure moved: 0
+- Infrastructure removed: 0
+- Unsupported infrastructure YAML: 2
+
+## 2026-09-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.0.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:36bdfbf059e6f00f1f32502e1aa29b0d15e20f3b5f547a7b27f6695b99076d76`
+- Pages created: 0
+- Pages updated: 2
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1274
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none

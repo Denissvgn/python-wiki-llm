@@ -2,18 +2,20 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [review_cmd](../modules/review_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 21 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 25 more
 
 **Complete modules touched:**
 
+- [api_contracts](../modules/api_contracts.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
-- [data_flow](../modules/data_flow.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [impact](../modules/impact.md)
 - [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
@@ -22,9 +24,11 @@
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
-- [resource_diagnostics](../modules/resource_diagnostics.md)
 - [review_cmd](../modules/review_cmd.md)
+- [review_service](../modules/review_service.md)
+- [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -47,7 +51,7 @@ sequenceDiagram
     participant p7 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
     participant p8 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
     participant p9 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p10 as Path(…).expanduser
+    participant p10 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
     participant p11 as Path (src/llm_wiki_cli/config.py:validate_source_root)
     participant p12 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
     participant p13 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
@@ -73,7 +77,7 @@ sequenceDiagram
     p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
     p4-->>p9: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     p4->>p5: PathValidationError
-    p3-->>p10: Path(…).expanduser
+    p3-->>p10: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
     p3-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
     p3-->>p12: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
     p3-->>p13: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
@@ -91,7 +95,7 @@ sequenceDiagram
     p19-->>p21: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 1462 interactions; 1432 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1836 interactions; 1806 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -127,6 +131,12 @@ flowchart LR
     s1 -. "output print" .-> b0
     b1["output print"]
     s1 -. "output print" .-> b1
+    b2["output print"]
+    s1 -. "output print" .-> b2
+    b3["output print"]
+    s1 -. "output print" .-> b3
+    b4["output print"]
+    s1 -. "output print" .-> b4
     click s1 "../modules/review_cmd.md"
     click s7 "../modules/config.md"
     click s8 "../modules/config.md"
@@ -134,13 +144,16 @@ flowchart LR
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
+    class b2 boundary
+    class b3 boundary
+    class b4 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR` | - | - |
+| `run` | `args` | `DEFAULT_WIKI_DIR` | - | `none` |
 | `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | - | - | - | - |
@@ -157,12 +170,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 588 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 589 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 590 | `getattr(args, 'format', 'markdown')` |
-| run | bool (src/llm_wiki_cli/commands/review_cmd.py:run) | 591 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 591 | `getattr(args, 'allow_external_src', False)` |
-| run | validate_source_root | 592 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 96 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 97 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 98 | `getattr(args, 'format', 'markdown')` |
+| run | bool (src/llm_wiki_cli/commands/review_cmd.py:run) | 99 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 99 | `getattr(args, 'allow_external_src', False)` |
+| run | validate_source_root | 100 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
@@ -173,17 +186,20 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 615 |
-| output | `print` | `run` | 617 |
+| output | `print` | `run` | 135 |
+| output | `print` | `run` | 137 |
+| output | `print` | `run` | 139 |
+| output | `print` | `run` | 151 |
+| output | `print` | `run` | 153 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 588 |
-| external_call | `run` | `getattr` | 589 |
-| external_call | `run` | `getattr` | 590 |
-| external_call | `run` | `getattr` | 591 |
+| external_call | `run` | `getattr` | 96 |
+| external_call | `run` | `getattr` | 97 |
+| external_call | `run` | `getattr` | 98 |
+| external_call | `run` | `getattr` | 99 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |

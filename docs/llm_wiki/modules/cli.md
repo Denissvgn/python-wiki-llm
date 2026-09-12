@@ -15,7 +15,7 @@ startup does not require their runtime packages.
 | Source | Symbols |
 |--------|---------|
 | `.` | `__version__` |
-| `.commands` | `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `release_cmd`, `review_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
+| `.commands` | `api_diff_cmd`, `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `queue_cmd`, `release_cmd`, `review_cmd`, `search_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
 | `.config` | `AGENT_CHOICES`, `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
 | `.services.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG` |
@@ -44,9 +44,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (36) |
+| Outbound | `src` (39) |
 
-> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -59,6 +59,7 @@ flowchart LR
 | `_add_include_tests_argument` | `(parser)` | — | — |
 | `_add_source_selection_argument` | `(parser)` | — | — |
 | `_add_jobs_argument` | `(parser)` | — | — |
+| `_add_queue_command` | `(subparsers)` | — | — |
 | `_build_parser` | `()` | — | — |
 | `_register_commands` | `(subparsers)` | — | — |
 | `_add_doctor_command` | `(subparsers)` | — | — |
@@ -82,6 +83,8 @@ flowchart LR
 | `_add_bump_command` | `(subparsers)` | — | — |
 | `_add_generate_prompt_command` | `(subparsers)` | — | — |
 | `_add_metrics_command` | `(subparsers)` | — | — |
+| `_add_api_diff_command` | `(subparsers)` | — | — |
+| `_add_search_command` | `(subparsers)` | — | — |
 | `_add_review_command` | `(subparsers)` | — | — |
 | `_add_uninstall_command` | `(subparsers)` | — | — |
 | `_add_status_command` | `(subparsers)` | — | — |

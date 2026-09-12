@@ -2,13 +2,15 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_service](../modules/context_service.md), and 29 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 31 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [context_budget](../modules/context_budget.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
@@ -63,8 +65,12 @@ sequenceDiagram
     participant p15 as ProtocolRequestError
     participant p16 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
     participant p17 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p18 as sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p19 as set (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p18 as validate_request
+    participant p19 as set (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p20 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p21 as dict (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p22 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p23 as legacy.pop
     p0->>p1: _normalise_focus
     p1-->>p2: isinstance (src/llm_wiki_cli/api.py:_normalise_focus)
     p1-->>p3: list (src/llm_wiki_cli/api.py:_normalise_focus)
@@ -84,20 +90,20 @@ sequenceDiagram
     p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
     p13->>p15: ProtocolRequestError
     p13-->>p17: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p13->>p15: ProtocolRequestError
-    p13-->>p18: sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p13-->>p19: set (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p13->>p15: ProtocolRequestError
-    p13->>p15: ProtocolRequestError
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p13->>p15: ProtocolRequestError
-    p13-->>p17: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p13->>p15: ProtocolRequestError
+    p13->>p18: validate_request
+    p18-->>p19: set (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18->>p15: ProtocolRequestError
+    p18-->>p20: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p21: dict (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p22: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p22: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p22: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p23: legacy.pop
+    p18-->>p23: legacy.pop
+    p18-->>p23: legacy.pop
 ```
 
-> Call sequence diagram shows 30 of 1997 interactions; 1967 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2047 interactions; 2017 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -157,17 +163,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context | _normalise_focus | 802 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2376 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2382 | `list(focus)` |
-| build_context | _normalize_optional_knowledge_mode | 803 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 369 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 370 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 370 | `repr(item)` |
-| _normalize_optional_knowledge_mode | InvalidRequestError | 371 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 376 | `cast(KnowledgeMode, value)` |
-| build_context | _validate_protocol_request | 819 | `context_cmd._validate_protocol_request(request)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1071 | `isinstance(data, dict)` |
+| build_context | _normalise_focus | 804 | `_normalise_focus(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2397 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2403 | `list(focus)` |
+| build_context | _normalize_optional_knowledge_mode | 805 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 371 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 372 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 372 | `repr(item)` |
+| _normalize_optional_knowledge_mode | InvalidRequestError | 373 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 378 | `cast(KnowledgeMode, value)` |
+| build_context | _validate_protocol_request | 821 | `context_cmd._validate_protocol_request(request)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -177,11 +183,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 2376 |
-| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 369 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 370 |
-| external_call | `_normalize_optional_knowledge_mode` | `cast` | 376 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1071 |
+| external_call | `_normalise_focus` | `isinstance` | 2397 |
+| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 371 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 372 |
+| external_call | `_normalize_optional_knowledge_mode` | `cast` | 378 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1077 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |
 

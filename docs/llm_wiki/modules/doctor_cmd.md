@@ -4,13 +4,17 @@
 
 ## Description
 
-CLI adapter for the read-only knowledge health report.
+Renders the read-only knowledge health report as text or JSON and propagates its
+exit status. With `--capabilities`, the v2 report adds provider, helper,
+unsupported-input, and plugin diagnostics while retaining the detailed health
+sections and explicit preparation commands.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR` |
+| `..services.capability_diagnostics` | `build_capability_doctor`, `render_capability_doctor` |
 | `..services.doctor_service` | `build_doctor_report`, `render_doctor_text` |
 | `..services.extraction_jobs` | `extraction_job_request_from_args` |
 | `__future__` | `annotations` |
@@ -24,21 +28,26 @@ flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
     n1["src/llm_wiki_cli/commands/doctor_cmd.py"]
     n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/services/doctor_service.py"]
-    n4["src/llm_wiki_cli/services/extraction_jobs.py"]
+    n3["src/llm_wiki_cli/services/capability_diagnostics.py"]
+    n4["src/llm_wiki_cli/services/doctor_service.py"]
+    n5["src/llm_wiki_cli/services/extraction_jobs.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n4
+    n0 --> n5
     n1 --> n2
     n1 --> n3
     n1 --> n4
+    n1 --> n5
     n3 --> n2
     n3 --> n4
+    n4 --> n2
+    n4 --> n5
     click n0 "../modules/cli.md"
     click n1 "../modules/doctor_cmd.md"
     click n2 "../modules/config.md"
-    click n3 "../modules/doctor_service.md"
-    click n4 "../modules/extraction_jobs.md"
+    click n3 "../modules/capability_diagnostics.md"
+    click n4 "../modules/doctor_service.md"
+    click n5 "../modules/extraction_jobs.md"
 ```
 
 ### Internal neighbors
@@ -47,6 +56,7 @@ flowchart LR
 |---|---|
 | Inbound | [cli](../modules/cli.md) |
 | Outbound | [config](../modules/config.md) |
+| Outbound | [capability_diagnostics](../modules/capability_diagnostics.md) |
 | Outbound | [doctor_service](../modules/doctor_service.md) |
 | Outbound | [extraction_jobs](../modules/extraction_jobs.md) |
 

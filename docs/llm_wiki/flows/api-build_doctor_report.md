@@ -169,17 +169,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 124 | `isinstance(strict, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 125 | `TypeError('strict must be a boolean')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 126 | `isinstance(allow_external_src, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 127 | `TypeError('allow_external_src must be a boolean')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 128 | `isinstance(parallel_jobs, bool)` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 128 | `isinstance(parallel_jobs, int)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 129 | `TypeError('parallel_jobs must be an integer')` |
-| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 131 | `ValueError('parallel_jobs must be greater than zero')` |
-| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 133 | `str(wiki_dir)` |
-| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 134 | `str(src_dir)` |
-| build_doctor_report | validate_path | 135 | `validate_path(wiki_text, '--wiki-dir')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 125 | `isinstance(strict, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 126 | `TypeError('strict must be a boolean')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 127 | `isinstance(allow_external_src, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 128 | `TypeError('allow_external_src must be a boolean')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 129 | `isinstance(parallel_jobs, bool)` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 129 | `isinstance(parallel_jobs, int)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 130 | `TypeError('parallel_jobs must be an integer')` |
+| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 132 | `ValueError('parallel_jobs must be greater than zero')` |
+| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 134 | `str(wiki_dir)` |
+| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 135 | `str(src_dir)` |
+| build_doctor_report | validate_path | 136 | `validate_path(wiki_text, '--wiki-dir')` |
 
 ### Boundary effects
 
@@ -189,13 +189,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_doctor_report` | `isinstance` | 124 |
-| external_call | `build_doctor_report` | `TypeError` | 125 |
-| external_call | `build_doctor_report` | `isinstance` | 126 |
-| external_call | `build_doctor_report` | `TypeError` | 127 |
-| external_call | `build_doctor_report` | `isinstance` | 128 |
-| external_call | `build_doctor_report` | `TypeError` | 129 |
-| external_call | `build_doctor_report` | `ValueError` | 131 |
+| external_call | `build_doctor_report` | `isinstance` | 125 |
+| external_call | `build_doctor_report` | `TypeError` | 126 |
+| external_call | `build_doctor_report` | `isinstance` | 127 |
+| external_call | `build_doctor_report` | `TypeError` | 128 |
+| external_call | `build_doctor_report` | `isinstance` | 129 |
+| external_call | `build_doctor_report` | `TypeError` | 130 |
+| external_call | `build_doctor_report` | `ValueError` | 132 |
 | step_limit | `build_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `build_doctor_report` | `depth limit` | 0 |
 

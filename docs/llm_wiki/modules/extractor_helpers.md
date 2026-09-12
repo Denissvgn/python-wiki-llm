@@ -34,21 +34,24 @@ flowchart LR
     n2["src/llm_wiki_cli/extractors/haskell_extractor.py"]
     n3["src/llm_wiki_cli/extractors/rust_extractor.py"]
     n4["src/llm_wiki_cli/extractors/ts_extractor.py"]
-    n5["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n6["src/llm_wiki_cli/services/inventory_cache.py"]
-    n0 --> n5
-    n1 --> n5
-    n2 --> n5
-    n3 --> n5
-    n4 --> n5
+    n5["src/llm_wiki_cli/services/capability_diagnostics.py"]
+    n6["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n7["src/llm_wiki_cli/services/inventory_cache.py"]
+    n0 --> n6
+    n1 --> n6
+    n2 --> n6
+    n3 --> n6
+    n4 --> n6
     n5 --> n6
+    n6 --> n7
     click n0 "../modules/prepare_extractors_cmd.md"
     click n1 "../modules/go_extractor.md"
     click n2 "../modules/haskell_extractor.md"
     click n3 "../modules/rust_extractor.md"
     click n4 "../modules/ts_extractor.md"
-    click n5 "../modules/extractor_helpers.md"
-    click n6 "../modules/inventory_cache.md"
+    click n5 "../modules/capability_diagnostics.md"
+    click n6 "../modules/extractor_helpers.md"
+    click n7 "../modules/inventory_cache.md"
 ```
 
 ### Internal neighbors
@@ -60,6 +63,7 @@ flowchart LR
 | Inbound | [haskell_extractor](../modules/haskell_extractor.md) |
 | Inbound | [rust_extractor](../modules/rust_extractor.md) |
 | Inbound | [ts_extractor](../modules/ts_extractor.md) |
+| Inbound | [capability_diagnostics](../modules/capability_diagnostics.md) |
 | Outbound | [inventory_cache](../modules/inventory_cache.md) |
 
 ## Classes

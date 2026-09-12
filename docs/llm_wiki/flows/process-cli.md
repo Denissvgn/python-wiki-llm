@@ -73,7 +73,7 @@ sequenceDiagram
     p18-->>p19: parser.add_argument (src/llm_wiki_cli/cli.py:_add_helper_cache_argument)
 ```
 
-> Call sequence diagram shows 30 of 548 interactions; 518 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 587 interactions; 557 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -149,41 +149,41 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2346 | `_build_parser(data not statically known)` |
-| _build_parser | argparse.ArgumentParser | 162 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
-| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 163 | `parser.add_argument('--version', action='version', version=...)` |
-| _build_parser | parser.add_subparsers | 166 | `parser.add_subparsers(dest='command', required=True)` |
-| _build_parser | _register_commands | 167 | `_register_commands(subparsers)` |
-| _register_commands | _add_init_command | 172 | `_add_init_command(subparsers)` |
-| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 241 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
-| _add_init_command | init_parser.add_argument | 244 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
-| _add_init_command | init_parser.add_argument | 250 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
-| _add_init_command | init_parser.add_argument | 255 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
-| _add_init_command | init_parser.add_argument | 261 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
+| main | _build_parser | 2406 | `_build_parser(data not statically known)` |
+| _build_parser | argparse.ArgumentParser | 179 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
+| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 180 | `parser.add_argument('--version', action='version', version=...)` |
+| _build_parser | parser.add_subparsers | 183 | `parser.add_subparsers(dest='command', required=True)` |
+| _build_parser | _register_commands | 184 | `_register_commands(subparsers)` |
+| _register_commands | _add_init_command | 189 | `_add_init_command(subparsers)` |
+| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 262 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
+| _add_init_command | init_parser.add_argument | 265 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
+| _add_init_command | init_parser.add_argument | 271 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
+| _add_init_command | init_parser.add_argument | 276 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
+| _add_init_command | init_parser.add_argument | 282 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2352 |
-| output | `print` | `main` | 2355 |
-| output | `print` | `main` | 2358 |
-| environment_read | `os.environ.get` | `main` | 2361 |
-| output | `print` | `main` | 2363 |
-| output | `print` | `main` | 2366 |
+| output | `print` | `main` | 2412 |
+| output | `print` | `main` | 2415 |
+| output | `print` | `main` | 2418 |
+| environment_read | `os.environ.get` | `main` | 2421 |
+| output | `print` | `main` | 2423 |
+| output | `print` | `main` | 2426 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_build_parser` | `argparse.ArgumentParser` | 162 |
-| unresolved_call | `_build_parser` | `parser.add_argument` | 163 |
-| unresolved_call | `_build_parser` | `parser.add_subparsers` | 166 |
-| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 241 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 244 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 250 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 255 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 261 |
+| external_call | `_build_parser` | `argparse.ArgumentParser` | 179 |
+| unresolved_call | `_build_parser` | `parser.add_argument` | 180 |
+| unresolved_call | `_build_parser` | `parser.add_subparsers` | 183 |
+| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 262 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 265 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 271 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 276 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 282 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

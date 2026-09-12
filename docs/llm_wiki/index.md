@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 540 | [Open section](#entities) |
-| Modules | 163 | [Open section](#modules) |
-| Workflows | 102 | [Open section](#workflows) |
+| Entities | 546 | [Open section](#entities) |
+| Modules | 175 | [Open section](#modules) |
+| Workflows | 112 | [Open section](#workflows) |
 | Guides | 15 | [Open section](#guides) |
-| Entry-point flows | 437 | [Open section](#entry-point-flows) |
+| Entry-point flows | 441 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -46,6 +46,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [BoundedProcessResult](entities/BoundedProcessResult.md)
 - [BoundedQueryResult](entities/BoundedQueryResult.md)
 - [BoundedResult](entities/BoundedResult.md)
+- [BudgetedContext](entities/BudgetedContext.md)
 - [BuildContext](entities/BuildContext.md)
 - [BundleRecord](entities/BundleRecord.md)
 - [BundledSkill](entities/BundledSkill.md)
@@ -157,6 +158,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [EntityModuleResult](entities/EntityModuleResult.md)
 - [EntryPointDetectionResult](entities/EntryPointDetectionResult.md)
 - [EnvelopeInputs](entities/EnvelopeInputs.md)
+- [EstimatedCounter](entities/EstimatedCounter.md)
 - [EvaluatedEnvelope](entities/EvaluatedEnvelope.md)
 - [EvaluationPlan](entities/EvaluationPlan.md)
 - [EvaluationPlanError](entities/EvaluationPlanError.md)
@@ -306,6 +308,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [LlmWikiSettingTab](entities/LlmWikiSettingTab.md)
 - [LlmWikiSettings](entities/LlmWikiSettings.md)
 - [LocalEgressCanary](entities/LocalEgressCanary.md)
+- [LocalTokenizerCounter](entities/LocalTokenizerCounter.md)
 - [LockAcquisitionError](entities/LockAcquisitionError.md)
 - [MCPDependencyError](entities/MCPDependencyError.md)
 - [MachineVerificationAvailability](entities/MachineVerificationAvailability.md)
@@ -436,6 +439,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ResultArtifactError](entities/ResultArtifactError.md)
 - [ResultBounds](entities/ResultBounds.md)
 - [ReusedSync](entities/ReusedSync.md)
+- [ReviewAnalysis](entities/ReviewAnalysis.md)
 - [ReviewEvent](entities/ReviewEvent.md)
 - [ReviewEvidence](entities/ReviewEvidence.md)
 - [ReviewFinding](entities/ReviewFinding.md)
@@ -509,8 +513,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [TeamConfigError](entities/TeamConfigError.md)
 - [TeamConventionRequest](entities/TeamConventionRequest.md)
 - [TeamPolicyContext](entities/TeamPolicyContext.md)
+- [TokenCounter](entities/TokenCounter.md)
 - [TreeBaseline](entities/TreeBaseline.md)
 - [TreeSnapshot](entities/TreeSnapshot.md)
+- [TriggerFailure](entities/TriggerFailure.md)
 - [TsPathAliasRule](entities/TsPathAliasRule.md)
 - [TypeScriptExtractor](entities/TypeScriptExtractor.md)
 - [TypedGraphTraversalResult](entities/TypedGraphTraversalResult.md)
@@ -563,6 +569,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 - [api](modules/api.md) - Supported API for extraction, wiki, native knowledge, and documentation.
 - [api_contracts](modules/api_contracts.md) - Static FastAPI and exported OpenAPI contract assembly.
+- [api_diff](modules/api_diff.md) - Conservative compatibility checks over supplied OpenAPI exports only.
+- [api_diff_cmd](modules/api_diff_cmd.md) - Compare supplied local OpenAPI exports without invoking target code.
 - [api_types](modules/api_types.md) - Static return contracts for the supported Python API.
 - [bootstrap_runtime](modules/bootstrap_runtime.md) - `src/llm_wiki_cli/services/bootstrap_runtime.py`
 - [bootstrap_service](modules/bootstrap_service.md) - Typed request/result contract for deterministic wiki bootstrap.
@@ -571,6 +579,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [calibration___init__](modules/calibration___init__.md) - Isolated calibration services.
 - [calibration_contracts](modules/calibration_contracts.md) - Deterministic evidence contracts for standalone documentation calibration.
 - [canonical_pages](modules/canonical_pages.md) - Canonical generated page names and explicitly retained removal history.
+- [capability_diagnostics](modules/capability_diagnostics.md) - Read-only provider preparation and plugin metadata diagnostics.
+- [change_selection](modules/change_selection.md) - Portable, explicit change selection and shared source-to-page mapping.
 - [ci_check_cmd](modules/ci_check_cmd.md) - `src/llm_wiki_cli/commands/ci_check_cmd.py`
 - [ci_installer](modules/ci_installer.md) - Portable installation of the managed LLM Wiki integrity workflow.
 - [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
@@ -579,6 +589,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
 - [concept_identity](modules/concept_identity.md) - Pure stable-identity primitives for governed knowledge concepts.
 - [config](modules/config.md) - Shared constants and utilities for agent-wiki-cli.
+- [context_budget](modules/context_budget.md) - Opt-in full-render context budgets over the existing captured-read contract.
 - [context_knowledge_contract](modules/context_knowledge_contract.md) - Frozen compatibility and failure contracts for context knowledge selection.
 - [context_packet](modules/context_packet.md) - Canonical Qualified Context Packet construction and verification.
 - [context_service](modules/context_service.md) - Structured context budgeting — return priority-ranked, token-budgeted codebase context for LLM agents.
@@ -618,6 +629,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
+- [impact](modules/impact.md) - Deterministic advisory change impact and bounded CI presentations.
 - [imports](modules/imports.md) - `src/llm_wiki_cli/services/imports.py`
 - [infrastructure_inventory](modules/infrastructure_inventory.md) - Inventory helpers for non-Docker infrastructure YAML files.
 - [infrastructure_sync](modules/infrastructure_sync.md) - Deterministic infrastructure discovery and incremental sync planning.
@@ -651,6 +663,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [llm-wiki_main](modules/llm-wiki_main.md) - `integrations/obsidian/llm-wiki/main.js`
 - [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) - LLM Wiki CLI.
 - [lockfile](modules/lockfile.md) - `src/llm_wiki_cli/services/lockfile.py`
+- [maintenance_queue](modules/maintenance_queue.md) - Advisory managed-page selection from existing freshness and worklist evidence.
 - [markdown_sections](modules/markdown_sections.md) - Deterministic Markdown section parsing and legacy sync splice helpers.
 - [mcp_cmd](modules/mcp_cmd.md) - Run llm-wiki as a local Model Context Protocol server.
 - [mcp_server](modules/mcp_server.md) - Read-only MCP service helpers for exposing an LLM Wiki to agents.
@@ -678,6 +691,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [python_imports](modules/python_imports.md) - Pure Python import-root indexing over an already selected inventory.
 - [python_observations](modules/python_observations.md) - Canonical Python observation envelopes and per-source cache validation.
 - [python_stdlib](modules/python_stdlib.md) - Shared, interpreter-compatible Python standard-library module names.
+- [queue_cmd](modules/queue_cmd.md) - Read-only managed-wiki maintenance triage.
 - [record](modules/record.md) - Documentation-run record services.
 - [redaction](modules/redaction.md) - Shared best-effort redaction for credential-like text.
 - [refresh](modules/refresh.md) - Documentation-run refresh services.
@@ -687,8 +701,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [rendering_lifecycle](modules/rendering_lifecycle.md) - Profile selection and live managed-schema lifecycle classification.
 - [resource_diagnostics](modules/resource_diagnostics.md) - `src/llm_wiki_cli/services/resource_diagnostics.py`
 - [review_cmd](modules/review_cmd.md) - `src/llm_wiki_cli/commands/review_cmd.py`
+- [review_service](modules/review_service.md) - Reusable source-to-wiki review analysis over one captured source basis.
 - [runtime_output](modules/runtime_output.md) - Best-effort implicit output and preflighted operator-selected destinations.
 - [rust_extractor](modules/rust_extractor.md) - Rust AST extractor for agent-wiki-cli.
+- [search_cmd](modules/search_cmd.md) - CLI access to the same read-only search service used by MCP.
+- [search_rank](modules/search_rank.md) - Offline lexical retrieval with exact identity precedence and visible reasons.
 - [section_ownership](modules/section_ownership.md) - Conservative section ownership, scoped hashes, and semantic merge policy.
 - [secure_file](modules/secure_file.md) - Helpers for writing local runtime files with best-effort privacy.
 - [services_contracts](modules/services_contracts.md) - Stable machine-readable contracts exposed by source-adapter commands.
@@ -709,6 +726,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [sync_manifest](modules/sync_manifest.md) - Service-level persistence boundary for the sync manifest v5 contract.
 - [team](modules/team.md) - Shared team policy and conservative wiki conflict resolution.
 - [team_cmd](modules/team_cmd.md) - `src/llm_wiki_cli/commands/team_cmd.py`
+- [token_counting](modules/token_counting.md) - Trusted host counters. No repository-discovered code or network loading.
 - [trigger_cmd](modules/trigger_cmd.md) - `src/llm_wiki_cli/commands/trigger_cmd.py`
 - [ts_extractor](modules/ts_extractor.md) - TypeScript AST extractor for agent-wiki-cli.
 - [uninstall_cmd](modules/uninstall_cmd.md) - `src/llm_wiki_cli/commands/uninstall_cmd.py`
@@ -734,20 +752,25 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [append_log](workflows/append_log.md) - entry: `sync_cmd._append_log`
 - [apply_entity_page](workflows/apply_entity_page.md) - entry: `sync_cmd._apply_entity_page`
 - [apply_module_page](workflows/apply_module_page.md) - entry: `sync_cmd._apply_module_page`
+- [build_analysis](workflows/build_analysis.md) - entry: `review_service.build_analysis`
+- [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
+- [build_capability_diagnostics](workflows/build_capability_diagnostics.md) - entry: `capability_diagnostics.build_capability_diagnostics`
 - [build_context_impl](workflows/build_context_impl.md) - entry: `context_service._build_context_impl`
 - [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
 - [build_dependency_graph](workflows/build_dependency_graph.md) - entry: `dependencies.build_dependency_graph`
 - [build_extract_payload](workflows/build_extract_payload.md) - entry: `extraction_service.build_extract_payload`
 - [build_generated_section_context](workflows/build_generated_section_context.md) - entry: `sync_cmd._build_generated_section_context`
+- [build_impact](workflows/build_impact.md) - entry: `impact.build_impact`
 - [build_knowledge_generation_plan](workflows/build_knowledge_generation_plan.md) - entry: `knowledge_generation._build_knowledge_generation_plan`
 - [build_live_documentation_query_service](workflows/build_live_documentation_query_service.md) - entry: `documentation_query_builder.build_live_documentation_query_service`
+- [build_maintenance_queue](workflows/build_maintenance_queue.md) - entry: `maintenance_queue.build_maintenance_queue`
 - [build_migration_plan](workflows/build_migration_plan.md) - entry: `migrate_cmd._build_migration_plan`
 - [build_protocol_enrichment_from_captured_read](workflows/build_protocol_enrichment_from_captured_read.md) - entry: `context_packet._build_protocol_enrichment_from_captured_read`
 - [build_reuse_input_basis](workflows/build_reuse_input_basis.md) - entry: `knowledge_reuse.build_reuse_input_basis`
 - [build_runtime_knowledge_plan](workflows/build_runtime_knowledge_plan.md) - entry: `knowledge_orchestration.build_runtime_knowledge_plan`
 - [build_runtime_live_evaluation](workflows/build_runtime_live_evaluation.md) - entry: `knowledge_orchestration.build_runtime_live_evaluation`
-- [build_surface_index_pages](workflows/build_surface_index_pages.md) - entry: `review_cmd._build_surface_index_pages`
+- [build_surface_index_pages](workflows/build_surface_index_pages.md) - entry: `review_service._build_surface_index_pages`
 - [build_sync_graph_observations](workflows/build_sync_graph_observations.md) - entry: `sync_cmd._build_sync_graph_observations`
 - [build_sync_prompt](workflows/build_sync_prompt.md) - entry: `trigger_cmd._build_sync_prompt`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
@@ -763,9 +786,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [collect_lint_inputs](workflows/collect_lint_inputs.md) - entry: `lint_service._collect_lint_inputs`
 - [collect_runtime](workflows/collect_runtime.md) - entry: `documentation_native._collect_runtime`
 - [committed_artifact_snapshot](workflows/committed_artifact_snapshot.md) - entry: `knowledge_cmd._committed_artifact_snapshot`
+- [context_budget_flow](workflows/context_budget_flow.md) - entry: `context_budget.run`
+- [context_service_flow](workflows/context_service_flow.md) - entry: `context_service.run`
 - [current_coverage](workflows/current_coverage.md) - entry: `metrics.current_coverage`
 - [current_markdown](workflows/current_markdown.md) - entry: `knowledge_loader._current_markdown`
 - [discover_infrastructure_plan](workflows/discover_infrastructure_plan.md) - entry: `sync_cmd._discover_infrastructure_plan`
+- [doctor_cmd_flow](workflows/doctor_cmd_flow.md) - entry: `doctor_cmd.run`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
 - [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
@@ -787,7 +813,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
 - [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
 - [preflight_lint_source_selection](workflows/preflight_lint_source_selection.md) - entry: `lint_service._preflight_lint_source_selection`
-- [preflight_review_source_selection](workflows/preflight_review_source_selection.md) - entry: `review_cmd._preflight_review_source_selection`
+- [preflight_review_source_selection](workflows/preflight_review_source_selection.md) - entry: `review_service._preflight_review_source_selection`
 - [preflight_team_source_selection](workflows/preflight_team_source_selection.md) - entry: `team_cmd._preflight_team_source_selection`
 - [preflight_trigger_source_selection](workflows/preflight_trigger_source_selection.md) - entry: `trigger_cmd._preflight_trigger_source_selection`
 - [preflight_wiki_removal](workflows/preflight_wiki_removal.md) - entry: `uninstall_cmd._preflight_wiki_removal`
@@ -806,8 +832,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_cmd._regenerate_flow_pages`
 - [regenerate_workflow_pages](workflows/regenerate_workflow_pages.md) - entry: `sync_cmd._regenerate_workflow_pages`
 - [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
+- [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`
 - [run_packet_output](workflows/run_packet_output.md) - entry: `context_service._run_packet_output`
+- [run_protocol](workflows/run_protocol.md) - entry: `context_service._run_protocol`
 - [run_report_checks](workflows/run_report_checks.md) - entry: `lint_service._run_report_checks`
 - [run_status](workflows/run_status.md) - entry: `knowledge_cmd._run_status`
 - [run_verify](workflows/run_verify.md) - entry: `knowledge_cmd._run_verify`
@@ -876,6 +904,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-bootstrap_wiki](flows/api-bootstrap_wiki.md) - entry: `bootstrap_wiki`
 - [api-build_api_contracts](flows/api-build_api_contracts.md) - entry: `build_api_contracts`
 - [api-build_artifact_verification_context](flows/api-build_artifact_verification_context.md) - entry: `build_artifact_verification_context`
+- [api-build_budgeted_context](flows/api-build_budgeted_context.md) - entry: `build_budgeted_context`
 - [api-build_calibration_agent_packet-api](flows/api-build_calibration_agent_packet-api.md) - entry: `build_calibration_agent_packet`
 - [api-build_calibration_agent_packet-controller](flows/api-build_calibration_agent_packet-controller.md) - entry: `build_calibration_agent_packet`
 - [api-build_context](flows/api-build_context.md) - entry: `build_context`
@@ -1245,6 +1274,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 **cli**
 
+- [cli-api-diff](flows/cli-api-diff.md) - entry: `run`
 - [cli-bootstrap](flows/cli-bootstrap.md) - entry: `run`
 - [cli-bump](flows/cli-bump.md) - entry: `run`
 - [cli-ci-check](flows/cli-ci-check.md) - entry: `run`
@@ -1264,8 +1294,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [cli-obsidian](flows/cli-obsidian.md) - entry: `run`
 - [cli-plugins](flows/cli-plugins.md) - entry: `run`
 - [cli-prepare-extractors](flows/cli-prepare-extractors.md) - entry: `run`
+- [cli-queue](flows/cli-queue.md) - entry: `run`
 - [cli-release](flows/cli-release.md) - entry: `run`
 - [cli-review](flows/cli-review.md) - entry: `run`
+- [cli-search](flows/cli-search.md) - entry: `run`
 - [cli-site](flows/cli-site.md) - entry: `run`
 - [cli-skills](flows/cli-skills.md) - entry: `run`
 - [cli-status](flows/cli-status.md) - entry: `run`

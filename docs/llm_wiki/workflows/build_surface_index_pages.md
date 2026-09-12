@@ -1,7 +1,7 @@
 # build_surface_index_pages
 
-**Entry point:** `review_cmd._build_surface_index_pages`
-**Modules involved:** [entrypoints](../modules/entrypoints.md), [plugins](../modules/plugins.md), [review_cmd](../modules/review_cmd.md), [wiki_surface_index](../modules/wiki_surface_index.md)
+**Entry point:** `review_service._build_surface_index_pages`
+**Modules involved:** [entrypoints](../modules/entrypoints.md), [plugins](../modules/plugins.md), [review_service](../modules/review_service.md), [wiki_surface_index](../modules/wiki_surface_index.md)
 
 ## Sequence
 
@@ -16,9 +16,9 @@
 
 - [entrypoints](../modules/entrypoints.md)
 - [plugins](../modules/plugins.md)
-- [review_cmd](../modules/review_cmd.md)
+- [review_service](../modules/review_service.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 
 ## Behavior
 
-This workflow starts at `review_cmd._build_surface_index_pages`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+This workflow starts at `review_service._build_surface_index_pages`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.

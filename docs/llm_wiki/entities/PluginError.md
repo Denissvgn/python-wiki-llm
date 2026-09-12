@@ -28,13 +28,13 @@ flowchart LR
     n3["src/llm_wiki_cli/commands/install_cmd.py"]
     n4["src/llm_wiki_cli/commands/plugins_cmd.py"]
     n5["src/llm_wiki_cli/commands/trigger_cmd.py"]
-    n6["_normalize_category_colors (src/llm_wiki_cli/services/diagrams.py)"]
-    n7["_normalize_node_classes (src/llm_wiki_cli/services/diagrams.py)"]
-    n8["_normalize_style (src/llm_wiki_cli/services/diagrams.py)"]
-    n9["_plugin_error (src/llm_wiki_cli/services/entrypoints.py)"]
-    n10["src/llm_wiki_cli/services/lint_service.py"]
-    n11["_prepare_destination (src/llm_wiki_cli/services/plugin_samples.py)"]
-    n12["_resolve_destination (src/llm_wiki_cli/services/plugin_samples.py)"]
+    n6["build_capability_diagnostics (src/llm_wiki_cli/services/capability_diagnostics.py)"]
+    n7["_normalize_category_colors (src/llm_wiki_cli/services/diagrams.py)"]
+    n8["_normalize_node_classes (src/llm_wiki_cli/services/diagrams.py)"]
+    n9["_normalize_style (src/llm_wiki_cli/services/diagrams.py)"]
+    n10["_plugin_error (src/llm_wiki_cli/services/entrypoints.py)"]
+    n11["src/llm_wiki_cli/services/lint_service.py"]
+    n12["_prepare_destination (src/llm_wiki_cli/services/plugin_samples.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -52,12 +52,12 @@ flowchart LR
     click n3 "../modules/install_cmd.md"
     click n4 "../modules/plugins_cmd.md"
     click n5 "../modules/trigger_cmd.md"
-    click n6 "../modules/diagrams.md"
+    click n6 "../modules/capability_diagnostics.md"
     click n7 "../modules/diagrams.md"
     click n8 "../modules/diagrams.md"
-    click n9 "../modules/entrypoints.md"
-    click n10 "../modules/lint_service.md"
-    click n11 "../modules/plugin_samples.md"
+    click n9 "../modules/diagrams.md"
+    click n10 "../modules/entrypoints.md"
+    click n11 "../modules/lint_service.md"
     click n12 "../modules/plugin_samples.md"
 ```
 
@@ -81,6 +81,7 @@ flowchart LR
 | `install_cmd` | import | [install_cmd](../modules/install_cmd.md) | — |
 | `plugins_cmd` | import | [plugins_cmd](../modules/plugins_cmd.md) | — |
 | `trigger_cmd` | import | [trigger_cmd](../modules/trigger_cmd.md) | — |
+| `build_capability_diagnostics` | call | [capability_diagnostics](../modules/capability_diagnostics.md) | 1 |
 | `_normalize_category_colors` | call | [diagrams](../modules/diagrams.md) | 2 |
 | `_normalize_node_classes` | call | [diagrams](../modules/diagrams.md) | 2 |
 | `_normalize_style` | call | [diagrams](../modules/diagrams.md) | 2 |
@@ -88,6 +89,5 @@ flowchart LR
 | `_plugin_error` | type_reference | [entrypoints](../modules/entrypoints.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
 | `_prepare_destination` | call | [plugin_samples](../modules/plugin_samples.md) | 2 |
-| `_resolve_destination` | call | [plugin_samples](../modules/plugin_samples.md) | 2 |
 
-> References: showing 12 of 35 logical references; 23 omitted by the 12-row generated summary limit.
+> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.
