@@ -652,7 +652,9 @@ project plugin code. When a selected provider needs preparation, health is
 unevaluated and the command exits `2`; otherwise it retains the health exit code.
 Preparation is an explicit action and may download dependencies or compile a
 bundled helper. Append `--plan --format json` to a suggested preparation command
-to inspect it first.
+to inspect it first. Text output includes a quoted shell command (or a
+`cmd.exe` command on Windows), plugin validation details, and the full health
+summary when health can be evaluated.
 
 ## `context`
 
@@ -1640,7 +1642,10 @@ FastAPI operations, findings, limitations, and an impact identity. Equivalent
 change inputs against the same checkout produce the same impact. Missing pages
 can appear as expected mappings; deleted sources need retained wiki provenance
 to identify their former pages. Source details describe the current checkout.
-Impact uses built-in extraction with project plugins disabled.
+Impact uses built-in extraction with project plugins disabled. Its findings
+describe candidate coverage without asserting whether wiki pages were edited
+in the patch. Absent sources with no retained mapping keep previous coverage
+unknown; they do not produce missing-page regeneration advice.
 
 `impact-markdown` emits a summary capped at 64 KiB and 50 findings. `github`
 emits up to 50 escaped warning/notice annotations; omitted counts are explicit.
@@ -1659,9 +1664,11 @@ llm-wiki api-diff --baseline api/before.yaml --candidate api/after.yaml --format
 The `llm-wiki-api-diff/v1` report identifies both exports and flags known
 operation removals, newly required wire inputs or plain body properties, and
 removed explicit success responses. Path-placeholder renames and header-name
-case changes preserve wire identity. Unresolved references, schema composition,
-recursion, response ranges, and other narrowing remain advisory. The command
-reads local JSON/YAML without importing an application, running its build, or
+case changes preserve wire identity. Read-only body fields do not become
+required request inputs, including fields reached through local references.
+Unresolved references, malformed parameter/body/response evidence, schema
+composition, recursion, response ranges, and other narrowing remain advisory.
+The command reads local JSON/YAML without importing an application, running its build, or
 fetching external references. Exit `1` means a declared breaking change; `0`
 means compatible or advisory, not a complete compatibility proof.
 

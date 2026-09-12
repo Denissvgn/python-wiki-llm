@@ -98,7 +98,7 @@ def source_relative_paths(paths, root, *, prefix=None) -> list[str]:
     """Map repo-relative Git/patch paths through an exact source-root prefix."""
     if prefix is None:
         try:
-            prefix = _git(root, "rev-parse", "--show-prefix").strip()
+            prefix = _git(root, "rev-parse", "--show-prefix").rstrip("\n")
         except ValueError:
             prefix = ""
     result = set()
@@ -161,35 +161,111 @@ def select_changes(root, request, *, snapshot=None) -> dict:
     }
 
 
+def _patch_path(value: str, *, git_prefix: bool = False) -> str | None:
+    if value.startswith('"'):
+        quoted = re.match(r'"(?:\\.|[^"\\])*"', value)
+        if quoted is None:
+            raise ValueError("Malformed quoted patch path")
+        trailing = value[quoted.end() :]
+        if trailing.strip() and not trailing.startswith("\t"):
+            raise ValueError("Malformed quoted patch path")
+        try:
+            # Preserve literal Unicode as well as Git's octal-escaped UTF-8 bytes.
+            value = (
+                ast.literal_eval(quoted[0].encode("utf-8").decode("latin-1"))
+                .encode("latin-1")
+                .decode("utf-8")
+            )
+        except (ValueError, SyntaxError, UnicodeError):
+            raise ValueError("Malformed quoted patch path") from None
+    else:
+        value = value.split("\t", 1)[0]
+    if value == "/dev/null":
+        return None
+    if git_prefix and value.startswith(("a/", "b/")):
+        value = value[2:]
+    return portable_path(value)
+
+
+def _git_patch_header_paths(line: str) -> set[str]:
+    # Unquoted Git paths can contain spaces. Prefer an identical pair; renames
+    # and copies also carry unambiguous extended headers below.
+    pairs = []
+    for match in re.finditer(r' (?=b/|"b/)', line):
+        try:
+            old = _patch_path(line[: match.start()], git_prefix=True)
+            new = _patch_path(line[match.end() :], git_prefix=True)
+        except ValueError:
+            continue
+        if old and new:
+            if old == new:
+                return {old}
+            pairs.append({old, new})
+    return pairs[0] if len(pairs) == 1 else set()
+
+
 def patch_paths(text: str) -> list[str]:
-    """Include both sides of renames/deletions, including Git's C quoting."""
+    """Read file headers, including binary/mode changes, without reading hunks."""
     paths = set()
+    old_remaining = new_remaining = 0
     for line in text.splitlines():
-        for prefix in ("--- ", "+++ ", "rename from ", "rename to "):
+        if line.startswith("diff --git "):
+            old_remaining = new_remaining = 0
+            paths.update(_git_patch_header_paths(line[len("diff --git ") :]))
+            continue
+        hunk = re.match(r"^@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@", line)
+        if hunk:
+            old_remaining, new_remaining = (
+                int(count) if count is not None else 1 for count in hunk.groups()
+            )
+            continue
+        if old_remaining or new_remaining:
+            if line.startswith((" ", "-")):
+                old_remaining = max(0, old_remaining - 1)
+            if line.startswith((" ", "+")):
+                new_remaining = max(0, new_remaining - 1)
+            continue
+        for prefix in (
+            "--- ",
+            "+++ ",
+            "rename from ",
+            "rename to ",
+            "copy from ",
+            "copy to ",
+        ):
             if not line.startswith(prefix):
                 continue
-            value = line[len(prefix) :]
-            if value.startswith('"'):
-                try:
-                    # Git quotes UTF-8 bytes with octal escapes.
-                    value = ast.literal_eval(value).encode("latin-1").decode("utf-8")
-                except (ValueError, SyntaxError, UnicodeError):
-                    raise ValueError("Malformed quoted patch path") from None
-            else:
-                value = value.split("\t", 1)[0]
-            if value == "/dev/null":
-                continue
-            if prefix in {"--- ", "+++ "} and value.startswith(("a/", "b/")):
-                value = value[2:]
-            paths.add(portable_path(value))
+            value = _patch_path(
+                line[len(prefix) :], git_prefix=prefix in {"--- ", "+++ "}
+            )
+            if value is not None:
+                paths.add(value)
             break
     return sorted(paths)
 
 
 def affected_page_map(
-    paths, inventory: Mapping, surface_pages=()
+    paths,
+    inventory: Mapping,
+    surface_pages=(),
+    *,
+    page_contents: Mapping[str, str] | None = None,
 ) -> dict[str, list[str]]:
     """Map exact sources to canonical pages; never match ambiguous suffixes."""
+    declared_sources = {}
+    for target, content in (page_contents or {}).items():
+        label = "Path" if target.startswith("modules/") else "Location"
+        if not target.startswith(("modules/", "entities/")):
+            continue
+        match = re.search(rf"^\*\*{label}:\*\*\s+`([^`\r\n]+)`", content, re.MULTILINE)
+        if match is None:
+            continue
+        source = re.sub(r":\d+$", "", match[1]) if label == "Location" else match[1]
+        try:
+            declared_sources[portable_path(target)] = portable_path(source)
+        except ValueError:
+            continue
+
     inventory = dict(inventory)
     modules = build_module_page_map(inventory)
     entities = build_entity_page_map(inventory)
@@ -213,6 +289,17 @@ def affected_page_map(
             source, target = portable_path(source), portable_path(target)
         except ValueError:
             continue
+        if source in mapped:
+            mapped[source].add(target)
+    # A narrower inventory can reuse another source's canonical name. Existing
+    # generated provenance takes precedence over that inferred name or an index.
+    for source, pages in mapped.items():
+        pages.difference_update(
+            target
+            for target in list(pages)
+            if target in declared_sources and declared_sources[target] != source
+        )
+    for target, source in declared_sources.items():
         if source in mapped:
             mapped[source].add(target)
     return {path: sorted(pages) for path, pages in mapped.items()}

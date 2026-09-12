@@ -383,6 +383,7 @@ class TestReviewMode:
     def test_review_accepts_flow_page_change_as_source_documentation(
         self, tmp_project, monkeypatch
     ):
+        (tmp_project / "api.py").write_text("def run(): pass\n", encoding="utf-8")
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         (wiki_dir / "modules").mkdir(parents=True)
         (wiki_dir / "flows").mkdir(parents=True)
@@ -424,6 +425,7 @@ class TestReviewMode:
     def test_review_lists_flow_pages_for_stale_source_documentation(
         self, tmp_project, monkeypatch
     ):
+        (tmp_project / "api.py").write_text("def run(): pass\n", encoding="utf-8")
         wiki_dir = tmp_project / "docs" / "llm_wiki"
         (wiki_dir / "modules").mkdir(parents=True)
         (wiki_dir / "flows").mkdir(parents=True)

@@ -320,6 +320,7 @@ class CapturedContextRead:
     strict_wiki_symlinks: bool = False
     allow_external_src: bool = False
     explicit_changes: bool = False
+    change_selection: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.source_root, Path) or not self.source_root.is_absolute():
@@ -4756,6 +4757,25 @@ def _assert_source_inputs_unchanged(
 
 
 def _assert_selection_unchanged(captured: CapturedContextRead) -> None:
+    if captured.explicit_changes:
+        from .change_selection import select_changes
+
+        if captured.change_selection is None:
+            raise ContextPacketSourceMutationError("source-selection")
+        request = {
+            key: value
+            for key, value in captured.change_selection["request"].items()
+            if key not in {"commits", "index_id"}
+        }
+        try:
+            current_selection = select_changes(
+                captured.source_root, request, snapshot=captured.source_snapshot
+            )
+        except ValueError as exc:
+            raise ContextPacketSourceMutationError("source-selection") from exc
+        if current_selection != captured.change_selection:
+            raise ContextPacketSourceMutationError("source-selection")
+        return
     changed = context_service._selected_git_changed_files(
         str(captured.source_root),
         captured.source_snapshot,

@@ -73,9 +73,19 @@ def _requirements(schema, document, *, prefix="", seen=(), depth=0):
         or _UNCERTAIN_SCHEMA & schema.keys()
     ):
         return set(), True
+    if schema.get("readOnly") is True:
+        return set(), False
+    schema_type = schema.get("type")
+    if schema_type is not None:
+        if not isinstance(schema_type, str):
+            return set(), True
+        if schema_type in {"string", "number", "integer", "boolean", "null"}:
+            return set(), False
+        if schema_type not in {"object", "array"}:
+            return set(), True
     seen = (*seen, ref) if ref else seen
-    required = schema.get("required", [])
-    properties = schema.get("properties", {})
+    required = [] if schema_type == "array" else schema.get("required", [])
+    properties = {} if schema_type == "array" else schema.get("properties", {})
     if (
         not isinstance(required, list)
         or not all(isinstance(x, str) for x in required)
@@ -103,7 +113,7 @@ def _requirements(schema, document, *, prefix="", seen=(), depth=0):
         )
         result.update(nested)
         unknown |= uncertain
-    if "items" in schema:
+    if "items" in schema and schema_type in {None, "array"}:
         nested, uncertain = _requirements(
             schema["items"], document, prefix=prefix + "/*", seen=seen, depth=depth + 1
         )
@@ -143,18 +153,52 @@ def _body_requirements(loaded, operation):
 
 
 def _normalization_diagnostics(loaded, diagnostics):
-    """Do not interpret an unreadable path or operation as a known removal."""
+    """Keep malformed evidence that the inventory normalizer omits or coerces."""
     document = loaded["document"]
+
+    def malformed(context, message):
+        diagnostics.append({"context": context, "message": message})
+
+    def parameters(raw, context, path):
+        if not isinstance(raw, list):
+            malformed(context, "Parameters must be an array")
+            return
+        seen = set()
+        for value in raw:
+            value = _dereference(value, document, diagnostics, context=context)
+            if not isinstance(value, Mapping):
+                malformed(context, "Parameter is unavailable or malformed")
+                continue
+            name, location = value.get("name"), value.get("in")
+            if (
+                not isinstance(name, str)
+                or not name
+                or not isinstance(location, str)
+                or location not in {"query", "header", "path", "cookie"}
+            ):
+                malformed(context, "Parameter wire identity is malformed")
+                continue
+            wire = location, name.casefold() if location == "header" else name
+            if wire in seen:
+                malformed(context, "Parameter wire identity is duplicated")
+            seen.add(wire)
+            if "required" in value and not isinstance(value["required"], bool):
+                malformed(context, "Parameter required flag must be boolean")
+            if location == "path" and (
+                name not in re.findall(r"\{([^}]+)\}", path)
+                or value.get("required") is not True
+            ):
+                malformed(
+                    context, "Path parameter must name a route slot and be required"
+                )
+
     for path, raw in document["paths"].items():
         item = _dereference(raw, document, diagnostics, context=str(path))
         if not isinstance(item, Mapping):
-            diagnostics.append(
-                {
-                    "context": str(path),
-                    "message": "Path Item is unavailable or malformed",
-                }
-            )
+            malformed(str(path), "Path Item is unavailable or malformed")
             continue
+        if "parameters" in item:
+            parameters(item["parameters"], str(path), path)
         for method in (
             "get",
             "put",
@@ -165,13 +209,43 @@ def _normalization_diagnostics(loaded, diagnostics):
             "patch",
             "trace",
         ):
-            if method in item and not isinstance(item[method], Mapping):
-                diagnostics.append(
-                    {
-                        "context": str(path),
-                        "message": f"{method.upper()} operation is malformed",
-                    }
+            if method not in item:
+                continue
+            operation = item[method]
+            if not isinstance(operation, Mapping):
+                malformed(str(path), f"{method.upper()} operation is malformed")
+                continue
+            context = f"{method.upper()} {path}"
+            if "parameters" in operation:
+                parameters(operation["parameters"], context, path)
+            if "requestBody" in operation:
+                body = _dereference(
+                    operation["requestBody"], document, diagnostics, context=context
                 )
+                if not isinstance(body, Mapping):
+                    malformed(context, "Request body is unavailable or malformed")
+                else:
+                    if "required" in body and not isinstance(body["required"], bool):
+                        malformed(context, "Request body required flag must be boolean")
+                    if (
+                        not isinstance(body.get("content"), Mapping)
+                        or not body["content"]
+                    ):
+                        malformed(
+                            context, "Request body content is unavailable or malformed"
+                        )
+            responses = operation.get("responses")
+            if not isinstance(responses, Mapping) or not responses:
+                malformed(context, "Responses are unavailable or malformed")
+                continue
+            for code, raw_response in responses.items():
+                if str(code).startswith("x-"):
+                    continue
+                response = _dereference(
+                    raw_response, document, diagnostics, context=context
+                )
+                if not isinstance(response, Mapping):
+                    malformed(context, f"Response {code} is unavailable or malformed")
 
 
 def compare_exports(baseline, candidate):
@@ -249,7 +323,8 @@ def compare_exports(baseline, candidate):
         new_label = f"{updated['method']} {updated['path']}"
         uncertain = any(
             str(item.get("context", "")) == op["path"]
-            or str(item.get("context", "")).startswith(ctx)
+            or str(item.get("context", "")) == ctx
+            or str(item.get("context", "")).startswith(ctx + " ")
             for diagnostics, op, ctx in (
                 (old_diagnostics, old, label),
                 (new_diagnostics, updated, new_label),

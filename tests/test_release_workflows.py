@@ -455,33 +455,23 @@ def test_wiki_integrity_wrapper_summary_is_bounded_and_labels_drift_advisory() -
     assert "summary_program=" not in wrapper
 
 
-def test_readme_documents_the_repository_wiki_maintenance_contract() -> None:
+def test_readme_links_the_public_wiki_automation_contract() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    section = readme.split("### Maintaining this repository's wiki", 1)[1].split(
-        "\n### ", 1
-    )[0]
-
+    assert "docs/automation.md#install-the-full-integrity-gate" in readme
+    automation = " ".join(
+        (ROOT / "docs/automation.md").read_text(encoding="utf-8").split()
+    )
     for required in (
         ".llm-wiki/source-selection.json",
-        "docs/llm_wiki",
-        ".github/scripts/setup-llm-wiki-ci-toolchains.sh",
-        "--mode routine",
-        "--key toolchains.node.version_output",
-        "--key toolchains.npm.version_output",
-        ".venv/bin/llm-wiki prepare-extractors",
-        ".venv/bin/llm-wiki sync",
-        ".venv/bin/llm-wiki ci-check",
-        "--knowledge-drift-report",
-        "commit that source change first",
-        "separately from the selected-source change",
-        "does not run `llm-wiki knowledge init`",
+        "llm-wiki install-ci --action-ref",
+        "strict `ci-check` gate",
+        "read-only permissions",
+        "project worktree stayed clean",
+        "up to 50 warning/notice annotations",
+        "Reporting failures do not replace the integrity result",
+        "Installation does not bootstrap or synchronize the wiki",
     ):
-        assert required in section
-    assert "--source-selection" not in section
-    assert "--include-tests go" in section
-    assert "--include-tests go" not in "\n".join(
-        line for line in section.splitlines() if line.lstrip().startswith(".")
-    )
+        assert required in automation
 
 
 def test_publish_is_dry_run_by_default_and_publisher_cannot_build() -> None:

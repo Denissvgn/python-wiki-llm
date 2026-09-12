@@ -211,12 +211,17 @@ def build_budgeted_context(
             captured.source_root, request["changes"], snapshot=captured.source_snapshot
         )
         captured = replace(
-            captured, changed_files=tuple(changes["paths"]), explicit_changes=True
+            captured,
+            changed_files=tuple(changes["paths"]),
+            explicit_changes=True,
+            change_selection=changes,
         )
+        changes = dict(changes)
         changes["affected_pages"] = affected_page_map(
             changes["paths"],
             captured.inventory,
             captured.surface_evaluation.payload.get("pages", ()),
+            page_contents=captured.surface_evaluation.content_by_path,
         )
     legacy = {k: v for k, v in request.items() if k in context._V2_REQUEST_KEYS}
     legacy.update(

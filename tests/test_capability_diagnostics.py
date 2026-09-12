@@ -1,6 +1,8 @@
 """Read-only prerequisite diagnosis across provider states and clean setups."""
 
 import json
+import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -119,3 +121,49 @@ def test_clean_setup_cli_and_executable_remedy_plan(tmp_path, language, suffix):
     assert remedy.returncode == 0, remedy.stderr
     assert json.loads(remedy.stdout)["languages"] == [language]
     assert not (tmp_path / "helpers").exists()
+
+
+def test_text_preserves_health_details(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.doctor_service import (
+        build_doctor_report,
+        render_doctor_text,
+    )
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "app.py").write_text("pass\n")
+    report = capabilities.build_capability_doctor()
+    text = capabilities.render_capability_doctor(report)
+    assert render_doctor_text(build_doctor_report()).strip() in text
+    assert "Availability:" in text
+
+
+def test_text_remedy_quoting_and_plugin_failure_details(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "app.ts").write_text("export const answer = 42;\n")
+    cache = tmp_path / "cache with spaces"
+    report = capabilities.build_capability_doctor(helper_cache_dir=str(cache))
+    argv = next(
+        p["remedy"]["argv"]
+        for p in report["capabilities"]["providers"]
+        if p["selected_files"]
+    )
+    report["capabilities"]["plugins"] = [
+        {
+            "id": "broken",
+            "status": "invalid",
+            "reason": "Missing plugin manifest",
+            "remedy": {"argv": argv},
+        }
+    ]
+    text = capabilities.render_capability_doctor(report)
+    command = next(
+        line.split(": ", 1)[1]
+        for line in text.splitlines()
+        if "Preparation command" in line
+    )
+    if os.name == "nt":
+        assert command == subprocess.list2cmdline(argv)
+    else:
+        assert shlex.split(command) == argv
+    assert "Missing plugin manifest" in text
+    assert "Validation command" in text

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..config import DEFAULT_WIKI_DIR
+from ..extractors.common import LANGUAGE_EXTENSIONS
 from .bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_entity_page_map,
@@ -42,7 +43,9 @@ from .change_selection import (
     source_relative_paths,
 )
 
-_SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
+_SOURCE_EXTS = tuple(
+    ext for extensions in LANGUAGE_EXTENSIONS.values() for ext in extensions
+)
 _DEPENDENCY_FILES = {
     "requirements.txt",
     "requirements-dev.txt",
@@ -184,10 +187,17 @@ def _load_surface_index_pages(wiki_dir: Path) -> list[dict] | None:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    if payload.get("schema_version") != WIKI_SURFACE_INDEX_SCHEMA_VERSION:
+    if (
+        not isinstance(payload, dict)
+        or payload.get("schema_version") != WIKI_SURFACE_INDEX_SCHEMA_VERSION
+    ):
         return None
     pages = payload.get("pages")
-    return pages if isinstance(pages, list) else None
+    return (
+        pages
+        if isinstance(pages, list) and all(isinstance(page, dict) for page in pages)
+        else None
+    )
 
 
 def _build_surface_index_pages(
@@ -371,6 +381,7 @@ def build_analysis(
     helper_cache_dir: str | None = None,
 ) -> ReviewAnalysis:
     wiki_path = Path(wiki_dir)
+    has_patch = bool(diff_text)
     source_snapshot = _preflight_review_source_selection(
         src_dir,
         wiki_path,
@@ -394,7 +405,9 @@ def build_analysis(
     )
     changed = selected["paths"]
     try:
-        repository_root = Path(_git(src_dir, "rev-parse", "--show-toplevel").strip())
+        repository_root = Path(
+            _git(src_dir, "rev-parse", "--show-toplevel").rstrip("\n")
+        )
     except ValueError:
         repository_root = Path(src_dir).resolve()
     wiki_changed = set()
@@ -438,6 +451,9 @@ def build_analysis(
             source_snapshot,
             include_plugins,
         ),
+        page_contents=_surface_text_pages(
+            wiki_path, {PageKind.MODULES, PageKind.ENTITIES}
+        ),
     )
     symbol_pages = _symbol_reference_pages(wiki_path)
     imports_by_file = {}
@@ -462,6 +478,21 @@ def build_analysis(
             continue
 
         pages = page_map.get(normalized, [])
+        if not (Path(src_dir) / normalized).is_file():
+            findings.append(
+                ReviewFinding(
+                    severity="info",
+                    source_path=normalized,
+                    wiki_pages=pages,
+                    reason="Selected source is absent from the current checkout; retained wiki mappings may describe a deleted or renamed file."
+                    if pages
+                    else "Selected source is absent from the current checkout and has no retained wiki mapping.",
+                    suggested_follow_up="Check the deletion or rename and update or retire any retained documentation."
+                    if pages
+                    else "Check the deletion or rename against the baseline; previous documentation coverage is unknown.",
+                )
+            )
+            continue
         if not pages:
             findings.append(
                 ReviewFinding(
@@ -496,7 +527,9 @@ def build_analysis(
                     severity="info",
                     source_path=normalized,
                     wiki_pages=existing_pages,
-                    reason="Documented source changed, but related wiki page(s) were not changed in this patch.",
+                    reason="Documented source changed, but related wiki page(s) were not changed in this patch."
+                    if has_patch
+                    else "Selected source maps to these existing wiki pages; their accuracy needs review.",
                     suggested_follow_up="Confirm these pages are still accurate or update them with the code change.",
                 )
             )
@@ -548,7 +581,7 @@ def build_analysis(
         for path in infra_changed:
             findings.append(
                 ReviewFinding(
-                    severity="warning",
+                    severity="warning" if has_patch else "info",
                     source_path=path,
                     wiki_pages=sorted(
                         page.relative_path
@@ -560,8 +593,10 @@ def build_analysis(
                             PageKind.LOAD_ORDER,
                         }
                     ),
-                    reason="Dependency or infrastructure file changed without infrastructure or architecture wiki updates.",
-                    suggested_follow_up="Update infrastructure notes or dependency architecture pages for compatibility, dependency, or runtime changes.",
+                    reason="Dependency or infrastructure file changed without infrastructure or architecture wiki updates."
+                    if has_patch
+                    else "Selected dependency or infrastructure path may affect infrastructure or architecture documentation.",
+                    suggested_follow_up="Check the change for compatibility, dependency, or runtime effects and update relevant documentation when needed.",
                 )
             )
 

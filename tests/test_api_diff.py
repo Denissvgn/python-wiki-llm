@@ -1,6 +1,7 @@
 """Versioned exported-contract cases; no application imports or builds."""
 
 import json
+import copy
 import sys
 from pathlib import Path
 
@@ -75,3 +76,147 @@ def test_malformed_candidate_is_unknown_instead_of_a_confirmed_removal(
     report = compare_openapi("baseline.json", "candidate.json", source_root=tmp_path)
     assert report["status"] == "advisory"
     assert report["breaking_count"] == 0
+
+
+@pytest.mark.parametrize("schema_type", ["string", "array", "object"])
+def test_inapplicable_schema_keywords_do_not_add_request_requirements(
+    tmp_path, schema_type
+):
+    schema = {"type": schema_type}
+    if schema_type == "array":
+        schema["items"] = {"type": "string"}
+    baseline = {
+        "openapi": "3.1.0",
+        "paths": {
+            "/items": {
+                "post": {
+                    "requestBody": {
+                        "content": {"application/json": {"schema": schema}}
+                    },
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        },
+    }
+    candidate = copy.deepcopy(baseline)
+    changed = candidate["paths"]["/items"]["post"]["requestBody"]["content"][
+        "application/json"
+    ]["schema"]
+    if schema_type == "object":
+        changed["items"] = {"required": ["ignored"]}
+    else:
+        changed["required"] = ["ignored"]
+        changed["properties"] = {"ignored": {"type": "object", "required": ["nested"]}}
+    for name, document in (("baseline", baseline), ("candidate", candidate)):
+        (tmp_path / f"{name}.json").write_text(json.dumps(document))
+    report = compare_openapi("baseline.json", "candidate.json", source_root=tmp_path)
+    assert report["breaking_count"] == 0
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize(
+    "malformed",
+    [
+        {"parameters": None},
+        {"parameters": [None]},
+        {"parameters": [{"in": "query", "name": "q", "required": "false"}]},
+        {"parameters": [{"in": "path", "name": "missing", "required": True}]},
+        {"parameters": [{"in": "query", "name": "q"}, {"in": "query", "name": "q"}]},
+        {"requestBody": {"required": "false", "content": {"application/json": {}}}},
+        {"responses": {"200": None}},
+        {"responses": {}},
+    ],
+)
+def test_malformed_wire_evidence_cannot_prove_a_break(tmp_path, side, malformed):
+    baseline = {
+        "openapi": "3.1.0",
+        "paths": {
+            "/items": {
+                "get": {
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        },
+    }
+    candidate = copy.deepcopy(baseline)
+    candidate["paths"]["/items"]["get"]["parameters"] = [
+        {"in": "query", "name": "q", "required": True, "schema": {"type": "string"}},
+    ]
+    documents = {"baseline": baseline, "candidate": candidate}
+    documents[side]["paths"]["/items"]["get"].update(malformed)
+    for name, document in documents.items():
+        (tmp_path / f"{name}.json").write_text(json.dumps(document))
+    report = compare_openapi("baseline.json", "candidate.json", source_root=tmp_path)
+    assert report["status"] == "advisory"
+    assert report["breaking_count"] == 0
+    assert any(f["code"] == "unresolved-contract" for f in report["findings"])
+
+
+def test_referenced_readonly_object_has_no_required_request_fields(tmp_path):
+    baseline = {
+        "openapi": "3.1.0",
+        "paths": {
+            "/items": {
+                "post": {
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "server": {
+                                            "$ref": "#/components/schemas/Server"
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    },
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "Server": {
+                    "readOnly": True,
+                    "type": "object",
+                    "properties": {"id": {"type": "string"}},
+                }
+            }
+        },
+    }
+    candidate = copy.deepcopy(baseline)
+    candidate["components"]["schemas"]["Server"]["required"] = ["id"]
+    for name, document in (("baseline", baseline), ("candidate", candidate)):
+        (tmp_path / f"{name}.json").write_text(json.dumps(document))
+    report = compare_openapi("baseline.json", "candidate.json", source_root=tmp_path)
+    assert report["breaking_count"] == 0
+    assert not any(f["code"] == "required-input-added" for f in report["findings"])
+
+
+def test_unknown_operation_does_not_hide_break_in_a_path_prefix(tmp_path):
+    baseline = {
+        "openapi": "3.1.0",
+        "paths": {
+            path: {
+                "get": {
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+            for path in ("/items", "/items/child")
+        },
+    }
+    candidate = copy.deepcopy(baseline)
+    candidate["paths"]["/items"]["get"]["responses"] = {
+        "404": {"description": "Missing"}
+    }
+    candidate["paths"]["/items/child"]["get"]["parameters"] = [{"$ref": "#/missing"}]
+    for name, document in (("baseline", baseline), ("candidate", candidate)):
+        (tmp_path / f"{name}.json").write_text(json.dumps(document))
+    report = compare_openapi("baseline.json", "candidate.json", source_root=tmp_path)
+    assert report["breaking_count"] == 1
+    assert any(
+        f["code"] == "success-response-removed" and f["severity"] == "breaking"
+        for f in report["findings"]
+    )

@@ -55,7 +55,7 @@ def build_impact(
         if (operation.get("handler") or {}).get("file") in paths
     ]
     try:
-        prefix = _git(src_dir, "rev-parse", "--show-prefix").strip()
+        prefix = _git(src_dir, "rev-parse", "--show-prefix").rstrip("\n")
     except ValueError:
         prefix = ""
     findings = []

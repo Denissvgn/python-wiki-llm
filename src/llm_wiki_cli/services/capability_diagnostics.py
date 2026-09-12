@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import os
+import shlex
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -254,6 +256,12 @@ def build_capability_doctor(wiki_dir="docs/llm_wiki", src_dir=".", **kwargs):
 
 
 def render_capability_doctor(report):
+    from .doctor_service import _render_doctor_payload
+
+    def command(argv):
+        return subprocess.list2cmdline(argv) if os.name == "nt" else shlex.join(argv)
+
+    shell = "cmd.exe" if os.name == "nt" else "shell"
     lines = [f"Doctor: {report['status']} ({DOCTOR_CAPABILITY_VERSION})"]
     for provider in report["capabilities"]["providers"]:
         if provider["selected_files"]:
@@ -263,15 +271,24 @@ def render_capability_doctor(report):
             if provider["remedy"]:
                 if provider["remedy"]["prerequisite"]:
                     lines.append("  " + provider["remedy"]["prerequisite"])
-                lines.append("  Preparation argv: " + repr(provider["remedy"]["argv"]))
+                lines.append(
+                    f"  Preparation command ({shell}): "
+                    + command(provider["remedy"]["argv"])
+                )
     for item in report["capabilities"]["unsupported_inputs"]:
         lines.append(
             f"{item['language']}: {item['status']} ({len(item['paths'])} files)"
         )
     for item in report["capabilities"]["plugins"]:
         lines.append(f"Plugin {item['id']}: {item['status']}")
+        if item.get("reason"):
+            lines.append("  " + item["reason"])
+        if item.get("remedy"):
+            lines.append(
+                f"  Validation command ({shell}): " + command(item["remedy"]["argv"])
+            )
     if report["health_reason"]:
         lines.append(report["health_reason"])
     elif report["health"]:
-        lines.append("Knowledge health: " + report["health"]["status"])
+        lines.append(_render_doctor_payload(report["health"]).rstrip("\n"))
     return "\n".join(lines) + "\n"

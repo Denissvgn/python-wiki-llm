@@ -5,6 +5,10 @@ import pytest
 from llm_wiki_cli.services.bootstrap_runtime import build_module_page_map
 from llm_wiki_cli.services.extraction_service import get_inventory_result
 from llm_wiki_cli.services.impact import build_impact, render_github, render_summary
+from llm_wiki_cli.services.wiki_surface_index import (
+    SURFACE_INDEX_FILENAME,
+    WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+)
 from tests.test_change_selection import git
 
 
@@ -97,3 +101,64 @@ def test_github_bounds_and_untrusted_path_escaping(tmp_path, monkeypatch):
     assert "omitted: 10" in summary
     assert len(summary.encode("utf-8")) <= 65536
     assert "<script>" not in summary
+
+
+def test_impact_does_not_claim_wiki_was_unchanged(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    git(tmp_path, "init", "-q")
+    (tmp_path / "app.py").write_text("def run(): return 1\n")
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "example"\n')
+    wiki = tmp_path / "wiki"
+    (wiki / "modules").mkdir(parents=True)
+    (wiki / "modules/app.md").write_text("# app\nReturns 1.\n")
+    git(tmp_path, "add", ".")
+    git(tmp_path, "commit", "-qm", "base")
+    (tmp_path / "app.py").write_text("def run(): return 2\n")
+    (wiki / "modules/app.md").write_text("# app\nReturns 2.\n")
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "renamed"\n')
+    git(tmp_path, "add", ".")
+    patch = git(tmp_path, "diff", "--cached")
+    report = build_impact(patch, wiki_dir="wiki")
+    assert report == build_impact(wiki_dir="wiki", changes={"mode": "staged"})
+    assert report == build_impact(
+        wiki_dir="wiki",
+        changes={
+            "mode": "paths",
+            "paths": ["app.py", "pyproject.toml", "wiki/modules/app.md"],
+        },
+    )
+    assert len(report["findings"]) == 2
+    assert all(f["severity"] == "info" for f in report["findings"])
+    assert all(
+        "were not changed" not in f["reason"] and "without" not in f["reason"]
+        for f in report["findings"]
+    )
+
+
+def test_deleted_sources_preserve_unknown_or_retained_coverage(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    wiki = tmp_path / "wiki"
+    (wiki / "modules").mkdir(parents=True)
+    (wiki / "modules/old.md").write_text("# Old\n")
+    (wiki / SURFACE_INDEX_FILENAME).write_text(
+        json.dumps(
+            {
+                "schema_version": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
+                "pages": [
+                    {"source_path": "old.py", "canonical_path": "modules/old.md"}
+                ],
+            }
+        )
+    )
+    report = build_impact(
+        wiki_dir="wiki",
+        changes={"mode": "paths", "paths": ["old.py", "gone.hs", "gone.lhs"]},
+    )
+    assert len(report["findings"]) == 3
+    by_source = {f["source_path"]: f for f in report["findings"]}
+    assert by_source["old.py"]["wiki_pages"] == ["modules/old.md"]
+    assert "retire" in by_source["old.py"]["suggested_follow_up"]
+    for path in ("gone.hs", "gone.lhs"):
+        assert "unknown" in by_source[path]["suggested_follow_up"]
+        assert by_source[path]["wiki_pages"] == []
+    assert all(f["severity"] == "info" for f in report["findings"])
