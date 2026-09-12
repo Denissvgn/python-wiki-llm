@@ -47,10 +47,7 @@ bounds, and no-execution rules are documented in
 identity also version `.llm-wiki-governance.json`, the narrow authority for
 stable UIDs, aliases, lifecycle events, and scoped human reviews. Generated
 knowledge and manifest data only commit and project that ledger. Disposable
-machine-check results live separately in `.llm-wiki-verification.json`. The
-detailed authority,
-load-state, commit, and compatibility decisions are recorded in
-[ADR-0001](docs/architecture/0001-native-knowledge-authority-state-and-rollout.md).
+machine-check results live separately in `.llm-wiki-verification.json`.
 Generated Mermaid diagrams, including bounded call-sequence, data-flow,
 dependency, and relationship diagrams when present, plus generated tables,
 links, headings, canonical filenames, and machine-readable artifacts are

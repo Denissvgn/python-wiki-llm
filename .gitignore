@@ -12,8 +12,23 @@ build/
 .git/llm-wiki.lock
 .git/llm-wiki-breaker.json
 .git/llm-wiki-sync.log
+# Local planning and agent context
+/backlog/
+/plans/
+/planning/
+/roadmap/
 reports/
-docs/adr/
-docs/consolidated_backlog_*.md
-docs/planned_tasks_*.md
+/docs/adr/
+/docs/architecture/
+/docs/backlog/
+/docs/plans/
+/docs/planning/
+/docs/roadmap/
+/docs/*backlog*.md
+/docs/*plan*.md
+/docs/*roadmap*.md
+/docs/*handoff*.md
+/docs/*closeout*.md
 AGENTS.md
+/.agents/
+/.codex/
