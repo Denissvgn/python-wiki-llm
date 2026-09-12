@@ -653,7 +653,7 @@ unevaluated and the command exits `2`; otherwise it retains the health exit code
 Preparation is an explicit action and may download dependencies or compile a
 bundled helper. Append `--plan --format json` to a suggested preparation command
 to inspect it first. Text output includes a quoted shell command (or a
-`cmd.exe` command on Windows), plugin validation details, and the full health
+PowerShell command on Windows), plugin validation details, and the full health
 summary when health can be evaluated.
 
 ## `context`

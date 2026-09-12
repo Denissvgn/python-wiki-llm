@@ -3,9 +3,11 @@
 import json
 import os
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -137,7 +139,10 @@ def test_text_preserves_health_details(tmp_path, monkeypatch):
     assert "Availability:" in text
 
 
-def test_text_remedy_quoting_and_plugin_failure_details(tmp_path, monkeypatch):
+@pytest.mark.parametrize("platform", ["posix", "nt"])
+def test_text_remedy_quoting_and_plugin_failure_details(
+    tmp_path, monkeypatch, platform
+):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "app.ts").write_text("export const answer = 42;\n")
     cache = tmp_path / "cache with spaces"
@@ -155,15 +160,71 @@ def test_text_remedy_quoting_and_plugin_failure_details(tmp_path, monkeypatch):
             "remedy": {"argv": argv},
         }
     ]
+    argv[-1] = "C:\\cache&' $HOME %TEMP% ! ` ‘left’ ‚low‛"
+    monkeypatch.setattr(capabilities, "os", SimpleNamespace(name=platform))
     text = capabilities.render_capability_doctor(report)
     command = next(
         line.split(": ", 1)[1]
         for line in text.splitlines()
         if "Preparation command" in line
     )
-    if os.name == "nt":
-        assert command == subprocess.list2cmdline(argv)
+    if platform == "nt":
+        assert "Preparation command (PowerShell): & '" in text
+        assert command.endswith(
+            "'--cache-dir' 'C:\\cache&'' $HOME %TEMP% ! ` ‘‘left’’ ‚‚low‛‛'"
+        )
     else:
         assert shlex.split(command) == argv
     assert "Missing plugin manifest" in text
     assert "Validation command" in text
+
+
+@pytest.mark.skipif(os.name != "nt", reason="requires a native Windows PowerShell host")
+def test_windows_text_command_preserves_literal_arguments():
+    powershell = shutil.which("powershell.exe") or shutil.which("pwsh")
+    if powershell is None:
+        pytest.skip("PowerShell is unavailable")
+    arguments = [
+        r"C:\source&cache",
+        r"C:\source's workspace",
+        r"C:\literal$HOME%TEMP%!`name",
+        r"C:\left‘right’low‚high‛",
+    ]
+    report = {
+        "status": "unknown",
+        "health": None,
+        "health_reason": "Prerequisite inspection only",
+        "capabilities": {
+            "providers": [],
+            "unsupported_inputs": [],
+            "plugins": [
+                {
+                    "id": "echo-arguments",
+                    "status": "invalid",
+                    "remedy": {
+                        "argv": [
+                            sys.executable,
+                            "-I",
+                            "-c",
+                            "import json, sys; print(json.dumps(sys.argv[1:]))",
+                            *arguments,
+                        ]
+                    },
+                }
+            ],
+        },
+    }
+    text = capabilities.render_capability_doctor(report)
+    command = next(
+        line.split(": ", 1)[1]
+        for line in text.splitlines()
+        if "Validation command" in line
+    )
+    result = subprocess.run(
+        [powershell, "-NoProfile", "-NonInteractive", "-Command", command],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+    )
+    assert json.loads(result.stdout) == arguments

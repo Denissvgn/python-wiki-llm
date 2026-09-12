@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import shlex
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -259,9 +258,13 @@ def render_capability_doctor(report):
     from .doctor_service import _render_doctor_payload
 
     def command(argv):
-        return subprocess.list2cmdline(argv) if os.name == "nt" else shlex.join(argv)
+        if os.name == "nt":
+            # PowerShell recognizes typographic single quotes as delimiters too.
+            quotes = str.maketrans({char: char * 2 for char in "'‘’‚‛"})
+            return "& " + " ".join("'" + arg.translate(quotes) + "'" for arg in argv)
+        return shlex.join(argv)
 
-    shell = "cmd.exe" if os.name == "nt" else "shell"
+    shell = "PowerShell" if os.name == "nt" else "POSIX shell"
     lines = [f"Doctor: {report['status']} ({DOCTOR_CAPABILITY_VERSION})"]
     for provider in report["capabilities"]["providers"]:
         if provider["selected_files"]:
