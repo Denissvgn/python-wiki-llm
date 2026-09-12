@@ -793,9 +793,9 @@ def test_doctor_reuses_single_lint_verification_receipt_read(
     assert report.verification_receipt["state"] == "absent"
 
 
-def test_readme_documents_doctor_contract_and_all_exit_codes() -> None:
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    section = readme.split("### `doctor`", 1)[1].split("\n### ", 1)[0]
+def test_cli_reference_documents_doctor_contract_and_all_exit_codes() -> None:
+    guide = (ROOT / "docs/cli-reference.md").read_text(encoding="utf-8")
+    section = guide.split("## `doctor`", 1)[1].split("\n## ", 1)[0]
 
     assert "llm-wiki doctor" in section
     assert "llm-wiki-doctor/v1" in section

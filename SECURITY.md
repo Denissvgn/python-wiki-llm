@@ -34,17 +34,22 @@ privately or in a minimally revealing public PR, then documented after release.
 ## Security Model and High-Risk Areas
 
 LLM Wiki CLI runs locally on developer machines and intentionally integrates
-with source trees, git hooks, and external coding-agent CLIs. The highest-risk
-areas are:
+with source trees, prepared extractor helpers, and external coding-agent CLIs.
+The highest-risk areas are:
 
-- Headless agent execution from post-commit hooks.
+- Explicit manual agent execution through `trigger-agent`.
 - Prompt files generated from git diffs and source inventory.
 - Path handling for `--src-dir`, `--wiki-dir`, and generated page links.
-- Subprocess execution for TypeScript, Go, and Rust extractors.
+- Subprocess execution for TypeScript/JavaScript, Go, Rust, and Haskell helpers.
 - Preservation and migration of existing wiki content.
 
 Do not run automated sync against untrusted repositories or untrusted agent
 CLIs. Review generated prompts and wiki diffs when working with sensitive code.
+
+See the [security model](docs/security-model.md) for source-plugin trust,
+read-only knowledge, and standalone workspace boundaries. Current releases do
+not install Git hooks; [upgrade guidance](docs/automation.md#git-hook-retirement)
+covers removal of recognized legacy hooks.
 
 ## Handling Secrets
 

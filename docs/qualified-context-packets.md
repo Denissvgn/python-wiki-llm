@@ -91,7 +91,7 @@ packet schema. The outer accounting includes the nested packet, metadata, and
 final newline. To use the existing packet validator, serialize the nested
 packet with the canonical JSON rules above. The outer change-selection and
 budget accounting fields are outside that packet's digest. See the
-[context command](../README.md#context) for counter identity, explicit changes,
+[context command](cli-reference.md#context) for counter identity, explicit changes,
 estimated mode, and cannot-fit behavior.
 
 Construction captures one source inventory and one wiki and knowledge read

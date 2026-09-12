@@ -277,9 +277,9 @@ def test_readme_current_support_table_mentions_python_3_10_plus():
     assert "| Python | stdlib `ast` | Python 3.9+ |" not in readme
 
 
-def test_readme_describes_entity_reference_tables_as_bounded_presentations():
-    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    normalized = " ".join(readme.split())
+def test_wiki_guide_describes_entity_reference_tables_as_bounded_presentations():
+    guide = (PROJECT_ROOT / "docs/wiki-guide.md").read_text(encoding="utf-8")
+    normalized = " ".join(guide.split())
 
     assert "at most 12 logical rows" in normalized
     assert "report exact coverage and omission counts when truncated" in normalized
@@ -311,8 +311,8 @@ def test_changelog_1_2_0_documents_python_support_floor():
     assert "release automation covers Python 3.10 and 3.13" in release_notes
 
 
-def test_readme_documents_bundled_skills():
-    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+def test_cli_reference_documents_bundled_skills():
+    guide = (PROJECT_ROOT / "docs/cli-reference.md").read_text(encoding="utf-8")
 
     for skill_id in [
         "agent-docs",
@@ -332,14 +332,14 @@ def test_readme_documents_bundled_skills():
         "wiki-semantic-enhance",
         "wiki-sync",
     ]:
-        assert f"`{skill_id}`" in readme
+        assert f"`{skill_id}`" in guide
 
 
 def test_public_lifecycle_docs_scope_legacy_generic_schema_migration():
-    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    guide = (PROJECT_ROOT / "docs/cli-reference.md").read_text(encoding="utf-8")
     release_notes = _changelog_section("## [1.7.0]")
 
-    for text in (readme, release_notes):
+    for text in (guide, release_notes):
         normalized = " ".join(text.split())
         assert "configured agent's current schema path" in normalized
         assert "`.agents.md`" in normalized
@@ -347,12 +347,12 @@ def test_public_lifecycle_docs_scope_legacy_generic_schema_migration():
         assert "user-owned, manually managed content" in normalized
 
 
-def test_readme_documents_autonomous_agent_consumption_paths():
-    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    assert "For autonomous agents" in readme
-    assert "llm-wiki init --agent generic" in readme
-    assert "llm-wiki skills export --dest" in readme
-    assert "usage-examples" in readme
+def test_wiki_guide_documents_autonomous_agent_consumption_paths():
+    guide = (PROJECT_ROOT / "docs/wiki-guide.md").read_text(encoding="utf-8")
+    assert "For autonomous agents" in guide
+    assert "llm-wiki init --agent generic" in guide
+    assert "llm-wiki skills export --dest" in guide
+    assert "usage-examples" in guide
 
 
 def test_readme_uses_distribution_name_for_uninstall():
@@ -384,11 +384,11 @@ def test_readme_documents_fork_first_policy():
     assert not (PROJECT_ROOT / ".github/PULL_REQUEST_TEMPLATE.md").exists()
 
 
-def test_readme_documents_resource_aware_execution():
-    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    text = " ".join(readme.split())
+def test_cli_reference_documents_resource_aware_execution():
+    guide = (PROJECT_ROOT / "docs/cli-reference.md").read_text(encoding="utf-8")
+    text = " ".join(guide.split())
 
-    assert "### Resource-aware execution" in readme
+    assert "## Resource-aware execution" in guide
     assert "run one heavy gate at a time" in text
     assert "The supervising agent owns that schedule" in text
     assert "Use `--jobs 1` for interactive source scans" in text
@@ -397,8 +397,8 @@ def test_readme_documents_resource_aware_execution():
     assert "not proof that `llm-wiki` leaked a watcher" in text
     assert "For a narrow task with supplied files or a supplied diff" in text
     assert "budget and focus bound emitted output after a full deep inventory" in text
-    assert "Extractor plan: requested=auto resolved=20" in readme
-    assert '"extractor_jobs"' in readme
+    assert "Extractor plan: requested=auto resolved=20" in guide
+    assert '"extractor_jobs"' in guide
     for field in [
         "requested_jobs",
         "resolved_jobs",
@@ -408,7 +408,7 @@ def test_readme_documents_resource_aware_execution():
         "sequential_plan_ids",
         "cache_elided_plan_ids",
     ]:
-        assert field in readme
+        assert field in guide
     assert "Default lint report serialization, MCP lint responses" in text
     assert "the `llm-wiki-context/v1` protocol stay unchanged" in text
 
@@ -416,7 +416,11 @@ def test_readme_documents_resource_aware_execution():
 def test_release_metadata_documents_surfaces_and_platforms():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     release_notes = _changelog_section("## [1.0.0]")
-    release_metadata = " ".join("\n".join([readme, release_notes]).split())
+    guides = [
+        (PROJECT_ROOT / path).read_text(encoding="utf-8")
+        for path in ("docs/wiki-guide.md", "docs/cli-reference.md")
+    ]
+    release_metadata = " ".join("\n".join([readme, *guides, release_notes]).split())
 
     for required in [
         "canonical wiki surface registry",
@@ -440,19 +444,19 @@ def test_release_metadata_documents_surfaces_and_platforms():
         assert required in release_metadata
 
 
-def test_readme_development_commands_use_project_virtualenv():
-    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    readme_lines = {line.strip() for line in readme.splitlines()}
+def test_wiki_guide_source_commands_use_project_virtualenv():
+    guide = (PROJECT_ROOT / "docs/wiki-guide.md").read_text(encoding="utf-8")
+    guide_lines = {line.strip() for line in guide.splitlines()}
 
     for required in [
         '.venv/bin/pip install -e ".[dev]"',
         '.venv/bin/pip install -e ".[dev,mcp]"',
         ".venv/bin/python -m build",
     ]:
-        assert required in readme
+        assert required in guide
 
-    assert 'pip install -e ".[dev]"' not in readme_lines
-    assert not any("/pytest" in line for line in readme_lines)
+    assert 'pip install -e ".[dev]"' not in guide_lines
+    assert not any("/pytest" in line for line in guide_lines)
 
 
 def test_changelog_1_0_0_documents_public_surfaces():

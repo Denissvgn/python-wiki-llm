@@ -77,10 +77,12 @@ def test_ci_check_schema_is_registered_and_generic_lint_shape_is_unchanged(
     assert ci_report.validate_ci_check_payload(payload, cli_exit=0) is payload
 
 
-def test_readme_documents_the_versioned_ci_health_envelope() -> None:
-    readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")
-    section = readme.split("### `lint` and `ci-check`", 1)[1].split(
-        "\n### `doctor`", 1
+def test_cli_reference_documents_the_versioned_ci_health_envelope() -> None:
+    guide = (Path(__file__).parents[1] / "docs/cli-reference.md").read_text(
+        encoding="utf-8"
+    )
+    section = guide.split("## `lint` and `ci-check`", 1)[1].split(
+        "\n## `doctor`", 1
     )[0]
 
     assert "llm-wiki-ci-check/v1" in section

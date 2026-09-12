@@ -124,9 +124,11 @@ def test_upgrade_no_skills_parses_expanded_profile_opt_out(monkeypatch) -> None:
     assert seen["skills"] is False
 
 
-def test_readme_nondefault_rollback_sequence_keeps_one_wiki_dir() -> None:
-    readme = (Path(__file__).parents[1] / "README.md").read_text(encoding="utf-8")
-    section = readme.split(
+def test_cli_reference_nondefault_rollback_sequence_keeps_one_wiki_dir() -> None:
+    guide = (Path(__file__).parents[1] / "docs/cli-reference.md").read_text(
+        encoding="utf-8"
+    )
+    section = guide.split(
         "For a non-default installation, carry the same existing path", 1
     )[1]
     command_block = section.split("```bash", 1)[1].split("```", 1)[0]
