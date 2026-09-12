@@ -14,4 +14,6 @@ build/
 .git/llm-wiki-sync.log
 reports/
 docs/adr/
+docs/consolidated_backlog_*.md
+docs/planned_tasks_*.md
 AGENTS.md
