@@ -22,6 +22,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "adopt_documentation_wiki_snapshot",
     "bootstrap_wiki",
     "build_calibration_agent_packet",
+    "build_budgeted_context",
     "build_context",
     "build_qualified_context",
     "build_documentation_agent_packet",
@@ -69,6 +70,7 @@ _PUBLIC_FUNCTION_NAMES = (
 
 _INVALID_REQUEST_FAILURES = frozenset(
     {
+        "build_budgeted_context",
         "build_context",
         "build_qualified_context",
         "build_documentation_query_service",
@@ -227,6 +229,9 @@ def _failure_cases(tmp_path: Path):
             str(tmp_path / "new-wiki"),
         ),
         "extract_source": lambda: api.extract_source(str(missing_source)),
+        "build_budgeted_context": lambda: api.build_budgeted_context(
+            ".", request={"budget_tokens": 0}
+        ),
         "build_context": lambda: api.build_context(".", budget=0),
         "build_qualified_context": lambda: api.build_qualified_context(
             ".",

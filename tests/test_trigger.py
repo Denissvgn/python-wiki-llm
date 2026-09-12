@@ -67,6 +67,7 @@ def test_trigger_rejects_omitted_persisted_explicit_profile_before_git(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.chdir(tmp_path)
+    Path(".git").mkdir()
     selected = Path("selected")
     selected.mkdir()
     (selected / "app.py").write_text("VALUE = 1\n", encoding="utf-8")
@@ -351,7 +352,9 @@ class TestTriggerGitFailure:
         mock_run.side_effect = subprocess.CalledProcessError(1, "git diff")
         git_dir = tmp_project / ".git"
 
-        trigger_cmd.run(_make_args())
+        with pytest.raises(SystemExit) as caught:
+            trigger_cmd.run(_make_args())
+        assert caught.value.code == 1
         state = circuit_breaker.load_state(git_dir)
         assert state["consecutive_failures"] == 1
         assert state["state"] == "closed"
@@ -474,7 +477,9 @@ class TestTriggerPromptHandling:
         with patch(
             "llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run
         ):
-            trigger_cmd.run(_make_args(agent="claude"))
+            with pytest.raises(SystemExit) as caught:
+                trigger_cmd.run(_make_args(agent="claude"))
+            assert caught.value.code == 1
 
         assert calls == [["git", "diff", "HEAD~1..HEAD"]]
         assert "Invalid agent prompt configuration" in capsys.readouterr().out
@@ -503,7 +508,55 @@ class TestTriggerPromptHandling:
         with patch(
             "llm_wiki_cli.commands.trigger_cmd.subprocess.run", side_effect=fake_run
         ):
-            trigger_cmd.run(_make_args(agent="aider"))
+            with pytest.raises(SystemExit) as caught:
+                trigger_cmd.run(_make_args(agent="aider"))
+            assert caught.value.code == 2
 
         state = circuit_breaker.load_state(tmp_project / ".git")
         assert state["consecutive_failures"] == 1
+
+
+@pytest.mark.parametrize("failure,code", [
+    ("timeout", 124), ("launch", 1), ("unsupported", 1), ("exit", 7),
+    ("signal", 1), ("write", 1), ("diff-timeout", 1), ("inventory", 1),
+])
+def test_failure_reaches_top_level_cli(failure, code, tmp_project, monkeypatch):
+    from llm_wiki_cli import cli
+
+    events = []
+    monkeypatch.setattr(trigger_cmd, "record_event", lambda name, data: events.append((name, data)))
+    monkeypatch.setattr(trigger_cmd, "_preflight_trigger_source_selection", lambda *a: None)
+    monkeypatch.setattr(trigger_cmd, "_filter_trigger_diff", lambda *a, **kw: a[4])
+    monkeypatch.setattr(trigger_cmd, "_build_sync_prompt", lambda *a, **kw: "prompt")
+    if failure == "inventory":
+        def bad_inventory(*a, **kw):
+            trigger_cmd._record_trigger_failure(a[0], a[1], a[3], exit_code=1)
+        monkeypatch.setattr(trigger_cmd, "_build_sync_prompt", bad_inventory)
+    if failure == "write":
+        def bad_write(*a):
+            raise OSError("cannot write prompt")
+        monkeypatch.setattr(trigger_cmd, "_write_prompt_file", bad_write)
+
+    def execute(cmd, **kw):
+        if cmd[:2] == ["git", "diff"]:
+            if failure == "diff-timeout":
+                raise subprocess.TimeoutExpired(cmd, 30)
+            return subprocess.CompletedProcess(cmd, 0, stdout="diff\n")
+        if failure == "timeout":
+            raise subprocess.TimeoutExpired(cmd, 10)
+        if failure == "launch":
+            raise FileNotFoundError("missing runner")
+        return subprocess.CompletedProcess(cmd, -15 if failure == "signal" else 7)
+
+    monkeypatch.setattr(trigger_cmd.subprocess, "run", execute)
+    if failure == "unsupported":
+        monkeypatch.setattr(trigger_cmd, "_agent_command", lambda *a: None)
+    agent = "claude"
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "trigger-agent", "--agent", agent])
+    with pytest.raises(SystemExit) as caught:
+        cli.main()
+    assert caught.value.code == code
+    finishes = [data for name, data in events if name == "trigger_finish"]
+    assert len(finishes) == 1
+    assert finishes[0]["breaker_result"] == "failure"
+    assert circuit_breaker.load_state(tmp_project / ".git")["consecutive_failures"] == 1

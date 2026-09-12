@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 from .commands import (
+    api_diff_cmd,
     bump_cmd,
     ci_check_cmd,
     docs_cmd,
@@ -17,8 +18,10 @@ from .commands import (
     obsidian_cmd,
     plugins_cmd,
     prepare_extractors_cmd,
+    queue_cmd,
     release_cmd,
     review_cmd,
+    search_cmd,
     site_cmd,
     skills_cmd,
     status_cmd,
@@ -118,6 +121,7 @@ def _add_jobs_argument(parser):
 
 
 _COMMAND_MODULES = {
+    "api-diff": api_diff_cmd,
     "init": init_cmd,
     "extract": extract_cmd,
     "lint": lint_cmd,
@@ -134,6 +138,7 @@ _COMMAND_MODULES = {
     "generate-prompt": generate_prompt_cmd,
     "metrics": metrics_cmd,
     "review": review_cmd,
+    "search": search_cmd,
     "uninstall": uninstall_cmd,
     "status": status_cmd,
     "mcp": mcp_cmd,
@@ -147,6 +152,7 @@ _COMMAND_MODULES = {
     "context": context_cmd,
     "docs": docs_cmd,
     "doctor": doctor_cmd,
+    "queue": queue_cmd,
 }
 
 HELPER_CACHE_HELP = (
@@ -156,6 +162,17 @@ INCLUDE_TEST_LANGUAGES = ("go",)
 INCLUDE_TESTS_HELP = (
     "Include language-specific test files in extraction; may be repeated"
 )
+
+
+def _add_queue_command(subparsers):
+    parser = subparsers.add_parser("queue", help="Rank advisory managed-wiki maintenance work")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--limit", type=int, default=30)
+    parser.add_argument("--format", choices=("text", "json"), default="text")
+    _add_source_selection_argument(parser)
+    _add_helper_cache_argument(parser)
 
 
 def _build_parser():
@@ -185,8 +202,11 @@ def _register_commands(subparsers):
     _add_generate_prompt_command(subparsers)
     _add_metrics_command(subparsers)
     _add_review_command(subparsers)
+    _add_search_command(subparsers)
+    _add_api_diff_command(subparsers)
     _add_uninstall_command(subparsers)
     _add_status_command(subparsers)
+    _add_queue_command(subparsers)
     _add_mcp_command(subparsers)
     _add_obsidian_command(subparsers)
     _add_site_command(subparsers)
@@ -205,6 +225,7 @@ def _add_doctor_command(subparsers):
         "doctor",
         help="Report current wiki knowledge health with CI-friendly exit codes",
     )
+    doctor_parser.add_argument("--capabilities", action="store_true", help="Opt into doctor v2 with provider prerequisites and corrective commands")
     doctor_parser.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
@@ -1196,6 +1217,28 @@ def _add_metrics_command(subparsers):
     _add_source_selection_argument(metrics_parser)
 
 
+def _add_api_diff_command(subparsers):
+    parser = subparsers.add_parser("api-diff", help="Check compatibility of two exported OpenAPI contracts")
+    parser.add_argument("--baseline", required=True)
+    parser.add_argument("--candidate", required=True)
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--format", choices=("json", "markdown"), default="json")
+
+
+def _add_search_command(subparsers):
+    parser = subparsers.add_parser("search", help="Search wiki text, titles, symbols, and paths")
+    parser.add_argument("query", help="Search query or exact page ID")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--kind", action="append", help="Restrict page kind; repeatable")
+    parser.add_argument("--limit", type=int, default=20, help="Maximum results, capped at 100")
+    parser.add_argument("--mode", choices=["ranked", "substring"], default="ranked")
+    parser.add_argument("--format", choices=["json", "text"], default="json")
+    _add_source_selection_argument(parser)
+
+
 def _add_review_command(subparsers):
     review_parser = subparsers.add_parser(
         "review", help="Run a static wiki-aware review of proposed code changes"
@@ -1213,15 +1256,20 @@ def _add_review_command(subparsers):
     )
     review_parser.add_argument("--base", help="Base ref for git diff comparison")
     review_parser.add_argument("--head", help="Head ref for git diff comparison")
+    review_parser.add_argument("--staged", action="store_true", help="Review staged changes")
+    review_parser.add_argument("--changed-path", action="append", help="Changed path relative to --src-dir; repeatable")
     review_parser.add_argument(
         "--patch", metavar="FILE|-", help="Read an explicit patch from a file or stdin"
     )
     review_parser.add_argument(
         "--format",
-        choices=["markdown", "json"],
+        choices=["markdown", "json", "impact-json", "impact-markdown", "github"],
         default="markdown",
         help="Output format (default: markdown)",
     )
+    review_parser.add_argument("--summary-output", metavar="FILE", help="Write a bounded impact summary")
+    review_parser.add_argument("--impact-output", metavar="FILE", help="Write the portable impact JSON")
+    review_parser.add_argument("--helper-cache-dir", metavar="DIR", help="Prepared extractor helper cache for impact")
     _add_source_selection_argument(review_parser)
 
 
@@ -1887,6 +1935,18 @@ def _add_context_command(subparsers):
         type=int,
         help="Token budget for the context payload (required unless --request is used)",
     )
+    context_parser.add_argument(
+        "--budget-mode", choices=["exact", "estimated"],
+        help="Opt into v3 accounting of the complete rendered output",
+    )
+    context_parser.add_argument(
+        "--tokenizer", metavar="FILE",
+        help="Local tokenizer.json for exact v3 counting; never downloaded automatically",
+    )
+    context_parser.add_argument("--base", help="Base Git revision (opts into v3 output)")
+    context_parser.add_argument("--head", help="Head Git revision; requires --base")
+    context_parser.add_argument("--staged", action="store_true", help="Use staged changes (v3)")
+    context_parser.add_argument("--changed-path", action="append", help="Changed source-relative path; repeatable (v3)")
     context_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan (default: .)"
     )

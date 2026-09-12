@@ -10,6 +10,14 @@ inputs:
     description: Repository-relative source root; its default source-selection profile is discovered automatically.
     required: false
     default: .
+  impact-base:
+    description: Optional fetched base commit for advisory change impact; requires impact-head.
+    required: false
+    default: ""
+  impact-head:
+    description: Optional fetched candidate commit for advisory change impact; requires impact-base.
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -417,6 +425,37 @@ runs:
         --jobs 1
         --knowledge-drift-report
 
+    - name: Report advisory change impact
+      if: ${{ !cancelled() && inputs.impact-base != '' && inputs.impact-head != '' }}
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
+        INPUT_IMPACT_BASE: ${{ inputs.impact-base }}
+        INPUT_IMPACT_HEAD: ${{ inputs.impact-head }}
+      run: |
+        set -euo pipefail
+        if [[ -z "${LLM_WIKI_EVIDENCE_DIR:-}" ]]; then
+          printf 'LLM Wiki impact unavailable: runner evidence setup failed.\n'
+          exit 0
+        fi
+        if "${{ steps.setup-python.outputs.python-path }}" -I -m llm_wiki_cli.cli review \
+          --src-dir "${INPUT_SRC_DIR}" --wiki-dir "${INPUT_WIKI_DIR}" \
+          --base "${INPUT_IMPACT_BASE}" --head "${INPUT_IMPACT_HEAD}" --format github \
+          --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" \
+          --impact-output "${LLM_WIKI_EVIDENCE_DIR}/llm-wiki-impact.json" \
+          --summary-output "${LLM_WIKI_EVIDENCE_DIR}/llm-wiki-impact.md"; then
+          cat "${LLM_WIKI_EVIDENCE_DIR}/llm-wiki-impact.md" >> "${GITHUB_STEP_SUMMARY}"
+        else
+          printf 'LLM Wiki impact unavailable; see command diagnostics. Integrity status is unchanged.\n' \
+            | tee -a "${GITHUB_STEP_SUMMARY}"
+        fi
+
     - name: Save the exact prepared extractor-helper cache
       if: >-
         success() &&
@@ -438,6 +477,8 @@ runs:
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json
           ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt
+          ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.json
+          ${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.md
           ${{ runner.temp }}/llm-wiki-evidence/extractor-plan.json
           ${{ runner.temp }}/llm-wiki-evidence/helper-cache-metrics.json
           ${{ runner.temp }}/llm-wiki-evidence/prepare-extractors.log

@@ -476,6 +476,13 @@ diagnostics, verifies that the project worktree stayed clean, and uploads a
 fixed, allowlisted set of validation, cache-measurement, and toolchain evidence
 even when validation fails.
 
+Installed pull-request workflows fetch full history and supply the fetched
+base and head commits to the same action for advisory change impact. The action
+adds a bounded job summary, up to 50 warning/notice annotations, and
+`llm-wiki-impact.json` / `llm-wiki-impact.md` artifacts. Reporting failures do
+not replace the integrity result. Callers of the action can opt in by setting
+both `impact-base` and `impact-head`.
+
 The portable gate disables project-local Python plugins so pull-request content
 is never imported or executed. A project that intentionally depends on trusted
 extractor, generation, or lint plugins must use a separately reviewed trusted
@@ -555,6 +562,11 @@ llm-wiki trigger-agent --agent claude --max-prompt-bytes 2000000
 llm-wiki trigger-agent --agent claude --force
 llm-wiki trigger-agent --reset-breaker
 ```
+
+Failed trigger runs exit nonzero, including preparation and runner launch failures.
+Runner timeouts exit `124`; other positive child exit codes are preserved.
+Empty or oversized inputs, an occupied lock, and an open breaker remain successful
+skips. Each attempted run records its outcome for the circuit breaker and metrics.
 
 Set `LLM_WIKI_LOCK_WAIT` to a non-negative number of seconds when a trusted
 automation runner should wait briefly for another sync to release the lock.
@@ -1243,6 +1255,24 @@ health results, not serialization failures. The supported Python API exposes
 the identical object through
 `llm_wiki_cli.api.doctor(src_dir=".", wiki_dir="docs/llm_wiki")`.
 
+Add `--capabilities` to diagnose source-provider preparation alongside health:
+
+```bash
+llm-wiki doctor --capabilities --format json --src-dir .
+llm-wiki doctor --capabilities --helper-cache-dir /path/to/prepared-cache
+```
+
+This opts into `llm-wiki-doctor/v2`, with separate `health` and `capabilities`
+objects. It reports selected languages, provider capabilities, missing or stale
+helpers, missing tools, unsupported inputs, installed plugin metadata, and
+explicit preparation command arguments. Tool versions and execution viability
+remain unknown until invoked. Diagnosis never downloads helpers or loads
+project plugin code. When a selected provider needs preparation, health is
+unevaluated and the command exits `2`; otherwise it retains the health exit code.
+Preparation is an explicit action and may download dependencies or compile a
+bundled helper. Append `--plan --format json` to a suggested preparation command
+to inspect it first.
+
 ### `context`
 
 Build a token-budgeted source snapshot for agents.
@@ -1348,6 +1378,62 @@ field additionally covers files returned at downgraded detail. See
 printing it to stdout. `--read-only` documents source-adapter intent: the command
 does not write wiki files, hooks, manifests, local config, or helper/cache state,
 except for an explicit `--output` artifact.
+
+For accounting of the complete emitted representation, opt into
+`llm-wiki-context/v3`:
+
+```bash
+llm-wiki context --budget 8000 --budget-mode estimated --format markdown
+llm-wiki context --budget 8000 --budget-mode exact --tokenizer tokenizer.json
+llm-wiki context --budget 8000 --budget-mode exact --tokenizer tokenizer.json --format packet
+llm-wiki context --budget 8000 --base main --head HEAD
+llm-wiki context --budget 8000 --staged
+llm-wiki context --budget 8000 --changed-path src/app.py --changed-path src/models.py
+```
+
+Exact mode requires the optional `agent-wiki-cli[tokens]` dependency and an
+explicit local tokenizer JSON file. The counter identity binds its bytes and
+backend version. Counting disables saved truncation, padding, and special-token
+insertion; it covers the output text, including knowledge, metadata, accounting,
+the packet envelope when selected, and its final newline. Host chat framing is
+outside this budget. Estimated mode uses UTF-8 byte length divided by four,
+rounded up, and always reports `exact_compliance: false`.
+
+The v3 envelope reports a conservative `used_tokens` upper bound that can be
+recounted with the named counter. Whole source entries are reduced or omitted
+under pressure, with omissions disclosed. Required evidence is retained. If the
+remaining envelope cannot fit, stdout is empty, stderr contains a JSON
+`cannot-fit` result, and the command exits `3` without writing an output file.
+Legacy v1/v2 allocation and qualified-packet schemas remain available.
+
+Explicit changes also opt into v3, using estimated mode unless exact mode is
+requested. Choose one base/head pair, staged changes, or repeated paths.
+Supplied paths are relative to `--src-dir`, work without Git, and accept Windows
+separators. Range and staged inputs retain both sides of renames and deletions.
+The response records resolved Git/index or path identities and direct affected
+page mappings. Without explicit changes, selection retains the legacy last
+commit behavior. A range identifies changed paths; source details come from the
+current checkout, so check out the intended candidate before reading context.
+
+Protocol clients put these options in the request:
+
+```json
+{
+  "protocol": "llm-wiki-context/v3",
+  "budget_tokens": 8000,
+  "budget_mode": "estimated",
+  "format": "json",
+  "knowledge_mode": "auto",
+  "changes": {"mode": "paths", "paths": ["src/app.py"]}
+}
+```
+
+Other change forms are `{"mode":"range","base":"main","head":"HEAD"}`
+and `{"mode":"staged"}`. Protocol v3 defaults to exact mode; supply the local
+tokenizer with `--tokenizer`. An optional `counter_id` must match the selected
+counter. Python callers use `llm_wiki_cli.api.build_budgeted_context(...)` with
+a trusted counter implementing `identity`, `exact`, and `count(text)`; the
+result contains the emitted `rendered` text, `accounting`, and `ok` status.
 
 ### Codebase source integration
 
@@ -2155,6 +2241,10 @@ Run a static wiki-aware review of proposed code changes.
 ```bash
 llm-wiki review --base main --head HEAD
 llm-wiki review --patch change.patch --format json
+llm-wiki review --staged --format impact-json
+llm-wiki review --changed-path src/app.py --format impact-markdown
+llm-wiki review --base main --head HEAD --format github \
+  --impact-output impact.json --summary-output impact.md
 ```
 
 The review command compares code changes with full-surface wiki coverage and
@@ -2162,6 +2252,75 @@ reports stale or missing documentation risks. Module/entity pages, source-linked
 user-flow pages, workflow pages, infrastructure notes, and dependency/load-order
 architecture pages all count as relevant review coverage when they describe the
 changed code or dependency relationship.
+
+`impact-json` returns the stable `llm-wiki-impact/v1` payload, with direct
+source-to-page mappings, candidate dependency edges and manifests, static
+FastAPI operations, findings, limitations, and an impact identity. Equivalent
+change inputs against the same checkout produce the same impact. Missing pages
+can appear as expected mappings; deleted sources need retained wiki provenance
+to identify their former pages. Source details describe the current checkout.
+Impact uses built-in extraction with project plugins disabled.
+
+`impact-markdown` emits a summary capped at 64 KiB and 50 findings. `github`
+emits up to 50 escaped warning/notice annotations; omitted counts are explicit.
+`--summary-output` and `--impact-output` save the corresponding artifacts.
+These reports are advisory and do not make freshness or compatibility claims.
+
+### `api-diff`
+
+Compare two source-contained OpenAPI 3.0 or 3.1 exports:
+
+```bash
+llm-wiki api-diff --baseline api/before.json --candidate api/after.json
+llm-wiki api-diff --baseline api/before.yaml --candidate api/after.yaml --format markdown
+```
+
+The `llm-wiki-api-diff/v1` report identifies both exports and flags known
+operation removals, newly required wire inputs or plain body properties, and
+removed explicit success responses. Path-placeholder renames and header-name
+case changes preserve wire identity. Unresolved references, schema composition,
+recursion, response ranges, and other narrowing remain advisory. The command
+reads local JSON/YAML without importing an application, running its build, or
+fetching external references. Exit `1` means a declared breaking change; `0`
+means compatible or advisory, not a complete compatibility proof.
+
+### `search`
+
+Search a managed wiki through the same ranked service used by MCP `search_wiki`:
+
+```bash
+llm-wiki search "source selection" --limit 5 --format json
+llm-wiki search "KnowledgeModelError" --kind entities
+llm-wiki search "exact phrase" --mode substring
+```
+
+Ranked mode combines exact page IDs, paths and defined symbols with lexical,
+title, path, and inbound-link relevance. Results include scores, reasons,
+snippets, content hashes, a corpus identity, and the ranking version. Stable
+path ordering resolves ties. `--mode substring` retains the earlier
+case-insensitive substring behavior and page ordering; MCP accepts the same
+`mode` option. Ranked searches are limited to 10,000 selected pages and 64 MiB
+of UTF-8 content, with 1–100 returned results. Exceeding a corpus limit fails
+explicitly; narrow `--kind` or choose a smaller wiki. Search is read-only and
+does not require embeddings or a model service.
+
+### `queue`
+
+Select advisory maintenance work for a managed wiki:
+
+```bash
+llm-wiki queue --src-dir . --wiki-dir docs/llm_wiki --limit 30
+llm-wiki queue --src-dir . --wiki-dir docs/llm_wiki --format json
+```
+
+The `llm-wiki-maintenance-queue/v1` report ranks pages using observed source
+changes, semantic-work signals, lint severity, reachability from the index,
+and source fan-in. Every recommendation explains its score, ownership, and
+whether it is actionable or informational. Unknown or incompatible provenance
+remains explicit; it is never promoted to confirmed source drift. The queue
+reuses existing freshness and worklist evidence, loads no project plugins, and
+does not edit pages or change the integrity gate. Prepared helpers are required
+for the selected source languages; `--helper-cache-dir` selects their cache.
 
 ### `upgrade`
 

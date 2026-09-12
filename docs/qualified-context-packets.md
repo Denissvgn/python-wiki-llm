@@ -84,6 +84,16 @@ llm-wiki context --src-dir . --wiki-dir docs/llm_wiki \
 MCP `query_documentation` operations return a bounded query result, not a
 packet.
 
+Opt-in `--budget-mode exact --tokenizer tokenizer.json --format packet` uses
+the `llm-wiki-context/v3` complete-output budget envelope. Its `packet` field
+contains an existing qualified v2 packet; v3 does not define another qualified
+packet schema. The outer accounting includes the nested packet, metadata, and
+final newline. To use the existing packet validator, serialize the nested
+packet with the canonical JSON rules above. The outer change-selection and
+budget accounting fields are outside that packet's digest. See the
+[context command](../README.md#context) for counter identity, explicit changes,
+estimated mode, and cannot-fit behavior.
+
 Construction captures one source inventory and one wiki and knowledge read
 view. Both the response and evidence basis are derived from that view. It
 checks the captured source and wiki anchors again before returning. A

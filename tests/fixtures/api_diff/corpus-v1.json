@@ -1,0 +1,3249 @@
+{
+  "schema_version": "api-diff-corpus/v1",
+  "contracts": [
+    "catalog",
+    "jobs"
+  ],
+  "cases": [
+    {
+      "id": "identical",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "operation-removal",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "path-removal",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "required-query",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  },
+                  "required": true
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "new-required-header",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "in": "header",
+                  "name": "X-Tenant",
+                  "required": true,
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "new-required-cookie",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "in": "cookie",
+                  "name": "session",
+                  "required": true,
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "success-removal",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "required-body-property",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "author"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "optional-query",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "in": "query",
+                  "name": "format",
+                  "required": false
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "response-wildcard",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "2XX": {
+                  "description": "Success"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "response-default",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "default": {
+                  "description": "Any response"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "enum-narrowing",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string",
+                    "enum": [
+                      "en"
+                    ]
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "unresolved-path",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "$ref": "missing.json#/path"
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "unresolved-response",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "$ref": "#/components/responses/Missing"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "unresolved-baseline-parameter",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "$ref": "outside.json#/parameter"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  },
+                  "required": true
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "readonly-body-property",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string",
+                          "readOnly": true
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "author"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "ignored-authorization-header",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "in": "header",
+                  "name": "Authorization",
+                  "required": true
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "path-template-rename",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          },
+          "/books/{book_id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "book_id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "new-required-body",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              },
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 1
+    },
+    {
+      "id": "header-case-compatible",
+      "baseline": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "in": "header",
+                  "name": "X-Tenant",
+                  "required": true
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Catalog",
+          "version": "1"
+        },
+        "paths": {
+          "/books/{id}": {
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "get": {
+              "operationId": "readBook",
+              "parameters": [
+                {
+                  "in": "query",
+                  "name": "locale",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "in": "header",
+                  "name": "x-tenant",
+                  "required": true
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Book"
+                },
+                "404": {
+                  "description": "Missing"
+                }
+              }
+            }
+          },
+          "/books": {
+            "post": {
+              "operationId": "createBook",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "author": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ]
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Created"
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "jobs-local-refs",
+      "baseline": {
+        "openapi": "3.0.3",
+        "info": {
+          "title": "Jobs",
+          "version": "1"
+        },
+        "paths": {
+          "/jobs": {
+            "post": {
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "202": {
+                  "description": "Accepted"
+                }
+              }
+            }
+          },
+          "/jobs/{id}": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "Status"
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Job": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "source"
+              ]
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.0.3",
+        "info": {
+          "title": "Jobs",
+          "version": "1"
+        },
+        "paths": {
+          "/jobs": {
+            "post": {
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "202": {
+                  "description": "Accepted"
+                }
+              }
+            }
+          },
+          "/jobs/{id}": {}
+        },
+        "components": {
+          "schemas": {
+            "Job": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "source",
+                "priority"
+              ]
+            }
+          }
+        }
+      },
+      "expected_breaking": 2
+    },
+    {
+      "id": "composition",
+      "baseline": {
+        "openapi": "3.0.3",
+        "info": {
+          "title": "Jobs",
+          "version": "1"
+        },
+        "paths": {
+          "/jobs": {
+            "post": {
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "202": {
+                  "description": "Accepted"
+                }
+              }
+            }
+          },
+          "/jobs/{id}": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "Status"
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Job": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "source"
+              ]
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.0.3",
+        "info": {
+          "title": "Jobs",
+          "version": "1"
+        },
+        "paths": {
+          "/jobs": {
+            "post": {
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "202": {
+                  "description": "Accepted"
+                }
+              }
+            }
+          },
+          "/jobs/{id}": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "Status"
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Job": {
+              "oneOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    },
+    {
+      "id": "cycle",
+      "baseline": {
+        "openapi": "3.0.3",
+        "info": {
+          "title": "Jobs",
+          "version": "1"
+        },
+        "paths": {
+          "/jobs": {
+            "post": {
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "202": {
+                  "description": "Accepted"
+                }
+              }
+            }
+          },
+          "/jobs/{id}": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "Status"
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Job": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "source"
+              ]
+            }
+          }
+        }
+      },
+      "candidate": {
+        "openapi": "3.0.3",
+        "info": {
+          "title": "Jobs",
+          "version": "1"
+        },
+        "paths": {
+          "/jobs": {
+            "post": {
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "202": {
+                  "description": "Accepted"
+                }
+              }
+            }
+          },
+          "/jobs/{id}": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "Status"
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Job": {
+              "$ref": "#/components/schemas/Job"
+            }
+          }
+        }
+      },
+      "expected_breaking": 0
+    }
+  ]
+}

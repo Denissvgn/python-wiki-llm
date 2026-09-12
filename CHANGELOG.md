@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Opt-in context v3 accounting for complete JSON, Markdown, and packet output,
+  with a pinned local tokenizer backend, explicit estimates, and cannot-fit results.
+- Shared range, staged, and supplied-path context/review selection, plus portable
+  change-impact JSON, bounded summaries, and advisory GitHub annotations.
+- Deterministic ranked wiki search shared by the CLI and MCP, with reasons,
+  provenance, resource limits, and substring compatibility.
+- A narrow compatibility gate for local OpenAPI exports.
+- Read-only maintenance queues and versioned doctor capability diagnostics with
+  explicit helper-preparation remedies.
+- Structured feature-request fields for blocked workflows and optional pilots.
+
+### Fixed
+
+- Failed trigger preparation, launches, timeouts, and child processes propagate
+  nonzero CLI exits while intentional skips remain successful.
+
 ## [2.0.2] - 2026-09-10
 
 ### Fixed

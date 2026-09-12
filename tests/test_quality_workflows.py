@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from llm_wiki_cli.services import review_service
 from llm_wiki_cli.commands import (
     bootstrap_cmd,
     ci_check_cmd,
@@ -201,7 +202,7 @@ class TestReviewMode:
             path: Path(path).stem for path in current_inventory
         }
         monkeypatch.setattr(
-            review_cmd,
+            review_service,
             "get_inventory_result",
             lambda src_dir, deep=True, source_snapshot=None: InventoryResult(
                 current_inventory,
@@ -210,11 +211,11 @@ class TestReviewMode:
             ),
         )
         monkeypatch.setattr(
-            review_cmd,
+            review_service,
             "build_module_page_map",
             lambda inventory: current_module_page_map,
         )
-        monkeypatch.setattr(review_cmd, "build_entity_page_map", lambda inventory: {})
+        monkeypatch.setattr(review_service, "build_entity_page_map", lambda inventory: {})
 
     def _write_surface_index(self, wiki_dir: Path, pages: list[dict]) -> None:
         (wiki_dir / ".llm-wiki-surface.json").write_text(
@@ -292,10 +293,10 @@ class TestReviewMode:
         def fail_inventory(*_args, **_kwargs):
             pytest.fail("review must gate before inventory or persisted pages")
 
-        monkeypatch.setattr(review_cmd, "get_inventory_result", fail_inventory)
+        monkeypatch.setattr(review_service, "get_inventory_result", fail_inventory)
 
         with pytest.raises(SourceSelectionError, match="persisted"):
-            review_cmd.build_findings(
+            review_service.build_findings(
                 self._source_diff("selected/app.py"),
                 src_dir=".",
                 wiki_dir=str(wiki),
@@ -347,7 +348,7 @@ class TestReviewMode:
             return "\n".join(lines)
 
         monkeypatch.setattr(
-            review_cmd,
+            review_service,
             "get_inventory_result",
             lambda src_dir, deep=True, source_snapshot=None: InventoryResult(
                 inventory,
@@ -356,18 +357,18 @@ class TestReviewMode:
             ),
         )
         monkeypatch.setattr(
-            review_cmd,
+            review_service,
             "build_module_page_map",
             lambda current_inventory: module_page_map,
         )
         monkeypatch.setattr(
-            review_cmd, "build_entity_page_map", lambda current_inventory: {}
+            review_service, "build_entity_page_map", lambda current_inventory: {}
         )
         monkeypatch.setattr(
-            review_cmd, "_workflow_pages", lambda current_wiki_dir: workflows
+            review_service, "_workflow_pages", lambda current_wiki_dir: workflows
         )
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             "\n".join(diff_for(path) for path in source_paths),
             src_dir=".",
             wiki_dir=str(wiki_dir),
@@ -410,7 +411,7 @@ class TestReviewMode:
             ]
         )
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             diff, src_dir=".", wiki_dir="docs/llm_wiki"
         )
 
@@ -445,7 +446,7 @@ class TestReviewMode:
         )
         self._patch_inventory_for_api(monkeypatch)
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             self._source_diff("api.py", "+def run():"),
             src_dir=".",
             wiki_dir="docs/llm_wiki",
@@ -490,7 +491,7 @@ class TestReviewMode:
         ).save(wiki_dir)
         self._patch_inventory_for_api(monkeypatch)
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             self._source_diff("api.py", "+def changed():"),
             src_dir=".",
             wiki_dir=wiki_dir.as_posix(),
@@ -522,7 +523,7 @@ class TestReviewMode:
         module_page_map = {"api.py": "api", "service.py": "service"}
         self._patch_inventory_for_api(monkeypatch, inventory, module_page_map)
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             self._source_diff("api.py", "+import service"),
             src_dir=".",
             wiki_dir="docs/llm_wiki",
@@ -546,7 +547,7 @@ class TestReviewMode:
             ]
         )
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             diff, src_dir=".", wiki_dir="docs/llm_wiki"
         )
 
@@ -564,7 +565,7 @@ class TestReviewMode:
 +    pass
 """
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             diff, src_dir=".", wiki_dir="docs/llm_wiki"
         )
 
@@ -581,7 +582,7 @@ class TestReviewMode:
 +requests = "*"
 """
 
-        findings = review_cmd.build_findings(
+        findings = review_service.build_findings(
             diff, src_dir=".", wiki_dir="docs/llm_wiki"
         )
 
@@ -627,19 +628,19 @@ class TestReviewMode:
         This test pins the wiring at the call site directly.
         """
         calls = []
-        real_get_entry_points = review_cmd.get_entry_points
+        real_get_entry_points = review_service.get_entry_points
 
         def spy(inventory, **kwargs):
             calls.append(kwargs)
             return real_get_entry_points(inventory, **kwargs)
 
-        monkeypatch.setattr(review_cmd, "get_entry_points", spy)
+        monkeypatch.setattr(review_service, "get_entry_points", spy)
 
         wiki_dir = tmp_path / "wiki"
         wiki_dir.mkdir()
         src_dir = "/some/external/src"
 
-        review_cmd._build_surface_index_pages(
+        review_service._build_surface_index_pages(
             wiki_dir,
             {},
             src_dir,

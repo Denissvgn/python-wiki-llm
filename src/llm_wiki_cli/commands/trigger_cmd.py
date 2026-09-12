@@ -36,6 +36,14 @@ GIT_DIR = Path(".git")
 DEFAULT_MAX_PROMPT_BYTES = 2_000_000
 
 
+class TriggerFailure(RuntimeError):
+    """A recorded failed run, with its portable process exit status."""
+
+    def __init__(self, exit_code: int):
+        self.exit_code = exit_code if 0 < exit_code < 256 else 1
+        super().__init__(f"Trigger failed with exit code {self.exit_code}")
+
+
 def run(args):
     # Handle --reset-breaker early (no lock needed)
     if getattr(args, "reset_breaker", False):
@@ -57,6 +65,8 @@ def run(args):
             _run_sync(args)
     except LockAcquisitionError:
         print("Another llm-wiki sync is already running. Skipping.")
+    except TriggerFailure as exc:
+        raise SystemExit(exc.exit_code) from exc
 
 
 def _run_sync(args):
@@ -70,6 +80,20 @@ def _run_sync(args):
         return
     _record_trigger_start(args, wiki_dir)
 
+    try:
+        _prepare_and_run_sync(args, wiki_dir, src_dir, started)
+    except TriggerFailure:
+        raise
+    except Exception:
+        # Preparation failures must also release recovery probes and close metrics.
+        circuit_breaker.record_failure(GIT_DIR)
+        _record_trigger_finish(
+            args, wiki_dir, started, exit_code=1, breaker_result="failure"
+        )
+        raise
+
+
+def _prepare_and_run_sync(args, wiki_dir, src_dir, started):
     source_snapshot = _preflight_trigger_source_selection(args, src_dir, wiki_dir)
     diff_text = _fetch_last_commit_diff(args, wiki_dir, src_dir, started)
     diff_text = _filter_trigger_diff(
@@ -198,6 +222,7 @@ def _record_trigger_failure(args, wiki_dir, started: float, *, exit_code: int) -
         exit_code=exit_code,
         breaker_result="failure",
     )
+    raise TriggerFailure(exit_code)
 
 
 def _is_breaker_open() -> bool:

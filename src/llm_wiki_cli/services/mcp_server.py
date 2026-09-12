@@ -657,6 +657,7 @@ class McpWikiService:
         query: str,
         kinds: list[str] | None = None,
         limit: int = 20,
+        mode: str = "ranked",
     ) -> dict:
         self._assert_source_selection_current()
         if not isinstance(query, str) or not query.strip():
@@ -667,6 +668,25 @@ class McpWikiService:
         unknown = requested - _SEARCH_KINDS
         if unknown:
             raise McpWikiError(f"Unknown wiki search kind: {sorted(unknown)[0]}")
+
+        if mode not in {"ranked", "substring"}:
+            raise McpWikiError("Search mode must be ranked or substring")
+        if mode == "ranked":
+            from .search_rank import MAX_SEARCH_BYTES, rank_pages
+
+            def records():
+                for page in self._iter_pages(requested):
+                    if page.path.stat().st_size > MAX_SEARCH_BYTES:
+                        raise McpWikiError("Page exceeds search byte limit; restrict the wiki or kinds")
+                    content = read_md(page.path)
+                    yield {"kind": page.kind, "id": page.page_id, "uri": page.uri,
+                           "path": _relative_posix(page.path, self.wiki_dir),
+                           "title": _markdown_title(content, page.page_id), "content": content}
+
+            try:
+                return rank_pages(records(), query, limit=limit)
+            except ValueError as exc:
+                raise McpWikiError(str(exc)) from exc
 
         needle = query.casefold()
         matches: list[dict] = []
@@ -1233,10 +1253,10 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
 
     @server.tool()
     def search_wiki(
-        query: str, kinds: list[str] | None = None, limit: int = 20
+        query: str, kinds: list[str] | None = None, limit: int = 20, mode: str = "ranked"
     ) -> dict:
         """Search Markdown wiki pages and return snippets plus resource URIs."""
-        return service.search_wiki(query, kinds=kinds, limit=limit)
+        return service.search_wiki(query, kinds=kinds, limit=limit, mode=mode)
 
     @server.tool()
     def get_context(

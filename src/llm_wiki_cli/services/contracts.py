@@ -35,6 +35,7 @@ records, their diagnostics, and entry-point ``routes`` remain optional under
 from __future__ import annotations
 
 EXTRACT_SCHEMA_VERSION = "llm-wiki-extract/v1"
+CONTEXT_BUDGET_PROTOCOL_VERSION = "llm-wiki-context/v3"
 CONTEXT_PROTOCOL_VERSION = "llm-wiki-context/v1"
 CONTEXT_KNOWLEDGE_PROTOCOL_VERSION = "llm-wiki-context/v2"
 CI_CHECK_SCHEMA_VERSION = "llm-wiki-ci-check/v1"
@@ -143,6 +144,7 @@ PROTOCOL_VERSIONS = (
     EXTRACT_SCHEMA_VERSION,
     CONTEXT_PROTOCOL_VERSION,
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+    CONTEXT_BUDGET_PROTOCOL_VERSION,
     CI_CHECK_SCHEMA_VERSION,
     CI_CHECK_V2_SCHEMA_VERSION,
     PROGRESS_SCHEMA_VERSION,
