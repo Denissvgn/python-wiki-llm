@@ -7,23 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-13
+
 ### Added
 
-- Opt-in context v3 accounting for complete JSON, Markdown, and packet output,
-  with a pinned local tokenizer backend, explicit estimates, and cannot-fit results.
-- Shared range, staged, and supplied-path context/review selection, plus portable
-  change-impact JSON, bounded summaries, and advisory GitHub annotations.
-- Deterministic ranked wiki search shared by the CLI and MCP, with reasons,
-  provenance, resource limits, and substring compatibility.
-- A narrow compatibility gate for local OpenAPI exports.
-- Read-only maintenance queues and versioned doctor capability diagnostics with
-  explicit helper-preparation remedies.
+- Opt-in `llm-wiki-context/v3` budgeting for complete JSON, Markdown, and packet
+  output, including metadata and the final newline. Exact counting uses
+  `agent-wiki-cli[tokens]` and an explicitly supplied local tokenizer; estimated
+  mode is labeled separately. Requests that cannot fit the required envelope
+  exit `3` with a structured diagnostic and no partial output.
+- Shared base/head, staged, and supplied-path selection for `context` and
+  `review`, with resolved change identities and source-to-page mappings.
+  Portable `llm-wiki-impact/v1` JSON, bounded Markdown summaries, and escaped
+  GitHub annotations are also available in installed pull-request workflows.
+- Deterministic ranked wiki search shared by `llm-wiki search` and MCP
+  `search_wiki`, with match reasons, snippets, content hashes, corpus identity,
+  and explicit resource limits. No embeddings or model service are required.
+- `llm-wiki api-diff` compares local OpenAPI 3.0/3.1 JSON or YAML exports and
+  gates supported operation removals, newly required request inputs, and
+  removed explicit success responses. Unsupported or malformed evidence stays
+  advisory; external references are never fetched.
+- Read-only `llm-wiki queue` recommendations prioritize documentation work
+  using source changes, semantic-work signals, lint findings, reachability,
+  and source fan-in, with reasons and ownership for each recommendation.
+- `doctor --capabilities` adds versioned provider diagnostics for missing or
+  stale helpers, missing tools, unsupported source languages, and plugin
+  metadata. Preparation and recheck commands preserve the selected source,
+  wiki, profile, and cache, with literal PowerShell quoting on Windows.
 - Structured feature-request fields for blocked workflows and optional pilots.
+
+### Changed
+
+- Wiki search ranks results by default; `--mode substring` and the matching
+  MCP option preserve the earlier substring behavior and page ordering.
+- The README now focuses on installation and getting started, with detailed
+  usage in dedicated wiki, CLI, automation, and security guides.
 
 ### Fixed
 
 - Failed trigger preparation, launches, timeouts, and child processes propagate
-  nonzero CLI exits while intentional skips remain successful.
+  nonzero CLI exits while intentional skips remain successful. Timeouts exit
+  `124`, and positive child exit codes are preserved.
+- Change review handles quoted Unicode paths, renames, deletions, binary and
+  mode-only patches, and source-selection changes consistently. Deleted
+  sources without retained page provenance keep prior coverage unknown instead
+  of suggesting that missing pages should be regenerated.
+
+### Compatibility
+
+- Context v3 remains opt-in; legacy context v1/v2 behavior and qualified-packet
+  schemas remain available. Change ranges select changed paths; source details
+  describe the current checkout, so check out the intended candidate before
+  requesting context.
+- Impact reports and maintenance queues are advisory. A successful `api-diff`
+  result covers only supported comparisons and is not a complete compatibility
+  proof; read-only fields, header-name case, and path-placeholder renames retain
+  their wire semantics.
 
 ## [2.0.2] - 2026-09-10
 
@@ -960,7 +999,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v1.8.1...v2.0.0
