@@ -27,6 +27,13 @@ _TOOL_HINTS = {
     "rust": "Install the Rust toolchain with Cargo",
     "haskell": "Install GHC 9.6 or later in the supported 9.x series, or set LLM_WIKI_GHC",
 }
+_LANGUAGE_LABELS = {
+    "python": "Python",
+    "typescript": "TypeScript/JavaScript",
+    "go": "Go",
+    "rust": "Rust",
+    "haskell": "Haskell",
+}
 
 
 def build_capability_diagnostics(
@@ -48,13 +55,14 @@ def build_capability_diagnostics(
     effective_cache = cache or cache_base / helpers.HELPER_CACHE_DIRNAME
     providers = []
     for language, (provider, tool_names) in _PROVIDERS.items():
+        label = _LANGUAGE_LABELS[language]
         tools = {}
         for name in tool_names:
-            override = {"go": helpers.ENV_GO_BINARY, "ghc": helpers.ENV_GHC_BINARY}.get(
-                name
-            )
-            requested = os.environ.get(override, "") if override else ""
-            tools[name] = shutil.which(requested or name)
+            resolver = {
+                "go": helpers._resolve_go_executable,
+                "ghc": helpers._resolve_ghc_executable,
+            }.get(name)
+            tools[name] = resolver() if resolver is not None else shutil.which(name)
         missing = [name for name, path in tools.items() if path is None]
         artifact = None
         if language == "python":
@@ -80,6 +88,23 @@ def build_capability_diagnostics(
                 else "unprepared"
             )
         remedy = None
+        if language == "python":
+            status_reason = (
+                "Python analysis is built in; no extractor helper is needed."
+            )
+        elif artifact:
+            status_reason = f"The {label} extractor helper is prepared."
+        elif helper_state == "missing":
+            status_reason = (
+                f"The bundled {label} extractor helper has not been prepared."
+            )
+        else:
+            status_reason = f"The cached {label} extractor helper is outdated, incomplete, or unreadable."
+        if state == "missing-toolchain":
+            needed_tools = ["node"] if artifact else missing
+            status_reason += (
+                " Required commands were not found: " + ", ".join(needed_tools) + "."
+            )
         if state != "ready":
             remedy = {
                 "argv": [
@@ -94,9 +119,26 @@ def build_capability_diagnostics(
                     language,
                     "--cache-dir",
                     str(cache_base),
-                ],
-                "prerequisite": _TOOL_HINTS[language] if missing else None,
-                "effect": "Explicit preparation may download dependencies or compile the bundled helper",
+                ]
+                if artifact is None
+                else None,
+                "prerequisite": (
+                    "Install Node.js or make node available on PATH"
+                    if artifact
+                    else _TOOL_HINTS[language]
+                    if missing
+                    else None
+                ),
+                "next_step": (
+                    "Make the required commands available, then run the preparation command."
+                    if missing and artifact is None
+                    else "Make node available, then rerun doctor; the helper is already prepared."
+                    if artifact
+                    else f"Run the preparation command to build or restore the {label} extractor helper."
+                ),
+                "effect": "Explicit preparation may download dependencies or compile the bundled helper"
+                if artifact is None
+                else None,
             }
         providers.append(
             {
@@ -107,6 +149,7 @@ def build_capability_diagnostics(
                 "selected_files": len(snapshot.files_by_language.get(language, ())),
                 "extensions": list(LANGUAGE_EXTENSIONS[language]),
                 "status": state,
+                "status_reason": status_reason,
                 "helper": {
                     "status": helper_state,
                     "path": str(artifact) if artifact else None,
@@ -185,24 +228,6 @@ def build_capability_diagnostics(
         for language, files in sorted(snapshot.unsupported_files_by_language.items())
         if files
     ]
-    known_suffixes = {
-        suffix for suffixes in LANGUAGE_EXTENSIONS.values() for suffix in suffixes
-    }
-    unknown_sources = sorted(
-        path
-        for path in snapshot.selected_regular_paths
-        if Path(path).suffix.lower()
-        in {".java", ".cs", ".cpp", ".c", ".rb", ".php", ".kt"} - known_suffixes
-    )
-    if unknown_sources:
-        unsupported.append(
-            {
-                "language": "unknown-provider",
-                "status": "unknown",
-                "paths": unknown_sources,
-                "remedy": None,
-            }
-        )
     blocked = [
         p["language"]
         for p in providers
@@ -242,15 +267,39 @@ def build_capability_doctor(wiki_dir="docs/llm_wiki", src_dir=".", **kwargs):
     health = None
     if not capabilities["blocked_languages"]:
         health = build_doctor_report(wiki_dir, src_dir, **kwargs).to_payload()
+    recheck = None
+    if capabilities["blocked_languages"]:
+        argv = [
+            sys.executable,
+            "-m",
+            "llm_wiki_cli.cli",
+            "doctor",
+            "--capabilities",
+            "--src-dir",
+            str(src_dir),
+            "--wiki-dir",
+            str(wiki_dir),
+            "--helper-cache-dir",
+            str(Path(capabilities["helper_cache"]).parent),
+        ]
+        for name in ("strict", "allow_external_src"):
+            if kwargs.get(name):
+                argv.append("--" + name.replace("_", "-"))
+        if kwargs.get("source_selection") is not None:
+            argv.extend(["--source-selection", str(kwargs["source_selection"])])
+        for language in sorted(kwargs.get("include_tests") or ()):
+            argv.extend(["--include-tests", language])
+        recheck = {"argv": argv, "cwd": str(Path.cwd())}
     return {
         "schema_version": DOCTOR_CAPABILITY_VERSION,
         "status": health["status"] if health else "unknown",
         "exit_code": health["exit_code"] if health else 2,
         "health": health,
         "capabilities": capabilities,
+        "recheck": recheck,
         "health_reason": None
         if health
-        else "Selected source providers need preparation; knowledge health was not evaluated",
+        else "Selected source providers need setup; knowledge health was not evaluated",
     }
 
 
@@ -271,13 +320,28 @@ def render_capability_doctor(report):
             lines.append(
                 f"{provider['language']}: {provider['status']} — {provider['provider']}, {provider['tier']}, helper {provider['helper']['status']}"
             )
+            if provider.get("status_reason"):
+                lines.append("  " + provider["status_reason"])
+            if provider.get("tools"):
+                lines.append(
+                    "  Commands: "
+                    + ", ".join(
+                        name + (" found" if path else " missing")
+                        for name, path in provider["tools"].items()
+                    )
+                )
             if provider["remedy"]:
                 if provider["remedy"]["prerequisite"]:
                     lines.append("  " + provider["remedy"]["prerequisite"])
-                lines.append(
-                    f"  Preparation command ({shell}): "
-                    + command(provider["remedy"]["argv"])
-                )
+                if provider["remedy"].get("next_step"):
+                    lines.append("  Next step: " + provider["remedy"]["next_step"])
+                if provider["remedy"]["argv"]:
+                    lines.append(
+                        f"  Preparation command ({shell}): "
+                        + command(provider["remedy"]["argv"])
+                    )
+                if provider["remedy"].get("effect"):
+                    lines.append("  " + provider["remedy"]["effect"])
     for item in report["capabilities"]["unsupported_inputs"]:
         lines.append(
             f"{item['language']}: {item['status']} ({len(item['paths'])} files)"
@@ -294,4 +358,9 @@ def render_capability_doctor(report):
         lines.append(report["health_reason"])
     elif report["health"]:
         lines.append(_render_doctor_payload(report["health"]).rstrip("\n"))
+    if report.get("recheck"):
+        lines.append("After setup, rerun from: " + report["recheck"]["cwd"])
+        lines.append(
+            f"  Recheck command ({shell}): " + command(report["recheck"]["argv"])
+        )
     return "\n".join(lines) + "\n"

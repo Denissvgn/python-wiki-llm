@@ -316,7 +316,7 @@ def _load_manifest(cache_root: Path, language: str) -> dict[str, Any] | None:
     path = _manifest_path(cache_root, language)
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return None
     return data if isinstance(data, dict) else None
 

@@ -646,7 +646,12 @@ llm-wiki doctor --capabilities --helper-cache-dir /path/to/prepared-cache
 This opts into `llm-wiki-doctor/v2`, with separate `health` and `capabilities`
 objects. It reports selected languages, provider capabilities, missing or stale
 helpers, missing tools, unsupported inputs, installed plugin metadata, and
-explicit preparation command arguments. Tool versions and execution viability
+explicit preparation command arguments. Unsupported Java, C#, C/C++, Ruby,
+PHP, and Kotlin sources are reported by language even without a source-selection
+profile, while ignored and excluded paths stay outside the report. Go and GHC
+tool overrides use the same path resolution as helper preparation, including
+`~` expansion. An unreadable helper manifest produces a preparation remedy.
+Tool versions and execution viability
 remain unknown until invoked. Diagnosis never downloads helpers or loads
 project plugin code. When a selected provider needs preparation, health is
 unevaluated and the command exits `2`; otherwise it retains the health exit code.
@@ -655,6 +660,13 @@ bundled helper. Append `--plan --format json` to a suggested preparation command
 to inspect it first. Text output includes a quoted shell command (or a
 PowerShell command on Windows), plugin validation details, and the full health
 summary when health can be evaluated.
+
+Each provider explains what is missing and whether its commands were found.
+Preparation remedies include a plain-language `next_step`; when a prepared
+TypeScript helper only lacks Node.js, the remedy identifies that runtime and
+leaves `argv` null. A blocked report includes a `recheck` command and working
+directory that preserve the source, wiki, selection, and helper-cache options.
+Text output shows these next steps directly.
 
 ## `context`
 
@@ -1668,6 +1680,9 @@ case changes preserve wire identity. Read-only body fields do not become
 required request inputs, including fields reached through local references.
 Unresolved references, malformed parameter/body/response evidence, schema
 composition, recursion, response ranges, and other narrowing remain advisory.
+Nested reference diagnostics apply to their owning operation. Conflicting
+inherited definitions of the same header stay advisory instead of introducing
+a required-input verdict.
 The command reads local JSON/YAML without importing an application, running its build, or
 fetching external references. Exit `1` means a declared breaking change; `0`
 means compatible or advisory, not a complete compatibility proof.

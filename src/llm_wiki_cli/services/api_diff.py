@@ -250,8 +250,8 @@ def _normalization_diagnostics(loaded, diagnostics):
 
 def compare_exports(baseline, candidate):
     """Compare already loaded exports, reusing the authoritative normalizer."""
-    old_ops, old_diagnostics = _openapi_operations(baseline)
-    new_ops, new_diagnostics = _openapi_operations(candidate)
+    old_ops, old_diagnostics = _openapi_operations(baseline, diagnostic_origins=True)
+    new_ops, new_diagnostics = _openapi_operations(candidate, diagnostic_origins=True)
     _normalization_diagnostics(baseline, old_diagnostics)
     _normalization_diagnostics(candidate, new_diagnostics)
     findings = []
@@ -322,9 +322,9 @@ def compare_exports(baseline, candidate):
             continue
         new_label = f"{updated['method']} {updated['path']}"
         uncertain = any(
-            str(item.get("context", "")) == op["path"]
-            or str(item.get("context", "")) == ctx
-            or str(item.get("context", "")).startswith(ctx + " ")
+            item["operation"] == ctx
+            if "operation" in item
+            else str(item.get("context", "")) in {op["path"], ctx}
             for diagnostics, op, ctx in (
                 (old_diagnostics, old, label),
                 (new_diagnostics, updated, new_label),
@@ -333,9 +333,24 @@ def compare_exports(baseline, candidate):
         )
         severity = "advisory" if uncertain else "breaking"
         old_params = {_wire_key(p, old["path"]): p for p in old["parameters"]}
+        ambiguous_inputs = {
+            wire
+            for op in (old, updated)
+            for wire, count in Counter(
+                _wire_key(p, op["path"]) for p in op["parameters"]
+            ).items()
+            if wire is not None and count > 1
+        }
+        for wire in sorted(ambiguous_inputs):
+            finding(
+                "ambiguous-wire-input",
+                "advisory",
+                label,
+                f"Multiple parameter definitions describe the same {wire[0]} input: {wire[1]}",
+            )
         for parameter in updated["parameters"]:
             wire = _wire_key(parameter, updated["path"])
-            if wire is None:
+            if wire is None or wire in ambiguous_inputs:
                 continue
             previous = old_params.get(wire)
             if parameter["required"] and not (previous and previous["required"]):

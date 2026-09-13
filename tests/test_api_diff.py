@@ -220,3 +220,92 @@ def test_unknown_operation_does_not_hide_break_in_a_path_prefix(tmp_path):
         f["code"] == "success-response-removed" and f["severity"] == "breaking"
         for f in report["findings"]
     )
+
+
+@pytest.mark.parametrize("side", ["baseline", "candidate"])
+@pytest.mark.parametrize("location", ["parameter", "requestBody", "response"])
+def test_nested_unresolved_evidence_is_scoped_to_its_operation(
+    tmp_path, side, location
+):
+    baseline = {
+        "openapi": "3.1.0",
+        "paths": {
+            path: {"post": {"responses": {"200": {"description": "OK"}}}}
+            for path in ("/items", "/items.requestBody", "/items/child")
+        },
+    }
+    candidate = copy.deepcopy(baseline)
+    for item in candidate["paths"].values():
+        item["post"]["parameters"] = [
+            {
+                "in": "query",
+                "name": "q",
+                "required": True,
+                "schema": {"type": "string"},
+            },
+        ]
+    documents = {"baseline": baseline, "candidate": candidate}
+    operation = documents[side]["paths"]["/items"]["post"]
+    schema = {"type": "array", "items": {"$ref": "#/components/schemas/Missing"}}
+    if location == "parameter":
+        operation.setdefault("parameters", []).append(
+            {"in": "query", "name": "filter", "schema": schema}
+        )
+    elif location == "requestBody":
+        operation["requestBody"] = {"content": {"application/json": {"schema": schema}}}
+    else:
+        operation["responses"]["200"]["content"] = {
+            "application/json": {"schema": schema}
+        }
+    for name, document in documents.items():
+        (tmp_path / f"{name}.json").write_text(json.dumps(document))
+    report = compare_openapi("baseline.json", "candidate.json", source_root=tmp_path)
+    breaking = [f for f in report["findings"] if f["severity"] == "breaking"]
+    assert {f["operation"] for f in breaking} == {
+        "POST /items.requestBody",
+        "POST /items/child",
+    }
+    assert report["breaking_count"] == 2
+
+
+@pytest.mark.parametrize("operation_name", ["X-Token", "x-token"])
+@pytest.mark.parametrize("newly_required", [False, True])
+def test_inherited_header_identity_does_not_invent_a_new_requirement(
+    tmp_path, operation_name, newly_required
+):
+    baseline = {
+        "openapi": "3.1.0",
+        "paths": {
+            "/items": {
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "X-Token",
+                        "required": True,
+                        "schema": {"type": "string"},
+                    },
+                ],
+                "get": {
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": operation_name,
+                            "required": False,
+                            "schema": {"type": "string"},
+                        },
+                    ],
+                    "responses": {"200": {"description": "OK"}},
+                },
+            },
+        },
+    }
+    candidate = copy.deepcopy(baseline)
+    candidate["paths"]["/items"]["get"]["parameters"][0]["required"] = newly_required
+    for name, document in (("baseline", baseline), ("candidate", candidate)):
+        (tmp_path / f"{name}.json").write_text(json.dumps(document))
+    report = compare_openapi("baseline.json", "candidate.json", source_root=tmp_path)
+    assert report["breaking_count"] == int(
+        newly_required and operation_name == "X-Token"
+    )
+    if operation_name == "x-token":
+        assert any(f["code"] == "ambiguous-wire-input" for f in report["findings"])
