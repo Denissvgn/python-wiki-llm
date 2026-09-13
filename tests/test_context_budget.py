@@ -23,6 +23,13 @@ class ByteCounter:
         return len(text.encode("utf-8"))
 
 
+def test_optional_tokenizer_absence_keeps_estimates_and_actionable_exact_error(tmp_path, monkeypatch):
+    monkeypatch.setitem(sys.modules, "tokenizers", None)
+    assert EstimatedCounter().count("hello") == 2
+    with pytest.raises(ValueError, match=r"agent-wiki-cli\[tokens\]"):
+        LocalTokenizerCounter(tmp_path / "unused.json")
+
+
 @pytest.mark.parametrize("fmt", ["json", "markdown", "packet"])
 @pytest.mark.parametrize("mode", ["off", "auto", "required"])
 def test_complete_render_and_minimum_envelope(tmp_path, monkeypatch, fmt, mode):
