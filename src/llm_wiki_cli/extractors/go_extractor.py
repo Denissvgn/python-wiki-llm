@@ -30,6 +30,7 @@ from ..services.extractor_helpers import (
     get_prepared_binary,
     missing_helper_message,
 )
+from ..services.go_calls import attach_go_receiver_methods
 
 _GO_SCRIPTS_DIR = Path(__file__).parent / "go_scripts"
 
@@ -44,6 +45,7 @@ class GoExtractionRequest:
     source_files: list[str] | None = None
     helper_cache_dir: str | None = None
     include_tests: Iterable[str] | None = None
+    defer_receiver_attachment: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -82,7 +84,10 @@ class GoExtractor:
         if not inventory:
             return {}
 
-        return self._normalize_inventory(request.src_dir, inventory)
+        inventory = self._normalize_inventory(request.src_dir, inventory)
+        if request.deep and not request.defer_receiver_attachment:
+            attach_go_receiver_methods(inventory)
+        return inventory
 
     def _coerce_request(
         self,
@@ -150,6 +155,7 @@ class GoExtractor:
         cmd += ["--only-files", ",".join(source_files)]
         if request.deep:
             cmd.append("--deep")
+            cmd.append("--file-local")
         if request.include_tests and "go" in request.include_tests:
             cmd.append("--include-tests")
         return cmd

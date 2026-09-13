@@ -50,7 +50,7 @@ _DEFAULT_FLOW_DEPTH = 6
 DEFAULT_FLOW_DEPTH = _DEFAULT_FLOW_DEPTH
 FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-flow-observations/v1"
 _ENTRY_POINT_OBSERVATIONS_SCHEMA = "llm-wiki-entrypoint-observations/v1"
-_BUILTIN_DETECTOR_VERSION = "2"
+_BUILTIN_DETECTOR_VERSION = "3"
 
 
 @dataclass(frozen=True)
@@ -346,10 +346,63 @@ def _source_text(root: str | Path, filepath: str) -> str:
         return ""
 
 
-def _detect_go_http_servers(inventory: dict, *, root: str | Path) -> list[dict]:
-    entries: list[dict] = []
+def _go_http_handler_index(
+    inventory: dict,
+) -> dict[tuple[PurePosixPath, str | None, str], set[str]]:
+    """Index top-level candidates once, preserving ambiguous package matches."""
+    handlers: dict[tuple[PurePosixPath, str | None, str], set[str]] = {}
     for filepath, data in inventory.items():
         if not isinstance(data, Mapping) or data.get("language") != "go":
+            continue
+        package = data.get("go_package")
+        if package is not None and not isinstance(package, str):
+            continue
+        directory = PurePosixPath(filepath).parent
+        for function in data.get("functions", []):
+            if not isinstance(function, Mapping) or function.get("receiver"):
+                continue
+            name = function.get("name")
+            if isinstance(name, str):
+                handlers.setdefault((directory, package, name), set()).add(filepath)
+    return handlers
+
+
+def _detect_go_http_servers(
+    inventory: dict, *, root: str | Path, include_details: bool = False
+) -> list[dict]:
+    entries: list[dict] = []
+    handlers = _go_http_handler_index(inventory)
+    for filepath, data in inventory.items():
+        if not isinstance(data, Mapping) or data.get("language") != "go":
+            continue
+        frameworks = data.get("frameworks", {})
+        http = frameworks.get("go_http") if isinstance(frameworks, Mapping) else None
+        if isinstance(http, Mapping):
+            package = data.get("go_package")
+            directory = PurePosixPath(filepath).parent
+            for line in http.get("servers", []):
+                entry = _entry(CATEGORY_HTTP, filepath, "http.Server")
+                if include_details:
+                    entry["__source_line"] = _source_line(line)
+                    entry["__detection_file"] = filepath
+                entries.append(entry)
+            for registration in http.get("registrations", []):
+                if not isinstance(registration, Mapping):
+                    continue
+                symbol = registration.get("handler")
+                if not isinstance(symbol, str) or (
+                    package is not None and not isinstance(package, str)
+                ):
+                    continue
+                candidates = handlers.get((directory, package, symbol), set())
+                if len(candidates) == 1:
+                    entry = _entry(CATEGORY_HTTP, next(iter(candidates)), symbol)
+                    if include_details:
+                        entry["__source_line"] = _source_line(registration.get("line"))
+                        entry["__detection_file"] = filepath
+                    entries.append(entry)
+            # An empty AST observation is authoritative; only old inventories
+            # without this field use the compatibility source patterns below.
             continue
         if not (_import_modules(data) & _GO_HTTP_MODULES):
             continue
@@ -743,7 +796,7 @@ def _builtin_entry_points(
     entries += _detect_javascript_http_servers(
         inventory, include_details=include_details
     )
-    entries += _detect_go_http_servers(inventory, root=root)
+    entries += _detect_go_http_servers(inventory, root=root, include_details=include_details)
     entries += _detect_haskell_web_servers(inventory, root=root)
     entries += _detect_process(inventory, console_scripts)
 
@@ -821,10 +874,21 @@ def _builtin_detector_details(
     elif category == CATEGORY_HTTP and data.get("language") == "go":
         detector_id = "builtin.go-net-http"
         reason = "source imports net/http and declares a supported server pattern"
+        if entry.get("__detection_file"):
+            filepath = entry["__detection_file"]
+            line = _source_line(entry.get("__source_line"))
     elif category == CATEGORY_HTTP and data.get("language") == "haskell":
         detector_id = "builtin.haskell-web-server"
         reason = "source imports a supported WAI, Warp, or Servant server module"
     elif category == CATEGORY_PROCESS:
+        if data.get("language") == "go" and data.get("go_package") == "main":
+            return {
+                "id": "builtin.go-main",
+                "version": _BUILTIN_DETECTOR_VERSION,
+                "reason": "Go package main declares an executable main function",
+                "source_location": _source_location(filepath, line),
+                "plugin_component": None,
+            }
         matching_script = next(
             (
                 script

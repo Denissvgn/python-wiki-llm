@@ -9,8 +9,6 @@
     "integrations/github-action/render_summary.py"
   ],
   "extraPaths": ["src"],
-  "venvPath": ".",
-  "venv": ".venv",
   "pythonVersion": "3.10",
   "typeCheckingMode": "basic",
   "reportUnsupportedDunderAll": "error"

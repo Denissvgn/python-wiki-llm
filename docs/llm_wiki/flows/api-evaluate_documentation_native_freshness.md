@@ -2,7 +2,7 @@
 
 **Entry point:** `evaluate_documentation_native_freshness` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 30 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 31 more
 
 **Complete modules touched:**
 
@@ -13,6 +13,7 @@
 - [documentation_native](../modules/documentation_native.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
+- [go_calls](../modules/go_calls.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -100,7 +101,7 @@ sequenceDiagram
     p20->>p15: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 2938 interactions; 2908 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2975 interactions; 2945 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

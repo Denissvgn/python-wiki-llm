@@ -155,9 +155,10 @@ class ModulePathResolver:
             haskell_module_lookup={
                 key: frozenset(value) for key, value in haskell_module_lookup.items()
             },
-            go_module_scopes=_read_go_module_scopes(
-                project_root,
-                source_snapshot,
+            go_module_scopes=(
+                _read_go_module_scopes(project_root, source_snapshot)
+                if project_root is not None
+                else _inventory_go_scopes(inventory)
             ),
             ts_path_aliases=_read_ts_path_aliases(
                 project_root,
@@ -479,6 +480,31 @@ _GO_MODULE_EXCLUDED_DIRS: frozenset[str] = frozenset(
         "vendor",
     }
 )
+
+
+def _inventory_go_scopes(inventory: dict) -> tuple[_GoModuleScope, ...]:
+    scopes = set()
+    for data in inventory.values():
+        if not isinstance(data, dict):
+            continue
+        scope = data.get("go_import_scope")
+        if data.get("language") == "go" and isinstance(scope, dict):
+            if isinstance(scope.get("root"), str) and isinstance(scope.get("module"), str):
+                scopes.add(_GoModuleScope(scope["root"], scope["module"]))
+    return tuple(sorted(scopes, key=lambda scope: (scope.root, scope.module)))
+
+
+def stamp_go_import_scopes(inventory: dict, source_snapshot: SourceSnapshot) -> None:
+    """Bind Go resolution to the selected package markers, after cache merge."""
+    if not any(data.get("language") == "go" for data in inventory.values()):
+        return
+    scopes = _read_go_module_scopes(source_snapshot.root, source_snapshot)
+    for filepath, data in inventory.items():
+        if data.get("language") != "go":
+            continue
+        matches = [scope for scope in scopes if _path_under_scope(filepath, scope.root)]
+        scope = max(matches, key=lambda item: len(item.root)) if matches else None
+        data["go_import_scope"] = {"root": scope.root, "module": scope.module} if scope else None
 
 
 def _read_go_module_scopes(

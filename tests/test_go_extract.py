@@ -232,6 +232,259 @@ class TestGoWrapperFiltering:
 
 
 @skip_no_go
+@pytest.mark.parametrize("deep", [False, True])
+def test_go_executable_visibility_and_process_evidence(tmp_path, deep):
+    from llm_wiki_cli.services.entrypoints import get_detailed_entry_points
+
+    _make_go(tmp_path, "main.go", """
+        package main
+        func main() { helper() }
+        func helper() {}
+        func Exported() {}
+        func élève() {}
+        func École() {}
+        func init() {}
+        func init() {}
+    """)
+    inventory = GoExtractor().extract(str(tmp_path), deep=deep)
+    data = inventory["main.go"]
+    names = {fn["name"] for fn in data["functions"]}
+    assert {"main", "Exported", "École"} <= names
+    assert ("helper" in names) == deep
+    assert ("élève" in names) == deep
+    assert data["main_block"] is True and data["go_package"] == "main"
+    if deep:
+        assert len([fn for fn in data["functions"] if fn["name"] == "init"]) == 2
+    observed = get_detailed_entry_points(inventory, root=tmp_path)
+    process = [item for item in observed["observations"] if item["entry"]["category"] == "process"]
+    assert len(process) == 1
+    assert process[0]["entry"]["symbol"] == "main"
+    assert "Go" in process[0]["detector"]["reason"]
+
+
+@skip_no_go
+def test_go_library_main_and_receiver_main_are_not_process_entries(tmp_path):
+    from llm_wiki_cli.services.entrypoints import get_entry_points
+
+    _make_go(tmp_path, "library.go", """
+        package library
+        type Service struct{}
+        func main() {}
+        func (s Service) main() {}
+        func (s Service) private() {}
+        func init() {}
+    """)
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert not inventory["library.go"].get("main_block")
+    assert {method["name"] for method in inventory["library.go"]["classes"][0]["methods"]} == {"main", "private"}
+    assert not [e for e in get_entry_points(inventory, root=tmp_path) if e["category"] == "process"]
+
+
+@skip_no_go
+@pytest.mark.parametrize("registration", [
+    'web.HandleFunc("/health", health)',
+    'mux := web.NewServeMux(); mux.HandleFunc("/health", health)',
+    'web.ListenAndServe(":8000", web.HandlerFunc(health))',
+], ids=["global", "serve-mux", "listen-handler"])
+def test_go_http_ast_registration_resolves_package_handlers(tmp_path, registration):
+    from llm_wiki_cli.services.entrypoints import get_detailed_entry_points, get_entry_points
+
+    _make_go(tmp_path, "main.go", f'''package main
+import web "net/http"
+func main() {{ {registration} }}
+''')
+    _make_go(tmp_path, "handlers.go", '''package main
+import "net/http"
+func health(w http.ResponseWriter, r *http.Request) {}
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert all(not key.startswith("__") for entry in get_entry_points(inventory, root=tmp_path) for key in entry)
+    detailed = get_detailed_entry_points(inventory, root=tmp_path)
+    http = [o for o in detailed["observations"] if o["entry"]["category"] == "http"]
+    assert len(http) == 1
+    assert (http[0]["entry"]["file"], http[0]["entry"]["symbol"]) == ("handlers.go", "health")
+    assert http[0]["detector"]["source_location"] == {"source_path": "main.go", "line": 3}
+
+
+@skip_no_go
+@pytest.mark.parametrize("body", [
+    '// http.HandleFunc("/fake", health)',
+    's := `http.HandleFunc("/fake", health)`; _ = s',
+    'http := fake{}; http.HandleFunc("/fake", health)',
+    'mux := fake{}; mux.HandleFunc("/fake", health)',
+    'mux := http.NewServeMux(); mux = other(); mux.HandleFunc("/fake", health)',
+    'health := other(); http.HandleFunc("/fake", health)',
+], ids=["comment", "string", "shadowed-import", "other-receiver", "reassigned-mux", "shadowed-handler"])
+def test_go_http_ast_rejects_non_net_http_or_unknown_bindings(tmp_path, body):
+    from llm_wiki_cli.services.entrypoints import get_entry_points
+
+    _make_go(tmp_path, "main.go", f'''package main
+import "net/http"
+func health(w http.ResponseWriter, r *http.Request) {{}}
+func main() {{
+{body}
+}}
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert "go_http" in inventory["main.go"]["frameworks"]
+    assert not [e for e in get_entry_points(inventory, root=tmp_path) if e["category"] == "http"]
+
+
+@skip_no_go
+def test_go_body_calls_preserve_binding_and_callable_ownership(tmp_path):
+    from llm_wiki_cli.services.extraction_service import resolve_call_edges
+
+    _make_go(tmp_path, "main.go", '''package main
+import "fmt"
+type Service struct{}
+func (s *Service) work() { helper() }
+func helper() { helper() }
+func main() {
+    helper()
+    s := &Service{}
+    s.work()
+    fmt.Println("hello")
+    go helper()
+    defer helper()
+    fn := func() { fmt.Println("nested") }
+    fn()
+    helper := fn
+    helper()
+}
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    data = inventory["main.go"]
+    main = next(fn for fn in data["functions"] if fn["name"] == "main")
+    assert [call["name"] for call in main["calls"]] == ["helper", "work", "Println", "helper", "helper", "fn", "helper"]
+    assert [call.get("invocation") for call in main["calls"]][3:5] == ["go", "defer"]
+    assert len(data["nested_functions"]) == 1
+    assert data["nested_functions"][0]["calls"][0]["name"] == "Println"
+    edges = resolve_call_edges(inventory)
+    main_edges = [edge for edge in edges if edge["from"]["symbol"] == "main"]
+    assert main_edges[0]["to"] == {"file": "main.go", "symbol": "helper"}
+    assert main_edges[1]["to"] == {"file": "main.go", "symbol": "Service.work"}
+    assert main_edges[2]["kind"] == "external"
+    assert all(edge["kind"] == "unresolved" for edge in main_edges[-2:])
+    recursive = [edge for edge in edges if edge["from"]["symbol"] == "helper"]
+    assert len(recursive) == 1 and recursive[0]["to"]["symbol"] == "helper"
+
+
+@skip_no_go
+@pytest.mark.parametrize("count", [2, 3])
+def test_go_workflows_require_three_resolved_selected_modules(tmp_path, monkeypatch, count):
+    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory, resolve_call_edges
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "go.mod").write_text("module example.org/app\n\ngo 1.21\n", encoding="utf-8")
+    imports = []
+    calls = []
+    for index in range(count):
+        imports.append(f'p{index} "example.org/app/pkg{index}"')
+        calls.append(f'p{index}.Run()')
+        _make_go(tmp_path, f"pkg{index}/run.go", f"package pkg{index}\nfunc Run() {{}}\n")
+        _make_go(tmp_path, f"pkg{index}/other.go", f"package pkg{index}\nfunc Other() {{}}\n")
+    _make_go(tmp_path, "main.go", "package main\nimport (\n" + "\n".join(imports) + "\n)\nfunc main() {\n" + "\n".join(calls) + "\n}\n")
+    inventory = get_inventory(str(tmp_path), deep=True)
+    edges = resolve_call_edges(inventory)
+    assert [(edge["to"]["file"], edge["to"]["symbol"]) for edge in edges] == [(f"pkg{i}/run.go", "Run") for i in range(count)]
+    assert bool(get_call_graph(inventory)) == (count == 3)
+    if count == 3:
+        _make_go(tmp_path, "cmd/other/main.go", (tmp_path / "main.go").read_text())
+        assert len(get_call_graph(get_inventory(str(tmp_path), deep=True))) == 2
+
+
+@skip_no_go
+@pytest.mark.parametrize("method_file", ["types.go", "methods.go"], ids=["same-file", "cross-file"])
+def test_go_method_workflow_labels_follow_the_defining_file(tmp_path, monkeypatch, method_file):
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_workflow_md
+    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "go.mod").write_text("module example.org/app\n\ngo 1.21\n", encoding="utf-8")
+    for package in ("a", "b", "c"):
+        _make_go(tmp_path, f"{package}/run.go", f"package {package}\nfunc Run() {{}}\n")
+    source = '''package worker
+import (
+    "example.org/app/a"
+    "example.org/app/b"
+    "example.org/app/c"
+)
+func (w Worker) Execute() { a.Run(); b.Run(); c.Run() }
+'''
+    if method_file == "types.go":
+        source += "type Worker struct{}\n"
+    else:
+        _make_go(tmp_path, "types.go", "package worker\ntype Worker struct{}\n")
+    _make_go(tmp_path, method_file, source)
+
+    workflows = get_call_graph(get_inventory(str(tmp_path), deep=True))
+
+    module = Path(method_file).stem
+    workflow_name = f"{module}_Worker_Execute"
+    assert set(workflows) == {workflow_name}
+    workflow = workflows[workflow_name]
+    assert workflow["entry"] == f"{module}.Worker.Execute"
+    assert workflow["entry_module"] == module
+    assert workflow["entry_module_path"] == method_file
+    assert workflow["modules_touched_paths"] == sorted([method_file, "a/run.go", "b/run.go", "c/run.go"])
+    assert [site["file"] for site in workflow["call_sites"]] == ["a/run.go", "b/run.go", "c/run.go"]
+    markdown = _generate_workflow_md(workflow_name, workflow)
+    assert f"**Entry point:** `{module}.Worker.Execute`" in markdown
+    assert f"This workflow starts at `{module}.Worker.Execute`." in markdown
+
+
+@skip_no_go
+def test_go_cross_file_method_call_locations_and_order_are_stable(tmp_path):
+    from llm_wiki_cli.services.extraction_service import resolve_call_edges
+
+    _make_go(tmp_path, "service.go", "package main\ntype Service struct{}\n")
+    _make_go(tmp_path, "work.go", "package main\nfunc (s Service) work() { helper() }\n")
+    _make_go(tmp_path, "main.go", "package main\nfunc main() { s := &Service{}; s.work() }\nfunc helper() {}\n")
+    first = GoExtractor().extract(str(tmp_path), deep=True)
+    assert first == GoExtractor().extract(str(tmp_path), deep=True)
+    edges = resolve_call_edges(first)
+    assert {edge["from"]["file"] for edge in edges if edge["from"]["symbol"] == "Service.work"} == {"work.go"}
+    assert next(edge for edge in edges if edge["from"]["symbol"] == "main")["to"] == {"file": "work.go", "symbol": "Service.work"}
+
+
+@skip_no_go
+def test_go_cached_cross_file_methods_follow_edits_and_deletions(tmp_path):
+    from llm_wiki_cli.services.extraction_service import get_inventory_result, resolve_call_edges
+    from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
+
+    source = tmp_path / "source"
+    _make_go(source, "service.go", "package main\ntype Service struct{}\n")
+    method = _make_go(source, "work.go", "package main\nfunc (s Service) work() { before() }\n")
+    _make_go(source, "helpers.go", "package main\nfunc before() {}\nfunc after() {}\n")
+    options = InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "cache"))
+    first = get_inventory_result(source, deep=True, cache_options=options).inventory
+    assert next(edge for edge in resolve_call_edges(first))["to"]["symbol"] == "before"
+    method.write_text("package main\nfunc (s Service) work() { after() }\n", encoding="utf-8")
+    warm = get_inventory_result(source, deep=True, cache_options=options).inventory
+    cold = get_inventory_result(source, deep=True).inventory
+    assert warm == cold
+    edges = resolve_call_edges(warm)
+    assert len(edges) == 1 and edges[0]["to"]["symbol"] == "after"
+    method.unlink()
+    warm = get_inventory_result(source, deep=True, cache_options=options).inventory
+    assert warm == get_inventory_result(source, deep=True).inventory
+    assert not resolve_call_edges(warm)
+
+
+@skip_no_go
+def test_go_server_literal_remains_an_ast_backed_entrypoint(tmp_path):
+    from llm_wiki_cli.services.entrypoints import get_entry_points
+
+    _make_go(tmp_path, "server.go", '''package web
+import web "net/http"
+var server = &web.Server{Addr: ":8000"}
+// web.Server{} in a comment is not another server.
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert get_entry_points(inventory, root=tmp_path) == [{"category": "http", "file": "server.go", "symbol": "http.Server", "label": "http.Server", "id": "http-http.Server"}]
+
+
+@skip_no_go
 class TestGoExtractor:
     def test_empty_dir(self, tmp_path):
         inv = GoExtractor().extract(str(tmp_path))

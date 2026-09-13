@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [review_cmd](../modules/review_cmd.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 25 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 27 more
 
 **Complete modules touched:**
 
@@ -15,12 +15,14 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [go_calls](../modules/go_calls.md)
 - [impact](../modules/impact.md)
 - [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [packages](../modules/packages.md)
+- [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
@@ -95,7 +97,7 @@ sequenceDiagram
     p19-->>p21: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 1836 interactions; 1806 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1875 interactions; 1845 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

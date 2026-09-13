@@ -16,13 +16,14 @@ def run(args):
 
     if version_file is None:
         print(
-            "Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION)."
+            "Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).",
+            file=sys.stderr,
         )
         sys.exit(1)
 
     current = read_version(version_file)
     if current is None:
-        print(f"Error: Could not parse version from {version_file}")
+        print(f"Error: Could not parse version from {version_file}", file=sys.stderr)
         sys.exit(1)
 
     if args.bump_type == "patch":
@@ -30,7 +31,7 @@ def run(args):
     elif args.bump_type == "minor":
         new_version = bump_minor(current)
     else:
-        print(f"Error: Unknown bump type '{args.bump_type}'")
+        print(f"Error: Unknown bump type '{args.bump_type}'", file=sys.stderr)
         sys.exit(1)
 
     write_version(version_file, new_version)

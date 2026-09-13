@@ -131,6 +131,46 @@ def _codes(contracts: dict) -> set[str]:
     return {item["code"] for item in contracts["diagnostics"]}
 
 
+@pytest.mark.parametrize("test_path", ["tests/test_app.py", "test_app.py", "conftest.py", "TESTS/example.py"])
+def test_test_applications_and_imported_app_mounts_do_not_change_production(tmp_path, test_path):
+    files = {
+        "routes.py": 'from fastapi import APIRouter\nrouter = APIRouter()\n@router.get("/health")\ndef health(): pass\n',
+        "app.py": 'from fastapi import FastAPI\nfrom routes import router\napp = FastAPI()\napp.include_router(router)\n',
+    }
+    baseline = build_static_api_contracts(_inventory(tmp_path, files))
+    test_source = 'from app import app\nfrom routes import router\nfrom fastapi import FastAPI\napp.include_router(router, prefix="/test-only")\n'
+    for index in range(6):
+        test_source += f'def test_{index}():\n    test_app = FastAPI()\n    test_app.include_router(router)\n'
+    files[test_path] = test_source
+    inventory = _inventory(tmp_path, files)
+    # Exercise the public inventory's portable path normalization as well.
+    inventory[test_path.replace("/", "\\")] = inventory.pop(test_path)
+    original = deepcopy(inventory)
+    result = build_static_api_contracts(inventory)
+    assert result["operations"] == baseline["operations"]
+    assert result["applications"] == baseline["applications"]
+    assert inventory == original
+    assert result["excluded_counts"]["test_source"] == 0
+    assert "fastapi_test_source_excluded" in _codes(result)
+
+
+def test_distinct_production_app_defaults_remain_distinct(tmp_path):
+    inventory = _inventory(tmp_path, {
+        "routes.py": 'from fastapi import APIRouter\nrouter = APIRouter()\n@router.get("/health")\ndef health(): pass\n',
+        "app.py": '''from fastapi import FastAPI
+from routes import router
+first = FastAPI()
+first.include_router(router, tags=["first"])
+second = FastAPI()
+second.include_router(router, tags=["second"])
+''',
+    })
+    contracts = build_static_api_contracts(inventory)
+    assert len(contracts["applications"]) == 2
+    assert len(contracts["operations"]) == 2
+    assert {tuple(o["tags"]) for o in contracts["operations"]} == {("first",), ("second",)}
+
+
 def _static_fixture(root: Path) -> dict:
     return _inventory(
         root,

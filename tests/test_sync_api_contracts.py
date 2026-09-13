@@ -81,6 +81,31 @@ def _write_fastapi_source(project: Path) -> None:
     )
 
 
+def test_test_router_mounts_stay_excluded_through_bootstrap_first_sync(tmp_path, monkeypatch, capsys):
+    project = tmp_path / "project"
+    project.mkdir()
+    monkeypatch.chdir(project)
+    (project / "routes.py").write_text('from fastapi import APIRouter\nrouter = APIRouter()\n@router.get("/health")\ndef health(): pass\n', encoding="utf-8")
+    (project / "app.py").write_text('from fastapi import FastAPI\nfrom routes import router\napp = FastAPI()\napp.include_router(router)\n', encoding="utf-8")
+    (project / "test_app.py").write_text('from app import app\nfrom routes import router\nfrom fastapi import FastAPI\napp.include_router(router, prefix="/test-only")\ndef test_app():\n    app = FastAPI()\n    app.include_router(router)\n', encoding="utf-8")
+    wiki = project / "wiki"
+    args = _bootstrap_args(project, wiki)
+    args.api_contracts = True
+    bootstrap_cmd.run(args)
+    capsys.readouterr()
+    contract = (wiki / "api-contracts.md").read_text(encoding="utf-8")
+    assert contract.count("| `GET` | `/health`") == 1
+    assert "/test-only" not in contract
+    before = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
+    sync_cmd.run(_sync_args(project, wiki, no_cache=False))
+    capsys.readouterr()
+    after = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
+    assert before == after
+    sync_cmd.run(_sync_args(project, wiki, no_cache=True))
+    capsys.readouterr()
+    assert (wiki / "api-contracts.md").read_text(encoding="utf-8") == contract
+
+
 def _write_plain_source(project: Path) -> None:
     (project / "plain.py").write_text(
         "def helper():\n    return 'ok'\n", encoding="utf-8"

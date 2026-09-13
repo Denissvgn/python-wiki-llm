@@ -2282,7 +2282,9 @@ class TestBootstrapOverwrite:
         assert exc_info.value.code == 2
         assert _tree_bytes(wiki_dir) == before
         assert user_page.read_text(encoding="utf-8") == "CUSTOM CONTENT"
-        output = capsys.readouterr().out
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        output = captured.err
         assert "Bootstrap is first-use only" in output
         assert "llm-wiki sync --jobs 1" in output
         assert "llm-wiki migrate --dry-run" not in output
@@ -2307,9 +2309,9 @@ class TestBootstrapOverwrite:
         assert exc_info.value.code == 2
         assert _tree_bytes(wiki_dir) == before
         assert user_page.read_text(encoding="utf-8") == "CUSTOM CONTENT"
-        assert "compatibility `overwrite` option is no longer supported" in (
-            capsys.readouterr().out
-        )
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "compatibility `overwrite` option is no longer supported" in captured.err
 
     def test_exact_init_scaffold_is_accepted(self, tmp_project, capsys):
         wiki_dir = tmp_project / "docs" / "llm_wiki"

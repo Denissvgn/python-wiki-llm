@@ -2,7 +2,7 @@
 
 **Entry point:** `capture_context_read` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), and 47 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), and 48 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -116,7 +117,7 @@ sequenceDiagram
     p18->>p20: _current_windows_user_sid
 ```
 
-> Call sequence diagram shows 30 of 4067 interactions; 4037 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4182 interactions; 4152 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

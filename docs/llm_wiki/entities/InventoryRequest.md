@@ -1,6 +1,6 @@
 # InventoryRequest
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:145`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:146`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)

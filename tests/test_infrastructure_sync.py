@@ -484,7 +484,9 @@ def test_first_use_bootstrap_rejects_changed_existing_infrastructure_wiki(
 
     assert exc_info.value.code == 2
     assert _wiki_bytes(wiki) == before_tree
-    assert "llm-wiki sync --jobs 1" in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "llm-wiki sync --jobs 1" in captured.err
     after_state = _manifest(wiki)["generation_inputs"]["infrastructure"]
     assert after_state == before_state
     assert after_state["sources"]["Dockerfile"]["source_content_hash"] == before_hash

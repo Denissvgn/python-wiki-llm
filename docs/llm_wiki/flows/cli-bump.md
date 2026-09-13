@@ -87,7 +87,7 @@ flowchart LR
     s1 -->|"find_version_file(root)"| s3
     s3 -. "Path(root)" .-> s4
     s3 -. "candidate.exists(data not statically known)" .-> s5
-    s1 -. "print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')" .-> s6
+    s1 -. "print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)" .-> s6
     s1 -. "sys.exit(1)" .-> s7
     s1 -->|"read_version(version_file)"| s8
     s8 -. "path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)(encoding='utf-8')" .-> s9
@@ -129,7 +129,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `sys`, `subprocess`, `sys`, `sys` | - | - |
+| `run` | `args` | `sys`, `sys`, `sys`, `sys`, `subprocess`, `sys`, `sys` | - | - |
 | `getattr` | - | - | - | - |
 | `find_version_file` | `root: str` | `VERSION_PATTERNS` | - | `candidate`, `None` |
 | `Path` | - | - | - | - |
@@ -150,9 +150,9 @@ flowchart LR
 | run | find_version_file | 15 | `find_version_file(root)` |
 | find_version_file | Path | 31 | `Path(root)` |
 | find_version_file | candidate.exists | 34 | `candidate.exists(data not statically known)` |
-| run | print | 18 | `print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')` |
-| run | sys.exit | 21 | `sys.exit(1)` |
-| run | read_version | 23 | `read_version(version_file)` |
+| run | print | 18 | `print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)` |
+| run | sys.exit | 22 | `sys.exit(1)` |
+| run | read_version | 24 | `read_version(version_file)` |
 | read_version | path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version) | 41 | `path.read_text(encoding='utf-8')` |
 | read_version | _read_pyproject_version | 43 | `_read_pyproject_version(content)` |
 | _read_pyproject_version | tomllib.loads | 90 | `tomllib.loads(text)` |
@@ -163,13 +163,13 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | output | `print` | `run` | 18 |
-| output | `print` | `run` | 25 |
-| output | `print` | `run` | 33 |
-| output | `print` | `run` | 37 |
-| process | `subprocess.run` | `run` | 42 |
-| output | `print` | `run` | 49 |
-| output | `print` | `run` | 55 |
-| output | `print` | `run` | 57 |
+| output | `print` | `run` | 26 |
+| output | `print` | `run` | 34 |
+| output | `print` | `run` | 38 |
+| process | `subprocess.run` | `run` | 43 |
+| output | `print` | `run` | 50 |
+| output | `print` | `run` | 56 |
+| output | `print` | `run` | 58 |
 
 ### Static analysis gaps
 
@@ -177,7 +177,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 14 |
 | unresolved_call | `find_version_file` | `candidate.exists` | 34 |
-| external_call | `run` | `sys.exit` | 21 |
+| external_call | `run` | `sys.exit` | 22 |
 | unresolved_call | `read_version` | `path.read_text` | 41 |
 | unresolved_call | `_read_pyproject_version` | `tomllib.loads` | 90 |
 | external_call | `_read_pyproject_version` | `isinstance` | 93 |

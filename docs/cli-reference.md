@@ -143,8 +143,16 @@ refreshed by the CLI; edit the semantic sections instead. Use
 this skips agent constraint-file updates outside the generated wiki directory.
 Use `--format json` to emit a machine-readable summary with created, updated,
 and skipped files plus source counts and the manifest path.
+Bootstrap failure diagnostics go to stderr in both text and JSON modes.
+Rejected first-use or overwrite requests exit with code 2 before changing files;
+source extraction failures exit with code 1.
 Go `_test.go` files are excluded by default; pass `--include-tests go` when
 behavior-spec or integration-test modules should be documented.
+Executable Go `main` functions are retained in both shallow and full extraction.
+Full extraction also retains private functions and receiver methods for analysis;
+their `exported` flag distinguishes them from public declarations. A Go process
+entry requires a receiver-free `main` with no parameters or results in `package
+main`; initialization functions do not become independent process entries.
 Use `--helper-cache-dir PATH` when prepared Go/Rust/Haskell helpers live in a
 separate cache from the source repository.
 
@@ -307,6 +315,29 @@ names from inventory entries rather than filepath stems.
 Extractor helper processes use a 120-second runtime timeout by default. Set
 `LLM_WIKI_EXTRACTOR_TIMEOUT` to an integer number of seconds (minimum `1`) for
 larger repositories.
+Go HTTP detection uses AST registrations from `net/http.HandleFunc`, a mux bound
+by `mux := http.NewServeMux()` and registered with `mux.HandleFunc`, and named handlers supplied to
+`ListenAndServe` or `ListenAndServeTLS`, including `http.HandlerFunc` wrappers.
+Constructed `http.Server` literals remain explicit server entries.
+Import aliases and handlers in another selected file of the same package are
+supported. Handler matching requires one defining file in the same directory
+and Go package; ambiguous matches remain unresolved. Unknown receiver bindings
+and function values remain unresolved.
+Registration evidence does not prove that a server starts or a callback executes.
+
+Go body calls in full extraction carry optional `go_binding` evidence and an
+`invocation` marker for `go` or `defer`. Package markers selected with the source
+scope supply `go_import_scope`; unrelated same-named functions are not treated
+as call targets. Calls into imported packages require explicit `exported: true`
+evidence on the target function; missing or malformed visibility remains
+unresolved. Private functions in the same package remain valid call targets.
+Receiver calls resolve only to supported concrete declarations.
+Nested function-literal bodies have separate callable records. Dynamic dispatch
+and function-value calls remain unresolved, and source order is not runtime
+execution order. Workflow pages require resolved direct calls into at least
+three other selected project modules; an executable need not meet that threshold.
+When a receiver type and its method are declared in different files, workflow
+entry labels and source paths use the file that defines the method.
 Haskell file entries are additive under `llm-wiki-extract/v1`. A Haskell entry
 uses `language: "haskell"`, `imports`, `classes`, and `functions`, with `module`
 present when the source declares one. Import records use `module`, `qualified`,
@@ -371,6 +402,12 @@ reported through `unknowns` and diagnostics; test-source and
 inventory by default. With `--openapi-file`, OpenAPI defines the operation set
 and wire contract, external references are never fetched, and unmatched or
 conflicting static declarations remain visible as diagnostics.
+The production graph also excludes test-origin application/router declarations,
+aliases, and router mounts before resolving their owners. A test mounting a
+production router, or modifying an imported production app, does not add a
+production operation. Raw test declarations remain in extraction inventory,
+and exclusion diagnostics identify their source files. Distinct production apps
+and legitimate repeated mounts retain their own operation contexts.
 Installed `entrypoint_detector` plugin hooks also contribute to the same
 `entrypoints` array in deep output. Detector failures are isolated: built-in
 entry-point detection still runs, `extract` prints a warning to stderr, and the
@@ -1798,6 +1835,10 @@ llm-wiki bump --patch --stage
 llm-wiki uninstall --dry-run
 llm-wiki uninstall --remove-wiki
 ```
+
+`bump` and `release` write validation and staging errors to stderr and exit with
+code 1. Successful summaries remain on stdout. Rejected validation requests do
+not change version or changelog files.
 
 `status` reports knowledge availability from the committed wiki snapshot. It
 does not run source extraction or live freshness evaluation; a ready snapshot

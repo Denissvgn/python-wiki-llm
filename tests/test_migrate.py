@@ -1141,7 +1141,9 @@ class TestMigrateIntegration:
             )
 
         assert exc_info.value.code == 2
-        route_output = capsys.readouterr().out
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        route_output = captured.err
         assert "Bootstrap is first-use only" in route_output
         assert "llm-wiki migrate --dry-run" in route_output
         assert {

@@ -734,11 +734,37 @@ def _operation_id(method: str, path: str, index: int) -> str:
 
 def build_static_api_contracts(inventory: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
     """Assemble production FastAPI operations from syntax-only inventory."""
+    # Source eligibility belongs to declarations and edges, before binding
+    # resolution. A test can mutate an imported production app/router without
+    # declaring either the owner or the handler in the test itself.
+    diagnostics: list[dict[str, Any]] = []
+    test_operations = 0
+    for filepath, _file_data, fastapi in _framework_records(inventory):
+        if not is_test_source_path(filepath):
+            continue
+        declarations = {
+            kind: [record for record in fastapi.get(kind, []) if isinstance(record, Mapping)]
+            for kind in ("applications", "routers", "aliases", "operations", "includes")
+        }
+        test_operations += sum(
+            max(1, len(_operation_methods(record)[0]))
+            for record in declarations["operations"]
+        )
+        if any(declarations.values()):
+            diagnostics.append(_diagnostic(
+                "fastapi_test_source_excluded",
+                "Test-origin declarations and router registrations were excluded from the production contract.",
+                severity="info", file=filepath,
+                excluded_declarations={kind: len(records) for kind, records in declarations.items() if records},
+            ))
+    inventory = {
+        filepath: data for filepath, data in inventory.items()
+        if not is_test_source_path(filepath)
+    }
     nodes, app_keys = _declaration_nodes(inventory)
     resolver = build_module_path_resolver(dict(inventory))
     operations_by_owner: dict[tuple[str, str, str], list[tuple[str, Mapping[str, Any]]]] = defaultdict(list)
     includes_by_owner: dict[tuple[str, str, str], list[tuple[tuple[str, str, str], Mapping[str, Any]]]] = defaultdict(list)
-    diagnostics: list[dict[str, Any]] = []
 
     for filepath, file_data, fastapi in _framework_records(inventory):
         for record in fastapi.get("operations", []):
@@ -837,7 +863,7 @@ def build_static_api_contracts(inventory: Mapping[str, Mapping[str, Any]]) -> di
         )
 
     assembled: list[dict[str, Any]] = []
-    excluded = {"test_source": 0, "schema_excluded": 0, "conditional": 0}
+    excluded = {"test_source": test_operations, "schema_excluded": 0, "conditional": 0}
 
     def walk(
         key: tuple[str, str, str],

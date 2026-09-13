@@ -84,12 +84,12 @@ flowchart LR
     s1 -. "Path (src/llm_wiki_cli/commands/release_cmd.py:run)(getattr(...))" .-> s3
     s1 -. "getattr(args, 'changelog', 'CHANGELOG.md')" .-> s4
     s1 -. "changelog_path.exists(data not statically known)" .-> s5
-    s1 -. "print(...)" .-> s6
+    s1 -. "print(..., file=sys.stderr)" .-> s6
     s1 -. "sys.exit(1)" .-> s7
     s1 -->|"find_version_file(root)"| s8
     s8 -. "Path (src/llm_wiki_cli/services…ning.py:find_version_file)(root)" .-> s9
     s8 -. "candidate.exists(data not statically known)" .-> s10
-    s1 -. "print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')" .-> s11
+    s1 -. "print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)" .-> s11
     s1 -. "sys.exit(1)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
@@ -124,7 +124,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `sys`, `subprocess`, `sys`, `sys` | - | `none` |
+| `run` | `args` | `sys`, `sys`, `sys`, `sys`, `sys`, `subprocess`, `sys`, `sys` | - | `none` |
 | `getattr` | - | - | - | - |
 | `Path (src/llm_wiki_cli/commands/release_cmd.py:run)` | - | - | - | - |
 | `getattr` | - | - | - | - |
@@ -145,13 +145,13 @@ flowchart LR
 | run | Path (src/llm_wiki_cli/commands/release_cmd.py:run) | 119 | `Path(getattr(...))` |
 | run | getattr | 119 | `getattr(args, 'changelog', 'CHANGELOG.md')` |
 | run | changelog_path.exists | 121 | `changelog_path.exists(data not statically known)` |
-| run | print | 122 | `print(...)` |
+| run | print | 122 | `print(..., file=sys.stderr)` |
 | run | sys.exit | 123 | `sys.exit(1)` |
 | run | find_version_file | 126 | `find_version_file(root)` |
 | find_version_file | Path (src/llm_wiki_cli/services…ning.py:find_version_file) | 31 | `Path(root)` |
 | find_version_file | candidate.exists | 34 | `candidate.exists(data not statically known)` |
-| run | print | 128 | `print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).')` |
-| run | sys.exit | 131 | `sys.exit(1)` |
+| run | print | 128 | `print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)` |
+| run | sys.exit | 132 | `sys.exit(1)` |
 
 ### Boundary effects
 
@@ -159,12 +159,12 @@ flowchart LR
 |---|---|---|---:|
 | output | `print` | `run` | 122 |
 | output | `print` | `run` | 128 |
-| output | `print` | `run` | 135 |
-| output | `print` | `run` | 141 |
-| output | `print` | `run` | 145 |
-| filesystem_write | `changelog_path.write_bytes` | `run` | 150 |
-| output | `print` | `run` | 151 |
-| process | `subprocess.run` | `run` | 155 |
+| output | `print` | `run` | 136 |
+| output | `print` | `run` | 142 |
+| output | `print` | `run` | 146 |
+| filesystem_write | `changelog_path.write_bytes` | `run` | 151 |
+| output | `print` | `run` | 152 |
+| process | `subprocess.run` | `run` | 156 |
 
 ### Static analysis gaps
 
@@ -175,7 +175,7 @@ flowchart LR
 | unresolved_call | `run` | `changelog_path.exists` | 121 |
 | external_call | `run` | `sys.exit` | 123 |
 | unresolved_call | `find_version_file` | `candidate.exists` | 34 |
-| external_call | `run` | `sys.exit` | 131 |
+| external_call | `run` | `sys.exit` | 132 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

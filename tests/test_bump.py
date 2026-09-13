@@ -85,7 +85,9 @@ class TestBumpValidation:
             bump_cmd.run(_make_args())
 
         assert exc_info.value.code == 1
-        assert "No version file found" in capsys.readouterr().out
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "No version file found" in captured.err
 
     def test_unparseable_version_is_actionable(self, monkeypatch, capsys):
         version_file = Path("VERSION")
@@ -98,11 +100,15 @@ class TestBumpValidation:
             bump_cmd.run(_make_args())
 
         assert exc_info.value.code == 1
-        assert "Could not parse version from VERSION" in capsys.readouterr().out
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "Could not parse version from VERSION" in captured.err
 
     def test_unknown_bump_type_is_rejected(self, tmp_project, capsys):
         with pytest.raises(SystemExit) as exc_info:
             bump_cmd.run(_make_args(bump_type="major"))
 
         assert exc_info.value.code == 1
-        assert "Unknown bump type 'major'" in capsys.readouterr().out
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "Unknown bump type 'major'" in captured.err

@@ -268,7 +268,9 @@ def test_bootstrap_rejects_overwrite_without_touching_contract_semantics(
     assert exc_info.value.code == 2
     assert contract_path.read_bytes() == contract_before
     assert flow_path.read_bytes() == flow_before
-    assert "overwrite` option is no longer supported" in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "overwrite` option is no longer supported" in captured.err
 
 
 def test_invalid_openapi_fails_before_generated_pages(tmp_path, monkeypatch, capsys):
@@ -283,7 +285,9 @@ def test_invalid_openapi_fails_before_generated_pages(tmp_path, monkeypatch, cap
         bootstrap_cmd.run(_args(project, wiki, openapi_file="openapi.json"))
 
     assert exc_info.value.code == 2
-    assert "Invalid OpenAPI" in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert "Error:" not in captured.out
+    assert "Invalid OpenAPI" in captured.err
     assert not (wiki / "index.md").exists()
     assert not (wiki / "api-contracts.md").exists()
 

@@ -1121,7 +1121,7 @@ jobs:
             --path "${RUNNER_TEMP}/qualification-venv"
       - name: Install source and hash-locked release tools
         run: |
-          python -m pip install --no-cache-dir "./candidate[dev,mcp]"
+          python -m pip install --no-cache-dir "./candidate[dev,mcp,tokens]"
           python -m pip install --require-hashes \
             --no-cache-dir -r candidate/release/requirements.txt
           python -I incoming/tools/release/qualification.py verify-download \
@@ -1155,14 +1155,7 @@ jobs:
       - name: Run static checks
         working-directory: candidate
         run: |
-          pyright
-          ruff check src tests integrations/github-action/render_summary.py
-          bandit -r src/llm_wiki_cli -f json \
-            -o ../evidence/security/bandit-full.json || true
-          bandit -r src/llm_wiki_cli -lll -iii
-          pip-audit --local --format json \
-            --output ../evidence/security/pip-audit.json
-          actionlint .github/workflows/*.yml
+          python -I release/static_checks.py --evidence ../evidence/security
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
