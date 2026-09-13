@@ -99,6 +99,7 @@ def test_default_checks_use_current_interpreter_and_preserve_blocking_scanners(
         "actionlint",
     }
     assert by_name["pyright"].command[-2:] == ("--pythonpath", sys.executable)
+    assert "examples" in by_name["ruff"].command
     assert all(
         check.command[0] == sys.executable
         for check in checks

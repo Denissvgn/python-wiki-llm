@@ -196,12 +196,13 @@ def test_package_data_includes_bundled_documentation_hooks_plugin_sample():
     assert "examples/plugins/documentation-hooks/llm-wiki-plugin.json" in package_data
     assert "examples/plugins/documentation-hooks/detectors.py" in package_data
     assert "examples/plugins/documentation-hooks/styles.py" in package_data
+    assert "examples/plugins/documentation-hooks/README.md" in package_data
 
 
 def test_sdist_manifest_includes_source_documentation_hooks_plugin_sample():
     manifest = (PROJECT_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     assert (
-        "recursive-include examples/plugins/documentation-hooks *.py *.json" in manifest
+        "recursive-include examples/plugins/documentation-hooks *.py *.json *.md" in manifest
     )
 
 

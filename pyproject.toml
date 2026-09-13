@@ -81,6 +81,7 @@ where = ["src"]
     "extractors/rust_scripts/src/main.rs",
     "examples/plugins/documentation-hooks/detectors.py",
     "examples/plugins/documentation-hooks/llm-wiki-plugin.json",
+    "examples/plugins/documentation-hooks/README.md",
     "examples/plugins/documentation-hooks/styles.py",
     "skills/agent-docs/SKILL.md",
     "skills/agent-docs/reference.md",

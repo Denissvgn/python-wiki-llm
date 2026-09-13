@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
 
 import pytest
@@ -11,7 +12,7 @@ import pytest
 from llm_wiki_cli.commands.extract_cmd import get_inventory
 from llm_wiki_cli.services import plugins
 from llm_wiki_cli.services import plugin_samples
-from llm_wiki_cli.services.diagrams import resolve_diagram_style
+from llm_wiki_cli.services.diagrams import data_flow_diagram, resolve_diagram_style
 from llm_wiki_cli.services.entrypoints import detect_entry_points
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -25,10 +26,23 @@ BUNDLED_SAMPLE_PLUGIN = (
     / "documentation-hooks"
 )
 SAMPLE_FILES = (
+    "README.md",
     "detectors.py",
     "llm-wiki-plugin.json",
     "styles.py",
 )
+
+
+@pytest.fixture(autouse=True)
+def _isolated_sample_modules():
+    # Each temporary project models a fresh process. The loader correctly
+    # rejects modules already loaded from a different installed plugin root.
+    names = ("detectors", "styles")
+    previous = {name: sys.modules.pop(name) for name in names if name in sys.modules}
+    yield
+    for name in names:
+        sys.modules.pop(name, None)
+    sys.modules.update(previous)
 
 
 def _install_sample_plugin(root: Path) -> Path:
@@ -134,6 +148,42 @@ def test_sample_plugin_diagram_style_resolves_bounded_options(tmp_path):
         "node_classes": {"task-handler": "entry"},
         "category_colors": {"entry": "#2E7D32"},
     }
+
+
+@pytest.mark.parametrize("symbol", ["handle_task", "task_handler"])
+def test_sample_colors_the_actual_numbered_task_entry_node(tmp_path, symbol):
+    _install_sample_plugin(tmp_path)
+    style = resolve_diagram_style(
+        {"surface": "data_flow", "category": "task"}, root=tmp_path,
+        strict_plugin_errors=True,
+    )
+    diagram = data_flow_diagram(
+        {"steps": [
+            {"index": 1, "file": "tasks.py", "symbol": symbol},
+            {"index": 2, "file": "storage.py", "symbol": "save_result"},
+        ]},
+        {"tasks.py": "tasks", "storage.py": "storage"},
+        style=style,
+    )
+    assert f's1["1. {symbol}"]' in diagram
+    assert "classDef entry fill:#2E7D32,stroke:#2E7D32" in diagram
+    assert "class s1 entry" in diagram
+    assert "class s2 entry" not in diagram
+
+
+@pytest.mark.parametrize("context", [
+    {"surface": "data_flow", "category": "http"},
+    {"surface": "data_flow"},
+    {"surface": "sequence", "category": "task"},
+])
+def test_sample_does_not_color_unrelated_surfaces(tmp_path, context):
+    _install_sample_plugin(tmp_path)
+    style = resolve_diagram_style(context, root=tmp_path, strict_plugin_errors=True)
+    diagram = data_flow_diagram(
+        {"steps": [{"file": "tasks.py", "symbol": "handle_task"}]}, {}, style=style
+    )
+    assert "classDef entry" not in diagram
+    assert "class s1 entry" not in diagram
 
 
 def test_cli_reference_documents_sample_plugin_names():

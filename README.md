@@ -8,7 +8,7 @@ and guides that static analysis cannot provide.
 The PyPI package is `agent-wiki-cli`, the command is `llm-wiki`, and the Python
 import package is `llm_wiki_cli`.
 
-[Quick start](#quick-start) · [Command reference](docs/cli-reference.md) ·
+[Quick start](#quick-start) · [Examples](examples/README.md) · [Command reference](docs/cli-reference.md) ·
 [Standalone documentation](docs/standalone-documentation.md)
 
 ## Installation
@@ -55,6 +55,10 @@ llm-wiki lint --strict --src-dir . --wiki-dir docs/llm_wiki --jobs 1
 
 For an isolated documentation workspace from source or an existing enriched
 wiki, follow the [standalone documentation guide](docs/standalone-documentation.md).
+
+For a small project you can copy and change, try the
+[Python, FastAPI, Go, and plugin tutorials](examples/README.md). They show the
+generated pages, a source edit, and the next sync without requiring a model service.
 
 ## What It Creates
 

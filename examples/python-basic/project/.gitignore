@@ -1,0 +1,7 @@
+/wiki/
+/output/
+/.llm-wiki/
+/AGENTS.md
+/.venv/
+__pycache__/
+*.pyc
