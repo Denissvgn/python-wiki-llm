@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- TypeScript class and interface properties preserve explicit optionality,
+  independently of defaults and unions with `undefined`. Generated attribute
+  tables distinguish required properties from optional ones, and incremental
+  sync detects question-token edits while preserving authored descriptions.
+
 ## [2.1.0] - 2026-09-13
 
 ### Added
