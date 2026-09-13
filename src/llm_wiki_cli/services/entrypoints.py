@@ -50,7 +50,7 @@ _DEFAULT_FLOW_DEPTH = 6
 DEFAULT_FLOW_DEPTH = _DEFAULT_FLOW_DEPTH
 FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-flow-observations/v1"
 _ENTRY_POINT_OBSERVATIONS_SCHEMA = "llm-wiki-entrypoint-observations/v1"
-_BUILTIN_DETECTOR_VERSION = "2"
+_BUILTIN_DETECTOR_VERSION = "3"
 
 
 @dataclass(frozen=True)
@@ -825,6 +825,14 @@ def _builtin_detector_details(
         detector_id = "builtin.haskell-web-server"
         reason = "source imports a supported WAI, Warp, or Servant server module"
     elif category == CATEGORY_PROCESS:
+        if data.get("language") == "go" and data.get("go_package") == "main":
+            return {
+                "id": "builtin.go-main",
+                "version": _BUILTIN_DETECTOR_VERSION,
+                "reason": "Go package main declares an executable main function",
+                "source_location": _source_location(filepath, line),
+                "plugin_component": None,
+            }
         matching_script = next(
             (
                 script

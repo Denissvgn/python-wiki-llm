@@ -232,6 +232,55 @@ class TestGoWrapperFiltering:
 
 
 @skip_no_go
+@pytest.mark.parametrize("deep", [False, True])
+def test_go_executable_visibility_and_process_evidence(tmp_path, deep):
+    from llm_wiki_cli.services.entrypoints import get_detailed_entry_points
+
+    _make_go(tmp_path, "main.go", """
+        package main
+        func main() { helper() }
+        func helper() {}
+        func Exported() {}
+        func élève() {}
+        func École() {}
+        func init() {}
+        func init() {}
+    """)
+    inventory = GoExtractor().extract(str(tmp_path), deep=deep)
+    data = inventory["main.go"]
+    names = {fn["name"] for fn in data["functions"]}
+    assert {"main", "Exported", "École"} <= names
+    assert ("helper" in names) == deep
+    assert ("élève" in names) == deep
+    assert data["main_block"] is True and data["go_package"] == "main"
+    if deep:
+        assert len([fn for fn in data["functions"] if fn["name"] == "init"]) == 2
+    observed = get_detailed_entry_points(inventory, root=tmp_path)
+    process = [item for item in observed["observations"] if item["entry"]["category"] == "process"]
+    assert len(process) == 1
+    assert process[0]["entry"]["symbol"] == "main"
+    assert "Go" in process[0]["detector"]["reason"]
+
+
+@skip_no_go
+def test_go_library_main_and_receiver_main_are_not_process_entries(tmp_path):
+    from llm_wiki_cli.services.entrypoints import get_entry_points
+
+    _make_go(tmp_path, "library.go", """
+        package library
+        type Service struct{}
+        func main() {}
+        func (s Service) main() {}
+        func (s Service) private() {}
+        func init() {}
+    """)
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert not inventory["library.go"].get("main_block")
+    assert {method["name"] for method in inventory["library.go"]["classes"][0]["methods"]} == {"main", "private"}
+    assert not [e for e in get_entry_points(inventory, root=tmp_path) if e["category"] == "process"]
+
+
+@skip_no_go
 class TestGoExtractor:
     def test_empty_dir(self, tmp_path):
         inv = GoExtractor().extract(str(tmp_path))

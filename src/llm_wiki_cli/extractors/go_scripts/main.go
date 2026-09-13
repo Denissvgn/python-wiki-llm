@@ -18,7 +18,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unicode"
 )
 
 // ── Excluded directories ──────────────────────────────────────────────────────
@@ -79,6 +78,7 @@ type MethodInfo struct {
 	Decorators []string    `json:"decorators,omitempty"`
 	Params     []ParamInfo `json:"params,omitempty"`
 	ReturnType string      `json:"return_type,omitempty"`
+	Exported   bool        `json:"exported"`
 }
 
 type AttributeInfo struct {
@@ -108,6 +108,7 @@ type FunctionInfo struct {
 	Decorators []string    `json:"decorators,omitempty"`
 	Params     []ParamInfo `json:"params,omitempty"`
 	ReturnType string      `json:"return_type,omitempty"`
+	Exported   bool        `json:"exported"`
 }
 
 type ImportInfo struct {
@@ -121,15 +122,14 @@ type FileEntry struct {
 	Classes   []ClassInfo    `json:"classes"`
 	Functions []FunctionInfo `json:"functions"`
 	Imports   []ImportInfo   `json:"imports,omitempty"`
+	Package   string         `json:"go_package"`
+	MainBlock bool           `json:"main_block,omitempty"`
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 func isExported(name string) bool {
-	if name == "" {
-		return false
-	}
-	return unicode.IsUpper(rune(name[0]))
+	return ast.IsExported(name)
 }
 
 func exprToString(expr ast.Expr) string {
@@ -310,6 +310,7 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 	entry := &FileEntry{
 		Classes:   []ClassInfo{},
 		Functions: []FunctionInfo{},
+		Package:   f.Name.Name,
 	}
 
 	// Collect receiver methods so we can attach them to structs in deep mode.
@@ -406,6 +407,7 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 								}
 								ci.Methods = append(ci.Methods, MethodInfo{
 									Name:       m.Names[0].Name,
+									Exported:   isExported(m.Names[0].Name),
 									Line:       fset.Position(m.Pos()).Line,
 									IsAsync:    false,
 									Docstring:  docText(m.Doc),
@@ -446,16 +448,21 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 			}
 
 		case *ast.FuncDecl:
-			if !isExported(d.Name.Name) {
+			recv := receiverTypeName(d)
+			isMain := f.Name.Name == "main" && d.Name.Name == "main" && recv == "" && d.Body != nil && d.Type.Params.NumFields() == 0 && d.Type.Results.NumFields() == 0
+			if isMain {
+				entry.MainBlock = true
+			}
+			if !isExported(d.Name.Name) && !deep && !isMain {
 				continue
 			}
-			recv := receiverTypeName(d)
 			if recv != "" {
 				// Receiver method — collect for later attachment.
 				mi := MethodInfo{
-					Name:    d.Name.Name,
-					Line:    fset.Position(d.Pos()).Line,
-					IsAsync: false,
+					Name:     d.Name.Name,
+					Exported: isExported(d.Name.Name),
+					Line:     fset.Position(d.Pos()).Line,
+					IsAsync:  false,
 				}
 				if deep {
 					mi.Docstring = docText(d.Doc)
@@ -470,9 +477,10 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 			} else {
 				// Top-level function.
 				fi := FunctionInfo{
-					Name:    d.Name.Name,
-					Line:    fset.Position(d.Pos()).Line,
-					IsAsync: false,
+					Name:     d.Name.Name,
+					Exported: isExported(d.Name.Name),
+					Line:     fset.Position(d.Pos()).Line,
+					IsAsync:  false,
 				}
 				if deep {
 					fi.Docstring = docText(d.Doc)
@@ -502,6 +510,7 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 					Decorators: rm.method.Decorators,
 					Params:     rm.method.Params,
 					ReturnType: rm.method.ReturnType,
+					Exported:   rm.method.Exported,
 				})
 			}
 		}
@@ -513,6 +522,7 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 				Line:     rm.method.Line,
 				IsAsync:  false,
 				Receiver: rm.receiver,
+				Exported: rm.method.Exported,
 			})
 		}
 	}
@@ -616,7 +626,7 @@ func main() {
 		}
 		dirClassIndex := map[string]map[string]classRef{}
 		for relPath, entry := range inventory {
-			dir := filepath.Dir(relPath)
+			dir := filepath.Dir(relPath) + ":" + entry.Package
 			if _, ok := dirClassIndex[dir]; !ok {
 				dirClassIndex[dir] = map[string]classRef{}
 			}
@@ -628,7 +638,7 @@ func main() {
 		// For each file, find functions with a Receiver resolvable within
 		// the same directory and move them into the target class's methods.
 		for relPath, entry := range inventory {
-			dir := filepath.Dir(relPath)
+			dir := filepath.Dir(relPath) + ":" + entry.Package
 			remaining := make([]FunctionInfo, 0, len(entry.Functions))
 			for _, fn := range entry.Functions {
 				if fn.Receiver == "" {
@@ -653,6 +663,7 @@ func main() {
 						Decorators: fn.Decorators,
 						Params:     fn.Params,
 						ReturnType: fn.ReturnType,
+						Exported:   fn.Exported,
 					},
 				)
 			}

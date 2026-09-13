@@ -559,7 +559,7 @@ class TestGetEntryPoints:
                     "entry": legacy[0],
                     "detector": {
                         "id": "builtin.api-export",
-                        "version": "2",
+                        "version": "3",
                         "reason": "non-private local function is listed in __all__",
                         "source_location": {
                             "source_path": "api.py",
