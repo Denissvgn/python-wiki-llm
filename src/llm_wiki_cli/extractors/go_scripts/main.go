@@ -17,6 +17,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -119,11 +120,157 @@ type ImportInfo struct {
 }
 
 type FileEntry struct {
-	Classes   []ClassInfo    `json:"classes"`
-	Functions []FunctionInfo `json:"functions"`
-	Imports   []ImportInfo   `json:"imports,omitempty"`
-	Package   string         `json:"go_package"`
-	MainBlock bool           `json:"main_block,omitempty"`
+	Classes    []ClassInfo    `json:"classes"`
+	Functions  []FunctionInfo `json:"functions"`
+	Imports    []ImportInfo   `json:"imports,omitempty"`
+	Package    string         `json:"go_package"`
+	MainBlock  bool           `json:"main_block,omitempty"`
+	Frameworks *GoFrameworks  `json:"frameworks,omitempty"`
+}
+
+type GoHTTPRegistration struct {
+	Handler string `json:"handler"`
+	Line    int    `json:"line"`
+}
+
+type GoHTTPInfo struct {
+	Registrations []GoHTTPRegistration `json:"registrations"`
+	Limitations   []string             `json:"limitations"`
+}
+
+type GoFrameworks struct {
+	HTTP GoHTTPInfo `json:"go_http"`
+}
+
+func importBindings(f *ast.File) map[string]string {
+	bindings := map[string]string{}
+	for _, imp := range f.Imports {
+		path, err := strconv.Unquote(imp.Path.Value)
+		if err != nil {
+			continue
+		}
+		parts := strings.Split(path, "/")
+		name := parts[len(parts)-1]
+		if imp.Name != nil {
+			name = imp.Name.Name
+		}
+		if name != "." && name != "_" {
+			bindings[name] = path
+		}
+	}
+	return bindings
+}
+
+func isImportedSelector(expr ast.Expr, imports map[string]string, module, name string) bool {
+	selector, ok := expr.(*ast.SelectorExpr)
+	if !ok || selector.Sel.Name != name {
+		return false
+	}
+	base, ok := selector.X.(*ast.Ident)
+	return ok && base.Obj == nil && imports[base.Name] == module
+}
+
+// Objects, rather than spellings, retain lexical scope and shadowing. Any
+// reassignment makes the inferred origin unknown, including closure writes.
+func assignmentCounts(f *ast.File) map[*ast.Object]int {
+	counts := map[*ast.Object]int{}
+	add := func(expr ast.Expr) {
+		if id, ok := expr.(*ast.Ident); ok && id.Obj != nil {
+			counts[id.Obj]++
+		}
+	}
+	ast.Inspect(f, func(node ast.Node) bool {
+		switch n := node.(type) {
+		case *ast.AssignStmt:
+			for _, expr := range n.Lhs {
+				add(expr)
+			}
+		case *ast.ValueSpec:
+			for _, id := range n.Names {
+				add(id)
+			}
+		case *ast.RangeStmt:
+			add(n.Key)
+			add(n.Value)
+		case *ast.IncDecStmt:
+			add(n.X)
+		}
+		return true
+	})
+	return counts
+}
+
+func assignedValue(id *ast.Ident, writes map[*ast.Object]int) ast.Expr {
+	if id.Obj == nil || writes[id.Obj] != 1 {
+		return nil
+	}
+	switch decl := id.Obj.Decl.(type) {
+	case *ast.AssignStmt:
+		if len(decl.Lhs) == len(decl.Rhs) {
+			for index, lhs := range decl.Lhs {
+				if name, ok := lhs.(*ast.Ident); ok && name.Obj == id.Obj {
+					return decl.Rhs[index]
+				}
+			}
+		}
+	case *ast.ValueSpec:
+		if len(decl.Names) == len(decl.Values) {
+			for index, name := range decl.Names {
+				if name.Obj == id.Obj {
+					return decl.Values[index]
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func staticHTTPHandler(expr ast.Expr, imports map[string]string) string {
+	if wrapper, ok := expr.(*ast.CallExpr); ok && len(wrapper.Args) == 1 && isImportedSelector(wrapper.Fun, imports, "net/http", "HandlerFunc") {
+		expr = wrapper.Args[0]
+	}
+	if id, ok := expr.(*ast.Ident); ok && id.Name != "nil" {
+		if id.Obj == nil && imports[id.Name] == "" {
+			return id.Name
+		}
+		if id.Obj != nil && id.Obj.Kind == ast.Fun {
+			return id.Name
+		}
+	}
+	return ""
+}
+
+func extractHTTP(f *ast.File, fset *token.FileSet) *GoFrameworks {
+	imports := importBindings(f)
+	writes := assignmentCounts(f)
+	info := GoHTTPInfo{Registrations: []GoHTTPRegistration{}, Limitations: []string{"static-named-net-http-handlers-only", "registration-does-not-prove-runtime-reachability"}}
+	ast.Inspect(f, func(node ast.Node) bool {
+		call, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		argument := -1
+		if isImportedSelector(call.Fun, imports, "net/http", "HandleFunc") || isImportedSelector(call.Fun, imports, "net/http", "ListenAndServe") {
+			argument = 1
+		}
+		if isImportedSelector(call.Fun, imports, "net/http", "ListenAndServeTLS") {
+			argument = 3
+		}
+		if selector, ok := call.Fun.(*ast.SelectorExpr); ok && selector.Sel.Name == "HandleFunc" {
+			if receiver, ok := selector.X.(*ast.Ident); ok {
+				if origin, ok := assignedValue(receiver, writes).(*ast.CallExpr); ok && isImportedSelector(origin.Fun, imports, "net/http", "NewServeMux") {
+					argument = 1
+				}
+			}
+		}
+		if argument >= 0 && len(call.Args) > argument {
+			if handler := staticHTTPHandler(call.Args[argument], imports); handler != "" {
+				info.Registrations = append(info.Registrations, GoHTTPRegistration{Handler: handler, Line: fset.Position(call.Pos()).Line})
+			}
+		}
+		return true
+	})
+	return &GoFrameworks{HTTP: info}
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -311,6 +458,9 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 		Classes:   []ClassInfo{},
 		Functions: []FunctionInfo{},
 		Package:   f.Name.Name,
+	}
+	if deep {
+		entry.Frameworks = extractHTTP(f, fset)
 	}
 
 	// Collect receiver methods so we can attach them to structs in deep mode.

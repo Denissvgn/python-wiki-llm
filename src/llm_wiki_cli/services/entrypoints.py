@@ -346,10 +346,40 @@ def _source_text(root: str | Path, filepath: str) -> str:
         return ""
 
 
-def _detect_go_http_servers(inventory: dict, *, root: str | Path) -> list[dict]:
+def _detect_go_http_servers(
+    inventory: dict, *, root: str | Path, include_details: bool = False
+) -> list[dict]:
     entries: list[dict] = []
     for filepath, data in inventory.items():
         if not isinstance(data, Mapping) or data.get("language") != "go":
+            continue
+        frameworks = data.get("frameworks", {})
+        http = frameworks.get("go_http") if isinstance(frameworks, Mapping) else None
+        if isinstance(http, Mapping):
+            package = data.get("go_package")
+            directory = PurePosixPath(filepath).parent
+            for registration in http.get("registrations", []):
+                if not isinstance(registration, Mapping):
+                    continue
+                symbol = registration.get("handler")
+                candidates = [
+                    candidate
+                    for candidate, other in inventory.items()
+                    if isinstance(other, Mapping)
+                    and other.get("language") == "go"
+                    and other.get("go_package") == package
+                    and PurePosixPath(candidate).parent == directory
+                    and any(fn.get("name") == symbol and not fn.get("receiver")
+                            for fn in other.get("functions", []))
+                ]
+                if len(candidates) == 1 and isinstance(symbol, str):
+                    entry = _entry(CATEGORY_HTTP, candidates[0], symbol)
+                    if include_details:
+                        entry["__source_line"] = _source_line(registration.get("line"))
+                        entry["__detection_file"] = filepath
+                    entries.append(entry)
+            # An empty AST observation is authoritative; only old inventories
+            # without this field use the compatibility source patterns below.
             continue
         if not (_import_modules(data) & _GO_HTTP_MODULES):
             continue
@@ -743,7 +773,7 @@ def _builtin_entry_points(
     entries += _detect_javascript_http_servers(
         inventory, include_details=include_details
     )
-    entries += _detect_go_http_servers(inventory, root=root)
+    entries += _detect_go_http_servers(inventory, root=root, include_details=include_details)
     entries += _detect_haskell_web_servers(inventory, root=root)
     entries += _detect_process(inventory, console_scripts)
 
@@ -821,6 +851,9 @@ def _builtin_detector_details(
     elif category == CATEGORY_HTTP and data.get("language") == "go":
         detector_id = "builtin.go-net-http"
         reason = "source imports net/http and declares a supported server pattern"
+        if entry.get("__detection_file"):
+            filepath = entry["__detection_file"]
+            line = _source_line(entry.get("__source_line"))
     elif category == CATEGORY_HTTP and data.get("language") == "haskell":
         detector_id = "builtin.haskell-web-server"
         reason = "source imports a supported WAI, Warp, or Servant server module"

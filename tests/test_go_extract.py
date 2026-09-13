@@ -281,6 +281,56 @@ def test_go_library_main_and_receiver_main_are_not_process_entries(tmp_path):
 
 
 @skip_no_go
+@pytest.mark.parametrize("registration", [
+    'web.HandleFunc("/health", health)',
+    'mux := web.NewServeMux(); mux.HandleFunc("/health", health)',
+    'web.ListenAndServe(":8000", web.HandlerFunc(health))',
+])
+def test_go_http_ast_registration_resolves_package_handlers(tmp_path, registration):
+    from llm_wiki_cli.services.entrypoints import get_detailed_entry_points, get_entry_points
+
+    _make_go(tmp_path, "main.go", f'''package main
+import web "net/http"
+func main() {{ {registration} }}
+''')
+    _make_go(tmp_path, "handlers.go", '''package main
+import "net/http"
+func health(w http.ResponseWriter, r *http.Request) {}
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert all(not key.startswith("__") for entry in get_entry_points(inventory, root=tmp_path) for key in entry)
+    detailed = get_detailed_entry_points(inventory, root=tmp_path)
+    http = [o for o in detailed["observations"] if o["entry"]["category"] == "http"]
+    assert len(http) == 1
+    assert (http[0]["entry"]["file"], http[0]["entry"]["symbol"]) == ("handlers.go", "health")
+    assert http[0]["detector"]["source_location"] == {"source_path": "main.go", "line": 3}
+
+
+@skip_no_go
+@pytest.mark.parametrize("body", [
+    '// http.HandleFunc("/fake", health)',
+    's := `http.HandleFunc("/fake", health)`; _ = s',
+    'http := fake{}; http.HandleFunc("/fake", health)',
+    'mux := fake{}; mux.HandleFunc("/fake", health)',
+    'mux := http.NewServeMux(); mux = other(); mux.HandleFunc("/fake", health)',
+    'health := other(); http.HandleFunc("/fake", health)',
+])
+def test_go_http_ast_rejects_non_net_http_or_unknown_bindings(tmp_path, body):
+    from llm_wiki_cli.services.entrypoints import get_entry_points
+
+    _make_go(tmp_path, "main.go", f'''package main
+import "net/http"
+func health(w http.ResponseWriter, r *http.Request) {{}}
+func main() {{
+{body}
+}}
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert "go_http" in inventory["main.go"]["frameworks"]
+    assert not [e for e in get_entry_points(inventory, root=tmp_path) if e["category"] == "http"]
+
+
+@skip_no_go
 class TestGoExtractor:
     def test_empty_dir(self, tmp_path):
         inv = GoExtractor().extract(str(tmp_path))
