@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [lint_service](../modules/lint_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 45 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 46 more
 
 **Complete modules touched:**
 
@@ -16,6 +16,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -110,7 +111,7 @@ sequenceDiagram
     p11->>p5: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 2802 interactions; 2772 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2815 interactions; 2785 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

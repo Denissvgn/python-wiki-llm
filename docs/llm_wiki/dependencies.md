@@ -39,7 +39,7 @@ flowchart TD
 | [sync_manifest](modules/sync_manifest.md) | 25 | 6 |
 | [knowledge_model](modules/knowledge_model.md) | 22 | 10 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 21 | 5 |
-| [extraction_service](modules/extraction_service.md) | 20 | 25 |
+| [extraction_service](modules/extraction_service.md) | 20 | 26 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 18 | 17 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 17 | 6 |
 | [knowledge_governance](modules/knowledge_governance.md) | 17 | 9 |
@@ -122,6 +122,7 @@ flowchart TD
 | [documentation_native](modules/documentation_native.md) | 2 | 23 |
 | [packet](modules/packet.md) | 2 | 5 |
 | [verify](modules/verify.md) | 2 | 9 |
+| [go_calls](modules/go_calls.md) | 2 | 0 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [mcp_server](modules/mcp_server.md) | 2 | 20 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
@@ -166,7 +167,7 @@ flowchart TD
 | [upgrade_cmd](modules/upgrade_cmd.md) | 1 | 9 |
 | [planner](modules/planner.md) | 1 | 3 |
 | [fastapi_contracts](modules/fastapi_contracts.md) | 1 | 0 |
-| [go_extractor](modules/go_extractor.md) | 1 | 2 |
+| [go_extractor](modules/go_extractor.md) | 1 | 3 |
 | [haskell_extractor](modules/haskell_extractor.md) | 1 | 2 |
 | [python_bindings](modules/python_bindings.md) | 1 | 0 |
 | [python_extractor](modules/python_extractor.md) | 1 | 7 |

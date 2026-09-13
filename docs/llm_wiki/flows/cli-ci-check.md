@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 48 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 49 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -115,7 +116,7 @@ sequenceDiagram
     p4->>p18: windows_current_user_sid
 ```
 
-> Call sequence diagram shows 30 of 3183 interactions; 3153 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3196 interactions; 3166 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

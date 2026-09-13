@@ -100,7 +100,7 @@ sequenceDiagram
     p18->>p7: ContextPacketMalformedError
 ```
 
-> Call sequence diagram shows 30 of 2076 interactions; 2046 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2078 interactions; 2048 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

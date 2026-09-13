@@ -2,7 +2,7 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 36 more
+**Modules touched:** [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 37 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [go_calls](../modules/go_calls.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -105,7 +106,7 @@ sequenceDiagram
     p1-->>p20: payload.get (src/llm_wiki_cli/services…y:validate_context_packet)
 ```
 
-> Call sequence diagram shows 30 of 3449 interactions; 3419 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3458 interactions; 3428 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `extract_source` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), [config](../modules/config.md), and 21 more
+**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), [config](../modules/config.md), and 23 more
 
 **Complete modules touched:**
 
@@ -16,10 +16,12 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [go_calls](../modules/go_calls.md)
 - [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [packages](../modules/packages.md)
+- [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_calls](../modules/python_calls.md)
@@ -93,7 +95,7 @@ sequenceDiagram
     p18-->>p23: get_current_process
 ```
 
-> Call sequence diagram shows 30 of 2595 interactions; 2565 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2718 interactions; 2688 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -155,7 +157,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | extract_source | build_extract_payload | 706 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| build_extract_payload | validate_source_root | 1985 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| build_extract_payload | validate_source_root | 1990 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |

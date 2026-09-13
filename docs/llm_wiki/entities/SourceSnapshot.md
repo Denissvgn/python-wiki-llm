@@ -119,4 +119,4 @@ flowchart LR
 | `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 148 logical references; 136 omitted by the 12-row generated summary limit.
+> References: showing 12 of 149 logical references; 137 omitted by the 12-row generated summary limit.

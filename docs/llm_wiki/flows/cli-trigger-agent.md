@@ -93,7 +93,7 @@ sequenceDiagram
     p22-->>p26: Path.cwd().resolve
 ```
 
-> Call sequence diagram shows 30 of 780 interactions; 750 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 787 interactions; 757 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

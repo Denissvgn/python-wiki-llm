@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 44 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 45 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,7 @@
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -115,7 +116,7 @@ sequenceDiagram
     p20-->>p22: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 4428 interactions; 4398 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4473 interactions; 4443 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -162,8 +163,8 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `BootstrapExtractionError`, `BootstrapContractError`, `options.progress_stream` | - | - |
-| `_bootstrap_run_options_from_args` | `args` | `sys` | - | `_BootstrapRunOptions(...)` |
+| `run` | `args` | `BootstrapExtractionError`, `BootstrapContractError`, `sys` | - | - |
+| `_bootstrap_run_options_from_args` | `args` | `sys`, `sys` | - | `_BootstrapRunOptions(...)` |
 | `Path (src/llm_wiki_cli/services…rap_run_options_from_args)` | - | - | - | - |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -179,9 +180,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6306 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4415 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4416 | `validate_path(str(...), '--wiki-dir')` |
+| run | _bootstrap_run_options_from_args | 6311 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4416 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4417 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
@@ -189,13 +190,13 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4416 | `str(wiki_dir)` |
+| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4417 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6312 |
+| output | `print` | `run` | 6317 |
 
 ### Static analysis gaps
 

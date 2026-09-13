@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 546 | [Open section](#entities) |
-| Modules | 175 | [Open section](#modules) |
-| Workflows | 112 | [Open section](#workflows) |
+| Modules | 176 | [Open section](#modules) |
+| Workflows | 114 | [Open section](#workflows) |
 | Guides | 15 | [Open section](#guides) |
 | Entry-point flows | 441 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -624,6 +624,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [fastapi_contracts](modules/fastapi_contracts.md) - Syntax-only FastAPI declaration extraction.
 - [filesystem_guard](modules/filesystem_guard.md) - Small cross-platform guards for security-sensitive workspace writes.
 - [generate_prompt_cmd](modules/generate_prompt_cmd.md) - `src/llm_wiki_cli/commands/generate_prompt_cmd.py`
+- [go_calls](modules/go_calls.md) - Resolve captured Go call bindings only within evidenced package scopes.
 - [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
@@ -831,6 +832,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_cmd._regenerate_dependency_pages`
 - [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_cmd._regenerate_flow_pages`
 - [regenerate_workflow_pages](workflows/regenerate_workflow_pages.md) - entry: `sync_cmd._regenerate_workflow_pages`
+- [resolve_call](workflows/resolve_call.md) - entry: `extraction_service._resolve_call`
+- [resolve_call_observation](workflows/resolve_call_observation.md) - entry: `extraction_service._resolve_call_observation`
 - [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
 - [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`

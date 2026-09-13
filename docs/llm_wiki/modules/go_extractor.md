@@ -19,6 +19,7 @@ Requirements
 | Source | Symbols |
 |--------|---------|
 | `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_binary`, `missing_helper_message` |
+| `..services.go_calls` | `attach_go_receiver_methods` |
 | `.common` | `chunk_source_files_for_cli`, `discover_source_files`, `filter_bundled_inventory`, `normalize_include_tests` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
@@ -37,14 +38,18 @@ flowchart LR
     n1["src/llm_wiki_cli/extractors/go_extractor.py"]
     n2["src/llm_wiki_cli/services/extraction_service.py"]
     n3["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n4["src/llm_wiki_cli/services/go_calls.py"]
     n1 --> n0
     n1 --> n3
+    n1 --> n4
     n2 --> n0
     n2 --> n1
+    n2 --> n4
     click n0 "../modules/common.md"
     click n1 "../modules/go_extractor.md"
     click n2 "../modules/extraction_service.md"
     click n3 "../modules/extractor_helpers.md"
+    click n4 "../modules/go_calls.md"
 ```
 
 ### Internal neighbors
@@ -54,10 +59,11 @@ flowchart LR
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Outbound | [common](../modules/common.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
+| Outbound | [go_calls](../modules/go_calls.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GoExtractionRequest](../entities/GoExtractionRequest.md) | 38 | — | Internal request object for Go extraction orchestration. |
-| [GoExtractor](../entities/GoExtractor.md) | 54 | — | Extractor for Go source files using a prepared helper binary. |
+| [GoExtractionRequest](../entities/GoExtractionRequest.md) | 39 | — | Internal request object for Go extraction orchestration. |
+| [GoExtractor](../entities/GoExtractor.md) | 56 | — | Extractor for Go source files using a prepared helper binary. |

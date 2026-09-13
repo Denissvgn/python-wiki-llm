@@ -2,7 +2,7 @@
 
 **Entry point:** `refresh_documentation_native_projection` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 47 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 48 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
+- [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -119,7 +120,7 @@ sequenceDiagram
     p21-->>p23: key.encode
 ```
 
-> Call sequence diagram shows 30 of 4814 interactions; 4784 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4903 interactions; 4873 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

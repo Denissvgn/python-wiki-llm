@@ -72,6 +72,8 @@ flowchart LR
 | `_normalize_haskell_module` | `(module: object) -> str` | — | — |
 | `_package_dir` | `(filepath: str) -> str` | — | — |
 | `_relative_package_dir` | `(module: str, importer_filepath: str) -> str` | — | — |
+| `_inventory_go_scopes` | `(inventory: dict) -> tuple[_GoModuleScope, ...]` | — | — |
+| `stamp_go_import_scopes` | `(inventory: dict, source_snapshot: SourceSnapshot) -> None` | — | Bind Go resolution to the selected package markers, after cache merge. |
 | `_read_go_module_scopes` | `(project_root: str \| Path \| None, source_snapshot: SourceSnapshot \| None = None) -> tuple[_GoModuleScope, ...]` | — | — |
 | `_go_module_dir_is_agent_worktree` | `(project_root: Path, root_path: Path, dirname: str) -> bool` | — | — |
 | `_read_go_module_path` | `(path: Path) -> str` | — | — |

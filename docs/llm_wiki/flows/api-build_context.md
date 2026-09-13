@@ -103,7 +103,7 @@ sequenceDiagram
     p18-->>p23: legacy.pop
 ```
 
-> Call sequence diagram shows 30 of 2047 interactions; 2017 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2049 interactions; 2019 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

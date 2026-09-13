@@ -1,6 +1,6 @@
 # GoExtractionRequest
 
-**Location:** `src/llm_wiki_cli/extractors/go_extractor.py:38`
+**Location:** `src/llm_wiki_cli/extractors/go_extractor.py:39`
 **Kind:** Class
 **Bases:** —
 **Module:** [go_extractor](../modules/go_extractor.md)
@@ -21,6 +21,7 @@ Internal request object for Go extraction orchestration.
 | `source_files` | `list[str] \| None` | `None` | — |
 | `helper_cache_dir` | `str \| None` | `None` | — |
 | `include_tests` | `Iterable[str] \| None` | `None` | — |
+| `defer_receiver_attachment` | `bool` | `False` | — |
 
 ## Methods
 
@@ -62,7 +63,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [go_extractor](../modules/go_extractor.md) | 1 | `deep`, `helper_cache_dir`, `include_tests`, `only_files`, `source_files`, `src_dir` |
+| [go_extractor](../modules/go_extractor.md) | 1 | `deep`, `defer_receiver_attachment`, `helper_cache_dir`, `include_tests`, `only_files`, `source_files`, `src_dir` |
 
 ### References
 

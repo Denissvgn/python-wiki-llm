@@ -121,35 +121,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_flow_api_contract_section | sorted | 2223 | `sorted(operations, key=...)` |
-| render_flow_api_contract_section | str (src/llm_wiki_cli/services…_flow_api_contract_section) | 2224 | `str(...)` |
-| render_flow_api_contract_section | item.get | 2224 | `item.get('path')` |
-| render_flow_api_contract_section | str (src/llm_wiki_cli/services…_flow_api_contract_section) | 2224 | `str(...)` |
-| render_flow_api_contract_section | item.get | 2224 | `item.get('method')` |
-| render_flow_api_contract_section | _operation_anchor | 2226 | `_operation_anchor(operation)` |
-| _operation_anchor | operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor) | 1956 | `operation.get('id')` |
-| _operation_anchor | operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor) | 1957 | `operation.get('method', '')` |
-| _operation_anchor | operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor) | 1957 | `operation.get('path', '')` |
-| _operation_anchor | _SAFE_ID_RE.sub(…).strip(…).lower | 1959 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower(data not statically known)` |
-| _operation_anchor | _SAFE_ID_RE.sub(…).strip | 1959 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-')` |
+| render_flow_api_contract_section | sorted | 2249 | `sorted(operations, key=...)` |
+| render_flow_api_contract_section | str (src/llm_wiki_cli/services…_flow_api_contract_section) | 2250 | `str(...)` |
+| render_flow_api_contract_section | item.get | 2250 | `item.get('path')` |
+| render_flow_api_contract_section | str (src/llm_wiki_cli/services…_flow_api_contract_section) | 2250 | `str(...)` |
+| render_flow_api_contract_section | item.get | 2250 | `item.get('method')` |
+| render_flow_api_contract_section | _operation_anchor | 2252 | `_operation_anchor(operation)` |
+| _operation_anchor | operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor) | 1982 | `operation.get('id')` |
+| _operation_anchor | operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor) | 1983 | `operation.get('method', '')` |
+| _operation_anchor | operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor) | 1983 | `operation.get('path', '')` |
+| _operation_anchor | _SAFE_ID_RE.sub(…).strip(…).lower | 1985 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower(data not statically known)` |
+| _operation_anchor | _SAFE_ID_RE.sub(…).strip | 1985 | `_SAFE_ID_RE.sub('-', str(identity)).strip('-')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.append` | `render_flow_api_contract_section` | 2228 |
-| mutation | `lines.append` | `render_flow_api_contract_section` | 2232 |
+| mutation | `lines.append` | `render_flow_api_contract_section` | 2254 |
+| mutation | `lines.append` | `render_flow_api_contract_section` | 2258 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `render_flow_api_contract_section` | `sorted` | 2223 |
-| unresolved_call | `render_flow_api_contract_section` | `item.get` | 2224 |
-| unresolved_call | `_operation_anchor` | `operation.get` | 1956 |
-| unresolved_call | `_operation_anchor` | `operation.get` | 1957 |
-| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower` | 1959 |
-| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip` | 1959 |
+| external_call | `render_flow_api_contract_section` | `sorted` | 2249 |
+| unresolved_call | `render_flow_api_contract_section` | `item.get` | 2250 |
+| unresolved_call | `_operation_anchor` | `operation.get` | 1982 |
+| unresolved_call | `_operation_anchor` | `operation.get` | 1983 |
+| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip('-').lower` | 1985 |
+| unresolved_call | `_operation_anchor` | `_SAFE_ID_RE.sub('-', str(identity)).strip` | 1985 |
 | step_limit | `render_flow_api_contract_section` | `first 12 steps` | 0 |
 
 ## Behavior

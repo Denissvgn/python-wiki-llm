@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Go process and HTTP entrypoint evidence, private callable visibility in deep
+  extraction, and bounded body-call traces with package-aware resolution.
 - Opt-in `llm-wiki-context/v3` budgeting for complete JSON, Markdown, and packet
   output, including metadata and the final newline. Exact counting uses
   `agent-wiki-cli[tokens]` and an explicitly supplied local tokenizer; estimated
@@ -45,6 +47,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Test-origin FastAPI applications and router mounts no longer alter production
+  API contracts, including mounts on imported production applications.
+- Bootstrap, bump, and release validation errors use stderr. Bootstrap Python
+  callers retain control of their diagnostic output stream.
+- Go method edits and deletions update cross-file relationships consistently
+  through the inventory cache, and distinct executables retain separate workflows.
 - Failed trigger preparation, launches, timeouts, and child processes propagate
   nonzero CLI exits while intentional skips remain successful. Timeouts exit
   `124`, and positive child exit codes are preserved.
