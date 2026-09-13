@@ -1112,7 +1112,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
         },
     ]
     core_text = "\n".join(str(step) for step in core["steps"])
-    assert 'python -m pip install --no-cache-dir "./candidate[dev]"' in core_text
+    assert 'python -m pip install --no-cache-dir "./candidate[dev,tokens]"' in core_text
     assert " -e " not in core_text
     assert "--strict-config" in core_text
     assert "--strict-markers" in core_text
@@ -1185,6 +1185,7 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     assert setup["with"]["cache"] == "pip"
     assert setup["with"]["cache-dependency-path"] == "pyproject.toml"
     install = _named_step(job, "Install dependencies")
+    assert 'pip install -e ".[dev,tokens]"' in install["run"]
     assert "--no-cache-dir" not in install["run"]
 
     coverage = _named_step(job, "Run strict suite with coverage")
