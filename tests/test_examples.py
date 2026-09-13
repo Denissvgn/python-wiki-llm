@@ -24,13 +24,22 @@ ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
 GO_BINARY = get_prepared_binary("go", ROOT)
 GO_SKIP_REASON = "Prepared Go helper not available — Go example requires the toolchain owner"
+_IGNORE_PROJECT_OUTPUTS = shutil.ignore_patterns(
+    "wiki", "output", "vendor", ".helpers", ".llm-wiki", "AGENTS.md",
+    ".venv", ".pytest_cache", "__pycache__", "*.pyc",
+)
 
 
-def _snapshot(root: Path) -> dict[str, tuple[bytes, int]]:
-    return {
-        path.relative_to(root).as_posix(): (path.read_bytes(), path.stat().st_mtime_ns)
-        for path in sorted(root.rglob("*")) if path.is_file()
-    }
+def _snapshot(root: Path, *, project_inputs: bool = False) -> dict[str, tuple[bytes, int]]:
+    result = {}
+    for directory, directories, files in os.walk(root):
+        ignored = _IGNORE_PROJECT_OUTPUTS(directory, [*directories, *files]) if project_inputs else set()
+        directories[:] = sorted(name for name in directories if name not in ignored)
+        for name in sorted(files):
+            if name not in ignored:
+                path = Path(directory) / name
+                result[path.relative_to(root).as_posix()] = (path.read_bytes(), path.stat().st_mtime_ns)
+    return result
 
 
 @pytest.fixture
@@ -39,15 +48,15 @@ def project_copy(tmp_path):
 
     def copy(name):
         source = EXAMPLES / name / "project"
-        originals[source] = _snapshot(source)
+        originals[source] = _snapshot(source, project_inputs=True)
         target = tmp_path / name
-        shutil.copytree(source, target)
+        shutil.copytree(source, target, ignore=_IGNORE_PROJECT_OUTPUTS)
         return target
 
     yield copy
 
     for source, before in originals.items():
-        assert _snapshot(source) == before, f"tutorial inputs were modified: {source}"
+        assert _snapshot(source, project_inputs=True) == before, f"tutorial inputs were modified: {source}"
 
 
 def _cli(project: Path, *args: str) -> str:
@@ -96,6 +105,29 @@ def _inventory(project: Path) -> dict:
     return json.loads((project / "output/inventory.json").read_text(encoding="utf-8"))
 
 
+def test_existing_local_outputs_do_not_pollute_fresh_tutorial_copies(tmp_path, monkeypatch, project_copy):
+    examples = tmp_path / "existing-examples"
+    source = examples / "python-basic/project"
+    shutil.copytree(EXAMPLES / "python-basic/project", source, ignore=_IGNORE_PROJECT_OUTPUTS)
+    shutil.copy2(EXAMPLES / "python-basic/README.md", source.parent / "README.md")
+    for relative in (
+        "wiki/stale.md", "output/result.txt", ".helpers/cache.bin", "vendor/plugin.py",
+        ".llm-wiki/plugins.lock.json", ".venv/cache", "__pycache__/app.pyc", "AGENTS.md",
+    ):
+        path = source / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("existing local output", encoding="utf-8")
+    before = _snapshot(source)
+    monkeypatch.setattr(sys.modules[__name__], "EXAMPLES", examples)
+
+    project = project_copy("python-basic")
+
+    assert _snapshot(project) == _snapshot(source, project_inputs=True)
+    _documented(project, "python-basic", "Generate the wiki")
+    assert (project / "wiki/index.md").is_file()
+    assert _snapshot(source) == before
+
+
 def test_python_basic_tutorial(project_copy):
     name = "python-basic"
     project = project_copy(name)
@@ -116,6 +148,7 @@ def test_python_basic_tutorial(project_copy):
     response = json.loads(context)
     accounting = response["accounting"]
     assert EstimatedCounter().count(context.rstrip("\n")) <= accounting["used_tokens"]
+    assert EstimatedCounter().count(context) <= accounting["budget_tokens"]
     assert accounting["used_tokens"] <= accounting["budget_tokens"] == 1200
     assert not (project / "output/task.txt").exists()
 
