@@ -11,6 +11,7 @@ from typing import Any
 
 import pytest
 
+from llm_wiki_cli import __version__
 from llm_wiki_cli.services import (
     context_packet,
     extraction_service,
@@ -39,6 +40,7 @@ from llm_wiki_cli.services.source_selection import (
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests.knowledge_fixtures import (
+    GOLDEN_PRODUCER_VERSION,
     materialize_fixture_tree,
     one_module_two_entities_fixture,
 )
@@ -192,6 +194,7 @@ def test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
+    monkeypatch.setattr(context_packet, "__version__", GOLDEN_PRODUCER_VERSION)
     first = _build_snapshot_packet(tmp_path, monkeypatch)
     second = build_qualified_context(".", "docs/llm_wiki", _request())
 
@@ -233,6 +236,31 @@ def test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden(
         ).hexdigest()
     )
     assert first.packet_id == expected_id
+
+
+@pytest.mark.parametrize("knowledge_mode", [None, "auto"])
+def test_runtime_producer_version_is_bound_to_packet_identity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    knowledge_mode: str | None,
+) -> None:
+    root = tmp_path / "project"
+    _write_snapshot_project(root)
+    monkeypatch.chdir(root)
+    request = _request()
+    if knowledge_mode is not None:
+        request["knowledge_mode"] = knowledge_mode
+
+    current = build_qualified_context(".", "docs/llm_wiki", request)
+    assert current.to_payload()["basis"]["generator"]["version"] == __version__
+    identities = {current.to_payload()["packet_id"]}
+    for version in (f"{__version__}-candidate", f"{__version__}-next"):
+        monkeypatch.setattr(context_packet, "__version__", version)
+        packet = build_qualified_context(".", "docs/llm_wiki", request)
+        assert packet.to_payload()["basis"]["generator"]["version"] == version
+        assert packet.to_payload()["packet_id"] not in identities
+        assert validate_context_packet(packet.to_bytes()).valid is True
+        identities.add(packet.to_payload()["packet_id"])
 
 
 def test_packet_binds_snapshot_request_response_generator_and_limitations(

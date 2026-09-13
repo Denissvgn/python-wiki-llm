@@ -60,10 +60,10 @@ def _write_fixture_pages(root, fixture, *, crlf: bool = False):
         path.write_text(content, encoding="utf-8", newline="")
 
 
-def _committed_state(root):
+def _committed_state(root, *, producer_version: str | None = None):
     fixture = one_module_two_entities_fixture()
     _write_fixture_pages(root, fixture)
-    plan = _plan(root, fixture)
+    plan = _plan(root, fixture, producer_version=producer_version)
     result = commit_knowledge_artifacts(plan)
     return fixture, plan, result
 

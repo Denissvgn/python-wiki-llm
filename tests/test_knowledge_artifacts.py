@@ -34,8 +34,8 @@ from tests.knowledge_fixtures import (
 from tests.test_knowledge_index import _builder_case_for
 
 
-def _plan(tmp_path, fixture):
-    case = _builder_case_for(fixture)
+def _plan(tmp_path, fixture, *, producer_version: str | None = None):
+    case = _builder_case_for(fixture, producer_version=producer_version)
     model = build_knowledge_index(case.inputs)
     manifest = SyncManifest(
         sources={

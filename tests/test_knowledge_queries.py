@@ -70,8 +70,14 @@ MODULE_LOCATOR = "llm-wiki://modules/accounts"
 SOURCE_PATH = "src/accounts.py"
 
 
-def _ready_view(tmp_path, *, snapshot_only: bool = False, evaluate: bool = True):
-    _committed_state(tmp_path)
+def _ready_view(
+    tmp_path,
+    *,
+    snapshot_only: bool = False,
+    evaluate: bool = True,
+    producer_version: str | None = None,
+):
+    _committed_state(tmp_path, producer_version=producer_version)
     loaded = load_knowledge_state(tmp_path)
     assert loaded.knowledge is not None
     live = None if not evaluate else _live_evaluation(loaded.knowledge)

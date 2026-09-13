@@ -36,6 +36,8 @@ from llm_wiki_cli.services.wiki_surface_index import (
 
 FIXTURE_REPOSITORY_IDENTITY = "example.invalid/acme/knowledge-fixture"
 FIXTURE_GIT_REVISION = "git:0123456789abcdef0123456789abcdef01234567"
+# Producer identity is a fixed golden input, independent of the installed release.
+GOLDEN_PRODUCER_VERSION = "2.0.2"
 FIXTURE_SOURCE_PATH = "src/accounts.py"
 FIXTURE_WIKI_DIR = "docs/llm_wiki"
 FIXTURE_KNOWLEDGE_FILENAME = ".llm-wiki-knowledge.json"
@@ -1710,6 +1712,7 @@ def render_knowledge_goldens() -> dict[str, bytes]:
 
 
 __all__ = [
+    "GOLDEN_PRODUCER_VERSION",
     "FIXTURE_ASSETS",
     "FIXTURE_CONSUMERS",
     "FIXTURE_GIT_REVISION",

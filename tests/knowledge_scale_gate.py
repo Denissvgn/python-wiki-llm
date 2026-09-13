@@ -8,7 +8,6 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping
 
-from llm_wiki_cli import __version__
 from llm_wiki_cli.services.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
     TYPED_GRAPH_EXTENSION_KEY,
@@ -31,6 +30,7 @@ from llm_wiki_cli.services.section_ownership import (
     section_ownership_extension,
 )
 from llm_wiki_cli.services.wiki_surface import PageKind
+from tests.knowledge_fixtures import GOLDEN_PRODUCER_VERSION
 from tests.test_knowledge_queries import (
     MODULE_LOCATOR,
     SOURCE_PATH,
@@ -245,7 +245,9 @@ def build_knowledge_scale_gate_record(
 ) -> dict[str, Any]:
     """Measure the fixed fixture without recording its temporary location."""
 
-    view = _with_section_ownership(_ready_view(fixture_root))
+    view = _with_section_ownership(
+        _ready_view(fixture_root, producer_version=GOLDEN_PRODUCER_VERSION)
+    )
     assert view.knowledge is not None
     graph = build_stress_graph(view, reverse=reverse)
     knowledge = replace(
@@ -346,7 +348,10 @@ def build_knowledge_scale_gate_record(
             "network": "not used",
             "python": "project-supported Python >=3.10",
             "serialization": "UTF-8 deterministic JSON",
-            "tool": f"agent-wiki-cli {__version__}",
+            "tool": (
+                f"{knowledge.bundle.producer.tool.component_id} "
+                f"{knowledge.bundle.producer.tool.version}"
+            ),
         },
         "measurements": {
             "concepts": len(knowledge.concepts),
