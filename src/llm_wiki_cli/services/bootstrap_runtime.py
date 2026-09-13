@@ -4300,6 +4300,7 @@ class _BootstrapRunOptions:
     trust_source_plugins: bool
     source_selection: str | Path | None
     progress_stream: TextIO
+    diagnostic_stream: TextIO | None = None
 
 
 @dataclass
@@ -4444,6 +4445,7 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         trust_source_plugins=True,
         source_selection=getattr(args, "source_selection", None),
         progress_stream=sys.stderr if json_mode else sys.stdout,
+        diagnostic_stream=sys.stderr,
     )
 
 
@@ -4587,7 +4589,10 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         ),
     )
     if inventory_result.failed:
-        print_inventory_failures(inventory_result, file=options.progress_stream)
+        print_inventory_failures(
+            inventory_result,
+            file=options.diagnostic_stream if options.diagnostic_stream is not None else options.progress_stream,
+        )
         details = "; ".join(
             f"{status.language}: {status.message or 'extraction failed'}"
             for status in inventory_result.failed
@@ -6309,7 +6314,7 @@ def run(args):
     except BootstrapExtractionError:
         raise SystemExit(1)
     except BootstrapContractError as exc:
-        print(f"Error: {exc}", file=options.progress_stream)
+        print(f"Error: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
 
 

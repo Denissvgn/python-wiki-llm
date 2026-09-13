@@ -119,26 +119,27 @@ def run(args):
     changelog_path = Path(getattr(args, "changelog", "CHANGELOG.md"))
 
     if not changelog_path.exists():
-        print(f"Error: {changelog_path} not found.")
+        print(f"Error: {changelog_path} not found.", file=sys.stderr)
         sys.exit(1)
 
     # Read version from project file
     version_file = find_version_file(root)
     if version_file is None:
         print(
-            "Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION)."
+            "Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).",
+            file=sys.stderr,
         )
         sys.exit(1)
 
     version = read_version(version_file)
     if version is None:
-        print(f"Error: Could not parse version from {version_file}")
+        print(f"Error: Could not parse version from {version_file}", file=sys.stderr)
         sys.exit(1)
 
     try:
         new_text, stamped = stamp_changelog(changelog_path, version)
     except ValueError as e:
-        print(f"Error: {e}")
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
     if not stamped:
