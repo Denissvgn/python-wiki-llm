@@ -150,11 +150,11 @@ def test_sample_plugin_diagram_style_resolves_bounded_options(tmp_path):
     }
 
 
-@pytest.mark.parametrize("symbol", ["handle_task", "task_handler"])
+@pytest.mark.parametrize("symbol", ["handle_task", "task_handler", "HANDLE_TASK", "Task_Handler"])
 def test_sample_colors_the_actual_numbered_task_entry_node(tmp_path, symbol):
     _install_sample_plugin(tmp_path)
     style = resolve_diagram_style(
-        {"surface": "data_flow", "category": "task"}, root=tmp_path,
+        {"surface": "data_flow", "category": "task", "symbol": symbol}, root=tmp_path,
         strict_plugin_errors=True,
     )
     diagram = data_flow_diagram(

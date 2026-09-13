@@ -183,20 +183,25 @@ def test_fastapi_contracts_tutorial(project_copy):
     assert note in (project / "wiki/api-contracts.md").read_text(encoding="utf-8")
 
 
-def test_plugin_hooks_tutorial(project_copy):
+@pytest.mark.parametrize("symbol, renamed", [
+    ("handle_task", "task_handler"),
+    ("HANDLE_TASK", "Task_Handler"),
+])
+def test_plugin_hooks_tutorial(project_copy, symbol, renamed):
     name = "plugin-hooks"
     project = project_copy(name)
+    _replace(project / "tasks.py", "def handle_task(", f"def {symbol}(")
     _documented(project, name, "Generate the wiki")
     flow = project / "wiki/flows/task-task-handler.md"
     markdown = flow.read_text(encoding="utf-8")
-    assert 's1["1. handle_task"]' in markdown
+    assert f's1["1. {symbol}"]' in markdown
     assert "classDef entry fill:#2E7D32,stroke:#2E7D32" in markdown
     assert "class s1 entry" in markdown and "save_result" in markdown
     _assert_first_sync_stable(project, name)
-    _replace(project / "tasks.py", "def handle_task(", "def task_handler(")
+    _replace(project / "tasks.py", f"def {symbol}(", f"def {renamed}(")
     _documented(project, name, "Sync a source change")
     updated = flow.read_text(encoding="utf-8")
-    assert 's1["1. task_handler"]' in updated and "class s1 entry" in updated
+    assert f's1["1. {renamed}"]' in updated and "class s1 entry" in updated
     assert not (project / "output/result.txt").exists()
 
 

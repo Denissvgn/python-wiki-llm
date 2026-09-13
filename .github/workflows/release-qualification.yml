@@ -1123,7 +1123,7 @@ jobs:
       - name: Install source and hash-locked release tools
         run: |
           python -m pip install --no-cache-dir "./candidate[dev,mcp,tokens]"
-          python -m pip install --no-cache-dir -r candidate/examples/fastapi-contracts/requirements.txt
+          python -m pip install --require-hashes --only-binary=:all: --no-cache-dir -r candidate/examples/fastapi-contracts/requirements-ci.txt
           python -m pip install --require-hashes \
             --no-cache-dir -r candidate/release/requirements.txt
           python -I incoming/tools/release/qualification.py verify-download \

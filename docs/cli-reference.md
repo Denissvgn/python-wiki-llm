@@ -1095,6 +1095,10 @@ plugins cannot inject Markdown, labels, hrefs, or raw Mermaid lines. Core
 renderers keep labels Unicode-safe and bounded, and validate and percent-encode
 relative `click` hrefs.
 
+Data-flow style contexts also include `flow_id`, `category`, and the entry
+`symbol` with its original case. Hooks can use `symbol` to match the first
+numbered node label, such as `1. HANDLE_TASK`.
+
 These hooks are deterministic local extension contracts over explicit inputs;
 they do not perform network discovery and they do not mutate Markdown directly.
 They are not a sandbox, though: installing a plugin runs trusted project-local

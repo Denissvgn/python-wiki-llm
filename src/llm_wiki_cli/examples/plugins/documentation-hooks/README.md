@@ -60,10 +60,11 @@ classDef entry fill:#2E7D32,stroke:#2E7D32
 class s1 entry
 ```
 
-A Mermaid viewer shows the first task node in green. The hook maps the actual
-`1. handle_task` and `1. task_handler` labels only when the surface is
-`data_flow` and its category is `task`. It leaves other task steps and unrelated
-data flows uncolored. Relationship/dependency flowcharts retain the sample's
+A Mermaid viewer shows the first task node in green. The hook uses the entry
+`symbol` from the style context to match its actual numbered label, including
+case variants such as `1. HANDLE_TASK` and `1. Task_Handler`. It applies only
+when the surface is `data_flow` and its category is `task`. It leaves other task
+steps and unrelated data flows uncolored. Relationship/dependency flowcharts retain the sample's
 `task-handler` label hint and left-to-right direction. Sequence diagrams are
 outside this hook's supported surfaces. These are color, class, and direction
 hints; they do not change graph edges or the renderer's reserved classes.

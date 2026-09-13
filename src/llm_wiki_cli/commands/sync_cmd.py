@@ -5312,6 +5312,7 @@ def _regenerate_flow_pages(
                     ),
                     flow_id=entry_point.get("id"),
                     category=entry_point.get("category"),
+                    symbol=entry_point.get("symbol"),
                 )
                 if data_flow is not None
                 else None

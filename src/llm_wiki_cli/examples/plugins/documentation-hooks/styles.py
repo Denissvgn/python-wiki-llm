@@ -17,6 +17,11 @@ def style_flowcharts(context):
             if context.get("category") == "task"
             else {}
         )
+        symbol = str(context.get("symbol") or "")
+        if context.get("category") == "task" and symbol.lower() in {
+            "handle_task", "task_handler",
+        }:
+            node_classes = {f"1. {symbol}": "entry"}
     return {
         "direction": "LR",
         "node_classes": node_classes,
