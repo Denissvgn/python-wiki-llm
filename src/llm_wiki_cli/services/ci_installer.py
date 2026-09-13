@@ -192,12 +192,15 @@ jobs:
         uses: actions/checkout@{CHECKOUT_ACTION_REF} # v6.1.0
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Check LLM Wiki integrity
         uses: {WIKI_INTEGRITY_ACTION}@{action_ref}
         with:
           src-dir: {source_value}
           wiki-dir: {wiki_value}
+          impact-base: ${{{{ github.event.pull_request.base.sha }}}}
+          impact-head: ${{{{ github.event.pull_request.head.sha }}}}
 """
 
 

@@ -4,7 +4,10 @@
 
 ## Description
 
-_Auto-generated from `src/llm_wiki_cli/commands/trigger_cmd.py`._
+Coordinates a configured documentation trigger under the wiki lock and circuit
+breaker. Failed execution records failure metrics and breaker state, then exits
+with a portable nonzero status. Preparation failures also close the recorded run
+and release a recovery probe through the failure path.
 
 ## Imports
 
@@ -54,12 +57,19 @@ flowchart LR
 
 > All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
+## Classes
+
+| Class | Line | Bases | Description |
+|-------|------|-------|-------------|
+| [TriggerFailure](../entities/TriggerFailure.md) | 39 | `RuntimeError` | A recorded failed run, with its portable process exit status. |
+
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `run` | `(args)` | — | — |
 | `_run_sync` | `(args)` | — | Core sync logic, executed inside the concurrency lock. |
+| `_prepare_and_run_sync` | `(args, wiki_dir, src_dir, started)` | — | — |
 | `_preflight_trigger_source_selection` | `(args, src_dir: str, wiki_dir: str) -> SourceSnapshot` | — | — |
 | `_trigger_source_snapshot` | `(args, src_dir: str, diff_text: str \| None) -> SourceSnapshot \| None` | — | — |
 | `_record_trigger_start` | `(args, wiki_dir) -> None` | — | — |

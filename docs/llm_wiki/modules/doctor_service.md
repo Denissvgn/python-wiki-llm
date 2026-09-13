@@ -32,6 +32,7 @@ verification-receipt evaluation already produced by strict lint.
 | `enum` | `Enum` |
 | `pathlib` | `Path` |
 | `re` | `re` |
+| `typing` | `Any` |
 
 ## Local dependency map
 
@@ -51,17 +52,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (3) |
+| Inbound | `src` (4) |
 | Outbound | `src` (12) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [DoctorStatus](../entities/DoctorStatus.md) | Enum | 37 | `str`, `Enum` | Closed overall health vocabulary for the doctor contract. |
-| [DoctorReport](../entities/DoctorReport.md) | Class | 71 | — | One stable machine report plus its process exit classification. |
+| [DoctorStatus](../entities/DoctorStatus.md) | Enum | 38 | `str`, `Enum` | Closed overall health vocabulary for the doctor contract. |
+| [DoctorReport](../entities/DoctorReport.md) | Class | 72 | — | One stable machine report plus its process exit classification. |
 
 ## Functions
 
@@ -70,6 +71,7 @@ flowchart LR
 | `build_doctor_report` | `(wiki_dir: str \| Path = DEFAULT_WIKI_DIR, src_dir: str \| Path = '.', *, strict: bool = False, allow_external_src: bool = False, helper_cache_dir: str \| Path \| None = None, include_tests: Iterable[str] \| None = None, parallel_jobs: int = 1, job_request: ExtractionJobRequest \| None = None, source_selection: str \| Path \| None = None) -> DoctorReport` | — | Build a doctor report by composing existing strict-lint results. |
 | `compose_doctor_report` | `(lint: LintReport, *, strict: bool, wiki_dir: str, src_dir: str) -> DoctorReport` | — | Compose health sections from one already-computed lint operation. |
 | `render_doctor_text` | `(report: DoctorReport) -> str` | — | Render the report as a compact one-screen human summary. |
+| `_render_doctor_payload` | `(payload: Mapping[str, Any]) -> str` | — | — |
 | `_availability_section` | `(lint: LintReport, view: KnowledgeReadView \| None, wiki_root: Path) -> dict[str, object]` | — | — |
 | `_knowledge_declared` | `(wiki_root: Path) -> bool` | — | — |
 | `_freshness_section` | `(lint: LintReport, view: KnowledgeReadView \| None) -> dict[str, object]` | — | — |

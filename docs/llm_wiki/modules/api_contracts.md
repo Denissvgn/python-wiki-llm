@@ -8,6 +8,8 @@ Static FastAPI and exported OpenAPI contract assembly.
 
 The service consumes syntax-only inventory.  It never imports a target
 application and never resolves remote OpenAPI references.
+The compatibility consumer can request operation origins on nested normalization
+diagnostics while other consumers retain the existing diagnostic shape.
 
 ## Imports
 
@@ -36,50 +38,57 @@ application and never resolves remote OpenAPI references.
 flowchart LR
     n0["src/llm_wiki_cli/commands/sync_cmd.py"]
     n1["src/llm_wiki_cli/services/api_contracts.py"]
-    n2["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n3["src/llm_wiki_cli/services/documentation_native.py"]
-    n4["src/llm_wiki_cli/services/extraction_service.py"]
-    n5["src/llm_wiki_cli/services/imports.py"]
-    n6["src/llm_wiki_cli/services/paths.py"]
-    n7["src/llm_wiki_cli/services/source_selection.py"]
-    n8["src/llm_wiki_cli/services/source_snapshot.py"]
+    n2["src/llm_wiki_cli/services/api_diff.py"]
+    n3["src/llm_wiki_cli/services/bootstrap_runtime.py"]
+    n4["src/llm_wiki_cli/services/documentation_native.py"]
+    n5["src/llm_wiki_cli/services/extraction_service.py"]
+    n6["src/llm_wiki_cli/services/impact.py"]
+    n7["src/llm_wiki_cli/services/imports.py"]
+    n8["src/llm_wiki_cli/services/paths.py"]
+    n9["src/llm_wiki_cli/services/source_selection.py"]
+    n10["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n4
-    n0 --> n6
-    n0 --> n7
+    n0 --> n3
+    n0 --> n5
     n0 --> n8
-    n1 --> n5
-    n1 --> n6
+    n0 --> n9
+    n0 --> n10
     n1 --> n7
     n1 --> n8
+    n1 --> n9
+    n1 --> n10
     n2 --> n1
-    n2 --> n4
-    n2 --> n5
-    n2 --> n6
-    n2 --> n7
-    n2 --> n8
     n3 --> n1
-    n3 --> n2
-    n3 --> n4
-    n3 --> n6
+    n3 --> n5
     n3 --> n7
     n3 --> n8
+    n3 --> n9
+    n3 --> n10
     n4 --> n1
+    n4 --> n3
     n4 --> n5
-    n4 --> n7
     n4 --> n8
-    n5 --> n8
-    n8 --> n7
+    n4 --> n9
+    n4 --> n10
+    n5 --> n1
+    n5 --> n7
+    n5 --> n9
+    n5 --> n10
+    n6 --> n1
+    n6 --> n10
+    n7 --> n10
+    n10 --> n9
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/api_contracts.md"
-    click n2 "../modules/bootstrap_runtime.md"
-    click n3 "../modules/documentation_native.md"
-    click n4 "../modules/extraction_service.md"
-    click n5 "../modules/imports.md"
-    click n6 "../modules/paths.md"
-    click n7 "../modules/source_selection.md"
-    click n8 "../modules/source_snapshot.md"
+    click n2 "../modules/api_diff.md"
+    click n3 "../modules/bootstrap_runtime.md"
+    click n4 "../modules/documentation_native.md"
+    click n5 "../modules/extraction_service.md"
+    click n6 "../modules/impact.md"
+    click n7 "../modules/imports.md"
+    click n8 "../modules/paths.md"
+    click n9 "../modules/source_selection.md"
+    click n10 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -87,9 +96,11 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [sync_cmd](../modules/sync_cmd.md) |
+| Inbound | [api_diff](../modules/api_diff.md) |
 | Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Inbound | [documentation_native](../modules/documentation_native.md) |
 | Inbound | [extraction_service](../modules/extraction_service.md) |
+| Inbound | [impact](../modules/impact.md) |
 | Outbound | [imports](../modules/imports.md) |
 | Outbound | [paths](../modules/paths.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
@@ -151,7 +162,7 @@ flowchart LR
 | `_openapi_parameter` | `(raw: Any, document: Mapping[str, Any], diagnostics: list[dict[str, Any]], context: str) -> dict[str, Any] \| None` | — | — |
 | `_openapi_request_body` | `(raw: Any, document: Mapping[str, Any], diagnostics: list[dict[str, Any]], context: str) -> dict[str, Any] \| None` | — | — |
 | `_openapi_responses` | `(raw: Any, document: Mapping[str, Any], diagnostics: list[dict[str, Any]], context: str) -> list[dict[str, Any]]` | — | — |
-| `_openapi_operations` | `(loaded: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]` | — | — |
+| `_openapi_operations` | `(loaded: Mapping[str, Any], *, diagnostic_origins: bool = False) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]` | — | — |
 | `_parameter_contract` | `(operation: Mapping[str, Any]) -> set[tuple[Any, ...]]` | — | — |
 | `_response_keys` | `(operation: Mapping[str, Any]) -> set[str]` | — | — |
 | `_canonical_schema_token` | `(value: Any) -> str` | — | — |

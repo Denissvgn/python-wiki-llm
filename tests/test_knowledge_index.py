@@ -75,6 +75,7 @@ from llm_wiki_cli.services.wiki_surface_index import (
 )
 from tests.knowledge_fixtures import (
     EvaluatedKnowledgeFixture,
+    GOLDEN_PRODUCER_VERSION,
     duplicate_entity_occurrences_fixture,
     one_module_two_entities_fixture,
 )
@@ -122,6 +123,8 @@ def _surface_pages(
 def _real_envelope(
     fixture: EvaluatedKnowledgeFixture,
     content_by_page: Mapping[str, str],
+    *,
+    producer_version: str | None = None,
 ) -> EvaluatedEnvelope:
     source_inputs = tuple(
         ConsumedInput.from_bytes(
@@ -154,7 +157,7 @@ def _real_envelope(
             generation_option_allowlist=prepared_generation_options.allowlist,
             tool=ProducerComponentInput(
                 component_id="agent-wiki-cli",
-                version=__version__,
+                version=__version__ if producer_version is None else producer_version,
                 configuration={
                     "knowledge_schema": KNOWLEDGE_SCHEMA_VERSION,
                     "surface_schema": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
@@ -163,7 +166,7 @@ def _real_envelope(
             extractors=(
                 ProducerComponentInput(
                     component_id="llm-wiki/extractor/python",
-                    version=__version__,
+                    version=__version__ if producer_version is None else producer_version,
                     configuration={
                         "entry_point": EXTRACTOR_REGISTRY["python"],
                         "inventory_mode": "deep",
@@ -232,11 +235,15 @@ def _manifest_evidence(
 
 def _builder_case_for(
     fixture: EvaluatedKnowledgeFixture,
+    *,
+    producer_version: str | None = None,
 ) -> _BuilderCase:
     pages = _surface_pages(fixture)
     content_by_page = {page.canonical_path: page.content for page in fixture.pages}
     page_sources, baselines = _manifest_evidence(fixture)
-    envelope = _real_envelope(fixture, content_by_page)
+    envelope = _real_envelope(
+        fixture, content_by_page, producer_version=producer_version
+    )
     observations = collect_link_observations(
         pages,
         content_by_page,
@@ -339,9 +346,10 @@ def test_builds_complete_deterministic_index_from_evaluated_inputs(
         assert relationship.evidence.page_hash == (source.facets.semantics.page_hash)
 
 
-def test_complete_builder_golden_is_byte_stable(
-    builder_case: _BuilderCase,
-) -> None:
+def test_complete_builder_golden_is_byte_stable() -> None:
+    builder_case = _builder_case_for(
+        one_module_two_entities_fixture(), producer_version=GOLDEN_PRODUCER_VERSION
+    )
     first = serialize_knowledge_index(
         build_knowledge_index(builder_case.inputs)
     ).encode("utf-8")

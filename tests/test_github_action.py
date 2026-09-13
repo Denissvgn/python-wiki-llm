@@ -959,9 +959,9 @@ def test_action_yaml_and_workflow_pass_available_validation() -> None:
     )
 
 
-def test_readme_documents_the_ci_gate_inputs_and_thresholds() -> None:
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    section = readme.split("### Strict doctor dashboard", 1)[1].split("\n## ", 1)[0]
+def test_automation_guide_documents_the_ci_gate_inputs_and_thresholds() -> None:
+    guide = (ROOT / "docs/automation.md").read_text(encoding="utf-8")
+    section = guide.split("## Strict doctor dashboard", 1)[1].split("\n## ", 1)[0]
 
     assert "integrations/github-action" in section
     assert "wiki-dir:" in section

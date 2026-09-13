@@ -1,6 +1,6 @@
 # SourceSnapshot
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:128`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:135`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -63,12 +63,12 @@ flowchart LR
     n4["_validated_prompt_selection_and_diff (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
     n5["_validated_prompt_snapshot (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
     n6["src/llm_wiki_cli/commands/migrate_cmd.py"]
-    n7["_build_surface_index_pages (src/llm_wiki_cli/commands/review_cmd.py)"]
-    n8["_flow_pages_by_source (src/llm_wiki_cli/commands/review_cmd.py)"]
-    n9["_preflight_review_source_selection (src/llm_wiki_cli/commands/review_cmd.py)"]
-    n10["_surface_index_pages (src/llm_wiki_cli/commands/review_cmd.py)"]
-    n11["_append_log (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n12["_apply_current_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n7["_append_log (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n8["_apply_current_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n9["_apply_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n10["_apply_surface_page_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n11["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n12["_build_generated_section_context (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -88,10 +88,10 @@ flowchart LR
     click n4 "../modules/generate_prompt_cmd.md"
     click n5 "../modules/generate_prompt_cmd.md"
     click n6 "../modules/migrate_cmd.md"
-    click n7 "../modules/review_cmd.md"
-    click n8 "../modules/review_cmd.md"
-    click n9 "../modules/review_cmd.md"
-    click n10 "../modules/review_cmd.md"
+    click n7 "../modules/sync_cmd.md"
+    click n8 "../modules/sync_cmd.md"
+    click n9 "../modules/sync_cmd.md"
+    click n10 "../modules/sync_cmd.md"
     click n11 "../modules/sync_cmd.md"
     click n12 "../modules/sync_cmd.md"
 ```
@@ -112,11 +112,11 @@ flowchart LR
 | `_validated_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
 | `_validated_prompt_snapshot` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
 | `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_build_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
-| `_flow_pages_by_source` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
-| `_preflight_review_source_selection` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
-| `_surface_index_pages` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
 | `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_surface_page_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
 > References: showing 12 of 148 logical references; 136 omitted by the 12-row generated summary limit.

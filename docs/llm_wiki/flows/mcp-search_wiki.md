@@ -21,7 +21,7 @@ sequenceDiagram
 flowchart LR
     s1["1. search_wiki"]
     s2["2. service.search_wiki"]
-    s1 -. "service.search_wiki(query, kinds=kinds, limit=limit)" .-> s2
+    s1 -. "service.search_wiki(query, kinds=kinds, limit=limit, mode=mode)" .-> s2
     click s1 "../modules/mcp_server.md"
 ```
 
@@ -29,14 +29,14 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `search_wiki` | `query: str`, `kinds: list[str] \| None`, `limit: int` | - | - | `service.search_wiki(...)` |
+| `search_wiki` | `query: str`, `kinds: list[str] \| None`, `limit: int`, `mode: str` | - | - | `service.search_wiki(...)` |
 | `service.search_wiki` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| search_wiki | service.search_wiki | 1239 | `service.search_wiki(query, kinds=kinds, limit=limit)` |
+| search_wiki | service.search_wiki | 1259 | `service.search_wiki(query, kinds=kinds, limit=limit, mode=mode)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `search_wiki` | `service.search_wiki` | 1239 |
+| unresolved_call | `search_wiki` | `service.search_wiki` | 1259 |
 
 ## Behavior
 

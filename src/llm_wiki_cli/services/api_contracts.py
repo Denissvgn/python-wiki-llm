@@ -1549,7 +1549,9 @@ def _openapi_responses(
     return responses
 
 
-def _openapi_operations(loaded: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _openapi_operations(
+    loaded: Mapping[str, Any], *, diagnostic_origins: bool = False
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     document = loaded["document"]
     diagnostics: list[dict[str, Any]] = []
     operations = []
@@ -1563,6 +1565,7 @@ def _openapi_operations(loaded: Mapping[str, Any]) -> tuple[list[dict[str, Any]]
             if not isinstance(raw, Mapping):
                 continue
             context = f"{method.upper()} {path}"
+            diagnostic_start = len(diagnostics)
             parameter_map: dict[tuple[str, str], dict[str, Any]] = {}
             for source in (path_parameters, raw.get("parameters", [])):
                 if not isinstance(source, list):
@@ -1588,6 +1591,11 @@ def _openapi_operations(loaded: Mapping[str, Any]) -> tuple[list[dict[str, Any]]
                     "provenance": "openapi",
                 }
             )
+            if diagnostic_origins:
+                # Nested schema contexts are display strings, not operation IDs.
+                # Keep the actual owner even when another route has that prefix.
+                for diagnostic in diagnostics[diagnostic_start:]:
+                    diagnostic["operation"] = context
     return operations, diagnostics
 
 

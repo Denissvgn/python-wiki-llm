@@ -33,6 +33,8 @@ One coordinated in-memory source/wiki read used by a packet response.
 | `basis_incompatible` | `bool` | `False` | — |
 | `strict_wiki_symlinks` | `bool` | `False` | — |
 | `allow_external_src` | `bool` | `False` | — |
+| `explicit_changes` | `bool` | `False` | — |
+| `change_selection` | `Mapping[str, Any] \| None` | `None` | — |
 
 ## Methods
 
@@ -89,7 +91,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_packet](../modules/context_packet.md) | 1 | `allow_external_src`, `basis_incompatible`, `call_edges`, `changed_files`, `data_flows`, `dependency_analysis`, `entrypoints`, `flows`, `inventory`, `inventory_result`, `knowledge_view`, `source_anchor` |
+| [context_packet](../modules/context_packet.md) | 1 | `allow_external_src`, `basis_incompatible`, `call_edges`, `change_selection`, `changed_files`, `data_flows`, `dependency_analysis`, `entrypoints`, `explicit_changes`, `flows`, `inventory`, `inventory_result` |
 
 ### References
 
@@ -108,4 +110,4 @@ flowchart LR
 | `build_context_from_captured_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
 | `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 1 |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

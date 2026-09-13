@@ -10,6 +10,19 @@ from ..services.extraction_jobs import extraction_job_request_from_args
 
 
 def run(args) -> None:
+    if getattr(args, "capabilities", False):
+        from ..services.capability_diagnostics import build_capability_doctor, render_capability_doctor
+
+        report = build_capability_doctor(
+            args.wiki_dir, args.src_dir, strict=args.strict,
+            allow_external_src=args.allow_external_src, helper_cache_dir=args.helper_cache_dir,
+            source_selection=args.source_selection, include_tests=args.include_tests,
+            parallel_jobs=args.jobs, job_request=extraction_job_request_from_args(args))
+        print(json.dumps(report, indent=2, sort_keys=True) if args.format == "json"
+              else render_capability_doctor(report), end="\n" if args.format == "json" else "")
+        if report["exit_code"]:
+            raise SystemExit(report["exit_code"])
+        return
     report = build_doctor_report(
         getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
         getattr(args, "src_dir", "."),

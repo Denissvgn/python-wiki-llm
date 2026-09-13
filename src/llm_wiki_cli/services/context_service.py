@@ -240,6 +240,7 @@ def get_inventory(
     include_plugins: bool = True,
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    helper_cache_dir: str | None = None,
 ) -> dict: ...
 
 
@@ -254,6 +255,7 @@ def get_inventory(
     include_plugins: bool = True,
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    helper_cache_dir: str | None = None,
 ) -> InventoryResult: ...
 
 
@@ -268,6 +270,7 @@ def get_inventory(
     include_plugins: bool = True,
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    helper_cache_dir: str | None = None,
 ) -> dict | InventoryResult: ...
 
 
@@ -281,6 +284,7 @@ def get_inventory(
     include_plugins: bool = True,
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    helper_cache_dir: str | None = None,
 ) -> dict | InventoryResult:
     """Build command inventory, optionally returning extraction metadata."""
     inventory_options: dict[str, Any] = {
@@ -291,6 +295,8 @@ def get_inventory(
         "source_selection": source_selection,
         "source_snapshot": source_snapshot,
     }
+    if helper_cache_dir is not None:
+        inventory_options["helper_cache_dir"] = helper_cache_dir
     if not include_plugins:
         inventory_options["include_plugins"] = False
     inventory_result = get_inventory_result(
@@ -1075,6 +1081,7 @@ def _validate_protocol_request(data: object) -> dict:
         if isinstance(protocol, str) and protocol in {
             PROTOCOL_VERSION,
             KNOWLEDGE_PROTOCOL_VERSION,
+            "llm-wiki-context/v3",
         }:
             exc.protocol = protocol
         raise
@@ -1090,6 +1097,10 @@ def _validate_protocol_request_impl(data: object) -> dict:
         )
 
     protocol = data.get("protocol")
+    if protocol == "llm-wiki-context/v3":
+        from .context_budget import validate_request
+
+        return validate_request(data)
     if protocol == PROTOCOL_VERSION:
         request_keys = _V1_REQUEST_KEYS
     elif protocol == KNOWLEDGE_PROTOCOL_VERSION:
@@ -3342,6 +3353,18 @@ def _run_protocol(args) -> None:
                 "knowledge_mode",
                 protocol=request["protocol"],
             )
+        if request["protocol"] == "llm-wiki-context/v3":
+            from .context_budget import run as run_budgeted
+
+            run_budgeted(args, request)
+            return
+        from .change_selection import changes_from_args
+
+        if (getattr(args, "tokenizer", None) or getattr(args, "budget_mode", None)
+                or changes_from_args(args) is not None):
+            raise ProtocolRequestError(
+                "Complete-output counting and explicit changes require llm-wiki-context/v3.", "protocol"
+            )
         payload, warnings = _build_context(
             getattr(args, "src_dir", "."),
             request["budget_tokens"],
@@ -3464,6 +3487,16 @@ def run(args) -> None:
     if budget < 1:
         print("Error: --budget must be greater than zero.", file=sys.stderr)
         raise SystemExit(2)
+
+    from .change_selection import changes_from_args
+
+    if getattr(args, "budget_mode", None) is not None or changes_from_args(args) is not None:
+        from .context_budget import run as run_budgeted
+
+        run_budgeted(args)
+        return
+    if getattr(args, "tokenizer", None):
+        raise ValueError("--tokenizer requires --budget-mode exact")
 
     focus_values = ["all"] if focus == "all" else ["changed", "neighbors"]
     if fmt == "packet":

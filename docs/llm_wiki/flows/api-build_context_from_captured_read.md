@@ -2,10 +2,12 @@
 
 **Entry point:** `build_context_from_captured_read` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [documentation_queries](../modules/documentation_queries.md), and 3 more
+**Modules touched:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), and 4 more
 
 **Complete modules touched:**
 
+- [change_selection](../modules/change_selection.md)
+- [context_budget](../modules/context_budget.md)
 - [context_packet](../modules/context_packet.md)
 - [context_service](../modules/context_service.md)
 - [documentation_queries](../modules/documentation_queries.md)
@@ -34,8 +36,12 @@ sequenceDiagram
     participant p13 as isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
     participant p14 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
     participant p15 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p16 as sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p17 as set (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p16 as validate_request
+    participant p17 as set (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p18 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p19 as dict (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p20 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p21 as legacy.pop
     p0-->>p1: isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)
     p0-->>p2: TypeError (src/llm_wiki_cli/services…ontext_from_captured_read)
     p0->>p3: _normalized_request
@@ -55,20 +61,20 @@ sequenceDiagram
     p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
     p12->>p5: ProtocolRequestError
     p12-->>p15: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p5: ProtocolRequestError
-    p12-->>p16: sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12-->>p17: set (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p5: ProtocolRequestError
-    p12->>p5: ProtocolRequestError
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p5: ProtocolRequestError
-    p12-->>p15: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p5: ProtocolRequestError
+    p12->>p16: validate_request
+    p16-->>p17: set (src/llm_wiki_cli/services…udget.py:validate_request)
+    p16->>p5: ProtocolRequestError
+    p16-->>p18: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    p16-->>p19: dict (src/llm_wiki_cli/services…udget.py:validate_request)
+    p16-->>p20: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p16-->>p20: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p16-->>p20: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p16-->>p21: legacy.pop
+    p16-->>p21: legacy.pop
+    p16-->>p21: legacy.pop
 ```
 
-> Call sequence diagram shows 30 of 598 interactions; 568 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 636 interactions; 606 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -127,17 +133,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context_from_captured_read | isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2) | 859 | `isinstance(captured, CapturedContextRead)` |
-| build_context_from_captured_read | TypeError (src/llm_wiki_cli/services…ontext_from_captured_read) | 860 | `TypeError('captured must be a CapturedContextRead')` |
-| build_context_from_captured_read | _normalized_request | 861 | `_normalized_request(request)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1726 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1727 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy | 1731 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1731 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1732 | `candidate.setdefault('protocol', ...)` |
-| _normalized_request | candidate.setdefault | 1740 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1741 | `context_service._validate_protocol_request(candidate)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1071 | `isinstance(data, dict)` |
+| build_context_from_captured_read | isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2) | 864 | `isinstance(captured, CapturedContextRead)` |
+| build_context_from_captured_read | TypeError (src/llm_wiki_cli/services…ontext_from_captured_read) | 865 | `TypeError('captured must be a CapturedContextRead')` |
+| build_context_from_captured_read | _normalized_request | 866 | `_normalized_request(request)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1741 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1742 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy | 1746 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1746 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 1747 | `candidate.setdefault('protocol', ...)` |
+| _normalized_request | candidate.setdefault | 1755 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1756 | `context_service._validate_protocol_request(candidate)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -147,13 +153,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_context_from_captured_read` | `isinstance` | 859 |
-| external_call | `build_context_from_captured_read` | `TypeError` | 860 |
-| external_call | `_normalized_request` | `isinstance` | 1726 |
-| external_call | `_normalized_request` | `deepcopy` | 1731 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1732 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1740 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1071 |
+| external_call | `build_context_from_captured_read` | `isinstance` | 864 |
+| external_call | `build_context_from_captured_read` | `TypeError` | 865 |
+| external_call | `_normalized_request` | `isinstance` | 1741 |
+| external_call | `_normalized_request` | `deepcopy` | 1746 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1747 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1755 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1077 |
 | step_limit | `build_context_from_captured_read` | `first 12 steps` | 0 |
 | truncated_flow | `build_context_from_captured_read` | `depth limit` | 0 |
 

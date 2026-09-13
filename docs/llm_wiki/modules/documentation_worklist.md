@@ -42,33 +42,36 @@ flowchart LR
     n1["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n2["src/llm_wiki_cli/services/documentation_worklist.py"]
     n3["src/llm_wiki_cli/services/io.py"]
-    n4["src/llm_wiki_cli/services/markdown_sections.py"]
-    n5["src/llm_wiki_cli/services/validation.py"]
-    n6["src/llm_wiki_cli/services/wiki_surface.py"]
-    n7["src/llm_wiki_cli/services/wiki_surface_index.py"]
+    n4["src/llm_wiki_cli/services/maintenance_queue.py"]
+    n5["src/llm_wiki_cli/services/markdown_sections.py"]
+    n6["src/llm_wiki_cli/services/validation.py"]
+    n7["src/llm_wiki_cli/services/wiki_surface.py"]
+    n8["src/llm_wiki_cli/services/wiki_surface_index.py"]
     n0 --> n2
-    n0 --> n5
+    n0 --> n6
     n1 --> n2
     n1 --> n3
-    n1 --> n5
-    n1 --> n7
+    n1 --> n6
+    n1 --> n8
     n2 --> n3
-    n2 --> n4
     n2 --> n5
     n2 --> n6
     n2 --> n7
-    n6 --> n5
-    n7 --> n3
-    n7 --> n5
+    n2 --> n8
+    n4 --> n2
     n7 --> n6
+    n8 --> n3
+    n8 --> n6
+    n8 --> n7
     click n0 "../modules/controller.md"
     click n1 "../modules/documentation_run_dependencies.md"
     click n2 "../modules/documentation_worklist.md"
     click n3 "../modules/io.md"
-    click n4 "../modules/markdown_sections.md"
-    click n5 "../modules/validation.md"
-    click n6 "../modules/wiki_surface.md"
-    click n7 "../modules/wiki_surface_index.md"
+    click n4 "../modules/maintenance_queue.md"
+    click n5 "../modules/markdown_sections.md"
+    click n6 "../modules/validation.md"
+    click n7 "../modules/wiki_surface.md"
+    click n8 "../modules/wiki_surface_index.md"
 ```
 
 ### Internal neighbors
@@ -77,6 +80,7 @@ flowchart LR
 |---|---|
 | Inbound | [controller](../modules/controller.md) |
 | Inbound | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) |
+| Inbound | [maintenance_queue](../modules/maintenance_queue.md) |
 | Outbound | [io](../modules/io.md) |
 | Outbound | [markdown_sections](../modules/markdown_sections.md) |
 | Outbound | [validation](../modules/validation.md) |

@@ -55,6 +55,8 @@ from .config import (
     validate_source_root,
 )
 from .services import context_packet as context_packet_service
+from .services.context_budget import BudgetedContext
+from .services.token_counting import TokenCounter
 from .services.context_knowledge_contract import (
     KNOWLEDGE_MODE_REQUEST_FIELD,
     KNOWLEDGE_MODE_VALUES,
@@ -877,6 +879,25 @@ def build_context(
     if warnings:
         result["warnings"] = warnings
     return cast(ContextPayload, result)
+
+
+@_api_boundary
+def build_budgeted_context(
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    request: Mapping[str, Any] | None = None,
+    *,
+    counter: TokenCounter | None = None,
+    allow_external_src: bool = False,
+    source_selection: str | Path | None = None,
+) -> BudgetedContext:
+    """Render opt-in v3 context with a trusted complete-output token counter."""
+    from .services.context_budget import build_budgeted_context as build
+
+    return build(
+        src_dir, wiki_dir, request, counter=counter,
+        allow_external_src=allow_external_src, source_selection=source_selection,
+    )
 
 
 @_api_boundary
@@ -2858,6 +2879,9 @@ __all__ = [
     "build_p0_calibration_agent_packet",
     "build_context",
     "build_qualified_context",
+    "build_budgeted_context",
+    "BudgetedContext",
+    "TokenCounter",
     "bootstrap_wiki",
     "build_documentation_query_service",
     "callees",

@@ -319,6 +319,8 @@ class CapturedContextRead:
     basis_incompatible: bool = False
     strict_wiki_symlinks: bool = False
     allow_external_src: bool = False
+    explicit_changes: bool = False
+    change_selection: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.source_root, Path) or not self.source_root.is_absolute():
@@ -613,6 +615,7 @@ def capture_context_read(
     source_selection: str | Path | None = None,
     allow_selection_mismatch: bool = False,
     strict_wiki_symlinks: bool = False,
+    helper_cache_dir: str | None = None,
 ) -> CapturedContextRead:
     """Capture one source inventory, wiki surface, and knowledge read view.
 
@@ -680,6 +683,7 @@ def capture_context_read(
         expected_selection_inputs=selection_inputs,
     )
 
+    helper_options = {"helper_cache_dir": helper_cache_dir} if helper_cache_dir is not None else {}
     collected = context_service.get_inventory(
         str(source_root),
         deep=True,
@@ -689,6 +693,7 @@ def capture_context_read(
         include_plugins=False,
         source_selection=source_selection,
         source_snapshot=source_snapshot,
+        **helper_options,
     )
     if not isinstance(collected, InventoryResult):
         raise ContextPacketUnavailableError(
@@ -1081,7 +1086,7 @@ def _captured_source_classification(
                 "as high priority."
             )
             focus_mode = "all"
-        elif not captured.changed_files:
+        elif not captured.changed_files and not captured.explicit_changes:
             warnings.append(
                 "No files changed in the last commit. Treating all files "
                 "as high priority."
@@ -1268,6 +1273,16 @@ def build_qualified_context(
             response,
             packet_contract,
         )
+    return packet_from_captured_response(captured, normalized, response)
+
+
+def packet_from_captured_response(
+    captured: CapturedContextRead,
+    normalized: Mapping[str, Any],
+    response: Mapping[str, Any],
+) -> QualifiedContextPacket:
+    """Seal and validate a selected response against its unchanged captured basis."""
+    packet_contract = _packet_contract_for_request(normalized)
     body = _packet_body(captured, normalized, response, packet_contract)
 
     _assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
@@ -4742,6 +4757,25 @@ def _assert_source_inputs_unchanged(
 
 
 def _assert_selection_unchanged(captured: CapturedContextRead) -> None:
+    if captured.explicit_changes:
+        from .change_selection import select_changes
+
+        if captured.change_selection is None:
+            raise ContextPacketSourceMutationError("source-selection")
+        request = {
+            key: value
+            for key, value in captured.change_selection["request"].items()
+            if key not in {"commits", "index_id"}
+        }
+        try:
+            current_selection = select_changes(
+                captured.source_root, request, snapshot=captured.source_snapshot
+            )
+        except ValueError as exc:
+            raise ContextPacketSourceMutationError("source-selection") from exc
+        if current_selection != captured.change_selection:
+            raise ContextPacketSourceMutationError("source-selection")
+        return
     changed = context_service._selected_git_changed_files(
         str(captured.source_root),
         captured.source_snapshot,

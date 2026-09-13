@@ -12,6 +12,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from .contracts import DOCTOR_SCHEMA_VERSION
@@ -215,8 +216,10 @@ def compose_doctor_report(
 
 def render_doctor_text(report: DoctorReport) -> str:
     """Render the report as a compact one-screen human summary."""
+    return _render_doctor_payload(report.to_payload())
 
-    payload = report.to_payload()
+
+def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
     availability = payload["availability"]
     freshness = payload["freshness"]
     snapshot = payload["snapshot_parity"]
@@ -233,7 +236,7 @@ def render_doctor_text(report: DoctorReport) -> str:
     freshness_counts = _format_counts(freshness["counts_by_state"])
     lines = [
         "LLM Wiki Doctor",
-        f"Status:               {report.status.value} (exit {report.exit_code})",
+        f"Status:               {payload['status']} (exit {payload['exit_code']})",
         (
             "Availability:         "
             f"{availability['state']} ({availability['reason']})"
@@ -268,10 +271,10 @@ def render_doctor_text(report: DoctorReport) -> str:
             ),
         ]
     )
-    if report.unhealthy_reasons:
-        lines.append("Unhealthy:            " + ", ".join(report.unhealthy_reasons))
-    if report.degraded_reasons:
-        lines.append("Degraded:             " + ", ".join(report.degraded_reasons))
+    if payload["unhealthy_reasons"]:
+        lines.append("Unhealthy:            " + ", ".join(payload["unhealthy_reasons"]))
+    if payload["degraded_reasons"]:
+        lines.append("Degraded:             " + ", ".join(payload["degraded_reasons"]))
     return "\n".join(lines) + "\n"
 
 

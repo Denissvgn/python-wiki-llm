@@ -2,32 +2,23 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [trigger_cmd](../modules/trigger_cmd.md)
-**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 27 more
+**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [extraction_service](../modules/extraction_service.md), and 18 more
 
 **Complete modules touched:**
 
 - [circuit_breaker](../modules/circuit_breaker.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
-- [documentation_query_builder](../modules/documentation_query_builder.md)
-- [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [generate_prompt_cmd](../modules/generate_prompt_cmd.md)
 - [imports](../modules/imports.md)
-- [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [lockfile](../modules/lockfile.md)
 - [metrics](../modules/metrics.md)
-- [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
-- [progress](../modules/progress.md)
-- [python_calls](../modules/python_calls.md)
-- [python_contracts](../modules/python_contracts.md)
-- [python_imports](../modules/python_imports.md)
-- [python_observations](../modules/python_observations.md)
 - [redaction](../modules/redaction.md)
 - [secure_file](../modules/secure_file.md)
 - [source_selection](../modules/source_selection.md)
@@ -61,7 +52,7 @@ sequenceDiagram
     participant p15 as os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
     participant p16 as raw_value.strip
     participant p17 as float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    participant p18 as ValueError (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    participant p18 as ValueError
     participant p19 as math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
     participant p20 as _run_sync
     participant p21 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
@@ -90,9 +81,9 @@ sequenceDiagram
     p14-->>p15: os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
     p14-->>p16: raw_value.strip
     p14-->>p17: float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    p14-->>p18: ValueError (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    p14-->>p18: ValueError
     p14-->>p19: math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    p14-->>p18: ValueError (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    p14-->>p18: ValueError
     p0->>p20: _run_sync
     p20-->>p21: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
     p20->>p22: validate_path
@@ -102,7 +93,7 @@ sequenceDiagram
     p22-->>p26: Path.cwd().resolve
 ```
 
-> Call sequence diagram shows 30 of 1340 interactions; 1310 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 780 interactions; 750 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -163,7 +154,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `GIT_DIR`, `IDE_AGENTS`, `GIT_DIR`, `LockAcquisitionError` | - | `none` |
+| `run` | `args` | `GIT_DIR`, `IDE_AGENTS`, `GIT_DIR`, `LockAcquisitionError`, `TriggerFailure` | - | `none` |
 | `getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | - | - | - | - |
 | `reset_breaker` | `git_dir: Path` | `_DEFAULT_STATE` | - | - |
 | `save_state` | `git_dir: Path`, `state: dict` | - | - | - |
@@ -180,8 +171,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 41 | `getattr(args, 'reset_breaker', False)` |
-| run | reset_breaker | 42 | `circuit_breaker.reset_breaker(GIT_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 49 | `getattr(args, 'reset_breaker', False)` |
+| run | reset_breaker | 50 | `circuit_breaker.reset_breaker(GIT_DIR)` |
 | reset_breaker | save_state | 139 | `save_state(git_dir, dict(...))` |
 | save_state | _state_path | 55 | `_state_path(git_dir)` |
 | save_state | tempfile.mkstemp | 56 | `tempfile.mkstemp(dir=git_dir, suffix='.tmp')` |
@@ -190,24 +181,24 @@ flowchart LR
 | save_state | os.replace | 60 | `os.replace(tmp, path)` |
 | save_state | os.unlink | 63 | `os.unlink(tmp)` |
 | reset_breaker | dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker) | 139 | `dict(_DEFAULT_STATE)` |
-| run | print (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 43 | `print('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')` |
+| run | print (src/llm_wiki_cli/commands/trigger_cmd.py:run) | 51 | `print('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 43 |
-| output | `print` | `run` | 47 |
-| output | `print` | `run` | 48 |
 | output | `print` | `run` | 51 |
+| output | `print` | `run` | 55 |
+| output | `print` | `run` | 56 |
 | output | `print` | `run` | 59 |
+| output | `print` | `run` | 67 |
 | filesystem_write | `os.unlink` | `save_state` | 63 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 41 |
+| external_call | `run` | `getattr` | 49 |
 | external_call | `save_state` | `tempfile.mkstemp` | 56 |
 | external_call | `save_state` | `os.fdopen` | 58 |
 | external_call | `save_state` | `json.dump` | 59 |

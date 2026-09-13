@@ -1,6 +1,6 @@
 # _ProtocolEnrichmentSession
 
-**Location:** `src/llm_wiki_cli/services/context_service.py:1773`
+**Location:** `src/llm_wiki_cli/services/context_service.py:1784`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_service](../modules/context_service.md)

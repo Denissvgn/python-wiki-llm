@@ -10,6 +10,9 @@ classifies supported and unsupported source, package markers, Docker, Compose,
 and targeted YAML candidates; captures exact input hashes; and retains the
 resolved source-selection policy so downstream consumers do not rediscover a
 different tree.
+Known unsupported source languages are retained as advisory counts even without
+an explicit selection profile. Their files stay outside built-in extraction and
+respect the same directory and ignore boundaries as other discovered inputs.
 
 ## Imports
 
@@ -49,20 +52,20 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (33) |
+| Inbound | `src` (35) |
 | Outbound | `src` (6) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 94 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
-| [SourceFile](../entities/SourceFile.md) | 104 | — | A source-tree file discovered relative to a snapshot root. |
-| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 116 | — | Filesystem identity used for cheap between-stage mutation checks. |
-| [SourceSnapshot](../entities/SourceSnapshot.md) | 128 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 429 | — | — |
+| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 101 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
+| [SourceFile](../entities/SourceFile.md) | 111 | — | A source-tree file discovered relative to a snapshot root. |
+| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 123 | — | Filesystem identity used for cheap between-stage mutation checks. |
+| [SourceSnapshot](../entities/SourceSnapshot.md) | 135 | — | Filtered source-tree discovery results shared by lint/extract paths. |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 436 | — | — |
 
 ## Functions
 

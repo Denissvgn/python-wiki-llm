@@ -226,7 +226,7 @@ jobs:
           --path "${RUNNER_TEMP}/qualification-venv"
 
       - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev]"
+        run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
 
       - name: Run strict core suite with canonical coverage
         if: ${{ matrix.coverage && !inputs.discovery-mode }}

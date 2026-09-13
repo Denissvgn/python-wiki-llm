@@ -33,7 +33,7 @@ Pure read/check operations exposed through MCP tools and resources.
 | `list_concept_sections` | `(locator_or_exact_route: str, ownership: str \| None = None, limit: int = 20) -> dict` | — | Return bounded document-order sections for one exact concept. |
 | `traverse_typed_graph` | `(locator_or_exact_route: str, direction: str = 'both', kinds: list[str] \| None = None, origins: list[str] \| None = None, resolutions: list[str] \| None = None, include_evidence: bool = False, limit: int = 20) -> dict` | — | Traverse bounded persisted typed relationships for one concept. |
 | `explain_evidence` | `(locator_or_exact_route: str, limit: int = 20) -> dict` | — | Return bounded evidence for one exact concept identity. |
-| `search_wiki` | `(query: str, kinds: list[str] \| None = None, limit: int = 20) -> dict` | — | — |
+| `search_wiki` | `(query: str, kinds: list[str] \| None = None, limit: int = 20, mode: str = 'ranked') -> dict` | — | — |
 | `get_context` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'markdown', filters: dict \| None = None, prefer_fresh: bool = False, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | — |
 | `get_context_packet` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'json', filters: dict \| None = None, prefer_fresh: bool = False, if_packet_id: str \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | Return a fresh qualified packet or an unchanged cache marker. |
 | `check_wiki` | `(strict: bool = False, format: str = 'json', knowledge_drift_report: bool = False) -> dict` | — | — |
@@ -53,22 +53,25 @@ Pure read/check operations exposed through MCP tools and resources.
 ```mermaid
 flowchart LR
     n0["McpWikiService (src/llm_wiki_cli/services/mcp_server.py)"]
-    n1["_register_directory_resource (src/llm_wiki_cli/services/mcp_server.py)"]
-    n2["_register_mcp_resources (src/llm_wiki_cli/services/mcp_server.py)"]
-    n3["_register_mcp_tools (src/llm_wiki_cli/services/mcp_server.py)"]
-    n4["_register_root_resource (src/llm_wiki_cli/services/mcp_server.py)"]
-    n5["create_mcp_server (src/llm_wiki_cli/services/mcp_server.py)"]
+    n1["run (src/llm_wiki_cli/commands/search_cmd.py)"]
+    n2["_register_directory_resource (src/llm_wiki_cli/services/mcp_server.py)"]
+    n3["_register_mcp_resources (src/llm_wiki_cli/services/mcp_server.py)"]
+    n4["_register_mcp_tools (src/llm_wiki_cli/services/mcp_server.py)"]
+    n5["_register_root_resource (src/llm_wiki_cli/services/mcp_server.py)"]
+    n6["create_mcp_server (src/llm_wiki_cli/services/mcp_server.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/mcp_server.md"
-    click n1 "../modules/mcp_server.md"
+    click n1 "../modules/search_cmd.md"
     click n2 "../modules/mcp_server.md"
     click n3 "../modules/mcp_server.md"
     click n4 "../modules/mcp_server.md"
     click n5 "../modules/mcp_server.md"
+    click n6 "../modules/mcp_server.md"
 ```
 
 ### Summary
@@ -81,6 +84,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `run` | call | [search_cmd](../modules/search_cmd.md) | 1 |
 | `_register_directory_resource` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
 | `_register_mcp_resources` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
 | `_register_mcp_tools` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

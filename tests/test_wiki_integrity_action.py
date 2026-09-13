@@ -58,6 +58,14 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
             "required": False,
             "default": ".",
         },
+        "impact-base": {
+            "description": "Optional fetched base commit for advisory change impact; requires impact-head.",
+            "required": False, "default": "",
+        },
+        "impact-head": {
+            "description": "Optional fetched candidate commit for advisory change impact; requires impact-base.",
+            "required": False, "default": "",
+        },
     }
 
     steps = action["runs"]["steps"]
@@ -322,8 +330,8 @@ def test_full_integrity_action_isolates_python_modules_from_candidate_source() -
 
     assert run_text.count("-I -m pip") == 1
     assert run_text.count("-m pip") == 1
-    assert run_text.count("-I -m llm_wiki_cli.cli") == 2
-    assert run_text.count("-m llm_wiki_cli.cli") == 2
+    assert run_text.count("-I -m llm_wiki_cli.cli") == 3
+    assert run_text.count("-m llm_wiki_cli.cli") == 3
     assert "python -m pip" not in run_text
 
 
@@ -554,6 +562,8 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.md",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.json",
         "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-ci-report.invalid.txt",
+        "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.json",
+        "${{ runner.temp }}/llm-wiki-evidence/llm-wiki-impact.md",
         "${{ runner.temp }}/llm-wiki-evidence/extractor-plan.json",
         "${{ runner.temp }}/llm-wiki-evidence/helper-cache-metrics.json",
         "${{ runner.temp }}/llm-wiki-evidence/prepare-extractors.log",

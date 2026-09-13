@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 from pathlib import Path
+import shutil
 from types import SimpleNamespace
 
 import pytest
@@ -13,7 +14,11 @@ from llm_wiki_cli.services import (
     knowledge_reuse,
 )
 from llm_wiki_cli.services.doctor_service import build_doctor_report
-from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
+from llm_wiki_cli.services.extractor_helpers import (
+    ENV_CACHE_DIR,
+    resolve_helper_cache_root,
+    typescript_dependencies_ready,
+)
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 
 
@@ -51,6 +56,11 @@ def _artifacts():
 def test_javascript_health_refresh_and_first_sync_converge(
     tmp_path, monkeypatch, legacy
 ):
+    helper_root = resolve_helper_cache_root(Path(__file__).resolve().parents[1])
+    assert helper_root is not None
+    cache_dir = tmp_path / "helper-cache"
+    shutil.copytree(helper_root, cache_dir / helper_root.name)
+    monkeypatch.setenv(ENV_CACHE_DIR, str(cache_dir))
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/main.js").write_text(

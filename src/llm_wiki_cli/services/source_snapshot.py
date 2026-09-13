@@ -68,6 +68,13 @@ _PACKAGE_MARKER_NAMES = {
 _PACKAGE_MARKER_SUFFIXES = {".cabal"}
 KNOWN_UNSUPPORTED_LANGUAGE_EXTENSIONS: dict[str, tuple[str, ...]] = {
     "shell": (".sh",),
+    "java": (".java",),
+    "csharp": (".cs",),
+    "cpp": (".cpp",),
+    "c": (".c",),
+    "ruby": (".rb",),
+    "php": (".php",),
+    "kotlin": (".kt",),
 }
 _ADVISORY_UNSUPPORTED_LANGUAGES = (GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE,)
 _UNSUPPORTED_LANGUAGE_LABELS = {

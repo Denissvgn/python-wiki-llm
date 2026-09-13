@@ -29,6 +29,7 @@ from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
 from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from tests.knowledge_fixtures import (
+    GOLDEN_PRODUCER_VERSION,
     materialize_fixture_tree,
     one_module_two_entities_fixture,
 )
@@ -135,6 +136,7 @@ def test_v2_packet_is_deterministic_and_v1_golden_remains_valid(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(context_packet, "__version__", GOLDEN_PRODUCER_VERSION)
     first = _build_absent_packet(tmp_path, monkeypatch)
     second = build_qualified_context(
         ".",

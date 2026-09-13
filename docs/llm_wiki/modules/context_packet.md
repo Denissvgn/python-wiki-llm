@@ -12,6 +12,10 @@ then consumes only those captured values.  Optimistic source and wiki anchors
 are checked before the canonical bytes are returned, so a mutation cannot
 silently detach the response from its declared basis.
 
+Explicit change selections retain their supplied paths or Git range/index
+identity. Rendering revalidates that same selection against the captured basis,
+including staged index changes, before sealing the response.
+
 This module is deliberately provider- and persistence-free.  It returns bytes
 in memory, never refreshes native artifacts, and keeps structural validation
 separate from live reconciliation.
@@ -23,6 +27,7 @@ separate from live reconciliation.
 | `.` | `context_service`, `wiki_surface` |
 | `..` | `__version__` |
 | `..config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path` |
+| `.change_selection` | `select_changes` |
 | `.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `TYPED_GRAPH_SCHEMA_VERSION` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `CONTEXT_COVERAGE_LIMITATION_CODE_MAX_LENGTH`, `CONTEXT_COVERAGE_LIMITATION_LIMIT`, `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
@@ -74,10 +79,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (3) |
-| Outbound | `src` (23) |
+| Inbound | `src` (5) |
+| Outbound | `src` (24) |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 28 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -90,10 +95,10 @@ flowchart LR
 | [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 256 | `ContextPacketError` | A required read-only packet capability is unavailable. |
 | [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 262 | `ContextPacketError` | A structural packet field violates its declared path policy. |
 | [CapturedContextRead](../entities/CapturedContextRead.md) | 301 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 349 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 386 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 429 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 455 | — | Consumer-time comparison against one fresh official read. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 351 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 388 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 431 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 457 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 
@@ -102,7 +107,7 @@ flowchart LR
 | `_packet_contract_for_schema` | `(schema_version: object) -> _PacketWireContract` | — | — |
 | `_packet_contract_for_request` | `(request: Mapping[str, Any]) -> _PacketWireContract` | — | — |
 | `_validate_reconciliation_contract` | `(*, packet_id: object, policy: object, state: object, current: object, facets: object, limitations: object) -> None` | — | — |
-| `capture_context_read` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None, allow_selection_mismatch: bool = False, strict_wiki_symlinks: bool = False) -> CapturedContextRead` | — | Capture one source inventory, wiki surface, and knowledge read view. |
+| `capture_context_read` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None, allow_selection_mismatch: bool = False, strict_wiki_symlinks: bool = False, helper_cache_dir: str \| None = None) -> CapturedContextRead` | — | Capture one source inventory, wiki surface, and knowledge read view. |
 | `build_context_from_captured_read` | `(captured: CapturedContextRead, request: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]` | — | Build a versioned context payload solely from one captured read. |
 | `_build_legacy_context_from_captured_read` | `(captured: CapturedContextRead, normalized: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]` | — | Retain the frozen v1 response construction without semantic changes. |
 | `_build_knowledge_context_from_captured_read` | `(captured: CapturedContextRead, normalized: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]` | — | Build explicit v2 knowledge selection from the coordinated capture. |
@@ -111,6 +116,7 @@ flowchart LR
 | `_captured_query_service` | `(captured: CapturedContextRead, inventory: Mapping[str, Any], query_surface: Mapping[str, Any], knowledge_view: KnowledgeReadView \| None) -> DocumentationGraphQueryService` | — | — |
 | `_explicit_filter_enrichment_from_captured_read` | `(query_service: DocumentationGraphQueryService \| None, query_surface: Mapping[str, Any] \| None, filters: Mapping[str, Any], warnings: list[str]) -> dict[str, Any]` | — | — |
 | `build_qualified_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None) -> QualifiedContextPacket` | — | Build a canonical packet in memory from one coordinated read view. |
+| `packet_from_captured_response` | `(captured: CapturedContextRead, normalized: Mapping[str, Any], response: Mapping[str, Any]) -> QualifiedContextPacket` | — | Seal and validate a selected response against its unchanged captured basis. |
 | `_fit_knowledge_packet_response` | `(captured: CapturedContextRead, request: Mapping[str, Any], response: dict[str, Any], packet_contract: _PacketWireContract) -> dict[str, Any]` | — | Tail-reduce v2 native selection before the canonical byte limit. |
 | `_set_knowledge_collection_prefix` | `(selection: dict[str, Any], bounds: dict[str, Any], name: str, original_items: list[Any], returned: int) -> None` | — | — |
 | `_candidate_packet_size` | `(captured: CapturedContextRead, request: Mapping[str, Any], response: Mapping[str, Any], packet_contract: _PacketWireContract) -> int` | — | — |

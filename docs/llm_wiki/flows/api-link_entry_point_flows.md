@@ -97,17 +97,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| link_entry_point_flows | deepcopy | 1837 | `deepcopy(dict(...))` |
-| link_entry_point_flows | dict | 1837 | `dict(contracts)` |
-| link_entry_point_flows | entry.get | 1840 | `entry.get('category')` |
-| link_entry_point_flows | entry.get | 1840 | `entry.get('id')` |
-| link_entry_point_flows | str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1842 | `str(entry.get('symbol') or '').rsplit('.', 1)` |
-| link_entry_point_flows | str (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1842 | `str(...)` |
-| link_entry_point_flows | entry.get | 1842 | `entry.get('symbol')` |
-| link_entry_point_flows | str (src/llm_wiki_cli/services…:link_entry_point_flows, 1) | 1843 | `str(...)` |
-| link_entry_point_flows | entry.get | 1843 | `entry.get('file')` |
-| link_entry_point_flows | str (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1843 | `str(entry[...])` |
-| link_entry_point_flows | linked.get | 1844 | `linked.get('operations')` |
+| link_entry_point_flows | deepcopy | 1845 | `deepcopy(dict(...))` |
+| link_entry_point_flows | dict | 1845 | `dict(contracts)` |
+| link_entry_point_flows | entry.get | 1848 | `entry.get('category')` |
+| link_entry_point_flows | entry.get | 1848 | `entry.get('id')` |
+| link_entry_point_flows | str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1850 | `str(entry.get('symbol') or '').rsplit('.', 1)` |
+| link_entry_point_flows | str (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1850 | `str(...)` |
+| link_entry_point_flows | entry.get | 1850 | `entry.get('symbol')` |
+| link_entry_point_flows | str (src/llm_wiki_cli/services…:link_entry_point_flows, 1) | 1851 | `str(...)` |
+| link_entry_point_flows | entry.get | 1851 | `entry.get('file')` |
+| link_entry_point_flows | str (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1851 | `str(entry[...])` |
+| link_entry_point_flows | linked.get | 1852 | `linked.get('operations')` |
 
 ### Boundary effects
 
@@ -117,12 +117,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `link_entry_point_flows` | `deepcopy` | 1837 |
-| unresolved_call | `link_entry_point_flows` | `entry.get` | 1840 |
-| unresolved_call | `link_entry_point_flows` | `str(entry.get('symbol') or '').rsplit` | 1842 |
-| unresolved_call | `link_entry_point_flows` | `entry.get` | 1842 |
-| unresolved_call | `link_entry_point_flows` | `entry.get` | 1843 |
-| unresolved_call | `link_entry_point_flows` | `linked.get` | 1844 |
+| external_call | `link_entry_point_flows` | `deepcopy` | 1845 |
+| unresolved_call | `link_entry_point_flows` | `entry.get` | 1848 |
+| unresolved_call | `link_entry_point_flows` | `str(entry.get('symbol') or '').rsplit` | 1850 |
+| unresolved_call | `link_entry_point_flows` | `entry.get` | 1850 |
+| unresolved_call | `link_entry_point_flows` | `entry.get` | 1851 |
+| unresolved_call | `link_entry_point_flows` | `linked.get` | 1852 |
 | step_limit | `link_entry_point_flows` | `first 12 steps` | 0 |
 
 ## Behavior

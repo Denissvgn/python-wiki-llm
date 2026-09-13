@@ -119,15 +119,17 @@ def test_existing_hub_cli_parses_while_skill_handoff_changes() -> None:
 
 def test_public_migration_guidance_matches_skill_ownership() -> None:
     readme = _read(PROJECT_ROOT / "README.md")
+    reference = _read(PROJECT_ROOT / "docs/cli-reference.md")
     changelog = _read(PROJECT_ROOT / "CHANGELOG.md")
 
-    for text in (readme, changelog):
+    assert "docs/cli-reference.md#skills" in readme
+    for text in (reference, changelog):
         normalized = " ".join(text.split())
         assert "`doc-hub`" in normalized
         assert "`publish-docs`" in normalized
         assert "public" in normalized and "CLI" in normalized
-    assert "No durable authored hub-overview surface exists" in readme
-    assert "move only their aggregation/export/first-check stage" in readme
+    assert "No durable authored hub-overview surface exists" in reference
+    assert "move only their aggregation/export/first-check stage" in reference
     assert "move only their hub aggregation stage" in " ".join(changelog.split())
 
 

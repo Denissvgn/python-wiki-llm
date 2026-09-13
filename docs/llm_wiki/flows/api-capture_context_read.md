@@ -175,15 +175,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 624 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 625 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 626 | `callable(plan_reporter)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 627 | `TypeError('plan_reporter must be callable or None')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 628 | `isinstance(allow_selection_mismatch, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 629 | `TypeError('allow_selection_mismatch must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 630 | `isinstance(strict_wiki_symlinks, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 631 | `TypeError('strict_wiki_symlinks must be a boolean')` |
-| capture_context_read | validate_source_root | 636 | `context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 627 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 628 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 629 | `callable(plan_reporter)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 630 | `TypeError('plan_reporter must be callable or None')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 631 | `isinstance(allow_selection_mismatch, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 632 | `TypeError('allow_selection_mismatch must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 633 | `isinstance(strict_wiki_symlinks, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 634 | `TypeError('strict_wiki_symlinks must be a boolean')` |
+| capture_context_read | validate_source_root | 639 | `context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 
@@ -195,14 +195,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `capture_context_read` | `isinstance` | 624 |
-| external_call | `capture_context_read` | `TypeError` | 625 |
-| external_call | `capture_context_read` | `callable` | 626 |
-| external_call | `capture_context_read` | `TypeError` | 627 |
-| external_call | `capture_context_read` | `isinstance` | 628 |
-| external_call | `capture_context_read` | `TypeError` | 629 |
-| external_call | `capture_context_read` | `isinstance` | 630 |
-| external_call | `capture_context_read` | `TypeError` | 631 |
+| external_call | `capture_context_read` | `isinstance` | 627 |
+| external_call | `capture_context_read` | `TypeError` | 628 |
+| external_call | `capture_context_read` | `callable` | 629 |
+| external_call | `capture_context_read` | `TypeError` | 630 |
+| external_call | `capture_context_read` | `isinstance` | 631 |
+| external_call | `capture_context_read` | `TypeError` | 632 |
+| external_call | `capture_context_read` | `isinstance` | 633 |
+| external_call | `capture_context_read` | `TypeError` | 634 |
 | step_limit | `capture_context_read` | `first 12 steps` | 0 |
 | truncated_flow | `capture_context_read` | `depth limit` | 0 |
 

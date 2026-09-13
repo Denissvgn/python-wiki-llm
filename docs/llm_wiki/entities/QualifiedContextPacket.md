@@ -1,6 +1,6 @@
 # QualifiedContextPacket
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:349`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:351`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)
@@ -36,14 +36,17 @@ flowchart LR
     n0["QualifiedContextPacket (src/llm_wiki_cli/services/context_packet.py)"]
     n1["src/llm_wiki_cli/eval_lite/planner.py"]
     n2["build_qualified_context (src/llm_wiki_cli/services/context_packet.py)"]
-    n3["QualifiedContextPacket._from_validated_payload (src/llm_wiki_cli/services/context_packet.py)"]
+    n3["packet_from_captured_response (src/llm_wiki_cli/services/context_packet.py)"]
+    n4["QualifiedContextPacket._from_validated_payload (src/llm_wiki_cli/services/context_packet.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/planner.md"
     click n2 "../modules/context_packet.md"
     click n3 "../modules/context_packet.md"
+    click n4 "../modules/context_packet.md"
 ```
 
 ### Summary
@@ -58,5 +61,6 @@ flowchart LR
 |---|---|---|---:|
 | `planner` | import | [planner](../modules/planner.md) | — |
 | `build_qualified_context` | type_reference | [context_packet](../modules/context_packet.md) | — |
+| `packet_from_captured_response` | type_reference | [context_packet](../modules/context_packet.md) | — |
 | `QualifiedContextPacket._from_validated_payload` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `QualifiedContextPacket._from_validated_payload` | type_reference | [context_packet](../modules/context_packet.md) | — |

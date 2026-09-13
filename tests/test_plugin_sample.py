@@ -136,8 +136,8 @@ def test_sample_plugin_diagram_style_resolves_bounded_options(tmp_path):
     }
 
 
-def test_readme_references_tested_sample_plugin_names():
-    content = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+def test_cli_reference_documents_sample_plugin_names():
+    content = (REPO_ROOT / "docs/cli-reference.md").read_text(encoding="utf-8")
 
     for expected in [
         "examples/plugins/documentation-hooks",

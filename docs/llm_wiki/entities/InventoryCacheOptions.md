@@ -42,6 +42,7 @@ flowchart LR
     n8["prepare_cache_options (src/llm_wiki_cli/services/inventory_cache.py)"]
     n9["_collect_lint_inputs (src/llm_wiki_cli/services/lint_service.py)"]
     n10["build_report (src/llm_wiki_cli/services/lint_service.py)"]
+    n11["build_maintenance_queue (src/llm_wiki_cli/services/maintenance_queue.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -52,6 +53,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/inventory_cache.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -63,6 +65,7 @@ flowchart LR
     click n8 "../modules/inventory_cache.md"
     click n9 "../modules/lint_service.md"
     click n10 "../modules/lint_service.md"
+    click n11 "../modules/maintenance_queue.md"
 ```
 
 ### Summary
@@ -86,3 +89,4 @@ flowchart LR
 | `prepare_cache_options` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
 | `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `build_report` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `build_maintenance_queue` | call | [maintenance_queue](../modules/maintenance_queue.md) | 1 |

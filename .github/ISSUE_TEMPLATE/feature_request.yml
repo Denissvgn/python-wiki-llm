@@ -42,6 +42,51 @@ body:
     validations:
       required: false
   - type: textarea
+    id: stack
+    attributes:
+      label: Stack and environment
+      description: Languages, frameworks, OS, Python version, and agent host relevant to this request.
+    validations:
+      required: true
+  - type: textarea
+    id: repository_shape
+    attributes:
+      label: Repository size and layout
+      description: Approximate source file count, mono-repo or single package, and relevant source roots.
+    validations:
+      required: true
+  - type: textarea
+    id: blocked_task
+    attributes:
+      label: Blocked task and current workaround
+      description: Describe a concrete task, the expected result, and how you complete it today (or why you cannot).
+    validations:
+      required: true
+  - type: input
+    id: representative_repository
+    attributes:
+      label: Representative repository or example
+      description: Optional public link or minimal example. Do not include credentials or private source code.
+    validations:
+      required: false
+  - type: textarea
+    id: baseline_cost
+    attributes:
+      label: Current time and rework
+      description: Optional. Include the observation date, task duration, retries or manual corrections, and how you measured them. Unknown is fine.
+    validations:
+      required: false
+  - type: dropdown
+    id: pilot_availability
+    attributes:
+      label: Availability for a bounded pilot
+      options:
+        - No pilot participation requested
+        - I can provide an example and feedback on this issue
+        - I can try the workflow on a representative repository
+    validations:
+      required: true
+  - type: textarea
     id: compatibility
     attributes:
       label: Compatibility considerations
