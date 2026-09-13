@@ -89,17 +89,17 @@ flowchart LR
 |-------|------|-------|-------------|
 | [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 710 | — | — |
 | [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 988 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3033 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4282 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4307 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4320 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4327 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4335 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4341 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4352 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4363 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4371 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4378 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3052 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4301 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4326 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4339 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4346 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4354 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4360 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4371 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4382 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4390 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4397 | — | — |
 
 ## Functions
 

@@ -1572,37 +1572,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6272,
+              "line": 6291,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4457,
+              "line": 4476,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4457,
+              "line": 4476,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4458,
+              "line": 4477,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4462,
+              "line": 4481,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4462,
+              "line": 4481,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -29470,7 +29470,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6317,
+              "line": 6336,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -31687,7 +31687,7 @@
             "src/llm_wiki_cli/services/knowledge_generation.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 3493,
+          "step_count": 3508,
           "truncated": true
         }
       },
@@ -56461,5 +56461,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:19b283f750379b16d9b8f83d6dd1d1a9275c86bbe9d72d5a333fce5855790bef"
+  "source_hash": "sha256:117f0f830f66b77120b776db943a6bb35b36b14023928f4131a1f2af261ed74a"
 }
