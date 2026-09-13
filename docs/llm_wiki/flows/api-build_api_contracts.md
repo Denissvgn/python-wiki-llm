@@ -71,7 +71,7 @@ sequenceDiagram
     p16->>p19: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 892 interactions; 862 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 893 interactions; 863 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -133,7 +133,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_api_contracts | load_openapi_document | 1819 | `load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)` |
+| build_api_contracts | load_openapi_document | 1827 | `load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)` |
 | load_openapi_document | _resolve_openapi_path | 1259 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
 | _resolve_openapi_path | Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1187 | `Path(source_root).resolve(data not statically known)` |
 | _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1187 | `Path(source_root)` |

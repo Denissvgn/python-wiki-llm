@@ -8,6 +8,8 @@ Static FastAPI and exported OpenAPI contract assembly.
 
 The service consumes syntax-only inventory.  It never imports a target
 application and never resolves remote OpenAPI references.
+The compatibility consumer can request operation origins on nested normalization
+diagnostics while other consumers retain the existing diagnostic shape.
 
 ## Imports
 
@@ -160,7 +162,7 @@ flowchart LR
 | `_openapi_parameter` | `(raw: Any, document: Mapping[str, Any], diagnostics: list[dict[str, Any]], context: str) -> dict[str, Any] \| None` | — | — |
 | `_openapi_request_body` | `(raw: Any, document: Mapping[str, Any], diagnostics: list[dict[str, Any]], context: str) -> dict[str, Any] \| None` | — | — |
 | `_openapi_responses` | `(raw: Any, document: Mapping[str, Any], diagnostics: list[dict[str, Any]], context: str) -> list[dict[str, Any]]` | — | — |
-| `_openapi_operations` | `(loaded: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]` | — | — |
+| `_openapi_operations` | `(loaded: Mapping[str, Any], *, diagnostic_origins: bool = False) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]` | — | — |
 | `_parameter_contract` | `(operation: Mapping[str, Any]) -> set[tuple[Any, ...]]` | — | — |
 | `_response_keys` | `(operation: Mapping[str, Any]) -> set[str]` | — | — |
 | `_canonical_schema_token` | `(value: Any) -> str` | — | — |

@@ -101,7 +101,7 @@ sequenceDiagram
     p20-->>p23: wintypes.HANDLE
 ```
 
-> Call sequence diagram shows 30 of 1162 interactions; 1132 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1187 interactions; 1157 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -139,16 +139,16 @@ flowchart LR
     s1 -. "output print" .-> b1
     b2["output print"]
     s1 -. "output print" .-> b2
-    b3["environment_read os.environ.get"]
-    s4 -. "environment_read os.environ.get" .-> b3
-    b4["mutation providers.append"]
-    s4 -. "mutation providers.append" .-> b4
-    b5["mutation plugin_states.append"]
-    s4 -. "mutation plugin_states.append" .-> b5
-    b6["mutation plugin_states.append"]
-    s4 -. "mutation plugin_states.append" .-> b6
-    b7["mutation unsupported.append"]
-    s4 -. "mutation unsupported.append" .-> b7
+    b3["mutation argv.append"]
+    s3 -. "mutation argv.append" .-> b3
+    b4["mutation argv.extend"]
+    s3 -. "mutation argv.extend" .-> b4
+    b5["mutation argv.extend"]
+    s3 -. "mutation argv.extend" .-> b5
+    b6["mutation providers.append"]
+    s4 -. "mutation providers.append" .-> b6
+    b7["mutation plugin_states.append"]
+    s4 -. "mutation plugin_states.append" .-> b7
     click s1 "../modules/doctor_cmd.md"
     click s3 "../modules/capability_diagnostics.md"
     click s4 "../modules/capability_diagnostics.md"
@@ -172,8 +172,8 @@ flowchart LR
 |---|---|---|---|---|
 | `run` | `args` | `DEFAULT_WIKI_DIR` | - | `none` |
 | `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
-| `build_capability_doctor` | `wiki_dir`, `src_dir`, `kwargs` | `DOCTOR_CAPABILITY_VERSION` | - | `{...}` |
-| `build_capability_diagnostics` | `src_dir`, `helper_cache_dir`, `source_selection`, `allow_external_src`, `include_tests` | `helpers`, `sys`, `_TOOL_HINTS`, `LANGUAGE_EXTENSIONS`, `sys` | `tools[...]` | `{...}` |
+| `build_capability_doctor` | `wiki_dir`, `src_dir`, `kwargs` | `sys`, `DOCTOR_CAPABILITY_VERSION` | - | `{...}` |
+| `build_capability_diagnostics` | `src_dir`, `helper_cache_dir`, `source_selection`, `allow_external_src`, `include_tests` | `helpers`, `_LANGUAGE_LABELS`, `sys`, `_TOOL_HINTS`, `LANGUAGE_EXTENSIONS`, `sys` | `tools[...]` | `{...}` |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -189,8 +189,8 @@ flowchart LR
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 13 | `getattr(args, 'capabilities', False)` |
 | run | build_capability_doctor | 16 | `build_capability_doctor(args.wiki_dir, args.src_dir, strict=args.strict, allow_external_src=args.allow_external_src, helper_cache_dir=args.helper_cache_dir, source_selection=args.source_selection, include_tests=args.include_tests, parallel_jobs=args.jobs, job_request=extraction_job_request_from_args(...))` |
-| build_capability_doctor | build_capability_diagnostics | 228 | `build_capability_diagnostics(src_dir, **=...)` |
-| build_capability_diagnostics | validate_source_root | 40 | `validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)` |
+| build_capability_doctor | build_capability_diagnostics | 253 | `build_capability_diagnostics(src_dir, **=...)` |
+| build_capability_diagnostics | validate_source_root | 47 | `validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
@@ -206,11 +206,11 @@ flowchart LR
 | output | `print` | `run` | 21 |
 | output | `print` | `run` | 38 |
 | output | `print` | `run` | 40 |
-| environment_read | `os.environ.get` | `build_capability_diagnostics` | 56 |
-| mutation | `providers.append` | `build_capability_diagnostics` | 101 |
-| mutation | `plugin_states.append` | `build_capability_diagnostics` | 167 |
-| mutation | `plugin_states.append` | `build_capability_diagnostics` | 169 |
-| mutation | `unsupported.append` | `build_capability_diagnostics` | 198 |
+| mutation | `argv.append` | `build_capability_doctor` | 287 |
+| mutation | `argv.extend` | `build_capability_doctor` | 289 |
+| mutation | `argv.extend` | `build_capability_doctor` | 291 |
+| mutation | `providers.append` | `build_capability_diagnostics` | 143 |
+| mutation | `plugin_states.append` | `build_capability_diagnostics` | 210 |
 
 ### Static analysis gaps
 

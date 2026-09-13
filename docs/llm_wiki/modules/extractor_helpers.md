@@ -5,6 +5,9 @@
 ## Description
 
 Preparation and lookup for external extractor helper tools.
+Resolves tool overrides and validates prepared helper manifests against their
+source, platform, and artifact identities. Unreadable or invalid manifests leave
+the helper unprepared so diagnostics can provide a corrective preparation command.
 
 ## Imports
 

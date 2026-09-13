@@ -9,6 +9,9 @@ The narrow gate identifies proven breaking changes to operations, success
 responses, and required request inputs. Malformed or unresolved evidence retains
 an operation-scoped unknown verdict; read-only request fields and schema keywords
 that cannot apply to the declared type do not become new required inputs.
+Nested reference diagnostics retain their actual owning operation, including
+when another route resembles a diagnostic suffix. Inherited parameters that
+collide on the same wire identity remain advisory.
 
 ## Imports
 

@@ -11,6 +11,12 @@ loading project plugin code. The v2 doctor combines these diagnostics with the
 existing health report; text output includes failure reasons and shell-labelled,
 quoted commands, while JSON retains structured argument lists.
 
+Each provider explains its missing prerequisite, available commands, and next
+step. Blocked reports include a recheck command that preserves the source,
+wiki, selection, and helper-cache settings. A prepared TypeScript helper that
+lacks Node.js requires runtime setup without rebuilding the helper. Tool
+overrides follow the same resolution rules as explicit preparation.
+
 ## Imports
 
 | Source | Symbols |
