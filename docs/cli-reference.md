@@ -320,17 +320,24 @@ by `mux := http.NewServeMux()` and registered with `mux.HandleFunc`, and named h
 `ListenAndServe` or `ListenAndServeTLS`, including `http.HandlerFunc` wrappers.
 Constructed `http.Server` literals remain explicit server entries.
 Import aliases and handlers in another selected file of the same package are
-supported. Unknown receiver bindings and function values remain unresolved.
+supported. Handler matching requires one defining file in the same directory
+and Go package; ambiguous matches remain unresolved. Unknown receiver bindings
+and function values remain unresolved.
 Registration evidence does not prove that a server starts or a callback executes.
 
 Go body calls in full extraction carry optional `go_binding` evidence and an
 `invocation` marker for `go` or `defer`. Package markers selected with the source
 scope supply `go_import_scope`; unrelated same-named functions are not treated
-as call targets. Receiver calls resolve only to supported concrete declarations.
+as call targets. Calls into imported packages require explicit `exported: true`
+evidence on the target function; missing or malformed visibility remains
+unresolved. Private functions in the same package remain valid call targets.
+Receiver calls resolve only to supported concrete declarations.
 Nested function-literal bodies have separate callable records. Dynamic dispatch
 and function-value calls remain unresolved, and source order is not runtime
 execution order. Workflow pages require resolved direct calls into at least
 three other selected project modules; an executable need not meet that threshold.
+When a receiver type and its method are declared in different files, workflow
+entry labels and source paths use the file that defines the method.
 Haskell file entries are additive under `llm-wiki-extract/v1`. A Haskell entry
 uses `language: "haskell"`, `imports`, `classes`, and `functions`, with `module`
 present when the source declares one. Import records use `module`, `qualified`,

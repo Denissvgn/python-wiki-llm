@@ -2556,7 +2556,6 @@ def _workflow_entries_for_file(
     symbol_to_files: dict[str, set[str]],
     module_resolver,
 ) -> dict[str, dict]:
-    module_name = _module_name(filepath)
     workflows: dict[str, dict] = {}
     imported = _detailed_import_candidates(
         filepath, data.get("imports", []), symbol_to_files, module_resolver
@@ -2569,7 +2568,7 @@ def _workflow_entries_for_file(
         if len(touched_module_paths) >= _WORKFLOW_MODULE_THRESHOLD:
             workflow_name, workflow = _workflow_entry(
                 source_file,
-                module_name,
+                _module_name(source_file),
                 {**fn, "name": caller_symbol},
                 touched_module_paths,
                 chain,

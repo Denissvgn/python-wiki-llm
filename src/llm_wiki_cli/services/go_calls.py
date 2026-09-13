@@ -86,7 +86,7 @@ def resolve_go_call(call: dict, filepath: str, resolver) -> tuple:
             fn_symbol = (
                 f"{fn['receiver']}.{fn['name']}" if fn.get("receiver") else fn["name"]
             )
-            if fn_symbol == symbol and (kind != "import" or fn.get("exported", True)):
+            if fn_symbol == symbol and (kind != "import" or fn.get("exported") is True):
                 candidates.add((path, symbol))
         if kind == "receiver":
             for cls in other.get("classes", []):

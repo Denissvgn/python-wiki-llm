@@ -394,6 +394,46 @@ def test_go_workflows_require_three_resolved_selected_modules(tmp_path, monkeypa
 
 
 @skip_no_go
+@pytest.mark.parametrize("method_file", ["types.go", "methods.go"], ids=["same-file", "cross-file"])
+def test_go_method_workflow_labels_follow_the_defining_file(tmp_path, monkeypatch, method_file):
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_workflow_md
+    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "go.mod").write_text("module example.org/app\n\ngo 1.21\n", encoding="utf-8")
+    for package in ("a", "b", "c"):
+        _make_go(tmp_path, f"{package}/run.go", f"package {package}\nfunc Run() {{}}\n")
+    source = '''package worker
+import (
+    "example.org/app/a"
+    "example.org/app/b"
+    "example.org/app/c"
+)
+func (w Worker) Execute() { a.Run(); b.Run(); c.Run() }
+'''
+    if method_file == "types.go":
+        source += "type Worker struct{}\n"
+    else:
+        _make_go(tmp_path, "types.go", "package worker\ntype Worker struct{}\n")
+    _make_go(tmp_path, method_file, source)
+
+    workflows = get_call_graph(get_inventory(str(tmp_path), deep=True))
+
+    module = Path(method_file).stem
+    workflow_name = f"{module}_Worker_Execute"
+    assert set(workflows) == {workflow_name}
+    workflow = workflows[workflow_name]
+    assert workflow["entry"] == f"{module}.Worker.Execute"
+    assert workflow["entry_module"] == module
+    assert workflow["entry_module_path"] == method_file
+    assert workflow["modules_touched_paths"] == sorted([method_file, "a/run.go", "b/run.go", "c/run.go"])
+    assert [site["file"] for site in workflow["call_sites"]] == ["a/run.go", "b/run.go", "c/run.go"]
+    markdown = _generate_workflow_md(workflow_name, workflow)
+    assert f"**Entry point:** `{module}.Worker.Execute`" in markdown
+    assert f"This workflow starts at `{module}.Worker.Execute`." in markdown
+
+
+@skip_no_go
 def test_go_cross_file_method_call_locations_and_order_are_stable(tmp_path):
     from llm_wiki_cli.services.extraction_service import resolve_call_edges
 

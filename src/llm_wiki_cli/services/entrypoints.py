@@ -346,10 +346,32 @@ def _source_text(root: str | Path, filepath: str) -> str:
         return ""
 
 
+def _go_http_handler_index(
+    inventory: dict,
+) -> dict[tuple[PurePosixPath, str | None, str], set[str]]:
+    """Index top-level candidates once, preserving ambiguous package matches."""
+    handlers: dict[tuple[PurePosixPath, str | None, str], set[str]] = {}
+    for filepath, data in inventory.items():
+        if not isinstance(data, Mapping) or data.get("language") != "go":
+            continue
+        package = data.get("go_package")
+        if package is not None and not isinstance(package, str):
+            continue
+        directory = PurePosixPath(filepath).parent
+        for function in data.get("functions", []):
+            if not isinstance(function, Mapping) or function.get("receiver"):
+                continue
+            name = function.get("name")
+            if isinstance(name, str):
+                handlers.setdefault((directory, package, name), set()).add(filepath)
+    return handlers
+
+
 def _detect_go_http_servers(
     inventory: dict, *, root: str | Path, include_details: bool = False
 ) -> list[dict]:
     entries: list[dict] = []
+    handlers = _go_http_handler_index(inventory)
     for filepath, data in inventory.items():
         if not isinstance(data, Mapping) or data.get("language") != "go":
             continue
@@ -368,18 +390,13 @@ def _detect_go_http_servers(
                 if not isinstance(registration, Mapping):
                     continue
                 symbol = registration.get("handler")
-                candidates = [
-                    candidate
-                    for candidate, other in inventory.items()
-                    if isinstance(other, Mapping)
-                    and other.get("language") == "go"
-                    and other.get("go_package") == package
-                    and PurePosixPath(candidate).parent == directory
-                    and any(fn.get("name") == symbol and not fn.get("receiver")
-                            for fn in other.get("functions", []))
-                ]
-                if len(candidates) == 1 and isinstance(symbol, str):
-                    entry = _entry(CATEGORY_HTTP, candidates[0], symbol)
+                if not isinstance(symbol, str) or (
+                    package is not None and not isinstance(package, str)
+                ):
+                    continue
+                candidates = handlers.get((directory, package, symbol), set())
+                if len(candidates) == 1:
+                    entry = _entry(CATEGORY_HTTP, next(iter(candidates)), symbol)
                     if include_details:
                         entry["__source_line"] = _source_line(registration.get("line"))
                         entry["__detection_file"] = filepath

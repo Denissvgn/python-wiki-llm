@@ -6,6 +6,8 @@ import ast
 import inspect
 import textwrap
 
+import pytest
+
 from llm_wiki_cli.commands.extract_cmd import get_inventory, resolve_call_edges
 from llm_wiki_cli.services import entrypoints as entrypoint_service
 from llm_wiki_cli.services import plugins
@@ -108,6 +110,106 @@ def _write_detector_plugin(tmp_path, *, body, plugin_id="detector-plugin"):
     )
     plugins.install_plugin(str(plugin_dir), root=tmp_path, yes=True)
     return plugin_dir
+
+
+class TestGoHttpAstHandlers:
+    @pytest.mark.parametrize("file_count", [16, 64])
+    def test_handler_lookup_traversals_grow_linearly(self, tmp_path, file_count):
+        class CountedInventory(dict):
+            visits = 0
+
+            def items(self):
+                for item in super().items():
+                    self.visits += 1
+                    yield item
+
+        class CountedFunctions(list):
+            visits = 0
+
+            def __iter__(self):
+                for function in super().__iter__():
+                    self.visits += 1
+                    yield function
+
+        inventory = CountedInventory()
+        functions = []
+        for index in range(file_count):
+            records = CountedFunctions([
+                {"name": f"health_{index}"}, {"name": f"other_{index}"}
+            ])
+            functions.append(records)
+            inventory[f"web/handlers_{index}.go"] = {
+                "language": "go",
+                "go_package": "web",
+                "functions": records,
+                "frameworks": {"go_http": {"registrations": [
+                    {"handler": f"health_{index}", "line": 10},
+                    {"handler": f"other_{index}", "line": 11},
+                ]}},
+            }
+
+        entries = entrypoint_service._detect_go_http_servers(inventory, root=tmp_path)
+
+        assert {(entry["file"], entry["symbol"]) for entry in entries} == {
+            (f"web/handlers_{index}.go", f"{name}_{index}")
+            for index in range(file_count)
+            for name in ("health", "other")
+        }
+        # Bound work by input size, independently of machine speed.
+        assert inventory.visits <= 3 * file_count
+        assert sum(records.visits for records in functions) <= 4 * file_count
+
+    def test_only_unique_top_level_handlers_in_the_same_package_resolve(self, tmp_path):
+        def go_file(*functions, package="web"):
+            return {"language": "go", "go_package": package, "functions": list(functions)}
+
+        registration_file = "internal/web/server.go"
+        data = go_file({"name": "method", "receiver": "Server"})
+        data["frameworks"] = {"go_http": {"registrations": [
+            {"handler": name, "line": 12}
+            for name in ("health", "ambiguous", "method", "elsewhere", "other_package", "python", "missing")
+        ]}}
+        inventory = {
+            registration_file: data,
+            "internal/web/handlers.go": go_file(
+                {"name": "health"}, {"name": "health"}, {"name": "ambiguous"}
+            ),
+            "internal/web/duplicate.go": go_file({"name": "ambiguous"}),
+            "internal/other/handlers.go": go_file({"name": "elsewhere"}),
+            "internal/web/external_test.go": go_file({"name": "other_package"}, package="web_test"),
+            "internal/web/helpers.py": {"language": "python", "functions": [{"name": "python"}]},
+        }
+
+        entries = entrypoint_service._detect_go_http_servers(
+            inventory, root=tmp_path, include_details=True
+        )
+
+        assert entries == [{
+            "category": "http", "file": "internal/web/handlers.go", "symbol": "health",
+            "label": "health",
+            "__source_line": 12, "__detection_file": registration_file,
+        }]
+
+    def test_malformed_handler_records_do_not_hide_valid_registrations(self, tmp_path):
+        inventory = {
+            "server.go": {
+                "language": "go", "go_package": "web",
+                "functions": [None, "invalid", {}, {"name": []}, {"name": "health"}],
+                "frameworks": {"go_http": {"registrations": [
+                    None, "invalid", {}, {"handler": []}, {"handler": "health"},
+                ]}},
+            },
+            "invalid.go": None,
+            "invalid_package.go": {
+                "language": "go", "go_package": [], "functions": [{"name": "health"}],
+                "frameworks": {"go_http": {"registrations": [{"handler": "health"}]}},
+            },
+        }
+
+        assert entrypoint_service._detect_go_http_servers(inventory, root=tmp_path) == [{
+            "category": "http", "file": "server.go", "symbol": "health",
+            "label": "health",
+        }]
 
 
 class TestGetEntryPoints:
@@ -383,6 +485,12 @@ class TestGetEntryPoints:
             "label": "dashboard",
             "id": "http-dashboard",
         } in http_entries
+
+        inventory["internal/web/server.go"]["frameworks"] = {"go_http": {}}
+        assert not [
+            entry for entry in get_entry_points(inventory, root=tmp_path)
+            if entry["category"] == "http"
+        ]
 
     def test_detects_haskell_servant_warp_server_patterns(self, tmp_path):
         app = tmp_path / "hls-analysis" / "app" / "Main.hs"

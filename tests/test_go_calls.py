@@ -1,5 +1,7 @@
 """Conservative Go resolution across package, receiver, and selection boundaries."""
 
+import pytest
+
 from llm_wiki_cli.services.go_calls import resolve_go_call
 from llm_wiki_cli.services.imports import build_module_path_resolver
 
@@ -43,3 +45,38 @@ def test_interface_dispatch_does_not_resolve_to_declaration():
     data["classes"] = [{"name": "Worker", "kind": "interface", "methods": [{"name": "Run"}]}]
     resolver = build_module_path_resolver({"main.go": data})
     assert resolve_go_call(_call("receiver", receiver="Worker"), "main.go", resolver)[2] == "unresolved"
+
+
+@pytest.mark.parametrize(("export_fields", "expected_kind"), [
+    ({"exported": True}, "internal"),
+    ({"exported": False}, "unresolved"),
+    ({}, "unresolved"),
+    ({"exported": None}, "unresolved"),
+    ({"exported": "false"}, "unresolved"),
+    ({"exported": "true"}, "unresolved"),
+    ({"exported": 1}, "unresolved"),
+    ({"exported": 0}, "unresolved"),
+], ids=["public", "private", "missing", "null", "string-false", "string-true", "one", "zero"])
+def test_imported_functions_require_explicit_export_evidence(export_fields, expected_kind):
+    library = _file("lib")
+    library["functions"] = [{"name": "Run", **export_fields}]
+    resolver = build_module_path_resolver({"main.go": _file(), "lib/api.go": library})
+
+    result = resolve_go_call(
+        _call("import", module="example.org/app/lib"), "main.go", resolver
+    )
+
+    expected_file = "lib/api.go" if expected_kind == "internal" else None
+    assert result == (expected_file, "Run", expected_kind, [])
+
+
+def test_same_package_private_calls_remain_resolvable():
+    helper = _file()
+    helper["functions"] = [{"name": "hidden", "exported": False}]
+    resolver = build_module_path_resolver({"main.go": _file(), "helper.go": helper})
+
+    result = resolve_go_call(
+        {"name": "hidden", "go_binding": {"kind": "package"}}, "main.go", resolver
+    )
+
+    assert result == ("helper.go", "hidden", "internal", [])
