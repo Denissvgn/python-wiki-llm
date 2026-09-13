@@ -358,6 +358,12 @@ def _detect_go_http_servers(
         if isinstance(http, Mapping):
             package = data.get("go_package")
             directory = PurePosixPath(filepath).parent
+            for line in http.get("servers", []):
+                entry = _entry(CATEGORY_HTTP, filepath, "http.Server")
+                if include_details:
+                    entry["__source_line"] = _source_line(line)
+                    entry["__detection_file"] = filepath
+                entries.append(entry)
             for registration in http.get("registrations", []):
                 if not isinstance(registration, Mapping):
                     continue

@@ -61,7 +61,7 @@ from .entrypoints import (
 from .entrypoints import get_entry_points as get_entry_points  # noqa: F401
 from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
 from .imports import build_module_path_resolver, stamp_go_import_scopes
-from .go_calls import resolve_go_call
+from .go_calls import attach_go_receiver_methods, resolve_go_call
 from .python_imports import is_python_source
 from .python_calls import PythonCallContext, resolve_python_call
 from .python_observations import (
@@ -1109,6 +1109,7 @@ def _build_builtin_extraction_kwargs(
                 source_files=fresh_source_files,
                 helper_cache_dir=_inventory_helper_cache_dir(context.request),
                 include_tests=context.request.include_tests,
+                defer_receiver_attachment=True,
             ),
         }
     if language == "rust":
@@ -1275,6 +1276,8 @@ def _merge_inventory_results(
         source_paths=context.source_snapshot.language_paths("python"),
     )
     stamp_go_import_scopes(inventory, context.source_snapshot)
+    if context.request.deep and context.registry.get("go") == EXTRACTOR_REGISTRY.get("go"):
+        attach_go_receiver_methods(inventory)
     if context.registry.get("python") == EXTRACTOR_REGISTRY["python"]:
         from ..extractors.python_contracts import finalize_inventory_model_kinds
 
@@ -2572,6 +2575,10 @@ def _workflow_entries_for_file(
                 chain,
             )
             workflow["call_sites"] = call_sites
+            if data.get("language") == "go":
+                # Executables routinely share the name main across packages.
+                source_stem = Path(source_file).with_suffix("").as_posix().replace("/", "_")
+                workflow_name = f"{source_stem}_{workflow_name}"
             workflows[workflow_name] = workflow
     return workflows
 

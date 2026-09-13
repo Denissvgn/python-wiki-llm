@@ -388,6 +388,9 @@ def test_go_workflows_require_three_resolved_selected_modules(tmp_path, monkeypa
     edges = resolve_call_edges(inventory)
     assert [(edge["to"]["file"], edge["to"]["symbol"]) for edge in edges] == [(f"pkg{i}/run.go", "Run") for i in range(count)]
     assert bool(get_call_graph(inventory)) == (count == 3)
+    if count == 3:
+        _make_go(tmp_path, "cmd/other/main.go", (tmp_path / "main.go").read_text())
+        assert len(get_call_graph(get_inventory(str(tmp_path), deep=True))) == 2
 
 
 @skip_no_go
@@ -402,6 +405,43 @@ def test_go_cross_file_method_call_locations_and_order_are_stable(tmp_path):
     edges = resolve_call_edges(first)
     assert {edge["from"]["file"] for edge in edges if edge["from"]["symbol"] == "Service.work"} == {"work.go"}
     assert next(edge for edge in edges if edge["from"]["symbol"] == "main")["to"] == {"file": "work.go", "symbol": "Service.work"}
+
+
+@skip_no_go
+def test_go_cached_cross_file_methods_follow_edits_and_deletions(tmp_path):
+    from llm_wiki_cli.services.extraction_service import get_inventory_result, resolve_call_edges
+    from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
+
+    source = tmp_path / "source"
+    _make_go(source, "service.go", "package main\ntype Service struct{}\n")
+    method = _make_go(source, "work.go", "package main\nfunc (s Service) work() { before() }\n")
+    _make_go(source, "helpers.go", "package main\nfunc before() {}\nfunc after() {}\n")
+    options = InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "cache"))
+    first = get_inventory_result(source, deep=True, cache_options=options).inventory
+    assert next(edge for edge in resolve_call_edges(first))["to"]["symbol"] == "before"
+    method.write_text("package main\nfunc (s Service) work() { after() }\n", encoding="utf-8")
+    warm = get_inventory_result(source, deep=True, cache_options=options).inventory
+    cold = get_inventory_result(source, deep=True).inventory
+    assert warm == cold
+    edges = resolve_call_edges(warm)
+    assert len(edges) == 1 and edges[0]["to"]["symbol"] == "after"
+    method.unlink()
+    warm = get_inventory_result(source, deep=True, cache_options=options).inventory
+    assert warm == get_inventory_result(source, deep=True).inventory
+    assert not resolve_call_edges(warm)
+
+
+@skip_no_go
+def test_go_server_literal_remains_an_ast_backed_entrypoint(tmp_path):
+    from llm_wiki_cli.services.entrypoints import get_entry_points
+
+    _make_go(tmp_path, "server.go", '''package web
+import web "net/http"
+var server = &web.Server{Addr: ":8000"}
+// web.Server{} in a comment is not another server.
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    assert get_entry_points(inventory, root=tmp_path) == [{"category": "http", "file": "server.go", "symbol": "http.Server", "label": "http.Server", "id": "http-http.Server"}]
 
 
 @skip_no_go

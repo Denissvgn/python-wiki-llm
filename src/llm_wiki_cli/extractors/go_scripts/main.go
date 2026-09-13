@@ -256,6 +256,7 @@ type GoHTTPRegistration struct {
 
 type GoHTTPInfo struct {
 	Registrations []GoHTTPRegistration `json:"registrations"`
+	Servers       []int                `json:"servers"`
 	Limitations   []string             `json:"limitations"`
 }
 
@@ -364,8 +365,11 @@ func staticHTTPHandler(expr ast.Expr, imports map[string]string) string {
 func extractHTTP(f *ast.File, fset *token.FileSet) *GoFrameworks {
 	imports := importBindings(f)
 	writes := assignmentCounts(f)
-	info := GoHTTPInfo{Registrations: []GoHTTPRegistration{}, Limitations: []string{"static-named-net-http-handlers-only", "registration-does-not-prove-runtime-reachability"}}
+	info := GoHTTPInfo{Registrations: []GoHTTPRegistration{}, Servers: []int{}, Limitations: []string{"static-net-http-registrations-and-server-literals-only", "registration-does-not-prove-runtime-reachability"}}
 	ast.Inspect(f, func(node ast.Node) bool {
+		if literal, ok := node.(*ast.CompositeLit); ok && isImportedSelector(literal.Type, imports, "net/http", "Server") {
+			info.Servers = append(info.Servers, fset.Position(literal.Pos()).Line)
+		}
 		call, ok := node.(*ast.CallExpr)
 		if !ok {
 			return true
@@ -859,6 +863,7 @@ func main() {
 	srcDir := flag.String("src-dir", ".", "Root directory to scan")
 	onlyFiles := flag.String("only-files", "", "Comma-separated list of files to extract")
 	deep := flag.Bool("deep", false, "Include enriched data (docs, attributes, methods, imports)")
+	fileLocal := flag.Bool("file-local", false, "Keep cross-file receiver methods with their declaring source for caching")
 	includeTests := flag.Bool("include-tests", false, "Include Go _test.go files")
 	flag.Parse()
 
@@ -910,7 +915,7 @@ func main() {
 	// Go methods are often defined in a different file from the type they extend.
 	// After all files are processed, attach any lingering receiver-method functions
 	// to their type within the same directory (= package boundary).
-	if *deep {
+	if *deep && !*fileLocal {
 		// Build: dir → typeName → {relPath, classIdx}
 		type classRef struct {
 			relPath  string
