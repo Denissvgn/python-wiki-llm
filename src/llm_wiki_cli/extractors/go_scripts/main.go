@@ -17,6 +17,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -80,6 +81,8 @@ type MethodInfo struct {
 	Params     []ParamInfo `json:"params,omitempty"`
 	ReturnType string      `json:"return_type,omitempty"`
 	Exported   bool        `json:"exported"`
+	Calls      []GoCall    `json:"calls,omitempty"`
+	SourceFile string      `json:"source_file,omitempty"`
 }
 
 type AttributeInfo struct {
@@ -110,6 +113,8 @@ type FunctionInfo struct {
 	Params     []ParamInfo `json:"params,omitempty"`
 	ReturnType string      `json:"return_type,omitempty"`
 	Exported   bool        `json:"exported"`
+	Calls      []GoCall    `json:"calls,omitempty"`
+	Qualname   string      `json:"qualname,omitempty"`
 }
 
 type ImportInfo struct {
@@ -120,12 +125,128 @@ type ImportInfo struct {
 }
 
 type FileEntry struct {
-	Classes    []ClassInfo    `json:"classes"`
-	Functions  []FunctionInfo `json:"functions"`
-	Imports    []ImportInfo   `json:"imports,omitempty"`
-	Package    string         `json:"go_package"`
-	MainBlock  bool           `json:"main_block,omitempty"`
-	Frameworks *GoFrameworks  `json:"frameworks,omitempty"`
+	Classes         []ClassInfo    `json:"classes"`
+	Functions       []FunctionInfo `json:"functions"`
+	Imports         []ImportInfo   `json:"imports,omitempty"`
+	Package         string         `json:"go_package"`
+	MainBlock       bool           `json:"main_block,omitempty"`
+	Frameworks      *GoFrameworks  `json:"frameworks,omitempty"`
+	NestedFunctions []FunctionInfo `json:"nested_functions,omitempty"`
+	CallLimitations []string       `json:"call_limitations,omitempty"`
+}
+
+type GoCallBinding struct {
+	Kind     string `json:"kind"`
+	Module   string `json:"module,omitempty"`
+	Receiver string `json:"receiver,omitempty"`
+}
+
+type GoCall struct {
+	Name       string        `json:"name"`
+	Attr       string        `json:"attr,omitempty"`
+	Line       int           `json:"line"`
+	Binding    GoCallBinding `json:"go_binding"`
+	Invocation string        `json:"invocation,omitempty"`
+}
+
+func receiverType(expr ast.Expr, writes map[*ast.Object]int) string {
+	id, ok := expr.(*ast.Ident)
+	if !ok || id.Obj == nil {
+		return ""
+	}
+	var typ ast.Expr
+	switch decl := id.Obj.Decl.(type) {
+	case *ast.Field:
+		typ = decl.Type
+	case *ast.ValueSpec:
+		typ = decl.Type
+	}
+	if typ == nil {
+		value := assignedValue(id, writes)
+		if address, ok := value.(*ast.UnaryExpr); ok && address.Op == token.AND {
+			value = address.X
+		}
+		if literal, ok := value.(*ast.CompositeLit); ok {
+			typ = literal.Type
+		}
+	}
+	if pointer, ok := typ.(*ast.StarExpr); ok {
+		typ = pointer.X
+	}
+	if name, ok := typ.(*ast.Ident); ok {
+		return name.Name
+	}
+	return ""
+}
+
+func callBinding(expr ast.Expr, imports map[string]string, writes map[*ast.Object]int) GoCallBinding {
+	if id, ok := expr.(*ast.Ident); ok {
+		if id.Obj != nil && id.Obj.Kind == ast.Typ {
+			return GoCallBinding{Kind: "conversion"}
+		}
+		if id.Obj != nil && id.Obj.Kind != ast.Fun {
+			return GoCallBinding{Kind: "dynamic"}
+		}
+		switch id.Name {
+		case "append", "cap", "clear", "close", "complex", "copy", "delete", "imag", "len", "make", "max", "min", "new", "panic", "print", "println", "real", "recover":
+			if id.Obj == nil {
+				return GoCallBinding{Kind: "builtin"}
+			}
+		}
+		return GoCallBinding{Kind: "package"}
+	}
+	if selector, ok := expr.(*ast.SelectorExpr); ok {
+		if base, ok := selector.X.(*ast.Ident); ok {
+			if base.Obj == nil && imports[base.Name] != "" {
+				return GoCallBinding{Kind: "import", Module: imports[base.Name]}
+			}
+			if typ := receiverType(base, writes); typ != "" {
+				return GoCallBinding{Kind: "receiver", Receiver: typ}
+			}
+		}
+	}
+	return GoCallBinding{Kind: "dynamic"}
+}
+
+func extractBodyCalls(body *ast.BlockStmt, owner string, fset *token.FileSet, nested *[]FunctionInfo, imports map[string]string, writes map[*ast.Object]int) []GoCall {
+	if body == nil {
+		return nil
+	}
+	calls := []GoCall{}
+	invocations := map[*ast.CallExpr]string{}
+	ast.Inspect(body, func(node ast.Node) bool {
+		switch n := node.(type) {
+		case *ast.FuncLit:
+			position := fset.Position(n.Pos())
+			name := fmt.Sprintf("%s.func_%d_%d", owner, position.Line, position.Column)
+			info := FunctionInfo{Name: name, Line: position.Line, Params: extractParams(n.Type.Params)}
+			info.Calls = extractBodyCalls(n.Body, name, fset, nested, imports, writes)
+			*nested = append(*nested, info)
+			return false
+		case *ast.GoStmt:
+			invocations[n.Call] = "go"
+		case *ast.DeferStmt:
+			invocations[n.Call] = "defer"
+		case *ast.CallExpr:
+			binding := callBinding(n.Fun, imports, writes)
+			if binding.Kind == "conversion" {
+				return true
+			}
+			call := GoCall{Line: fset.Position(n.Pos()).Line, Binding: binding, Invocation: invocations[n]}
+			switch target := n.Fun.(type) {
+			case *ast.Ident:
+				call.Name = target.Name
+			case *ast.SelectorExpr:
+				call.Name = target.Sel.Name
+				call.Attr = exprToString(target)
+			default:
+				call.Name = "<dynamic>"
+			}
+			calls = append(calls, call)
+		}
+		return true
+	})
+	return calls
 }
 
 type GoHTTPRegistration struct {
@@ -461,7 +582,11 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 	}
 	if deep {
 		entry.Frameworks = extractHTTP(f, fset)
+		entry.CallLimitations = []string{"static-go-call-bindings-only", "dynamic-dispatch-and-function-values-unresolved", "source-order-is-not-runtime-order"}
 	}
+
+	imports := importBindings(f)
+	writes := assignmentCounts(f)
 
 	// Collect receiver methods so we can attach them to structs in deep mode.
 	type methodEntry struct {
@@ -606,11 +731,23 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 			if !isExported(d.Name.Name) && !deep && !isMain {
 				continue
 			}
+			owner := d.Name.Name
+			if recv != "" {
+				owner = recv + "." + owner
+			}
+			if recv == "" && owner == "init" {
+				owner = fmt.Sprintf("init@%d", fset.Position(d.Pos()).Line)
+			}
+			var calls []GoCall
+			if deep {
+				calls = extractBodyCalls(d.Body, owner, fset, &entry.NestedFunctions, imports, writes)
+			}
 			if recv != "" {
 				// Receiver method — collect for later attachment.
 				mi := MethodInfo{
 					Name:     d.Name.Name,
 					Exported: isExported(d.Name.Name),
+					Calls:    calls,
 					Line:     fset.Position(d.Pos()).Line,
 					IsAsync:  false,
 				}
@@ -629,8 +766,12 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 				fi := FunctionInfo{
 					Name:     d.Name.Name,
 					Exported: isExported(d.Name.Name),
+					Calls:    calls,
 					Line:     fset.Position(d.Pos()).Line,
 					IsAsync:  false,
+				}
+				if d.Name.Name == "init" {
+					fi.Qualname = owner
 				}
 				if deep {
 					fi.Docstring = docText(d.Doc)
@@ -661,6 +802,7 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 					Params:     rm.method.Params,
 					ReturnType: rm.method.ReturnType,
 					Exported:   rm.method.Exported,
+					Calls:      rm.method.Calls,
 				})
 			}
 		}
@@ -814,6 +956,8 @@ func main() {
 						Params:     fn.Params,
 						ReturnType: fn.ReturnType,
 						Exported:   fn.Exported,
+						Calls:      fn.Calls,
+						SourceFile: filepath.ToSlash(relPath),
 					},
 				)
 			}
@@ -822,6 +966,20 @@ func main() {
 	}
 
 	enc := json.NewEncoder(os.Stdout)
+	for _, entry := range inventory {
+		for index := range entry.Classes {
+			methods := entry.Classes[index].Methods
+			sort.SliceStable(methods, func(i, j int) bool {
+				if methods[i].SourceFile != methods[j].SourceFile {
+					return methods[i].SourceFile < methods[j].SourceFile
+				}
+				if methods[i].Line != methods[j].Line {
+					return methods[i].Line < methods[j].Line
+				}
+				return methods[i].Name < methods[j].Name
+			})
+		}
+	}
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(inventory); err != nil {
 		fmt.Fprintf(os.Stderr, "Error encoding JSON: %v\n", err)

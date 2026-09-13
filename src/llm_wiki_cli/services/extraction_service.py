@@ -60,7 +60,8 @@ from .entrypoints import (
 )
 from .entrypoints import get_entry_points as get_entry_points  # noqa: F401
 from .extraction_jobs import ExtractionJobPlan, ExtractionJobRequest
-from .imports import build_module_path_resolver
+from .imports import build_module_path_resolver, stamp_go_import_scopes
+from .go_calls import resolve_go_call
 from .python_imports import is_python_source
 from .python_calls import PythonCallContext, resolve_python_call
 from .python_observations import (
@@ -1273,6 +1274,7 @@ def _merge_inventory_results(
         packages,
         source_paths=context.source_snapshot.language_paths("python"),
     )
+    stamp_go_import_scopes(inventory, context.source_snapshot)
     if context.registry.get("python") == EXTRACTOR_REGISTRY["python"]:
         from ..extractors.python_contracts import finalize_inventory_model_kinds
 
@@ -2456,7 +2458,7 @@ def _workflow_call_chain(
     for call_index, call in enumerate(fn.get("calls", [])):
         attr = call.get("attr", "")
         visible_name = _attr_root(attr) if attr else call["name"]
-        if not python and (
+        if not python and data.get("language") != "go" and (
             visible_name in parameter_names
             or (
                 attr
@@ -2481,6 +2483,7 @@ def _workflow_call_chain(
             )
             if python
             else None,
+            go_resolver=module_resolver,
         )
         if kind != "internal" or target_file is None or target_file == filepath:
             continue
@@ -2556,12 +2559,13 @@ def _workflow_entries_for_file(
         filepath, data.get("imports", []), symbol_to_files, module_resolver
     )
     for caller_symbol, fn, class_name in _caller_components(data):
+        source_file = fn.get("source_file", filepath) if data.get("language") == "go" else filepath
         touched_module_paths, chain, call_sites = _workflow_call_chain(
-            fn, filepath, data, class_name, imported, inventory, module_resolver
+            fn, source_file, data, class_name, imported, inventory, module_resolver
         )
         if len(touched_module_paths) >= _WORKFLOW_MODULE_THRESHOLD:
             workflow_name, workflow = _workflow_entry(
-                filepath,
+                source_file,
                 module_name,
                 {**fn, "name": caller_symbol},
                 touched_module_paths,
@@ -2619,7 +2623,13 @@ def _caller_components(data: dict):
             info["call_bindings"] = data["main_block_call_bindings"]
         yield "__main__", info, None
     for fn in data.get("functions", []):
-        yield fn["name"], fn, None
+        if data.get("language") == "go":
+            symbol = fn.get("qualname") or (
+                f"{fn['receiver']}.{fn['name']}" if fn.get("receiver") else fn["name"]
+            )
+            yield symbol, fn, fn.get("receiver")
+        else:
+            yield fn["name"], fn, None
     for cls in data.get("classes", []):
         for method in cls.get("methods", []):
             yield f"{cls['name']}.{method['name']}", method, cls["name"]
@@ -2661,8 +2671,12 @@ def _resolve_call(
     symbol_to_files: dict[str, set[str]],
     *,
     python_context: PythonCallContext | None = None,
+    go_resolver=None,
 ) -> tuple[str | None, str, str]:
     """Return ``(to_file, to_symbol, kind)`` for a single call record."""
+    if data.get("language") == "go" and go_resolver is not None:
+        target, symbol, kind, _ = resolve_go_call(call, filepath, go_resolver)
+        return target, symbol, "unresolved" if kind == "ambiguous" else kind
     if python_context is not None:
         target, symbol, kind, _ = resolve_python_call(
             call, filepath, data, python_context
@@ -2708,10 +2722,11 @@ def _edges_for_file(
 
     edges: list[dict] = []
     for caller_symbol, fn, class_name in _caller_components(data):
+        source_file = fn.get("source_file", filepath) if data.get("language") == "go" else filepath
         for call_index, call in enumerate(fn.get("calls", [])):
             to_file, to_symbol, kind = _resolve_call(
                 call,
-                filepath,
+                source_file,
                 class_name,
                 data,
                 imported_internal,
@@ -2723,15 +2738,16 @@ def _edges_for_file(
                     if is_python_source(filepath, data)
                     else None
                 ),
+                go_resolver=module_resolver,
             )
             edge = {
-                "from": {"file": filepath, "symbol": caller_symbol},
+                "from": {"file": source_file, "symbol": caller_symbol},
                 "to": {"file": to_file, "symbol": to_symbol},
                 "name": call.get("attr") or call["name"],
                 "kind": kind,
                 "line": call.get("line", 0),
             }
-            for key in ("args", "kwargs"):
+            for key in ("args", "kwargs", "invocation"):
                 if key in call:
                     edge[key] = call[key]
             edges.append(edge)
@@ -2784,8 +2800,11 @@ def _resolve_call_observation(
     symbol_to_files: dict[str, set[str]],
     *,
     python_context: PythonCallContext | None = None,
+    go_resolver=None,
 ) -> tuple[str | None, str, str, list[dict]]:
     """Resolve one call while retaining every ambiguous internal candidate."""
+    if data.get("language") == "go" and go_resolver is not None:
+        return resolve_go_call(call, filepath, go_resolver)
 
     if python_context is not None:
         return resolve_python_call(call, filepath, data, python_context)
@@ -2852,10 +2871,11 @@ def _call_observations_for_file(
     local_symbols = _file_local_symbols(data)
     observations: list[dict] = []
     for caller_symbol, fn, class_name in _caller_components(data):
+        source_file = fn.get("source_file", filepath) if data.get("language") == "go" else filepath
         for call_index, call in enumerate(fn.get("calls", [])):
             to_file, to_symbol, kind, candidates = _resolve_call_observation(
                 call,
-                filepath,
+                source_file,
                 class_name,
                 data,
                 imported_candidates,
@@ -2867,10 +2887,11 @@ def _call_observations_for_file(
                     if is_python_source(filepath, data)
                     else None
                 ),
+                go_resolver=module_resolver,
             )
             raw_line = call.get("line")
             observation = {
-                "from": {"file": filepath, "symbol": caller_symbol},
+                "from": {"file": source_file, "symbol": caller_symbol},
                 "to": {"file": to_file, "symbol": to_symbol},
                 "name": call.get("attr") or call["name"],
                 "kind": kind,
@@ -2884,7 +2905,7 @@ def _call_observations_for_file(
             }
             if candidates:
                 observation["candidates"] = candidates
-            for key in ("args", "kwargs"):
+            for key in ("args", "kwargs", "invocation"):
                 if key in call:
                     observation[key] = call[key]
             observations.append(observation)

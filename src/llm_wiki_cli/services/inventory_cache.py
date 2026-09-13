@@ -170,6 +170,7 @@ def _implementation_fingerprint() -> str:
         "extractors/go_scripts/go.mod",
         "extractors/haskell_scripts/Main.hs",
         "services/imports.py",
+        "services/go_calls.py",
         "services/python_imports.py",
         "services/python_calls.py",
         "services/python_stdlib.py",

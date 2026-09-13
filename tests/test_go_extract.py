@@ -285,7 +285,7 @@ def test_go_library_main_and_receiver_main_are_not_process_entries(tmp_path):
     'web.HandleFunc("/health", health)',
     'mux := web.NewServeMux(); mux.HandleFunc("/health", health)',
     'web.ListenAndServe(":8000", web.HandlerFunc(health))',
-])
+], ids=["global", "serve-mux", "listen-handler"])
 def test_go_http_ast_registration_resolves_package_handlers(tmp_path, registration):
     from llm_wiki_cli.services.entrypoints import get_detailed_entry_points, get_entry_points
 
@@ -314,7 +314,7 @@ func health(w http.ResponseWriter, r *http.Request) {}
     'mux := fake{}; mux.HandleFunc("/fake", health)',
     'mux := http.NewServeMux(); mux = other(); mux.HandleFunc("/fake", health)',
     'health := other(); http.HandleFunc("/fake", health)',
-])
+], ids=["comment", "string", "shadowed-import", "other-receiver", "reassigned-mux", "shadowed-handler"])
 def test_go_http_ast_rejects_non_net_http_or_unknown_bindings(tmp_path, body):
     from llm_wiki_cli.services.entrypoints import get_entry_points
 
@@ -328,6 +328,80 @@ func main() {{
     inventory = GoExtractor().extract(str(tmp_path), deep=True)
     assert "go_http" in inventory["main.go"]["frameworks"]
     assert not [e for e in get_entry_points(inventory, root=tmp_path) if e["category"] == "http"]
+
+
+@skip_no_go
+def test_go_body_calls_preserve_binding_and_callable_ownership(tmp_path):
+    from llm_wiki_cli.services.extraction_service import resolve_call_edges
+
+    _make_go(tmp_path, "main.go", '''package main
+import "fmt"
+type Service struct{}
+func (s *Service) work() { helper() }
+func helper() { helper() }
+func main() {
+    helper()
+    s := &Service{}
+    s.work()
+    fmt.Println("hello")
+    go helper()
+    defer helper()
+    fn := func() { fmt.Println("nested") }
+    fn()
+    helper := fn
+    helper()
+}
+''')
+    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    data = inventory["main.go"]
+    main = next(fn for fn in data["functions"] if fn["name"] == "main")
+    assert [call["name"] for call in main["calls"]] == ["helper", "work", "Println", "helper", "helper", "fn", "helper"]
+    assert [call.get("invocation") for call in main["calls"]][3:5] == ["go", "defer"]
+    assert len(data["nested_functions"]) == 1
+    assert data["nested_functions"][0]["calls"][0]["name"] == "Println"
+    edges = resolve_call_edges(inventory)
+    main_edges = [edge for edge in edges if edge["from"]["symbol"] == "main"]
+    assert main_edges[0]["to"] == {"file": "main.go", "symbol": "helper"}
+    assert main_edges[1]["to"] == {"file": "main.go", "symbol": "Service.work"}
+    assert main_edges[2]["kind"] == "external"
+    assert all(edge["kind"] == "unresolved" for edge in main_edges[-2:])
+    recursive = [edge for edge in edges if edge["from"]["symbol"] == "helper"]
+    assert len(recursive) == 1 and recursive[0]["to"]["symbol"] == "helper"
+
+
+@skip_no_go
+@pytest.mark.parametrize("count", [2, 3])
+def test_go_workflows_require_three_resolved_selected_modules(tmp_path, monkeypatch, count):
+    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory, resolve_call_edges
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "go.mod").write_text("module example.org/app\n\ngo 1.21\n", encoding="utf-8")
+    imports = []
+    calls = []
+    for index in range(count):
+        imports.append(f'p{index} "example.org/app/pkg{index}"')
+        calls.append(f'p{index}.Run()')
+        _make_go(tmp_path, f"pkg{index}/run.go", f"package pkg{index}\nfunc Run() {{}}\n")
+        _make_go(tmp_path, f"pkg{index}/other.go", f"package pkg{index}\nfunc Other() {{}}\n")
+    _make_go(tmp_path, "main.go", "package main\nimport (\n" + "\n".join(imports) + "\n)\nfunc main() {\n" + "\n".join(calls) + "\n}\n")
+    inventory = get_inventory(str(tmp_path), deep=True)
+    edges = resolve_call_edges(inventory)
+    assert [(edge["to"]["file"], edge["to"]["symbol"]) for edge in edges] == [(f"pkg{i}/run.go", "Run") for i in range(count)]
+    assert bool(get_call_graph(inventory)) == (count == 3)
+
+
+@skip_no_go
+def test_go_cross_file_method_call_locations_and_order_are_stable(tmp_path):
+    from llm_wiki_cli.services.extraction_service import resolve_call_edges
+
+    _make_go(tmp_path, "service.go", "package main\ntype Service struct{}\n")
+    _make_go(tmp_path, "work.go", "package main\nfunc (s Service) work() { helper() }\n")
+    _make_go(tmp_path, "main.go", "package main\nfunc main() { s := &Service{}; s.work() }\nfunc helper() {}\n")
+    first = GoExtractor().extract(str(tmp_path), deep=True)
+    assert first == GoExtractor().extract(str(tmp_path), deep=True)
+    edges = resolve_call_edges(first)
+    assert {edge["from"]["file"] for edge in edges if edge["from"]["symbol"] == "Service.work"} == {"work.go"}
+    assert next(edge for edge in edges if edge["from"]["symbol"] == "main")["to"] == {"file": "work.go", "symbol": "Service.work"}
 
 
 @skip_no_go
