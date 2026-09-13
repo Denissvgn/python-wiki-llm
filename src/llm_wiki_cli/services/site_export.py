@@ -546,11 +546,13 @@ def _publication_commitments(
             )
         targets.add(target)
 
-    out_absolute = out.absolute()
+    # Operations may already use resolved paths from _safe_join. Compare both
+    # identities in the same namespace, including trusted /var-style aliases.
+    out_absolute = out.resolve()
     commitments: list[tuple[str, str]] = []
     for target in targets:
         try:
-            relative = target.absolute().relative_to(out_absolute).as_posix()
+            relative = target.resolve().relative_to(out_absolute).as_posix()
         except ValueError as exc:
             raise SiteExportError(
                 f"Publication output escapes output directory: {target}"
