@@ -87,6 +87,7 @@ flowchart LR
 | `_detect_javascript_http_servers` | `(inventory: dict, *, include_details: bool = False) -> list[dict]` | — | — |
 | `_import_modules` | `(data: Mapping[str, Any]) -> set[str]` | — | — |
 | `_source_text` | `(root: str \| Path, filepath: str) -> str` | — | — |
+| `_go_http_handler_index` | `(inventory: dict) -> dict[tuple[PurePosixPath, str \| None, str], set[str]]` | — | Index top-level candidates once, preserving ambiguous package matches. |
 | `_detect_go_http_servers` | `(inventory: dict, *, root: str \| Path, include_details: bool = False) -> list[dict]` | — | — |
 | `_has_haskell_web_import` | `(data: Mapping[str, Any]) -> bool` | — | — |
 | `_haskell_application_symbols` | `(data: Mapping[str, Any], source: str) -> list[str]` | — | — |

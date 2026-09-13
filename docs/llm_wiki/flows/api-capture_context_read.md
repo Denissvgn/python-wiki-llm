@@ -117,7 +117,7 @@ sequenceDiagram
     p18->>p20: _current_windows_user_sid
 ```
 
-> Call sequence diagram shows 30 of 4171 interactions; 4141 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4182 interactions; 4152 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

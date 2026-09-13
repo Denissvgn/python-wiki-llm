@@ -4402,7 +4402,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 4510,
+          "step_count": 4507,
           "truncated": true
         }
       },
@@ -5422,7 +5422,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 4172,
+          "step_count": 4183,
           "truncated": true
         }
       },
@@ -9634,7 +9634,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py"
           ],
-          "step_count": 2719,
+          "step_count": 2730,
           "truncated": true
         }
       },
@@ -19617,7 +19617,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4904,
+          "step_count": 4901,
           "truncated": true
         }
       },
@@ -30486,7 +30486,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py"
           ],
-          "step_count": 2775,
+          "step_count": 2786,
           "truncated": true
         }
       },
@@ -33282,7 +33282,7 @@
             "src/llm_wiki_cli/services/module_maps.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 6340,
+          "step_count": 6336,
           "truncated": true
         }
       },
@@ -56461,5 +56461,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:4df17d43a8a11ce35bd3480bb5e7b640a281ff859b6c59367badeaef68260a25"
+  "source_hash": "sha256:19b283f750379b16d9b8f83d6dd1d1a9275c86bbe9d72d5a333fce5855790bef"
 }
