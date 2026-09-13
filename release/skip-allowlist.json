@@ -338,6 +338,114 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_body_calls_preserve_binding_and_callable_ownership",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_cached_cross_file_methods_follow_edits_and_deletions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_cross_file_method_call_locations_and_order_are_stable",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_executable_visibility_and_process_evidence[False]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_executable_visibility_and_process_evidence[True]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[global]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[listen-handler]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[serve-mux]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[comment]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[other-receiver]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[reassigned-mux]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[shadowed-handler]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[shadowed-import]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[string]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_library_main_and_receiver_main_are_not_process_entries",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_server_literal_remains_an_ast_backed_entrypoint",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_workflows_require_three_resolved_selected_modules[2]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_workflows_require_three_resolved_selected_modules[3]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_extracts_syntax_inventory",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
@@ -1167,6 +1275,114 @@
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_go_extract.py::TestGoExtractor::test_vendor_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_body_calls_preserve_binding_and_callable_ownership",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_cached_cross_file_methods_follow_edits_and_deletions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_cross_file_method_call_locations_and_order_are_stable",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_executable_visibility_and_process_evidence[False]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_executable_visibility_and_process_evidence[True]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[global]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[listen-handler]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[serve-mux]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[comment]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[other-receiver]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[reassigned-mux]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[shadowed-handler]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[shadowed-import]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[string]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_library_main_and_receiver_main_are_not_process_entries",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_server_literal_remains_an_ast_backed_entrypoint",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_workflows_require_three_resolved_selected_modules[2]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_workflows_require_three_resolved_selected_modules[3]",
       "owner_lane": "toolchains",
       "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
     },
@@ -2049,6 +2265,114 @@
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_go_extract.py::TestGoExtractor::test_vendor_excluded",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_body_calls_preserve_binding_and_callable_ownership",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_cached_cross_file_methods_follow_edits_and_deletions",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_cross_file_method_call_locations_and_order_are_stable",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_executable_visibility_and_process_evidence[False]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_executable_visibility_and_process_evidence[True]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[global]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[listen-handler]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_registration_resolves_package_handlers[serve-mux]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[comment]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[other-receiver]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[reassigned-mux]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[shadowed-handler]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[shadowed-import]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_http_ast_rejects_non_net_http_or_unknown_bindings[string]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_library_main_and_receiver_main_are_not_process_entries",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_server_literal_remains_an_ast_backed_entrypoint",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_workflows_require_three_resolved_selected_modules[2]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_workflows_require_three_resolved_selected_modules[3]",
       "owner_lane": "toolchains",
       "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
     },

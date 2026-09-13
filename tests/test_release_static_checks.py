@@ -28,7 +28,9 @@ def test_failure_keeps_later_checks_and_all_evidence(tmp_path):
 @pytest.mark.parametrize("exit_code", [0, 1])
 def test_bandit_findings_require_complete_json(tmp_path, exit_code):
     report = tmp_path / "bandit.json"
-    payload = json.dumps({"results": [{}], "errors": [], "metrics": {}})
+    payload = json.dumps(
+        {"results": [{}], "errors": [], "metrics": {"_totals": {"loc": 1}}}
+    )
     check = _check(
         "bandit-full",
         f"from pathlib import Path; Path({str(report)!r}).write_text({payload!r}); raise SystemExit({exit_code})",
@@ -41,7 +43,13 @@ def test_bandit_findings_require_complete_json(tmp_path, exit_code):
 
 @pytest.mark.parametrize(
     "payload",
-    [None, "broken", "{}", '{"results": [], "errors": ["failed"], "metrics": {}}'],
+    [
+        None,
+        "broken",
+        "{}",
+        '{"results": [], "errors": ["failed"], "metrics": {}}',
+        '{"results": [], "errors": [], "metrics": {"_totals": {"loc": 0}}}',
+    ],
 )
 def test_bandit_success_cannot_hide_absent_or_failed_report(tmp_path, payload):
     report = tmp_path / "bandit.json"
@@ -51,7 +59,9 @@ def test_bandit_success_cannot_hide_absent_or_failed_report(tmp_path, payload):
         else f"from pathlib import Path; Path({str(report)!r}).write_text({payload!r})"
     )
     # A valid old result must never satisfy the current check.
-    report.write_text(json.dumps({"results": [], "errors": [], "metrics": {}}))
+    report.write_text(
+        json.dumps({"results": [], "errors": [], "metrics": {"_totals": {"loc": 1}}})
+    )
     check = _check("bandit-full", code, report=report, report_kind="bandit")
     assert not static_checks.run_checks([check], tmp_path, tmp_path / "out")["passed"]
 
@@ -65,6 +75,13 @@ def test_missing_executable_does_not_skip_other_checks(tmp_path):
     assert not result["passed"]
     assert result["checks"][0]["error"]
     assert result["checks"][1]["passed"]
+
+
+def test_empty_dependency_audit_is_not_complete_evidence(tmp_path):
+    report = tmp_path / "audit.json"
+    code = f"from pathlib import Path; Path({str(report)!r}).write_text('{{\"dependencies\": []}}')"
+    check = _check("audit", code, report=report, report_kind="pip-audit")
+    assert not static_checks.run_checks([check], tmp_path, tmp_path / "out")["passed"]
 
 
 def test_default_checks_use_current_interpreter_and_preserve_blocking_scanners(

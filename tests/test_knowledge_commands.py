@@ -705,7 +705,9 @@ def test_bootstrap_rejection_preserves_evidence_and_sync_regenerates(
     assert _artifact_bytes(wiki_dir) == before_artifacts
     assert SyncManifest.load(wiki_dir) == before_manifest
     assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
-    output = capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    output = captured.err
     assert "Bootstrap is first-use only" in output
     assert "llm-wiki sync" in output
     assert "llm-wiki migrate --dry-run" not in output

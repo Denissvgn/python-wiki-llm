@@ -35,14 +35,22 @@ def _report_error(check: Check) -> str | None:
     except (OSError, ValueError) as exc:
         return f"Required report is unreadable: {exc}"
     if check.report_kind == "bandit":
+        metrics = data.get("metrics") if isinstance(data, dict) else None
+        totals = metrics.get("_totals") if isinstance(metrics, dict) else None
+        lines = totals.get("loc") if isinstance(totals, dict) else None
         valid = (
             isinstance(data, dict)
             and isinstance(data.get("results"), list)
             and data.get("errors") == []
-            and isinstance(data.get("metrics"), dict)
+            and type(lines) is int
+            and lines > 0
         )
     elif check.report_kind == "pip-audit":
-        valid = isinstance(data, dict) and isinstance(data.get("dependencies"), list)
+        valid = (
+            isinstance(data, dict)
+            and isinstance(data.get("dependencies"), list)
+            and bool(data["dependencies"])
+        )
     else:
         valid = False
     return None if valid else "Required report is incomplete or records analysis errors"

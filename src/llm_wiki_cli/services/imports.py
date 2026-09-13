@@ -485,6 +485,8 @@ _GO_MODULE_EXCLUDED_DIRS: frozenset[str] = frozenset(
 def _inventory_go_scopes(inventory: dict) -> tuple[_GoModuleScope, ...]:
     scopes = set()
     for data in inventory.values():
+        if not isinstance(data, dict):
+            continue
         scope = data.get("go_import_scope")
         if data.get("language") == "go" and isinstance(scope, dict):
             if isinstance(scope.get("root"), str) and isinstance(scope.get("module"), str):
