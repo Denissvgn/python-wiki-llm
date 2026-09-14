@@ -1,6 +1,8 @@
 import argparse
 import os
 import sys
+
+
 from .commands import (
     api_diff_cmd,
     bump_cmd,
@@ -44,6 +46,15 @@ from .services.contracts import BOOTSTRAP_SKIP_DATA_FLOW_FLAG
 from .services.extraction_jobs import ExtractionJobsAction
 from .services.resource_diagnostics import resource_failure_hint
 from . import __version__
+
+
+class _ExplicitContextOption(argparse.Action):
+    """Retain which semantic options were supplied beside a request file."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        supplied = getattr(namespace, "_explicit_context_options", frozenset())
+        setattr(namespace, "_explicit_context_options", supplied | {self.dest})
 
 
 def _positive_int(value: str) -> int:
@@ -1933,6 +1944,7 @@ def _add_context_command(subparsers):
     context_parser.add_argument(
         "--budget",
         type=int,
+        action=_ExplicitContextOption,
         help="Token budget for the context payload (required unless --request is used)",
     )
     context_parser.add_argument(
@@ -1958,12 +1970,14 @@ def _add_context_command(subparsers):
     context_parser.add_argument(
         "--format",
         choices=["json", "markdown", "packet"],
+        action=_ExplicitContextOption,
         default="json",
         help="Output format; packet emits canonical Qualified Context Packet JSON (default: json)",
     )
     context_parser.add_argument(
         "--focus",
         choices=["changed", "all"],
+        action=_ExplicitContextOption,
         default="changed",
         help="changed=prioritise git diff files, all=treat every file as high priority (default: changed)",
     )

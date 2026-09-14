@@ -180,17 +180,11 @@ def _api_mcp_error(exc: LlmWikiApiError) -> McpWikiError:
 
 
 def _path_validation_mcp_error(exc: PathValidationError) -> McpWikiError:
-    message = str(exc)
-    if "--src-dir" in message:
-        field = "src_dir"
-    elif "--wiki-dir" in message:
-        field = "wiki_dir"
-    else:
-        field = "path"
+    from .context_packet import describe_context_packet_error
+
+    failure = describe_context_packet_error(exc)
     return McpWikiError(
-        message,
-        code="path-policy-error",
-        data={"field": field},
+        failure["message"], code=failure["code"], data=failure["details"],
     )
 
 
@@ -807,8 +801,8 @@ class McpWikiService:
 
         from .context_packet import (
             ContextPacketError,
-            ContextPacketPathPolicyError,
             build_qualified_context,
+            describe_context_packet_error,
         )
 
         if if_packet_id is not None and (
@@ -816,7 +810,8 @@ class McpWikiService:
             or re.fullmatch(r"sha256:[0-9a-f]{64}", if_packet_id) is None
         ):
             raise McpWikiError(
-                "if_packet_id must be a sha256:<64 lowercase hex> value or None."
+                "if_packet_id must be a sha256:<64 lowercase hex> value or None.",
+                code="invalid-request", data={"field": "if_packet_id"},
             )
         selected_mode = _normalize_knowledge_mode(knowledge_mode)
         request = {
@@ -842,28 +837,15 @@ class McpWikiService:
                 **self._external_source_options(),
                 **self._source_selection_options(),
             )
-        except PathValidationError as exc:
-            raise _path_validation_mcp_error(exc) from exc
-        except ContextPacketPathPolicyError as exc:
-            raise McpWikiError(
-                str(exc),
-                code="path-policy-error",
-                data={"field": getattr(exc, "field", "path")},
-            ) from exc
         except context_cmd.KnowledgeRequiredUnavailableError as exc:
             raise _required_knowledge_mcp_error(exc) from exc
-        except context_cmd.ProtocolRequestError as exc:
+        except (PathValidationError, ContextPacketError, context_cmd.ProtocolRequestError) as exc:
             if _is_required_knowledge_failure(exc):
                 raise _required_knowledge_mcp_error(exc) from exc
+            failure = describe_context_packet_error(exc)
             raise McpWikiError(
-                str(exc),
-                code="invalid-request",
-                data={"field": exc.field},
+                failure["message"], code=failure["code"], data=failure["details"]
             ) from exc
-        except ContextPacketError as exc:
-            if _is_required_knowledge_failure(exc):
-                raise _required_knowledge_mcp_error(exc) from exc
-            raise McpWikiError(str(exc), code="invalid-request") from exc
 
         if packet.packet_id == if_packet_id:
             return {

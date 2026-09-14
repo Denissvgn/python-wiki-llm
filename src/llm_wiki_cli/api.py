@@ -429,6 +429,22 @@ def _path_error_field(message: str) -> str:
     return "path"
 
 
+def _raise_context_packet_api_error(exc: BaseException) -> NoReturn:
+    """Keep packet exception catch points while preserving safe failure details."""
+    _raise_required_knowledge_api_error(exc)
+    failure = context_packet_service.describe_context_packet_error(exc)
+    leaf = (
+        WorkspaceStateError
+        if failure["code"] in {
+            "context-read-mutated", "context-packet-unavailable", "workspace-state-error"
+        }
+        else InvalidRequestError
+    )
+    raise leaf(
+        failure["message"], code=failure["code"], details=failure["details"]
+    ) from exc
+
+
 def _wiki_path_policy_details(exc: BaseException) -> dict[str, Any]:
     details: dict[str, Any] = {"field": "wiki_dir"}
     current: BaseException | None = exc
@@ -542,6 +558,8 @@ def _calibration_error_category(exc: Exception) -> str | None:
 def _raise_api_error(exc: Exception) -> NoReturn:
     """Translate one internal exception at the supported API boundary."""
 
+    if isinstance(exc, context_packet_service.ContextPacketError):
+        _raise_context_packet_api_error(exc)
     for leaf in _API_ERROR_LEAVES:
         if isinstance(exc, leaf):
             raise leaf(str(exc)) from exc
@@ -963,55 +981,14 @@ def build_qualified_context(
             read_only=read_only,
             source_selection=source_selection,
         )
-    except PathValidationError as exc:
-        if _caused_by(exc, OSError):
-            raise WorkspaceStateError(
-                str(exc),
-                code="workspace-state-error",
-                details={"field": _path_error_field(str(exc))},
-            ) from exc
-        raise PathPolicyError(
-            str(exc),
-            code="path-policy-error",
-            details={"field": _path_error_field(str(exc))},
-        ) from exc
-    except context_packet_service.ContextPacketPathPolicyError as exc:
-        raise PathPolicyError(
-            str(exc),
-            code="path-policy-error",
-            details={"field": getattr(exc, "field", "path")},
-        ) from exc
     except (
-        context_packet_service.ContextPacketSourceMutationError,
-        context_packet_service.ContextPacketUnavailableError,
+        PathValidationError,
+        context_packet_service.ContextPacketError,
+        context_cmd.ProtocolRequestError,
+        context_cmd.KnowledgeRequiredUnavailableError,
+        ValueError, TypeError,
     ) as exc:
-        _raise_required_knowledge_api_error(exc)
-        raise WorkspaceStateError(str(exc)) from exc
-    except context_cmd.KnowledgeRequiredUnavailableError as exc:
-        _raise_required_knowledge_api_error(exc)
-        raise WorkspaceStateError(str(exc)) from exc
-    except context_packet_service.ContextPacketError as exc:
-        _raise_required_knowledge_api_error(exc)
-        raise InvalidRequestError(
-            str(exc),
-            code="invalid-request",
-            details={"field": getattr(exc, "field", "request")},
-        ) from exc
-    except context_cmd.ProtocolRequestError as exc:
-        _raise_required_knowledge_api_error(exc)
-        if exc.field == "wiki_dir":
-            raise PathPolicyError(
-                str(exc),
-                code="path-policy-error",
-                details=_wiki_path_policy_details(exc),
-            ) from exc
-        if exc.field == "src_dir":
-            raise WorkspaceStateError(str(exc)) from exc
-        raise InvalidRequestError(
-            str(exc),
-            code="invalid-request",
-            details={"field": exc.field},
-        ) from exc
+        _raise_context_packet_api_error(exc)
     return packet
 
 
@@ -1023,10 +1000,8 @@ def validate_context_packet(
 
     try:
         validation = context_packet_service.validate_context_packet(packet_bytes)
-    except context_packet_service.ContextPacketPathPolicyError as exc:
-        raise PathPolicyError(str(exc)) from exc
-    except context_packet_service.ContextPacketError as exc:
-        raise InvalidRequestError(str(exc)) from exc
+    except (context_packet_service.ContextPacketError, ValueError, TypeError) as exc:
+        _raise_context_packet_api_error(exc)
     return validation
 
 
@@ -1042,10 +1017,8 @@ def compare_context_packet_basis(
             packet_bytes,
             expected_basis,
         )
-    except context_packet_service.ContextPacketPathPolicyError as exc:
-        raise PathPolicyError(str(exc)) from exc
-    except context_packet_service.ContextPacketError as exc:
-        raise InvalidRequestError(str(exc)) from exc
+    except (context_packet_service.ContextPacketError, ValueError, TypeError) as exc:
+        _raise_context_packet_api_error(exc)
     return comparison
 
 
@@ -1070,25 +1043,14 @@ def reconcile_context_packet(
             read_only=read_only,
             source_selection=source_selection,
         )
-    except PathValidationError as exc:
-        if _caused_by(exc, OSError):
-            raise WorkspaceStateError(str(exc)) from exc
-        raise PathPolicyError(str(exc)) from exc
-    except context_packet_service.ContextPacketPathPolicyError as exc:
-        raise PathPolicyError(str(exc)) from exc
     except (
-        context_packet_service.ContextPacketSourceMutationError,
-        context_packet_service.ContextPacketUnavailableError,
+        PathValidationError,
+        context_packet_service.ContextPacketError,
+        context_cmd.ProtocolRequestError,
+        context_cmd.KnowledgeRequiredUnavailableError,
+        ValueError, TypeError,
     ) as exc:
-        raise WorkspaceStateError(str(exc)) from exc
-    except context_packet_service.ContextPacketError as exc:
-        raise InvalidRequestError(str(exc)) from exc
-    except context_cmd.ProtocolRequestError as exc:
-        if exc.field == "wiki_dir":
-            raise PathPolicyError(str(exc)) from exc
-        if exc.field == "src_dir":
-            raise WorkspaceStateError(str(exc)) from exc
-        raise InvalidRequestError(str(exc)) from exc
+        _raise_context_packet_api_error(exc)
     return reconciliation
 
 

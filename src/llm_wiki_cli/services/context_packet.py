@@ -84,6 +84,11 @@ from .knowledge_model import (
 from .wiki_media import contains_uri_authority_userinfo
 from .knowledge_observability import knowledge_freshness_disclosure
 from .knowledge_verification import verification_summaries_for_concepts
+from .packet_field_policy import (
+    PUBLIC_URI_FIELDS as _PUBLIC_URI_FIELDS,
+    STRUCTURAL_PATH_FIELDS as _STRUCTURAL_PATH_FIELDS,
+    STRING_CLASSES as _PATH_COUNT_KEYS,
+)
 from .plugins import runtime_plugin_fallback_root
 from .source_snapshot import (
     SourceSnapshot,
@@ -130,14 +135,6 @@ _COVERAGE_LIMITATION_RE = re.compile(r"^[a-z][a-z0-9]*(?:[/-][a-z0-9]+)*$")
 _PORTABLE_URI_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:[^\x00-\x20]*$")
 _RFC3986_URI_RE = re.compile(r"^[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]+$")
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[\\/]")
-_STRUCTURAL_PATH_FIELDS = frozenset(
-    {
-        "canonical_path",
-        "file",
-        "source_path",
-    }
-)
-_PUBLIC_URI_FIELDS = frozenset({"mcp_uri"})
 _RECONCILIATION_FACETS = frozenset(
     {
         "request",
@@ -154,13 +151,6 @@ _RECONCILIATION_FACETS = frozenset(
 )
 _RECONCILIATION_FACET_FIELDS = frozenset(
     {"matches_expected", "current", "state", "reason"}
-)
-_PATH_COUNT_KEYS = (
-    "free_text_values",
-    "opaque_values",
-    "portable_identities",
-    "public_uris",
-    "repository_relative_paths",
 )
 _PACKET_TOP_LEVEL_FIELDS = frozenset(
     {
@@ -235,9 +225,11 @@ class ContextPacketMalformedError(ContextPacketError):
 
     code = "malformed-context-packet"
 
-    def __init__(self, field: str, message: str):
+    def __init__(self, field: str, message: str, *, code: str | None = None):
         self.field = field
         self.message = message
+        if code is not None:
+            self.code = code
         super().__init__(f"{field}: {message}")
 
 
@@ -258,6 +250,10 @@ class ContextPacketUnavailableError(ContextPacketError):
 
     code = "context-packet-unavailable"
 
+    def __init__(self, message: str, *, field: str = "context"):
+        self.field = field
+        super().__init__(message)
+
 
 class ContextPacketPathPolicyError(ContextPacketError):
     """A structural packet field violates its declared path policy."""
@@ -268,6 +264,85 @@ class ContextPacketPathPolicyError(ContextPacketError):
         self.field = field
         self.message = message
         super().__init__(f"{field}: {message}")
+
+
+def describe_context_packet_error(error: BaseException) -> dict[str, Any]:
+    """Describe a packet failure without echoing offending values or host roots.
+
+    Dynamic mapping keys and raw service messages belong to the chained local
+    exception, not to the public diagnostic shared by API, CLI and MCP.
+    """
+    field = getattr(error, "field", None)
+    code = "invalid-request"
+    message = "Context request is invalid. Check the indicated field."
+    if isinstance(error, ContextPacketMalformedError):
+        code = (
+            "unsupported-context-packet"
+            if error.code == "unsupported-context-packet"
+            else "malformed-context-packet"
+        )
+        message = (
+            "Packet schema is unsupported. Use a supported qualified packet version."
+            if code == "unsupported-context-packet"
+            else "Packet bytes do not satisfy the canonical context contract."
+        )
+    elif isinstance(error, ContextPacketSourceMutationError):
+        code = error.code
+        field = {"source": "source_snapshot", "wiki": "wiki_dir"}.get(
+            error.facet, error.facet
+        )
+        message = "Source or wiki changed during the context read. Retry the operation."
+    elif isinstance(error, ContextPacketUnavailableError):
+        code = error.code
+        message = "A required context input or read capability is unavailable."
+    elif isinstance(error, (ContextPacketPathPolicyError, PathValidationError)):
+        code = "path-policy-error"
+        if isinstance(error, PathValidationError):
+            flag = re.match(r"^(?:Error:\s*)?--(src|wiki)-dir\b", str(error))
+            field = f"{flag.group(1)}_dir" if flag is not None else "path"
+            cause = error.__cause__
+            seen: set[int] = set()
+            while cause is not None and id(cause) not in seen:
+                seen.add(id(cause))
+                if isinstance(cause, OSError):
+                    break
+                cause = cause.__cause__
+            if isinstance(cause, OSError):
+                code = "workspace-state-error"
+        message = (
+            "The context workspace could not be read. Check availability and access."
+            if code == "workspace-state-error"
+            else "Context path must satisfy the allowed source and wiki boundary."
+        )
+    elif isinstance(error, context_service.ProtocolRequestError):
+        if field == "wiki_dir":
+            code = "path-policy-error"
+            message = "The wiki path cannot be read under the context path policy."
+        elif field == "src_dir":
+            code = "context-packet-unavailable"
+            message = "The source directory is unavailable or cannot be read."
+
+    roots = {
+        "packet", "schema_version", "packet_id", "assurance", "request",
+        "response", "basis", "delivery", "path_policy", "expected_basis",
+        "src_dir", "wiki_dir", "path", "context", "source_snapshot",
+        "source_selection", "protocol", "knowledge_mode", "read_only",
+        "budget_tokens", "focus", "format", "filters", "prefer_fresh",
+        "if_packet_id", "counter_id", "budget_mode", "changes", "allow_external_src",
+    }
+    if field is None and isinstance(error, (TypeError, ValueError)):
+        candidate = re.match(r"^([a-z_]+)\b", str(error))
+        if candidate is not None and candidate.group(1) in roots:
+            field = candidate.group(1)
+    # Only fixed contract roots may reach diagnostics. In particular, paths used
+    # as keys below response.files never become user-visible error fields.
+    first = re.split(r"[.\[/]", field.lstrip("$./"))[0] if isinstance(field, str) else ""
+    safe_field = first if first in roots else "packet"
+    return {
+        "code": code,
+        "message": f"{safe_field}: {message}",
+        "details": {"field": safe_field},
+    }
 
 
 def _packet_contract_for_schema(schema_version: object) -> _PacketWireContract:
@@ -281,6 +356,7 @@ def _packet_contract_for_schema(schema_version: object) -> _PacketWireContract:
         raise ContextPacketMalformedError(
             "schema_version",
             f"unsupported qualified-context packet schema: {schema_version!r}",
+            code="unsupported-context-packet",
         )
     return contract
 
@@ -626,6 +702,8 @@ def capture_context_read(
 
     if not isinstance(read_only, bool):
         raise TypeError("read_only must be a boolean")
+    if not isinstance(allow_external_src, bool):
+        raise TypeError("allow_external_src must be a boolean")
     if plan_reporter is not None and not callable(plan_reporter):
         raise TypeError("plan_reporter must be callable or None")
     if not isinstance(allow_selection_mismatch, bool):
@@ -644,6 +722,11 @@ def capture_context_read(
         wiki_root = validate_path(wiki_dir, "--wiki-dir")
     except PathValidationError:
         raise
+
+    if not source_root.is_dir():
+        raise ContextPacketUnavailableError(
+            "Source directory must exist and be a directory.", field="src_dir"
+        )
 
     try:
         selection_policy = context_service.resolve_source_selection(
@@ -1999,6 +2082,16 @@ def _path_policy_digest() -> str:
 
 
 def _path_policy_receipt(value: Mapping[str, Any]) -> dict[str, Any]:
+    from .packet_field_policy import (
+        UnclassifiedPacketField, classify_string, validate_field_coverage,
+    )
+
+    try:
+        validate_field_coverage(value)
+    except UnclassifiedPacketField as exc:
+        raise ContextPacketPathPolicyError(
+            _pointer(exc.pointer), "has no declared packet field classification"
+        ) from exc
     counts = {name: 0 for name in _PATH_COUNT_KEYS}
     accepted = 0
 
@@ -2028,11 +2121,11 @@ def _path_policy_receipt(value: Mapping[str, Any]) -> dict[str, Any]:
             return
         if not isinstance(item, str):
             return
-        field = pointer[-1] if pointer else ""
-        if field in _STRUCTURAL_PATH_FIELDS:
+        classification = classify_string(pointer)
+        if classification == "repository_relative_paths":
             _repository_path(item, _pointer(pointer))
             counts["repository_relative_paths"] += 1
-        elif field in _PUBLIC_URI_FIELDS:
+        elif classification == "public_uris":
             if _PORTABLE_URI_RE.fullmatch(item) is None or item.casefold().startswith(
                 "file:"
             ):
@@ -2041,7 +2134,7 @@ def _path_policy_receipt(value: Mapping[str, Any]) -> dict[str, Any]:
                     "must be a portable non-file URI",
                 )
             counts["public_uris"] += 1
-        elif pointer == ("basis", "repository", "identity"):
+        elif classification == "portable_identities":
             if item != "unknown":
                 try:
                     validate_configured_public_identity(item)
@@ -2051,7 +2144,7 @@ def _path_policy_receipt(value: Mapping[str, Any]) -> dict[str, Any]:
                         "must be a normalized portable repository identity",
                     ) from exc
             counts["portable_identities"] += 1
-        elif _is_free_text_pointer(pointer):
+        elif classification == "free_text_values":
             counts["free_text_values"] += 1
         else:
             counts["opaque_values"] += 1
