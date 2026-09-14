@@ -589,6 +589,25 @@ def _validate_packet_adapter_parity(
             "structured_errors": True, "mcp_transport": "verified"}
 
 
+def _validate_native_consumer(python: Path, mcp_python: Path, work: Path) -> Mapping:
+    probe = Path(__file__).parent / "fixtures" / "native-artifact-consumer.py"
+    tutorial = Path(__file__).parents[1] / "examples" / "native-knowledge"
+    if not probe.is_file() or not (tutorial / "README.md").is_file():
+        raise SmokeError("native consumer tutorial is missing from the frozen harness")
+    results = []
+    for executable, mode in ((python, "base"), (mcp_python, "mcp")):
+        result = dict(_json_output(_run(
+            _isolated_utf8_python_command(executable, "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode),
+            cwd=work,
+        ), f"installed native consumer ({mode})"))
+        if result.pop("sdk", None) != ("verified" if mode == "mcp" else "not-used"):
+            raise SmokeError("native consumer SDK verification is incomplete")
+        results.append(result)
+    if results[0] != results[1]:
+        raise SmokeError("base and MCP native consumer results differ")
+    return {**results[0], "mcp_transport": "verified"}
+
+
 def run_smoke(args: argparse.Namespace) -> int:
     artifact = args.artifact.resolve()
     artifact_reference_file_count = _validate_artifact_members(artifact)
@@ -760,6 +779,7 @@ def run_smoke(args: argparse.Namespace) -> int:
         raise SmokeError("read-only compact context route created governance state")
 
     packet_adapters = _validate_packet_adapter_parity(python, mcp_python, work, source, wiki)
+    native_consumer = _validate_native_consumer(python, mcp_python, work)
 
     site = work / "site"
     _run(
@@ -866,6 +886,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "context_packet_schema": packet_schema,
             "context_packet_sha256": _sha256(packet_path),
             "packet_adapters": packet_adapters,
+            "native_consumer": native_consumer,
             "site_sha256": _tree_hash(site),
             "obsidian_sha256": _tree_hash(vault),
             "skills": skill_count,

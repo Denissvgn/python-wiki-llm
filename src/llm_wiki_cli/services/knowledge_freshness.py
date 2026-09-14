@@ -413,6 +413,14 @@ def _validate_live_producer(
         ) from exc
 
 
+def structural_freshness_modeled(concept: ConceptRecord) -> bool:
+    """Whether the contract models this concept, independent of basis presence."""
+    basis = concept.facets.structure.basis
+    return concept.document.page_kind in _STRUCTURAL_PAGE_KINDS and not (
+        basis is not None and basis.scope is ObservationScope.AGGREGATE
+    )
+
+
 def _evaluate_concept(
     knowledge: KnowledgeIndex,
     concept: ConceptRecord,
@@ -430,11 +438,7 @@ def _evaluate_concept(
             compared=False,
         )
 
-    if (
-        concept.document.page_kind not in _STRUCTURAL_PAGE_KINDS
-        or recorded_raw is not None
-        and recorded_raw.scope is ObservationScope.AGGREGATE
-    ):
+    if not structural_freshness_modeled(concept):
         return _result(
             concept.locator,
             ComputedFreshness.UNKNOWN,

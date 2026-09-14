@@ -11,6 +11,7 @@ is merely being loaded.
 from __future__ import annotations
 
 import json
+import sys
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -788,6 +789,42 @@ def _status_payload(
     }
 
 
+def _run_coverage(args) -> None:
+    from ..api import LlmWikiApiError, get_knowledge_coverage
+    from ..services.knowledge_coverage import render_knowledge_coverage
+
+    try:
+        payload = get_knowledge_coverage(
+            src_dir=args.src_dir,
+            wiki_dir=args.wiki_dir,
+            live=args.live,
+            allow_external_src=args.allow_external_src,
+            source_selection=args.source_selection,
+            helper_cache_dir=args.helper_cache_dir,
+        )
+    except LlmWikiApiError as exc:
+        if args.format == "json":
+            print(
+                json.dumps(
+                    {
+                        "state": "error",
+                        "error": {
+                            "code": exc.code,
+                            "message": str(exc),
+                            "details": exc.details,
+                        },
+                    }
+                ),
+                file=sys.stderr,
+            )
+            raise SystemExit(1) from exc
+        raise
+    if args.format == "json":
+        _print_payload(payload)
+    else:
+        print(render_knowledge_coverage(payload), end="")
+
+
 def _run_status(args) -> None:
     if args.event_limit > MAX_EVENT_LIMIT:
         raise GovernanceError(
@@ -922,6 +959,8 @@ def run(args) -> None:
         _run_init(args)
     elif action == "status":
         _run_status(args)
+    elif action == "coverage":
+        _run_coverage(args)
     elif action == "move":
         _run_move(args)
     elif action == "alias":

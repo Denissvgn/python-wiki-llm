@@ -1851,6 +1851,23 @@ managed instruction block or change its compact/expanded delivery, use
 
 ## `knowledge`
 
+Read eligibility and freshness diagnostics without enabling governance:
+
+```bash
+llm-wiki knowledge coverage --wiki-dir wiki
+llm-wiki knowledge coverage --src-dir src --wiki-dir wiki --live --format json
+```
+
+The default reads the committed snapshot only. `--live` performs source
+extraction with prepared helpers; `--source-selection`, `--helper-cache-dir`
+and `--allow-external-src` preserve the corresponding source options.
+The versioned report separates modeled concepts, intentionally unmodeled
+content, actual comparisons and missing/incompatible bases. It is advisory;
+`unknown` over all concepts is not a defect rate. Unavailable knowledge has
+null counts, while a valid empty model has zeroes. JSON failures leave stdout
+empty and emit a safe code/field record on stderr with exit 1; usage errors
+retain exit 2. See [coverage diagnostics](native-knowledge.md#coverage-diagnostics).
+
 Initialize durable identity, inspect governance, record explicit lifecycle or
 section review events, stage ambiguous moves, and run application-owned pure
 verification checkers:

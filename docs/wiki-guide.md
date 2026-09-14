@@ -117,6 +117,10 @@ The original `PathPolicyError` name remains an alias for
 `InvalidRequestError`; `ExtractionError` and `BootstrapError` remain aliases
 for `WorkspaceStateError`. The original internal exception is available
 through `__cause__`.
+Native query operations also supply safe machine-readable codes and field
+details; see [native query failures](native-knowledge.md#native-query-failures).
+The [native knowledge tutorial](../examples/native-knowledge/README.md) shows
+a library consumer using shared inspection, coverage and qualified packets.
 
 The package has a small required Python runtime footprint. `PyYAML>=6` parses
 user-supplied OpenAPI YAML, and Python versions older than 3.11 use `tomli` for

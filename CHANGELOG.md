@@ -9,11 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Shared Python/MCP native concept inspection with explicit snapshot/live
+  scope, bounded graph and section results, and concurrent-input checks.
+- Versioned native coverage diagnostics through Python, MCP and
+  `knowledge coverage`, separating modeled observations, actual comparisons,
+  missing bases and intentionally unmodeled content.
+- A downstream native-knowledge tutorial covering source drift, authored
+  follow-up, packet intent checks and live reconciliation without agent setup.
 - Runnable Python, FastAPI, Go HTTP, and plugin-hook tutorials, with a
   self-contained guide included in the exported documentation-hooks sample.
 
 ### Fixed
 
+- Native query failures provide safe codes and fields while preserving public
+  exception catch points and local debugging causes. Missing live helpers,
+  invalid projections and concurrent mutations remain distinguishable.
 - Search and maintenance-queue commands reject invalid inputs before reading
   the workspace. Search responses disclose their mode and bounds; queues include
   the requested limit in their report and identity.

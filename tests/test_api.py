@@ -265,11 +265,14 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
         "allow_external_src",
         "read_only",
         "source_selection",
+        "helper_cache_dir",
     ]
     assert builder_params["src_dir"].default == "."
     assert builder_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY
     assert builder_params["limit"].default == 20
     assert builder_params["read_only"].default is True
+    assert builder_params["helper_cache_dir"].default is None
+    assert builder_params["helper_cache_dir"].kind is inspect.Parameter.KEYWORD_ONLY
 
     common = [
         "locator_or_exact_route",
@@ -1139,7 +1142,9 @@ def test_query_filter_iteration_failure_is_a_stable_invalid_request():
 
     assert exc_info.value.code == "invalid-request"
     assert exc_info.value.details == {"field": "kinds"}
-    assert "could not be read as an iterable" in str(exc_info.value)
+    assert f"iterable with at most {api.MAX_QUERY_FILTER_VALUES} values" in str(exc_info.value)
+    assert "iterator implementation leaked" not in str(exc_info.value)
+    assert isinstance(exc_info.value.__cause__, RuntimeError)
 
 
 def test_build_context_forwards_opt_in_freshness_policy(monkeypatch):
@@ -2266,10 +2271,7 @@ def test_knowledge_wrappers_map_query_errors_without_building_service(
     )
     service = _FailingKnowledgeService()
 
-    with pytest.raises(
-        LlmWikiApiError,
-        match="knowledge query failed",
-    ) as exc_info:
+    with pytest.raises(api.InvalidRequestError) as exc_info:
         getattr(api, function_name)(
             "llm-wiki://entities/User",
             service=service,
@@ -2277,6 +2279,9 @@ def test_knowledge_wrappers_map_query_errors_without_building_service(
         )
 
     assert isinstance(exc_info.value.__cause__, api.DocumentationQueryError)
+    assert exc_info.value.code == "invalid-request"
+    assert exc_info.value.details == {"field": "request"}
+    assert "knowledge query failed" not in str(exc_info.value)
 
 
 @pytest.mark.parametrize(

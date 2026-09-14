@@ -1,0 +1,9 @@
+{
+  "protocol": "llm-wiki-context/v2",
+  "budget_tokens": 4000,
+  "focus": ["all"],
+  "format": "json",
+  "filters": {"language": "python"},
+  "prefer_fresh": false,
+  "knowledge_mode": "auto"
+}

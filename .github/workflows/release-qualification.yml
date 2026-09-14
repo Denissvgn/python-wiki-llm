@@ -135,7 +135,9 @@ jobs:
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
             tests/release_artifact_smoke.py \
-            tests/fixtures/packet-artifact-parity.py
+            tests/fixtures/packet-artifact-parity.py \
+            tests/fixtures/native-artifact-consumer.py \
+            examples/native-knowledge
           harness_sha256="$(sha256sum \
             "${RUNNER_TEMP}/frozen/qualification-harnesses.tar" | cut -d' ' -f1)"
           echo "harness-sha256=${harness_sha256}" >> "${GITHUB_OUTPUT}"

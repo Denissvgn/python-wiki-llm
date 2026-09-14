@@ -2,6 +2,10 @@
 
 This guide describes implemented capabilities, optional integrations, and
 candidate evaluation designs. It does not report completed field evaluations.
+Percentage and cohort targets below are hypotheses for adopter evaluations,
+not established outcomes or library completion thresholds. The
+[runnable native tutorial](../examples/native-knowledge/README.md) demonstrates
+the core decision loop in a downstream project.
 
 ## Executive conclusion
 
@@ -231,7 +235,10 @@ inputs, governance state, or canonical Markdown.
    rewriting the wiki.
 2. Strict validation loads the committed manifest, surface, Markdown, and
    knowledge projection as one snapshot.
-3. A live comparison classifies promised module/entity observations.
+3. A live comparison classifies modeled structural observations. Use
+   `knowledge coverage --live` to separate eligibility, actual comparisons and
+   intentionally unmodeled kinds. Use `queue --format json` for existing ranked
+   page follow-up, preserving its actionable/informational classifications.
 4. Structural, projection, governance, review, and verification failures keep
    the ordinary `ci-check` behavior. Native drift findings such as changed or
    missing sources and incompatible bases are emitted as warning diagnostics
@@ -258,12 +265,14 @@ remain valid, without silently changing repository merge policy.
 ### Success measures
 
 - at least 80% of surfaced drift findings are actionable;
-- a planned four-week evaluation across three to five repositories surfaces at
-  least five real stale-documentation defects;
+- a planned four-week evaluation across three to five repositories records
+  maintainer-labeled drift findings relative to source-change volume;
 - fewer than one false alarm per ten pull requests;
-- `unknown` plus `basis-incompatible` below 20% after setup stabilization;
+- track unknown and incompatible outcomes among **modeled** concepts, keeping
+  missing bases in that population and reporting unmodeled content separately;
 - less than 15% CI wall-time overhead relative to the existing documentation
-  validation command.
+  validation command at equivalent validation scope, with helper preparation
+  and cold/warm conditions recorded. Low defect incidence is not a failure by itself.
 
 ### Boundaries
 
@@ -324,11 +333,18 @@ The CLI selects the same explicit v2 contract as a raw
 llm-wiki context --budget 32000 --knowledge-mode auto --read-only
 ```
 
+For a filter-bearing handoff, use `context --request expected-request.json
+--format packet`. Consumers must compare the embedded request to their own
+intent, validate canonical bytes, and reconcile for live currentness. These
+are separate decisions; see [qualified packets](qualified-context-packets.md).
+
 Other supported interfaces are:
 
 - Python `query_documentation(...)` for bounded exact or supplied-impact
   queries, and `build_documentation_query_service(...)` when several live
   full-inventory queries should share one service;
+- Python/MCP `inspect_concept` for one exact concept, typed edges, sections and
+  coverage from a common view; snapshot-only by default, live by explicit opt-in;
 - MCP `query_documentation`, `get_context`, `get_context_packet`, and the
   dedicated exact concept and traversal tools.
 
@@ -370,8 +386,9 @@ points or reduces time/tokens by at least 15% without a quality regression.
 - context output limits emitted material, not necessarily scan cost;
 - status-only operations do not evaluate freshness;
 - a `found: false` result under unavailable knowledge is not proof of absence;
-- loaded knowledge is inert, but building a live service can use configured,
-  trusted extractor plugins.
+- loaded knowledge is inert; the public live query builder, native inspection
+  and qualified packets use built-in source adapters with project plugins
+  disabled. Other extraction workflows have their own explicit plugin policies.
 
 ## NK-UC-003 — Evidence-backed change-impact analysis
 

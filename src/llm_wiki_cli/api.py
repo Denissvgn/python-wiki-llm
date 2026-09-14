@@ -40,6 +40,8 @@ from .api_types import (
     ExtractSourceResult,
     FlowForEntrypointResult,
     KnowledgeMode,
+    KnowledgeCoverageResult,
+    NativeInspectionResult,
     MarkdownContextResult,
     PagesForSymbolResult,
     RelatedConceptsResult,
@@ -155,6 +157,8 @@ from .services.documentation_wiki_input import (
 
 from .services.entrypoints import build_flow
 from .services.wiki_surface_index import evaluate_surface_index
+from .services.source_snapshot import SourceSnapshotError
+from .services.source_selection import SourceSelectionError
 
 if TYPE_CHECKING:
     from .services.calibration.controller import (
@@ -627,7 +631,11 @@ def _raise_api_error(exc: Exception) -> NoReturn:
     raise WorkspaceStateError(str(exc)) from exc
 
 
-def _api_boundary(function: Callable[_P, _R]) -> Callable[_P, _R]:
+def _api_boundary(
+    function: Callable[_P, _R],
+    *,
+    translate_error: Callable[[Exception], NoReturn] = _raise_api_error,
+) -> Callable[_P, _R]:
     """Wrap a synchronous public callable in the stable exception taxonomy."""
 
     signature = inspect.signature(function)
@@ -640,14 +648,326 @@ def _api_boundary(function: Callable[_P, _R]) -> Callable[_P, _R]:
         try:
             return function(*args, **kwargs)
         except LlmWikiApiError as exc:
-            if type(exc) in _API_ERROR_LEAVES:
+            if translate_error is _raise_api_error and type(exc) in _API_ERROR_LEAVES:
                 raise
-            _raise_api_error(exc)
+            translate_error(exc)
         except Exception as exc:
-            _raise_api_error(exc)
+            translate_error(exc)
 
     setattr(wrapped, "__llm_wiki_api_boundary__", True)
     return wrapped
+
+
+_NATIVE_QUERY_ERROR_FIELDS = frozenset(
+    {
+        "request",
+        "operation",
+        "value",
+        "locator_or_exact_route",
+        "limit",
+        "paths",
+        "diff",
+        "direction",
+        "kinds",
+        "origins",
+        "resolutions",
+        "ownership",
+        "include_evidence",
+        "include_raw_evidence",
+        "allow_full_inventory",
+        "source_selection",
+        "src_dir",
+        "wiki_dir",
+        "path",
+        "read_only",
+        "allow_external_src",
+        "helper_cache_dir",
+        "live",
+        "service",
+        "context",
+    }
+)
+
+
+def _raise_native_query_api_error(exc: Exception) -> NoReturn:
+    """Retain public catch points while exposing only fixed query diagnostics."""
+    from .services.knowledge_loader import KnowledgeStateLoadError
+
+    chain: list[BaseException] = []
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        chain.append(current)
+        current = current.__cause__
+
+    try:
+        _raise_api_error(exc)
+    except LlmWikiApiError as mapped:
+        leaf = type(mapped)
+        default_code = (
+            "invalid-request"
+            if isinstance(mapped, InvalidRequestError)
+            else "artifact-integrity-error"
+            if isinstance(mapped, ArtifactIntegrityError)
+            else "workspace-state-error"
+        )
+        code = (
+            mapped.code
+            if mapped.code
+            in {
+                "invalid-request",
+                "artifact-integrity-error",
+                "workspace-state-error",
+                "context-read-mutated",
+                "path-policy-error",
+                "full-inventory-required",
+            }
+            else default_code
+        )
+        field = "request"
+        for item in chain:
+            details = getattr(item, "details", None)
+            candidate = details.get("field") if isinstance(details, Mapping) else None
+            candidate = candidate or getattr(item, "field", None)
+            if isinstance(candidate, str) and candidate in _NATIVE_QUERY_ERROR_FIELDS:
+                field = candidate
+                if candidate != "request":
+                    break
+        if any(isinstance(item, SourceSelectionError) for item in chain):
+            field = "source_selection"
+        path_error = next(
+            (item for item in chain if isinstance(item, PathValidationError)), None
+        )
+        if path_error is not None and field == "request":
+            field = context_packet_service.describe_context_packet_error(path_error)[
+                "details"
+            ]["field"]
+        mutation = next(
+            (
+                item
+                for item in chain
+                if isinstance(
+                    item, context_packet_service.ContextPacketSourceMutationError
+                )
+            ),
+            None,
+        )
+        load_error = next(
+            (item for item in chain if isinstance(item, KnowledgeStateLoadError)), None
+        )
+        if mutation is not None:
+            leaf, code = WorkspaceStateError, "context-read-mutated"
+            field = "wiki_dir" if mutation.facet == "wiki" else "src_dir"
+        elif any(
+            isinstance(item, (SourceSnapshotError, extract_cmd.ExtractorFailureError))
+            for item in chain
+        ) or any(
+            isinstance(item, context_cmd.ProtocolRequestError)
+            and getattr(item, "field", None) == "src_dir"
+            for item in chain
+        ):
+            leaf, code, field = WorkspaceStateError, "workspace-state-error", "src_dir"
+        elif any(
+            isinstance(item, context_packet_service.ContextPacketUnavailableError)
+            for item in chain
+        ):
+            leaf, code = WorkspaceStateError, "workspace-state-error"
+        elif load_error is not None:
+            missing = all(
+                issue.code == "artifact-absent" for issue in load_error.issues
+            )
+            leaf = WorkspaceStateError if missing else ArtifactIntegrityError
+            code = "workspace-state-error" if missing else "artifact-integrity-error"
+            field = "wiki_dir"
+        elif path_error is not None:
+            failure = context_packet_service.describe_context_packet_error(path_error)
+            code, field = failure["code"], failure["details"]["field"]
+            leaf = (
+                WorkspaceStateError
+                if code == "workspace-state-error"
+                else InvalidRequestError
+            )
+        elif any(isinstance(item, wiki_surface.WikiSurfacePathError) for item in chain):
+            leaf, code, field = InvalidRequestError, "path-policy-error", "wiki_dir"
+
+        if code == "context-read-mutated":
+            message = (
+                "Source or wiki changed during the read. Retry with stable inputs."
+            )
+        elif code == "path-policy-error":
+            message = "Path must stay within the allowed workspace and satisfy its path policy."
+        elif code == "full-inventory-required":
+            message = (
+                "Set allow_full_inventory=true to authorize a full-inventory query."
+            )
+        elif issubclass(leaf, WorkspaceStateError):
+            message = "A required documentation input or read capability is unavailable. Check access and prepared helpers."
+        elif issubclass(leaf, ArtifactIntegrityError):
+            message = "Documentation artifacts do not satisfy the supported integrity contract."
+        else:
+            message = {
+                "limit": "limit must be a positive integer; values above 100 are capped.",
+                "kinds": "Supply an iterable with at most 100 values and supported relationship kinds.",
+                "origins": "Supply an iterable with at most 100 values and supported origins.",
+                "resolutions": "Supply an iterable with at most 100 values and supported resolutions.",
+                "source_selection": "Supply the recorded --source-selection profile; run llm-wiki sync after an intentional profile change.",
+            }.get(
+                field,
+                "Invalid documentation query input. Check the documented type, value and bounds.",
+            )
+        cause = (
+            exc.__cause__
+            if isinstance(exc, LlmWikiApiError) and exc.__cause__ is not None
+            else exc
+        )
+        raise leaf(
+            f"{field}: {message}", code=code, details={"field": field}
+        ) from cause
+
+
+def _native_query_boundary(function: Callable[_P, _R]) -> Callable[_P, _R]:
+    return _api_boundary(function, translate_error=_raise_native_query_api_error)
+
+
+@_native_query_boundary
+def get_knowledge_coverage(
+    *,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    live: bool = False,
+    service: DocumentationGraphQueryService | None = None,
+    allow_external_src: bool = False,
+    source_selection: str | Path | None = None,
+    helper_cache_dir: str | Path | None = None,
+) -> KnowledgeCoverageResult:
+    """Explain modeled coverage from a snapshot, live capture or existing service.
+
+    A supplied service retains its captured read scope. Source/helper options
+    apply only to a new live capture; this operation never initializes agents
+    or writes projections.
+    """
+    from .services.knowledge_consumption import (
+        KnowledgeReadView,
+        load_knowledge_read_view,
+    )
+    from .services.knowledge_coverage import build_knowledge_coverage
+
+    for field, value in (("live", live), ("allow_external_src", allow_external_src)):
+        if not isinstance(value, bool):
+            raise InvalidRequestError(
+                "must be a boolean", code="invalid-request", details={"field": field}
+            )
+    if helper_cache_dir is not None and not isinstance(helper_cache_dir, (str, Path)):
+        raise InvalidRequestError(
+            "helper cache must be a path",
+            code="invalid-request",
+            details={"field": "helper_cache_dir"},
+        )
+    if service is not None:
+        if (
+            live
+            or source_selection is not None
+            or helper_cache_dir is not None
+            or src_dir != "."
+            or wiki_dir != DEFAULT_WIKI_DIR
+            or allow_external_src
+        ):
+            raise InvalidRequestError(
+                "service owns its read scope",
+                code="invalid-request",
+                details={"field": "service"},
+            )
+        view = getattr(service, "knowledge_view", None)
+        if not isinstance(view, KnowledgeReadView):
+            raise InvalidRequestError(
+                "service requires a native read view",
+                code="invalid-request",
+                details={"field": "service"},
+            )
+        return cast(KnowledgeCoverageResult, build_knowledge_coverage(view))
+    if live:
+        captured = context_packet_service.capture_context_read(
+            src_dir,
+            wiki_dir,
+            read_only=True,
+            allow_external_src=allow_external_src,
+            source_selection=source_selection,
+            helper_cache_dir=None
+            if helper_cache_dir is None
+            else str(helper_cache_dir),
+        )
+        payload = build_knowledge_coverage(captured.knowledge_view)
+        context_packet_service._assert_source_unchanged(
+            captured.source_snapshot, captured.source_anchor
+        )
+        context_packet_service._assert_wiki_unchanged(
+            captured.wiki_root, captured.wiki_anchor
+        )
+    else:
+        wiki_root = _validate_wiki_dir(wiki_dir)
+        anchor = context_packet_service._wiki_anchor(wiki_root)
+        view = load_knowledge_read_view(wiki_root, snapshot_only=True)
+        payload = build_knowledge_coverage(view)
+        context_packet_service._assert_wiki_unchanged(wiki_root, anchor)
+    return cast(KnowledgeCoverageResult, payload)
+
+
+@_native_query_boundary
+def inspect_concept(
+    locator_or_exact_route: object,
+    *,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    live: bool = False,
+    limit: int = 20,
+    include_evidence: bool = False,
+    allow_external_src: bool = False,
+    source_selection: str | Path | None = None,
+    helper_cache_dir: str | Path | None = None,
+) -> NativeInspectionResult:
+    """Inspect a concept, typed edges, sections and coverage from one read.
+
+    Snapshot-only by default. ``live=True`` performs one full source capture.
+    Each collection uses ``limit`` (capped at 100); each query retains its
+    64 KiB bound, and the whole result is capped at 256 KiB. Edge evidence is
+    opt-in. Source/wiki mutation during composition aborts the operation.
+    """
+    from .services.native_inspection import inspect_native_concept
+
+    query = _normalize_query_input(
+        lambda: normalize_concept_coordinate(locator_or_exact_route)
+    )
+    bounded_limit = _normalize_query_limit(limit)
+    for field, value in (
+        ("live", live),
+        ("include_evidence", include_evidence),
+        ("allow_external_src", allow_external_src),
+    ):
+        if not isinstance(value, bool):
+            raise InvalidRequestError(
+                "must be a boolean", code="invalid-request", details={"field": field}
+            )
+    if helper_cache_dir is not None and not isinstance(helper_cache_dir, (str, Path)):
+        raise InvalidRequestError(
+            "must be a path",
+            code="invalid-request",
+            details={"field": "helper_cache_dir"},
+        )
+    return cast(
+        NativeInspectionResult,
+        inspect_native_concept(
+            query,
+            src_dir=src_dir,
+            wiki_root=_validate_wiki_dir(wiki_dir),
+            live=live,
+            limit=bounded_limit,
+            include_evidence=include_evidence,
+            allow_external_src=allow_external_src,
+            source_selection=source_selection,
+            helper_cache_dir=helper_cache_dir,
+        ),
+    )
 
 
 @_api_boundary
@@ -1104,7 +1424,7 @@ def doctor(
     return cast(DoctorResult, report.to_payload())
 
 
-@_api_boundary
+@_native_query_boundary
 def build_documentation_query_service(
     src_dir: str = ".",
     *,
@@ -1113,9 +1433,28 @@ def build_documentation_query_service(
     allow_external_src: bool = False,
     read_only: bool = True,
     source_selection: str | Path | None = None,
+    helper_cache_dir: str | Path | None = None,
 ) -> DocumentationGraphQueryService:
     """Build a supported graph query service over derived documentation data."""
     try:
+        for field, value in (
+            ("read_only", read_only),
+            ("allow_external_src", allow_external_src),
+        ):
+            if not isinstance(value, bool):
+                raise InvalidRequestError(
+                    "must be a boolean",
+                    code="invalid-request",
+                    details={"field": field},
+                )
+        if helper_cache_dir is not None and not isinstance(
+            helper_cache_dir, (str, Path)
+        ):
+            raise InvalidRequestError(
+                "must be a path",
+                code="invalid-request",
+                details={"field": "helper_cache_dir"},
+            )
         bounded_limit = normalize_documentation_query_limit(limit)
         src_root = validate_source_root(
             src_dir,
@@ -1123,6 +1462,17 @@ def build_documentation_query_service(
             allow_external=allow_external_src,
         )
         wiki_root = _validate_wiki_dir(wiki_dir)
+        if not src_root.is_dir():
+            raise WorkspaceStateError(
+                "Source directory is unavailable.",
+                code="workspace-state-error",
+                details={"field": "src_dir"},
+            )
+        helper_options: dict[str, Any] = (
+            {}
+            if helper_cache_dir is None
+            else {"helper_cache_dir": Path(helper_cache_dir)}
+        )
         return build_live_documentation_query_service(
             source_root=src_root,
             wiki_root=wiki_root,
@@ -1141,7 +1491,10 @@ def build_documentation_query_service(
             verification_view_attacher=attach_machine_verification_read_view,
             verification_summarizer=verification_summaries_for_concepts,
             service_factory=DocumentationGraphQueryService,
+            **helper_options,
         )
+    except LlmWikiApiError:
+        raise
     except PathValidationError as exc:
         if _caused_by(exc, OSError):
             raise WorkspaceStateError(str(exc)) from exc
@@ -1484,7 +1837,7 @@ def pages_for_symbol(
     )
 
 
-@_api_boundary
+@_native_query_boundary
 def get_concept(
     locator_or_exact_route: object,
     *,
@@ -1517,7 +1870,7 @@ def get_concept(
     )
 
 
-@_api_boundary
+@_native_query_boundary
 def list_concept_sections(
     locator_or_exact_route: object,
     *,
@@ -1555,7 +1908,7 @@ def list_concept_sections(
     )
 
 
-@_api_boundary
+@_native_query_boundary
 def related_concepts(
     locator_or_exact_route: object,
     *,
@@ -1604,7 +1957,7 @@ def related_concepts(
     )
 
 
-@_api_boundary
+@_native_query_boundary
 def traverse_typed_graph(
     locator_or_exact_route: object,
     *,
@@ -1676,7 +2029,7 @@ def traverse_typed_graph(
     )
 
 
-@_api_boundary
+@_native_query_boundary
 def explain_evidence(
     locator_or_exact_route: object,
     *,
@@ -2185,7 +2538,7 @@ def _impact_query(
     )
 
 
-@_api_boundary
+@_native_query_boundary
 def query_documentation(
     request: Mapping[str, Any],
     *,
@@ -2737,6 +3090,10 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "NativeInspectionResult",
+    "inspect_concept",
+    "KnowledgeCoverageResult",
+    "get_knowledge_coverage",
     "ArtifactIntegrityError",
     "BOOTSTRAP_SUMMARY_SCHEMA_VERSION",
     "CONTEXT_KNOWLEDGE_PROTOCOL_VERSION",

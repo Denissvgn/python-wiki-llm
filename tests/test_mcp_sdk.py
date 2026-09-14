@@ -59,11 +59,11 @@ def test_optional_sdk_registration_when_installed(
     tools, resources, templates = asyncio.run(list_registrations())
     from mcp import types as mcp_types
 
-    async def call_packet(arguments):
+    async def call_packet(arguments, name="get_context_packet"):
         handler = server._mcp_server.request_handlers[mcp_types.CallToolRequest]
         result = await handler(mcp_types.CallToolRequest(
             method="tools/call",
-            params=mcp_types.CallToolRequestParams(name="get_context_packet", arguments=arguments),
+            params=mcp_types.CallToolRequestParams(name=name, arguments=arguments),
         ))
         assert isinstance(result.root, mcp_types.CallToolResult)
         return result.root
@@ -98,6 +98,41 @@ def test_optional_sdk_registration_when_installed(
     assert "packet" not in failed.structuredContent
     assert str(project) not in json.dumps(failed.structuredContent)
 
+    for name in ("get_concept", "related_concepts", "list_concept_sections",
+                 "traverse_typed_graph", "explain_evidence", "inspect_concept"):
+        failed = asyncio.run(call_packet({
+            "locator_or_exact_route": "llm-wiki://entities/User", "limit": 0,
+        }, name))
+        assert failed.isError is True
+        assert failed.structuredContent is not None
+        assert failed.structuredContent["error"]["code"] == "invalid-request"
+        assert failed.structuredContent["error"]["details"] == {"field": "limit"}
+        assert str(project) not in json.dumps(failed.structuredContent)
+
+    failed = asyncio.run(call_packet({"request": {
+        "operation": "concept", "value": "llm-wiki://entities/User",
+        "PRIVATE_UNKNOWN_FIELD": "PRIVATE_VALUE",
+    }}, "query_documentation"))
+    assert failed.isError is True
+    assert failed.structuredContent is not None
+    assert failed.structuredContent["error"]["code"] == "invalid-request"
+    assert "PRIVATE_" not in json.dumps(failed.structuredContent)
+    absent = asyncio.run(call_packet({}, "get_knowledge_coverage"))
+    assert absent.isError is True
+    assert absent.structuredContent is not None
+    assert absent.structuredContent["error"]["code"] == "workspace-state-error"
+    assert absent.structuredContent["error"]["details"] == {"field": "wiki_dir"}
+    coverage = packet_payload(asyncio.run(call_packet({"live": True}, "get_knowledge_coverage")))
+    assert coverage["schema_version"] == "llm-wiki-knowledge-coverage/v1"
+    assert coverage["counts"] is None
+    assert coverage["freshness_evaluated"] is False
+    inspection = packet_payload(asyncio.run(call_packet({
+        "locator_or_exact_route": "llm-wiki://entities/User", "live": True,
+    }, "inspect_concept")))
+    assert inspection["schema_version"] == "llm-wiki-native-inspection/v1"
+    assert inspection["coverage"]["availability"] == "absent"
+    assert inspection["concept"]["found"] is False
+
     tools_by_name = {tool.name: tool for tool in tools}
     for name, expected_fields in {
         "get_concept": {"locator_or_exact_route", "limit"},
@@ -122,6 +157,7 @@ def test_optional_sdk_registration_when_installed(
             "limit",
         },
         "explain_evidence": {"locator_or_exact_route", "limit"},
+        "inspect_concept": {"locator_or_exact_route", "live", "limit", "include_evidence"},
     }.items():
         schema = tools_by_name[name].inputSchema
         assert set(schema["properties"]) == expected_fields

@@ -742,6 +742,17 @@ def _add_knowledge_command(subparsers):
         help="Maximum lifecycle and review events shown per concept",
     )
 
+    coverage = actions.add_parser(
+        "coverage", help="Explain modeled, unmodeled and compared native observations",
+    )
+    _add_knowledge_wiki_argument(coverage)
+    coverage.add_argument("--src-dir", default=".")
+    coverage.add_argument("--allow-external-src", action="store_true")
+    coverage.add_argument("--live", action="store_true", help="Capture a full source inventory and evaluate freshness; default is snapshot-only")
+    coverage.add_argument("--format", choices=("text", "json"), default="text")
+    _add_source_selection_argument(coverage)
+    _add_helper_cache_argument(coverage)
+
     move = actions.add_parser(
         "move",
         help="Explicitly carry one UID to a new current locator and natural key",
