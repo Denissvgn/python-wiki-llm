@@ -124,6 +124,7 @@ flowchart TD
 | [verify](modules/verify.md) | 2 | 9 |
 | [go_calls](modules/go_calls.md) | 2 | 0 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
+| [maintenance_queue](modules/maintenance_queue.md) | 2 | 4 |
 | [mcp_server](modules/mcp_server.md) | 2 | 21 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
 | [python_observations](modules/python_observations.md) | 2 | 2 |
@@ -184,7 +185,6 @@ flowchart TD
 | [impact](modules/impact.md) | 1 | 5 |
 | [knowledge_generation](modules/knowledge_generation.md) | 1 | 15 |
 | [lockfile](modules/lockfile.md) | 1 | 0 |
-| [maintenance_queue](modules/maintenance_queue.md) | 1 | 4 |
 | [obsidian](modules/obsidian.md) | 1 | 11 |
 | [packages](modules/packages.md) | 1 | 3 |
 | [packet_field_policy](modules/packet_field_policy.md) | 1 | 0 |
@@ -196,7 +196,7 @@ flowchart TD
 | [render_summary](modules/render_summary.md) | 0 | 1 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
-| [cli](modules/cli.md) | 0 | 39 |
+| [cli](modules/cli.md) | 0 | 40 |
 | [hook_cmd](modules/hook_cmd.md) | 0 | 1 |
 | [eval_lite___init__](modules/eval_lite___init__.md) | 0 | 1 |
 | [detectors](modules/detectors.md) | 0 | 0 |

@@ -36,7 +36,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_concept | service.get_concept | 1177 | `service.get_concept(locator_or_exact_route, limit=limit)` |
+| get_concept | service.get_concept | 1178 | `service.get_concept(locator_or_exact_route, limit=limit)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_concept` | `service.get_concept` | 1177 |
+| unresolved_call | `get_concept` | `service.get_concept` | 1178 |
 
 ## Behavior
 

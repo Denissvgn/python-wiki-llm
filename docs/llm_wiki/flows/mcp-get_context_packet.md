@@ -56,11 +56,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_context_packet | service.get_context_packet | 1288 | `service.get_context_packet(**=options)` |
-| get_context_packet | str | 1298 | `str(exc)` |
-| get_context_packet | CallToolResult | 1302 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| get_context_packet | TextContent | 1304 | `TextContent(type='text', text=json.dumps(...))` |
-| get_context_packet | json.dumps | 1304 | `json.dumps(failure, sort_keys=True)` |
+| get_context_packet | service.get_context_packet | 1289 | `service.get_context_packet(**=options)` |
+| get_context_packet | str | 1299 | `str(exc)` |
+| get_context_packet | CallToolResult | 1303 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| get_context_packet | TextContent | 1305 | `TextContent(type='text', text=json.dumps(...))` |
+| get_context_packet | json.dumps | 1305 | `json.dumps(failure, sort_keys=True)` |
 
 ### Boundary effects
 
@@ -70,10 +70,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_context_packet` | `service.get_context_packet` | 1288 |
-| external_call | `get_context_packet` | `CallToolResult` | 1302 |
-| external_call | `get_context_packet` | `TextContent` | 1304 |
-| external_call | `get_context_packet` | `json.dumps` | 1304 |
+| unresolved_call | `get_context_packet` | `service.get_context_packet` | 1289 |
+| external_call | `get_context_packet` | `CallToolResult` | 1303 |
+| external_call | `get_context_packet` | `TextContent` | 1305 |
+| external_call | `get_context_packet` | `json.dumps` | 1305 |
 
 ## Behavior
 
