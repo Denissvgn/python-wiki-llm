@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from ..api_types import QueryCostDisclosure
 from . import context_packet
 from .documentation_queries import (
     DocumentationQueryError,
@@ -68,14 +69,15 @@ def inspect_native_concept(
     sections = service.list_concept_sections(coordinate)
     assert service.knowledge_view is not None
     coverage = build_knowledge_coverage(service.knowledge_view)
+    cost: QueryCostDisclosure = {
+        "scope": "full-inventory" if live else "snapshot-index-only",
+        "full_inventory_performed": live,
+        "supplied_paths": 0,
+    }
     result = {
         "schema_version": NATIVE_INSPECTION_SCHEMA_VERSION,
         "read_scope": coverage["read_scope"],
-        "cost": {
-            "scope": "full-inventory" if live else "snapshot-only",
-            "full_inventory_performed": live,
-            "supplied_paths": [],
-        },
+        "cost": cost,
         "concept": concept,
         "graph": graph,
         "sections": sections,

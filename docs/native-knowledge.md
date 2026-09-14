@@ -826,7 +826,9 @@ workspace; `allow_external_src` applies only to the source root.
 The result schema is `llm-wiki-native-inspection/v1`. `concept`, `graph`, and
 `sections` preserve their individual availability, freshness, resolution,
 coverage and bounds. `coverage` is described below; `read_scope` and `cost`
-disclose what was read. Limits are explicit: one target, default 20 and maximum
+disclose what was read. Cost uses the existing query scopes
+`snapshot-index-only` or `full-inventory`, with `supplied_paths: 0` for an exact
+target. Limits are explicit: one target, default 20 and maximum
 100 entries per collection, 64 KiB per query, 16 KiB for coverage, and 256 KiB
 for the complete compact JSON result. `truncated` also reflects component
 truncation. Edge evidence samples remain opt-in with `include_evidence=True`;

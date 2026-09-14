@@ -53,7 +53,9 @@ def test_live_inspection_matches_independent_queries_with_one_inventory(
     result = api.inspect_concept(TARGET, src_dir="src", wiki_dir="wiki", live=True)
     assert counts == {"inventory": 1, "service": 1}
     assert {key: result[key] for key in expected} == expected
-    assert result["cost"]["full_inventory_performed"] is True
+    assert result["cost"] == {
+        "scope": "full-inventory", "full_inventory_performed": True, "supplied_paths": 0,
+    }
     assert result["coverage"]["counts"] is not None
     assert result["concept"]["concept"] is not None
     assert result["coverage"]["counts"]["compared"] == 2
@@ -85,7 +87,9 @@ def test_snapshot_never_scans_source_and_keeps_scope_after_source_change(
         TARGET, limit=1, include_evidence=True
     )
     assert snapshot["read_scope"] == "snapshot-only"
-    assert snapshot["cost"]["full_inventory_performed"] is False
+    assert snapshot["cost"] == {
+        "scope": "snapshot-index-only", "full_inventory_performed": False, "supplied_paths": 0,
+    }
     assert snapshot["concept"]["knowledge"]["freshness_evaluated"] is False
     assert snapshot["graph"]["include_evidence"] is True
     assert snapshot["graph"]["returned"] <= 1
