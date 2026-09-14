@@ -36,7 +36,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| traverse_typed_graph | service.traverse_typed_graph | 1236 | `service.traverse_typed_graph(locator_or_exact_route, direction=direction, kinds=kinds, origins=origins, resolutions=resolutions, include_evidence=include_evidence, limit=limit)` |
+| traverse_typed_graph | service.traverse_typed_graph | 1237 | `service.traverse_typed_graph(locator_or_exact_route, direction=direction, kinds=kinds, origins=origins, resolutions=resolutions, include_evidence=include_evidence, limit=limit)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `traverse_typed_graph` | `service.traverse_typed_graph` | 1236 |
+| unresolved_call | `traverse_typed_graph` | `service.traverse_typed_graph` | 1237 |
 
 ## Behavior
 

@@ -144,15 +144,32 @@ def test_queue_limit_metadata_and_counts(count, limit):
         {"canonical_path": f"modules/{i}.md", "kind": "modules", "role": "mixed"}
         for i in reversed(range(count))
     ]
-    result = compose_queue(pages, [], {}, {}, {}, limit=limit)
+    issues = {
+        page["canonical_path"]: [
+            LintIssue("placeholder", "Document the module behavior", "warning")
+        ]
+        for page in pages
+    }
+    result = compose_queue(pages, [], {}, issues, {}, limit=limit)
     assert result["schema_version"] == "llm-wiki-maintenance-queue/v1"
     assert result["limit"] == limit
     assert result["returned"] == len(result["items"]) == min(count, limit)
     assert result["total"] == count == result["returned"] + result["omitted"]
+    assert all(item["classification"] == "actionable" for item in result["items"])
     assert [item["path"] for item in result["items"]] == [
         f"modules/{i}.md" for i in range(min(count, limit))
     ]
     assert compose_queue([], [], {}, {}, {})["limit"] == 30
+
+
+def test_unknown_freshness_alone_is_informational_queue_evidence():
+    page = {"canonical_path": "modules/unknown.md", "kind": "modules", "role": "mixed"}
+    result = compose_queue([page], [], {}, {}, {})
+    assert result["total"] == result["returned"] == 1
+    item = result["items"][0]
+    assert item["freshness"]["state"] == "unknown"
+    assert item["classification"] == "informational"
+    assert [reason["code"] for reason in item["reasons"]] == ["freshness:unknown"]
 
 
 def test_queue_identity_binds_limit_even_when_items_match(
