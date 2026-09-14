@@ -707,6 +707,14 @@ Text output shows these next steps directly.
 
 ## `context`
 
+Use `--request FILE --format packet` to deliver a canonical v1/v2 packet from
+a filter-bearing request file. The file owns semantic options; explicit
+budget, focus, freshness-preference, or knowledge-mode overrides are rejected.
+The file's inner format remains JSON or Markdown. For v3 requests, the declared
+outer format must agree with any explicit format flag. See
+[qualified context packets](qualified-context-packets.md) for request examples,
+error codes, and the distinction between validation and currentness.
+
 Build a token-budgeted source snapshot for agents.
 
 ```bash

@@ -3,6 +3,7 @@
 import json
 import subprocess
 import sys
+from typing import Any
 
 import pytest
 
@@ -157,11 +158,12 @@ def test_existing_empty_source_remains_a_valid_packet(packet_project):
 def test_packet_option_types_fail_before_source_reads(packet_project, monkeypatch, option, operation):
     packet = api.build_qualified_context().to_bytes()
     monkeypatch.setattr(context_service, "validate_source_root", lambda *a, **k: pytest.fail("unexpected source read"))
+    invalid_options: dict[str, Any] = {option: "yes"}
     with pytest.raises(api.InvalidRequestError) as raised:
         if operation == "build":
-            api.build_qualified_context(**{option: "yes"})
+            api.build_qualified_context(**invalid_options)
         else:
-            api.reconcile_context_packet(packet, **{option: "yes"})
+            api.reconcile_context_packet(packet, **invalid_options)
     assert raised.value.code == "invalid-request"
     assert raised.value.details == {"field": option}
 

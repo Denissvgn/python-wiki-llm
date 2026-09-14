@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Request-file context can explicitly deliver a canonical packet, including
+  filters, without silently changing the output contract. Conflicting semantic
+  options are rejected before source/wiki capture.
+- Packet APIs, CLI delivery, and MCP provide structured failure distinctions
+  without exposing resolved roots in their failure records. Missing source
+  directories are reported as unavailable rather than successful empty packets.
+- Static-site exports consistently recognize trusted output-root aliases,
+  including macOS `/var` paths, while preserving artifact containment checks.
 - TypeScript class and interface properties preserve explicit optionality,
   independently of defaults and unions with `undefined`. Generated attribute
   tables distinguish required properties from optional ones, and incremental

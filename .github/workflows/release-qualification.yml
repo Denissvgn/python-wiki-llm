@@ -134,7 +134,8 @@ jobs:
             --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
-            tests/release_artifact_smoke.py
+            tests/release_artifact_smoke.py \
+            tests/fixtures/packet-artifact-parity.py
           harness_sha256="$(sha256sum \
             "${RUNNER_TEMP}/frozen/qualification-harnesses.tar" | cut -d' ' -f1)"
           echo "harness-sha256=${harness_sha256}" >> "${GITHUB_OUTPUT}"

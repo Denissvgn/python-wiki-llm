@@ -562,6 +562,33 @@ def _validate_mcp(mcp_python: Path, work: Path) -> str:
     return "stdio-started"
 
 
+def _validate_packet_adapter_parity(
+    python: Path, mcp_python: Path, work: Path, source: Path, wiki: Path,
+) -> Mapping:
+    """Reconstruct canonical packet bytes using only each installed artifact."""
+    probe = Path(__file__).parent / "fixtures" / "packet-artifact-parity.py"
+    if not probe.is_file():
+        raise SmokeError("packet artifact parity probe is missing from the harness")
+    # -c keeps the probe independent of the checkout's import path. The harness
+    # may be copied elsewhere; only the explicitly installed package is read.
+    code = probe.read_text(encoding="utf-8")
+    results = []
+    for executable, mode in ((python, "base"), (mcp_python, "mcp")):
+        result = _json_output(_run(
+            _isolated_utf8_python_command(executable, "-c", code, str(source), str(wiki), mode),
+            cwd=work,
+        ), f"installed packet parity ({mode})")
+        if not result.get("read_only") or not result.get("structured_errors"):
+            raise SmokeError("installed packet adapter acceptance was incomplete")
+        results.append(result)
+    if results[0]["cases"] != results[1]["cases"]:
+        raise SmokeError("base and MCP installations produced different packet bytes")
+    if results[1].get("sdk") != "verified":
+        raise SmokeError("installed MCP packet transport was not exercised")
+    return {"cases": results[0]["cases"], "read_only": True,
+            "structured_errors": True, "mcp_transport": "verified"}
+
+
 def run_smoke(args: argparse.Namespace) -> int:
     artifact = args.artifact.resolve()
     artifact_reference_file_count = _validate_artifact_members(artifact)
@@ -732,6 +759,8 @@ def run_smoke(args: argparse.Namespace) -> int:
     if (wiki / ".llm-wiki-governance.json").exists():
         raise SmokeError("read-only compact context route created governance state")
 
+    packet_adapters = _validate_packet_adapter_parity(python, mcp_python, work, source, wiki)
+
     site = work / "site"
     _run(
         [
@@ -836,6 +865,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "doctor_status": doctor["status"],
             "context_packet_schema": packet_schema,
             "context_packet_sha256": _sha256(packet_path),
+            "packet_adapters": packet_adapters,
             "site_sha256": _tree_hash(site),
             "obsidian_sha256": _tree_hash(vault),
             "skills": skill_count,

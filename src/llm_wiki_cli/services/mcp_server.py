@@ -1272,7 +1272,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         prefer_fresh: bool = False,
         if_packet_id: str | None = None,
         knowledge_mode: KnowledgeMode | None = None,
-    ) -> dict:
+    ) -> Any:
         """Return a qualified packet with packet-id cache revalidation."""
         options = {
             "budget_tokens": budget_tokens,
@@ -1284,7 +1284,26 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         }
         if knowledge_mode is not None:
             options["knowledge_mode"] = knowledge_mode
-        return service.get_context_packet(**options)
+        try:
+            return service.get_context_packet(**options)
+        except McpWikiError as exc:
+            # Imported only while serving the optional SDK transport. The base
+            # service stays SDK-free, and errors never resemble fresh packets.
+            from mcp.types import CallToolResult, TextContent
+
+            failure = {
+                "state": "error",
+                "error": {
+                    "code": exc.code or "invalid-request",
+                    "message": str(exc),
+                    "details": exc.data or {},
+                },
+            }
+            return CallToolResult(
+                isError=True,
+                content=[TextContent(type="text", text=json.dumps(failure, sort_keys=True))],
+                structuredContent=failure,
+            )
 
     @server.tool()
     def check_wiki(

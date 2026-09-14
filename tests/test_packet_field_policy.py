@@ -32,7 +32,8 @@ def test_policy_enumerates_core_fields_and_dynamic_key_spaces(version):
     assert all(entry["string_class"] in packets._PATH_COUNT_KEYS for entry in entries)
     assert all(entry.get("reason") for entry in entries if entry["kind"] == "open-json")
     with pytest.raises(TypeError):
-        root.fields["new_field"] = policy.SCALAR
+        # Deliberately attempt a mutation to check runtime immutability.
+        root.fields["new_field"] = policy.SCALAR  # pyright: ignore[reportIndexIssue]
 
 
 @pytest.mark.parametrize("version", [1, 2])

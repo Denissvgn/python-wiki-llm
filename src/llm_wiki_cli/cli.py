@@ -1940,6 +1940,10 @@ def _add_context_command(subparsers):
     context_parser = subparsers.add_parser(
         "context",
         help="Return priority-ranked, token-budgeted codebase context for LLM agents",
+        description=(
+            "Build bounded source context. Packet output is read-only; structural "
+            "validation alone does not establish live currentness."
+        ),
     )
     context_parser.add_argument(
         "--budget",
@@ -1984,7 +1988,10 @@ def _add_context_command(subparsers):
     context_parser.add_argument(
         "--request",
         metavar="FILE|-",
-        help="Read a Wiki-as-Context protocol JSON request from a file or stdin",
+        help=(
+            "Read semantic options from a protocol JSON file or stdin; "
+            "--format packet selects canonical packet delivery for v1/v2 requests"
+        ),
     )
     context_parser.add_argument(
         "--output",
