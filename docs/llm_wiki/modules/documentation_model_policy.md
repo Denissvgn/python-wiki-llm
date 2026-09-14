@@ -42,6 +42,7 @@ flowchart LR
     n3["src/llm_wiki_cli/services/validation.py"]
     n0 --> n1
     n0 --> n2
+    n0 --> n3
     n2 --> n1
     n2 --> n3
     click n0 "../modules/api.md"

@@ -1,0 +1,87 @@
+# inspect_concept
+
+**Entry point:** `inspect_concept` (`mcp`)
+**Source:** [mcp_server](../modules/mcp_server.md)
+**Modules touched:** [mcp_server](../modules/mcp_server.md)
+
+## Call sequence
+
+<!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
+```mermaid
+sequenceDiagram
+    participant p0 as inspect_concept
+    participant p1 as _native_tool_call
+    participant p2 as callback
+    participant p3 as str
+    participant p4 as CallToolResult
+    participant p5 as TextContent
+    participant p6 as json.dumps
+    p0->>p1: _native_tool_call
+    p1-->>p2: callback
+    p1-->>p3: str
+    p1-->>p4: CallToolResult
+    p1-->>p5: TextContent
+    p1-->>p6: json.dumps
+```
+
+## Data flow
+
+<!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+```mermaid
+flowchart LR
+    s1["1. inspect_concept"]
+    s2["2. _native_tool_call"]
+    s3["3. callback"]
+    s4["4. str"]
+    s5["5. CallToolResult"]
+    s6["6. TextContent"]
+    s7["7. json.dumps"]
+    s1 -->|"_native_tool_call(service.inspect_concept, locator_or_exact_route, live=live, limit=limit, include_evidence=include_evidence)"| s2
+    s2 -. "callback(..., **=kwargs)" .-> s3
+    s2 -. "str(exc)" .-> s4
+    s2 -. "CallToolResult(isError=True, content=[...], structuredContent=failure)" .-> s5
+    s2 -. "TextContent(type='text', text=json.dumps(...))" .-> s6
+    s2 -. "json.dumps(failure, sort_keys=True)" .-> s7
+    click s1 "../modules/mcp_server.md"
+    click s2 "../modules/mcp_server.md"
+```
+
+### Step data
+
+| Step | Inputs | Reads | Writes | Returns |
+|---|---|---|---|---|
+| `inspect_concept` | `locator_or_exact_route: str`, `live: bool`, `limit: int`, `include_evidence: bool` | - | - | `_native_tool_call(...)` |
+| `_native_tool_call` | `callback: Callable[..., Any]`, `args`, `kwargs` | `McpWikiError` | - | `callback(...)`, `CallToolResult(...)` |
+| `callback` | - | - | - | - |
+| `str` | - | - | - | - |
+| `CallToolResult` | - | - | - | - |
+| `TextContent` | - | - | - | - |
+| `json.dumps` | - | - | - | - |
+
+### Call data
+
+| From | To | Line | Call |
+|---|---|---:|---|
+| inspect_concept | _native_tool_call | 1306 | `_native_tool_call(service.inspect_concept, locator_or_exact_route, live=live, limit=limit, include_evidence=include_evidence)` |
+| _native_tool_call | callback | 1175 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1183 | `str(exc)` |
+| _native_tool_call | CallToolResult | 1187 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent | 1189 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1189 | `json.dumps(failure, sort_keys=True)` |
+
+### Boundary effects
+
+*No boundary effects detected.*
+
+### Static analysis gaps
+
+| Kind | Step | Target | Line |
+|---|---|---|---:|
+| unresolved_call | `_native_tool_call` | `callback` | 1175 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1187 |
+| external_call | `_native_tool_call` | `TextContent` | 1189 |
+| external_call | `_native_tool_call` | `json.dumps` | 1189 |
+
+## Behavior
+
+This flow starts at `inspect_concept` and is classified as `mcp`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.

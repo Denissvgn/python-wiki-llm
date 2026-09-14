@@ -191,11 +191,11 @@ flowchart LR
 | validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 49 | `isinstance(limit, int)` |
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 52 | `ValueError(...)` |
 | build_maintenance_queue | capture_context_read | 194 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 703 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 704 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 705 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 706 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 707 | `callable(plan_reporter)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 704 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 705 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 706 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 707 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 708 | `callable(plan_reporter)` |
 
 ### Boundary effects
 
@@ -211,11 +211,11 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 48 |
 | external_call | `validate_queue_limit` | `isinstance` | 49 |
 | external_call | `validate_queue_limit` | `ValueError` | 52 |
-| external_call | `capture_context_read` | `isinstance` | 703 |
-| external_call | `capture_context_read` | `TypeError` | 704 |
-| external_call | `capture_context_read` | `isinstance` | 705 |
-| external_call | `capture_context_read` | `TypeError` | 706 |
-| external_call | `capture_context_read` | `callable` | 707 |
+| external_call | `capture_context_read` | `isinstance` | 704 |
+| external_call | `capture_context_read` | `TypeError` | 705 |
+| external_call | `capture_context_read` | `isinstance` | 706 |
+| external_call | `capture_context_read` | `TypeError` | 707 |
+| external_call | `capture_context_read` | `callable` | 708 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

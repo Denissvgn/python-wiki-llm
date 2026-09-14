@@ -10,16 +10,18 @@
 ```mermaid
 sequenceDiagram
     participant p0 as get_context_packet
-    participant p1 as service.get_context_packet
-    participant p2 as str
-    participant p3 as CallToolResult
-    participant p4 as TextContent
-    participant p5 as json.dumps
-    p0-->>p1: service.get_context_packet
-    p0-->>p2: str
-    p0-->>p3: CallToolResult
-    p0-->>p4: TextContent
-    p0-->>p5: json.dumps
+    participant p1 as _native_tool_call
+    participant p2 as callback
+    participant p3 as str
+    participant p4 as CallToolResult
+    participant p5 as TextContent
+    participant p6 as json.dumps
+    p0->>p1: _native_tool_call
+    p1-->>p2: callback
+    p1-->>p3: str
+    p1-->>p4: CallToolResult
+    p1-->>p5: TextContent
+    p1-->>p6: json.dumps
 ```
 
 ## Data flow
@@ -28,25 +30,29 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. get_context_packet"]
-    s2["2. service.get_context_packet"]
-    s3["3. str"]
-    s4["4. CallToolResult"]
-    s5["5. TextContent"]
-    s6["6. json.dumps"]
-    s1 -. "service.get_context_packet(**=options)" .-> s2
-    s1 -. "str(exc)" .-> s3
-    s1 -. "CallToolResult(isError=True, content=[...], structuredContent=failure)" .-> s4
-    s1 -. "TextContent(type='text', text=json.dumps(...))" .-> s5
-    s1 -. "json.dumps(failure, sort_keys=True)" .-> s6
+    s2["2. _native_tool_call"]
+    s3["3. callback"]
+    s4["4. str"]
+    s5["5. CallToolResult"]
+    s6["6. TextContent"]
+    s7["7. json.dumps"]
+    s1 -->|"_native_tool_call(service.get_context_packet, **=options)"| s2
+    s2 -. "callback(..., **=kwargs)" .-> s3
+    s2 -. "str(exc)" .-> s4
+    s2 -. "CallToolResult(isError=True, content=[...], structuredContent=failure)" .-> s5
+    s2 -. "TextContent(type='text', text=json.dumps(...))" .-> s6
+    s2 -. "json.dumps(failure, sort_keys=True)" .-> s7
     click s1 "../modules/mcp_server.md"
+    click s2 "../modules/mcp_server.md"
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `get_context_packet` | `budget_tokens: int`, `focus: list[str] \| None`, `format: str`, `filters: dict \| None`, `prefer_fresh: bool`, `if_packet_id: str \| None`, `knowledge_mode: KnowledgeMode \| None` | `McpWikiError` | `options[...]` | `service.get_context_packet(...)`, `CallToolResult(...)` |
-| `service.get_context_packet` | - | - | - | - |
+| `get_context_packet` | `budget_tokens: int`, `focus: list[str] \| None`, `format: str`, `filters: dict \| None`, `prefer_fresh: bool`, `if_packet_id: str \| None`, `knowledge_mode: KnowledgeMode \| None` | - | `options[...]` | `_native_tool_call(...)` |
+| `_native_tool_call` | `callback: Callable[..., Any]`, `args`, `kwargs` | `McpWikiError` | - | `callback(...)`, `CallToolResult(...)` |
+| `callback` | - | - | - | - |
 | `str` | - | - | - | - |
 | `CallToolResult` | - | - | - | - |
 | `TextContent` | - | - | - | - |
@@ -56,11 +62,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_context_packet | service.get_context_packet | 1289 | `service.get_context_packet(**=options)` |
-| get_context_packet | str | 1299 | `str(exc)` |
-| get_context_packet | CallToolResult | 1303 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| get_context_packet | TextContent | 1305 | `TextContent(type='text', text=json.dumps(...))` |
-| get_context_packet | json.dumps | 1305 | `json.dumps(failure, sort_keys=True)` |
+| get_context_packet | _native_tool_call | 1362 | `_native_tool_call(service.get_context_packet, **=options)` |
+| _native_tool_call | callback | 1175 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1183 | `str(exc)` |
+| _native_tool_call | CallToolResult | 1187 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent | 1189 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1189 | `json.dumps(failure, sort_keys=True)` |
 
 ### Boundary effects
 
@@ -70,10 +77,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_context_packet` | `service.get_context_packet` | 1289 |
-| external_call | `get_context_packet` | `CallToolResult` | 1303 |
-| external_call | `get_context_packet` | `TextContent` | 1305 |
-| external_call | `get_context_packet` | `json.dumps` | 1305 |
+| unresolved_call | `_native_tool_call` | `callback` | 1175 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1187 |
+| external_call | `_native_tool_call` | `TextContent` | 1189 |
+| external_call | `_native_tool_call` | `json.dumps` | 1189 |
 
 ## Behavior
 

@@ -1,6 +1,6 @@
 # QueryCostDisclosure
 
-**Location:** `src/llm_wiki_cli/api_types.py:245`
+**Location:** `src/llm_wiki_cli/api_types.py:266`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)
@@ -28,8 +28,11 @@ Deterministic disclosure of work selected for a query.
 flowchart LR
     n0["QueryCostDisclosure (src/llm_wiki_cli/api_types.py)"]
     n1["TypedDict"]
+    n2["src/llm_wiki_cli/services/native_inspection.py"]
     n0 --> n1
+    n2 --> n0
     click n0 "../modules/api_types.md"
+    click n2 "../modules/native_inspection.md"
 ```
 
 ### Summary
@@ -43,3 +46,9 @@ flowchart LR
 | Kind | Entity | Module |
 |---|---|---|
 | Base | `TypedDict` | — |
+
+### References
+
+| Reference | Kind | Source | Call sites |
+|---|---|---|---:|
+| `native_inspection` | import | [native_inspection](../modules/native_inspection.md) | — |

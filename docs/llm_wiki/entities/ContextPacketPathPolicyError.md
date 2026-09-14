@@ -17,7 +17,7 @@ A structural packet field violates its declared path policy.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(field: str, message: str)` | — | — |
+| `__init__` | `(field: str, message: str, *, relative_path: str \| None = None)` | — | — |
 
 ## Relationships
 

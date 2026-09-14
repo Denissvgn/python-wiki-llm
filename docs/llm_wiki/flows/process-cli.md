@@ -74,7 +74,7 @@ sequenceDiagram
     p18-->>p19: parser.add_argument (src/llm_wiki_cli/cli.py:_add_helper_cache_argument)
 ```
 
-> Call sequence diagram shows 30 of 587 interactions; 557 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 595 interactions; 565 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -150,7 +150,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2464 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2475 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 217 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 218 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers | 221 | `parser.add_subparsers(dest='command', required=True)` |
@@ -166,12 +166,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2470 |
-| output | `print` | `main` | 2473 |
-| output | `print` | `main` | 2476 |
-| environment_read | `os.environ.get` | `main` | 2479 |
 | output | `print` | `main` | 2481 |
 | output | `print` | `main` | 2484 |
+| output | `print` | `main` | 2487 |
+| environment_read | `os.environ.get` | `main` | 2490 |
+| output | `print` | `main` | 2492 |
+| output | `print` | `main` | 2495 |
 
 ### Static analysis gaps
 

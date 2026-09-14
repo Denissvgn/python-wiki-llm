@@ -2,12 +2,13 @@
 
 **Entry point:** `build_live_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 5 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [documentation_queries](../modules/documentation_queries.md), and 6 more
 
 **Complete modules touched:**
 
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -75,7 +76,7 @@ sequenceDiagram
     p19->>p7: SharedValidationError
 ```
 
-> Call sequence diagram shows 30 of 654 interactions; 624 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 882 interactions; 852 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -121,7 +122,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_live_documentation_query_service` | `source_root: Path`, `wiki_root: Path`, `limit: int`, `read_only: bool`, `helper_cache_dir: Path \| None`, `include_plugins: bool`, `source_plugins_only: bool`, `require_live_freshness: bool` | `build_source_snapshot`, `SourceSelectionError`, `SourceSelectionError`, `KnowledgeReadView`, `KnowledgeReadView`, `KnowledgeReadView`, `Mapping` | `stage_ns[...]`, `snapshot_options[...]`, `stage_ns[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]` | `service` |
+| `build_live_documentation_query_service` | `source_root: Path`, `wiki_root: Path`, `limit: int`, `read_only: bool`, `helper_cache_dir: Path \| None`, `include_plugins: bool`, `source_plugins_only: bool`, `require_live_freshness: bool` | `build_source_snapshot`, `SourceSelectionError`, `SourceSnapshot`, `SourceSelectionError`, `KnowledgeReadView`, `KnowledgeReadView`, `KnowledgeReadView`, `Mapping` | `stage_ns[...]`, `snapshot_options[...]`, `stage_ns[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]` | `service` |
 | `normalize_supplied_paths` | `values: object` | - | - | `tuple(...)` |
 | `_portable_supplied_path` | `value: object` | - | - | `require_portable_relative_path(...)` |
 | `DocumentationQueryError` | - | - | - | - |
@@ -138,7 +139,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_live_documentation_query_service | normalize_supplied_paths | 477 | `normalize_supplied_paths(paths)` |
+| build_live_documentation_query_service | normalize_supplied_paths | 487 | `normalize_supplied_paths(paths)` |
 | normalize_supplied_paths | _portable_supplied_path | 135 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 113 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 116 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |

@@ -15,7 +15,9 @@ Raised when a documentation graph query request is invalid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+| Method | Signature | Decorators | Description |
+|--------|-----------|------------|-------------|
+| `__init__` | `(message: str = '', *, field: str \| None = None)` | — | — |
 
 ## Relationships
 
@@ -68,7 +70,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [documentation_queries](../modules/documentation_queries.md) | 0 | — |
+| [documentation_queries](../modules/documentation_queries.md) | 1 | — |
 
 ### Structure
 
@@ -93,4 +95,4 @@ flowchart LR
 | `DocumentationGraphQueryService._build_knowledge_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
 | `DocumentationGraphQueryService._build_section_ownership_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
 
-> References: showing 12 of 34 logical references; 22 omitted by the 12-row generated summary limit.
+> References: showing 12 of 35 logical references; 23 omitted by the 12-row generated summary limit.

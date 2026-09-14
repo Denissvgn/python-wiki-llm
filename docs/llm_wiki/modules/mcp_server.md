@@ -16,6 +16,7 @@ origin validation; stdio remains the default.
 | Source | Symbols |
 |--------|---------|
 | `.` | `circuit_breaker`, `context_service`, `lint_service`, `wiki_surface` |
+| `..` | `api` |
 | `..api` | `LlmWikiApiError`, `build_documentation_query_service`, `query_documentation` |
 | `..api_types` | `KnowledgeMode` |
 | `..config` | `IDE_AGENTS`, `PathValidationError`, `get_agent_config_path`, `read_config`, `validate_path`, `validate_source_root` |
@@ -34,7 +35,7 @@ origin validation; stdio remains the default.
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.validation` | `posix_path_text`, `require_portable_relative_path` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Iterable`, `Mapping` |
+| `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass`, `field` |
 | `ipaddress` | `ipaddress` |
 | `itertools` | `islice` |
@@ -82,17 +83,17 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MCPDependencyError](../entities/MCPDependencyError.md) | 111 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
-| [McpWikiError](../entities/McpWikiError.md) | 115 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 212 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 216 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 220 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 228 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 235 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 248 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 267 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 354 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 396 | — | Pure read/check operations exposed through MCP tools and resources. |
+| [MCPDependencyError](../entities/MCPDependencyError.md) | 112 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
+| [McpWikiError](../entities/McpWikiError.md) | 116 | `ValueError` | Raised for invalid MCP wiki requests. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 213 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 217 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 221 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 229 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 236 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 249 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 268 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 355 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 397 | — | Pure read/check operations exposed through MCP tools and resources. |
 
 ## Functions
 
@@ -113,6 +114,7 @@ flowchart LR
 | `_normalise_origin` | `(origin: str) -> str` | — | — |
 | `is_origin_allowed` | `(origin: str, *, port: int, allowed_origins: list[str] \| tuple[str, ...]) -> bool` | — | Return True when an HTTP Origin is acceptable for local MCP use. |
 | `create_mcp_server` | `(config: McpServerConfig)` | — | Create and register the FastMCP server for a validated config. |
+| `_native_tool_call` | `(callback: Callable[..., Any], *args, **kwargs) -> Any` | — | Preserve semantic native failures through the optional SDK transport. |
 | `_register_mcp_tools` | `(server, service: McpWikiService) -> None` | — | — |
 | `_register_mcp_resources` | `(server, service: McpWikiService) -> None` | — | — |
 | `_register_root_resource` | `(server, service: McpWikiService, entry) -> None` | — | — |

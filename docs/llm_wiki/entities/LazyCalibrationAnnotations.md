@@ -1,6 +1,6 @@
 # _LazyCalibrationAnnotations
 
-**Location:** `src/llm_wiki_cli/api.py:247`
+**Location:** `src/llm_wiki_cli/api.py:252`
 **Kind:** Class
 **Bases:** `dict[str, Any]`
 **Module:** [api](../modules/api.md)

@@ -2,17 +2,19 @@
 
 **Entry point:** `dependency_neighborhood` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 7 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 9 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -79,7 +81,7 @@ sequenceDiagram
     p8->>p23: require_portable_path_component
 ```
 
-> Call sequence diagram shows 30 of 387 interactions; 357 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 482 interactions; 452 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -143,11 +145,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| dependency_neighborhood | _normalize_query_input | 1436 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1180 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1182 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1183 | `str(exc)` |
-| dependency_neighborhood | normalize_supplied_paths | 1436 | `normalize_supplied_paths((...))` |
+| dependency_neighborhood | _normalize_query_input | 1806 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1550 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1552 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1553 | `str(exc)` |
+| dependency_neighborhood | normalize_supplied_paths | 1806 | `normalize_supplied_paths((...))` |
 | normalize_supplied_paths | _portable_supplied_path | 135 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 113 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 116 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
@@ -163,7 +165,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1180 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1550 |
 | external_call | `require_portable_relative_path` | `isinstance` | 170 |
 | step_limit | `dependency_neighborhood` | `first 12 steps` | 0 |
 | truncated_flow | `dependency_neighborhood` | `depth limit` | 0 |

@@ -1,6 +1,6 @@
 # DocumentationGraphQueryService
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:832`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:836`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -137,4 +137,4 @@ flowchart LR
 | `flow_for_entrypoint` | type_reference | [api](../modules/api.md) | — |
 | `get_concept` | type_reference | [api](../modules/api.md) | — |
 
-> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.
+> References: showing 12 of 38 logical references; 26 omitted by the 12-row generated summary limit.

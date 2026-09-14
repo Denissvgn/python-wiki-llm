@@ -131,17 +131,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | 1016 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
-| compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | validate_context_packet | 1635 | `validate_context_packet(packet_bytes)` |
-| validate_context_packet | _coerce_packet_bytes | 1586 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2359 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2361 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2362 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2364 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2366 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2367 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2368 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 2372 | `raw.startswith(b'\xef\xbb\xbf')` |
+| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | 1353 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
+| compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | validate_context_packet | 1636 | `validate_context_packet(packet_bytes)` |
+| validate_context_packet | _coerce_packet_bytes | 1587 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2360 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2362 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2363 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2365 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2367 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2368 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2369 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | raw.startswith | 2373 | `raw.startswith(b'\xef\xbb\xbf')` |
 
 ### Boundary effects
 
@@ -151,11 +151,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2359 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2361 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 2362 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 2364 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2372 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2360 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2362 |
+| external_call | `_coerce_packet_bytes` | `bytes` | 2363 |
+| external_call | `_coerce_packet_bytes` | `TypeError` | 2365 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2373 |
 | step_limit | `compare_context_packet_basis` | `first 12 steps` | 0 |
 | truncated_flow | `compare_context_packet_basis` | `depth limit` | 0 |
 

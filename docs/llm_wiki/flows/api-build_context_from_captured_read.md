@@ -133,16 +133,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context_from_captured_read | isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2) | 947 | `isinstance(captured, CapturedContextRead)` |
-| build_context_from_captured_read | TypeError (src/llm_wiki_cli/services…ontext_from_captured_read) | 948 | `TypeError('captured must be a CapturedContextRead')` |
-| build_context_from_captured_read | _normalized_request | 949 | `_normalized_request(request)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1824 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1825 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy | 1829 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1829 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1830 | `candidate.setdefault('protocol', ...)` |
-| _normalized_request | candidate.setdefault | 1838 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1839 | `context_service._validate_protocol_request(candidate)` |
+| build_context_from_captured_read | isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2) | 948 | `isinstance(captured, CapturedContextRead)` |
+| build_context_from_captured_read | TypeError (src/llm_wiki_cli/services…ontext_from_captured_read) | 949 | `TypeError('captured must be a CapturedContextRead')` |
+| build_context_from_captured_read | _normalized_request | 950 | `_normalized_request(request)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1825 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1826 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy | 1830 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1830 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 1831 | `candidate.setdefault('protocol', ...)` |
+| _normalized_request | candidate.setdefault | 1839 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1840 | `context_service._validate_protocol_request(candidate)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `isinstance(data, dict)` |
 
 ### Boundary effects
@@ -153,12 +153,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_context_from_captured_read` | `isinstance` | 947 |
-| external_call | `build_context_from_captured_read` | `TypeError` | 948 |
-| external_call | `_normalized_request` | `isinstance` | 1824 |
-| external_call | `_normalized_request` | `deepcopy` | 1829 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1830 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1838 |
+| external_call | `build_context_from_captured_read` | `isinstance` | 948 |
+| external_call | `build_context_from_captured_read` | `TypeError` | 949 |
+| external_call | `_normalized_request` | `isinstance` | 1825 |
+| external_call | `_normalized_request` | `deepcopy` | 1830 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1831 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1839 |
 | external_call | `_validate_protocol_request` | `isinstance` | 1077 |
 | step_limit | `build_context_from_captured_read` | `first 12 steps` | 0 |
 | truncated_flow | `build_context_from_captured_read` | `depth limit` | 0 |

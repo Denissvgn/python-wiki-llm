@@ -134,17 +134,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet | _coerce_packet_bytes | 1586 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2359 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2361 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2362 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError | 2364 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2366 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2367 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2368 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 2372 | `raw.startswith(b'\xef\xbb\xbf')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2373 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
-| _coerce_packet_bytes | raw.endswith | 2377 | `raw.endswith(b'\n')` |
+| validate_context_packet | _coerce_packet_bytes | 1587 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2360 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2362 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2363 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError | 2365 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2367 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2368 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2369 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | raw.startswith | 2373 | `raw.startswith(b'\xef\xbb\xbf')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2374 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
+| _coerce_packet_bytes | raw.endswith | 2378 | `raw.endswith(b'\n')` |
 
 ### Boundary effects
 
@@ -154,12 +154,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2359 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2361 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 2362 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 2364 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2372 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.endswith` | 2377 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2360 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2362 |
+| external_call | `_coerce_packet_bytes` | `bytes` | 2363 |
+| external_call | `_coerce_packet_bytes` | `TypeError` | 2365 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2373 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.endswith` | 2378 |
 | step_limit | `validate_context_packet` | `first 12 steps` | 0 |
 | truncated_flow | `validate_context_packet` | `depth limit` | 0 |
 

@@ -71,7 +71,7 @@ sequenceDiagram
     p8-->>p12: ValueError (src/llm_wiki_cli/services….py:_validate_load_result)
 ```
 
-> Call sequence diagram shows 30 of 845 interactions; 815 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 846 interactions; 816 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -54,18 +54,18 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (8) |
+| Inbound | `src` (9) |
 | Outbound | `src` (9) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [DocumentationQueryError](../entities/DocumentationQueryError.md) | 128 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 342 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 832 | — | Read-only graph query service over already-derived documentation payloads. |
+| [_BoundedResult](../entities/BoundedResult.md) | 346 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 836 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 

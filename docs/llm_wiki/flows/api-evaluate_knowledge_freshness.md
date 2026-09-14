@@ -76,7 +76,7 @@ sequenceDiagram
     p16-->>p18: _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
 ```
 
-> Call sequence diagram shows 30 of 1663 interactions; 1633 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1664 interactions; 1634 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

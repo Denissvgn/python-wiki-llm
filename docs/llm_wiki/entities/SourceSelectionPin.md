@@ -1,6 +1,6 @@
 # _SourceSelectionPin
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:248`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:249`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)

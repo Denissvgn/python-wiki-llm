@@ -1,6 +1,6 @@
 # InvalidRequestError
 
-**Location:** `src/llm_wiki_cli/api.py:343`
+**Location:** `src/llm_wiki_cli/api.py:348`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -94,4 +94,4 @@ flowchart LR
 | `_validate_documentation_query_request` | call | [api](../modules/api.md) | 4 |
 | `bootstrap_wiki` | call | [api](../modules/api.md) | 1 |
 
-> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

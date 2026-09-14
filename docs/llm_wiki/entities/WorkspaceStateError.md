@@ -1,6 +1,6 @@
 # WorkspaceStateError
 
-**Location:** `src/llm_wiki_cli/api.py:347`
+**Location:** `src/llm_wiki_cli/api.py:352`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -70,6 +70,6 @@ flowchart LR
 | `_raise_required_knowledge_api_error` | call | [api](../modules/api.md) | 1 |
 | `bootstrap_wiki` | call | [api](../modules/api.md) | 2 |
 | `build_context` | call | [api](../modules/api.md) | 3 |
-| `build_documentation_query_service` | call | [api](../modules/api.md) | 3 |
+| `build_documentation_query_service` | call | [api](../modules/api.md) | 4 |
 | `extract_source` | call | [api](../modules/api.md) | 2 |
 | `list_wiki_pages` | call | [api](../modules/api.md) | 1 |

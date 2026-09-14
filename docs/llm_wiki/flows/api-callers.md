@@ -2,17 +2,19 @@
 
 **Entry point:** `callers` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 7 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 9 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -46,6 +48,7 @@ sequenceDiagram
     participant p20 as _query_service(…).callers
     participant p21 as _query_service
     participant p22 as build_documentation_query_service
+    participant p23 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
     p0->>p1: _normalize_query_input
     p1-->>p2: callback (src/llm_wiki_cli/api.py:_normalize_query_input)
     p1->>p3: InvalidRequestError
@@ -75,10 +78,10 @@ sequenceDiagram
     p0->>p21: _query_service
     p21->>p3: InvalidRequestError
     p21->>p22: build_documentation_query_service
-    p22->>p13: normalize_documentation_query_limit
+    p22-->>p23: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
 ```
 
-> Call sequence diagram shows 30 of 352 interactions; 322 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 447 interactions; 417 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -138,11 +141,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| callers | _normalize_query_input | 1370 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1180 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1182 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1183 | `str(exc)` |
-| callers | normalize_documentation_query_text | 1371 | `normalize_documentation_query_text(symbol, field='symbol')` |
+| callers | _normalize_query_input | 1740 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1550 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1552 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1553 | `str(exc)` |
+| callers | normalize_documentation_query_text | 1741 | `normalize_documentation_query_text(symbol, field='symbol')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 60 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 61 | `DocumentationQueryError(...)` |
@@ -158,7 +161,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1180 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1550 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |

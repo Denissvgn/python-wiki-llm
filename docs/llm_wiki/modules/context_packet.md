@@ -80,10 +80,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (6) |
+| Inbound | `src` (8) |
 | Outbound | `src` (25) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -95,11 +95,11 @@ flowchart LR
 | [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 236 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
 | [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 248 | `ContextPacketError` | A required read-only packet capability is unavailable. |
 | [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 258 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 377 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 427 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 464 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 507 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 533 | — | Consumer-time comparison against one fresh official read. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 378 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 428 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 465 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 508 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 534 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 

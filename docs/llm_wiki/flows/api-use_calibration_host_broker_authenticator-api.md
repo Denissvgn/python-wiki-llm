@@ -126,7 +126,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 2626 | `implementation(authenticator)` |
+| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 2996 | `implementation(authenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | isinstance (src/llm_wiki_cli/services…host_broker_authenticator) | 195 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
