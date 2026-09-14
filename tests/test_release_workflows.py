@@ -992,6 +992,12 @@ def test_static_qualification_installs_analyzed_extras_and_uses_blocking_runner(
     steps = _yaml("release-qualification.yml")["jobs"]["static"]["steps"]
     install = _named_step({"steps": steps}, "Install source and hash-locked release tools")
     assert '"./candidate[dev,mcp,tokens]"' in install["run"]
+    tutorial_install = next(
+        line for line in install["run"].splitlines()
+        if "candidate/examples/fastapi-contracts/" in line
+    )
+    assert "--require-hashes" in tutorial_install
+    assert "-r candidate/examples/fastapi-contracts/requirements-ci.txt" in tutorial_install
     check = _named_step({"steps": steps}, "Run static checks")
     assert "python -I release/static_checks.py --evidence ../evidence/security" in check["run"]
     assert not check.get("continue-on-error", False)
@@ -1000,6 +1006,7 @@ def test_static_qualification_installs_analyzed_extras_and_uses_blocking_runner(
     config = json.loads((ROOT / "pyrightconfig.json").read_text())
     assert "venv" not in config and "venvPath" not in config
     assert config["reportUnsupportedDunderAll"] == "error"
+    assert "examples" in config["include"]
 
 
 def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:

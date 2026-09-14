@@ -72,6 +72,7 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
                 "check",
                 "src",
                 "tests",
+                "examples",
                 "integrations/github-action/render_summary.py",
             ),
         ),

@@ -5,6 +5,8 @@
 Use this guide to understand the generated wiki, choose source inputs, and
 configure an agent. For the shortest setup, start with the
 [README quick start](../README.md#quick-start).
+The [examples](../examples/README.md) provide complete Python, FastAPI, Go HTTP,
+and plugin projects with commands and expected output.
 
 - [Wiki pages and content ownership](#what-it-creates)
 - [Supported inputs](#supported-inputs), [source selection](#source-selection), and [Haskell details](#haskell-inputs)

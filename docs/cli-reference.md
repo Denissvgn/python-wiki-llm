@@ -5,6 +5,10 @@
 Use `llm-wiki <command> --help` for the complete option list. The sections below
 explain command behavior, output contracts, and recovery procedures.
 
+Follow the [runnable examples](../examples/README.md) for a complete Python
+documentation cycle, production FastAPI contracts, Go HTTP analysis, or a custom
+task detector with Mermaid styling.
+
 | Task | Commands |
 |---|---|
 | Set up a wiki | [init](#init), [prepare-extractors](#prepare-extractors), [bootstrap](#bootstrap) |
@@ -338,6 +342,8 @@ execution order. Workflow pages require resolved direct calls into at least
 three other selected project modules; an executable need not meet that threshold.
 When a receiver type and its method are declared in different files, workflow
 entry labels and source paths use the file that defines the method.
+The [Go HTTP example](../examples/go-http/README.md) demonstrates helper
+preparation, cross-file handlers, package calls, and sync after a method rename.
 Haskell file entries are additive under `llm-wiki-extract/v1`. A Haskell entry
 uses `language: "haskell"`, `imports`, `classes`, and `functions`, with `module`
 present when the source declares one. Import records use `module`, `qualified`,
@@ -1088,6 +1094,10 @@ values and unknown keys, while explicit plugin validation rejects them, so
 plugins cannot inject Markdown, labels, hrefs, or raw Mermaid lines. Core
 renderers keep labels Unicode-safe and bounded, and validate and percent-encode
 relative `click` hrefs.
+
+Data-flow style contexts also include `flow_id`, `category`, and the entry
+`symbol` with its original case. Hooks can use `symbol` to match the first
+numbered node label, such as `1. HANDLE_TASK`.
 
 These hooks are deterministic local extension contracts over explicit inputs;
 they do not perform network discovery and they do not mutate Markdown directly.
