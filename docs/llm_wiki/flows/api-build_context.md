@@ -163,16 +163,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context | _normalise_focus | 804 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2397 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2403 | `list(focus)` |
-| build_context | _normalize_optional_knowledge_mode | 805 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| build_context | _normalise_focus | 822 | `_normalise_focus(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2359 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2365 | `list(focus)` |
+| build_context | _normalize_optional_knowledge_mode | 823 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
 | _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 371 | `isinstance(value, str)` |
 | _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 372 | `', '.join(...)` |
 | _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 372 | `repr(item)` |
 | _normalize_optional_knowledge_mode | InvalidRequestError | 373 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 | _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 378 | `cast(KnowledgeMode, value)` |
-| build_context | _validate_protocol_request | 821 | `context_cmd._validate_protocol_request(request)` |
+| build_context | _validate_protocol_request | 839 | `context_cmd._validate_protocol_request(request)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `isinstance(data, dict)` |
 
 ### Boundary effects
@@ -183,7 +183,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 2397 |
+| external_call | `_normalise_focus` | `isinstance` | 2359 |
 | external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 371 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 372 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 378 |

@@ -76,6 +76,7 @@ flowchart TD
 | [wiki_lifecycle](modules/wiki_lifecycle.md) | 7 | 8 |
 | [api_contracts](modules/api_contracts.md) | 6 | 4 |
 | [change_selection](modules/change_selection.md) | 6 | 2 |
+| [context_packet](modules/context_packet.md) | 6 | 25 |
 | [data_flow](modules/data_flow.md) | 6 | 1 |
 | [extractor_helpers](modules/extractor_helpers.md) | 6 | 1 |
 | [knowledge_freshness](modules/knowledge_freshness.md) | 6 | 6 |
@@ -84,7 +85,6 @@ flowchart TD
 | [markdown_sections](modules/markdown_sections.md) | 6 | 1 |
 | [python_imports](modules/python_imports.md) | 6 | 1 |
 | [concept_identity](modules/concept_identity.md) | 5 | 1 |
-| [context_packet](modules/context_packet.md) | 5 | 24 |
 | [refresh](modules/refresh.md) | 5 | 8 |
 | [immutable](modules/immutable.md) | 5 | 0 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
@@ -124,7 +124,7 @@ flowchart TD
 | [verify](modules/verify.md) | 2 | 9 |
 | [go_calls](modules/go_calls.md) | 2 | 0 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
-| [mcp_server](modules/mcp_server.md) | 2 | 20 |
+| [mcp_server](modules/mcp_server.md) | 2 | 21 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
 | [python_observations](modules/python_observations.md) | 2 | 2 |
 | [python_stdlib](modules/python_stdlib.md) | 2 | 0 |
@@ -187,6 +187,7 @@ flowchart TD
 | [maintenance_queue](modules/maintenance_queue.md) | 1 | 4 |
 | [obsidian](modules/obsidian.md) | 1 | 11 |
 | [packages](modules/packages.md) | 1 | 3 |
+| [packet_field_policy](modules/packet_field_policy.md) | 1 | 0 |
 | [plugin_samples](modules/plugin_samples.md) | 1 | 1 |
 | [protected_artifacts](modules/protected_artifacts.md) | 1 | 2 |
 | [python_calls](modules/python_calls.md) | 1 | 1 |

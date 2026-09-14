@@ -48,6 +48,12 @@ flowchart LR
 
 > All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
+## Classes
+
+| Class | Line | Bases | Description |
+|-------|------|-------|-------------|
+| [_ExplicitContextOption](../entities/ExplicitContextOption.md) | 51 | `argparse.Action` | Retain which semantic options were supplied beside a request file. |
+
 ## Functions
 
 | Function | Signature | Decorators | Description |

@@ -83,8 +83,8 @@ sequenceDiagram
     participant p16 as resolved.is_dir
     participant p17 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
     participant p18 as windows_current_user_sid
-    participant p19 as WindowsSecurityGuardError
-    participant p20 as _current_windows_user_sid
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)
     p0-->>p1: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)
     p0-->>p2: TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)
     p0-->>p3: callable (src/llm_wiki_cli/services…t.py:capture_context_read)
@@ -113,11 +113,9 @@ sequenceDiagram
     p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
     p4-->>p17: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
     p4->>p18: windows_current_user_sid
-    p18->>p19: WindowsSecurityGuardError
-    p18->>p20: _current_windows_user_sid
 ```
 
-> Call sequence diagram shows 30 of 4182 interactions; 4152 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4186 interactions; 4156 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -129,29 +127,27 @@ flowchart LR
     s1["1. capture_context_read"]
     s2["2. isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)"]
     s3["3. TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)"]
-    s4["4. callable (src/llm_wiki_cli/services…t.py:capture_context_read)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)"]
     s5["5. TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)"]
-    s6["6. isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)"]
+    s6["6. callable (src/llm_wiki_cli/services…t.py:capture_context_read)"]
     s7["7. TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)"]
     s8["8. isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)"]
     s9["9. TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)"]
-    s10["10. validate_source_root"]
-    s11["11. validate_path"]
-    s12["12. PathValidationError"]
+    s10["10. isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)"]
+    s11["11. TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)"]
+    s12["12. validate_source_root"]
     s1 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(read_only, bool)" .-> s2
     s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('read_only must be a boolean')" .-> s3
-    s1 -. "callable (src/llm_wiki_cli/services…t.py:capture_context_read)(plan_reporter)" .-> s4
-    s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('plan_reporter must be callable or None')" .-> s5
-    s1 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(allow_selection_mismatch, bool)" .-> s6
-    s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('allow_selection_mismatch must be a boolean')" .-> s7
-    s1 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(strict_wiki_symlinks, bool)" .-> s8
-    s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('strict_wiki_symlinks must be a boolean')" .-> s9
-    s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s10
-    s10 -->|"validate_path(path, label)"| s11
-    s11 -->|"PathValidationError(...)"| s12
+    s1 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(allow_external_src, bool)" .-> s4
+    s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('allow_external_src must be a boolean')" .-> s5
+    s1 -. "callable (src/llm_wiki_cli/services…t.py:capture_context_read)(plan_reporter)" .-> s6
+    s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('plan_reporter must be callable or None')" .-> s7
+    s1 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(allow_selection_mismatch, bool)" .-> s8
+    s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('allow_selection_mismatch must be a boolean')" .-> s9
+    s1 -. "isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(strict_wiki_symlinks, bool)" .-> s10
+    s1 -. "TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('strict_wiki_symlinks must be a boolean')" .-> s11
+    s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s12
     click s1 "../modules/context_packet.md"
-    click s10 "../modules/config.md"
-    click s11 "../modules/config.md"
     click s12 "../modules/config.md"
 ```
 
@@ -162,6 +158,8 @@ flowchart LR
 | `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None`, `allow_selection_mismatch: bool` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError`, `wiki_surface` | - | `CapturedContextRead(...)` |
 | `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `callable (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
@@ -169,24 +167,22 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
-| `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
-| `PathValidationError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 627 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 628 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 629 | `callable(plan_reporter)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 630 | `TypeError('plan_reporter must be callable or None')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 631 | `isinstance(allow_selection_mismatch, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 632 | `TypeError('allow_selection_mismatch must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 633 | `isinstance(strict_wiki_symlinks, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 634 | `TypeError('strict_wiki_symlinks must be a boolean')` |
-| capture_context_read | validate_source_root | 639 | `context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 158 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 703 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 704 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 705 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 706 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 707 | `callable(plan_reporter)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 708 | `TypeError('plan_reporter must be callable or None')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 709 | `isinstance(allow_selection_mismatch, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 710 | `TypeError('allow_selection_mismatch must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 711 | `isinstance(strict_wiki_symlinks, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 712 | `TypeError('strict_wiki_symlinks must be a boolean')` |
+| capture_context_read | validate_source_root | 717 | `context_service.validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 
 ### Boundary effects
 
@@ -196,14 +192,16 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `capture_context_read` | `isinstance` | 627 |
-| external_call | `capture_context_read` | `TypeError` | 628 |
-| external_call | `capture_context_read` | `callable` | 629 |
-| external_call | `capture_context_read` | `TypeError` | 630 |
-| external_call | `capture_context_read` | `isinstance` | 631 |
-| external_call | `capture_context_read` | `TypeError` | 632 |
-| external_call | `capture_context_read` | `isinstance` | 633 |
-| external_call | `capture_context_read` | `TypeError` | 634 |
+| external_call | `capture_context_read` | `isinstance` | 703 |
+| external_call | `capture_context_read` | `TypeError` | 704 |
+| external_call | `capture_context_read` | `isinstance` | 705 |
+| external_call | `capture_context_read` | `TypeError` | 706 |
+| external_call | `capture_context_read` | `callable` | 707 |
+| external_call | `capture_context_read` | `TypeError` | 708 |
+| external_call | `capture_context_read` | `isinstance` | 709 |
+| external_call | `capture_context_read` | `TypeError` | 710 |
+| external_call | `capture_context_read` | `isinstance` | 711 |
+| external_call | `capture_context_read` | `TypeError` | 712 |
 | step_limit | `capture_context_read` | `first 12 steps` | 0 |
 | truncated_flow | `capture_context_read` | `depth limit` | 0 |
 

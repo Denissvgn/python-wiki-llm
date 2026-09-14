@@ -2,7 +2,7 @@
 
 **Entry point:** `validate_context_packet` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), and 2 more
+**Modules touched:** [api](../modules/api.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), and 3 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [context_packet](../modules/context_packet.md)
 - [context_service](../modules/context_service.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [packet_field_policy](../modules/packet_field_policy.md)
 - [validation](../modules/validation.md)
 
 ## Call sequence
@@ -71,7 +72,7 @@ sequenceDiagram
     p1-->>p20: payload.get
 ```
 
-> Call sequence diagram shows 30 of 535 interactions; 505 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 587 interactions; 557 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -115,7 +116,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `validate_context_packet (src/llm_wiki_cli/api.py)` | `packet_bytes: bytes \| bytearray \| memoryview` | `context_packet_service`, `context_packet_service` | - | `validation` |
+| `validate_context_packet (src/llm_wiki_cli/api.py)` | `packet_bytes: bytes \| bytearray \| memoryview` | `context_packet_service` | - | `validation` |
 | `validate_context_packet (src/llm_wiki_cli/services/context_packet.py)` | `packet_bytes: bytes \| bytearray \| memoryview` | - | - | `ContextPacketValidation(...)` |
 | `_coerce_packet_bytes` | `value: bytes \| bytearray \| memoryview` | `_MAX_PACKET_BYTES`, `_MAX_PACKET_BYTES` | - | `raw` |
 | `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | - | - | - | - |
@@ -132,17 +133,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet (src/llm_wiki_cli/api.py) | validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | 1025 | `context_packet_service.validate_context_packet(packet_bytes)` |
-| validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | _coerce_packet_bytes | 1503 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2266 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2268 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2269 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError | 2271 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2273 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2274 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2275 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 2279 | `raw.startswith(b'\xef\xbb\xbf')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2280 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
+| validate_context_packet (src/llm_wiki_cli/api.py) | validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | 1002 | `context_packet_service.validate_context_packet(packet_bytes)` |
+| validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | _coerce_packet_bytes | 1586 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2359 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2361 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2362 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError | 2364 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2366 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2367 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2368 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | raw.startswith | 2372 | `raw.startswith(b'\xef\xbb\xbf')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2373 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
 
 ### Boundary effects
 
@@ -152,11 +153,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2266 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2268 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 2269 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 2271 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2279 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2359 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2361 |
+| external_call | `_coerce_packet_bytes` | `bytes` | 2362 |
+| external_call | `_coerce_packet_bytes` | `TypeError` | 2364 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2372 |
 | step_limit | `validate_context_packet` | `first 12 steps` | 0 |
 | truncated_flow | `validate_context_packet` | `depth limit` | 0 |
 

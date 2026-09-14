@@ -94,6 +94,7 @@ flowchart LR
 | `_required_knowledge_failure` | `(exc: BaseException) -> dict[str, Any] \| None` | — | — |
 | `_raise_required_knowledge_api_error` | `(exc: BaseException) -> None` | — | — |
 | `_path_error_field` | `(message: str) -> str` | — | — |
+| `_raise_context_packet_api_error` | `(exc: BaseException) -> NoReturn` | — | Keep packet exception catch points while preserving safe failure details. |
 | `_wiki_path_policy_details` | `(exc: BaseException) -> dict[str, Any]` | — | — |
 | `_caused_by` | `(exc: BaseException, expected: type[BaseException]) -> bool` | — | Return whether an explicitly chained cause has the requested type. |
 | `_has_exception_origin` | `(exc: BaseException, module_names: frozenset[str]) -> bool` | — | Return whether one exception inherits from a named service module. |

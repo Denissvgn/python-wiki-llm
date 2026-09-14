@@ -22,6 +22,7 @@ origin validation; stdio remains the default.
 | `.bootstrap_runtime` | `build_module_page_map` |
 | `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
 | `.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
+| `.context_packet` | `describe_context_packet_error` |
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
@@ -40,6 +41,7 @@ origin validation; stdio remains the default.
 | `json` | `json` |
 | `mcp` | `mcp` |
 | `mcp.server.fastmcp` | `FastMCP` |
+| `mcp.types` | `CallToolResult`, `TextContent` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `sys` | `sys` |
@@ -66,7 +68,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (20) |
+| Outbound | `src` (21) |
 
 ### External packages
 
@@ -74,7 +76,7 @@ flowchart LR
 |---|---:|---:|
 | python | 2 | 1 |
 
-> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -82,15 +84,15 @@ flowchart LR
 |-------|------|-------|-------------|
 | [MCPDependencyError](../entities/MCPDependencyError.md) | 111 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
 | [McpWikiError](../entities/McpWikiError.md) | 115 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 218 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 222 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 226 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 234 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 241 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 254 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 273 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 360 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 402 | — | Pure read/check operations exposed through MCP tools and resources. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 212 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 216 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 220 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 228 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 235 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 248 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 267 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 354 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 396 | — | Pure read/check operations exposed through MCP tools and resources. |
 
 ## Functions
 

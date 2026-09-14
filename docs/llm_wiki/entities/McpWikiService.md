@@ -1,6 +1,6 @@
 # McpWikiService
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:402`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:396`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)

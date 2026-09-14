@@ -95,4 +95,4 @@ flowchart LR
 | `_normalise_protocol_filters` | call | [context_service](../modules/context_service.md) | 6 |
 | `_normalise_protocol_focus` | call | [context_service](../modules/context_service.md) | 6 |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

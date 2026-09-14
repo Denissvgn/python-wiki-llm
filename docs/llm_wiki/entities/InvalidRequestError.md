@@ -94,4 +94,4 @@ flowchart LR
 | `_validate_documentation_query_request` | call | [api](../modules/api.md) | 4 |
 | `bootstrap_wiki` | call | [api](../modules/api.md) | 1 |
 
-> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.
+> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.

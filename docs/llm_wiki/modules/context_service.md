@@ -29,7 +29,7 @@ Usage::
 | `.change_selection` | `changes_from_args`, `changes_from_args` |
 | `.context_budget` | `validate_request`, `run`, `run` |
 | `.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
-| `.context_packet` | `ContextPacketError`, `build_qualified_context` |
+| `.context_packet` | `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context` |
 | `.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
@@ -175,7 +175,9 @@ flowchart LR
 | `_context_enrichment_from_session` | `(session: _ProtocolEnrichmentSession \| None, filters: dict, *, warnings: list[str], prefer_fresh: bool, knowledge_mode: str \| None, source_priorities: Mapping[str, str], src_dir: str, wiki_dir: str, basis_incompatible: bool, source_selection: str \| None, allow_external_src: bool) -> dict[str, Any]` | — | — |
 | `_emit_context_warnings` | `(warnings: list[str], *, enabled: bool) -> None` | — | — |
 | `_protocol_success_payload` | `(request: dict, payload: dict, warnings: list[str]) -> dict` | — | — |
+| `_validate_request_cli_options` | `(args, request: Mapping[str, Any]) -> None` | — | Reject conflicting semantic sources before source/wiki capture. |
 | `_run_protocol` | `(args) -> None` | — | — |
-| `_run_packet_output` | `(*, src_dir: str, wiki_dir: str, budget: int, focus_values: list[str], prefer_fresh: bool, knowledge_mode: str \| None, output_path: str \| None, allow_external_src: bool, source_selection: str \| Path \| None) -> None` | — | Build and emit canonical QCP bytes for the CLI-only packet format. |
+| `_emit_packet_error` | `(error: BaseException, *, protocol: str = PROTOCOL_VERSION) -> None` | — | Keep stdout empty on packet failure and emit bounded structured details. |
+| `_run_packet_output` | `(*, src_dir: str, wiki_dir: str, budget: int, focus_values: list[str], prefer_fresh: bool, knowledge_mode: str \| None, output_path: str \| None, allow_external_src: bool, source_selection: str \| Path \| None, request: Mapping[str, Any] \| None = None) -> None` | — | Build and emit canonical QCP bytes for the CLI-only packet format. |
 | `run` | `(args) -> None` | — | — |
 | `_normalise_changed_paths` | `(changed: list[str], inventory: dict) -> list[str]` | — | Match git-reported changed paths to inventory keys. |

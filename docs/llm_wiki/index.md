@@ -6,8 +6,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 546 | [Open section](#entities) |
-| Modules | 176 | [Open section](#modules) |
+| Entities | 549 | [Open section](#entities) |
+| Modules | 177 | [Open section](#modules) |
 | Workflows | 114 | [Open section](#workflows) |
 | Guides | 15 | [Open section](#guides) |
 | Entry-point flows | 441 | [Open section](#entry-point-flows) |
@@ -168,6 +168,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [EvidenceState](entities/EvidenceState.md)
 - [ExistingPage](entities/ExistingPage.md)
 - [ExpectedLinkOutcome](entities/ExpectedLinkOutcome.md)
+- [ExplicitContextOption](entities/ExplicitContextOption.md)
 - [ExternalBrokerAuthenticationUnavailable](entities/ExternalBrokerAuthenticationUnavailable.md)
 - [ExternalSourceOptions](entities/ExternalSourceOptions.md)
 - [ExtractPayloadResult](entities/ExtractPayloadResult.md)
@@ -184,6 +185,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ExtractorStatus](entities/ExtractorStatus.md)
 - [FastAPIScanner](entities/FastAPIScanner.md)
 - [FaultInjector](entities/FaultInjector.md)
+- [FieldPolicy](entities/FieldPolicy.md)
 - [FlowForEntrypointResult](entities/FlowForEntrypointResult.md)
 - [FlowResult](entities/FlowResult.md)
 - [FrontMatterParseResult](entities/FrontMatterParseResult.md)
@@ -520,6 +522,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [TsPathAliasRule](entities/TsPathAliasRule.md)
 - [TypeScriptExtractor](entities/TypeScriptExtractor.md)
 - [TypedGraphTraversalResult](entities/TypedGraphTraversalResult.md)
+- [UnclassifiedPacketField](entities/UnclassifiedPacketField.md)
 - [UnknownVerificationCheckerError](entities/UnknownVerificationCheckerError.md)
 - [UnsafeUninstallPathError](entities/UnsafeUninstallPathError.md)
 - [ValidatedKnowledgeArtifacts](entities/ValidatedKnowledgeArtifacts.md)
@@ -676,6 +679,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [obsidian_cmd](modules/obsidian_cmd.md) - Commands for exporting LLM Wiki into an Obsidian-friendly mirror.
 - [packages](modules/packages.md) - Discover Python packages within a source tree.
 - [packet](modules/packet.md) - Documentation-run packet services.
+- [packet_field_policy](modules/packet_field_policy.md) - Explicit field/key spaces for the frozen qualified-packet path policy.
 - [paths](modules/paths.md) - Shared path normalization helpers.
 - [planner](modules/planner.md) - Deterministic, inspection-only planning for qualified-context packets.
 - [plugin_samples](modules/plugin_samples.md) - Bundled sample plugin export helpers.

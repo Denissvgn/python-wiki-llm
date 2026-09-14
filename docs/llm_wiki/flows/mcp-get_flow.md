@@ -36,7 +36,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_flow | service.get_flow | 1172 | `service.get_flow(flow_id)` |
+| get_flow | service.get_flow | 1154 | `service.get_flow(flow_id)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_flow` | `service.get_flow` | 1172 |
+| unresolved_call | `get_flow` | `service.get_flow` | 1154 |
 
 ## Behavior
 

@@ -42,6 +42,7 @@ separate from live reconciliation.
 | `.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
 | `.knowledge_observability` | `knowledge_freshness_disclosure` |
 | `.knowledge_verification` | `verification_summaries_for_concepts` |
+| `.packet_field_policy` | `PUBLIC_URI_FIELDS`, `STRUCTURAL_PATH_FIELDS`, `STRING_CLASSES`, `UnclassifiedPacketField`, `classify_string`, `validate_field_coverage` |
 | `.plugins` | `runtime_plugin_fallback_root` |
 | `.source_snapshot` | `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_inputs_match_current_files`, `source_snapshot_matches_current_files` |
 | `.validation` | `require_repository_relative_path` |
@@ -79,31 +80,32 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (5) |
-| Outbound | `src` (24) |
+| Inbound | `src` (6) |
+| Outbound | `src` (25) |
 
-> All 28 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_PacketWireContract](../entities/PacketWireContract.md) | 180 | — | One immutable schema/protocol/policy binding for canonical packets. |
-| [ContextPacketError](../entities/ContextPacketError.md) | 227 | `ValueError` | Base failure for context-packet construction and consumption. |
-| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 233 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
-| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 244 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
-| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 256 | `ContextPacketError` | A required read-only packet capability is unavailable. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 262 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 301 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 351 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 388 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 431 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 457 | — | Consumer-time comparison against one fresh official read. |
+| [_PacketWireContract](../entities/PacketWireContract.md) | 170 | — | One immutable schema/protocol/policy binding for canonical packets. |
+| [ContextPacketError](../entities/ContextPacketError.md) | 217 | `ValueError` | Base failure for context-packet construction and consumption. |
+| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 223 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
+| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 236 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
+| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 248 | `ContextPacketError` | A required read-only packet capability is unavailable. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 258 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 377 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 427 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 464 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 507 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 533 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `describe_context_packet_error` | `(error: BaseException) -> dict[str, Any]` | — | Describe a packet failure without echoing offending values or host roots. |
 | `_packet_contract_for_schema` | `(schema_version: object) -> _PacketWireContract` | — | — |
 | `_packet_contract_for_request` | `(request: Mapping[str, Any]) -> _PacketWireContract` | — | — |
 | `_validate_reconciliation_contract` | `(*, packet_id: object, policy: object, state: object, current: object, facets: object, limitations: object) -> None` | — | — |

@@ -2,7 +2,7 @@
 
 **Entry point:** `compare_context_packet_basis` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 1 more
+**Modules touched:** [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 2 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [context_packet](../modules/context_packet.md)
 - [context_service](../modules/context_service.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [packet_field_policy](../modules/packet_field_policy.md)
 - [validation](../modules/validation.md)
 
 ## Call sequence
@@ -70,7 +71,7 @@ sequenceDiagram
     p1-->>p20: payload.get
 ```
 
-> Call sequence diagram shows 30 of 544 interactions; 514 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 556 interactions; 526 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -131,17 +132,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_context_packet_basis | validate_context_packet | 1552 | `validate_context_packet(packet_bytes)` |
-| validate_context_packet | _coerce_packet_bytes | 1503 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2266 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2268 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2269 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2271 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2273 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2274 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2275 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 2279 | `raw.startswith(b'\xef\xbb\xbf')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2280 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
+| compare_context_packet_basis | validate_context_packet | 1635 | `validate_context_packet(packet_bytes)` |
+| validate_context_packet | _coerce_packet_bytes | 1586 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2359 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2361 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2362 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2364 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2366 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2367 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2368 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | raw.startswith | 2372 | `raw.startswith(b'\xef\xbb\xbf')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2373 | `ContextPacketMalformedError('packet_bytes', 'must not contain a UTF-8 byte-order mark')` |
 
 ### Boundary effects
 
@@ -151,11 +152,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2266 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2268 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 2269 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 2271 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2279 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2359 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2361 |
+| external_call | `_coerce_packet_bytes` | `bytes` | 2362 |
+| external_call | `_coerce_packet_bytes` | `TypeError` | 2364 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2372 |
 | step_limit | `compare_context_packet_basis` | `first 12 steps` | 0 |
 | truncated_flow | `compare_context_packet_basis` | `depth limit` | 0 |
 
