@@ -1192,6 +1192,9 @@ def _native_tool_call(callback: Callable[..., Any], *args, **kwargs) -> Any:
 
 
 def _register_mcp_tools(server, service: McpWikiService) -> None:
+    # Native annotations describe a JSON object wire result. ``Any`` changes
+    # SDK inference across Python versions and can introduce a {"result": ...}
+    # wrapper; dict[str, Any] also accepts structured semantic error envelopes.
     @server.tool()
     def get_entity(entity_id: str) -> dict:
         """Return a wiki entity page by entity page id."""
@@ -1218,7 +1221,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         return service.query_graph(query)
 
     @server.tool()
-    def query_documentation(request: dict) -> Any:
+    def query_documentation(request: dict) -> dict[str, Any]:
         """Run one exact bounded documentation or supplied-impact query."""
         return _native_tool_call(service.query_documentation, request)
 
@@ -1226,7 +1229,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def get_concept(
         locator_or_exact_route: str,
         limit: int = 20,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Return one concept by current coordinate, durable UID, or alias."""
         return _native_tool_call(service.get_concept, locator_or_exact_route, limit=limit)
 
@@ -1236,7 +1239,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         direction: str = "both",
         kinds: list[str] | None = None,
         limit: int = 20,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Return bounded relationships for one exact concept identity."""
         return _native_tool_call(service.related_concepts,
             locator_or_exact_route,
@@ -1250,7 +1253,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         locator_or_exact_route: str,
         ownership: str | None = None,
         limit: int = 20,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Return bounded document-order sections for one exact concept."""
         return _native_tool_call(service.list_concept_sections,
             locator_or_exact_route,
@@ -1267,7 +1270,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         resolutions: list[str] | None = None,
         include_evidence: bool = False,
         limit: int = 20,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Traverse bounded persisted typed relationships for one concept."""
         return _native_tool_call(service.traverse_typed_graph,
             locator_or_exact_route,
@@ -1283,12 +1286,12 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def explain_evidence(
         locator_or_exact_route: str,
         limit: int = 20,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Return bounded evidence for one exact concept identity."""
         return _native_tool_call(service.explain_evidence, locator_or_exact_route, limit=limit)
 
     @server.tool()
-    def get_knowledge_coverage(live: bool = False) -> Any:
+    def get_knowledge_coverage(live: bool = False) -> dict[str, Any]:
         """Return versioned coverage counts; live=True explicitly performs source work."""
         return _native_tool_call(service.get_knowledge_coverage, live=live)
 
@@ -1296,7 +1299,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def inspect_concept(
         locator_or_exact_route: str, live: bool = False,
         limit: int = 20, include_evidence: bool = False,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Inspect concept, typed edges, sections and coverage from one view.
 
         Defaults to snapshot-only; live=True authorizes one full source read.
@@ -1347,7 +1350,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         prefer_fresh: bool = False,
         if_packet_id: str | None = None,
         knowledge_mode: KnowledgeMode | None = None,
-    ) -> Any:
+    ) -> dict[str, Any]:
         """Return a qualified packet with packet-id cache revalidation."""
         options = {
             "budget_tokens": budget_tokens,

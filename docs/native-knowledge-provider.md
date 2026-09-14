@@ -130,6 +130,9 @@ agent setup. Add managed agent instructions, durable governance, scoped review
 or Site/Obsidian export only when your integration needs them. Existing user
 prose and rules remain consumer-owned. Snapshot readers do not initialize or
 repair those optional components.
+Export writers also enforce a managed wiki's recorded source-selection
+boundary. Carry the consumer's source root and profile into an Obsidian export,
+even when enriched export uses the committed snapshot without extracting source.
 
 ## Producer and reader compatibility
 

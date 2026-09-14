@@ -134,6 +134,12 @@ def test_optional_sdk_registration_when_installed(
     assert inspection["concept"]["found"] is False
 
     tools_by_name = {tool.name: tool for tool in tools}
+    for name in ("query_documentation", "get_concept", "related_concepts",
+                 "list_concept_sections", "traverse_typed_graph", "explain_evidence",
+                 "get_knowledge_coverage", "inspect_concept", "get_context_packet"):
+        output_schema = tools_by_name[name].outputSchema
+        assert output_schema is not None and output_schema["type"] == "object"
+        assert "result" not in output_schema.get("properties", {})
     for name, expected_fields in {
         "get_concept": {"locator_or_exact_route", "limit"},
         "related_concepts": {

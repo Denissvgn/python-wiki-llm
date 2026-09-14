@@ -806,6 +806,10 @@ same optional `knowledge_mode`. Qualified packet versioning and validation are
 described in [Qualified context packets](qualified-context-packets.md).
 
 `filters.language` and `filters.module` scope the budgeted `files` payload.
+Module filters are glob patterns over extensionless paths or dotted module
+names: use `app/service` or `app.service`, rather than `app/service.py`.
+Check the returned file set and native selection before relying on the result;
+an unmatched valid filter can correctly produce an empty selection.
 `filters.symbol`, `filters.entrypoint`, and `filters.surface` add bounded
 `graphs` and `surface` sections without changing the file-priority budget.
 `filters.freshness` and `filters.evidence` refine concept references and require

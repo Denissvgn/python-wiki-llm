@@ -57,12 +57,16 @@ for version in (1, 2):
         label = f"v{version}-{format}"
         request = {"protocol": f"llm-wiki-context/v{version}", "budget_tokens": 2000,
                    "focus": ["all"], "format": format,
-                   "filters": {"module": "app/service.py"}}
+                   "filters": {"module": "app/service"}}
         if version == 2:
             request["knowledge_mode"] = "auto"
         request_path = Path.cwd() / f"packet-request-{label}.json"
         request_path.write_bytes(canonical(request))
         packet = api.build_qualified_context(str(source), str(wiki), request)
+        if format == "json":
+            assert "app/service.py" in packet.to_payload()["response"]["files"]
+        else:
+            assert "app/service.py" in json.dumps(packet.to_payload()["response"])
         result = subprocess.run(
             [sys.executable, "-X", "utf8", "-I", "-m", "llm_wiki_cli.cli", "context",
              "--src-dir", str(source), "--wiki-dir", str(wiki),
