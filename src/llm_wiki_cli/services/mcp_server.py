@@ -713,6 +713,7 @@ class McpWikiService:
         }
         return {
             "query": query,
+            "mode": "substring",
             "total": total,
             "returned": returned,
             "count": returned,

@@ -2992,6 +2992,7 @@ def _generate_flow_md(
                 "data_flow",
                 flow_id=entry.get("id"),
                 category=entry.get("category"),
+                symbol=entry.get("symbol"),
             )
         lines.extend(
             _generate_data_flow_section(
@@ -5135,6 +5136,7 @@ def _write_bootstrap_flow_pages(
                     fallback_root=plugin_fallback,
                     flow_id=entry_point.get("id"),
                     category=entry_point.get("category"),
+                    symbol=entry_point.get("symbol"),
                 )
                 if data_flow is not None
                 else None,

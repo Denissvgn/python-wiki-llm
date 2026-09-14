@@ -68,6 +68,12 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_examples.py::test_go_http_tutorial",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go example requires the toolchain owner"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_extract.py::TestTypeScriptModuleOnlyExtraction::test_deep_payload_includes_javascript_http_entrypoint_and_data_flow",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
@@ -1019,6 +1025,12 @@
       "node_id": "tests/test_documentation_workspace.py::test_windows_directory_guard_blocks_rename_until_release[root]",
       "owner_lane": "product-windows-2025",
       "reason": "Windows rename sharing semantics only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_examples.py::test_go_http_tutorial",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go example requires the toolchain owner"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -2051,6 +2063,12 @@
       "node_id": "tests/test_documentation_wiki_input.py::test_non_regular_input_is_rejected",
       "owner_lane": "product-ubuntu-24.04",
       "reason": "FIFOs unavailable"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_examples.py::test_go_http_tutorial",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go example requires the toolchain owner"
     },
     {
       "lane": "core-windows-3.13",

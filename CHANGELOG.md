@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Runnable Python, FastAPI, Go HTTP, and plugin-hook tutorials, with a
+  self-contained guide included in the exported documentation-hooks sample.
+
 ### Fixed
 
+- Search and maintenance-queue commands reject invalid inputs before reading
+  the workspace. Search responses disclose their mode and bounds; queues include
+  the requested limit in their report and identity.
+- Documentation-hook styles follow the original entry symbol, including its
+  capitalization, across initial generation and later source refreshes.
 - Request-file context can explicitly deliver a canonical packet, including
   filters, without silently changing the output contract. Conflicting semantic
   options are rejected before source/wiki capture.

@@ -891,6 +891,7 @@ jobs:
           python -m pytest -q
           tests/test_ts_extract.py
           tests/test_go_extract.py
+          tests/test_examples.py::test_go_http_tutorial
           tests/test_rust_extract.py
           tests/test_haskell_extract.py
           tests/test_multilanguage_wiki.py
@@ -1123,6 +1124,7 @@ jobs:
       - name: Install source and hash-locked release tools
         run: |
           python -m pip install --no-cache-dir "./candidate[dev,mcp,tokens]"
+          python -m pip install --require-hashes --only-binary=:all: --no-cache-dir -r candidate/examples/fastapi-contracts/requirements-ci.txt
           python -m pip install --require-hashes \
             --no-cache-dir -r candidate/release/requirements.txt
           python -I incoming/tools/release/qualification.py verify-download \

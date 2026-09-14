@@ -13,6 +13,9 @@ from pathlib import Path
 
 _PROBE = r"""
 from pathlib import Path
+import re
+import shlex
+import subprocess
 import sys
 
 import llm_wiki_cli
@@ -24,6 +27,42 @@ Path(llm_wiki_cli.__file__).resolve().relative_to(target)
 schema = load_knowledge_schema()
 assert KNOWLEDGE_SCHEMA_VERSION == "llm-wiki-knowledge/v1"
 assert schema["properties"]["schema_version"]["const"] == KNOWLEDGE_SCHEMA_VERSION
+
+# Exercise the installed sample using only its exported, self-contained README.
+from llm_wiki_cli.services.plugin_samples import export_sample
+
+project = Path.cwd() / (target.name + "-plugin-demo")
+project.mkdir()
+plugin = project / "vendor/documentation-hooks"
+export_sample("documentation-hooks", plugin, root=project)
+assert {path.name for path in plugin.iterdir()} == {
+    "README.md", "detectors.py", "styles.py", "llm-wiki-plugin.json"
+}
+readme = (plugin / "README.md").read_text(encoding="utf-8")
+(project / "tasks.py").write_text(re.findall(r"```python\n(.*?)```", readme, re.S)[0], encoding="utf-8")
+(project / ".gitignore").write_text(re.findall(r"```gitignore\n(.*?)```", readme, re.S)[0], encoding="utf-8")
+blocks = re.findall(r"```sh\n(.*?)```", readme, re.S)
+assert len(blocks) == 2
+for stage, block in enumerate(blocks):
+    if stage == 1:
+        tasks = project / "tasks.py"
+        tasks.write_text(tasks.read_text(encoding="utf-8").replace("handle_task", "task_handler"), encoding="utf-8")
+    for line in block.splitlines():
+        command = shlex.split(line)
+        assert command[0] == "llm-wiki"
+        # The README explicitly skips export when these files already exist.
+        if command[1:4] == ["plugins", "samples", "export"]:
+            continue
+        result = subprocess.run(
+            [sys.executable, "-m", "llm_wiki_cli.cli", *command[1:]],
+            cwd=project, capture_output=True, text=True, encoding="utf-8", timeout=90,
+        )
+        assert result.returncode == 0, (command, result.stdout, result.stderr)
+    markdown = (project / "wiki/flows/task-task-handler.md").read_text(encoding="utf-8")
+    symbol = "handle_task" if stage == 0 else "task_handler"
+    assert f's1["1. {symbol}"]' in markdown
+    assert "classDef entry fill:#2E7D32,stroke:#2E7D32" in markdown
+    assert "class s1 entry" in markdown
 """
 
 _FORBIDDEN_PARTS = {
@@ -50,6 +89,8 @@ _REQUIRED_HELPERS = {
     "llm_wiki_cli/extractors/ts_scripts/package-lock.json",
     "llm_wiki_cli/extractors/ts_scripts/package.json",
 }
+_SAMPLE_ROOT = "examples/plugins/documentation-hooks"
+_SAMPLE_FILES = ("README.md", "detectors.py", "styles.py", "llm-wiki-plugin.json")
 
 
 def _validate_member_names(names: set[str]) -> None:
@@ -61,6 +102,10 @@ def _validate_member_names(names: set[str]) -> None:
             raise RuntimeError(f"artifact contains a private/generated member: {name}")
         if path.suffix == ".pyc" or path.name in {".coverage", ".DS_Store", ".env"}:
             raise RuntimeError(f"artifact contains a cache/secret member: {name}")
+        if "examples" in path.parts:
+            parts = path.parts[path.parts.index("examples") + 1:]
+            if parts and parts[0] != "plugins":
+                raise RuntimeError(f"artifact contains a repository-only tutorial: {name}")
 
 
 def _verify_contents(wheel: Path, sdist: Path) -> None:
@@ -78,6 +123,12 @@ def _verify_contents(wheel: Path, sdist: Path) -> None:
         if len(versions) != 1 or not versions[0].strip():
             raise RuntimeError("wheel metadata must contain exactly one version")
         version = versions[0].strip()
+        wheel_sample = {}
+        for filename in _SAMPLE_FILES:
+            name = f"llm_wiki_cli/{_SAMPLE_ROOT}/{filename}"
+            if name not in wheel_names:
+                raise RuntimeError(f"wheel is missing a bundled sample file: {name}")
+            wheel_sample[filename] = archive.read(name)
     _validate_member_names(wheel_names)
     missing_helpers = _REQUIRED_HELPERS - wheel_names
     if missing_helpers:
@@ -109,6 +160,15 @@ def _verify_contents(wheel: Path, sdist: Path) -> None:
     missing_sdist = required_sdist - sdist_names
     if missing_sdist:
         raise RuntimeError(f"sdist is missing release inputs: {missing_sdist}")
+    with tarfile.open(sdist, "r:gz") as archive:
+        for prefix in (_SAMPLE_ROOT, f"src/llm_wiki_cli/{_SAMPLE_ROOT}"):
+            for filename in _SAMPLE_FILES:
+                name = f"{prefix}/{filename}"
+                if name not in sdist_names:
+                    raise RuntimeError(f"sdist is missing a sample file: {name}")
+                stream = archive.extractfile(f"agent_wiki_cli-{version}/{name}")
+                if stream is None or stream.read() != wheel_sample[filename]:
+                    raise RuntimeError(f"source and packaged sample differ: {name}")
 
 
 def _single_artifact(dist_dir: Path, pattern: str) -> Path:

@@ -1,0 +1,2 @@
+# Optional: needed to run or type-check the application, not to extract its docs.
+fastapi==0.141.1
