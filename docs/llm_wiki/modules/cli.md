@@ -20,6 +20,7 @@ startup does not require their runtime packages.
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
 | `.services.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG` |
 | `.services.extraction_jobs` | `ExtractionJobsAction` |
+| `.services.maintenance_queue` | `DEFAULT_QUEUE_LIMIT`, `MAX_QUEUE_LIMIT`, `MIN_QUEUE_LIMIT`, `validate_queue_limit` |
 | `.services.progress` | `Progress` |
 | `.services.resource_diagnostics` | `resource_failure_hint` |
 | `.services.runtime_output` | `RuntimeOutputError` |
@@ -44,9 +45,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (39) |
+| Outbound | `src` (40) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -54,6 +55,8 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `_positive_int` | `(value: str) -> int` | — | — |
 | `_nonnegative_int` | `(value: str) -> int` | — | — |
+| `_queue_limit` | `(value: str) -> int` | — | — |
+| `_nonblank_query` | `(value: str) -> str` | — | — |
 | `_surface_values` | `(value: str) -> tuple[str, ...]` | — | — |
 | `_add_helper_cache_argument` | `(parser)` | — | — |
 | `_add_include_tests_argument` | `(parser)` | — | — |

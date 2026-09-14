@@ -42,6 +42,12 @@ from .services import (
 )
 from .services.contracts import BOOTSTRAP_SKIP_DATA_FLOW_FLAG
 from .services.extraction_jobs import ExtractionJobsAction
+from .services.maintenance_queue import (
+    DEFAULT_QUEUE_LIMIT,
+    MAX_QUEUE_LIMIT,
+    MIN_QUEUE_LIMIT,
+    validate_queue_limit,
+)
 from .services.resource_diagnostics import resource_failure_hint
 from . import __version__
 
@@ -58,6 +64,19 @@ def _nonnegative_int(value: str) -> int:
     if parsed < 0:
         raise argparse.ArgumentTypeError("must not be negative")
     return parsed
+
+
+def _queue_limit(value: str) -> int:
+    try:
+        return validate_queue_limit(int(value))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def _nonblank_query(value: str) -> str:
+    if not value.strip():
+        raise argparse.ArgumentTypeError("must contain a non-whitespace character")
+    return value
 
 
 def _surface_values(value: str) -> tuple[str, ...]:
@@ -169,7 +188,15 @@ def _add_queue_command(subparsers):
     parser.add_argument("--src-dir", default=".")
     parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
     parser.add_argument("--allow-external-src", action="store_true")
-    parser.add_argument("--limit", type=int, default=30)
+    parser.add_argument(
+        "--limit",
+        type=_queue_limit,
+        default=DEFAULT_QUEUE_LIMIT,
+        help=(
+            f"Maximum items, {MIN_QUEUE_LIMIT} to {MAX_QUEUE_LIMIT} "
+            f"(default: {DEFAULT_QUEUE_LIMIT})"
+        ),
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
     _add_source_selection_argument(parser)
     _add_helper_cache_argument(parser)
@@ -1228,12 +1255,19 @@ def _add_api_diff_command(subparsers):
 
 def _add_search_command(subparsers):
     parser = subparsers.add_parser("search", help="Search wiki text, titles, symbols, and paths")
-    parser.add_argument("query", help="Search query or exact page ID")
+    parser.add_argument(
+        "query", type=_nonblank_query, help="Nonblank search query or exact page ID"
+    )
     parser.add_argument("--src-dir", default=".")
     parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--kind", action="append", help="Restrict page kind; repeatable")
-    parser.add_argument("--limit", type=int, default=20, help="Maximum results, capped at 100")
+    parser.add_argument(
+        "--limit",
+        type=_positive_int,
+        default=20,
+        help="Positive maximum results, capped at 100 (default: 20)",
+    )
     parser.add_argument("--mode", choices=["ranked", "substring"], default="ranked")
     parser.add_argument("--format", choices=["json", "text"], default="json")
     _add_source_selection_argument(parser)
@@ -1937,7 +1971,10 @@ def _add_context_command(subparsers):
     )
     context_parser.add_argument(
         "--budget-mode", choices=["exact", "estimated"],
-        help="Opt into v3 accounting of the complete rendered output",
+        help=(
+            "Opt into v3 accounting of the complete rendered output; exact mode "
+            "requires --tokenizer FILE and the optional agent-wiki-cli[tokens] dependency"
+        ),
     )
     context_parser.add_argument(
         "--tokenizer", metavar="FILE",

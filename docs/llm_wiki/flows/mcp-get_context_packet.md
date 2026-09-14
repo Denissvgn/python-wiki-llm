@@ -36,7 +36,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_context_packet | service.get_context_packet | 1305 | `service.get_context_packet(**=options)` |
+| get_context_packet | service.get_context_packet | 1306 | `service.get_context_packet(**=options)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_context_packet` | `service.get_context_packet` | 1305 |
+| unresolved_call | `get_context_packet` | `service.get_context_packet` | 1306 |
 
 ## Behavior
 

@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_wiki_cli import cli
+from llm_wiki_cli.services import maintenance_queue
 from llm_wiki_cli.services.knowledge_freshness import ConceptFreshnessResult
 from llm_wiki_cli.services.knowledge_model import ComputedFreshness
 from llm_wiki_cli.services.lint_service import LintIssue
@@ -75,9 +76,14 @@ def test_live_queue_cli_deterministic_read_only_and_never_gates(
     monkeypatch.chdir(tmp_path)
     wiki = _write_wiki(tmp_path)
     (tmp_path / "app.py").write_text("class User:\n    pass\n")
-    before = {str(p): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    before = {
+        str(p): (p.read_bytes(), p.stat().st_mtime_ns)
+        for p in tmp_path.rglob("*")
+        if p.is_file()
+    }
     cache = str(tmp_path / "helpers")
     result = build_maintenance_queue(".", str(wiki), helper_cache_dir=cache)
+    assert result["limit"] == 30
     assert result == build_maintenance_queue(".", str(wiki), helper_cache_dir=cache)
     monkeypatch.setattr(
         "sys.argv",
@@ -96,8 +102,94 @@ def test_live_queue_cli_deterministic_read_only_and_never_gates(
     assert json.loads(capsys.readouterr().out) == result
     assert all(item["freshness"]["state"] == "unknown" for item in result["items"])
     assert before == {
-        str(p): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()
+        str(p): (p.read_bytes(), p.stat().st_mtime_ns)
+        for p in tmp_path.rglob("*")
+        if p.is_file()
     }
+
+
+@pytest.mark.parametrize("limit", ["-5", "0", "1001", "1000000", "invalid"])
+def test_queue_invalid_limits_fail_before_dispatch(monkeypatch, capsys, limit):
+    monkeypatch.setattr(
+        cli,
+        "_dispatch_command",
+        lambda args: pytest.fail("invalid input was dispatched"),
+    )
+    monkeypatch.setattr("sys.argv", ["llm-wiki", "queue", "--limit", limit])
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+    assert exc.value.code == 2
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert "--limit" in output.err and "Traceback" not in output.err
+    assert len(output.err) < 1500
+
+
+@pytest.mark.parametrize("limit", [True, False, 1.5, "1", None, 0, -5, 1001, 1000000])
+def test_queue_services_validate_limits_before_capture(monkeypatch, limit):
+    monkeypatch.setattr(
+        maintenance_queue,
+        "capture_context_read",
+        lambda *args, **kwargs: pytest.fail("invalid limit reached capture"),
+    )
+    with pytest.raises(ValueError, match="between 1 and 1000"):
+        build_maintenance_queue(limit=limit)
+    with pytest.raises(ValueError, match="between 1 and 1000"):
+        compose_queue([], [], {}, {}, {}, limit=limit)
+
+
+@pytest.mark.parametrize("count,limit", [(0, 1), (3, 3), (3, 1), (3, 1000)])
+def test_queue_limit_metadata_and_counts(count, limit):
+    pages = [
+        {"canonical_path": f"modules/{i}.md", "kind": "modules", "role": "mixed"}
+        for i in reversed(range(count))
+    ]
+    issues = {
+        page["canonical_path"]: [
+            LintIssue("placeholder", "Document the module behavior", "warning")
+        ]
+        for page in pages
+    }
+    result = compose_queue(pages, [], {}, issues, {}, limit=limit)
+    assert result["schema_version"] == "llm-wiki-maintenance-queue/v1"
+    assert result["limit"] == limit
+    assert result["returned"] == len(result["items"]) == min(count, limit)
+    assert result["total"] == count == result["returned"] + result["omitted"]
+    assert all(item["classification"] == "actionable" for item in result["items"])
+    assert [item["path"] for item in result["items"]] == [
+        f"modules/{i}.md" for i in range(min(count, limit))
+    ]
+    assert compose_queue([], [], {}, {}, {})["limit"] == 30
+
+
+def test_unknown_freshness_alone_is_informational_queue_evidence():
+    page = {"canonical_path": "modules/unknown.md", "kind": "modules", "role": "mixed"}
+    result = compose_queue([page], [], {}, {}, {})
+    assert result["total"] == result["returned"] == 1
+    item = result["items"][0]
+    assert item["freshness"]["state"] == "unknown"
+    assert item["classification"] == "informational"
+    assert [reason["code"] for reason in item["reasons"]] == ["freshness:unknown"]
+
+
+def test_queue_identity_binds_limit_even_when_items_match(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.chdir(tmp_path)
+    wiki = _write_wiki(tmp_path)
+    first = build_maintenance_queue(".", str(wiki), limit=30)
+    second = build_maintenance_queue(".", str(wiki), limit=1000)
+    assert first["items"] == second["items"]
+    assert first["queue_id"] != second["queue_id"]
+    assert {k: v for k, v in first.items() if k not in {"queue_id", "limit"}} == {
+        k: v for k, v in second.items() if k not in {"queue_id", "limit"}
+    }
+    assert second == build_maintenance_queue(".", str(wiki), limit=1000)
+    monkeypatch.setattr(
+        "sys.argv", ["llm-wiki", "queue", "--limit", "1000", "--format", "json"]
+    )
+    cli.main()
+    assert json.loads(capsys.readouterr().out) == second
 
 
 def test_queue_rejects_symlinked_wiki_and_invalid_limit(tmp_path, monkeypatch):

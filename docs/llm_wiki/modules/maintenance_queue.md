@@ -29,30 +29,36 @@ construction preserves the captured source/wiki basis and does not edit pages.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/queue_cmd.py"]
-    n1["src/llm_wiki_cli/services/context_packet.py"]
-    n2["src/llm_wiki_cli/services/documentation_worklist.py"]
-    n3["src/llm_wiki_cli/services/inventory_cache.py"]
-    n4["src/llm_wiki_cli/services/lint_service.py"]
-    n5["src/llm_wiki_cli/services/maintenance_queue.py"]
+    n0["src/llm_wiki_cli/cli.py"]
+    n1["src/llm_wiki_cli/commands/queue_cmd.py"]
+    n2["src/llm_wiki_cli/services/context_packet.py"]
+    n3["src/llm_wiki_cli/services/documentation_worklist.py"]
+    n4["src/llm_wiki_cli/services/inventory_cache.py"]
+    n5["src/llm_wiki_cli/services/lint_service.py"]
+    n6["src/llm_wiki_cli/services/maintenance_queue.py"]
+    n0 --> n1
     n0 --> n5
-    n4 --> n3
-    n5 --> n1
-    n5 --> n2
-    n5 --> n3
+    n0 --> n6
+    n1 --> n6
     n5 --> n4
-    click n0 "../modules/queue_cmd.md"
-    click n1 "../modules/context_packet.md"
-    click n2 "../modules/documentation_worklist.md"
-    click n3 "../modules/inventory_cache.md"
-    click n4 "../modules/lint_service.md"
-    click n5 "../modules/maintenance_queue.md"
+    n6 --> n2
+    n6 --> n3
+    n6 --> n4
+    n6 --> n5
+    click n0 "../modules/cli.md"
+    click n1 "../modules/queue_cmd.md"
+    click n2 "../modules/context_packet.md"
+    click n3 "../modules/documentation_worklist.md"
+    click n4 "../modules/inventory_cache.md"
+    click n5 "../modules/lint_service.md"
+    click n6 "../modules/maintenance_queue.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [cli](../modules/cli.md) |
 | Inbound | [queue_cmd](../modules/queue_cmd.md) |
 | Outbound | [context_packet](../modules/context_packet.md) |
 | Outbound | [documentation_worklist](../modules/documentation_worklist.md) |
@@ -63,6 +69,7 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `compose_queue` | `(pages, work_items, freshness, issues, metrics, *, limit = 30)` | — | Rank captured evidence; unknown provenance never becomes confirmed drift. |
-| `build_maintenance_queue` | `(src_dir = '.', wiki_dir = 'docs/llm_wiki', *, limit = 30, allow_external_src = False, source_selection = None, helper_cache_dir = None)` | — | — |
+| `validate_queue_limit` | `(limit: object) -> int` | — | Validate the shared CLI and service bound before reading queue inputs. |
+| `compose_queue` | `(pages, work_items, freshness, issues, metrics, *, limit = DEFAULT_QUEUE_LIMIT)` | — | Rank captured evidence; unknown provenance never becomes confirmed drift. |
+| `build_maintenance_queue` | `(src_dir = '.', wiki_dir = 'docs/llm_wiki', *, limit = DEFAULT_QUEUE_LIMIT, allow_external_src = False, source_selection = None, helper_cache_dir = None)` | — | — |
 | `render_queue` | `(queue)` | — | — |

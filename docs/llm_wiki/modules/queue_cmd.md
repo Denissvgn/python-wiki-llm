@@ -22,6 +22,7 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/queue_cmd.py"]
     n2["src/llm_wiki_cli/services/maintenance_queue.py"]
     n0 --> n1
+    n0 --> n2
     n1 --> n2
     click n0 "../modules/cli.md"
     click n1 "../modules/queue_cmd.md"

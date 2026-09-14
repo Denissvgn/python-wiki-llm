@@ -18,6 +18,9 @@ from .inventory_cache import InventoryCacheOptions
 from .lint_service import build_report
 
 QUEUE_SCHEMA = "llm-wiki-maintenance-queue/v1"
+MIN_QUEUE_LIMIT = 1
+MAX_QUEUE_LIMIT = 1000
+DEFAULT_QUEUE_LIMIT = 30
 _FRESHNESS_WEIGHT = {
     "source-missing": 90,
     "source-changed": 70,
@@ -39,10 +42,24 @@ _EDITABLE = {
 }
 
 
-def compose_queue(pages, work_items, freshness, issues, metrics, *, limit=30):
+def validate_queue_limit(limit: object) -> int:
+    """Validate the shared CLI and service bound before reading queue inputs."""
+    if (
+        isinstance(limit, bool)
+        or not isinstance(limit, int)
+        or not MIN_QUEUE_LIMIT <= limit <= MAX_QUEUE_LIMIT
+    ):
+        raise ValueError(
+            f"Queue limit must be between {MIN_QUEUE_LIMIT} and {MAX_QUEUE_LIMIT}"
+        )
+    return limit
+
+
+def compose_queue(
+    pages, work_items, freshness, issues, metrics, *, limit=DEFAULT_QUEUE_LIMIT
+):
     """Rank captured evidence; unknown provenance never becomes confirmed drift."""
-    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 1000:
-        raise ValueError("Queue limit must be between 1 and 1000")
+    limit = validate_queue_limit(limit)
     page_map = {page["canonical_path"]: page for page in pages}
     work_map = {item.canonical_path: item for item in work_items if item.canonical_path}
     reachable = set()
@@ -151,6 +168,7 @@ def compose_queue(pages, work_items, freshness, issues, metrics, *, limit=30):
     return {
         "schema_version": QUEUE_SCHEMA,
         "advisory": True,
+        "limit": limit,
         "total": len(items),
         "returned": min(limit, len(items)),
         "omitted": max(0, len(items) - limit),
@@ -167,13 +185,12 @@ def build_maintenance_queue(
     src_dir=".",
     wiki_dir="docs/llm_wiki",
     *,
-    limit=30,
+    limit=DEFAULT_QUEUE_LIMIT,
     allow_external_src=False,
     source_selection=None,
     helper_cache_dir=None,
 ):
-    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 1000:
-        raise ValueError("Queue limit must be between 1 and 1000")
+    limit = validate_queue_limit(limit)
     captured = capture_context_read(
         src_dir,
         wiki_dir,
