@@ -191,6 +191,55 @@ def test_ci_pins_the_package_build_tool() -> None:
     assert "--no-cache-dir" not in package_build["run"]
 
 
+def test_windows_provider_acceptance_uses_installed_artifacts_and_preserves_evidence():
+    job = _yaml("ci.yml")["jobs"]["test"]
+    check = _named_step(job, "Verify installed provider artifacts on native Windows")
+    assert check["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert "tests/run_provider_artifact_checks.py" in check["run"]
+    assert '"pyright==1.1.411"' in check["run"]
+    upload = _named_step(job, "Upload native Windows provider evidence")
+    assert "always()" in upload["if"]
+    assert upload["with"]["if-no-files-found"] == "error"
+
+
+def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evidence():
+    job = _yaml("action-selftest.yml")["jobs"]["foreign-caller"]
+    assert job["strategy"]["matrix"] == {
+        "integration": ["context", "integrity"],
+        "state": ["clean", "drift", "corrupt"],
+    }
+    checkout = _named_step(job, "Check out provider separately from caller sources")
+    assert checkout["with"]["path"] == ".provider"
+    assert checkout["with"]["persist-credentials"] is False
+    assert "head.sha" in checkout["with"]["ref"]
+    for name in (
+        "Run context health against caller",
+        "Run full integrity against caller",
+    ):
+        step = _named_step(job, name)
+        assert step["uses"].startswith("./.provider/integrations/")
+        assert step["with"]["src-dir"] == "source"
+        assert step["with"]["wiki-dir"] == "wiki"
+    check = _named_step(job, "Verify actual action outcome and unchanged caller")
+    assert check["if"] == "always()"
+    assert "--action-evidence" in check["run"]
+    assert "--outcome" in check["run"]
+
+
+def test_language_oracle_controls_have_a_mandatory_locked_owner():
+    workflow = _yaml("release-qualification.yml")
+    owners = [
+        step
+        for job in workflow["jobs"].values()
+        for step in job.get("steps", [])
+        if step.get("name") == "Verify independent provider parser controls"
+    ]
+    assert len(owners) == 1
+    assert "tests.provider_conformance.owner_controls" in owners[0]["run"]
+    assert "continue-on-error" not in owners[0]
+    assert "if" not in owners[0]
+
+
 def _wiki_integrity_job() -> tuple[dict, dict]:
     workflow = _yaml("ci.yml")
     return workflow, workflow["jobs"]["wiki-integrity"]

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Unterminated fences in extracted source prose no longer hide the generated
+  wiki sections that follow, including source comments with RST tilde underlines.
 - Module and entity page names remain distinct on case-insensitive and
   Unicode-normalizing filesystems, preserving every selected source mapping.
 - Native MCP tools declare a consistent JSON object output on Python 3.10

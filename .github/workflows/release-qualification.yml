@@ -918,6 +918,12 @@ jobs:
           --minimum-collected 489
           --minimum-passed 489
           --output evidence/result-toolchains.json
+      - name: Verify independent provider parser controls
+        working-directory: candidate
+        run: >-
+          python -m tests.provider_conformance.owner_controls
+          --work "${RUNNER_TEMP}/provider-oracles"
+          --output ../evidence/provider-parser-controls.json
       - name: Audit exact helper dependency trees
         run: |
           set -euo pipefail

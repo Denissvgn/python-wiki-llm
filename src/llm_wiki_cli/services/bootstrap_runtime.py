@@ -222,7 +222,24 @@ def _sanitize_source_doc_markdown(value: object) -> str:
             return label
         return f"{label} (`{target_text}`)"
 
-    return _SOURCE_DOC_LINK_RE.sub(repl, str(value))
+    text = _SOURCE_DOC_LINK_RE.sub(repl, str(value))
+    # An unterminated source-doc fence must not consume the generated sections
+    # which follow the Description. RST tilde underlines can also open a fence
+    # when interpreted as Markdown. Preserve balanced source code blocks.
+    opened: tuple[str, int] | None = None
+    for line in text.splitlines():
+        match = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if match is None:
+            continue
+        marker, tail = match.groups()
+        if opened is None:
+            if marker[0] != "`" or "`" not in tail:
+                opened = (marker[0], len(marker))
+        elif marker[0] == opened[0] and len(marker) >= opened[1] and not tail.strip():
+            opened = None
+    if opened is not None:
+        text = text.rstrip("\n") + "\n" + opened[0] * opened[1]
+    return text
 
 
 def _source_doc_first_line(value: object) -> str:
