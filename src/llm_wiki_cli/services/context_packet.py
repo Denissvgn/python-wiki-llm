@@ -260,8 +260,9 @@ class ContextPacketPathPolicyError(ContextPacketError):
 
     code = "context-packet-path-policy-rejected"
 
-    def __init__(self, field: str, message: str):
+    def __init__(self, field: str, message: str, *, relative_path: str | None = None):
         self.field = field
+        self.relative_path = relative_path
         self.message = message
         super().__init__(f"{field}: {message}")
 
@@ -4900,6 +4901,7 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False) -> str:
                             "wiki_dir",
                             "wiki symlinks are not permitted for qualified context "
                             f"reads: {rel_path!r}",
+                            relative_path=rel_path,
                         )
                     target = os.readlink(entry.path)
                     records.append(

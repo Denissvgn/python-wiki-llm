@@ -968,7 +968,8 @@ paths or raw evidence. It is diagnostic and does not create a CI gate.
 ### Native query failures
 
 The native APIs retain the public exception classes and expose safe `code`
-and `details={"field": ...}` values. Codes include `invalid-request`,
+and `details` values with a `field`; wiki path-policy errors can also retain a
+validated wiki-relative `path` for recovery. Codes include `invalid-request`,
 `full-inventory-required`, `path-policy-error`, `workspace-state-error`,
 `artifact-integrity-error`, and `context-read-mutated`. Missing source or
 unprepared read helpers are workspace failures; invalid committed artifacts

@@ -158,6 +158,7 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
 
     calls = {
         "repository_walk": 0,
+        "source_recheck": 0,
         "snapshot": 0,
         "deep_extraction": 0,
         "surface": 0,
@@ -170,6 +171,12 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
     real_inventory = api.extract_cmd.get_inventory_result
     real_extract_payload = api.extract_cmd.build_extract_payload
     real_walk = source_snapshot.os.walk
+    real_recheck = api.context_packet_service._assert_source_unchanged
+
+    def counted_recheck(snapshot, anchor):
+        calls["source_recheck"] += 1
+        assert snapshot is captured_snapshot[0]
+        return real_recheck(snapshot, anchor)
 
     def counted_walk(*args, **kwargs):
         calls["repository_walk"] += 1
@@ -224,6 +231,7 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
         return built_service
 
     monkeypatch.setattr(source_snapshot.os, "walk", counted_walk)
+    monkeypatch.setattr(api.context_packet_service, "_assert_source_unchanged", counted_recheck)
     monkeypatch.setattr(api.extract_cmd, "build_source_snapshot", counted_snapshot)
     monkeypatch.setattr(api.extract_cmd, "get_inventory_result", counted_inventory)
     monkeypatch.setattr(
@@ -263,7 +271,9 @@ def test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view(
 
     assert result is built_service
     assert calls == {
-        "repository_walk": 1,
+        # One capture and one final membership/hash guard; only one extraction.
+        "repository_walk": 2,
+        "source_recheck": 1,
         "snapshot": 1,
         "deep_extraction": 1,
         "surface": 1,

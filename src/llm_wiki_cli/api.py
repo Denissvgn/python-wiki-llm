@@ -98,6 +98,7 @@ from .services.doctor_service import build_doctor_report
 from .services.documentation_queries import (
     DocumentationGraphQueryService,
     DocumentationQueryError,
+    QUERY_IDENTITY_BYTE_LIMIT,
     fit_documentation_query_result,
 )
 from .services.documentation_query_builder import (
@@ -692,6 +693,7 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
 def _raise_native_query_api_error(exc: Exception) -> NoReturn:
     """Retain public catch points while exposing only fixed query diagnostics."""
     from .services.knowledge_loader import KnowledgeStateLoadError
+    from .services.validation import require_portable_relative_path
 
     chain: list[BaseException] = []
     current: BaseException | None = exc
@@ -712,9 +714,10 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
             if isinstance(mapped, ArtifactIntegrityError)
             else "workspace-state-error"
         )
+        supplied_code = exc.code if isinstance(exc, LlmWikiApiError) else mapped.code
         code = (
-            mapped.code
-            if mapped.code
+            supplied_code
+            if isinstance(supplied_code, str) and supplied_code
             in {
                 "invalid-request",
                 "artifact-integrity-error",
@@ -812,6 +815,8 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
                 "origins": "Supply an iterable with at most 100 values and supported origins.",
                 "resolutions": "Supply an iterable with at most 100 values and supported resolutions.",
                 "source_selection": "Supply the recorded --source-selection profile; run llm-wiki sync after an intentional profile change.",
+                "value": f"Supply a nonempty query of at most {QUERY_IDENTITY_BYTE_LIMIT} UTF-8 bytes.",
+                "locator_or_exact_route": f"Supply an exact coordinate of at most {QUERY_IDENTITY_BYTE_LIMIT} UTF-8 bytes.",
             }.get(
                 field,
                 "Invalid documentation query input. Check the documented type, value and bounds.",
@@ -821,9 +826,21 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
             if isinstance(exc, LlmWikiApiError) and exc.__cause__ is not None
             else exc
         )
-        raise leaf(
-            f"{field}: {message}", code=code, details={"field": field}
-        ) from cause
+        safe_details = {"field": field}
+        if code == "path-policy-error" and field == "wiki_dir":
+            # Preserve the existing safe, wiki-relative recovery coordinate;
+            # never retain an arbitrary path from caller-supplied exceptions.
+            for item in chain:
+                if isinstance(item, (wiki_surface.WikiSurfacePathError,
+                                     context_packet_service.ContextPacketPathPolicyError)):
+                    try:
+                        path = require_portable_relative_path(item.relative_path)
+                    except (TypeError, ValueError):
+                        break
+                    if len(path.encode("utf-8")) <= QUERY_IDENTITY_BYTE_LIMIT:
+                        safe_details["path"] = path
+                    break
+        raise leaf(f"{field}: {message}", code=code, details=safe_details) from cause
 
 
 def _native_query_boundary(function: Callable[_P, _R]) -> Callable[_P, _R]:
