@@ -1572,37 +1572,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6272,
+              "line": 6274,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4457,
+              "line": 4458,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4457,
+              "line": 4458,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4458,
+              "line": 4459,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4462,
+              "line": 4463,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4462,
+              "line": 4463,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -1661,7 +1661,7 @@
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 2069,
+          "step_count": 2071,
           "truncated": true
         }
       },
@@ -17953,7 +17953,7 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 1388,
+          "step_count": 1389,
           "truncated": true
         }
       },
@@ -29470,7 +29470,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6317,
+              "line": 6319,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -29577,7 +29577,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 4474,
+          "step_count": 4476,
           "truncated": true
         }
       },
@@ -33282,7 +33282,7 @@
             "src/llm_wiki_cli/services/module_maps.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 6336,
+          "step_count": 6337,
           "truncated": true
         }
       },
@@ -56461,5 +56461,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:19b283f750379b16d9b8f83d6dd1d1a9275c86bbe9d72d5a333fce5855790bef"
+  "source_hash": "sha256:52dc5190774dc0e190a54e02f0b80b435b91c1f82eaf49ddf404c30ba3dd2200"
 }
