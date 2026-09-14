@@ -79,6 +79,7 @@ _FORBIDDEN_PARTS = {
     "secrets",
 }
 _REQUIRED_HELPERS = {
+    "llm_wiki_cli/py.typed",
     "llm_wiki_cli/extractors/go_scripts/go.mod",
     "llm_wiki_cli/extractors/go_scripts/main.go",
     "llm_wiki_cli/extractors/haskell_scripts/Main.hs",

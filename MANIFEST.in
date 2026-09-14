@@ -1,5 +1,6 @@
 recursive-include examples/plugins/documentation-hooks *.py *.json *.md
 include release_build_backend.py
+include src/llm_wiki_cli/py.typed
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json
 include src/llm_wiki_cli/extractors/ts_scripts/package-lock.json
 include docs/standalone-documentation.md
@@ -7,4 +8,5 @@ include docs/wiki-guide.md
 include docs/cli-reference.md
 include docs/automation.md
 include docs/security-model.md
+include docs/native-knowledge-provider.md
 prune reports

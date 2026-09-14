@@ -13,6 +13,8 @@ For operational details, see
 [Native knowledge artifact operations](native-knowledge-artifacts.md). For
 audience value, adoption tiers, and candidate evaluation designs, see
 [Native knowledge use cases](native-knowledge-use-cases.md).
+For public imports, installation, workspace boundaries and compatibility, see
+[Integrating native knowledge](native-knowledge-provider.md).
 For a small downstream integration, follow the
 [native knowledge tutorial](../examples/native-knowledge/README.md). Its Python
 client bootstraps a separate project without installing agent instructions.

@@ -217,6 +217,13 @@ entries.
 GHC 9.6.x is the supported Haskell helper toolchain for this release. Newer GHC
 9.x releases are best-effort, and helper preparation fails clearly when GHC
 version output is malformed or older than 9.6.
+The syntax parser starts with Haskell2010 and applies declared `LANGUAGE`
+options, including multiline pragmas, implied extensions and `No...` overrides.
+Only syntax options are read from `OPTIONS_GHC`; preprocessors, compiler
+plugins and target build actions are never executed. CPP-conditioned source
+requires an explicitly preprocessed input snapshot from the consumer's trusted
+build configuration. The reader does not guess dependency versions or choose
+CPP branches. Source coordinates then refer to the supplied snapshot.
 
 ## Agent Support
 

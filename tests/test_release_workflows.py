@@ -625,6 +625,10 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
     assert "tests/release_artifact_smoke.py" in freeze_text
     assert "tests/fixtures/packet-artifact-parity.py" in freeze_text
     assert "tests/fixtures/native-artifact-consumer.py" in freeze_text
+    assert "tests/verify_installed_provider.py" in freeze_text
+    assert "tests/fixtures/provider-typing-valid.py" in freeze_text
+    assert "tests/fixtures/provider-typing-invalid.txt" in freeze_text
+    assert "tests/fixtures/provider-artifact-consumer.py" in freeze_text
     assert "examples/native-knowledge" in freeze_text
     assert "sha256sum" in freeze_text
     assert jobs["freeze"]["outputs"]["harness-sha256"] == (

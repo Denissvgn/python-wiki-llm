@@ -67,6 +67,7 @@ def test_package_data_includes_knowledge_schema():
     data = _pyproject()
     package_data = data["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
     assert "schemas/llm-wiki-knowledge-v1.schema.json" in package_data
+    assert "py.typed" in package_data
 
 
 def test_jsonschema_is_a_dev_only_dependency():
@@ -105,6 +106,7 @@ def test_sdist_manifest_includes_knowledge_schema():
         "include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json"
         in manifest.splitlines()
     )
+    assert "include src/llm_wiki_cli/py.typed" in manifest.splitlines()
 
 
 def test_ci_verifies_schema_from_wheel_and_sdist_installations():

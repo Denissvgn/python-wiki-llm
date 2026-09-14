@@ -65,6 +65,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "llm_wiki_cli" = [
+    "py.typed",
     "schemas/llm-wiki-knowledge-v1.schema.json",
     "extractors/ts_scripts/package.json",
     "extractors/ts_scripts/package-lock.json",

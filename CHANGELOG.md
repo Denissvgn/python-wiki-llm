@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Installed inline Python typing for downstream clients and public schema
+  constants for native inspection and coverage, with an integration guide for
+  workspace boundaries, optional dependencies and reader compatibility.
 - Shared Python/MCP native concept inspection with explicit snapshot/live
   scope, bounded graph and section results, and concurrent-input checks.
 - Versioned native coverage diagnostics through Python, MCP and
@@ -21,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Haskell syntax reads apply declared language options and their implied
+  extensions per file, including multiline pragmas and explicit disabling.
+  Build actions remain inert; CPP input receives explicit preprocessing guidance.
 - Native query failures provide safe codes and fields while preserving public
   exception catch points and local debugging causes. Missing live helpers,
   invalid projections and concurrent mutations remain distinguishable.

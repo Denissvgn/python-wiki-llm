@@ -740,6 +740,44 @@ def test_haskell_helper_extracts_syntax_inventory(haskell_helper: Path, tmp_path
     )
     assert functions_by_name[("loadUser", "function")]["line"] == 23
 
+    # Syntax settings belong to each input file; compiling/typechecking the
+    # target or executing its OPTIONS_GHC actions is never necessary.
+    cases = {
+        "Plain.hs": "module Plain where\ndata Plain = Plain { number :: Int }\n",
+        "Extensions.hs": (
+            "{-# LANGUAGE\n MagicHash, GADTs, LambdaCase, ExplicitForAll\n #-}\n"
+            "module Extensions where\nimport GHC.Exts (Int#, (+#))\n"
+            "data Box a where\n  Box :: Int -> Box Int\n"
+            "choose :: forall a. Box a -> a\nchoose = \\case Box n -> n\n"
+            "increment :: Int# -> Int#\nincrement x# = x# +# 1#\n"
+        ),
+        "Quotes.hs": (
+            "{-# LANGUAGE TemplateHaskellQuotes #-}\n"
+            "{-# OPTIONS_GHC -F -pgmF ./must-not-run -fplugin MustNotLoad #-}\n"
+            "module Quotes where\nquoted = [| error \"do not execute\" |]\n"
+        ),
+    }
+    for name, content in cases.items():
+        _write_haskell(tmp_path, name, content)
+        result = _run_helper(haskell_helper, tmp_path, only_files=[name], deep=True)
+        assert result.returncode == 0, result.stderr
+        actual = json.loads(result.stdout)[name]
+        assert actual["module"] == name.removesuffix(".hs")
+        if name == "Extensions.hs":
+            assert actual["language_pragmas"] == ["ExplicitForAll", "GADTs", "LambdaCase", "MagicHash"]
+            assert any(item["name"] == "increment" for item in actual["functions"])
+    assert not (tmp_path / "must-not-run").exists()
+
+    for name, content, message in (
+        ("Disabled.hs", "{-# LANGUAGE MagicHash, NoMagicHash #-}\nmodule Disabled where\nf x# = x#\n", "parse failed"),
+        ("Unconfigured.hs", "module Unconfigured where\nf x# = x#\n", "parse failed"),
+        ("Conditional.hs", "{-# LANGUAGE CPP #-}\nmodule Conditional where\n#if FLAG\nx = 1\n#else\nx = 2\n#endif\n", "preprocessed source snapshot"),
+    ):
+        _write_haskell(tmp_path, name, content)
+        result = _run_helper(haskell_helper, tmp_path, only_files=[name], deep=True)
+        assert result.returncode != 0
+        assert message in result.stderr
+
 
 def test_literate_haskell_helper_preserves_inventory_shape(
     haskell_helper: Path, tmp_path

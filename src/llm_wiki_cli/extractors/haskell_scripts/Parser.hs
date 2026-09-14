@@ -5,7 +5,7 @@ module Parser
     ) where
 
 import Data.Char (isSpace)
-import Data.List (isPrefixOf, sortOn)
+import Data.List (foldl', isPrefixOf, sortOn)
 import qualified GHC.Data.EnumSet as EnumSet
 import GHC.Data.FastString (mkFastString)
 import GHC.Data.StringBuffer (stringToStringBuffer)
@@ -33,7 +33,11 @@ import GHC.Hs
     , TyClDecl (..)
     , isImportDeclQualified
     )
+import GHC.Driver.Flags (Language (..))
+import GHC.Driver.Session (flagSpecFlag, flagSpecName, impliedXFlags, languageExtensions, xFlags)
+import GHC.LanguageExtensions.Type (Extension)
 import GHC.Parser (parseModule)
+import GHC.Parser.Header (getOptions)
 import GHC.Parser.Annotation (SrcSpanAnn', getLocA)
 import GHC.Parser.Lexer
     ( ParseResult (..)
@@ -70,28 +74,73 @@ parseSourceFile :: FilePath -> FilePath -> IO (Either String FileEntry)
 parseSourceFile absolutePath displayPath = do
     rawSource <- readFile absolutePath
     let source = prepareSource absolutePath rawSource
-        parserState =
-            initParserState
-                parserOptions
-                (stringToStringBuffer source)
-                (mkRealSrcLoc (mkFastString displayPath) 1 1)
-    pure $
+        buffer = stringToStringBuffer source
+        (_, locatedOptions) = getOptions (parserOptions (languageExtensions (Just Haskell2010))) buffer displayPath
+        options = map unLoc locatedOptions
+    pure $ do
+        extensions <- either (Left . ((displayPath ++ ": ") ++)) Right (syntaxExtensions options)
+        let parserState =
+                initParserState
+                    (parserOptions extensions)
+                    buffer
+                    (mkRealSrcLoc (mkFastString displayPath) 1 1)
         case unP parseModule parserState of
-            POk _ parsedModule -> Right (moduleToEntry rawSource parsedModule)
+            POk _ parsedModule -> Right (moduleToEntry options parsedModule)
             PFailed failedState ->
                 Left
                     ( displayPath
                         ++ ": parse failed: "
+                        ++ cppGuidance source
                         ++ compactWhitespace
                             ( showSDocUnsafe
                                 (pprMessages NoDiagnosticOpts (getPsErrorMessages failedState))
                             )
                     )
 
-parserOptions :: ParserOpts
-parserOptions =
-    mkParserOpts EnumSet.empty diagOptions [] False False False True
+-- Parse syntax only. Never pass OPTIONS_GHC to a compiler driver: -F,
+-- -pgmF, plugins and other build actions must remain inert source text.
+syntaxExtensions :: [String] -> Either String [Extension]
+syntaxExtensions options =
+    EnumSet.toList <$> foldl' apply (Right baseline) names
   where
+    names = [name | Just name <- map (stripPrefix "-X") options]
+    languages = [(show value, value) | value <- [minBound .. maxBound] :: [Language]]
+    language = foldl' (\current name -> maybe current id (lookup name languages)) Haskell2010 names
+    baseline = EnumSet.fromList (languageExtensions (Just language))
+    flags = [(flagSpecName spec, flagSpecFlag spec) | spec <- xFlags]
+    apply selected name
+        | Just _ <- lookup name languages = selected
+        | Just extension <- lookup name flags = enable selected True extension
+        | Just disabled <- stripPrefix "No" name
+        , Just extension <- lookup disabled flags = enable selected False extension
+        | otherwise = Left ("unsupported LANGUAGE extension: " ++ name)
+    enable selected enabled extension = applyExtension [] enabled extension <$> selected
+
+applyExtension :: [Extension] -> Bool -> Extension -> EnumSet.EnumSet Extension -> EnumSet.EnumSet Extension
+applyExtension visited enabled extension selected
+    | extension `elem` visited = selected
+    | not enabled = EnumSet.delete extension selected
+    | otherwise =
+        foldl'
+            (\current (turnOn, implied) -> applyExtension (extension : visited) turnOn implied current)
+            (EnumSet.insert extension selected)
+            [(turnOn, implied) | (trigger, turnOn, implied) <- impliedXFlags, trigger == extension]
+
+cppGuidance :: String -> String
+cppGuidance source
+    | any isDirective (lines source) =
+        "CPP requires an explicitly preprocessed source snapshot; syntax-only reads do not choose build conditions. "
+    | otherwise = ""
+  where
+    isDirective line = any (`isPrefixOf` trimLeft line) ["#if", "#else", "#elif", "#endif", "#include", "#define", "#undef"]
+
+parserOptions :: [Extension] -> ParserOpts
+parserOptions extensions =
+    mkParserOpts (EnumSet.fromList extensions) diagOptions supportedNames False False False True
+  where
+    supportedNames =
+        map show ([minBound .. maxBound] :: [Language])
+            ++ concat [[flagSpecName spec, "No" ++ flagSpecName spec] | spec <- xFlags]
     diagOptions =
         DiagOpts
             EnumSet.empty
@@ -101,11 +150,11 @@ parserOptions =
             Nothing
             defaultSDocContext
 
-moduleToEntry :: String -> GenLocated location (HsModule GhcPs) -> FileEntry
-moduleToEntry rawSource locatedModule =
+moduleToEntry :: [String] -> GenLocated location (HsModule GhcPs) -> FileEntry
+moduleToEntry options locatedModule =
     emptyFileEntry
         { fileModule = moduleName
-        , fileLanguagePragmas = languagePragmas rawSource
+        , fileLanguagePragmas = sortOn id [name | Just name <- map (stripPrefix "-X") options]
         , fileImports = sortOn importLine imports
         , fileClasses = sortOn classLine classes
         , fileFunctions = sortOn functionLine functions
@@ -288,35 +337,6 @@ dropOneLeadingSpace :: String -> String
 dropOneLeadingSpace (' ' : rest) = rest
 dropOneLeadingSpace value = value
 
-languagePragmas :: String -> [String]
-languagePragmas source =
-    sortOn id (concatMap pragmasFromLine (lines source))
-
-pragmasFromLine :: String -> [String]
-pragmasFromLine rawLine =
-    case stripPrefix "{-# LANGUAGE" (trim rawLine) of
-        Nothing -> []
-        Just rest ->
-            case breakOn "#-}" rest of
-                Nothing -> []
-                Just inside -> map trim (splitCommas inside)
-
-splitCommas :: String -> [String]
-splitCommas "" = []
-splitCommas value =
-    case break (== ',') value of
-        (part, ',' : rest) -> part : splitCommas rest
-        (part, _) -> [part]
-
-breakOn :: String -> String -> Maybe String
-breakOn needle haystack =
-    search "" haystack
-  where
-    search _ "" = Nothing
-    search prefix remaining
-        | needle `isPrefixOf` remaining = Just (reverse prefix)
-        | otherwise = search (head remaining : prefix) (tail remaining)
-
 stripPrefix :: String -> String -> Maybe String
 stripPrefix prefix value
     | prefix `isPrefixOf` value = Just (drop (length prefix) value)
@@ -325,11 +345,5 @@ stripPrefix prefix value
 compactWhitespace :: String -> String
 compactWhitespace = unwords . words
 
-trim :: String -> String
-trim = trimRight . trimLeft
-
 trimLeft :: String -> String
 trimLeft = dropWhile isSpace
-
-trimRight :: String -> String
-trimRight = reverse . dropWhile isSpace . reverse

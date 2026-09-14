@@ -160,6 +160,8 @@ from .services.entrypoints import build_flow
 from .services.wiki_surface_index import evaluate_surface_index
 from .services.source_snapshot import SourceSnapshotError
 from .services.source_selection import SourceSelectionError
+from .services.knowledge_coverage import KNOWLEDGE_COVERAGE_SCHEMA_VERSION
+from .services.native_inspection import NATIVE_INSPECTION_SCHEMA_VERSION
 
 if TYPE_CHECKING:
     from .services.calibration.controller import (
@@ -3107,6 +3109,8 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "KNOWLEDGE_COVERAGE_SCHEMA_VERSION",
+    "NATIVE_INSPECTION_SCHEMA_VERSION",
     "NativeInspectionResult",
     "inspect_concept",
     "KnowledgeCoverageResult",

@@ -608,6 +608,20 @@ def _validate_native_consumer(python: Path, mcp_python: Path, work: Path) -> Map
     return {**results[0], "mcp_transport": "verified"}
 
 
+def _validate_provider_contract(python: Path, work: Path) -> Mapping:
+    fixtures = Path(__file__).parent / "fixtures"
+    consumer = _json_output(_run(
+        _isolated_utf8_python_command(python, "-c", (fixtures / "provider-artifact-consumer.py").read_text(encoding="utf-8")),
+        cwd=work,
+    ), "installed provider isolation and compatibility")
+    output = work / "provider-typing.json"
+    _run(_isolated_utf8_python_command(
+        Path(sys.executable), str(Path(__file__).with_name("verify_installed_provider.py")),
+        "--python", str(python), "--work", str(work / "typing"), "--output", str(output),
+    ), cwd=work)
+    return {"consumer": dict(consumer), "typing": json.loads(output.read_text(encoding="utf-8"))}
+
+
 def run_smoke(args: argparse.Namespace) -> int:
     artifact = args.artifact.resolve()
     artifact_reference_file_count = _validate_artifact_members(artifact)
@@ -623,6 +637,7 @@ def run_smoke(args: argparse.Namespace) -> int:
     work.mkdir(parents=True)
 
     module_suffix = _validate_installation(python, work)
+    provider_contract = _validate_provider_contract(python, work)
     version_text = _run(
         _isolated_utf8_python_command(
             python,
@@ -887,6 +902,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "context_packet_sha256": _sha256(packet_path),
             "packet_adapters": packet_adapters,
             "native_consumer": native_consumer,
+            "provider_contract": provider_contract,
             "site_sha256": _tree_hash(site),
             "obsidian_sha256": _tree_hash(vault),
             "skills": skill_count,
