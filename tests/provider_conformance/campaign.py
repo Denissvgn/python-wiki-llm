@@ -34,6 +34,7 @@ from .trace import (
     flow_findings,
     markdown_observations,
     module_page,
+    module_fact_present,
     native_findings,
     packet_entry,
 )
@@ -240,7 +241,9 @@ def assess(
                 Finding(
                     fact["id"],
                     "markdown",
-                    "pass" if needle in body else "fail",
+                    "pass"
+                    if module_fact_present(body, selector, fact["expected"])
+                    else "fail",
                     "source-module-or-import",
                     observed=needle,
                     reference=page["canonical_path"],

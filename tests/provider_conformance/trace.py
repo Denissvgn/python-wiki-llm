@@ -33,6 +33,20 @@ def entity_pages(surface: dict, path: str, name: str) -> list[dict]:
     ]
 
 
+def module_fact_present(markdown: str, selector: list[str], expected: dict) -> bool:
+    if selector == ["module"]:
+        match = re.search(
+            r"^\*\*Declared module:\*\* `([^`]+)`[ \t]*$", markdown, re.MULTILINE
+        )
+        return bool(match and match[1] == expected["value"])
+    if selector[0] != "imports":
+        raise Incomplete("Expected a source module/import fact")
+    rows = named_rows(markdown, "Imports", "Source") + named_rows(
+        markdown, "Imports", "Module"
+    )
+    return any(row.get("Source", row.get("Module")) == selector[1] for row in rows)
+
+
 def markdown_observations(
     wiki: Path, surface: dict, path: str, lang: str
 ) -> list[dict]:

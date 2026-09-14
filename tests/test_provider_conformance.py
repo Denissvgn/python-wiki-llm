@@ -267,10 +267,25 @@ def test_empty_packets_and_undisclosed_downgrades_fail():
     assert packet_entry(packet, "model.py")[1].status == "fail"
     packet["response"]["omitted_files"] = ["model.py"]
     assert packet_entry(packet, "model.py")[1].status == "bounded-omission"
+
     packet["response"]["files"] = {"model.py": {"detail": "slim"}}
     assert packet_entry(packet, "model.py")[1].status == "fail"
     packet["response"]["downgraded_files"] = {"model.py": "slim"}
     assert packet_entry(packet, "model.py")[1].status == "bounded-omission"
+
+
+def test_import_and_module_facts_cannot_match_unrelated_prose():
+    from tests.provider_conformance.trace import module_fact_present
+
+    body = "# Example\n\n## Description\nData.Hashable\n\n## Imports\n\n| Module | Alias |\n|---|---|\n| `Data.Other` | H |\n"
+    assert not module_fact_present(body, ["imports", "Data.Hashable"], {})
+    assert module_fact_present(body, ["imports", "Data.Other"], {})
+    assert not module_fact_present(body, ["module"], {"value": "Data.Hashable"})
+    assert module_fact_present(
+        body + "\n**Declared module:** `Data.Hashable`\n",
+        ["module"],
+        {"value": "Data.Hashable"},
+    )
 
 
 def test_flow_scope_excludes_nested_calls_and_shadowed_targets():
