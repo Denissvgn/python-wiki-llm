@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:9cbd10ea2e908f7356f50537d9215f59853d2d69eb76d6cbe7cf40010f22335c",
-    "knowledge_index_hash": "sha256:48ed624515440e0ad41af6ee26294737434a28eb3ab0baf4a581a5cbf44ba8b5",
-    "surface_index_hash": "sha256:966c8b03728ebe536a2150a46c2e9b3f210d00bce552571626f819ec8b4b52be"
+    "evaluated_envelope_hash": "sha256:0d19d2da4feae5ebc17d9eca3ba8aba82351e2add6c7c2ced70f3a98eca27744",
+    "knowledge_index_hash": "sha256:9cdc853f50d55f1aeaf001257cd4118fdaea52a1ee9d23f379a8085f3dff067d",
+    "surface_index_hash": "sha256:2a1067ae8cb2bf0b959dda9284a469f62260401d27607cfdf29f5dbb673e62e6"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -7260,12 +7260,12 @@
       "generation_options_hash": "sha256:963c315eb4f1d2b1fb73b2343d545b0268798643b4c9f247f8c3633bcff03442",
       "implementation_hash": "sha256:c2eafb1930dfc80babfe17fdf054f5dbad1e872801e96b22354598bec098099a",
       "inventory_hash": "sha256:745ea3ee74d0cc4a8f5ca03f5ffba410bdb19bc5b165059423b59abe0132ea2d",
-      "lifecycle_hash": "sha256:fce1691819494c185b4043385452b2ae84a967205e10f91b75cbeda4672a1e4c",
-      "markdown_snapshot_hash": "sha256:7d15c7668d7970185a40704821a370013d9a7c67670a3095869297a9ccc38ca4",
+      "lifecycle_hash": "sha256:89fd103ca915729113ded30d5e17331a167ab755960d60fc6188f5eb88b2c7eb",
+      "markdown_snapshot_hash": "sha256:90ceae883163b5a417f620c3518e6275dbd49fffb08874bda49acf2f0140d3f5",
       "observation_inputs_hash": "sha256:11b0c9fd8d6aaebba28d493a46653033c3c30a0d30f745a00d202b79603234a9",
       "repository_hash": "sha256:2077323ceb2fca4f1d6724fca822b6d87e1aa6d21ae0e46e777ff6c6cff29253",
       "schema_version": "llm-wiki-knowledge-reuse/v1",
-      "source_snapshot_hash": "sha256:0db9103875aa7be230fc8a7fd0e894f91468fa3451df7e723ef9ec291c038b63"
+      "source_snapshot_hash": "sha256:8ec698aeb1fff021e5ec933c371405e28ab92f9f6647ebeafa2d22e4a808640d"
     },
     "llm-wiki/generation-options/v1": {
       "data_flow_enabled": true,
@@ -7280,7 +7280,7 @@
     "source_selection_inputs": {
       "inputs": [
         {
-          "content_hash": "sha256:74aa1204424607a463430b36781dd193f0923dfc6f0c6275dd92b08081af97e4",
+          "content_hash": "sha256:cbe089aceb401690c190eea3a01ecb1b6eafed1af7176a22884fc484a3bc0664",
           "path": ".gitignore"
         },
         {

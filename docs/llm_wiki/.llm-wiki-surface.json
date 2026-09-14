@@ -20,7 +20,7 @@
       "dependencies": 1,
       "entities": 546,
       "flows": 441,
-      "guides": 15,
+      "guides": 6,
       "index": 1,
       "infrastructure": 0,
       "load-order": 1,
@@ -29,7 +29,7 @@
       "workflows": 114
     },
     "dependency_architecture": 2,
-    "total": 1296
+    "total": 1287
   },
   "dependency_pages": {
     "count": 2,
@@ -35806,15 +35806,6 @@
         "flows/process-cli.md",
         "flows/process-llm-wiki.md",
         "flows/process-render_summary.md",
-        "guides/archived-workflow-apply_diff.md",
-        "guides/archived-workflow-apply_sync_changes.md",
-        "guides/archived-workflow-build_apply_diff_context.md",
-        "guides/archived-workflow-exit_if_large_unforced_diff.md",
-        "guides/archived-workflow-finalize_bootstrap.md",
-        "guides/archived-workflow-generate_dependencies_md.md",
-        "guides/archived-workflow-get_inventory.md",
-        "guides/archived-workflow-print_dry_run_plan.md",
-        "guides/archived-workflow-runtime_live_concept_bases.md",
         "guides/cli-and-python-api.md",
         "guides/getting-started.md",
         "guides/integrations.md",
@@ -48297,145 +48288,6 @@
       "title": "write_bootstrap_infrastructure_pages"
     },
     {
-      "canonical_path": "guides/archived-workflow-apply_diff.md",
-      "id": "archived-workflow-apply_diff",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-apply_diff",
-      "outgoing_internal_links": [
-        "modules/source_selection.md",
-        "modules/sync_analysis.md",
-        "modules/sync_cmd.md",
-        "modules/sync_manifest.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: apply_diff"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-apply_sync_changes.md",
-      "id": "archived-workflow-apply_sync_changes",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-apply_sync_changes",
-      "outgoing_internal_links": [
-        "modules/extraction_service.md",
-        "modules/infrastructure_sync.md",
-        "modules/progress.md",
-        "modules/source_snapshot.md",
-        "modules/sync_analysis.md",
-        "modules/sync_cmd.md",
-        "modules/sync_manifest.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: apply_sync_changes"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-build_apply_diff_context.md",
-      "id": "archived-workflow-build_apply_diff_context",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-build_apply_diff_context",
-      "outgoing_internal_links": [
-        "modules/source_selection.md",
-        "modules/sync_analysis.md",
-        "modules/sync_cmd.md",
-        "modules/sync_manifest.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: build_apply_diff_context"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-exit_if_large_unforced_diff.md",
-      "id": "archived-workflow-exit_if_large_unforced_diff",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-exit_if_large_unforced_diff",
-      "outgoing_internal_links": [
-        "modules/extraction_service.md",
-        "modules/infrastructure_sync.md",
-        "modules/sync_analysis.md",
-        "modules/sync_cmd.md",
-        "modules/sync_manifest.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: exit_if_large_unforced_diff"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-finalize_bootstrap.md",
-      "id": "archived-workflow-finalize_bootstrap",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-finalize_bootstrap",
-      "outgoing_internal_links": [
-        "modules/bootstrap_runtime.md",
-        "modules/bootstrap_service.md",
-        "modules/extraction_service.md",
-        "modules/io.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: finalize_bootstrap"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-generate_dependencies_md.md",
-      "id": "archived-workflow-generate_dependencies_md",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-generate_dependencies_md",
-      "outgoing_internal_links": [
-        "modules/bootstrap_runtime.md",
-        "modules/diagrams.md",
-        "modules/io.md",
-        "modules/services_dependencies.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: generate_dependencies_md"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-get_inventory.md",
-      "id": "archived-workflow-get_inventory",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-get_inventory",
-      "outgoing_internal_links": [
-        "modules/context_service.md",
-        "modules/extraction_jobs.md",
-        "modules/extraction_service.md",
-        "modules/source_snapshot.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: get_inventory"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-print_dry_run_plan.md",
-      "id": "archived-workflow-print_dry_run_plan",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-print_dry_run_plan",
-      "outgoing_internal_links": [
-        "modules/infrastructure_sync.md",
-        "modules/sync_analysis.md",
-        "modules/sync_cmd.md",
-        "modules/sync_manifest.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: print_dry_run_plan"
-    },
-    {
-      "canonical_path": "guides/archived-workflow-runtime_live_concept_bases.md",
-      "id": "archived-workflow-runtime_live_concept_bases",
-      "kind": "guides",
-      "mcp_uri": "llm-wiki://guides/archived-workflow-runtime_live_concept_bases",
-      "outgoing_internal_links": [
-        "modules/knowledge_evidence.md",
-        "modules/knowledge_model.md",
-        "modules/knowledge_orchestration.md",
-        "modules/sync_manifest.md"
-      ],
-      "role": "semantic",
-      "source_path": null,
-      "title": "Archived workflow: runtime_live_concept_bases"
-    },
-    {
       "canonical_path": "guides/cli-and-python-api.md",
       "id": "cli-and-python-api",
       "kind": "guides",
@@ -56463,5 +56315,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:142b88f00ca82e61be0aa42862a40ec0c07a1273269493b5dc2e77d18043d3f2"
+  "source_hash": "sha256:1facceab8460eec9cbe597e4be84b7ca8886281d8ed70a0e1c4b3ec49c5c89f6"
 }
