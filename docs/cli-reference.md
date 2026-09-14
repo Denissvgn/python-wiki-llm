@@ -1754,6 +1754,17 @@ of UTF-8 content, with 1–100 returned results. Exceeding a corpus limit fails
 explicitly; narrow `--kind` or choose a smaller wiki. Search is read-only and
 does not require embeddings or a model service.
 
+The query must contain a non-whitespace character. Nonblank queries retain
+their original whitespace, including in substring mode. `--limit` accepts a
+positive integer, defaults to 20, and caps the returned results at 100 even when
+a larger value is requested. Blank queries and invalid limits exit `2`, leave
+stdout empty, and print argument diagnostics to stderr in both output formats.
+A valid query with no matches exits `0` with empty results.
+
+JSON responses from both the CLI and MCP disclose `mode` (`ranked` or
+`substring`), `total`, `returned`, and `bounds.results`, including truncation.
+Ranked scores and provenance remain specific to ranked mode.
+
 ## `queue`
 
 Select advisory maintenance work for a managed wiki:
@@ -1771,6 +1782,20 @@ remains explicit; it is never promoted to confirmed source drift. The queue
 reuses existing freshness and worklist evidence, loads no project plugins, and
 does not edit pages or change the integrity gate. Prepared helpers are required
 for the selected source languages; `--helper-cache-dir` selects their cache.
+
+`--limit` accepts integers from 1 through 1000 inclusive and defaults to 30.
+Invalid limits exit `2` before reading the queue inputs, with empty stdout and
+an argument diagnostic on stderr in either output format.
+
+The JSON report includes the requested `limit`, `total`, `returned`, and
+`omitted`; `returned` equals the number of `items`, and `total` equals
+`returned + omitted`. The `limit` field is additive metadata in
+`llm-wiki-maintenance-queue/v1`. Consumers should accept additional fields.
+The `queue_id` hashes the complete report, including `limit`: identical inputs
+and limits give the same identity, while different limits give different
+identities even if every item fits. Reports from versions without this field
+have different identities. A valid advisory queue exits `0`, including when
+there is no recommended work.
 
 ## `upgrade`
 

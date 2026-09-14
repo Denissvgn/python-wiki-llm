@@ -1,6 +1,7 @@
-"""Real CLI failure streams and mutation boundaries for write-oriented commands."""
+"""Real CLI failure streams and mutation boundaries."""
 
 import io
+import os
 import subprocess
 import sys
 import types
@@ -14,6 +15,54 @@ from llm_wiki_cli.services.bootstrap_service import (
 )
 from llm_wiki_cli.services.bootstrap_runtime import execute_bootstrap
 from llm_wiki_cli.services.extraction_service import InventoryResult, ExtractorStatus
+
+
+@pytest.mark.parametrize("fmt", ["json", "text"])
+@pytest.mark.parametrize(
+    "argv,argument",
+    [
+        (["search", "User", "--limit", "0"], "--limit"),
+        (["search", "User", "--limit", "-5", "--mode", "substring"], "--limit"),
+        (["search", ""], "query"),
+        (["search", " \t\u2003", "--mode", "substring"], "query"),
+        (["queue", "--limit", "0"], "--limit"),
+        (["queue", "--limit", "-5"], "--limit"),
+        (["queue", "--limit", "1001"], "--limit"),
+        (["queue", "--limit", "invalid"], "--limit"),
+    ],
+)
+def test_read_only_cli_argument_errors_use_stderr_without_writes(
+    tmp_path, fmt, argv, argument
+):
+    root = tmp_path / "workspace with spaces Ω"
+    root.mkdir()
+    (root / "app.py").write_text("class User:\n    pass\n", encoding="utf-8")
+
+    def snapshot():
+        return {
+            p.relative_to(root): (p.read_bytes(), p.stat().st_mtime_ns)
+            for p in root.rglob("*")
+            if p.is_file()
+        }
+
+    before = snapshot()
+    environment = dict(os.environ)
+    environment.pop("LLM_WIKI_DEBUG", None)
+    result = subprocess.run(
+        [sys.executable, "-B", "-m", "llm_wiki_cli.cli", *argv, "--format", fmt],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert "usage:" in result.stderr and argument in result.stderr
+    assert "Traceback" not in result.stderr
+    assert snapshot() == before
 
 
 @pytest.mark.parametrize(
