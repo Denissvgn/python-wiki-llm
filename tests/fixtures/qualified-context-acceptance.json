@@ -1,0 +1,166 @@
+{
+  "schema_version": "llm-wiki-qualified-context-acceptance/v1",
+  "scope": "raw-local-packets-and-existing-site-commitments",
+  "evidence_kind": "synthetic-regression-cases",
+  "corpora": [
+    {
+      "id": "fx-path-policy",
+      "cases": [
+        {
+          "id": "benign-source-path-literals",
+          "old_assumption": "Every slash-like source or Markdown string is a private path.",
+          "expected": "Opaque routes, URLs, arithmetic and source literals remain intact; structural paths remain constrained.",
+          "test": "tests/test_context_packet.py::test_typed_path_policy_preserves_opaque_slash_like_source_text_and_hides_roots"
+        },
+        {
+          "id": "structural-path-and-receipt-forgery",
+          "old_assumption": "A self-consistent-looking receipt is sufficient to admit arbitrary paths.",
+          "expected": "Structural absolute paths and forged classification counts are rejected.",
+          "test": "tests/test_context_packet.py::test_path_policy_rejects_structural_absolute_path_and_forged_counts"
+        },
+        {
+          "id": "undeclared-core-fields",
+          "old_assumption": "A new fixed-schema field can silently inherit an opaque classification.",
+          "expected": "Unknown fixed fields cannot produce a passed structural receipt, including non-string values.",
+          "test": "tests/test_packet_field_policy.py::test_unclassified_fixed_fields_fail_before_a_receipt_can_claim_passed"
+        },
+        {
+          "id": "declared-inventory-key-space",
+          "old_assumption": "Delegating additive inventory JSON either forbids benign text or disables nested path checks.",
+          "expected": "The declared namespace preserves opaque additions while rejecting machine-local structural paths.",
+          "test": "tests/test_packet_field_policy.py::test_inventory_delegation_preserves_benign_text_and_enforces_structural_paths"
+        },
+        {
+          "id": "safe-packet-diagnostics",
+          "old_assumption": "Resolved local roots are necessary to explain rejected context paths.",
+          "expected": "API, CLI and MCP return safe path-policy failure records without resolved roots.",
+          "test": "tests/test_context_integration.py::test_path_failure_diagnostics_do_not_expose_resolved_roots"
+        },
+        {
+          "id": "trusted-output-root-alias",
+          "old_assumption": "Lexical and resolved spellings of the same trusted output root are distinct directories.",
+          "expected": "Aliases preserve publication commitments without allowing outside commitments.",
+          "test": "tests/test_site_root_identity.py"
+        }
+      ]
+    },
+    {
+      "id": "fx-stale-evidence",
+      "cases": [
+        {
+          "id": "self-consistent-live-facet-substitution",
+          "old_assumption": "Canonical bytes and a matching self-digest establish currentness.",
+          "expected": "Independent live reconciliation detects substituted source, repository, knowledge, generator, freshness, response, delivery and path-policy facets.",
+          "test": "tests/test_qualified_context_acceptance.py::test_self_consistent_substitutions_reconcile_against_each_live_facet"
+        },
+        {
+          "id": "consumer-request-intent",
+          "old_assumption": "Reconciliation proves the packet carries the request the consumer intended.",
+          "expected": "Currentness and basis equality remain distinct from the caller's expected-request check.",
+          "test": "tests/test_qualified_context_acceptance.py::test_consumer_request_intent_is_separate_from_live_currentness"
+        },
+        {
+          "id": "availability-loss",
+          "old_assumption": "Losing native artifacts can become an unchanged successful response.",
+          "expected": "Availability loss is stale and unavailable knowledge does not acquire currentness.",
+          "test": "tests/test_qualified_context_acceptance.py::test_availability_loss_is_stale_not_an_unchanged_success"
+        },
+        {
+          "id": "snapshot-only-equality",
+          "old_assumption": "Matching snapshot evidence is equivalent to freshly evaluated knowledge.",
+          "expected": "Structural validation and caller-basis equality leave currentness unevaluated.",
+          "test": "tests/test_qualified_context_acceptance.py::test_snapshot_equality_never_becomes_currentness"
+        },
+        {
+          "id": "source-and-wiki-live-anchors",
+          "old_assumption": "Evidence remains current after source or consumed wiki state changes.",
+          "expected": "The official complete reconciliation policy detects changed live evidence.",
+          "test": "tests/test_context_packet.py::test_managed_live_packet_binds_envelope_and_reconciles_current"
+        },
+        {
+          "id": "capture-race",
+          "old_assumption": "A successful early read permits publication after an anchor changes.",
+          "expected": "Source and wiki mutation before final encoding abort packet return.",
+          "test": "tests/test_context_packet.py::test_mutation_before_final_encoding_aborts_without_returning_a_packet"
+        },
+        {
+          "id": "every-wiki-anchor",
+          "old_assumption": "A captured view remains usable when individual manifest, surface, knowledge, governance, verification or Markdown inputs change.",
+          "expected": "A mutation of each named wiki anchor before packet return is a context-read-mutated failure.",
+          "test": "tests/test_qualified_context_acceptance.py::test_each_wiki_anchor_mutation_aborts_packet_return"
+        },
+        {
+          "id": "selection-control-race",
+          "old_assumption": "Source selection can broaden between reads without invalidating the captured source basis.",
+          "expected": "A changed selection control is rejected before excluded source content is read.",
+          "test": "tests/test_context_packet.py::test_source_recheck_rejects_gitignore_broadening_before_secret_hash"
+        },
+        {
+          "id": "missing-live-source",
+          "old_assumption": "A nonexistent source is equivalent to an existing empty source tree.",
+          "expected": "Missing/non-directory sources are explicit unavailable failures across packet adapters.",
+          "test": "tests/test_context_integration.py::test_missing_source_is_unavailable_across_adapters"
+        },
+        {
+          "id": "consume-time-no-io-and-no-write",
+          "old_assumption": "Validation or reconciliation may silently refresh artifacts or invoke a provider.",
+          "expected": "Official reconciliation performs no writes/provider/plugin calls.",
+          "test": "tests/test_qualified_context_acceptance.py::test_official_reconciliation_is_read_only_and_provider_free"
+        },
+        {
+          "id": "offline-consumption",
+          "old_assumption": "Structural validation or caller-basis comparison requires reading local source or consulting a provider.",
+          "expected": "Offline consumers perform no file/network I/O and never infer live currentness from equality.",
+          "test": "tests/test_qualified_context_acceptance.py::test_offline_consumers_have_no_file_or_network_io"
+        },
+        {
+          "id": "built-marker-freshness",
+          "old_assumption": "A previous built marker remains valid after committed outputs change.",
+          "expected": "A regenerated publication stales the previous build until its matching marker is supplied.",
+          "test": "tests/test_site_export.py::test_same_selection_regeneration_updates_export_id_and_stales_old_build"
+        },
+        {
+          "id": "receipt-and-marker-substitution",
+          "old_assumption": "Missing, tampered or mismatched publication metadata can be treated as complete.",
+          "expected": "Official site consumers reject malformed or mismatched metadata.",
+          "test": "tests/test_site_export.py::test_check_rejects_missing_tampered_and_mismatched_publication_metadata"
+        }
+      ]
+    },
+    {
+      "id": "fx-same-owner-receipt",
+      "cases": [
+        {
+          "id": "truncation-and-byte-transplant",
+          "old_assumption": "An attached identifier proves arbitrary bytes came from its original body.",
+          "expected": "Truncated/noncanonical data and transplanted packet IDs are rejected.",
+          "test": "tests/test_context_packet.py::test_strict_parser_rejects_truncated_noncanonical_duplicate_and_invalid_json"
+        },
+        {
+          "id": "transplanted-packet-id",
+          "old_assumption": "A previously valid ID can be attached to a changed body.",
+          "expected": "Digest/body mismatch is malformed, regardless of the supplied ID's provenance.",
+          "test": "tests/test_context_packet.py::test_digest_rejects_semantic_mutation_and_transplanted_id"
+        },
+        {
+          "id": "earlier-state-and-owner-replacement",
+          "old_assumption": "Locally consistent replacement necessarily preserves the independent consumer's expectation.",
+          "expected": "Both owner-produced states may be structurally valid; independent expected basis and live source reveal mismatch.",
+          "test": "tests/test_qualified_context_acceptance.py::test_owner_can_replace_consistent_local_history_but_not_external_expectation"
+        },
+        {
+          "id": "whole-root-recreation",
+          "old_assumption": "Self-contained local bytes universally detect complete same-owner rollback/recreation.",
+          "expected": "Identical recreated content can retain packet identity; no owner-resistant or monotonic-history claim follows.",
+          "test": "tests/test_qualified_context_acceptance.py::test_consistent_whole_root_recreation_does_not_claim_owner_resistance"
+        },
+        {
+          "id": "same-owner-signing",
+          "old_assumption": "A signature made with an owner-controlled key establishes an external witness.",
+          "expected": "Local signing cannot admit unsupported packet assurance levels.",
+          "test": "tests/test_qualified_context_acceptance.py::test_local_signing_does_not_admit_stronger_packet_assurance"
+        }
+      ]
+    }
+  ]
+}
