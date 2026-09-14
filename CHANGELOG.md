@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Site and Obsidian native summaries preserve explicit unknown identity for
+  ungoverned wikis without requiring a governance ledger or fabricating UIDs.
 - Haskell syntax reads apply declared language options and their implied
   extensions per file, including multiline pragmas and explicit disabling.
   Build actions remain inert; CPP input receives explicit preprocessing guidance.

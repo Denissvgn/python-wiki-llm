@@ -65,6 +65,12 @@ wiki paths are resolved there. An absolute wiki path must remain within that
 boundary. `allow_external_src=True` authorizes an external **source** root; it
 does not authorize arbitrary wiki roots or weaken symlink containment.
 
+The headless `bootstrap_wiki` writer also requires non-overlapping source and
+wiki roots. With a whole-repository source input, place its initial wiki beside
+that input in the consumer workspace. With `src/` as the input, a sibling
+`wiki/` is suitable. Existing read operations can consume a conventional wiki
+inside a repository; this does not relax the headless writer's source protection.
+
 A process can read two projects under a common trusted workspace without
 changing its working directory. Pass explicit roots for every operation:
 

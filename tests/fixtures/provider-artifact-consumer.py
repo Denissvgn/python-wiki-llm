@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 
 from llm_wiki_cli import api
@@ -152,6 +153,36 @@ for case in ("corrupt-knowledge", "unsupported", "corrupt-surface"):
     assert tree(wiki) == frozen
 
 assert Path.cwd() == cwd
+before_export = tree(wiki_b)
+for surface, destination in (("site", "--out-dir"), ("obsidian", "--vault-dir")):
+    options = [
+        "--wiki-dir",
+        str(wiki_b),
+        destination,
+        str(root / (surface + "-output")),
+        "--knowledge-metadata",
+        "summary",
+        "--knowledge-profile",
+        "public-portable",
+    ]
+    for operation in ("export", "check"):
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-X",
+                "utf8",
+                "-I",
+                "-m",
+                "llm_wiki_cli.cli",
+                surface,
+                operation,
+                *options,
+            ],
+            capture_output=True,
+            timeout=60,
+        )
+        assert completed.returncode == 0, completed.stderr.decode(errors="replace")
+assert tree(wiki_b) == before_export
 print(
     json.dumps(
         {
@@ -160,6 +191,7 @@ print(
             "isolated_in_one_process": True,
             "application_execution": False,
             "offline_snapshot": True,
+            "ungoverned_exports": True,
             "packet_modes": ["omitted", "off", "auto", "required"],
             "states": states,
         },
