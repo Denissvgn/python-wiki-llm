@@ -183,6 +183,24 @@ for surface, destination in (("site", "--out-dir"), ("obsidian", "--vault-dir"))
         )
         assert completed.returncode == 0, completed.stderr.decode(errors="replace")
 assert tree(wiki_b) == before_export
+
+portable_source = root / "portable-source"
+for directory, filename, symbol in (("one", "Model.py", "Account"), ("two", "model.py", "account")):
+    path = portable_source / directory / filename
+    path.parent.mkdir(parents=True)
+    path.write_text(f"class {symbol}:\n    value: int\n", encoding="utf-8")
+portable_wiki = root / "portable-wiki"
+api.bootstrap_wiki(str(portable_source), str(portable_wiki))
+for directory in ("modules", "entities"):
+    pages = list((portable_wiki / directory).glob("*.md"))
+    assert len(pages) == len({page.name.casefold() for page in pages}) == 2
+for source_path in ("one/Model.py", "two/model.py"):
+    result = api.query_documentation(
+        {"operation": "impact", "paths": [source_path]},
+        src_dir=str(portable_source), wiki_dir=str(portable_wiki),
+    )
+    assert "concepts" in result
+    assert any(item["source_path"] == source_path for item in result["concepts"])
 print(
     json.dumps(
         {
@@ -192,6 +210,7 @@ print(
             "application_execution": False,
             "offline_snapshot": True,
             "ungoverned_exports": True,
+            "portable_page_identity": True,
             "packet_modes": ["omitted", "off", "auto", "required"],
             "states": states,
         },

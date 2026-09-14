@@ -10,6 +10,37 @@ from llm_wiki_cli.commands import bootstrap_cmd, lint_cmd, migrate_cmd
 from llm_wiki_cli.commands.extract_cmd import ExtractorStatus, InventoryResult
 
 
+def test_case_colliding_source_and_entity_names_keep_distinct_pages(tmp_path, monkeypatch):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services import bootstrap_runtime, sync_manifest
+    from llm_wiki_cli.services.validation import portable_path_key
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "source"
+    _write(source / "one/Model.py", "class Account:\n    value: int\n")
+    _write(source / "two/model.py", "class account:\n    label: str\n")
+    inventory = api.extract_source(str(source), deep=True)["inventory"]
+    modules = bootstrap_runtime.build_module_page_map(inventory)
+    entities = bootstrap_runtime.build_entity_occurrence_page_map(inventory, modules)
+    assert len({portable_path_key(name) for name in modules.values()}) == 2
+    assert len({portable_path_key(name) for name in entities.values()}) == 2
+    assert sync_manifest._build_module_page_map(inventory) == modules
+    assert sync_manifest._build_entity_occurrence_page_map(inventory, modules) == entities
+
+    wiki = tmp_path / "wiki"
+    api.bootstrap_wiki(str(source), str(wiki))
+    assert len(list((wiki / "modules").glob("*.md"))) == 2
+    assert len(list((wiki / "entities").glob("*.md"))) == 2
+    for path, page in modules.items():
+        assert f"`{path}`" in (wiki / "modules" / f"{page}.md").read_text()
+    for (name, path, _occurrence), page in entities.items():
+        result = api.inspect_concept(f"llm-wiki://entities/{page}", src_dir="source", wiki_dir="wiki")
+        concept = result["concept"]["concept"]
+        assert concept is not None
+        assert concept["title"] == name
+        assert concept["source_path"] == path
+
+
 def _make_args(**kwargs):
     defaults = {
         "src_dir": ".",

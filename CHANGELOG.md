@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Module and entity page names remain distinct on case-insensitive and
+  Unicode-normalizing filesystems, preserving every selected source mapping.
 - Native MCP tools declare a consistent JSON object output on Python 3.10
   and newer, preserving direct payloads and structured semantic errors.
 - Site and Obsidian native summaries preserve explicit unknown identity for
