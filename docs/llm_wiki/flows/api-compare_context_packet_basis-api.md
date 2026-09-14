@@ -131,7 +131,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | 1353 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
+| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | 1355 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
 | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | validate_context_packet | 1636 | `validate_context_packet(packet_bytes)` |
 | validate_context_packet | _coerce_packet_bytes | 1587 | `_coerce_packet_bytes(packet_bytes)` |
 | _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2360 | `isinstance(value, bytes)` |

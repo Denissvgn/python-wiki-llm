@@ -136,13 +136,13 @@ flowchart LR
 | projection_concept_summary | isinstance (src/llm_wiki_cli/services…rojection_concept_summary) | 414 | `isinstance(projection, KnowledgeProjection)` |
 | projection_concept_summary | TypeError | 415 | `TypeError('projection must be a KnowledgeProjection')` |
 | projection_concept_summary | _validate_projection_structure | 416 | `_validate_projection_structure(projection)` |
-| _validate_projection_structure | isinstance (src/llm_wiki_cli/services…date_projection_structure) | 797 | `isinstance(projection, KnowledgeProjection)` |
-| _validate_projection_structure | KnowledgeProjectionError | 798 | `KnowledgeProjectionError('projection-type-invalid', 'projection', 'must be a KnowledgeProjection')` |
-| _validate_projection_structure | KnowledgeProjectionError | 804 | `KnowledgeProjectionError('projection-schema-invalid', 'schema_version', ...)` |
-| _validate_projection_structure | isinstance (src/llm_wiki_cli/services…date_projection_structure) | 809 | `isinstance(projection.profile, KnowledgeProjectionProfile)` |
-| _validate_projection_structure | KnowledgeProjectionError | 810 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
-| _validate_projection_structure | _require_sha256 | 815 | `_require_sha256(projection.source_knowledge_hash, 'source_knowledge_hash', code='projection-source-hash-invalid')` |
-| _require_sha256 | require_sha256 | 2229 | `require_shared_sha256(value, digest_error=KnowledgeProjectionError(...))` |
+| _validate_projection_structure | isinstance (src/llm_wiki_cli/services…date_projection_structure) | 808 | `isinstance(projection, KnowledgeProjection)` |
+| _validate_projection_structure | KnowledgeProjectionError | 809 | `KnowledgeProjectionError('projection-type-invalid', 'projection', 'must be a KnowledgeProjection')` |
+| _validate_projection_structure | KnowledgeProjectionError | 815 | `KnowledgeProjectionError('projection-schema-invalid', 'schema_version', ...)` |
+| _validate_projection_structure | isinstance (src/llm_wiki_cli/services…date_projection_structure) | 820 | `isinstance(projection.profile, KnowledgeProjectionProfile)` |
+| _validate_projection_structure | KnowledgeProjectionError | 821 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
+| _validate_projection_structure | _require_sha256 | 826 | `_require_sha256(projection.source_knowledge_hash, 'source_knowledge_hash', code='projection-source-hash-invalid')` |
+| _require_sha256 | require_sha256 | 2240 | `require_shared_sha256(value, digest_error=KnowledgeProjectionError(...))` |
 | require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1100 | `isinstance(value, str)` |
 
 ### Boundary effects
@@ -155,8 +155,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `projection_concept_summary` | `isinstance` | 414 |
 | external_call | `projection_concept_summary` | `TypeError` | 415 |
-| external_call | `_validate_projection_structure` | `isinstance` | 797 |
-| external_call | `_validate_projection_structure` | `isinstance` | 809 |
+| external_call | `_validate_projection_structure` | `isinstance` | 808 |
+| external_call | `_validate_projection_structure` | `isinstance` | 820 |
 | external_call | `require_sha256` | `isinstance` | 1100 |
 | step_limit | `projection_concept_summary` | `first 12 steps` | 0 |
 | truncated_flow | `projection_concept_summary` | `depth limit` | 0 |

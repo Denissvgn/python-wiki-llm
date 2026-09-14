@@ -2,7 +2,7 @@
 
 **Entry point:** `compute_sync_diff` (`api`)
 **Source:** [sync_analysis](../modules/sync_analysis.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [knowledge_evidence](../modules/knowledge_evidence.md), [sync_analysis](../modules/sync_analysis.md)
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [knowledge_evidence](../modules/knowledge_evidence.md), [sync_analysis](../modules/sync_analysis.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -66,7 +66,7 @@ sequenceDiagram
     p0-->>p24: diff.unchanged_files.append
 ```
 
-> Call sequence diagram shows 30 of 140 interactions; 110 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 153 interactions; 123 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

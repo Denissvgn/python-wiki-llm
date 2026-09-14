@@ -1,6 +1,6 @@
 # ManifestTombstone
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:357`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:358`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)

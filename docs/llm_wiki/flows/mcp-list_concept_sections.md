@@ -62,7 +62,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_concept_sections | _native_tool_call | 1255 | `_native_tool_call(service.list_concept_sections, locator_or_exact_route, ownership=ownership, limit=limit)` |
+| list_concept_sections | _native_tool_call | 1258 | `_native_tool_call(service.list_concept_sections, locator_or_exact_route, ownership=ownership, limit=limit)` |
 | _native_tool_call | callback | 1175 | `callback(..., **=kwargs)` |
 | _native_tool_call | str | 1183 | `str(exc)` |
 | _native_tool_call | CallToolResult | 1187 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |

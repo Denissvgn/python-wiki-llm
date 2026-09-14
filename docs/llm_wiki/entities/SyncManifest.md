@@ -1,6 +1,6 @@
 # SyncManifest
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:933`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:939`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)

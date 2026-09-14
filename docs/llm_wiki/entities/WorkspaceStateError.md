@@ -1,6 +1,6 @@
 # WorkspaceStateError
 
-**Location:** `src/llm_wiki_cli/api.py:352`
+**Location:** `src/llm_wiki_cli/api.py:354`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)

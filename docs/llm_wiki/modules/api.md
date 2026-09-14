@@ -34,11 +34,11 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.documentation_wiki_input` | `DocumentationWikiInputError`, `DocumentationWikiSnapshot`, `adopt_documentation_wiki_snapshot`, `fingerprint_documentation_wiki_input` |
 | `.services.entrypoints` | `build_flow` |
 | `.services.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
-| `.services.knowledge_coverage` | `build_knowledge_coverage` |
+| `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
 | `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.services.knowledge_loader` | `KnowledgeStateLoadError` |
 | `.services.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
-| `.services.native_inspection` | `inspect_native_concept` |
+| `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
 | `.services.source_selection` | `SourceSelectionError` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
 | `.services.token_counting` | `TokenCounter` |
@@ -83,11 +83,11 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 252 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 333 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 348 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 352 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 356 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 254 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 335 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 350 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 354 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 358 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
 
 ## Functions
 

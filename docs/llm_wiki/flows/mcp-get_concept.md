@@ -62,7 +62,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_concept | _native_tool_call | 1231 | `_native_tool_call(service.get_concept, locator_or_exact_route, limit=limit)` |
+| get_concept | _native_tool_call | 1234 | `_native_tool_call(service.get_concept, locator_or_exact_route, limit=limit)` |
 | _native_tool_call | callback | 1175 | `callback(..., **=kwargs)` |
 | _native_tool_call | str | 1183 | `str(exc)` |
 | _native_tool_call | CallToolResult | 1187 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |

@@ -151,16 +151,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | project_knowledge | _projection_profile | 288 | `_projection_profile(profile)` |
-| _projection_profile | isinstance (src/llm_wiki_cli/services…on.py:_projection_profile) | 3477 | `isinstance(value, KnowledgeProjectionProfile)` |
-| _projection_profile | KnowledgeProjectionProfile | 3478 | `KnowledgeProjectionProfile(value)` |
-| _projection_profile | KnowledgeProjectionError | 3481 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
+| _projection_profile | isinstance (src/llm_wiki_cli/services…on.py:_projection_profile) | 3488 | `isinstance(value, KnowledgeProjectionProfile)` |
+| _projection_profile | KnowledgeProjectionProfile | 3489 | `KnowledgeProjectionProfile(value)` |
+| _projection_profile | KnowledgeProjectionError | 3492 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
 | project_knowledge | _relationship_limit | 289 | `_relationship_limit(relationship_limit)` |
-| _relationship_limit | isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit) | 3490 | `isinstance(value, bool)` |
-| _relationship_limit | isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit) | 3491 | `isinstance(value, int)` |
-| _relationship_limit | KnowledgeProjectionError | 3494 | `KnowledgeProjectionError('projection-limit-invalid', 'relationship_limit', ...)` |
+| _relationship_limit | isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit) | 3501 | `isinstance(value, bool)` |
+| _relationship_limit | isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit) | 3502 | `isinstance(value, int)` |
+| _relationship_limit | KnowledgeProjectionError | 3505 | `KnowledgeProjectionError('projection-limit-invalid', 'relationship_limit', ...)` |
 | project_knowledge | _validated_source | 290 | `_validated_source(view)` |
-| _validated_source | isinstance (src/llm_wiki_cli/services…tion.py:_validated_source) | 2257 | `isinstance(view, KnowledgeReadView)` |
-| _validated_source | TypeError (src/llm_wiki_cli/services…tion.py:_validated_source) | 2258 | `TypeError('view must be a KnowledgeReadView')` |
+| _validated_source | isinstance (src/llm_wiki_cli/services…tion.py:_validated_source) | 2268 | `isinstance(view, KnowledgeReadView)` |
+| _validated_source | TypeError (src/llm_wiki_cli/services…tion.py:_validated_source) | 2269 | `TypeError('view must be a KnowledgeReadView')` |
 
 ### Boundary effects
 
@@ -170,11 +170,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_projection_profile` | `isinstance` | 3477 |
-| external_call | `_relationship_limit` | `isinstance` | 3490 |
-| external_call | `_relationship_limit` | `isinstance` | 3491 |
-| external_call | `_validated_source` | `isinstance` | 2257 |
-| external_call | `_validated_source` | `TypeError` | 2258 |
+| external_call | `_projection_profile` | `isinstance` | 3488 |
+| external_call | `_relationship_limit` | `isinstance` | 3501 |
+| external_call | `_relationship_limit` | `isinstance` | 3502 |
+| external_call | `_validated_source` | `isinstance` | 2268 |
+| external_call | `_validated_source` | `TypeError` | 2269 |
 | step_limit | `project_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `project_knowledge` | `depth limit` | 0 |
 

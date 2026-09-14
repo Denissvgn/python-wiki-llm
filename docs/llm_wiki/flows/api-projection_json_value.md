@@ -86,16 +86,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | projection_json_value | _json_copy | 405 | `_json_copy(value)` |
-| _json_copy | isinstance | 3568 | `isinstance(value, Mapping)` |
-| _json_copy | str | 3570 | `str(key)` |
-| _json_copy | _json_copy | 3570 | `_json_copy(item)` |
-| _json_copy | sorted | 3571 | `sorted(value.items(...), key=...)` |
-| _json_copy | value.items | 3571 | `value.items(data not statically known)` |
-| _json_copy | str | 3571 | `str(pair[...])` |
-| _json_copy | isinstance | 3573 | `isinstance(value, tuple)` |
-| _json_copy | _json_copy | 3574 | `_json_copy(item)` |
-| _json_copy | isinstance | 3575 | `isinstance(value, list)` |
-| _json_copy | _json_copy | 3576 | `_json_copy(item)` |
+| _json_copy | isinstance | 3579 | `isinstance(value, Mapping)` |
+| _json_copy | str | 3581 | `str(key)` |
+| _json_copy | _json_copy | 3581 | `_json_copy(item)` |
+| _json_copy | sorted | 3582 | `sorted(value.items(...), key=...)` |
+| _json_copy | value.items | 3582 | `value.items(data not statically known)` |
+| _json_copy | str | 3582 | `str(pair[...])` |
+| _json_copy | isinstance | 3584 | `isinstance(value, tuple)` |
+| _json_copy | _json_copy | 3585 | `_json_copy(item)` |
+| _json_copy | isinstance | 3586 | `isinstance(value, list)` |
+| _json_copy | _json_copy | 3587 | `_json_copy(item)` |
 
 ### Boundary effects
 
@@ -105,11 +105,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_json_copy` | `isinstance` | 3568 |
-| external_call | `_json_copy` | `sorted` | 3571 |
-| unresolved_call | `_json_copy` | `value.items` | 3571 |
-| external_call | `_json_copy` | `isinstance` | 3573 |
-| external_call | `_json_copy` | `isinstance` | 3575 |
+| external_call | `_json_copy` | `isinstance` | 3579 |
+| external_call | `_json_copy` | `sorted` | 3582 |
+| unresolved_call | `_json_copy` | `value.items` | 3582 |
+| external_call | `_json_copy` | `isinstance` | 3584 |
+| external_call | `_json_copy` | `isinstance` | 3586 |
 | step_limit | `projection_json_value` | `first 12 steps` | 0 |
 
 ## Behavior

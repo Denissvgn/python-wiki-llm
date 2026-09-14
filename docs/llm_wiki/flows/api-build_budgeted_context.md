@@ -106,7 +106,7 @@ sequenceDiagram
     p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
 ```
 
-> Call sequence diagram shows 30 of 2773 interactions; 2743 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2784 interactions; 2754 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -178,7 +178,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1252 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1254 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 186 | `validate_request(...)` |
 | validate_request | set (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `set(data)` |
 | validate_request | ProtocolRequestError | 36 | `context.ProtocolRequestError(...)` |

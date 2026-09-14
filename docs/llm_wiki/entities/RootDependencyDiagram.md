@@ -1,6 +1,6 @@
 # _RootDependencyDiagram
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:3053`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:3059`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

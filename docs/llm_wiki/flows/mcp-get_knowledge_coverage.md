@@ -62,7 +62,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_knowledge_coverage | _native_tool_call | 1293 | `_native_tool_call(service.get_knowledge_coverage, live=live)` |
+| get_knowledge_coverage | _native_tool_call | 1296 | `_native_tool_call(service.get_knowledge_coverage, live=live)` |
 | _native_tool_call | callback | 1175 | `callback(..., **=kwargs)` |
 | _native_tool_call | str | 1183 | `str(exc)` |
 | _native_tool_call | CallToolResult | 1187 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |

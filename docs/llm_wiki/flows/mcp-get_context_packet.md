@@ -62,7 +62,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_context_packet | _native_tool_call | 1362 | `_native_tool_call(service.get_context_packet, **=options)` |
+| get_context_packet | _native_tool_call | 1365 | `_native_tool_call(service.get_context_packet, **=options)` |
 | _native_tool_call | callback | 1175 | `callback(..., **=kwargs)` |
 | _native_tool_call | str | 1183 | `str(exc)` |
 | _native_tool_call | CallToolResult | 1187 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |

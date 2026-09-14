@@ -62,7 +62,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| explain_evidence | _native_tool_call | 1288 | `_native_tool_call(service.explain_evidence, locator_or_exact_route, limit=limit)` |
+| explain_evidence | _native_tool_call | 1291 | `_native_tool_call(service.explain_evidence, locator_or_exact_route, limit=limit)` |
 | _native_tool_call | callback | 1175 | `callback(..., **=kwargs)` |
 | _native_tool_call | str | 1183 | `str(exc)` |
 | _native_tool_call | CallToolResult | 1187 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |

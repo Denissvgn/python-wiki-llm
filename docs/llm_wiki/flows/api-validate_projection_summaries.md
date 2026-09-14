@@ -119,7 +119,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `validate_projection_summaries` | `projection: KnowledgeProjection`, `canonical_paths: Sequence[str]` | `KnowledgeProjection`, `PROJECTION_SCHEMA_VERSION`, `PROJECTION_SCHEMA_VERSION`, `Mapping`, `Mapping`, `KnowledgeProjectionProfile`, `Sequence`, `ConceptIdentityError` | `seen_uids[...]`, `summaries[...]` | `summaries` |
+| `validate_projection_summaries` | `projection: KnowledgeProjection`, `canonical_paths: Sequence[str]` | `KnowledgeProjection`, `PROJECTION_SCHEMA_VERSION`, `PROJECTION_SCHEMA_VERSION`, `Mapping`, `Mapping`, `KnowledgeProjectionProfile`, `Sequence`, `UNKNOWN_VALUE` | `seen_uids[...]`, `summaries[...]` | `summaries` |
 | `isinstance (src/llm_wiki_cli/services…date_projection_summaries)` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
 | `KnowledgeProjectionError` | - | - | - | - |
@@ -154,7 +154,7 @@ flowchart LR
 |---|---|---|---:|
 | mutation | `details.append` | `validate_projection_summaries` | 596 |
 | mutation | `details.append` | `validate_projection_summaries` | 598 |
-| mutation | `allowed_identity_sources.add` | `validate_projection_summaries` | 622 |
+| mutation | `allowed_identity_sources.add` | `validate_projection_summaries` | 627 |
 
 ### Static analysis gaps
 

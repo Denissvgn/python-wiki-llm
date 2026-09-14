@@ -82,7 +82,7 @@ sequenceDiagram
     p12->>p16: _raise_page_map_parity
 ```
 
-> Call sequence diagram shows 30 of 3231 interactions; 3201 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3244 interactions; 3214 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
