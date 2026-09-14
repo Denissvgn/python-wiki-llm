@@ -3,8 +3,7 @@
 Revised: 2026-09-14. Internal verification contract for the common-workflows
 mitigations. This plan is not a claim of exhaustive coverage or release qualification.
 
-The [pre-mitigation plan](agent_common_workflows_verification_test_plan_pre_mitigation_20260914.md),
-original dated findings report, and original raw evidence are preserved unchanged.
+The original dated findings report and original raw evidence are preserved unchanged.
 Use the [verified review](../reports/agent_common_workflows_findings_review_20260914.md) and
 [implementation plan](../reports/agent_common_workflows_mitigation_plan_20260914.md) for the
 finding dispositions. The retained implementation runner is
