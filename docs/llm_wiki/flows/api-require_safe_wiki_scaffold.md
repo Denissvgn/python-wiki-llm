@@ -128,25 +128,25 @@ flowchart LR
 | iter_directory_kinds | tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds) | 224 | `tuple(...)` |
 | require_safe_wiki_scaffold | tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold) | 49 | `tuple(...)` |
 | require_safe_wiki_scaffold | first_unsafe_path_component | 54 | `first_unsafe_path_component(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath | 50 | `os.fspath(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 58 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath | 58 | `os.path.abspath(lexical)` |
-| first_unsafe_path_component | lexical.is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath | 59 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 70 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `first_unsafe_path_component` | `os.fspath` | 50 |
-| external_call | `first_unsafe_path_component` | `os.path.abspath` | 58 |
-| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 59 |
+| external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
+| external_call | `first_unsafe_path_component` | `os.path.abspath` | 59 |
+| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 60 |
 | step_limit | `require_safe_wiki_scaffold` | `first 12 steps` | 0 |
 
 ## Behavior

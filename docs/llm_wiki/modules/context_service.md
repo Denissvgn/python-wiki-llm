@@ -37,7 +37,7 @@ Usage::
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `print_extraction_job_plan` |
 | `.extraction_service` | `InventoryResult`, `_git_changed_files`, `_partition_snapshot_git_changes`, `analyze_data_flow`, `build_data_flow_context`, `build_flow`, `get_entry_points`, `get_docker_inventory`, `get_inventory_result`, `read_console_scripts`, `resolve_call_edges` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
-| `.io` | `write_text_output` |
+| `.io` | `write_text_output`, `write_utf8_stdout` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `build_knowledge_read_view` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |

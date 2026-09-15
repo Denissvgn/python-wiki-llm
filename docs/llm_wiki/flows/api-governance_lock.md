@@ -123,30 +123,30 @@ flowchart LR
 |---|---|---:|---|
 | governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 857 | `Path(wiki_dir)` |
 | governance_lock | first_unsafe_path_component | 858 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath | 50 | `os.fspath(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 58 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath | 58 | `os.path.abspath(lexical)` |
-| first_unsafe_path_component | lexical.is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | Path.cwd | 65 | `Path.cwd(data not statically known)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 66 | `Path(absolute.anchor)` |
-| first_unsafe_path_component | list | 67 | `list(...)` |
-| first_unsafe_path_component | pending_parts.pop | 70 | `pending_parts.pop(0)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath | 59 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
+| first_unsafe_path_component | Path.cwd | 66 | `Path.cwd(data not statically known)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 67 | `Path(absolute.anchor)` |
+| first_unsafe_path_component | list | 68 | `list(...)` |
+| first_unsafe_path_component | pending_parts.pop | 71 | `pending_parts.pop(0)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 70 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `first_unsafe_path_component` | `os.fspath` | 50 |
-| external_call | `first_unsafe_path_component` | `os.path.abspath` | 58 |
-| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 59 |
-| external_call | `first_unsafe_path_component` | `Path.cwd` | 65 |
+| external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
+| external_call | `first_unsafe_path_component` | `os.path.abspath` | 59 |
+| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 60 |
+| external_call | `first_unsafe_path_component` | `Path.cwd` | 66 |
 | step_limit | `governance_lock` | `first 12 steps` | 0 |
 
 ## Behavior

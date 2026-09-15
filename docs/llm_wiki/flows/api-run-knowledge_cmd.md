@@ -175,28 +175,28 @@ flowchart LR
 | _run_init | _wiki_root | 420 | `_wiki_root(args.wiki_dir)` |
 | _wiki_root | Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root) | 107 | `Path(value)` |
 | _wiki_root | first_unsafe_path_component | 108 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 50 | `os.fspath(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 58 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 58 | `os.path.abspath(lexical)` |
-| first_unsafe_path_component | lexical.is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component) | 65 | `Path.cwd(data not statically known)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 66 | `Path(absolute.anchor)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
+| first_unsafe_path_component | Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component) | 66 | `Path.cwd(data not statically known)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 67 | `Path(absolute.anchor)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 70 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `first_unsafe_path_component` | `os.fspath` | 50 |
-| external_call | `first_unsafe_path_component` | `os.path.abspath` | 58 |
-| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 59 |
-| external_call | `first_unsafe_path_component` | `Path.cwd` | 65 |
+| external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
+| external_call | `first_unsafe_path_component` | `os.path.abspath` | 59 |
+| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 60 |
+| external_call | `first_unsafe_path_component` | `Path.cwd` | 66 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

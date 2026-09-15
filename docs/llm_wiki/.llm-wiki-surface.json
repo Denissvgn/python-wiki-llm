@@ -1220,7 +1220,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 11,
               "target": "pending_parts.pop"
@@ -2771,7 +2771,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 12,
               "target": "pending_parts.pop"
@@ -6147,7 +6147,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 179,
+              "line": 180,
               "step": "write_bytes_atomic",
               "step_index": 9,
               "target": "os.unlink"
@@ -6192,13 +6192,13 @@
             },
             {
               "kind": "external_call",
-              "line": 164,
+              "line": 165,
               "step": "write_bytes_atomic",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 165,
+              "line": 166,
               "step": "write_bytes_atomic",
               "target": "TypeError"
             },
@@ -10951,7 +10951,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 3,
               "target": "pending_parts.pop"
@@ -10960,25 +10960,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 65,
+              "line": 66,
               "step": "first_unsafe_path_component",
               "target": "Path.cwd"
             },
@@ -13555,7 +13555,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 4,
               "target": "pending_parts.pop"
@@ -13564,25 +13564,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 65,
+              "line": 66,
               "step": "first_unsafe_path_component",
               "target": "Path.cwd"
             },
@@ -13712,7 +13712,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 3,
               "target": "pending_parts.pop"
@@ -13721,25 +13721,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 65,
+              "line": 66,
               "step": "first_unsafe_path_component",
               "target": "Path.cwd"
             },
@@ -14055,7 +14055,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 7,
               "target": "pending_parts.pop"
@@ -14076,19 +14076,19 @@
             },
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
@@ -14319,7 +14319,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 3,
               "target": "pending_parts.pop"
@@ -14328,25 +14328,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 65,
+              "line": 66,
               "step": "first_unsafe_path_component",
               "target": "Path.cwd"
             },
@@ -22321,7 +22321,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 7,
               "target": "pending_parts.pop"
@@ -22330,19 +22330,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
@@ -23355,7 +23355,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 5,
               "target": "pending_parts.pop"
@@ -23364,25 +23364,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 65,
+              "line": 66,
               "step": "first_unsafe_path_component",
               "target": "Path.cwd"
             },
@@ -30353,7 +30353,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1282,
+          "step_count": 1288,
           "truncated": true
         }
       },
@@ -31390,7 +31390,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 70,
+              "line": 71,
               "step": "first_unsafe_path_component",
               "step_index": 5,
               "target": "pending_parts.pop"
@@ -31399,25 +31399,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "first_unsafe_path_component",
               "target": "os.fspath"
             },
             {
               "kind": "external_call",
-              "line": 58,
+              "line": 59,
               "step": "first_unsafe_path_component",
               "target": "os.path.abspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 59,
+              "line": 60,
               "step": "first_unsafe_path_component",
               "target": "lexical.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 65,
+              "line": 66,
               "step": "first_unsafe_path_component",
               "target": "Path.cwd"
             },
@@ -57301,5 +57301,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:f5c95534b377078a999c55f60d33e55ae327332ebff03e5eda9c0f0cac3188c9"
+  "source_hash": "sha256:1397f036baeb7e1dff799393abe174266b0f8b235a2ecfc03a00fba23201f405"
 }

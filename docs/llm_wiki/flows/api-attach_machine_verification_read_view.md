@@ -148,13 +148,13 @@ flowchart LR
 | load_machine_verification_read_view | load_verification_receipt | 86 | `load_verification_receipt(Path(...))` |
 | load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 956 | `Path(wiki_dir)` |
 | load_verification_receipt | first_unsafe_path_component | 957 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 70 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
