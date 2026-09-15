@@ -1324,16 +1324,17 @@ def test_committed_profile_freezes_intended_product_census():
 
     snapshot = build_source_snapshot(repository)
     assert "src/llm_wiki_cli/services/go_calls.py" in snapshot.language_paths("python")
+    assert "src/llm_wiki_cli/services/packet_field_policy.py" in snapshot.language_paths("python")
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 185,
+        "python": 188,
         "typescript": 2,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 187
+    assert len(snapshot.all_source_paths) == 190
     assert {
         "src/llm_wiki_cli/extractors/python_bindings.py",
         "src/llm_wiki_cli/services/python_calls.py",

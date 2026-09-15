@@ -17,9 +17,11 @@ is merely being loaded.
 
 | Source | Symbols |
 |--------|---------|
+| `..api` | `LlmWikiApiError`, `get_knowledge_coverage` |
 | `..services.io` | `first_unsafe_path_component` |
 | `..services.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeCommitPlan`, `ValidatedKnowledgeArtifacts`, `build_knowledge_commit_plan`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts` |
 | `..services.knowledge_consumption` | `build_knowledge_read_view` |
+| `..services.knowledge_coverage` | `render_knowledge_coverage` |
 | `..services.knowledge_governance` | `ACTOR_KINDS`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `MAX_EVENT_LIMIT`, `GovernanceActor`, `GovernanceError`, `GovernanceLedger`, `GovernanceLoadResult`, `LifecycleEvent`, `ReviewEvent`, `add_alias`, `add_review_event`, `apply_governance_projection`, `concept_references_from_knowledge`, `current_review_evidence`, `evaluate_review_event`, `governance_bundle_id_from_knowledge`, `governance_lock`, `load_governance`, `move_concept`, `reconcile_concepts`, `review_scope_hash`, `save_governance`, `set_lifecycle`, `strip_governance_projection`, `validate_governance_ledger` |
 | `..services.knowledge_index` | `serialize_knowledge_index` |
 | `..services.knowledge_loader` | `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
@@ -33,6 +35,7 @@ is merely being loaded.
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
 | `pathlib` | `Path` |
+| `sys` | `sys` |
 | `typing` | `cast` |
 
 ## Local dependency map
@@ -54,15 +57,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (11) |
+| Outbound | `src` (13) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ArtifactSnapshot](../entities/ArtifactSnapshot.md) | 91 | — | — |
+| [_ArtifactSnapshot](../entities/ArtifactSnapshot.md) | 92 | — | — |
 
 ## Functions
 
@@ -89,6 +92,7 @@ flowchart LR
 | `_concept_for_uid` | `(ledger: GovernanceLedger, knowledge: KnowledgeIndex, uid: str)` | — | — |
 | `_run_review` | `(args) -> None` | — | — |
 | `_status_payload` | `(ledger: GovernanceLedger, knowledge: KnowledgeIndex, *, event_limit: int) -> dict[str, object]` | — | — |
+| `_run_coverage` | `(args) -> None` | — | — |
 | `_run_status` | `(args) -> None` | — | — |
 | `_scope_locator_for_uid` | `(knowledge: KnowledgeIndex, uid: str \| None) -> str \| None` | — | — |
 | `_run_verify` | `(args) -> None` | — | — |

@@ -275,6 +275,7 @@ def _fetch_last_commit_diff(
     try:
         git_diff_result = subprocess.run(
             ["git", "diff", "HEAD~1..HEAD"],
+            input="",
             capture_output=True,
             text=True,
             check=True,

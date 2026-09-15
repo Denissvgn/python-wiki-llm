@@ -1,6 +1,6 @@
 # LlmWikiApiError
 
-**Location:** `src/llm_wiki_cli/api.py:328`
+**Location:** `src/llm_wiki_cli/api.py:335`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [api](../modules/api.md)
@@ -29,17 +29,20 @@ flowchart LR
     n2["ArtifactIntegrityError (src/llm_wiki_cli/api.py)"]
     n3["InvalidRequestError (src/llm_wiki_cli/api.py)"]
     n4["WorkspaceStateError (src/llm_wiki_cli/api.py)"]
-    n5["_api_mcp_error (src/llm_wiki_cli/services/mcp_server.py)"]
+    n5["src/llm_wiki_cli/commands/knowledge_cmd.py"]
+    n6["_api_mcp_error (src/llm_wiki_cli/services/mcp_server.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/api.md"
     click n2 "../modules/api.md"
     click n3 "../modules/api.md"
     click n4 "../modules/api.md"
-    click n5 "../modules/mcp_server.md"
+    click n5 "../modules/knowledge_cmd.md"
+    click n6 "../modules/mcp_server.md"
 ```
 
 ### Summary
@@ -61,4 +64,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `knowledge_cmd` | import | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
 | `_api_mcp_error` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

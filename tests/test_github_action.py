@@ -928,7 +928,8 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
         "release/qualification.py",
         "release/toolchain-lock.json",
     ):
-        assert public_workflow.count(dependency) == 2
+        assert triggers["push"]["paths"].count(dependency) == 1
+        assert triggers["pull_request"]["paths"].count(dependency) == 1
     assert "knowledge-" + "m1" not in public_workflow.casefold()
     assert "pre-" + "feature-bootstrap" not in public_workflow.casefold()
     assert re.search(r"\b[MP]\d+\b", public_workflow) is None

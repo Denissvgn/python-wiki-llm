@@ -13,6 +13,11 @@ For operational details, see
 [Native knowledge artifact operations](native-knowledge-artifacts.md). For
 audience value, adoption tiers, and candidate evaluation designs, see
 [Native knowledge use cases](native-knowledge-use-cases.md).
+For public imports, installation, workspace boundaries and compatibility, see
+[Integrating native knowledge](native-knowledge-provider.md).
+For a small downstream integration, follow the
+[native knowledge tutorial](../examples/native-knowledge/README.md). Its Python
+client bootstraps a separate project without installing agent instructions.
 
 Knowledge-aware commands read the projection together with
 `.llm-wiki-surface.json` and the artifact commitments in
@@ -797,8 +802,44 @@ instead of treating the graph as empty.
 
 ## Python API
 
+For one exact target, `inspect_concept` returns the existing concept, typed
+graph and section query envelopes plus a separate coverage report from one
+read view:
+
+```python
+from llm_wiki_cli import api
+
+inspection = api.inspect_concept(
+    "llm-wiki://entities/User",
+    src_dir="src",
+    wiki_dir="wiki",
+    live=True,
+    limit=20,
+)
+```
+
+The default is `live=False`: snapshot-only, with no source extraction and no
+live-currentness claim. `live=True` authorizes one full inventory using built-in
+source adapters. Helpers must already be prepared; Python callers can pass
+`helper_cache_dir` to this operation or the live service builder. Source
+selection and root policies retain their usual meaning. Run from the consumer
+workspace; `allow_external_src` applies only to the source root.
+
+The result schema is `llm-wiki-native-inspection/v1`. `concept`, `graph`, and
+`sections` preserve their individual availability, freshness, resolution,
+coverage and bounds. `coverage` is described below; `read_scope` and `cost`
+disclose what was read. Cost uses the existing query scopes
+`snapshot-index-only` or `full-inventory`, with `supplied_paths: 0` for an exact
+target. Limits are explicit: one target, default 20 and maximum
+100 entries per collection, 64 KiB per query, 16 KiB for coverage, and 256 KiB
+for the complete compact JSON result. `truncated` also reflects component
+truncation. Edge evidence samples remain opt-in with `include_evidence=True`;
+compact evidence counts remain present by default. Source/wiki changes detected
+during composition abort the whole read. This operation does not retain a
+session cache or refresh projections.
+
 The supported API exports `get_concept`, `related_concepts`,
-`traverse_typed_graph`, and `explain_evidence`. Build one service when running
+`list_concept_sections`, `traverse_typed_graph`, and `explain_evidence`. Build one service when running
 several queries so source extraction, live evaluation, and indexes are reused:
 
 ```python
@@ -902,12 +943,57 @@ presented as completeness.
 The default query limit is 20. A caller can pass a different positive limit
 when building the Python service. Supplying `service=` to an API wrapper reuses
 that service and performs no new extraction.
+Treat a reused service as one captured operation, and rebuild it for later
+work that requires a fresh view.
+
+### Coverage diagnostics
+
+`api.get_knowledge_coverage(wiki_dir="wiki")` reports snapshot eligibility;
+adding `src_dir="src", live=True` evaluates freshness. Passing `service=service`
+instead derives the report from that service without another scan; the service
+owns its read scope, so root/helper/selection overrides are rejected.
+
+The separate `llm-wiki-knowledge-coverage/v1` report leaves existing aggregate
+summaries and packet v1/v2 contracts unchanged. `counts` and `by_kind` expose
+`total`, `modeled`, `unmodeled`, `compared`, and `modeled_freshness`. Modeled
+means the structural observation contract applies, even if its recorded or
+live basis is missing or incompatible. Aggregate observations and unsupported
+page kinds remain unmodeled. Only actual live comparisons enter `compared`.
+Thus `total = modeled + unmodeled`, `compared <= modeled`, and live
+`modeled_freshness` counts sum to `modeled`.
+
+`reasons` counts stable outcome codes. Snapshot-only reports have null
+`modeled_freshness` and `reasons`; unavailable native knowledge has null counts,
+kind groups and reasons, rather than fabricated zeroes. A ready empty model
+has zero counts. Kind/reason labels are allowlisted; extension labels group
+under `other`. The aggregate report contains no concept identities, source
+paths or raw evidence. It is diagnostic and does not create a CI gate.
+
+### Native query failures
+
+The native APIs retain the public exception classes and expose safe `code`
+and `details` values with a `field`; wiki path-policy errors can also retain a
+validated wiki-relative `path` for recovery. Codes include `invalid-request`,
+`full-inventory-required`, `path-policy-error`, `workspace-state-error`,
+`artifact-integrity-error`, and `context-read-mutated`. Missing source or
+unprepared read helpers are workspace failures; invalid committed artifacts
+without a trusted fallback are integrity failures. A snapshot read with no
+validated surface is unavailable. Live or snapshot reads with a documented
+validated fallback retain that result, and `found=False` under unavailable
+knowledge does not establish that the concept is absent from the project.
+
+Default exception messages omit resolved roots and offending values. Raw
+causes remain available through `__cause__` for local debugging. Ordinary
+Python argument-binding errors keep their normal behavior.
 
 ## MCP tools
 
 The read-only MCP server exposes the same knowledge queries:
 
 - `get_concept(locator_or_exact_route, limit=20)`;
+- `inspect_concept(locator_or_exact_route, live=false, limit=20, include_evidence=false)`;
+- `get_knowledge_coverage(live=false)`;
+- `list_concept_sections(locator_or_exact_route, ownership=None, limit=20)`;
 - `related_concepts(locator_or_exact_route, direction="both", kinds=None,
   limit=20)`;
 - `traverse_typed_graph(locator_or_exact_route, direction="both", kinds=None,
@@ -917,6 +1003,11 @@ The read-only MCP server exposes the same knowledge queries:
 Their result envelopes and degraded behavior match the Python query service.
 MCP accepts positive limits, caps them at 100, and reports truncation. Existing
 Markdown resources and `llm-wiki://...` resource URIs are unchanged.
+`inspect_concept` and `get_knowledge_coverage` default to snapshot-only reads;
+the existing dedicated query tools keep their live-service behavior. Native
+semantic failures use `isError: true` with the same code/details in structured
+content and JSON text. Argument-schema validation remains the MCP SDK's
+responsibility.
 
 MCP validates knowledge coordinates before constructing the live query service.
 It accepts canonical wiki paths, exact `llm-wiki://` URI forms, durable UIDs,

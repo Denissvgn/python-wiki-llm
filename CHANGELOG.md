@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-15
+
+### Added
+
+- Installed inline Python typing for downstream clients and public schema
+  constants for native inspection and coverage, with an integration guide for
+  workspace boundaries, optional dependencies and reader compatibility.
+- Shared Python/MCP native concept inspection with explicit snapshot/live
+  scope, bounded graph and section results, and concurrent-input checks.
+- Versioned native coverage diagnostics through Python, MCP and
+  `knowledge coverage`, separating modeled observations, actual comparisons,
+  missing bases and intentionally unmodeled content.
+- A downstream native-knowledge tutorial covering source drift, authored
+  follow-up, packet intent checks and live reconciliation without agent setup.
+- Runnable Python, FastAPI, Go HTTP, and plugin-hook tutorials, with a
+  self-contained guide included in the exported documentation-hooks sample.
+
+### Fixed
+
+- Git metadata reads and language extractors no longer inherit a host's input
+  stream, preventing Windows MCP requests from stalling on a shared stdin pipe.
+- Canonical packet and v3 budgeted CLI output preserve UTF-8 bytes and LF
+  line endings on Windows, keeping emitted output consistent with packet
+  identities and token accounting.
+- Unterminated fences in extracted source prose no longer hide the generated
+  wiki sections that follow, including source comments with RST tilde underlines.
+- Module and entity page names remain distinct on case-insensitive and
+  Unicode-normalizing filesystems, preserving every selected source mapping.
+- Native MCP tools declare a consistent JSON object output on Python 3.10
+  and newer, preserving direct payloads and structured semantic errors.
+- Site and Obsidian native summaries preserve explicit unknown identity for
+  ungoverned wikis without requiring a governance ledger or fabricating UIDs.
+- Haskell syntax reads apply declared language options and their implied
+  extensions per file, including multiline pragmas and explicit disabling.
+  Build actions remain inert; CPP input receives explicit preprocessing guidance.
+- Native query failures provide safe codes and fields while preserving public
+  exception catch points and local debugging causes. Missing live helpers,
+  invalid projections and concurrent mutations remain distinguishable.
+- Search and maintenance-queue commands reject invalid inputs before reading
+  the workspace. Search responses disclose their mode and bounds; queues include
+  the requested limit in their report and identity.
+- Documentation-hook styles follow the original entry symbol, including its
+  capitalization, across initial generation and later source refreshes.
+- Request-file context can explicitly deliver a canonical packet, including
+  filters, without silently changing the output contract. Conflicting semantic
+  options are rejected before source/wiki capture.
+- Packet APIs, CLI delivery, and MCP provide structured failure distinctions
+  without exposing resolved roots in their failure records. Missing source
+  directories are reported as unavailable rather than successful empty packets.
+- Static-site exports consistently recognize trusted output-root aliases,
+  including macOS `/var` paths, while preserving artifact containment checks.
+- TypeScript class and interface properties preserve explicit optionality,
+  independently of defaults and unions with `undefined`. Generated attribute
+  tables distinguish required properties from optional ones, and incremental
+  sync detects question-token edits while preserving authored descriptions.
+
+### Compatibility
+
+- Python 3.10+ remains supported, with unchanged required runtime dependencies.
+  MCP and exact token counting remain optional extras.
+- Existing context, packet and native knowledge artifact schemas remain
+  supported. Inspection and coverage expose their own versioned response
+  contracts without changing stored knowledge records.
+- Run `llm-wiki sync` to refresh generated signatures, page mappings and native
+  projections after upgrading. Review page links when source names differ only
+  by case or Unicode normalization.
+
 ## [2.1.0] - 2026-09-13
 
 ### Added
@@ -1007,7 +1074,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.0...v2.0.1

@@ -134,7 +134,15 @@ jobs:
             --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
-            tests/release_artifact_smoke.py
+            tests/release_artifact_smoke.py \
+            tests/mcp_probe.py \
+            tests/fixtures/packet-artifact-parity.py \
+            tests/fixtures/native-artifact-consumer.py \
+            tests/verify_installed_provider.py \
+            tests/fixtures/provider-typing-valid.py \
+            tests/fixtures/provider-typing-invalid.txt \
+            tests/fixtures/provider-artifact-consumer.py \
+            examples/native-knowledge
           harness_sha256="$(sha256sum \
             "${RUNNER_TEMP}/frozen/qualification-harnesses.tar" | cut -d' ' -f1)"
           echo "harness-sha256=${harness_sha256}" >> "${GITHUB_OUTPUT}"
@@ -911,6 +919,12 @@ jobs:
           --minimum-collected 489
           --minimum-passed 489
           --output evidence/result-toolchains.json
+      - name: Verify independent provider parser controls
+        working-directory: candidate
+        run: >-
+          python -m tests.provider_conformance.owner_controls
+          --work "${RUNNER_TEMP}/provider-oracles"
+          --output ../evidence/provider-parser-controls.json
       - name: Audit exact helper dependency trees
         run: |
           set -euo pipefail
@@ -1671,7 +1685,10 @@ jobs:
           "${RUNNER_TEMP}/mcp-venv/bin/python" -m pip install \
             --no-cache-dir "${artifact}[mcp]"
           echo "ARTIFACT=${artifact}" >> "${GITHUB_ENV}"
+      - name: Install the pinned downstream typing checker
+        run: python -m pip install --no-cache-dir "pyright==1.1.411"
       - name: Run without a source checkout
+        id: artifact-smoke
         run: >-
           python -I incoming/tools/tests/release_artifact_smoke.py
           --artifact "${ARTIFACT}"
@@ -1680,6 +1697,18 @@ jobs:
           --expected-version "${{ needs.freeze.outputs.version }}"
           --work artifact-smoke-work
           --output "smoke-${{ matrix.kind }}.json"
+      - name: Upload MCP probe diagnostics
+        if: >-
+          ${{ always() &&
+              (steps.artifact-smoke.outcome == 'success' ||
+               steps.artifact-smoke.outcome == 'failure') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: smoke-${{ matrix.kind }}-mcp-diagnostics
+          path: smoke-${{ matrix.kind }}-mcp-probes/
+          # Earlier package/typing failures may occur before any MCP request.
+          if-no-files-found: warn
+          retention-days: 14
       - name: Upload canonical smoke result
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:

@@ -128,32 +128,32 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_producer_record | _build_component | 962 | `_build_component(tool, 'producer.tool', analyzer=False)` |
-| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1784 | `isinstance(value, ProducerComponentInput)` |
-| _build_component | KnowledgeEnvelopeError | 1785 | `KnowledgeEnvelopeError(field_name, 'must be a ProducerComponentInput')` |
-| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1790 | `isinstance(value.component_id, str)` |
-| _build_component | _COMPONENT_ID_RE.fullmatch | 1791 | `_COMPONENT_ID_RE.fullmatch(value.component_id)` |
-| _build_component | KnowledgeEnvelopeError | 1793 | `KnowledgeEnvelopeError(..., 'must be a normalized producer component ID')` |
-| _build_component | set (src/llm_wiki_cli/services…velope.py:_build_component) | 1797 | `set(_validated_limitations(...))` |
-| _build_component | _validated_limitations | 1797 | `_validated_limitations(value.limitations, field_name)` |
-| _validated_limitations | isinstance (src/llm_wiki_cli/services….py:_validated_limitations) | 1847 | `isinstance(value, (...))` |
-| _validated_limitations | KnowledgeEnvelopeError | 1848 | `KnowledgeEnvelopeError(..., 'must be an iterable of machine codes, not scalar text or bytes')` |
-| _validated_limitations | tuple (src/llm_wiki_cli/services….py:_validated_limitations) | 1853 | `tuple(value)` |
+| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1788 | `isinstance(value, ProducerComponentInput)` |
+| _build_component | KnowledgeEnvelopeError | 1789 | `KnowledgeEnvelopeError(field_name, 'must be a ProducerComponentInput')` |
+| _build_component | isinstance (src/llm_wiki_cli/services…velope.py:_build_component) | 1794 | `isinstance(value.component_id, str)` |
+| _build_component | _COMPONENT_ID_RE.fullmatch | 1795 | `_COMPONENT_ID_RE.fullmatch(value.component_id)` |
+| _build_component | KnowledgeEnvelopeError | 1797 | `KnowledgeEnvelopeError(..., 'must be a normalized producer component ID')` |
+| _build_component | set (src/llm_wiki_cli/services…velope.py:_build_component) | 1801 | `set(_validated_limitations(...))` |
+| _build_component | _validated_limitations | 1801 | `_validated_limitations(value.limitations, field_name)` |
+| _validated_limitations | isinstance (src/llm_wiki_cli/services….py:_validated_limitations) | 1851 | `isinstance(value, (...))` |
+| _validated_limitations | KnowledgeEnvelopeError | 1852 | `KnowledgeEnvelopeError(..., 'must be an iterable of machine codes, not scalar text or bytes')` |
+| _validated_limitations | tuple (src/llm_wiki_cli/services….py:_validated_limitations) | 1857 | `tuple(value)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `limitations.add` | `_build_component` | 1800 |
-| mutation | `limitations.add` | `_build_component` | 1824 |
+| mutation | `limitations.add` | `_build_component` | 1804 |
+| mutation | `limitations.add` | `_build_component` | 1828 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_build_component` | `isinstance` | 1784 |
-| external_call | `_build_component` | `isinstance` | 1790 |
-| unresolved_call | `_build_component` | `_COMPONENT_ID_RE.fullmatch` | 1791 |
-| external_call | `_validated_limitations` | `isinstance` | 1847 |
+| external_call | `_build_component` | `isinstance` | 1788 |
+| external_call | `_build_component` | `isinstance` | 1794 |
+| unresolved_call | `_build_component` | `_COMPONENT_ID_RE.fullmatch` | 1795 |
+| external_call | `_validated_limitations` | `isinstance` | 1851 |
 | step_limit | `build_producer_record` | `first 12 steps` | 0 |
 
 ## Behavior

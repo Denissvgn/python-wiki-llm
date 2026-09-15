@@ -23,7 +23,7 @@ weaker accounting explicitly.
 | `..config` | `DEFAULT_WIKI_DIR` |
 | `.change_selection` | `affected_page_map`, `changes_from_args`, `select_changes`, `validate_changes` |
 | `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
-| `.io` | `write_text_output` |
+| `.io` | `write_text_output`, `write_utf8_stdout` |
 | `.token_counting` | `EstimatedCounter`, `LocalTokenizerCounter`, `TokenCounter` |
 | `__future__` | `annotations` |
 | `copy` | `copy` |

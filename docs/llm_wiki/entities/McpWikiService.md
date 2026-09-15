@@ -1,6 +1,6 @@
 # McpWikiService
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:402`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:397`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -33,6 +33,8 @@ Pure read/check operations exposed through MCP tools and resources.
 | `list_concept_sections` | `(locator_or_exact_route: str, ownership: str \| None = None, limit: int = 20) -> dict` | — | Return bounded document-order sections for one exact concept. |
 | `traverse_typed_graph` | `(locator_or_exact_route: str, direction: str = 'both', kinds: list[str] \| None = None, origins: list[str] \| None = None, resolutions: list[str] \| None = None, include_evidence: bool = False, limit: int = 20) -> dict` | — | Traverse bounded persisted typed relationships for one concept. |
 | `explain_evidence` | `(locator_or_exact_route: str, limit: int = 20) -> dict` | — | Return bounded evidence for one exact concept identity. |
+| `inspect_concept` | `(locator_or_exact_route: str, *, live: bool = False, limit: int = 20, include_evidence: bool = False) -> dict` | — | Inspect one native target from a shared snapshot or explicit live read. |
+| `get_knowledge_coverage` | `(live: bool = False) -> dict` | — | Explain eligible observations without treating unmodeled content as drift. |
 | `search_wiki` | `(query: str, kinds: list[str] \| None = None, limit: int = 20, mode: str = 'ranked') -> dict` | — | — |
 | `get_context` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'markdown', filters: dict \| None = None, prefer_fresh: bool = False, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | — |
 | `get_context_packet` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'json', filters: dict \| None = None, prefer_fresh: bool = False, if_packet_id: str \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | Return a fresh qualified packet or an unchanged cache marker. |
@@ -78,7 +80,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 29 | — |
+| [mcp_server](../modules/mcp_server.md) | 31 | — |
 
 ### References
 

@@ -220,6 +220,7 @@ def _run_git(
     try:
         completed = subprocess.run(
             command,
+            input="",
             capture_output=True,
             text=True,
             encoding="utf-8",

@@ -14,6 +14,27 @@ from typing import Any, Literal, TypedDict
 KnowledgeMode = Literal["off", "auto", "required"]
 
 
+class KnowledgeCoverageCounts(TypedDict):
+    total: int
+    modeled: int
+    unmodeled: int
+    compared: int
+    modeled_freshness: dict[str, int] | None
+
+
+class KnowledgeCoverageResult(TypedDict):
+    """Versioned aggregate diagnostics without identities or raw evidence."""
+
+    schema_version: str
+    availability: str
+    reason: str
+    read_scope: str
+    freshness_evaluated: bool
+    counts: KnowledgeCoverageCounts | None
+    by_kind: dict[str, KnowledgeCoverageCounts] | None
+    reasons: dict[str, int] | None
+
+
 class ResultBounds(TypedDict):
     """Exact size disclosure for one bounded result collection."""
 
@@ -390,7 +411,22 @@ class DoctorResult(TypedDict):
     unhealthy_reasons: list[str]
 
 
+class NativeInspectionResult(TypedDict):
+    """Bounded component results sharing one source/wiki read scope."""
+
+    schema_version: str
+    read_scope: str
+    cost: QueryCostDisclosure
+    concept: ConceptResult
+    graph: TypedGraphTraversalResult
+    sections: ConceptSectionsResult
+    coverage: KnowledgeCoverageResult
+    limits: dict[str, int]
+    truncated: bool
+
+
 __all__ = [
+    "NativeInspectionResult",
     "ByteResultBounds",
     "CalleesResult",
     "CallersResult",
@@ -415,6 +451,8 @@ __all__ = [
     "FlowForEntrypointResult",
     "MarkdownContextResult",
     "KnowledgeMode",
+    "KnowledgeCoverageCounts",
+    "KnowledgeCoverageResult",
     "KnowledgeStatus",
     "PagesForSymbolResult",
     "QueryCostDisclosure",

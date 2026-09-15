@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 546 | [Open section](#entities) |
-| Modules | 176 | [Open section](#modules) |
-| Workflows | 114 | [Open section](#workflows) |
+| Entities | 552 | [Open section](#entities) |
+| Modules | 179 | [Open section](#modules) |
+| Workflows | 116 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 441 | [Open section](#entry-point-flows) |
+| Entry-point flows | 445 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -168,6 +168,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [EvidenceState](entities/EvidenceState.md)
 - [ExistingPage](entities/ExistingPage.md)
 - [ExpectedLinkOutcome](entities/ExpectedLinkOutcome.md)
+- [ExplicitContextOption](entities/ExplicitContextOption.md)
 - [ExternalBrokerAuthenticationUnavailable](entities/ExternalBrokerAuthenticationUnavailable.md)
 - [ExternalSourceOptions](entities/ExternalSourceOptions.md)
 - [ExtractPayloadResult](entities/ExtractPayloadResult.md)
@@ -184,6 +185,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ExtractorStatus](entities/ExtractorStatus.md)
 - [FastAPIScanner](entities/FastAPIScanner.md)
 - [FaultInjector](entities/FaultInjector.md)
+- [FieldPolicy](entities/FieldPolicy.md)
 - [FlowForEntrypointResult](entities/FlowForEntrypointResult.md)
 - [FlowResult](entities/FlowResult.md)
 - [FrontMatterParseResult](entities/FrontMatterParseResult.md)
@@ -258,6 +260,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [KnowledgeAvailability](entities/KnowledgeAvailability.md)
 - [KnowledgeCommitPlan](entities/KnowledgeCommitPlan.md)
 - [KnowledgeCommitResult](entities/KnowledgeCommitResult.md)
+- [KnowledgeCoverageCounts](entities/KnowledgeCoverageCounts.md)
+- [KnowledgeCoverageResult](entities/KnowledgeCoverageResult.md)
 - [KnowledgeEnvelopeError](entities/KnowledgeEnvelopeError.md)
 - [KnowledgeFreshnessError](entities/KnowledgeFreshnessError.md)
 - [KnowledgeFreshnessReport](entities/KnowledgeFreshnessReport.md)
@@ -344,6 +348,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ModuleDependencyDiagram](entities/ModuleDependencyDiagram.md)
 - [ModulePathResolver](entities/ModulePathResolver.md)
 - [NativeEvidenceTransaction](entities/NativeEvidenceTransaction.md)
+- [NativeInspectionResult](entities/NativeInspectionResult.md)
 - [ObservationScope](entities/ObservationScope.md)
 - [ObsidianError](entities/ObsidianError.md)
 - [ObsidianOperation](entities/ObsidianOperation.md)
@@ -520,6 +525,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [TsPathAliasRule](entities/TsPathAliasRule.md)
 - [TypeScriptExtractor](entities/TypeScriptExtractor.md)
 - [TypedGraphTraversalResult](entities/TypedGraphTraversalResult.md)
+- [UnclassifiedPacketField](entities/UnclassifiedPacketField.md)
 - [UnknownVerificationCheckerError](entities/UnknownVerificationCheckerError.md)
 - [UnsafeUninstallPathError](entities/UnsafeUninstallPathError.md)
 - [ValidatedKnowledgeArtifacts](entities/ValidatedKnowledgeArtifacts.md)
@@ -644,6 +650,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_artifacts](modules/knowledge_artifacts.md) - Deterministic commit protocol for generated knowledge artifacts.
 - [knowledge_cmd](modules/knowledge_cmd.md) - Explicit durable-knowledge governance and verification commands.
 - [knowledge_consumption](modules/knowledge_consumption.md) - One read-only knowledge session shared by native consumers.
+- [knowledge_coverage](modules/knowledge_coverage.md) - Bounded native coverage diagnostics, separate from frozen context payloads.
 - [knowledge_envelope](modules/knowledge_envelope.md) - Deterministic bundle, snapshot, and producer envelope construction.
 - [knowledge_evidence](modules/knowledge_evidence.md) - Deterministic encoding, hashing, and concept-observation boundaries.
 - [knowledge_freshness](modules/knowledge_freshness.md) - Pure live freshness comparison for generated knowledge concepts.
@@ -672,10 +679,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [metrics_cmd](modules/metrics_cmd.md) - `src/llm_wiki_cli/commands/metrics_cmd.py`
 - [migrate_cmd](modules/migrate_cmd.md) - Legacy wiki migration command.
 - [module_maps](modules/module_maps.md) - Pure per-module dependency mini-map summaries.
+- [native_inspection](modules/native_inspection.md) - One bounded concept inspection over one captured native read view.
 - [obsidian](modules/obsidian.md) - Obsidian mirror export support for LLM Wiki.
 - [obsidian_cmd](modules/obsidian_cmd.md) - Commands for exporting LLM Wiki into an Obsidian-friendly mirror.
 - [packages](modules/packages.md) - Discover Python packages within a source tree.
 - [packet](modules/packet.md) - Documentation-run packet services.
+- [packet_field_policy](modules/packet_field_policy.md) - Explicit field/key spaces for the frozen qualified-packet path policy.
 - [paths](modules/paths.md) - Shared path normalization helpers.
 - [planner](modules/planner.md) - Deterministic, inspection-only planning for qualified-context packets.
 - [plugin_samples](modules/plugin_samples.md) - Bundled sample plugin export helpers.
@@ -797,7 +806,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
 - [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
 - [generate_prompt_cmd_flow](workflows/generate_prompt_cmd_flow.md) - entry: `generate_prompt_cmd.run`
+- [get_knowledge_coverage](workflows/get_knowledge_coverage.md) - entry: `api.get_knowledge_coverage`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
+- [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
 - [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
 - [knowledge_projection](workflows/knowledge_projection.md) - entry: `obsidian_cmd._knowledge_projection`
 - [lint_service_flow](workflows/lint_service_flow.md) - entry: `lint_service.run`
@@ -1004,6 +1015,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-get_calibration_run_status-controller](flows/api-get_calibration_run_status-controller.md) - entry: `get_calibration_run_status`
 - [api-get_concept](flows/api-get_concept.md) - entry: `get_concept`
 - [api-get_documentation_run_status](flows/api-get_documentation_run_status.md) - entry: `get_documentation_run_status`
+- [api-get_knowledge_coverage](flows/api-get_knowledge_coverage.md) - entry: `get_knowledge_coverage`
 - [api-governance_bundle_id_from_knowledge](flows/api-governance_bundle_id_from_knowledge.md) - entry: `governance_bundle_id_from_knowledge`
 - [api-governance_hash_from_knowledge](flows/api-governance_hash_from_knowledge.md) - entry: `governance_hash_from_knowledge`
 - [api-governance_lock](flows/api-governance_lock.md) - entry: `governance_lock`
@@ -1023,6 +1035,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-identity_coordinate_key](flows/api-identity_coordinate_key.md) - entry: `identity_coordinate_key`
 - [api-infrastructure_evidence_by_page](flows/api-infrastructure_evidence_by_page.md) - entry: `infrastructure_evidence_by_page`
 - [api-input_wiki_tree_baseline](flows/api-input_wiki_tree_baseline.md) - entry: `input_wiki_tree_baseline`
+- [api-inspect_concept](flows/api-inspect_concept.md) - entry: `inspect_concept`
 - [api-install_ci_workflow](flows/api-install_ci_workflow.md) - entry: `install_ci_workflow`
 - [api-is_canonical_uuid](flows/api-is_canonical_uuid.md) - entry: `is_canonical_uuid`
 - [api-is_placeholder_description](flows/api-is_placeholder_description.md) - entry: `is_placeholder_description`
@@ -1311,8 +1324,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [mcp-get_context_packet](flows/mcp-get_context_packet.md) - entry: `get_context_packet`
 - [mcp-get_entity](flows/mcp-get_entity.md) - entry: `get_entity`
 - [mcp-get_flow](flows/mcp-get_flow.md) - entry: `get_flow`
+- [mcp-get_knowledge_coverage](flows/mcp-get_knowledge_coverage.md) - entry: `get_knowledge_coverage`
 - [mcp-get_module](flows/mcp-get_module.md) - entry: `get_module`
 - [mcp-get_status](flows/mcp-get_status.md) - entry: `get_status`
+- [mcp-inspect_concept](flows/mcp-inspect_concept.md) - entry: `inspect_concept`
 - [mcp-list_concept_sections](flows/mcp-list_concept_sections.md) - entry: `list_concept_sections`
 - [mcp-query_documentation](flows/mcp-query_documentation.md) - entry: `query_documentation`
 - [mcp-query_graph](flows/mcp-query_graph.md) - entry: `query_graph`

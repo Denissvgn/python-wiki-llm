@@ -26,18 +26,18 @@ Field-specific failure selecting captured source snapshot state.
 flowchart LR
     n0["SourceSnapshotError (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/context_packet.py"]
-    n3["src/llm_wiki_cli/services/documentation_native.py"]
-    n4["_git_changed_files (src/llm_wiki_cli/services/extraction_service.py)"]
-    n5["_git_name_status_paths (src/llm_wiki_cli/services/extraction_service.py)"]
-    n6["_build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n7["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n8["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n9["_record_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n10["_resolve_snapshot_selection (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n11["_validate_repository_path (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n12["build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n13["SourceSnapshot.hashes_for (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n2["src/llm_wiki_cli/api.py"]
+    n3["src/llm_wiki_cli/services/context_packet.py"]
+    n4["src/llm_wiki_cli/services/documentation_native.py"]
+    n5["_git_changed_files (src/llm_wiki_cli/services/extraction_service.py)"]
+    n6["_git_name_status_paths (src/llm_wiki_cli/services/extraction_service.py)"]
+    n7["_build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n8["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n9["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n10["_record_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n11["_resolve_snapshot_selection (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n12["_validate_repository_path (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n13["build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -52,11 +52,11 @@ flowchart LR
     n12 --> n0
     n13 --> n0
     click n0 "../modules/source_snapshot.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/documentation_native.md"
-    click n4 "../modules/extraction_service.md"
+    click n2 "../modules/api.md"
+    click n3 "../modules/context_packet.md"
+    click n4 "../modules/documentation_native.md"
     click n5 "../modules/extraction_service.md"
-    click n6 "../modules/source_snapshot.md"
+    click n6 "../modules/extraction_service.md"
     click n7 "../modules/source_snapshot.md"
     click n8 "../modules/source_snapshot.md"
     click n9 "../modules/source_snapshot.md"
@@ -82,6 +82,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `api` | import | [api](../modules/api.md) | — |
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `_git_changed_files` | call | [extraction_service](../modules/extraction_service.md) | 1 |
@@ -93,6 +94,5 @@ flowchart LR
 | `_resolve_snapshot_selection` | call | [source_snapshot](../modules/source_snapshot.md) | 4 |
 | `_validate_repository_path` | call | [source_snapshot](../modules/source_snapshot.md) | 3 |
 | `build_source_snapshot` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
-| `SourceSnapshot.hashes_for` | call | [source_snapshot](../modules/source_snapshot.md) | 3 |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

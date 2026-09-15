@@ -2,17 +2,19 @@
 
 **Entry point:** `list_concept_sections` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 8 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 10 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -81,7 +83,7 @@ sequenceDiagram
     p23-->>p24: isinstance (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
 ```
 
-> Call sequence diagram shows 30 of 411 interactions; 381 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 506 interactions; 476 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -142,11 +144,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_concept_sections | _normalize_query_input | 1572 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1218 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1220 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1221 | `str(exc)` |
-| list_concept_sections | normalize_concept_coordinate | 1573 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| list_concept_sections | _normalize_query_input | 1906 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1552 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1554 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1555 | `str(exc)` |
+| list_concept_sections | normalize_concept_coordinate | 1907 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 73 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `value.strip(data not statically known)` |
@@ -162,7 +164,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1218 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1552 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |

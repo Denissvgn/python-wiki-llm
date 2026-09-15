@@ -97,7 +97,7 @@ sequenceDiagram
     p19-->>p21: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 1875 interactions; 1845 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1886 interactions; 1856 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -172,12 +172,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 96 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 97 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 98 | `getattr(args, 'format', 'markdown')` |
-| run | bool (src/llm_wiki_cli/commands/review_cmd.py:run) | 99 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 99 | `getattr(args, 'allow_external_src', False)` |
-| run | validate_source_root | 100 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 97 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 98 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 99 | `getattr(args, 'format', 'markdown')` |
+| run | bool (src/llm_wiki_cli/commands/review_cmd.py:run) | 100 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/review_cmd.py:run) | 100 | `getattr(args, 'allow_external_src', False)` |
+| run | validate_source_root | 101 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
@@ -188,20 +188,20 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 135 |
-| output | `print` | `run` | 137 |
-| output | `print` | `run` | 139 |
-| output | `print` | `run` | 151 |
-| output | `print` | `run` | 153 |
+| output | `print` | `run` | 136 |
+| output | `print` | `run` | 138 |
+| output | `print` | `run` | 140 |
+| output | `print` | `run` | 152 |
+| output | `print` | `run` | 154 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 96 |
 | external_call | `run` | `getattr` | 97 |
 | external_call | `run` | `getattr` | 98 |
 | external_call | `run` | `getattr` | 99 |
+| external_call | `run` | `getattr` | 100 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
 | external_call | `validate_path` | `Path.cwd` | 133 |
 | unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |

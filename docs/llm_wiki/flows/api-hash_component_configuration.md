@@ -107,14 +107,14 @@ flowchart LR
 | hash_component_configuration | isinstance | 859 | `isinstance(configuration, Mapping)` |
 | hash_component_configuration | KnowledgeEnvelopeError | 860 | `KnowledgeEnvelopeError('configuration', 'must be an object')` |
 | hash_component_configuration | _reject_machine_local_paths | 861 | `_reject_machine_local_paths(configuration, 'configuration')` |
-| _reject_machine_local_paths | set (src/llm_wiki_cli/services…reject_machine_local_paths) | 1713 | `set(data not statically known)` |
-| _reject_machine_local_paths | walk (src/llm_wiki_cli/services…reject_machine_local_paths) | 1757 | `walk(value, field_name)` |
+| _reject_machine_local_paths | set (src/llm_wiki_cli/services…reject_machine_local_paths) | 1717 | `set(data not statically known)` |
+| _reject_machine_local_paths | walk (src/llm_wiki_cli/services…reject_machine_local_paths) | 1761 | `walk(value, field_name)` |
 | hash_component_configuration | _hash_structured | 862 | `_hash_structured(COMPONENT_CONFIGURATION_DOMAIN, {...}, 'configuration')` |
-| _hash_structured | payload.values | 1604 | `payload.values(data not statically known)` |
-| _hash_structured | _validate_json_tree | 1605 | `_validate_json_tree(value, field_name)` |
-| _validate_json_tree | set (src/llm_wiki_cli/services…ope.py:_validate_json_tree) | 1626 | `set(data not statically known)` |
-| _validate_json_tree | walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree) | 1667 | `walk(value, field_name)` |
-| _hash_structured | sha256_bytes | 1606 | `sha256_bytes(canonical_json_bytes(...))` |
+| _hash_structured | payload.values | 1608 | `payload.values(data not statically known)` |
+| _hash_structured | _validate_json_tree | 1609 | `_validate_json_tree(value, field_name)` |
+| _validate_json_tree | set (src/llm_wiki_cli/services…ope.py:_validate_json_tree) | 1630 | `set(data not statically known)` |
+| _validate_json_tree | walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree) | 1671 | `walk(value, field_name)` |
+| _hash_structured | sha256_bytes | 1610 | `sha256_bytes(canonical_json_bytes(...))` |
 
 ### Boundary effects
 
@@ -125,9 +125,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `hash_component_configuration` | `isinstance` | 859 |
-| unresolved_call | `_reject_machine_local_paths` | `walk` | 1757 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1604 |
-| unresolved_call | `_validate_json_tree` | `walk` | 1667 |
+| unresolved_call | `_reject_machine_local_paths` | `walk` | 1761 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1608 |
+| unresolved_call | `_validate_json_tree` | `walk` | 1671 |
 | step_limit | `hash_component_configuration` | `first 12 steps` | 0 |
 
 ## Behavior

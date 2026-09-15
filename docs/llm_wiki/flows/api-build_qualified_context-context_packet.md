@@ -2,7 +2,7 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 50 more
+**Modules touched:** [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 51 more
 
 **Complete modules touched:**
 
@@ -43,6 +43,7 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [packages](../modules/packages.md)
+- [packet_field_policy](../modules/packet_field_policy.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
@@ -118,7 +119,7 @@ sequenceDiagram
     p14-->>p18: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
 ```
 
-> Call sequence diagram shows 30 of 4506 interactions; 4476 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4522 interactions; 4492 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -178,14 +179,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalized_request | 1236 | `_normalized_request(...)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1741 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1742 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1746 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1746 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1747 | `candidate.setdefault('protocol', ...)` |
-| _normalized_request | candidate.setdefault | 1755 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1756 | `context_service._validate_protocol_request(candidate)` |
+| build_qualified_context | _normalized_request | 1320 | `_normalized_request(...)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1825 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1826 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1830 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1830 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 1831 | `candidate.setdefault('protocol', ...)` |
+| _normalized_request | candidate.setdefault | 1839 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1840 | `context_service._validate_protocol_request(candidate)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `isinstance(data, dict)` |
 | _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `data.get('protocol')` |
 | _validate_protocol_request | _validate_protocol_request_impl | 1079 | `_validate_protocol_request_impl(data)` |
@@ -198,10 +199,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalized_request` | `isinstance` | 1741 |
-| external_call | `_normalized_request` | `deepcopy` | 1746 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1747 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1755 |
+| external_call | `_normalized_request` | `isinstance` | 1825 |
+| external_call | `_normalized_request` | `deepcopy` | 1830 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1831 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1839 |
 | external_call | `_validate_protocol_request` | `isinstance` | 1077 |
 | unresolved_call | `_validate_protocol_request` | `data.get` | 1077 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |

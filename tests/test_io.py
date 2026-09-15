@@ -2,6 +2,7 @@
 
 import os
 import stat
+from io import BytesIO, StringIO, TextIOWrapper
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -15,7 +16,32 @@ from llm_wiki_cli.services.io import (
     write_json_atomic,
     write_md,
     write_text_output,
+    write_utf8_stdout,
 )
+
+
+@pytest.mark.parametrize("encoding", ["utf-8", "cp1252"])
+def test_write_utf8_stdout_preserves_bytes_and_stream_configuration(monkeypatch, encoding):
+    text = '"Café 雪"\nsecond line\n'
+    buffer = BytesIO()
+    with TextIOWrapper(
+        buffer, encoding=encoding, errors="backslashreplace", newline="\r\n"
+    ) as stream, monkeypatch.context() as patch:
+        patch.setattr(io.sys, "stdout", stream)
+        stream.write("before\n")
+        write_utf8_stdout(text)
+        stream.write("after\n")
+        stream.flush()
+        assert buffer.getvalue() == b"before\r\n" + text.encode("utf-8") + b"after\r\n"
+        assert stream.encoding == encoding
+        assert stream.errors == "backslashreplace"
+
+
+def test_write_utf8_stdout_supports_text_only_replacements(monkeypatch):
+    stream = StringIO()
+    monkeypatch.setattr(io.sys, "stdout", stream)
+    write_utf8_stdout("Café 雪\n")
+    assert stream.getvalue() == "Café 雪\n"
 
 
 def test_write_md_normalizes_newlines_and_reads_back(tmp_path):

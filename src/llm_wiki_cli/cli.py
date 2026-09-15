@@ -1,6 +1,8 @@
 import argparse
 import os
 import sys
+
+
 from .commands import (
     api_diff_cmd,
     bump_cmd,
@@ -50,6 +52,15 @@ from .services.maintenance_queue import (
 )
 from .services.resource_diagnostics import resource_failure_hint
 from . import __version__
+
+
+class _ExplicitContextOption(argparse.Action):
+    """Retain which semantic options were supplied beside a request file."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        supplied = getattr(namespace, "_explicit_context_options", frozenset())
+        setattr(namespace, "_explicit_context_options", supplied | {self.dest})
 
 
 def _positive_int(value: str) -> int:
@@ -730,6 +741,17 @@ def _add_knowledge_command(subparsers):
         default=20,
         help="Maximum lifecycle and review events shown per concept",
     )
+
+    coverage = actions.add_parser(
+        "coverage", help="Explain modeled, unmodeled and compared native observations",
+    )
+    _add_knowledge_wiki_argument(coverage)
+    coverage.add_argument("--src-dir", default=".")
+    coverage.add_argument("--allow-external-src", action="store_true")
+    coverage.add_argument("--live", action="store_true", help="Capture a full source inventory and evaluate freshness; default is snapshot-only")
+    coverage.add_argument("--format", choices=("text", "json"), default="text")
+    _add_source_selection_argument(coverage)
+    _add_helper_cache_argument(coverage)
 
     move = actions.add_parser(
         "move",
@@ -1963,10 +1985,15 @@ def _add_context_command(subparsers):
     context_parser = subparsers.add_parser(
         "context",
         help="Return priority-ranked, token-budgeted codebase context for LLM agents",
+        description=(
+            "Build bounded source context. Packet output is read-only; structural "
+            "validation alone does not establish live currentness."
+        ),
     )
     context_parser.add_argument(
         "--budget",
         type=int,
+        action=_ExplicitContextOption,
         help="Token budget for the context payload (required unless --request is used)",
     )
     context_parser.add_argument(
@@ -1995,19 +2022,24 @@ def _add_context_command(subparsers):
     context_parser.add_argument(
         "--format",
         choices=["json", "markdown", "packet"],
+        action=_ExplicitContextOption,
         default="json",
         help="Output format; packet emits canonical Qualified Context Packet JSON (default: json)",
     )
     context_parser.add_argument(
         "--focus",
         choices=["changed", "all"],
+        action=_ExplicitContextOption,
         default="changed",
         help="changed=prioritise git diff files, all=treat every file as high priority (default: changed)",
     )
     context_parser.add_argument(
         "--request",
         metavar="FILE|-",
-        help="Read a Wiki-as-Context protocol JSON request from a file or stdin",
+        help=(
+            "Read semantic options from a protocol JSON file or stdin; "
+            "--format packet selects canonical packet delivery for v1/v2 requests"
+        ),
     )
     context_parser.add_argument(
         "--output",

@@ -42,6 +42,8 @@ flowchart LR
     n6["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n1
     n0 --> n2
+    n0 --> n5
+    n0 --> n6
     n1 --> n2
     n1 --> n4
     n2 --> n4

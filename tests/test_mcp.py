@@ -2303,14 +2303,19 @@ class TestMcpWikiService:
         else:
             kwargs = {}
 
-        with pytest.raises(
-            mcp_server.McpWikiError,
-            match="bad knowledge query",
-        ):
+        with pytest.raises(mcp_server.McpWikiError) as failure:
             getattr(service, method_name)(
                 "llm-wiki://entities/User",
                 **kwargs,
             )
+
+        if failure_point == "query":
+            assert failure.value.code == "invalid-request"
+            assert failure.value.data == {"field": "request"}
+            assert "bad knowledge query" not in str(failure.value)
+        else:
+            # Existing caller-supplied API exceptions retain their catch point.
+            assert str(failure.value) == "bad knowledge query"
 
     @pytest.mark.parametrize(
         ("load_result", "availability", "reason"),
@@ -2457,6 +2462,8 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "list_concept_sections",
         "traverse_typed_graph",
         "explain_evidence",
+        "get_knowledge_coverage",
+        "inspect_concept",
         "search_wiki",
         "get_context",
         "get_context_packet",

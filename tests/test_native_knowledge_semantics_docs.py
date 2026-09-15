@@ -1,10 +1,12 @@
 """Guard the documented native-knowledge consumer decision rules."""
 
+import json
 import re
 import shlex
 from pathlib import Path
 
 from llm_wiki_cli import cli
+from llm_wiki_cli.services import context_service
 from llm_wiki_cli.services.context_knowledge_contract import (
     context_knowledge_contract,
 )
@@ -119,11 +121,22 @@ def test_every_complete_command_in_native_context_docs_parses() -> None:
     assert {example.location.path for example in examples} == PUBLIC_CONTEXT_DOCS
     assert len(examples) >= 18
     parsed = tuple((example, parse_cli_example(example)) for example in examples)
-    context_modes = {
-        args.knowledge_mode
-        for _, args in parsed
-        if getattr(args, "command", None) == "context"
-    }
+    context_modes = set()
+    for example, args in parsed:
+        if getattr(args, "command", None) != "context":
+            continue
+        if getattr(args, "request", None):
+            assert args.knowledge_mode is None
+            assert args.format == "packet"
+            preceding = "\n".join(example.location.path.read_text(encoding="utf-8").splitlines()[:example.location.line - 1])
+            assert f"`{args.request}`" in preceding
+            blocks = re.findall(r"```json\s*\n(.*?)\n```", preceding, flags=re.DOTALL)
+            assert blocks, example.location.label
+            request = context_service._validate_protocol_request(json.loads(blocks[-1]))
+            assert request["protocol"] == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+            context_modes.add(request["knowledge_mode"])
+        else:
+            context_modes.add(args.knowledge_mode)
     assert context_modes == {"auto"}
 
     inline_commands = tuple(

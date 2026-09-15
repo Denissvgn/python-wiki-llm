@@ -622,7 +622,7 @@ def _validate_entity_record(record: Mapping[str, Any]) -> None:
             _validate_optional_json_array(attribute, field)
         _validate_optional_mapping(attribute, "constraints")
         _validate_optional_record_array(attribute, "unknowns")
-        _validate_optional_booleans(attribute, ("nullable", "required"))
+        _validate_optional_booleans(attribute, ("nullable", "optional", "required"))
 
     methods = _optional_record_array(record, "methods")
     for method in methods:

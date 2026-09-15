@@ -45,10 +45,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (6) |
+| Inbound | `src` (7) |
 | Outbound | `src` (6) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -70,6 +70,7 @@ flowchart LR
 | `_evaluate_model_freshness` | `(model: KnowledgeIndex, live: LiveKnowledgeEvaluation \| None) -> KnowledgeFreshnessReport` | — | — |
 | `_validate_live_evaluation` | `(recorded: KnowledgeIndex, live: LiveKnowledgeEvaluation) -> _ValidatedLiveEvaluation` | — | — |
 | `_validate_live_producer` | `(recorded: KnowledgeIndex, live: LiveKnowledgeEvaluation) -> None` | — | — |
+| `structural_freshness_modeled` | `(concept: ConceptRecord) -> bool` | — | Whether the contract models this concept, independent of basis presence. |
 | `_evaluate_concept` | `(knowledge: KnowledgeIndex, concept: ConceptRecord, live: _ValidatedLiveEvaluation \| None) -> ConceptFreshnessResult` | — | — |
 | `_reliable_recorded_basis` | `(concept: ConceptRecord) -> EvidenceBasis \| None` | — | — |
 | `_basis_incompatibility_reason` | `(recorded: KnowledgeIndex, recorded_basis: EvidenceBasis, live: _ValidatedLiveEvaluation) -> str \| None` | — | — |

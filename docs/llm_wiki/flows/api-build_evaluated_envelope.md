@@ -142,12 +142,12 @@ flowchart LR
 | build_evaluated_envelope | isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope) | 897 | `isinstance(inputs.repository, RepositoryRecord)` |
 | build_evaluated_envelope | KnowledgeEnvelopeError | 898 | `KnowledgeEnvelopeError('repository', 'must be a pre-evaluated RepositoryRecord')` |
 | build_evaluated_envelope | _extensions_copy | 902 | `_extensions_copy(inputs.repository.extensions, 'repository.extensions')` |
-| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1770 | `isinstance(value, Mapping)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1771 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
-| _extensions_copy | any (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1772 | `any(...)` |
-| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1772 | `isinstance(key, str)` |
-| _extensions_copy | KnowledgeEnvelopeError | 1773 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
-| _extensions_copy | _reject_machine_local_paths | 1774 | `_reject_machine_local_paths(value, field_name)` |
+| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1774 | `isinstance(value, Mapping)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1775 | `KnowledgeEnvelopeError(field_name, 'must be an object')` |
+| _extensions_copy | any (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1776 | `any(...)` |
+| _extensions_copy | isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy) | 1776 | `isinstance(key, str)` |
+| _extensions_copy | KnowledgeEnvelopeError | 1777 | `KnowledgeEnvelopeError(field_name, 'must use string extension keys')` |
+| _extensions_copy | _reject_machine_local_paths | 1778 | `_reject_machine_local_paths(value, field_name)` |
 
 ### Boundary effects
 
@@ -160,9 +160,9 @@ flowchart LR
 | external_call | `build_evaluated_envelope` | `isinstance` | 895 |
 | external_call | `build_evaluated_envelope` | `TypeError` | 896 |
 | external_call | `build_evaluated_envelope` | `isinstance` | 897 |
-| external_call | `_extensions_copy` | `isinstance` | 1770 |
-| external_call | `_extensions_copy` | `any` | 1772 |
-| external_call | `_extensions_copy` | `isinstance` | 1772 |
+| external_call | `_extensions_copy` | `isinstance` | 1774 |
+| external_call | `_extensions_copy` | `any` | 1776 |
+| external_call | `_extensions_copy` | `isinstance` | 1776 |
 | step_limit | `build_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `build_evaluated_envelope` | `depth limit` | 0 |
 

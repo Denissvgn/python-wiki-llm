@@ -176,7 +176,7 @@ flowchart LR
 | mutation | `relationships.extend` | `build_knowledge_index` | 225 |
 | mutation | `joined.append` | `_validate_and_join_inputs` | 380 |
 | mutation | `joined.sort` | `_validate_and_join_inputs` | 401 |
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1943 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1947 |
 
 ### Static analysis gaps
 

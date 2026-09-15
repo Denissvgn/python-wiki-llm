@@ -31,6 +31,7 @@ from .source_selection import (
 )
 from .validation import (
     portable_page_component,
+    portable_path_key,
     require_exact_fields,
     require_mapping,
     require_repository_relative_path,
@@ -584,25 +585,30 @@ def _build_module_page_map(
         else:
             page_map.update(_disambiguate_module_paths(filepaths, stem))
 
-    page_counts = Counter(page_map.values())
+    page_counts = Counter(portable_path_key(page) for page in page_map.values())
     colliding_pages = {page for page, count in page_counts.items() if count > 1}
     if not colliding_pages:
         return page_map
 
     resolved = dict(page_map)
-    used = {page for filepath, page in page_map.items() if page not in colliding_pages}
+    used = {
+        portable_path_key(page) for page in page_map.values()
+        if portable_path_key(page) not in colliding_pages
+    }
     for filepath in sorted(page_map):
-        if page_map[filepath] not in colliding_pages:
+        if portable_path_key(page_map[filepath]) not in colliding_pages:
             continue
         base = _page_name_from_source_path(filepath)
         candidates = [base, _page_name_with_extension(filepath)]
-        candidate = next((item for item in candidates if item not in used), base)
+        candidate = next(
+            (item for item in candidates if portable_path_key(item) not in used), base
+        )
         suffix = 2
-        while candidate in used:
+        while portable_path_key(candidate) in used:
             candidate = f"{base}_{suffix}"
             suffix += 1
         resolved[filepath] = candidate
-        used.add(candidate)
+        used.add(portable_path_key(candidate))
     return resolved
 
 
@@ -645,19 +651,19 @@ def _build_entity_occurrence_page_map(
             page_name = _safe_page_component(f"{page_name}_{occurrence}")
         proposed_pages.append((key, page_name, effective_module_page_map[filepath]))
 
-    page_counts = Counter(page for _, page, _ in proposed_pages)
+    page_counts = Counter(portable_path_key(page) for _, page, _ in proposed_pages)
     used: set[str] = set()
     page_map: dict[tuple[str, str, int], str] = {}
     for key, page_name, module_page in proposed_pages:
         candidate = page_name
-        if page_counts[page_name] > 1:
+        if page_counts[portable_path_key(page_name)] > 1:
             candidate = _safe_page_component(f"{module_page}_{page_name}")
         suffix = 2
-        while candidate in used:
+        while portable_path_key(candidate) in used:
             candidate = f"{page_name}_{suffix}"
             suffix += 1
         page_map[key] = candidate
-        used.add(candidate)
+        used.add(portable_path_key(candidate))
     return page_map
 
 

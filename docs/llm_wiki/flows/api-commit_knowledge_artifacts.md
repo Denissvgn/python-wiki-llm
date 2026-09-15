@@ -131,15 +131,15 @@ flowchart LR
 | commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts) | 482 | `TypeError('fault_injector must be callable')` |
 | commit_knowledge_artifacts | _apply_write | 485 | `_apply_write(plan.surface_index, CommitStage.SURFACE_INDEX_WRITTEN, fault_injector)` |
 | _apply_write | write_bytes_atomic | 550 | `write_bytes_atomic(artifact.path, artifact.content)` |
-| write_bytes_atomic | isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic) | 164 | `isinstance(content, bytes)` |
-| write_bytes_atomic | TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic) | 165 | `TypeError('content must be bytes')` |
-| write_bytes_atomic | Path | 166 | `Path(path)` |
+| write_bytes_atomic | isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic) | 165 | `isinstance(content, bytes)` |
+| write_bytes_atomic | TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic) | 166 | `TypeError('content must be bytes')` |
+| write_bytes_atomic | Path | 167 | `Path(path)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `os.unlink` | `write_bytes_atomic` | 179 |
+| filesystem_write | `os.unlink` | `write_bytes_atomic` | 180 |
 
 ### Static analysis gaps
 
@@ -151,8 +151,8 @@ flowchart LR
 | external_call | `commit_knowledge_artifacts` | `TypeError` | 480 |
 | external_call | `commit_knowledge_artifacts` | `callable` | 481 |
 | external_call | `commit_knowledge_artifacts` | `TypeError` | 482 |
-| external_call | `write_bytes_atomic` | `isinstance` | 164 |
-| external_call | `write_bytes_atomic` | `TypeError` | 165 |
+| external_call | `write_bytes_atomic` | `isinstance` | 165 |
+| external_call | `write_bytes_atomic` | `TypeError` | 166 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 
 ## Behavior

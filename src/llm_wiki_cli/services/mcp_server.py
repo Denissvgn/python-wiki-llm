@@ -11,7 +11,7 @@ import ipaddress
 import json
 import re
 import sys
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from itertools import islice
 from pathlib import Path
@@ -19,6 +19,7 @@ from typing import Any, Protocol, TypedDict, cast
 from urllib.parse import unquote, urlparse
 
 from ..api_types import KnowledgeMode
+from .. import api as public_api
 from ..api import (
     LlmWikiApiError,
     build_documentation_query_service,
@@ -180,17 +181,11 @@ def _api_mcp_error(exc: LlmWikiApiError) -> McpWikiError:
 
 
 def _path_validation_mcp_error(exc: PathValidationError) -> McpWikiError:
-    message = str(exc)
-    if "--src-dir" in message:
-        field = "src_dir"
-    elif "--wiki-dir" in message:
-        field = "wiki_dir"
-    else:
-        field = "path"
+    from .context_packet import describe_context_packet_error
+
+    failure = describe_context_packet_error(exc)
     return McpWikiError(
-        message,
-        code="path-policy-error",
-        data={"field": field},
+        failure["message"], code=failure["code"], data=failure["details"],
     )
 
 
@@ -434,12 +429,14 @@ class McpWikiService:
         except SourceSelectionError as exc:
             raise McpWikiError(
                 "MCP source selection changed during the server lifetime; "
-                "restart the server with the intended profile."
+                "restart the server with the intended profile.",
+                code="invalid-request", data={"field": "source_selection"},
             ) from exc
         if _source_selection_pin(current_policy) != self._source_selection_pin:
             raise McpWikiError(
                 "MCP source selection changed during the server lifetime; "
-                "restart the server with the intended profile."
+                "restart the server with the intended profile.",
+                code="invalid-request", data={"field": "source_selection"},
             )
         return current_policy
 
@@ -625,7 +622,7 @@ class McpWikiService:
             allowed=GRAPH_RESOLUTIONS,
         )
         if not isinstance(include_evidence, bool):
-            raise McpWikiError("include_evidence must be a boolean.")
+            raise McpWikiError("include_evidence must be a boolean.", code="invalid-request", data={"field": "include_evidence"})
         bounded_limit = _bounded_query_limit(limit)
         return self._run_documentation_query(
             "traverse_typed_graph",
@@ -651,6 +648,31 @@ class McpWikiService:
             locator,
             limit=bounded_limit,
         )
+
+    def inspect_concept(
+        self, locator_or_exact_route: str, *, live: bool = False,
+        limit: int = 20, include_evidence: bool = False,
+    ) -> dict:
+        """Inspect one native target from a shared snapshot or explicit live read."""
+        try:
+            return dict(public_api.inspect_concept(
+                locator_or_exact_route,
+                src_dir=_posix_string(self.src_dir), wiki_dir=_posix_string(self.wiki_dir),
+                live=live, limit=limit, include_evidence=include_evidence,
+                **self._external_source_options(), **self._source_selection_options(),
+            ))
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    def get_knowledge_coverage(self, live: bool = False) -> dict:
+        """Explain eligible observations without treating unmodeled content as drift."""
+        try:
+            return dict(public_api.get_knowledge_coverage(
+                src_dir=_posix_string(self.src_dir), wiki_dir=_posix_string(self.wiki_dir),
+                live=live, **self._external_source_options(), **self._source_selection_options(),
+            ))
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
 
     def search_wiki(
         self,
@@ -808,8 +830,8 @@ class McpWikiService:
 
         from .context_packet import (
             ContextPacketError,
-            ContextPacketPathPolicyError,
             build_qualified_context,
+            describe_context_packet_error,
         )
 
         if if_packet_id is not None and (
@@ -817,7 +839,8 @@ class McpWikiService:
             or re.fullmatch(r"sha256:[0-9a-f]{64}", if_packet_id) is None
         ):
             raise McpWikiError(
-                "if_packet_id must be a sha256:<64 lowercase hex> value or None."
+                "if_packet_id must be a sha256:<64 lowercase hex> value or None.",
+                code="invalid-request", data={"field": "if_packet_id"},
             )
         selected_mode = _normalize_knowledge_mode(knowledge_mode)
         request = {
@@ -843,28 +866,15 @@ class McpWikiService:
                 **self._external_source_options(),
                 **self._source_selection_options(),
             )
-        except PathValidationError as exc:
-            raise _path_validation_mcp_error(exc) from exc
-        except ContextPacketPathPolicyError as exc:
-            raise McpWikiError(
-                str(exc),
-                code="path-policy-error",
-                data={"field": getattr(exc, "field", "path")},
-            ) from exc
         except context_cmd.KnowledgeRequiredUnavailableError as exc:
             raise _required_knowledge_mcp_error(exc) from exc
-        except context_cmd.ProtocolRequestError as exc:
+        except (PathValidationError, ContextPacketError, context_cmd.ProtocolRequestError) as exc:
             if _is_required_knowledge_failure(exc):
                 raise _required_knowledge_mcp_error(exc) from exc
+            failure = describe_context_packet_error(exc)
             raise McpWikiError(
-                str(exc),
-                code="invalid-request",
-                data={"field": exc.field},
+                failure["message"], code=failure["code"], data=failure["details"]
             ) from exc
-        except ContextPacketError as exc:
-            if _is_required_knowledge_failure(exc):
-                raise _required_knowledge_mcp_error(exc) from exc
-            raise McpWikiError(str(exc), code="invalid-request") from exc
 
         if packet.packet_id == if_packet_id:
             return {
@@ -974,12 +984,15 @@ class McpWikiService:
                 **self._external_source_options(),
                 **self._source_selection_options(),
             )
-            method = getattr(query_service, method_name)
-            return method(value, **query_options)
+            method = getattr(public_api, method_name)
+            return method(value, service=query_service, **query_options)
         except (LlmWikiApiError, DocumentationQueryError) as exc:
             if isinstance(exc, LlmWikiApiError):
                 raise _api_mcp_error(exc) from exc
-            raise McpWikiError(str(exc)) from exc
+            try:
+                public_api._raise_native_query_api_error(exc)
+            except LlmWikiApiError as failure:
+                raise _api_mcp_error(failure) from exc
 
     def read_resource(self, uri: str) -> dict:
         self._assert_source_selection_current()
@@ -1156,7 +1169,32 @@ def create_mcp_server(config: McpServerConfig):
     return server
 
 
+def _native_tool_call(callback: Callable[..., Any], *args, **kwargs) -> Any:
+    """Preserve semantic native failures through the optional SDK transport."""
+    try:
+        return callback(*args, **kwargs)
+    except McpWikiError as exc:
+        from mcp.types import CallToolResult, TextContent
+
+        failure = {
+            "state": "error",
+            "error": {
+                "code": exc.code or "invalid-request",
+                "message": str(exc),
+                "details": exc.data or {},
+            },
+        }
+        return CallToolResult(
+            isError=True,
+            content=[TextContent(type="text", text=json.dumps(failure, sort_keys=True))],
+            structuredContent=failure,
+        )
+
+
 def _register_mcp_tools(server, service: McpWikiService) -> None:
+    # Native annotations describe a JSON object wire result. ``Any`` changes
+    # SDK inference across Python versions and can introduce a {"result": ...}
+    # wrapper; dict[str, Any] also accepts structured semantic error envelopes.
     @server.tool()
     def get_entity(entity_id: str) -> dict:
         """Return a wiki entity page by entity page id."""
@@ -1183,17 +1221,17 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         return service.query_graph(query)
 
     @server.tool()
-    def query_documentation(request: dict) -> dict:
+    def query_documentation(request: dict) -> dict[str, Any]:
         """Run one exact bounded documentation or supplied-impact query."""
-        return service.query_documentation(request)
+        return _native_tool_call(service.query_documentation, request)
 
     @server.tool()
     def get_concept(
         locator_or_exact_route: str,
         limit: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return one concept by current coordinate, durable UID, or alias."""
-        return service.get_concept(locator_or_exact_route, limit=limit)
+        return _native_tool_call(service.get_concept, locator_or_exact_route, limit=limit)
 
     @server.tool()
     def related_concepts(
@@ -1201,9 +1239,9 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         direction: str = "both",
         kinds: list[str] | None = None,
         limit: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return bounded relationships for one exact concept identity."""
-        return service.related_concepts(
+        return _native_tool_call(service.related_concepts,
             locator_or_exact_route,
             direction=direction,
             kinds=kinds,
@@ -1215,9 +1253,9 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         locator_or_exact_route: str,
         ownership: str | None = None,
         limit: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return bounded document-order sections for one exact concept."""
-        return service.list_concept_sections(
+        return _native_tool_call(service.list_concept_sections,
             locator_or_exact_route,
             ownership=ownership,
             limit=limit,
@@ -1232,9 +1270,9 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         resolutions: list[str] | None = None,
         include_evidence: bool = False,
         limit: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Traverse bounded persisted typed relationships for one concept."""
-        return service.traverse_typed_graph(
+        return _native_tool_call(service.traverse_typed_graph,
             locator_or_exact_route,
             direction=direction,
             kinds=kinds,
@@ -1248,9 +1286,30 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def explain_evidence(
         locator_or_exact_route: str,
         limit: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return bounded evidence for one exact concept identity."""
-        return service.explain_evidence(locator_or_exact_route, limit=limit)
+        return _native_tool_call(service.explain_evidence, locator_or_exact_route, limit=limit)
+
+    @server.tool()
+    def get_knowledge_coverage(live: bool = False) -> dict[str, Any]:
+        """Return versioned coverage counts; live=True explicitly performs source work."""
+        return _native_tool_call(service.get_knowledge_coverage, live=live)
+
+    @server.tool()
+    def inspect_concept(
+        locator_or_exact_route: str, live: bool = False,
+        limit: int = 20, include_evidence: bool = False,
+    ) -> dict[str, Any]:
+        """Inspect concept, typed edges, sections and coverage from one view.
+
+        Defaults to snapshot-only; live=True authorizes one full source read.
+        Collections are capped at 100, queries at 64 KiB and output at 256 KiB.
+        Edge evidence is opt-in. Preserve every component's qualifiers/bounds.
+        """
+        return _native_tool_call(
+            service.inspect_concept, locator_or_exact_route,
+            live=live, limit=limit, include_evidence=include_evidence,
+        )
 
     @server.tool()
     def search_wiki(
@@ -1291,7 +1350,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         prefer_fresh: bool = False,
         if_packet_id: str | None = None,
         knowledge_mode: KnowledgeMode | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return a qualified packet with packet-id cache revalidation."""
         options = {
             "budget_tokens": budget_tokens,
@@ -1303,7 +1362,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         }
         if knowledge_mode is not None:
             options["knowledge_mode"] = knowledge_mode
-        return service.get_context_packet(**options)
+        return _native_tool_call(service.get_context_packet, **options)
 
     @server.tool()
     def check_wiki(
@@ -1426,7 +1485,7 @@ def _graph_query_args(query: Mapping[str, object]) -> tuple[str, str, int]:
 
 def _knowledge_locator(value: object) -> str:
     if not isinstance(value, str) or not value.strip():
-        raise McpWikiError("locator_or_exact_route must be a non-empty string.")
+        raise McpWikiError("locator_or_exact_route must be a non-empty string.", code="invalid-request", data={"field": "locator_or_exact_route"})
     selected = value.strip()
     try:
         return wiki_surface.validate_exact_page_coordinate(selected)
@@ -1439,14 +1498,15 @@ def _knowledge_locator(value: object) -> str:
             continue
     raise McpWikiError(
         "locator_or_exact_route must be an exact canonical wiki path or "
-        "llm-wiki URI, durable concept UID, or natural-key alias."
+        "llm-wiki URI, durable concept UID, or natural-key alias.",
+        code="invalid-request", data={"field": "locator_or_exact_route"},
     )
 
 
 def _knowledge_direction(value: object) -> str:
     if not isinstance(value, str) or value not in _KNOWLEDGE_DIRECTIONS:
         choices = ", ".join(repr(item) for item in _KNOWLEDGE_DIRECTIONS)
-        raise McpWikiError(f"direction must be one of {choices}.")
+        raise McpWikiError(f"direction must be one of {choices}.", code="invalid-request", data={"field": "direction"})
     return value
 
 
@@ -1455,7 +1515,7 @@ def _section_ownership(value: object) -> str | None:
         return None
     if not isinstance(value, str) or value not in _SECTION_OWNERSHIP_VALUES:
         choices = ", ".join(repr(item) for item in _SECTION_OWNERSHIP_VALUES)
-        raise McpWikiError(f"ownership must be one of {choices}, or None.")
+        raise McpWikiError(f"ownership must be one of {choices}, or None.", code="invalid-request", data={"field": "ownership"})
     return value
 
 
@@ -1504,7 +1564,7 @@ def _knowledge_kinds(values: object) -> list[str] | None:
     )
     unsupported = sorted(set(requested) - set(_KNOWLEDGE_RELATIONSHIP_KINDS))
     if unsupported:
-        raise McpWikiError(f"unsupported relationship kind: {unsupported[0]!r}.")
+        raise McpWikiError("unsupported relationship kind.", code="invalid-request", data={"field": "kinds"})
     selected = set(requested)
     return [kind for kind in _KNOWLEDGE_RELATIONSHIP_KINDS if kind in selected]
 
@@ -1512,7 +1572,7 @@ def _knowledge_kinds(values: object) -> list[str] | None:
 def _typed_graph_direction(value: object) -> str:
     if not isinstance(value, str) or value not in _TYPED_GRAPH_DIRECTIONS:
         choices = ", ".join(repr(item) for item in _TYPED_GRAPH_DIRECTIONS)
-        raise McpWikiError(f"direction must be one of {choices}.")
+        raise McpWikiError(f"direction must be one of {choices}.", code="invalid-request", data={"field": "direction"})
     return value
 
 
@@ -1533,7 +1593,7 @@ def _typed_graph_kinds(values: object) -> list[str] | None:
         }
     )
     if invalid:
-        raise McpWikiError(f"unsupported typed relationship kind: {invalid[0]!r}.")
+        raise McpWikiError("unsupported typed relationship kind.", code="invalid-request", data={"field": "kinds"})
     selected = set(requested)
     return [
         *[kind for kind in CORE_RELATIONSHIP_KINDS if kind in selected],
@@ -1556,14 +1616,14 @@ def _typed_graph_enum_values(
     )
     unsupported = sorted(set(requested) - set(allowed))
     if unsupported:
-        raise McpWikiError(f"unsupported {field[:-1]}: {unsupported[0]!r}.")
+        raise McpWikiError(f"unsupported {field[:-1]}.", code="invalid-request", data={"field": field})
     selected = set(requested)
     return [value for value in allowed if value in selected]
 
 
 def _bounded_query_limit(value: object) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-        raise McpWikiError("limit must be a positive integer.")
+        raise McpWikiError("limit must be a positive integer.", code="invalid-request", data={"field": "limit"})
     return min(value, _MAX_QUERY_LIMIT)
 
 

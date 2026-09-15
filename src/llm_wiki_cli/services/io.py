@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import stat
+import sys
 import tempfile
 from collections.abc import Callable, Set
 from pathlib import Path
@@ -206,3 +207,20 @@ def write_text_output(path: str | Path, text: str) -> Path:
     target = Path(path).expanduser()
     _write_utf8_text(target, text)
     return target
+
+
+def write_utf8_stdout(text: str) -> None:
+    """Emit UTF-8 bytes without stdout encoding or newline translation.
+
+    Text-only stdout replacements used by embedded callers receive the same
+    Unicode text. Leave the caller's stream configuration unchanged.
+    """
+    encoded = text.encode("utf-8")
+    stream = sys.stdout
+    buffer = getattr(stream, "buffer", None)
+    if buffer is None:
+        stream.write(text)
+    else:
+        stream.flush()
+        buffer.write(encoded)
+        buffer.flush()

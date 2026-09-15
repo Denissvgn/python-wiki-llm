@@ -122,12 +122,12 @@ flowchart LR
 | hash_generation_options | isinstance (src/llm_wiki_cli/services…py:hash_generation_options) | 829 | `isinstance(defaults, Mapping)` |
 | hash_generation_options | KnowledgeEnvelopeError | 830 | `KnowledgeEnvelopeError('generation_option_defaults', 'must be an object')` |
 | hash_generation_options | _normalized_allowlist | 834 | `_normalized_allowlist(allowlist)` |
-| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1671 | `isinstance(value, (...))` |
-| _normalized_allowlist | KnowledgeEnvelopeError | 1672 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names, not scalar text or bytes')` |
-| _normalized_allowlist | tuple | 1677 | `tuple(value)` |
-| _normalized_allowlist | KnowledgeEnvelopeError | 1679 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names')` |
-| _normalized_allowlist | any (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1683 | `any(...)` |
-| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1683 | `isinstance(item, str)` |
+| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1675 | `isinstance(value, (...))` |
+| _normalized_allowlist | KnowledgeEnvelopeError | 1676 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names, not scalar text or bytes')` |
+| _normalized_allowlist | tuple | 1681 | `tuple(value)` |
+| _normalized_allowlist | KnowledgeEnvelopeError | 1683 | `KnowledgeEnvelopeError('generation_option_allowlist', 'must be an iterable of option names')` |
+| _normalized_allowlist | any (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1687 | `any(...)` |
+| _normalized_allowlist | isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist) | 1687 | `isinstance(item, str)` |
 
 ### Boundary effects
 
@@ -139,9 +139,9 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `hash_generation_options` | `isinstance` | 827 |
 | external_call | `hash_generation_options` | `isinstance` | 829 |
-| external_call | `_normalized_allowlist` | `isinstance` | 1671 |
-| external_call | `_normalized_allowlist` | `any` | 1683 |
-| external_call | `_normalized_allowlist` | `isinstance` | 1683 |
+| external_call | `_normalized_allowlist` | `isinstance` | 1675 |
+| external_call | `_normalized_allowlist` | `any` | 1687 |
+| external_call | `_normalized_allowlist` | `isinstance` | 1687 |
 | step_limit | `hash_generation_options` | `first 12 steps` | 0 |
 
 ## Behavior

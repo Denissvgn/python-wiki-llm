@@ -966,6 +966,28 @@ def test_shared_summary_validator_rejects_malformed_projection_shapes(
     assert raised.value.code == "projection-page-set-mismatch"
 
 
+@pytest.mark.parametrize("profile", ["internal", "public-portable"])
+def test_ungoverned_summaries_keep_unknown_identity_without_uid_collisions(tmp_path, profile):
+    projection = project_knowledge(_base_view(tmp_path), profile=profile)
+    summaries = validate_projection_summaries(projection, list(projection.concepts))
+    assert len(summaries) > 1
+    assert all(summary["knowledge_bundle_id"] == "unknown" for summary in summaries.values())
+    assert all(summary["knowledge_uid"] == "unknown" for summary in summaries.values())
+    assert "governance-not-available" in projection.warnings
+
+
+def test_ungoverned_summary_rejects_fabricated_tracked_identity(tmp_path):
+    projection = project_knowledge(_base_view(tmp_path))
+    payload = projection.to_payload()
+    path = next(iter(payload["concepts"]))
+    payload["concepts"][path]["identity"].update(
+        state="tracked", uid="lw:entity:" + "a" * 32,
+        namespaced_uid="unknown#lw:entity:" + "a" * 32,
+    )
+    with pytest.raises(KnowledgeProjectionError):
+        validate_projection_summaries(_projection_from_payload(payload), list(projection.concepts))
+
+
 def test_projection_detaches_and_deeply_freezes_nested_payloads(tmp_path):
     projection = _governed_projection(tmp_path)
     payload = projection.to_payload()

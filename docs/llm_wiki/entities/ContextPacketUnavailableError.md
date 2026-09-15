@@ -1,6 +1,6 @@
 # ContextPacketUnavailableError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:256`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:248`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -15,7 +15,9 @@ A required read-only packet capability is unavailable.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+| Method | Signature | Decorators | Description |
+|--------|-----------|------------|-------------|
+| `__init__` | `(message: str, *, field: str = 'context')` | — | — |
 
 ## Relationships
 
@@ -42,7 +44,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_packet](../modules/context_packet.md) | 0 | — |
+| [context_packet](../modules/context_packet.md) | 1 | — |
 
 ### Structure
 
@@ -56,4 +58,4 @@ flowchart LR
 |---|---|---|---:|
 | `_fit_knowledge_packet_response` | call | [context_packet](../modules/context_packet.md) | 2 |
 | `_packet_basis` | call | [context_packet](../modules/context_packet.md) | 1 |
-| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 3 |
+| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 4 |

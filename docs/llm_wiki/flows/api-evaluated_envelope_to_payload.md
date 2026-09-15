@@ -145,11 +145,11 @@ flowchart LR
 | evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
 | evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
 | evaluated_envelope_to_payload | _validated_bundle_payload | 1148 | `_validated_bundle_payload(envelope.bundle)` |
-| _validated_bundle_payload | dict (src/llm_wiki_cli/services…_validated_bundle_payload) | 1942 | `dict(bundle.snapshot.extensions)` |
-| _validated_bundle_payload | snapshot_extensions.pop | 1943 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
-| _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1944 | `replace(bundle, snapshot=replace(...))` |
-| _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1946 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
-| _validated_bundle_payload | knowledge_index_to_payload | 1952 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
+| _validated_bundle_payload | dict (src/llm_wiki_cli/services…_validated_bundle_payload) | 1946 | `dict(bundle.snapshot.extensions)` |
+| _validated_bundle_payload | snapshot_extensions.pop | 1947 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
+| _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1948 | `replace(bundle, snapshot=replace(...))` |
+| _validated_bundle_payload | replace (src/llm_wiki_cli/services…_validated_bundle_payload) | 1950 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
+| _validated_bundle_payload | knowledge_index_to_payload | 1956 | `knowledge_index_to_payload(KnowledgeIndex(...))` |
 | knowledge_index_to_payload | isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload) | 651 | `isinstance(model, KnowledgeIndex)` |
 | knowledge_index_to_payload | TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload) | 652 | `TypeError('model must be a KnowledgeIndex')` |
 
@@ -157,7 +157,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1943 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1947 |
 
 ### Static analysis gaps
 
@@ -165,8 +165,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
-| external_call | `_validated_bundle_payload` | `replace` | 1944 |
-| external_call | `_validated_bundle_payload` | `replace` | 1946 |
+| external_call | `_validated_bundle_payload` | `replace` | 1948 |
+| external_call | `_validated_bundle_payload` | `replace` | 1950 |
 | external_call | `knowledge_index_to_payload` | `isinstance` | 651 |
 | external_call | `knowledge_index_to_payload` | `TypeError` | 652 |
 | step_limit | `evaluated_envelope_to_payload` | `first 12 steps` | 0 |

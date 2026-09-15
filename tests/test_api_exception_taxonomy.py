@@ -43,6 +43,8 @@ _PUBLIC_FUNCTION_NAMES = (
     "flow_for_entrypoint",
     "get_calibration_run_status",
     "get_concept",
+    "get_knowledge_coverage",
+    "inspect_concept",
     "get_documentation_run_status",
     "get_p0_calibration_run_status",
     "list_concept_sections",
@@ -84,6 +86,8 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "extract_source",
         "flow_for_entrypoint",
         "get_concept",
+        "get_knowledge_coverage",
+        "inspect_concept",
         "list_concept_sections",
         "list_wiki_pages",
         "pages_for_symbol",
@@ -224,6 +228,8 @@ def _failure_cases(tmp_path: Path):
     query_service = cast(DocumentationGraphQueryService, _FailingQueryService())
 
     return {
+        "get_knowledge_coverage": lambda: api.get_knowledge_coverage(live=cast(Any, "invalid")),
+        "inspect_concept": lambda: api.inspect_concept(""),
         "bootstrap_wiki": lambda: api.bootstrap_wiki(
             str(missing_source),
             str(tmp_path / "new-wiki"),
@@ -599,6 +605,8 @@ def test_public_dict_return_annotations_import_and_resolve():
         "related_concepts": api_types.RelatedConceptsResult,
         "traverse_typed_graph": api_types.TypedGraphTraversalResult,
         "explain_evidence": api_types.EvidenceExplanationResult,
+        "get_knowledge_coverage": api_types.KnowledgeCoverageResult,
+        "inspect_concept": api_types.NativeInspectionResult,
         "query_documentation": api_types.DocumentationQueryResult,
         "export_documentation_run": api_types.DocumentationExportResult,
     }
@@ -928,6 +936,17 @@ def test_public_dict_return_annotations_import_and_resolve():
         ),
     }
 
+    expected_keys[api_types.KnowledgeCoverageCounts] = (
+        {"total", "modeled", "unmodeled", "compared", "modeled_freshness"}, set(),
+    )
+    expected_keys[api_types.KnowledgeCoverageResult] = (
+        {"schema_version", "availability", "reason", "read_scope", "freshness_evaluated",
+         "counts", "by_kind", "reasons"}, set(),
+    )
+    expected_keys[api_types.NativeInspectionResult] = (
+        {"schema_version", "read_scope", "cost", "concept", "graph", "sections",
+         "coverage", "limits", "truncated"}, set(),
+    )
     assert set(expected_keys) | {api_types.KnowledgeMode} == {
         getattr(api_types, name) for name in api_types.__all__
     }

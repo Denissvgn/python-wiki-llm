@@ -1,6 +1,6 @@
 # ManifestEvidenceBaseline
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:252`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:253`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)

@@ -5,7 +5,7 @@ using `http.NewServeMux`. That handler calls the exported `store.Status`
 function, which delegates to a private method in its own package.
 Everything uses the Go standard library.
 
-Prerequisites: `agent-wiki-cli` 2.1.0 or newer and a runnable Go toolchain
+Prerequisites: `agent-wiki-cli` 2.2.0 or newer and a runnable Go toolchain
 compatible with Go 1.21 source. Copy the [project](project/) contents, including
 `.gitignore`, into a fresh directory. **Run every command below from that copied
 project directory.** Documentation generation does not start the HTTP listener.

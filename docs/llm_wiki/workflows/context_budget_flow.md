@@ -10,6 +10,7 @@
 2. `change_selection.changes_from_args`
 3. `token_counting.LocalTokenizerCounter`
 4. `io.write_text_output`
+5. `io.write_utf8_stdout`
 
 ## Touches
 

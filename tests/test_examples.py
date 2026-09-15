@@ -59,21 +59,25 @@ def project_copy(tmp_path):
         assert _snapshot(source, project_inputs=True) == before, f"tutorial inputs were modified: {source}"
 
 
-def _cli(project: Path, *args: str) -> str:
+def _run_example(project: Path, command: list[str], *, expected_exit: int = 0) -> str:
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(ROOT / "src")
     environment["PYTHONUTF8"] = "1"
     environment["PYTHONIOENCODING"] = "utf-8"
     environment.pop("LLM_WIKI_CACHE_DIR", None)
     result = subprocess.run(
-        [sys.executable, "-m", "llm_wiki_cli.cli", *args], cwd=project,
+        command, cwd=project,
         env=environment, capture_output=True, text=True, encoding="utf-8", timeout=90,
     )
-    assert result.returncode == 0, (args, result.stdout, result.stderr)
+    assert result.returncode == expected_exit, (command, result.stdout, result.stderr)
     return result.stdout
 
 
-def _documented(project: Path, name: str, heading: str) -> list[str]:
+def _cli(project: Path, *args: str) -> str:
+    return _run_example(project, [sys.executable, "-m", "llm_wiki_cli.cli", *args])
+
+
+def _documented(project: Path, name: str, heading: str, *, expected_cli_exit: int = 0) -> list[str]:
     readme = (EXAMPLES / name / "README.md").read_text(encoding="utf-8")
     tokens = MarkdownIt().parse(readme)
     active = False
@@ -84,8 +88,14 @@ def _documented(project: Path, name: str, heading: str) -> list[str]:
         if active and token.type == "fence" and token.info == "sh":
             commands.extend(shlex.split(line) for line in token.content.splitlines() if line.strip())
     assert commands, heading
-    assert all(command[0] == "llm-wiki" for command in commands)
-    return [_cli(project, *command[1:]) for command in commands]
+    outputs = []
+    for command in commands:
+        if command[0] == "llm-wiki":
+            outputs.append(_run_example(project, [sys.executable, "-m", "llm_wiki_cli.cli", *command[1:]], expected_exit=expected_cli_exit))
+        else:
+            assert command[:2] == [".venv/bin/python", "client.py"]
+            outputs.append(_run_example(project, [sys.executable, *command[1:]]))
+    return outputs
 
 
 def _assert_first_sync_stable(project: Path, name: str) -> None:
@@ -151,6 +161,74 @@ def test_python_basic_tutorial(project_copy):
     assert EstimatedCounter().count(context) <= accounting["budget_tokens"]
     assert accounting["used_tokens"] <= accounting["budget_tokens"] == 1200
     assert not (project / "output/task.txt").exists()
+
+
+def test_native_knowledge_tutorial_decisions_follow_source_facts(project_copy, monkeypatch):
+    from llm_wiki_cli import api
+
+    name = "native-knowledge"
+    project = project_copy(name)
+    monkeypatch.chdir(project)
+    source = project / "src/catalog.py"
+    assert "price_cents: int" in source.read_text(encoding="utf-8")
+    assert "currency:" not in source.read_text(encoding="utf-8")
+    _, inspection, _, clean_drift = _documented(project, name, "Prepare and inspect")
+    assert json.loads(clean_drift)["ok"] is True
+    assert json.loads(_cli(project, "ci-check", "--src-dir", "src", "--wiki-dir", "wiki", "--format", "json", "--no-report", "--no-cache", "--no-plugins"))["ok"] is True
+    current = json.loads(inspection)
+    assert current["freshness"]["state"] == "current"
+    assert current["coverage"]["counts"]["modeled"] == current["coverage"]["counts"]["compared"] == 2
+    assert not (project / "AGENTS.md").exists()
+    _, handoff = _documented(project, name, "Capture a handoff")
+    before = json.loads(handoff)
+    assert before["intent_matches"] is True
+    assert before["offline_validation"]["freshness"]["evaluated"] is False
+    assert before["live_reconciliation"]["current"] is True
+    _, changed_inspection, drift, stale_handoff = _documented(project, name, "Change and diagnose", expected_cli_exit=1)
+    assert 'currency: str = "EUR"' in source.read_text(encoding="utf-8")
+    page = project / "wiki/entities/Item.md"
+    assert "`currency`" not in page.read_text(encoding="utf-8")
+    changed = json.loads(changed_inspection)
+    assert changed["freshness"]["state"] == "source-changed"
+    assert changed["coverage"]["counts"]["modeled_freshness"]["source-changed"] == 1
+    assert changed["coverage"]["counts"]["modeled_freshness"]["nonsemantic-source-change"] == 1
+    assert "review" in changed["decision"]
+    # Both fail for the same ordinary manifest issue; drift adds only warnings.
+    plain = json.loads(_run_example(project, [sys.executable, "-m", "llm_wiki_cli.cli", "ci-check", "--src-dir", "src", "--wiki-dir", "wiki", "--format", "json", "--no-report", "--no-cache", "--no-plugins"], expected_exit=1))
+    report = json.loads(drift)
+    assert report["issues"] == plain["issues"]
+    assert report["issues"][0]["category"] == "sync_manifest"
+    assert all(item["severity"] == "warning" for item in report["diagnostics"])
+    assert report["diagnostics"] and not plain["diagnostics"]
+    assert report["knowledge_drift_gate"] is False
+    stale = json.loads(stale_handoff)
+    assert stale["offline_validation"]["valid"] is True
+    assert stale["live_reconciliation"]["current"] is False
+    _, _, refreshed, refreshed_ci, _, new_handoff = _documented(project, name, "Review and synchronize")
+    assert json.loads(refreshed_ci)["ok"] is True
+    assert json.loads(refreshed)["freshness"]["state"] == "current"
+    assert json.loads(new_handoff)["live_reconciliation"]["current"] is True
+    text = page.read_text(encoding="utf-8")
+    assert "`currency`" in text
+    assert "Currency is explicit; price_cents remains an integer count of minor units." in text
+    before_fallback = _snapshot(project)
+    snapshot, unavailable = map(json.loads, _documented(project, name, "Read with limited knowledge"))
+    assert snapshot["coverage"]["freshness_evaluated"] is False
+    assert unavailable["knowledge"]["availability"] == "absent"
+    assert "source evidence" in unavailable["decision"]
+    assert _snapshot(project) == before_fallback
+    assert not (project / "missing-wiki").exists()
+    assert not (project / "AGENTS.md").exists()
+    expected = json.loads((project / "expected-request.json").read_text(encoding="utf-8"))
+    other = api.build_qualified_context("src", wiki_dir="wiki", request={**expected, "budget_tokens": 2000})
+    wrong = project / "output/wrong-request.packet.json"
+    wrong.write_bytes(other.to_bytes())
+    assert api.validate_context_packet(wrong.read_bytes()).valid
+    result = subprocess.run([sys.executable, "client.py", "check-packet", str(wrong)],
+                            cwd=project, capture_output=True, text=True, timeout=30)
+    assert result.returncode == 1
+    assert "does not match the consumer" in result.stderr
+    assert result.stdout == ""
 
 
 def _assert_production_contract(project: Path, suffix: str) -> None:

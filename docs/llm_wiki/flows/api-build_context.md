@@ -163,16 +163,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context | _normalise_focus | 804 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2397 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2403 | `list(focus)` |
-| build_context | _normalize_optional_knowledge_mode | 805 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 371 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 372 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 372 | `repr(item)` |
-| _normalize_optional_knowledge_mode | InvalidRequestError | 373 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 378 | `cast(KnowledgeMode, value)` |
-| build_context | _validate_protocol_request | 821 | `context_cmd._validate_protocol_request(request)` |
+| build_context | _normalise_focus | 1161 | `_normalise_focus(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2731 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2737 | `list(focus)` |
+| build_context | _normalize_optional_knowledge_mode | 1162 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 378 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 379 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 379 | `repr(item)` |
+| _normalize_optional_knowledge_mode | InvalidRequestError | 380 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 385 | `cast(KnowledgeMode, value)` |
+| build_context | _validate_protocol_request | 1178 | `context_cmd._validate_protocol_request(request)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `isinstance(data, dict)` |
 
 ### Boundary effects
@@ -183,10 +183,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 2397 |
-| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 371 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 372 |
-| external_call | `_normalize_optional_knowledge_mode` | `cast` | 378 |
+| external_call | `_normalise_focus` | `isinstance` | 2731 |
+| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 378 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 379 |
+| external_call | `_normalize_optional_knowledge_mode` | `cast` | 385 |
 | external_call | `_validate_protocol_request` | `isinstance` | 1077 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |

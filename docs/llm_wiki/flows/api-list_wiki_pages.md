@@ -134,8 +134,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_wiki_pages | _validate_wiki_dir | 1099 | `_validate_wiki_dir(wiki_dir)` |
-| _validate_wiki_dir | validate_path | 2407 | `validate_path(wiki_dir, '--wiki-dir')` |
+| list_wiki_pages | _validate_wiki_dir | 1400 | `_validate_wiki_dir(wiki_dir)` |
+| _validate_wiki_dir | validate_path | 2741 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 132 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
@@ -143,8 +143,8 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| list_wiki_pages | _wiki_page_payload | 1101 | `_wiki_page_payload(page)` |
-| list_wiki_pages | collect_wiki_pages | 1102 | `wiki_surface.collect_wiki_pages(wiki_root)` |
+| list_wiki_pages | _wiki_page_payload | 1402 | `_wiki_page_payload(page)` |
+| list_wiki_pages | collect_wiki_pages | 1403 | `wiki_surface.collect_wiki_pages(wiki_root)` |
 
 ### Boundary effects
 

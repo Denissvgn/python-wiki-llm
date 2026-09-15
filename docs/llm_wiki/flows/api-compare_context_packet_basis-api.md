@@ -2,7 +2,15 @@
 
 **Entry point:** `compare_context_packet_basis` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [api](../modules/api.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 1 more
+
+**Complete modules touched:**
+
+- [api](../modules/api.md)
+- [context_packet](../modules/context_packet.md)
+- [context_service](../modules/context_service.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [packet_field_policy](../modules/packet_field_policy.md)
 
 ## Call sequence
 
@@ -62,7 +70,7 @@ sequenceDiagram
     p18->>p7: ContextPacketMalformedError
 ```
 
-> Call sequence diagram shows 30 of 411 interactions; 381 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 463 interactions; 433 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -106,7 +114,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `compare_context_packet_basis (src/llm_wiki_cli/api.py)` | `packet_bytes: bytes \| bytearray \| memoryview`, `expected_basis: Mapping[str, Any]` | `context_packet_service`, `context_packet_service` | - | `comparison` |
+| `compare_context_packet_basis (src/llm_wiki_cli/api.py)` | `packet_bytes: bytes \| bytearray \| memoryview`, `expected_basis: Mapping[str, Any]` | `context_packet_service` | - | `comparison` |
 | `compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py)` | `packet_bytes: bytes \| bytearray \| memoryview`, `expected_basis: Mapping[str, Any]` | `Mapping` | - | `ContextBasisComparison(...)` |
 | `validate_context_packet` | `packet_bytes: bytes \| bytearray \| memoryview` | - | - | `ContextPacketValidation(...)` |
 | `_coerce_packet_bytes` | `value: bytes \| bytearray \| memoryview` | `_MAX_PACKET_BYTES`, `_MAX_PACKET_BYTES` | - | `raw` |
@@ -123,17 +131,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | 1041 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
-| compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | validate_context_packet | 1552 | `validate_context_packet(packet_bytes)` |
-| validate_context_packet | _coerce_packet_bytes | 1503 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2266 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2268 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2269 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2271 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2273 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2274 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2275 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 2279 | `raw.startswith(b'\xef\xbb\xbf')` |
+| compare_context_packet_basis (src/llm_wiki_cli/api.py) | compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | 1355 | `context_packet_service.compare_context_packet_basis(packet_bytes, expected_basis)` |
+| compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py) | validate_context_packet | 1636 | `validate_context_packet(packet_bytes)` |
+| validate_context_packet | _coerce_packet_bytes | 1587 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2360 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2362 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2363 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2365 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2367 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2368 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2369 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | raw.startswith | 2373 | `raw.startswith(b'\xef\xbb\xbf')` |
 
 ### Boundary effects
 
@@ -143,11 +151,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2266 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2268 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 2269 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 2271 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2279 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2360 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2362 |
+| external_call | `_coerce_packet_bytes` | `bytes` | 2363 |
+| external_call | `_coerce_packet_bytes` | `TypeError` | 2365 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2373 |
 | step_limit | `compare_context_packet_basis` | `first 12 steps` | 0 |
 | truncated_flow | `compare_context_packet_basis` | `depth limit` | 0 |
 

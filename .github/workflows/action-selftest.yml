@@ -6,6 +6,8 @@ on:
     paths:
       - .github/scripts/setup-llm-wiki-ci-toolchains.sh
       - integrations/github-action/**
+      - integrations/wiki-integrity/**
+      - tests/provider_conformance/**
       - release/qualification.py
       - release/toolchain-lock.json
       - src/llm_wiki_cli/**
@@ -16,6 +18,8 @@ on:
     paths:
       - .github/scripts/setup-llm-wiki-ci-toolchains.sh
       - integrations/github-action/**
+      - integrations/wiki-integrity/**
+      - tests/provider_conformance/**
       - release/qualification.py
       - release/toolchain-lock.json
       - src/llm_wiki_cli/**
@@ -131,3 +135,86 @@ jobs:
           STEP_OUTCOME: ${{ steps.invalid-fail-on.outcome }}
         run: |
           test "${STEP_OUTCOME}" = "failure"
+
+
+  foreign-caller:
+    name: Foreign caller (${{ matrix.integration }}, ${{ matrix.state }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        integration: [context, integrity]
+        state: [clean, drift, corrupt]
+    steps:
+      - name: Check out provider separately from caller sources
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: .provider
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Prepare locked bootstrap Go
+        shell: bash
+        run: >-
+          bash .provider/.github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode extractor-go --install-root "${RUNNER_TEMP}/foreign-bootstrap-tools"
+          --python "$(command -v python)"
+      - name: Freeze independent caller source and wiki
+        shell: bash
+        env:
+          FIXTURE_CASE: ${{ matrix.state }}
+          FIXTURE_KIND: ${{ matrix.integration }}
+        run: |
+          set -euo pipefail
+          python -m venv "${RUNNER_TEMP}/foreign-bootstrap-venv"
+          "${RUNNER_TEMP}/foreign-bootstrap-venv/bin/python" -m pip install ./.provider
+          "${RUNNER_TEMP}/foreign-bootstrap-venv/bin/python" -I             .provider/tests/provider_conformance/action_fixture.py prepare             --case "${FIXTURE_CASE}" --kind "${FIXTURE_KIND}"             --helper-cache "${RUNNER_TEMP}/foreign-bootstrap-cache"             --evidence "${RUNNER_TEMP}/foreign-caller-evidence"
+      - name: Run context health against caller
+        id: foreign-context
+        if: ${{ matrix.integration == 'context' }}
+        continue-on-error: true
+        uses: ./.provider/integrations/github-action
+        with:
+          src-dir: source
+          wiki-dir: wiki
+          strict: "true"
+          fail-on: unhealthy
+          evidence-id: foreign
+      - name: Run full integrity against caller
+        id: foreign-integrity
+        if: ${{ matrix.integration == 'integrity' }}
+        continue-on-error: true
+        uses: ./.provider/integrations/wiki-integrity
+        with:
+          src-dir: source
+          wiki-dir: wiki
+      - name: Verify actual action outcome and unchanged caller
+        if: always()
+        shell: bash
+        env:
+          FIXTURE_CASE: ${{ matrix.state }}
+          FIXTURE_KIND: ${{ matrix.integration }}
+          CONTEXT_OUTCOME: ${{ steps.foreign-context.outcome }}
+          INTEGRITY_OUTCOME: ${{ steps.foreign-integrity.outcome }}
+        run: |
+          set -euo pipefail
+          if [[ "${FIXTURE_KIND}" == context ]]; then
+            evidence="${RUNNER_TEMP}/llm-wiki-doctor-foreign-evidence"
+            outcome="${CONTEXT_OUTCOME}"
+          else
+            evidence="${RUNNER_TEMP}/llm-wiki-evidence"
+            outcome="${INTEGRITY_OUTCOME}"
+          fi
+          python -I .provider/tests/provider_conformance/action_fixture.py check             --case "${FIXTURE_CASE}" --kind "${FIXTURE_KIND}"             --outcome "${outcome}" --action-evidence "${evidence}"             --evidence "${RUNNER_TEMP}/foreign-caller-evidence"
+      - name: Upload caller conformance evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: foreign-caller-${{ matrix.integration }}-${{ matrix.state }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/foreign-caller-evidence
+          if-no-files-found: error
+          retention-days: 14

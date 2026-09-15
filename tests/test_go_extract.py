@@ -16,7 +16,10 @@ import pytest
 from llm_wiki_cli.config import EXTRACTOR_REGISTRY
 from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.go_extractor import GoExtractionRequest, GoExtractor
-from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
+from llm_wiki_cli.services.extractor_helpers import (
+    get_prepared_binary,
+    resolve_helper_cache_root,
+)
 
 # ---------------------------------------------------------------------------
 # Skip all tests when Go is not available on this machine.
@@ -43,7 +46,19 @@ def _command_available(*cmd: str) -> bool:
         return False
 
 
-GO_AVAILABLE = get_prepared_binary("go", ".") is not None
+def _repo_helper_cache_dir() -> str | None:
+    source_root = Path(__file__).resolve().parents[1]
+    cache_root = resolve_helper_cache_root(source_root)
+    if cache_root is None:
+        return None
+    cache_dir = str(cache_root.parent)
+    if get_prepared_binary("go", source_root, cache_dir) is None:
+        return None
+    return cache_dir
+
+
+GO_HELPER_CACHE_DIR = _repo_helper_cache_dir()
+GO_AVAILABLE = GO_HELPER_CACHE_DIR is not None
 skip_no_go = pytest.mark.skipif(
     not GO_AVAILABLE,
     reason="Prepared Go helper not available — Go extractor integration tests skipped",
@@ -60,6 +75,23 @@ def _make_go(tmp_path: Path, filename: str, content: str) -> Path:
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(textwrap.dedent(content), encoding="utf-8")
     return p
+
+
+def _extract_go(
+    tmp_path: Path,
+    *,
+    only_files: list[str] | None = None,
+    deep: bool = False,
+) -> dict:
+    """Use the discovered helper for temporary projects without a global cache override."""
+    return GoExtractor().extract(
+        GoExtractionRequest(
+            src_dir=str(tmp_path),
+            only_files=only_files,
+            deep=deep,
+            helper_cache_dir=GO_HELPER_CACHE_DIR,
+        )
+    )
 
 
 def _write_owned_package_sentinels(root: Path) -> None:
@@ -246,7 +278,7 @@ def test_go_executable_visibility_and_process_evidence(tmp_path, deep):
         func init() {}
         func init() {}
     """)
-    inventory = GoExtractor().extract(str(tmp_path), deep=deep)
+    inventory = _extract_go(tmp_path, deep=deep)
     data = inventory["main.go"]
     names = {fn["name"] for fn in data["functions"]}
     assert {"main", "Exported", "École"} <= names
@@ -274,7 +306,7 @@ def test_go_library_main_and_receiver_main_are_not_process_entries(tmp_path):
         func (s Service) private() {}
         func init() {}
     """)
-    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    inventory = _extract_go(tmp_path, deep=True)
     assert not inventory["library.go"].get("main_block")
     assert {method["name"] for method in inventory["library.go"]["classes"][0]["methods"]} == {"main", "private"}
     assert not [e for e in get_entry_points(inventory, root=tmp_path) if e["category"] == "process"]
@@ -297,7 +329,7 @@ func main() {{ {registration} }}
 import "net/http"
 func health(w http.ResponseWriter, r *http.Request) {}
 ''')
-    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    inventory = _extract_go(tmp_path, deep=True)
     assert all(not key.startswith("__") for entry in get_entry_points(inventory, root=tmp_path) for key in entry)
     detailed = get_detailed_entry_points(inventory, root=tmp_path)
     http = [o for o in detailed["observations"] if o["entry"]["category"] == "http"]
@@ -325,7 +357,7 @@ func main() {{
 {body}
 }}
 ''')
-    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    inventory = _extract_go(tmp_path, deep=True)
     assert "go_http" in inventory["main.go"]["frameworks"]
     assert not [e for e in get_entry_points(inventory, root=tmp_path) if e["category"] == "http"]
 
@@ -352,7 +384,7 @@ func main() {
     helper()
 }
 ''')
-    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    inventory = _extract_go(tmp_path, deep=True)
     data = inventory["main.go"]
     main = next(fn for fn in data["functions"] if fn["name"] == "main")
     assert [call["name"] for call in main["calls"]] == ["helper", "work", "Println", "helper", "helper", "fn", "helper"]
@@ -372,7 +404,7 @@ func main() {
 @skip_no_go
 @pytest.mark.parametrize("count", [2, 3])
 def test_go_workflows_require_three_resolved_selected_modules(tmp_path, monkeypatch, count):
-    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory, resolve_call_edges
+    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory_result, resolve_call_edges
 
     monkeypatch.chdir(tmp_path)
     (tmp_path / "go.mod").write_text("module example.org/app\n\ngo 1.21\n", encoding="utf-8")
@@ -384,20 +416,20 @@ def test_go_workflows_require_three_resolved_selected_modules(tmp_path, monkeypa
         _make_go(tmp_path, f"pkg{index}/run.go", f"package pkg{index}\nfunc Run() {{}}\n")
         _make_go(tmp_path, f"pkg{index}/other.go", f"package pkg{index}\nfunc Other() {{}}\n")
     _make_go(tmp_path, "main.go", "package main\nimport (\n" + "\n".join(imports) + "\n)\nfunc main() {\n" + "\n".join(calls) + "\n}\n")
-    inventory = get_inventory(str(tmp_path), deep=True)
+    inventory = get_inventory_result(tmp_path, deep=True, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory
     edges = resolve_call_edges(inventory)
     assert [(edge["to"]["file"], edge["to"]["symbol"]) for edge in edges] == [(f"pkg{i}/run.go", "Run") for i in range(count)]
     assert bool(get_call_graph(inventory)) == (count == 3)
     if count == 3:
         _make_go(tmp_path, "cmd/other/main.go", (tmp_path / "main.go").read_text())
-        assert len(get_call_graph(get_inventory(str(tmp_path), deep=True))) == 2
+        assert len(get_call_graph(get_inventory_result(tmp_path, deep=True, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory)) == 2
 
 
 @skip_no_go
 @pytest.mark.parametrize("method_file", ["types.go", "methods.go"], ids=["same-file", "cross-file"])
 def test_go_method_workflow_labels_follow_the_defining_file(tmp_path, monkeypatch, method_file):
     from llm_wiki_cli.services.bootstrap_runtime import _generate_workflow_md
-    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory
+    from llm_wiki_cli.services.extraction_service import get_call_graph, get_inventory_result
 
     monkeypatch.chdir(tmp_path)
     (tmp_path / "go.mod").write_text("module example.org/app\n\ngo 1.21\n", encoding="utf-8")
@@ -417,7 +449,7 @@ func (w Worker) Execute() { a.Run(); b.Run(); c.Run() }
         _make_go(tmp_path, "types.go", "package worker\ntype Worker struct{}\n")
     _make_go(tmp_path, method_file, source)
 
-    workflows = get_call_graph(get_inventory(str(tmp_path), deep=True))
+    workflows = get_call_graph(get_inventory_result(tmp_path, deep=True, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory)
 
     module = Path(method_file).stem
     workflow_name = f"{module}_Worker_Execute"
@@ -440,8 +472,8 @@ def test_go_cross_file_method_call_locations_and_order_are_stable(tmp_path):
     _make_go(tmp_path, "service.go", "package main\ntype Service struct{}\n")
     _make_go(tmp_path, "work.go", "package main\nfunc (s Service) work() { helper() }\n")
     _make_go(tmp_path, "main.go", "package main\nfunc main() { s := &Service{}; s.work() }\nfunc helper() {}\n")
-    first = GoExtractor().extract(str(tmp_path), deep=True)
-    assert first == GoExtractor().extract(str(tmp_path), deep=True)
+    first = _extract_go(tmp_path, deep=True)
+    assert first == _extract_go(tmp_path, deep=True)
     edges = resolve_call_edges(first)
     assert {edge["from"]["file"] for edge in edges if edge["from"]["symbol"] == "Service.work"} == {"work.go"}
     assert next(edge for edge in edges if edge["from"]["symbol"] == "main")["to"] == {"file": "work.go", "symbol": "Service.work"}
@@ -457,17 +489,17 @@ def test_go_cached_cross_file_methods_follow_edits_and_deletions(tmp_path):
     method = _make_go(source, "work.go", "package main\nfunc (s Service) work() { before() }\n")
     _make_go(source, "helpers.go", "package main\nfunc before() {}\nfunc after() {}\n")
     options = InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "cache"))
-    first = get_inventory_result(source, deep=True, cache_options=options).inventory
+    first = get_inventory_result(source, deep=True, cache_options=options, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory
     assert next(edge for edge in resolve_call_edges(first))["to"]["symbol"] == "before"
     method.write_text("package main\nfunc (s Service) work() { after() }\n", encoding="utf-8")
-    warm = get_inventory_result(source, deep=True, cache_options=options).inventory
-    cold = get_inventory_result(source, deep=True).inventory
+    warm = get_inventory_result(source, deep=True, cache_options=options, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory
+    cold = get_inventory_result(source, deep=True, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory
     assert warm == cold
     edges = resolve_call_edges(warm)
     assert len(edges) == 1 and edges[0]["to"]["symbol"] == "after"
     method.unlink()
-    warm = get_inventory_result(source, deep=True, cache_options=options).inventory
-    assert warm == get_inventory_result(source, deep=True).inventory
+    warm = get_inventory_result(source, deep=True, cache_options=options, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory
+    assert warm == get_inventory_result(source, deep=True, helper_cache_dir=GO_HELPER_CACHE_DIR).inventory
     assert not resolve_call_edges(warm)
 
 
@@ -480,14 +512,14 @@ import web "net/http"
 var server = &web.Server{Addr: ":8000"}
 // web.Server{} in a comment is not another server.
 ''')
-    inventory = GoExtractor().extract(str(tmp_path), deep=True)
+    inventory = _extract_go(tmp_path, deep=True)
     assert get_entry_points(inventory, root=tmp_path) == [{"category": "http", "file": "server.go", "symbol": "http.Server", "label": "http.Server", "id": "http-http.Server"}]
 
 
 @skip_no_go
 class TestGoExtractor:
     def test_empty_dir(self, tmp_path):
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         assert inv == {}
 
     def test_single_struct(self, tmp_path):
@@ -503,7 +535,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         assert len(inv) == 1
         data = list(inv.values())[0]
         assert len(data["classes"]) == 1
@@ -512,7 +544,7 @@ class TestGoExtractor:
 
     def test_language_field_stamped(self, tmp_path):
         _make_go(tmp_path, "a.go", "package a\n\ntype A struct{}\n")
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         for entry in inv.values():
             assert entry["language"] == "go"
 
@@ -531,7 +563,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         child = [c for c in data["classes"] if c["name"] == "Child"][0]
         assert "Base" in child["bases"]
@@ -548,7 +580,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         assert len(data["classes"]) == 1
         assert data["classes"][0]["name"] == "Reader"
@@ -571,7 +603,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         rw = [c for c in data["classes"] if c["name"] == "ReadWriter"][0]
         assert "Reader" in rw["bases"]
@@ -588,7 +620,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         assert len(data["functions"]) == 1
         assert data["functions"][0]["name"] == "Greet"
@@ -605,7 +637,7 @@ class TestGoExtractor:
             func PublicFunc() {}
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         names = [f["name"] for f in data["functions"]]
         assert "PublicFunc" in names
@@ -614,7 +646,7 @@ class TestGoExtractor:
     def test_test_files_excluded_by_default(self, tmp_path):
         _make_go(tmp_path, "main.go", "package main\n\nfunc Main() {}\n")
         _make_go(tmp_path, "main_test.go", "package main\n\nfunc TestMain() {}\n")
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         assert len(inv) == 1
         assert "main_test.go" not in list(inv.keys())[0]
 
@@ -622,7 +654,7 @@ class TestGoExtractor:
         _make_go(tmp_path, "main.go", "package main\n\nfunc Main() {}\n")
         _make_go(tmp_path, "main_test.go", "package main\n\nfunc TestMain() {}\n")
         inv = GoExtractor().extract(
-            GoExtractionRequest(src_dir=str(tmp_path), include_tests={"go"})
+            GoExtractionRequest(src_dir=str(tmp_path), include_tests={"go"}, helper_cache_dir=GO_HELPER_CACHE_DIR)
         )
         assert sorted(inv) == ["main.go", "main_test.go"]
 
@@ -636,7 +668,7 @@ class TestGoExtractor:
             type StringSlice = []string
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         assert any(
             c["name"] == "StringSlice" and c["kind"] == "type_alias"
@@ -646,19 +678,19 @@ class TestGoExtractor:
     def test_only_files(self, tmp_path):
         _make_go(tmp_path, "a.go", "package a\n\ntype A struct{}\n")
         _make_go(tmp_path, "b.go", "package a\n\ntype B struct{}\n")
-        inv = GoExtractor().extract(str(tmp_path), only_files=["a.go"])
+        inv = _extract_go(tmp_path, only_files=["a.go"])
         assert len(inv) == 1
         assert any("a.go" in k for k in inv)
 
     def test_only_files_respects_excluded_dirs(self, tmp_path):
         _make_go(tmp_path, "vendor/dep/dep.go", "package dep\n\ntype Dep struct{}\n")
-        inv = GoExtractor().extract(str(tmp_path), only_files=["vendor/dep/dep.go"])
+        inv = _extract_go(tmp_path, only_files=["vendor/dep/dep.go"])
         assert inv == {}
 
     def test_vendor_excluded(self, tmp_path):
         _make_go(tmp_path, "main.go", "package main\n\ntype App struct{}\n")
         _make_go(tmp_path, "vendor/dep/dep.go", "package dep\n\ntype Dep struct{}\n")
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         assert len(inv) == 1
         assert not any("vendor" in k for k in inv)
 
@@ -677,7 +709,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         user = data["classes"][0]
         assert "registered user" in user["docstring"]
@@ -695,7 +727,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         attrs = data["classes"][0]["attributes"]
         names = [a["name"] for a in attrs]
@@ -719,7 +751,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         user = [c for c in data["classes"] if c["name"] == "User"][0]
         assert len(user["methods"]) == 1
@@ -738,7 +770,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         fn = data["functions"][0]
         assert fn["name"] == "Add"
@@ -761,7 +793,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         writer = data["classes"][0]
         assert writer["docstring"] == "Writer is the interface for writing bytes."
@@ -785,7 +817,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         assert "imports" in data
         modules = [i["module"] for i in data["imports"]]
@@ -808,7 +840,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         json_imp = [i for i in data["imports"] if i["module"] == "encoding/json"][0]
         assert json_imp["alias"] == "j"
@@ -830,7 +862,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=False)
+        inv = _extract_go(tmp_path, deep=False)
         data = list(inv.values())[0]
         greet = [f for f in data["functions"] if f["name"] == "Greet"]
         assert len(greet) == 1
@@ -842,14 +874,14 @@ class TestGoExtractor:
         _make_go(
             tmp_path, "bad.go", "package bad\n\ntype Bad struct {\n"
         )  # missing closing brace
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         # Should still get the good file
         assert any("good.go" in k for k in inv)
 
     def test_multiple_files(self, tmp_path):
         _make_go(tmp_path, "a.go", "package a\n\ntype Alpha struct{}\n")
         _make_go(tmp_path, "sub/b.go", "package sub\n\ntype Beta struct{}\n")
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         assert len(inv) == 2
 
     # ── Kind label tests ──────────────────────────────────────────────────
@@ -865,7 +897,7 @@ class TestGoExtractor:
             type Role string
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         assert any(
             c["name"] == "Role" and c["kind"] == "named_type" for c in data["classes"]
@@ -882,7 +914,7 @@ class TestGoExtractor:
             type StringSlice = []string
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path))
+        inv = _extract_go(tmp_path)
         data = list(inv.values())[0]
         assert any(
             c["name"] == "StringSlice" and c["kind"] == "type_alias"
@@ -904,7 +936,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         role = [c for c in data["classes"] if c["name"] == "Role"][0]
         assert len(role["methods"]) == 1
@@ -936,7 +968,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         # Find the User class (may be in either file's entry)
         user = None
         for entry in inv.values():
@@ -974,7 +1006,7 @@ class TestGoExtractor:
             }
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=False)
+        inv = _extract_go(tmp_path, deep=False)
         all_fns = [fn for entry in inv.values() for fn in entry["functions"]]
         greet = [f for f in all_fns if f["name"] == "Greet"]
         assert len(greet) == 1
@@ -993,7 +1025,7 @@ class TestGoExtractor:
             func (h *myHelper) DoWork() {}
             """,
         )
-        inv = GoExtractor().extract(str(tmp_path), deep=True)
+        inv = _extract_go(tmp_path, deep=True)
         data = list(inv.values())[0]
         class_names = [c["name"] for c in data["classes"]]
         assert "myHelper" not in class_names

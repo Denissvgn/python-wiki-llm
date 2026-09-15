@@ -41,7 +41,7 @@ artifacts only after the public Markdown surface has been written.
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
-| `.validation` | `portable_page_component`, `posix_path_text` |
+| `.validation` | `portable_page_component`, `portable_path_key`, `posix_path_text` |
 | `.wiki_lifecycle` | `WikiLifecycleState`, `classify_wiki_lifecycle`, `is_pristine_wiki_target`, `migration_guidance`, `sync_guidance` |
 | `.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `iter_directory_kinds`, `iter_page_kinds`, `mcp_uri` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
@@ -87,19 +87,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 710 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 988 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3034 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4283 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4308 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4321 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4328 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4336 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4342 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4353 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4364 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4372 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4379 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 733 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1011 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3076 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4325 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4350 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4363 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4370 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4378 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4384 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4395 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4406 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4414 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4421 | — | — |
 
 ## Functions
 
@@ -121,7 +121,7 @@ flowchart LR
 | `_disambiguate_paths` | `(fps: list[str], stem: str) -> dict[str, str]` | — | Given filepaths sharing *stem*, return ``{filepath: unique_name}``. |
 | `_page_name_with_extension` | `(filepath: str) -> str` | — | Return a page-safe path stem that includes the source extension. |
 | `_page_name_from_source_path` | `(filepath: str) -> str` | — | Return a page-safe stem from the full source path without extension. |
-| `_globally_disambiguate_module_pages` | `(page_map: dict[str, str]) -> dict[str, str]` | — | Resolve page-id collisions left after stem-group disambiguation. |
+| `_globally_disambiguate_module_pages` | `(page_map: dict[str, str]) -> dict[str, str]` | — | Resolve portable filesystem collisions after stem-group disambiguation. |
 | `build_module_page_map` | `(inventory: dict) -> dict[str, str]` | — | Return ``{filepath: page_stem}`` qualifying colliding stems. |
 | `_entity_occurrences` | `(inventory: Mapping[str, Mapping]) -> list[tuple[EntityOccurrenceKey, Mapping]]` | — | — |
 | `_legacy_entity_page_map` | `(occurrence_page_map: Mapping[EntityOccurrenceKey, str]) -> dict[tuple[str, str], str]` | — | — |

@@ -1,6 +1,6 @@
 # _ExternalSourceOptions
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:222`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:217`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [mcp_server](../modules/mcp_server.md)

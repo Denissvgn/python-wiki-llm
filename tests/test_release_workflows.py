@@ -191,6 +191,60 @@ def test_ci_pins_the_package_build_tool() -> None:
     assert "--no-cache-dir" not in package_build["run"]
 
 
+def test_windows_provider_acceptance_uses_installed_artifacts_and_preserves_evidence():
+    job = _yaml("ci.yml")["jobs"]["test"]
+    check = _named_step(job, "Verify installed provider artifacts on native Windows")
+    assert check["id"] == "provider-artifacts"
+    assert check["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert "tests/run_provider_artifact_checks.py" in check["run"]
+    assert '"pyright==1.1.411"' in check["run"]
+    upload = _named_step(job, "Upload native Windows provider evidence")
+    assert " ".join(upload["if"].split()) == (
+        "${{ always() && matrix.lane == 'core-windows-3.13' && "
+        "(steps.provider-artifacts.outcome == 'success' || "
+        "steps.provider-artifacts.outcome == 'failure') }}"
+    )
+    assert upload["with"]["if-no-files-found"] == "error"
+
+
+def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evidence():
+    job = _yaml("action-selftest.yml")["jobs"]["foreign-caller"]
+    assert job["strategy"]["matrix"] == {
+        "integration": ["context", "integrity"],
+        "state": ["clean", "drift", "corrupt"],
+    }
+    checkout = _named_step(job, "Check out provider separately from caller sources")
+    assert checkout["with"]["path"] == ".provider"
+    assert checkout["with"]["persist-credentials"] is False
+    assert "head.sha" in checkout["with"]["ref"]
+    for name in (
+        "Run context health against caller",
+        "Run full integrity against caller",
+    ):
+        step = _named_step(job, name)
+        assert step["uses"].startswith("./.provider/integrations/")
+        assert step["with"]["src-dir"] == "source"
+        assert step["with"]["wiki-dir"] == "wiki"
+    check = _named_step(job, "Verify actual action outcome and unchanged caller")
+    assert check["if"] == "always()"
+    assert "--action-evidence" in check["run"]
+    assert "--outcome" in check["run"]
+
+
+def test_language_oracle_controls_have_a_mandatory_locked_owner():
+    workflow = _yaml("release-qualification.yml")
+    owners = [
+        step
+        for job in workflow["jobs"].values()
+        for step in job.get("steps", [])
+        if step.get("name") == "Verify independent provider parser controls"
+    ]
+    assert len(owners) == 1
+    assert "tests.provider_conformance.owner_controls" in owners[0]["run"]
+    assert "continue-on-error" not in owners[0]
+    assert "if" not in owners[0]
+
+
 def _wiki_integrity_job() -> tuple[dict, dict]:
     workflow = _yaml("ci.yml")
     return workflow, workflow["jobs"]["wiki-integrity"]
@@ -623,6 +677,14 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
     assert "git archive --format=tar" in freeze_text
     assert "release/qualification.py" in freeze_text
     assert "tests/release_artifact_smoke.py" in freeze_text
+    assert "tests/mcp_probe.py" in freeze_text
+    assert "tests/fixtures/packet-artifact-parity.py" in freeze_text
+    assert "tests/fixtures/native-artifact-consumer.py" in freeze_text
+    assert "tests/verify_installed_provider.py" in freeze_text
+    assert "tests/fixtures/provider-typing-valid.py" in freeze_text
+    assert "tests/fixtures/provider-typing-invalid.txt" in freeze_text
+    assert "tests/fixtures/provider-artifact-consumer.py" in freeze_text
+    assert "examples/native-knowledge" in freeze_text
     assert "sha256sum" in freeze_text
     assert jobs["freeze"]["outputs"]["harness-sha256"] == (
         "${{ steps.harness.outputs.harness-sha256 }}"
@@ -686,6 +748,16 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
     assert "release_artifact_smoke.py" in smoke_text
     assert "default-venv" in smoke_text
     assert "mcp-venv" in smoke_text
+    producer = _named_step(smoke, "Run without a source checkout")
+    assert producer["id"] == "artifact-smoke"
+    diagnostics = _named_step(smoke, "Upload MCP probe diagnostics")
+    assert "always()" in diagnostics["if"]
+    assert "steps.artifact-smoke.outcome == 'failure'" in diagnostics["if"]
+    assert "steps.artifact-smoke.outcome == 'success'" in diagnostics["if"]
+    assert diagnostics["with"]["path"] == "smoke-${{ matrix.kind }}-mcp-probes/"
+    assert diagnostics["with"]["if-no-files-found"] == "warn"
+    canonical = _named_step(smoke, "Upload canonical smoke result")
+    assert canonical["with"]["if-no-files-found"] == "error"
 
 
 def test_qualification_binds_workflow_ref_and_revision_before_candidate_code() -> None:

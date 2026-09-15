@@ -24,6 +24,7 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
+| `sys` | `sys` |
 | `tempfile` | `tempfile` |
 | `typing` | `Any` |
 
@@ -61,3 +62,4 @@ flowchart LR
 | `write_bytes_atomic` | `(path: str \| Path, content: bytes) -> Path` | — | Atomically replace *path* with exact bytes staged in the same directory. |
 | `write_json_atomic` | `(path: str \| Path, payload: Any) -> Path` | — | Atomically write deterministic UTF-8 JSON and return its target path. |
 | `write_text_output` | `(path: str \| Path, text: str) -> Path` | — | Write an explicit CLI/API output artifact as UTF-8 text. |
+| `write_utf8_stdout` | `(text: str) -> None` | — | Emit UTF-8 bytes without stdout encoding or newline translation. |

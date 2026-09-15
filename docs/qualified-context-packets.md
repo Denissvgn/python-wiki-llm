@@ -78,6 +78,34 @@ llm-wiki context --src-dir . --wiki-dir docs/llm_wiki \
   --budget 32000 --focus changed --knowledge-mode auto --format packet
 ```
 
+For filters or a reusable request, put the semantic options in `context-request.json`:
+
+```json
+{
+  "protocol": "llm-wiki-context/v2",
+  "budget_tokens": 32000,
+  "focus": ["all"],
+  "format": "json",
+  "filters": {"language": "python"},
+  "knowledge_mode": "auto"
+}
+```
+
+```console
+llm-wiki context --request context-request.json --format packet
+```
+
+For v1/v2 requests, `--format packet` selects canonical packet delivery while
+the file's `format` controls its inner JSON or Markdown representation. Other
+explicit format flags must agree with the request. Put budget, focus,
+freshness preference, and knowledge mode in the file; command-line overrides
+are rejected before reading source or wiki content. A v3 request continues to
+own its outer format, including its packet-and-accounting envelope.
+
+The source directory must exist and be a directory. An existing empty source
+is allowed; a missing source is an unavailable input. Missing optional wiki
+knowledge retains the selected mode's fallback behavior.
+
 `build_context` and MCP `get_context` return a context response.
 `build_qualified_context`, CLI `--format packet`, and MCP
 `get_context_packet` return the full qualified packet envelope. The Python and
@@ -93,6 +121,10 @@ packet with the canonical JSON rules above. The outer change-selection and
 budget accounting fields are outside that packet's digest. See the
 [context command](cli-reference.md#context) for counter identity, explicit changes,
 estimated mode, and cannot-fit behavior.
+
+The nested packet ID must not be used as an identity for the complete v3
+envelope. Changing outer accounting or change-selection metadata does not
+change that ID.
 
 Construction captures one source inventory and one wiki and knowledge read
 view. Both the response and evidence basis are derived from that view. It
@@ -116,6 +148,33 @@ being rejected merely because they resemble paths. The receipt explicitly
 does not establish the absence of arbitrary sensitive content.
 
 ## Validation and reconciliation
+
+Consumers must also check that the packet's normalized request is the request
+they intended to use. Live reconciliation rebuilds the request embedded in the
+packet; a `current` result does not independently establish consumer intent.
+
+Packet API failures retain the existing `InvalidRequestError` and
+`WorkspaceStateError` catch points and expose stable `code` and `details`
+attributes. `PathPolicyError` remains an alias of `InvalidRequestError`.
+
+| Code | Meaning |
+|---|---|
+| `invalid-request` | A request or packet-operation option is invalid. |
+| `malformed-context-packet` | Supplied bytes fail canonical structure or integrity checks. |
+| `unsupported-context-packet` | The packet declares an unsupported schema version. |
+| `path-policy-error` | A source, wiki, or structural packet path violates the allowed policy. |
+| `context-packet-unavailable` | A required input or read capability is unavailable. |
+| `context-read-mutated` | Source or wiki state changed during the read; retry is required. |
+| `workspace-state-error` | The workspace could not be read. |
+| `knowledge-required-unavailable` | Required native knowledge cannot be supplied; details explain the reason. |
+
+Field-oriented failure records omit resolved machine roots and offending
+untrusted values. Chained exceptions remain available for local debugging.
+Packet CLI failures leave stdout empty and emit a JSON error record on stderr,
+with exit code `1`; usage errors retain exit code `2`. The raw non-packet
+protocol retains its existing JSON error envelope. MCP semantic packet errors
+use `isError: true` with structured code/details and JSON text content;
+transport argument validation remains the MCP SDK's responsibility.
 
 Structural validation is offline:
 

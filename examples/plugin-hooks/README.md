@@ -5,7 +5,7 @@ recognizes `handle_task` or `task_handler` in paths ending with `tasks.py`; its
 style hook colors the first matching task node green in a data-flow diagram.
 This is a naming convention, not a Celery or RQ framework adapter.
 
-Prerequisites: Python 3.10+ and `agent-wiki-cli` 2.1.0 or newer. When working from
+Prerequisites: Python 3.10+ and `agent-wiki-cli` 2.2.0 or newer. When working from
 source, install that checkout first so export reads its sample files.
 Copy the [project](project/) contents, including
 `.gitignore`, into a fresh directory. **Run every command below from that copied

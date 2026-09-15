@@ -127,29 +127,29 @@ flowchart LR
 | load_and_evaluate_verification_receipt | load_verification_receipt | 1087 | `load_verification_receipt(wiki_dir, missing_ok=missing_ok)` |
 | load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 956 | `Path(wiki_dir)` |
 | load_verification_receipt | first_unsafe_path_component | 957 | `first_unsafe_path_component(root)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 50 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath | 50 | `os.fspath(path)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 58 | `Path(os.path.abspath(...))` |
-| first_unsafe_path_component | os.path.abspath | 58 | `os.path.abspath(lexical)` |
-| first_unsafe_path_component | lexical.is_absolute | 59 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | Path.cwd | 65 | `Path.cwd(data not statically known)` |
-| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 66 | `Path(absolute.anchor)` |
-| first_unsafe_path_component | list (src/llm_wiki_cli/services…rst_unsafe_path_component) | 67 | `list(...)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
+| first_unsafe_path_component | os.path.abspath | 59 | `os.path.abspath(lexical)` |
+| first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
+| first_unsafe_path_component | Path.cwd | 66 | `Path.cwd(data not statically known)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 67 | `Path(absolute.anchor)` |
+| first_unsafe_path_component | list (src/llm_wiki_cli/services…rst_unsafe_path_component) | 68 | `list(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 70 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `first_unsafe_path_component` | `os.fspath` | 50 |
-| external_call | `first_unsafe_path_component` | `os.path.abspath` | 58 |
-| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 59 |
-| external_call | `first_unsafe_path_component` | `Path.cwd` | 65 |
+| external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
+| external_call | `first_unsafe_path_component` | `os.path.abspath` | 59 |
+| unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 60 |
+| external_call | `first_unsafe_path_component` | `Path.cwd` | 66 |
 | step_limit | `load_and_evaluate_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `load_and_evaluate_verification_receipt` | `depth limit` | 0 |
 

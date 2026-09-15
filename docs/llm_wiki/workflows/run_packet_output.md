@@ -11,6 +11,7 @@
 1. `context_packet.build_qualified_context`
 2. `extraction_jobs.ExtractionJobRequest.resolved`
 3. `io.write_text_output`
+4. `io.write_utf8_stdout`
 
 ## Touches
 

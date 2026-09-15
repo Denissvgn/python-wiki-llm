@@ -38,10 +38,11 @@ flowchart LR
     n6["src/llm_wiki_cli/services/documentation_native.py"]
     n7["src/llm_wiki_cli/services/documentation_wiki_input.py"]
     n8["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n9["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n10["knowledge_freshness_hint (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n11["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n12["src/llm_wiki_cli/services/lint_service.py"]
+    n9["src/llm_wiki_cli/services/knowledge_coverage.py"]
+    n10["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n11["knowledge_freshness_hint (src/llm_wiki_cli/services/knowledge_observability.py)"]
+    n12["src/llm_wiki_cli/services/knowledge_projection.py"]
+    n13["src/llm_wiki_cli/services/lint_service.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -54,6 +55,7 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     n12 --> n0
+    n13 --> n0
     click n0 "../modules/knowledge_model.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/context_service.md"
@@ -61,10 +63,11 @@ flowchart LR
     click n6 "../modules/documentation_native.md"
     click n7 "../modules/documentation_wiki_input.md"
     click n8 "../modules/knowledge_consumption.md"
-    click n9 "../modules/knowledge_freshness.md"
-    click n10 "../modules/knowledge_observability.md"
-    click n11 "../modules/knowledge_projection.md"
-    click n12 "../modules/lint_service.md"
+    click n9 "../modules/knowledge_coverage.md"
+    click n10 "../modules/knowledge_freshness.md"
+    click n11 "../modules/knowledge_observability.md"
+    click n12 "../modules/knowledge_projection.md"
+    click n13 "../modules/lint_service.md"
 ```
 
 ### Summary
@@ -90,6 +93,7 @@ flowchart LR
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
+| `knowledge_coverage` | import | [knowledge_coverage](../modules/knowledge_coverage.md) | — |
 | `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `knowledge_freshness_hint` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |

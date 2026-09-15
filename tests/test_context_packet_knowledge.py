@@ -704,7 +704,7 @@ def test_direct_context_mismatch_never_indexes_or_ranks_rejected_projection(
             lambda payload: payload["response"]["knowledge"]["selection"]["concepts"][
                 0
             ].__setitem__("source_content_hash", "sha256:" + "0" * 64),
-            "raw projection evidence",
+            "raw projection evidence|no declared packet field classification",
         ),
     ],
 )

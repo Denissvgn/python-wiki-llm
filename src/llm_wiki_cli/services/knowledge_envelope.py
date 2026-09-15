@@ -1208,6 +1208,9 @@ def _run_git_result(
     try:
         result = subprocess.run(
             ["git", "-C", str(root), *args],
+            # A stdio host may already be reading this pipe on another thread.
+            # Git metadata reads must not inherit the host's protocol channel.
+            input="",
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -1281,6 +1284,7 @@ def _run_effective_git_config(
                 key,
                 *((selected_value,) if selected_value is not None else ()),
             ],
+            input="",
             capture_output=True,
             text=True,
             encoding="utf-8",

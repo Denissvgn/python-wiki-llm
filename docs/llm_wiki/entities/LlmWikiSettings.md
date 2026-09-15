@@ -11,15 +11,15 @@ _Auto-generated from `LlmWikiSettings` in `integrations/obsidian/llm-wiki/src/ma
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `cliPath` | `string` | *required* | — |
-| `projectRoot` | `string` | *required* | — |
-| `wikiDir` | `string` | *required* | — |
-| `vaultDir` | `string` | *required* | — |
-| `notesDir` | `string` | *required* | — |
-| `contextBudget` | `number` | *required* | — |
-| `sourceUriTemplate` | `string` | *required* | — |
+| Name | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `cliPath` | `string` | Yes | — | — |
+| `projectRoot` | `string` | Yes | — | — |
+| `wikiDir` | `string` | Yes | — | — |
+| `vaultDir` | `string` | Yes | — | — |
+| `notesDir` | `string` | Yes | — | — |
+| `contextBudget` | `number` | Yes | — | — |
+| `sourceUriTemplate` | `string` | Yes | — | — |
 
 ## Methods
 

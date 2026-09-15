@@ -128,6 +128,10 @@ def _ineligible_knowledge_status(
 class DocumentationQueryError(ValueError):
     """Raised when a documentation graph query request is invalid."""
 
+    def __init__(self, message: str = "", *, field: str | None = None):
+        super().__init__(message)
+        self.field = field
+
 
 _QueryParameters = ParamSpec("_QueryParameters")
 

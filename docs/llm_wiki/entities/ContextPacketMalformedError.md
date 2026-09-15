@@ -1,6 +1,6 @@
 # ContextPacketMalformedError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:233`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:223`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -17,7 +17,7 @@ The supplied bytes do not satisfy the canonical packet contract.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(field: str, message: str)` | — | — |
+| `__init__` | `(field: str, message: str, *, code: str \| None = None)` | — | — |
 
 ## Relationships
 

@@ -139,13 +139,13 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_live_query_source_selection | SyncManifest.load | 298 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1074 | `manifest_path.exists(data not statically known)` |
-| SyncManifest.load | FileNotFoundError | 1075 | `FileNotFoundError(manifest_path)` |
-| SyncManifest.load | json.loads | 1094 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
-| SyncManifest.load | manifest_path.read_text | 1095 | `manifest_path.read_text(encoding='utf-8')` |
-| SyncManifest.load | SyncManifest.from_payload | 1099 | `cls.from_payload(data)` |
-| SyncManifest.from_payload | _mapping_value | 950 | `_mapping_value(value, 'manifest')` |
-| _mapping_value | require_mapping | 138 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
+| SyncManifest.load | manifest_path.exists | 1080 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | FileNotFoundError | 1081 | `FileNotFoundError(manifest_path)` |
+| SyncManifest.load | json.loads | 1100 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
+| SyncManifest.load | manifest_path.read_text | 1101 | `manifest_path.read_text(encoding='utf-8')` |
+| SyncManifest.load | SyncManifest.from_payload | 1105 | `cls.from_payload(data)` |
+| SyncManifest.from_payload | _mapping_value | 956 | `_mapping_value(value, 'manifest')` |
+| _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
 | require_mapping | key.encode | 736 | `key.encode('utf-8')` |
@@ -154,15 +154,15 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1095 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1101 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1074 |
-| external_call | `SyncManifest.load` | `FileNotFoundError` | 1075 |
-| external_call | `SyncManifest.load` | `json.loads` | 1094 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1080 |
+| external_call | `SyncManifest.load` | `FileNotFoundError` | 1081 |
+| external_call | `SyncManifest.load` | `json.loads` | 1100 |
 | external_call | `require_mapping` | `isinstance` | 727 |
 | external_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |

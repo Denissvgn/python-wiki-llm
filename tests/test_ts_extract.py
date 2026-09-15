@@ -7,15 +7,20 @@ import inspect
 import json
 import shutil
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
+from llm_wiki_cli import cli
 from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
-from llm_wiki_cli.services.extractor_helpers import typescript_dependencies_ready
+from llm_wiki_cli.services.extractor_helpers import (
+    resolve_helper_cache_root,
+    typescript_dependencies_ready,
+)
 
 # ---------------------------------------------------------------------------
 # Skip all tests when Node.js is not available on this machine.
@@ -590,6 +595,14 @@ class TestTypeScriptExtractor:
             export class User {
                 name: string;
                 age: number = 0;
+                nickname?: string;
+                initialized_optional?: number = 1;
+            }
+            export interface EvidenceSignals {
+                required_count: number;
+                events_incomplete?: boolean;
+                questions_awaiting_review?: number;
+                required_undefined: number | undefined;
             }
             """,
         )
@@ -600,6 +613,105 @@ class TestTypeScriptExtractor:
         assert "age" in names
         age_attr = next(a for a in attrs if a["name"] == "age")
         assert age_attr.get("default") == "0"
+        by_name = {a["name"]: a for a in attrs}
+        assert by_name["name"]["optional"] is False
+        assert by_name["age"]["optional"] is False
+        assert by_name["nickname"] == {
+            "name": "nickname",
+            "type": "string",
+            "default": "",
+            "optional": True,
+        }
+        assert by_name["initialized_optional"]["optional"] is True
+        assert by_name["initialized_optional"]["default"] == "1"
+        interface = next(
+            cls for cls in inv["user.ts"]["classes"] if cls["name"] == "EvidenceSignals"
+        )
+        properties = {a["name"]: a for a in interface["attributes"]}
+        assert properties["required_count"]["optional"] is False
+        assert properties["required_undefined"]["optional"] is False
+        assert properties["required_undefined"]["type"] == "number | undefined"
+        for name in ("events_incomplete", "questions_awaiting_review"):
+            assert properties[name]["optional"] is True
+            assert properties[name]["default"] == ""
+
+    def test_optional_properties_bootstrap_and_incremental_sync(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        helper_root = resolve_helper_cache_root(PROJECT_ROOT)
+        assert helper_root is not None
+        source = _make_ts(
+            tmp_path,
+            "types.ts",
+            """\
+            export interface EvidenceSignals {
+                events_incomplete?: boolean;
+                change_me: number;
+                required_undefined: number | undefined;
+            }
+            export class EvidenceState {
+                initialized: number = 0;
+                optional_count?: number;
+            }
+            """,
+        )
+        monkeypatch.chdir(tmp_path)
+
+        def run(command):
+            args = [
+                "llm-wiki",
+                command,
+                "--src-dir",
+                ".",
+                "--wiki-dir",
+                "wiki",
+                "--helper-cache-dir",
+                str(helper_root.parent),
+            ]
+            if command == "bootstrap":
+                args.append("--source-adapter")
+            else:
+                args.extend(["--jobs", "1", "--cache-dir", str(tmp_path / "cache")])
+            monkeypatch.setattr(sys, "argv", args)
+            cli.main()
+
+        run("bootstrap")
+        page = tmp_path / "wiki/entities/EvidenceSignals.md"
+        content = page.read_text(encoding="utf-8")
+        assert "| `events_incomplete` | `boolean` | No | — |" in content
+        assert "| `change_me` | `number` | Yes | — |" in content
+        assert r"| `required_undefined` | `number \| undefined` | Yes | — |" in content
+        state = (tmp_path / "wiki/entities/EvidenceState.md").read_text(encoding="utf-8")
+        assert "| `initialized` | `number` | Yes | `0` |" in state
+        assert "| `optional_count` | `number` | No | — |" in state
+        content = content.replace(
+            "_Auto-generated from `EvidenceSignals` in `types.ts`._",
+            "Human-curated evidence contract.",
+        ).replace(
+            "| `events_incomplete` | `boolean` | No | — | — |",
+            "| `events_incomplete` | `boolean` | No | — | Omission means unavailable. |",
+        )
+        page.write_text(content, encoding="utf-8")
+        manifest_path = tmp_path / "wiki/.llm-wiki-manifest.json"
+        before = json.loads(manifest_path.read_text(encoding="utf-8"))
+        source.write_text(
+            source.read_text(encoding="utf-8").replace("change_me:", "change_me?:"),
+            encoding="utf-8",
+        )
+        capsys.readouterr()
+        run("sync")
+        assert "UPDATE entity: EvidenceSignals" in capsys.readouterr().out
+        after = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert (
+            before["sources"]["types.ts"]["semantic_hash"]
+            != after["sources"]["types.ts"]["semantic_hash"]
+        )
+        content = page.read_text(encoding="utf-8")
+        assert "| `change_me` | `number` | No | — |" in content
+        assert "Human-curated evidence contract." in content
+        assert "Omission means unavailable." in content
+        run("sync")
+        assert page.read_text(encoding="utf-8") == content
 
     def test_deep_mode_decorators(self, tmp_path):
         _make_ts(

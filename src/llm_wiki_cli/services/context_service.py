@@ -47,7 +47,7 @@ from .extraction_jobs import (
     ExtractionJobRequest,
     print_extraction_job_plan,
 )
-from .io import write_text_output
+from .io import write_text_output, write_utf8_stdout
 from .infrastructure_inventory import get_yaml_infrastructure_inventory
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .knowledge_consumption import (
@@ -3341,11 +3341,35 @@ def _protocol_success_payload(
     return response
 
 
+def _validate_request_cli_options(args, request: Mapping[str, Any]) -> None:
+    """Reject conflicting semantic sources before source/wiki capture."""
+    supplied = getattr(args, "_explicit_context_options", frozenset())
+    conflicts = supplied & {"budget", "focus"}
+    if conflicts or getattr(args, "prefer_fresh", False):
+        field = sorted(conflicts)[0] if conflicts else "prefer_fresh"
+        raise ProtocolRequestError(
+            f"With --request, place {field} in the request object.",
+            "budget_tokens" if field == "budget" else field,
+            protocol=request["protocol"],
+        )
+    if "format" not in supplied and getattr(args, "format", None) != "packet":
+        return
+    delivery = getattr(args, "format", None)
+    if delivery == "packet" and request["protocol"] != "llm-wiki-context/v3":
+        return
+    if delivery != request["format"]:
+        raise ProtocolRequestError(
+            "--format conflicts with the representation declared in --request.",
+            "format", protocol=request["protocol"],
+        )
+
+
 def _run_protocol(args) -> None:
     output_path: str | None = getattr(args, "output", None)
     request: dict[str, Any] | None = None
     try:
         request = _read_protocol_request(args.request)
+        _validate_request_cli_options(args, request)
         if getattr(args, "knowledge_mode", None) is not None:
             raise ProtocolRequestError(
                 "--knowledge-mode cannot be combined with --request; place "
@@ -3365,6 +3389,20 @@ def _run_protocol(args) -> None:
             raise ProtocolRequestError(
                 "Complete-output counting and explicit changes require llm-wiki-context/v3.", "protocol"
             )
+        if getattr(args, "format", None) == "packet":
+            _run_packet_output(
+                src_dir=getattr(args, "src_dir", "."),
+                wiki_dir=getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
+                budget=request["budget_tokens"],
+                focus_values=request["focus"],
+                prefer_fresh=request["prefer_fresh"],
+                knowledge_mode=request.get("knowledge_mode"),
+                output_path=output_path,
+                allow_external_src=getattr(args, "allow_external_src", False),
+                source_selection=getattr(args, "source_selection", None),
+                request=request,
+            )
+            return
         payload, warnings = _build_context(
             getattr(args, "src_dir", "."),
             request["budget_tokens"],
@@ -3388,6 +3426,8 @@ def _run_protocol(args) -> None:
     except ProtocolRequestError as exc:
         if request is not None:
             exc.protocol = request["protocol"]
+        if getattr(args, "format", None) == "packet":
+            _emit_packet_error(exc, protocol=exc.protocol)
         _emit_protocol_error(exc)
         return
     except KnowledgeRequiredUnavailableError as exc:
@@ -3405,6 +3445,27 @@ def _run_protocol(args) -> None:
         print(rendered)
 
 
+def _emit_packet_error(error: BaseException, *, protocol: str = PROTOCOL_VERSION) -> None:
+    """Keep stdout empty on packet failure and emit bounded structured details."""
+    from .context_packet import describe_context_packet_error
+
+    if isinstance(error, KnowledgeRequiredUnavailableError):
+        payload = error.details
+    else:
+        failure = describe_context_packet_error(error)
+        payload = {
+            "protocol": protocol,
+            "ok": False,
+            "error": {
+                "code": failure["code"],
+                "message": failure["message"],
+                **failure["details"],
+            },
+        }
+    print(json.dumps(payload, sort_keys=True), file=sys.stderr)
+    raise SystemExit(1) from error
+
+
 def _run_packet_output(
     *,
     src_dir: str,
@@ -3416,25 +3477,27 @@ def _run_packet_output(
     output_path: str | None,
     allow_external_src: bool,
     source_selection: str | Path | None,
+    request: Mapping[str, Any] | None = None,
 ) -> None:
     """Build and emit canonical QCP bytes for the CLI-only packet format."""
 
     from .context_packet import ContextPacketError, build_qualified_context
 
-    request = {
-        "protocol": (
-            KNOWLEDGE_PROTOCOL_VERSION
-            if knowledge_mode is not None
-            else PROTOCOL_VERSION
-        ),
-        "budget_tokens": budget,
-        "focus": focus_values,
-        "format": "json",
-        "filters": {},
-        "prefer_fresh": prefer_fresh,
-    }
-    if knowledge_mode is not None:
-        request["knowledge_mode"] = knowledge_mode
+    if request is None:
+        request = {
+            "protocol": (
+                KNOWLEDGE_PROTOCOL_VERSION
+                if knowledge_mode is not None
+                else PROTOCOL_VERSION
+            ),
+            "budget_tokens": budget,
+            "focus": focus_values,
+            "format": "json",
+            "filters": {},
+            "prefer_fresh": prefer_fresh,
+        }
+        if knowledge_mode is not None:
+            request["knowledge_mode"] = knowledge_mode
     try:
         packet = build_qualified_context(
             src_dir,
@@ -3443,22 +3506,21 @@ def _run_packet_output(
             allow_external_src=allow_external_src,
             read_only=True,
             job_request=ExtractionJobRequest.resolved(1),
-            plan_reporter=print_extraction_job_plan,
+            plan_reporter=None,
             source_selection=source_selection,
         )
-    except (ContextPacketError, PathValidationError, ProtocolRequestError) as exc:
-        print(f"Error: {exc}", file=sys.stderr)
-        raise SystemExit(1)
-    except KnowledgeRequiredUnavailableError as exc:
-        print(f"Error [{exc.code}]: {exc.reason}", file=sys.stderr)
-        raise SystemExit(1) from exc
+    except (
+        ContextPacketError, PathValidationError, ProtocolRequestError,
+        KnowledgeRequiredUnavailableError,
+    ) as exc:
+        _emit_packet_error(exc, protocol=request["protocol"])
 
     rendered = packet.to_bytes().decode("utf-8")
     if output_path:
         write_text_output(output_path, rendered)
         print(f"Context output written to: {output_path}", file=sys.stderr)
     else:
-        sys.stdout.write(rendered)
+        write_utf8_stdout(rendered)
 
 
 # ── CLI entry point ───────────────────────────────────────────────────

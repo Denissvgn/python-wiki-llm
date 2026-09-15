@@ -1,6 +1,6 @@
 # DocumentationQueryResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:269`
+**Location:** `src/llm_wiki_cli/api_types.py:290`
 **Kind:** Class
 **Bases:** `_DocumentationQueryRequired`
 **Module:** [api_types](../modules/api_types.md)

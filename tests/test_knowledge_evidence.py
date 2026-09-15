@@ -436,6 +436,51 @@ def test_malformed_selected_entity_structural_fields_are_unknown():
     assert basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
 
 
+@pytest.mark.parametrize("value", [None, 0, 1, "true", [], {}])
+def test_malformed_attribute_optionality_is_explicit_unknown(value):
+    inventory = {
+        "language": "typescript",
+        "classes": [
+            {
+                "name": "Contract",
+                "kind": "interface",
+                "attributes": [{"name": "value", "type": "number", "optional": value}],
+            }
+        ],
+        "functions": [],
+    }
+
+    basis = _entity_basis(inventory, "Contract")
+
+    assert not basis.is_known
+    assert basis.concept_observation_hash is None
+    assert basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+def test_attribute_optionality_is_optional_but_bound_when_present():
+    inventory = {
+        "language": "typescript",
+        "classes": [
+            {
+                "name": "Contract",
+                "kind": "interface",
+                "attributes": [{"name": "value", "type": "number"}],
+            }
+        ],
+        "functions": [],
+    }
+    legacy = _entity_basis(inventory, "Contract")
+    inventory["classes"][0]["attributes"][0]["optional"] = False
+    required = _entity_basis(inventory, "Contract")
+    inventory["classes"][0]["attributes"][0]["optional"] = True
+    optional = _entity_basis(inventory, "Contract")
+
+    assert all(basis.is_known for basis in (legacy, required, optional))
+    assert len(
+        {basis.concept_observation_hash for basis in (legacy, required, optional)}
+    ) == 3
+
+
 def test_missing_entity_occurrence_is_explicit_unknown():
     basis = _entity_basis(_inventory("python"), "User", 2)
 

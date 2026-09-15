@@ -145,6 +145,7 @@ from .source_selection import (
 from .sync_manifest import SyncManifest, SyncManifestError
 from .validation import (
     portable_page_component,
+    portable_path_key,
     posix_path_text as shared_posix_path_text,
 )
 from .wiki_lifecycle import (
@@ -221,7 +222,24 @@ def _sanitize_source_doc_markdown(value: object) -> str:
             return label
         return f"{label} (`{target_text}`)"
 
-    return _SOURCE_DOC_LINK_RE.sub(repl, str(value))
+    text = _SOURCE_DOC_LINK_RE.sub(repl, str(value))
+    # An unterminated source-doc fence must not consume the generated sections
+    # which follow the Description. RST tilde underlines can also open a fence
+    # when interpreted as Markdown. Preserve balanced source code blocks.
+    opened: tuple[str, int] | None = None
+    for line in text.splitlines():
+        match = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if match is None:
+            continue
+        marker, tail = match.groups()
+        if opened is None:
+            if marker[0] != "`" or "`" not in tail:
+                opened = (marker[0], len(marker))
+        elif marker[0] == opened[0] and len(marker) >= opened[1] and not tail.strip():
+            opened = None
+    if opened is not None:
+        text = text.rstrip("\n") + "\n" + opened[0] * opened[1]
+    return text
 
 
 def _source_doc_first_line(value: object) -> str:
@@ -352,28 +370,33 @@ def _page_name_from_source_path(filepath: str) -> str:
 
 
 def _globally_disambiguate_module_pages(page_map: dict[str, str]) -> dict[str, str]:
-    """Resolve page-id collisions left after stem-group disambiguation."""
+    """Resolve portable filesystem collisions after stem-group disambiguation."""
     from collections import Counter
 
-    page_counts = Counter(page_map.values())
+    page_counts = Counter(portable_path_key(page) for page in page_map.values())
     colliding_pages = {page for page, count in page_counts.items() if count > 1}
     if not colliding_pages:
         return page_map
 
     resolved = dict(page_map)
-    used = {page for filepath, page in page_map.items() if page not in colliding_pages}
+    used = {
+        portable_path_key(page) for page in page_map.values()
+        if portable_path_key(page) not in colliding_pages
+    }
     for filepath in sorted(page_map):
-        if page_map[filepath] not in colliding_pages:
+        if portable_path_key(page_map[filepath]) not in colliding_pages:
             continue
         base = _page_name_from_source_path(filepath)
         candidates = [base, _page_name_with_extension(filepath)]
-        candidate = next((item for item in candidates if item not in used), base)
+        candidate = next(
+            (item for item in candidates if portable_path_key(item) not in used), base
+        )
         suffix = 2
-        while candidate in used:
+        while portable_path_key(candidate) in used:
             candidate = f"{base}_{suffix}"
             suffix += 1
         resolved[filepath] = candidate
-        used.add(candidate)
+        used.add(portable_path_key(candidate))
     return resolved
 
 
@@ -457,19 +480,19 @@ def build_entity_occurrence_page_map(
             page_name = _safe_page_component(f"{page_name}_{occurrence}")
         proposed_pages.append((key, page_name, mod_page_map[filepath]))
 
-    page_counts = Counter(page for _, page, _ in proposed_pages)
+    page_counts = Counter(portable_path_key(page) for _, page, _ in proposed_pages)
     used: set[str] = set()
     page_map: dict[EntityOccurrenceKey, str] = {}
     for key, page_name, module_page in proposed_pages:
         candidate = page_name
-        if page_counts[page_name] > 1:
+        if page_counts[portable_path_key(page_name)] > 1:
             candidate = _safe_page_component(f"{module_page}_{page_name}")
         suffix = 2
-        while candidate in used:
+        while portable_path_key(candidate) in used:
             candidate = f"{page_name}_{suffix}"
             suffix += 1
         page_map[key] = candidate
-        used.add(candidate)
+        used.add(portable_path_key(candidate))
     return page_map
 
 
@@ -1754,6 +1777,25 @@ def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
             lines.append(
                 f"| `{_table_text(attribute.get('name'))}` | "
                 f"{_table_inline_code(attribute.get('type'))} | *{presence}* | "
+                f"{_table_text(attribute.get('description'))} |"
+            )
+        lines.append("")
+        return
+
+    if any(isinstance(attribute.get("optional"), bool) for attribute in attributes):
+        lines.extend(
+            [
+                "| Name | Type | Required | Default | Description |",
+                "|------|------|----------|---------|-------------|",
+            ]
+        )
+        for attribute in attributes:
+            optional = attribute.get("optional")
+            required = "No" if optional is True else "Yes" if optional is False else "—"
+            lines.append(
+                f"| `{_table_text(attribute.get('name'))}` | "
+                f"{_table_inline_code(attribute.get('type'))} | {required} | "
+                f"{_table_inline_code(attribute.get('default'))} | "
                 f"{_table_text(attribute.get('description'))} |"
             )
         lines.append("")

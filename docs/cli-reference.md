@@ -713,6 +713,14 @@ Text output shows these next steps directly.
 
 ## `context`
 
+Use `--request FILE --format packet` to deliver a canonical v1/v2 packet from
+a filter-bearing request file. The file owns semantic options; explicit
+budget, focus, freshness-preference, or knowledge-mode overrides are rejected.
+The file's inner format remains JSON or Markdown. For v3 requests, the declared
+outer format must agree with any explicit format flag. See
+[qualified context packets](qualified-context-packets.md) for request examples,
+error codes, and the distinction between validation and currentness.
+
 Build a token-budgeted source snapshot for agents.
 
 ```bash
@@ -798,6 +806,10 @@ same optional `knowledge_mode`. Qualified packet versioning and validation are
 described in [Qualified context packets](qualified-context-packets.md).
 
 `filters.language` and `filters.module` scope the budgeted `files` payload.
+Module filters are glob patterns over extensionless paths or dotted module
+names: use `app/service` or `app.service`, rather than `app/service.py`.
+Check the returned file set and native selection before relying on the result;
+an unmatched valid filter can correctly produce an empty selection.
 `filters.symbol`, `filters.entrypoint`, and `filters.surface` add bounded
 `graphs` and `surface` sections without changing the file-priority budget.
 `filters.freshness` and `filters.evidence` refine concept references and require
@@ -1842,6 +1854,23 @@ managed instruction block or change its compact/expanded delivery, use
 `llm-wiki upgrade` and the lifecycle guidance under [`skills`](cli-reference.md#skills).
 
 ## `knowledge`
+
+Read eligibility and freshness diagnostics without enabling governance:
+
+```bash
+llm-wiki knowledge coverage --wiki-dir wiki
+llm-wiki knowledge coverage --src-dir src --wiki-dir wiki --live --format json
+```
+
+The default reads the committed snapshot only. `--live` performs source
+extraction with prepared helpers; `--source-selection`, `--helper-cache-dir`
+and `--allow-external-src` preserve the corresponding source options.
+The versioned report separates modeled concepts, intentionally unmodeled
+content, actual comparisons and missing/incompatible bases. It is advisory;
+`unknown` over all concepts is not a defect rate. Unavailable knowledge has
+null counts, while a valid empty model has zeroes. JSON failures leave stdout
+empty and emit a safe code/field record on stderr with exit 1; usage errors
+retain exit 2. See [coverage diagnostics](native-knowledge.md#coverage-diagnostics).
 
 Initialize durable identity, inspect governance, record explicit lifecycle or
 section review events, stage ambiguous moves, and run application-owned pure

@@ -164,38 +164,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2270 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2271 | `getattr(args, 'changed', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2272 | `getattr(args, 'summary', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2273 | `getattr(args, 'deep', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2274 | `getattr(args, 'paths', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2275 | `getattr(args, 'package', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2276 | `getattr(args, 'include_empty', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2277 | `getattr(args, 'output', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2278 | `getattr(args, 'read_only', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2279 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2280 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2273 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2274 | `getattr(args, 'changed', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2275 | `getattr(args, 'summary', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2276 | `getattr(args, 'deep', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2277 | `getattr(args, 'paths', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2278 | `getattr(args, 'package', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2279 | `getattr(args, 'include_empty', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2280 | `getattr(args, 'output', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2281 | `getattr(args, 'read_only', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2282 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2283 | `getattr(args, 'helper_cache_dir', None)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 2286 |
-| output | `print` | `run` | 2290 |
-| output | `print` | `run` | 2292 |
-| output | `print` | `run` | 2294 |
-| output | `print` | `run` | 2320 |
-| output | `print` | `run` | 2322 |
-| output | `print` | `run` | 2327 |
-| output | `print` | `run` | 2331 |
+| output | `print` | `run` | 2289 |
+| output | `print` | `run` | 2293 |
+| output | `print` | `run` | 2295 |
+| output | `print` | `run` | 2297 |
+| output | `print` | `run` | 2323 |
+| output | `print` | `run` | 2325 |
+| output | `print` | `run` | 2330 |
+| output | `print` | `run` | 2334 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 2270 |
-| external_call | `run` | `getattr` | 2271 |
-| external_call | `run` | `getattr` | 2272 |
 | external_call | `run` | `getattr` | 2273 |
 | external_call | `run` | `getattr` | 2274 |
 | external_call | `run` | `getattr` | 2275 |
@@ -204,6 +201,9 @@ flowchart LR
 | external_call | `run` | `getattr` | 2278 |
 | external_call | `run` | `getattr` | 2279 |
 | external_call | `run` | `getattr` | 2280 |
+| external_call | `run` | `getattr` | 2281 |
+| external_call | `run` | `getattr` | 2282 |
+| external_call | `run` | `getattr` | 2283 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

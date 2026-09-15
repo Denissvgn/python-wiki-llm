@@ -1,6 +1,6 @@
 # MCPDependencyError
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:111`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:112`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [mcp_server](../modules/mcp_server.md)

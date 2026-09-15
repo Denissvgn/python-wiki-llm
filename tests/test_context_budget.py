@@ -1,11 +1,13 @@
 """Complete rendered-output accounting with independent token recounts."""
 
+import io
 import json
 import sys
 
 import pytest
 
 from llm_wiki_cli import api, cli
+from llm_wiki_cli.services import context_budget
 from llm_wiki_cli.services.context_budget import build_budgeted_context
 from llm_wiki_cli.services.context_packet import (
     validate_context_packet,
@@ -21,6 +23,50 @@ class ByteCounter:
 
     def count(self, text):
         return len(text.encode("utf-8"))
+
+
+@pytest.mark.parametrize("fmt", ["json", "markdown", "packet"])
+@pytest.mark.parametrize("output_file", [False, True])
+def test_cli_emits_the_counted_utf8_bytes_with_windows_stdout(
+    tmp_path, monkeypatch, fmt, output_file
+):
+    source = tmp_path / "project"
+    source.mkdir()
+    monkeypatch.chdir(source)
+    (source / "app.py").write_bytes(
+        '"""Café 雪."""\ndef greet_雪():\n    return "hello"\n'.encode("utf-8")
+    )
+    counter = ByteCounter()
+    request = {
+        "budget_tokens": 32000, "format": fmt, "focus": ["all"],
+        "knowledge_mode": "off", "budget_mode": "exact",
+    }
+    expected = api.build_budgeted_context(request=request, counter=counter)
+    assert expected.ok
+    assert "greet_雪" in expected.rendered
+    monkeypatch.setattr(context_budget, "LocalTokenizerCounter", lambda path: counter)
+    command = [
+        "context", "--format", fmt, "--focus", "all", "--budget", "32000",
+        "--budget-mode", "exact", "--tokenizer", "configured-counter.json",
+    ]
+    output_path = tmp_path / "context-output.txt"
+    if output_file:
+        command += ["--output", str(output_path)]
+    buffer = io.BytesIO()
+    with io.TextIOWrapper(
+        buffer, encoding="cp1252", errors="backslashreplace", newline="\r\n"
+    ) as stream, monkeypatch.context() as patch:
+        patch.setattr(sys, "stdout", stream)
+        patch.setattr(sys, "argv", ["llm-wiki", *command])
+        cli.main()
+        stream.flush()
+        stdout = buffer.getvalue()
+
+    actual = output_path.read_bytes() if output_file else stdout
+    assert actual == expected.rendered.encode("utf-8")
+    assert len(actual) <= expected.accounting["used_tokens"] <= 32000
+    if output_file:
+        assert stdout == b""
 
 
 def test_optional_tokenizer_absence_keeps_estimates_and_actionable_exact_error(tmp_path, monkeypatch):

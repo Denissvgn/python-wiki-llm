@@ -603,7 +603,12 @@ def validate_projection_summaries(
         )
 
     try:
-        bundle_id = validate_bundle_id(projection.bundle.get("bundle_id"))
+        raw_bundle_id = projection.bundle.get("bundle_id")
+        bundle_id = (
+            UNKNOWN_VALUE
+            if raw_bundle_id == UNKNOWN_VALUE
+            else validate_bundle_id(raw_bundle_id)
+        )
     except ConceptIdentityError as exc:
         raise KnowledgeProjectionError(
             "projection-bundle-invalid",
@@ -672,30 +677,36 @@ def validate_projection_summaries(
                 f"concepts.{canonical_path}.identity.bundle_id",
                 f"must equal governed bundle {bundle_id!r}",
             )
-        try:
-            uid = validate_concept_uid(identity.get("uid"))
-        except ConceptIdentityError as exc:
-            raise KnowledgeProjectionError(
-                "projection-uid-invalid",
-                f"concepts.{canonical_path}.identity.uid",
-                exc.message,
-            ) from exc
+        if bundle_id == UNKNOWN_VALUE:
+            # Structural validation already requires an entirely untracked
+            # identity. A shared unknown sentinel is not a colliding UID.
+            expected_uid = UNKNOWN_VALUE
+        else:
+            try:
+                uid = validate_concept_uid(identity.get("uid"))
+            except ConceptIdentityError as exc:
+                raise KnowledgeProjectionError(
+                    "projection-uid-invalid",
+                    f"concepts.{canonical_path}.identity.uid",
+                    exc.message,
+                ) from exc
+            expected_uid = f"{bundle_id}#{uid}"
         namespaced_uid = identity.get("namespaced_uid")
-        expected_uid = f"{bundle_id}#{uid}"
         if namespaced_uid != expected_uid:
             raise KnowledgeProjectionError(
                 "projection-namespaced-uid-invalid",
                 f"concepts.{canonical_path}.identity.namespaced_uid",
                 f"must be exactly {expected_uid!r}",
             )
-        prior = seen_uids.get(expected_uid)
+        prior = seen_uids.get(expected_uid) if expected_uid != UNKNOWN_VALUE else None
         if prior is not None:
             raise KnowledgeProjectionError(
                 "projection-uid-collision",
                 f"concepts.{canonical_path}.identity.namespaced_uid",
                 f"duplicates the UID projected for {prior!r}",
             )
-        seen_uids[expected_uid] = canonical_path
+        if expected_uid != UNKNOWN_VALUE:
+            seen_uids[expected_uid] = canonical_path
 
         summary = _projection_concept_summary_unchecked(
             projection,

@@ -36,7 +36,7 @@ from .source_selection import (
 from .sync_manifest import SyncManifest, SyncManifestError
 from .validation import require_portable_relative_path
 from .wiki_surface_index import evaluate_surface_index
-from .source_snapshot import build_source_snapshot, capture_source_selection_inputs
+from .source_snapshot import SourceSnapshot, build_source_snapshot, capture_source_selection_inputs
 
 _UNSET_LIVE_SELECTION_INPUTS = object()
 _UNSET_DIFF_HEADER = object()
@@ -304,19 +304,19 @@ def validate_live_query_source_selection(
         raise DocumentationQueryError(
             f"{operation} cannot validate the active source-selection profile "
             "because the wiki has no usable sync manifest; run `llm-wiki sync` "
-            "with the same --src-dir, --wiki-dir, and --source-selection first"
+            "with the same --src-dir, --wiki-dir, and --source-selection first", field="source_selection"
         ) from exc
     except SyncManifestError as exc:
         raise DocumentationQueryError(
             f"{operation} cannot validate the active source-selection profile "
             "because the wiki sync manifest is invalid; restore it or run "
-            "`llm-wiki sync` with the same active profile before querying"
+            "`llm-wiki sync` with the same active profile before querying", field="source_selection"
         ) from exc
     except (OSError, TypeError, UnicodeError, ValueError) as exc:
         raise DocumentationQueryError(
             f"{operation} cannot validate the active source-selection profile "
             "because the wiki sync manifest is invalid; restore it or run "
-            "`llm-wiki sync` with the same active profile before querying"
+            "`llm-wiki sync` with the same active profile before querying", field="source_selection"
         ) from exc
 
     try:
@@ -334,7 +334,7 @@ def validate_live_query_source_selection(
                 live_selection_inputs=live_selection_inputs,
             )
     except SourceSelectionError as exc:
-        raise DocumentationQueryError(str(exc)) from exc
+        raise DocumentationQueryError(str(exc), field="source_selection") from exc
 
 
 def _live_source_selection_identity(
@@ -419,18 +419,22 @@ def build_snapshot_documentation_query_service(
     limit: int,
 ) -> DocumentationGraphQueryService:
     """Build a snapshot-only service without source extraction."""
+    from .context_packet import _assert_wiki_unchanged, _wiki_anchor
 
+    anchor = _wiki_anchor(wiki_root)
     view = load_knowledge_read_view(
         wiki_root,
         snapshot_only=True,
         include_machine_verification=True,
     )
-    return build_documentation_query_service_from_view(
+    service = build_documentation_query_service_from_view(
         wiki_root=wiki_root,
         knowledge_view=view,
         limit=limit,
         surface_index=view.surface,
     )
+    _assert_wiki_unchanged(wiki_root, anchor)
+    return service
 
 
 def build_live_documentation_query_service(
@@ -466,6 +470,12 @@ def build_live_documentation_query_service(
     # Keep heavyweight extraction/context modules out of this builder's import
     # path until a live query service is requested.
     from . import context_service, extraction_service
+    from .context_packet import (
+        _assert_source_unchanged,
+        _assert_wiki_unchanged,
+        _source_anchor,
+        _wiki_anchor,
+    )
 
     selected_extract_builder = (
         extract_payload_builder or extraction_service.build_extract_payload
@@ -480,6 +490,8 @@ def build_live_documentation_query_service(
             "targeted extraction cannot establish full live freshness; use a "
             "full-inventory query or consume the attributed snapshot status"
         )
+    if not isinstance(read_only, bool):
+        raise DocumentationQueryError("read_only must be a boolean.")
     selected_view_builder = knowledge_view_builder or (
         context_service._build_context_knowledge_view
     )
@@ -516,6 +528,9 @@ def build_live_documentation_query_service(
         snapshot_options["only_files"] = selected_paths
     stage_started = perf_counter_ns()
     source_snapshot = selected_snapshot_builder(source_root, **snapshot_options)
+    guarded_snapshot = source_snapshot if isinstance(source_snapshot, SourceSnapshot) else None
+    source_anchor = _source_anchor(guarded_snapshot) if guarded_snapshot is not None else None
+    wiki_anchor = _wiki_anchor(wiki_root)
     stage_ns["source_snapshot"] = perf_counter_ns() - stage_started
     extract_options: dict[str, Any] = {
         "deep": True,
@@ -645,6 +660,9 @@ def build_live_documentation_query_service(
         service_factory=service_factory,
     )
     stage_ns["service_assembly"] = perf_counter_ns() - stage_started
+    if guarded_snapshot is not None and source_anchor is not None:
+        _assert_source_unchanged(guarded_snapshot, source_anchor)
+    _assert_wiki_unchanged(wiki_root, wiki_anchor)
     if metrics_observer is not None:
         metrics_observer(
             {

@@ -259,20 +259,22 @@ def test_selected_projection_failure_blocks_without_implicit_fallback(
     assert list((workspace / "site").iterdir()) == []
 
 
-def test_selected_projection_without_governance_fails_closed(tmp_path):
+def test_selected_projection_without_governance_preserves_unknown_identity(tmp_path):
     workspace, run = _prepare_source_run_at_review(tmp_path)
     run.publication["knowledge_mode"] = "public-portable"
     run.publication["knowledge_public_repository_identity"] = None
     save_documentation_run(workspace, run)
 
-    with pytest.raises(
-        DocumentationIntegrityError,
-        match="bundle.bundle_id",
-    ):
-        export_documentation_run(workspace)
+    report = export_documentation_run(workspace)
 
-    assert load_documentation_run(workspace).state == "blocked"
-    assert list((workspace / "site").iterdir()) == []
+    projection = report["validation"]["knowledge_projection"]
+    assert projection["source_knowledge_hashes_match"] is True
+    assert projection["freshness"] == "unevaluated (snapshot-only read)"
+    page = (workspace / "site/modules/app.md").read_text(encoding="utf-8")
+    assert 'knowledge_bundle_id: "unknown"' in page
+    assert 'knowledge_uid: "unknown"' in page
+    assert load_documentation_run(workspace).state != "blocked"
+    assert not (workspace / "wiki/.llm-wiki-governance.json").exists()
 
 
 def test_changed_projection_hash_blocks_stale_enriched_output(

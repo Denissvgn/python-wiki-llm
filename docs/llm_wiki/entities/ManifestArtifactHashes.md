@@ -1,6 +1,6 @@
 # ManifestArtifactHashes
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:446`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:447`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)

@@ -12,13 +12,14 @@ Shared construction for supported documentation query services.
 |--------|---------|
 | `.` | `wiki_surface`, `context_service`, `extraction_service` |
 | `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `.context_packet` | `_assert_wiki_unchanged`, `_wiki_anchor`, `_assert_source_unchanged`, `_assert_wiki_unchanged`, `_source_anchor`, `_wiki_anchor` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `QUERY_IDENTITY_BYTE_LIMIT` |
 | `.entrypoints` | `build_flow` |
 | `.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
 | `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
-| `.source_snapshot` | `build_source_snapshot`, `capture_source_selection_inputs` |
+| `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
 | `.validation` | `require_portable_relative_path` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
@@ -49,10 +50,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (8) |
-| Outbound | `src` (14) |
+| Inbound | `src` (9) |
+| Outbound | `src` (15) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

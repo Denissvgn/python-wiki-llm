@@ -171,6 +171,7 @@ def command_output(
     try:
         result = subprocess.run(
             cmd,
+            input="",
             capture_output=True,
             text=True,
             check=True,
@@ -211,6 +212,7 @@ def _go_version(go_executable: str, *, timeout: int = 15) -> tuple[str | None, s
     try:
         result = subprocess.run(
             [go_executable, "version"],
+            input="",
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -233,6 +235,7 @@ def _ghc_version(ghc_executable: str, *, timeout: int = 15) -> tuple[str | None,
     try:
         result = subprocess.run(
             [ghc_executable, "--numeric-version"],
+            input="",
             capture_output=True,
             text=True,
             timeout=timeout,
