@@ -110,10 +110,10 @@ flowchart LR
 | hash_inventory | KnowledgeEnvelopeError | 770 | `KnowledgeEnvelopeError('inventory', 'must use string source keys')` |
 | hash_inventory | _repository_relative_path | 771 | `_repository_relative_path(source_path, 'inventory.source_path')` |
 | hash_inventory | _hash_structured | 774 | `_hash_structured(INVENTORY_SNAPSHOT_DOMAIN, {...}, 'inventory')` |
-| _hash_structured | payload.values | 1604 | `payload.values(data not statically known)` |
-| _hash_structured | _validate_json_tree | 1605 | `_validate_json_tree(value, field_name)` |
-| _validate_json_tree | set | 1626 | `set(data not statically known)` |
-| _validate_json_tree | walk | 1667 | `walk(value, field_name)` |
+| _hash_structured | payload.values | 1608 | `payload.values(data not statically known)` |
+| _hash_structured | _validate_json_tree | 1609 | `_validate_json_tree(value, field_name)` |
+| _validate_json_tree | set | 1630 | `set(data not statically known)` |
+| _validate_json_tree | walk | 1671 | `walk(value, field_name)` |
 
 ### Boundary effects
 
@@ -127,8 +127,8 @@ flowchart LR
 | unresolved_call | `hash_inventory` | `inventory.items` | 768 |
 | external_call | `hash_inventory` | `isinstance` | 769 |
 | unresolved_call | `hash_inventory` | `_repository_relative_path` | 771 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1604 |
-| unresolved_call | `_validate_json_tree` | `walk` | 1667 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1608 |
+| unresolved_call | `_validate_json_tree` | `walk` | 1671 |
 | step_limit | `hash_inventory` | `first 12 steps` | 0 |
 
 ## Behavior

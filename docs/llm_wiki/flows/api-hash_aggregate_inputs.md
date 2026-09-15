@@ -106,11 +106,11 @@ flowchart LR
 | hash_aggregate_inputs | list | 878 | `list(inputs)` |
 | hash_aggregate_inputs | KnowledgeEnvelopeError | 880 | `KnowledgeEnvelopeError('aggregate_inputs', 'must be an iterable of finite canonical JSON values')` |
 | hash_aggregate_inputs | _hash_structured | 884 | `_hash_structured(AGGREGATE_INPUT_DOMAIN, {...}, 'aggregate_inputs')` |
-| _hash_structured | payload.values | 1604 | `payload.values(data not statically known)` |
-| _hash_structured | _validate_json_tree | 1605 | `_validate_json_tree(value, field_name)` |
-| _validate_json_tree | set | 1626 | `set(data not statically known)` |
-| _validate_json_tree | walk | 1667 | `walk(value, field_name)` |
-| _hash_structured | sha256_bytes | 1606 | `sha256_bytes(canonical_json_bytes(...))` |
+| _hash_structured | payload.values | 1608 | `payload.values(data not statically known)` |
+| _hash_structured | _validate_json_tree | 1609 | `_validate_json_tree(value, field_name)` |
+| _validate_json_tree | set | 1630 | `set(data not statically known)` |
+| _validate_json_tree | walk | 1671 | `walk(value, field_name)` |
+| _hash_structured | sha256_bytes | 1610 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_bytes | hashlib.sha256(…).hexdigest | 198 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 
 ### Boundary effects
@@ -122,8 +122,8 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `hash_aggregate_inputs` | `isinstance` | 872 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1604 |
-| unresolved_call | `_validate_json_tree` | `walk` | 1667 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1608 |
+| unresolved_call | `_validate_json_tree` | `walk` | 1671 |
 | unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 198 |
 | step_limit | `hash_aggregate_inputs` | `first 12 steps` | 0 |
 

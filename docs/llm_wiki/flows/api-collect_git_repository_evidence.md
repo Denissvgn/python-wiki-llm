@@ -131,11 +131,11 @@ flowchart LR
 | _run_git | _run_git_result | 1188 | `_run_git_result(root, ...)` |
 | _run_git_result | os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1202 | `os.environ.items(data not statically known)` |
 | _run_git_result | key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1202 | `key.startswith('GIT_')` |
-| _run_git_result | subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1209 | `subprocess.run([...], capture_output=True, text=True, encoding='utf-8', errors='strict', env=git_environment, timeout=15, check=False)` |
+| _run_git_result | subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1209 | `subprocess.run([...], input='', capture_output=True, text=True, encoding='utf-8', errors='strict', env=git_environment, timeout=15, check=False)` |
 | _run_git_result | str (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1210 | `str(root)` |
-| _run_git_result | _GitCommandResult | 1225 | `_GitCommandResult(available=False, returncode=None)` |
-| _run_git_result | result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1226 | `result.stdout.strip(data not statically known)` |
-| _run_git_result | _GitCommandResult | 1227 | `_GitCommandResult(available=True, returncode=result.returncode, output=output)` |
+| _run_git_result | _GitCommandResult | 1228 | `_GitCommandResult(available=False, returncode=None)` |
+| _run_git_result | result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result) | 1229 | `result.stdout.strip(data not statically known)` |
+| _run_git_result | _GitCommandResult | 1230 | `_GitCommandResult(available=True, returncode=result.returncode, output=output)` |
 | collect_git_repository_evidence | RepositoryEvidence | 314 | `RepositoryEvidence(data not statically known)` |
 
 ### Boundary effects
@@ -150,7 +150,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `_run_git_result` | `os.environ.items` | 1202 |
 | unresolved_call | `_run_git_result` | `key.startswith` | 1202 |
-| unresolved_call | `_run_git_result` | `result.stdout.strip` | 1226 |
+| unresolved_call | `_run_git_result` | `result.stdout.strip` | 1229 |
 | step_limit | `collect_git_repository_evidence` | `first 12 steps` | 0 |
 
 ## Behavior

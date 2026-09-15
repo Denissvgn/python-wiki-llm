@@ -153,7 +153,7 @@ flowchart LR
 | hash_source_snapshot | records.append | 747 | `records.append({...})` |
 | hash_source_snapshot | records.sort | 754 | `records.sort(key=...)` |
 | hash_source_snapshot | _hash_structured | 755 | `_hash_structured(SOURCE_SNAPSHOT_DOMAIN, {...}, 'source_inputs')` |
-| _hash_structured | payload.values | 1604 | `payload.values(data not statically known)` |
+| _hash_structured | payload.values | 1608 | `payload.values(data not statically known)` |
 
 ### Boundary effects
 
@@ -169,7 +169,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `hash_source_snapshot` | `enumerate` | 735 |
 | external_call | `hash_source_snapshot` | `isinstance` | 736 |
-| unresolved_call | `_hash_structured` | `payload.values` | 1604 |
+| unresolved_call | `_hash_structured` | `payload.values` | 1608 |
 | step_limit | `runtime_source_snapshot_hash` | `first 12 steps` | 0 |
 
 ## Behavior

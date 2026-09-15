@@ -137,7 +137,7 @@ flowchart LR
 | hash_markdown_snapshot | set (src/llm_wiki_cli/services….py:hash_markdown_snapshot) | 787 | `set(data not statically known)` |
 | hash_markdown_snapshot | pages.items | 788 | `pages.items(data not statically known)` |
 | hash_markdown_snapshot | _repository_relative_path | 789 | `_repository_relative_path(path, 'markdown_pages.path')` |
-| _repository_relative_path | require_repository_relative_path | 1501 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
+| _repository_relative_path | require_repository_relative_path | 1505 | `require_repository_relative_path(value, text_error=KnowledgeEnvelopeError(...), posix_error=KnowledgeEnvelopeError(...), normalized_error=KnowledgeEnvelopeError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…e_repository_relative_path) | 256 | `isinstance(value, str)` |
 | require_repository_relative_path | value.strip | 258 | `value.strip(data not statically known)` |
 | require_repository_relative_path | any (src/llm_wiki_cli/services…e_repository_relative_path) | 260 | `any(...)` |

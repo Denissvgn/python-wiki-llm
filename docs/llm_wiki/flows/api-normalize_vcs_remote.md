@@ -134,9 +134,9 @@ flowchart LR
 | normalize_vcs_remote | _WINDOWS_DRIVE_PREFIX_RE.match | 715 | `_WINDOWS_DRIVE_PREFIX_RE.match(value)` |
 | normalize_vcs_remote | _MALFORMED_PERCENT_RE.search | 716 | `_MALFORMED_PERCENT_RE.search(value)` |
 | normalize_vcs_remote | _normalize_scheme_remote | 721 | `_normalize_scheme_remote(value)` |
-| _normalize_scheme_remote | urlsplit | 1449 | `urlsplit(value)` |
-| _normalize_scheme_remote | parsed.scheme.casefold | 1454 | `parsed.scheme.casefold(data not statically known)` |
-| _normalize_scheme_remote | parsed.netloc.rsplit | 1457 | `parsed.netloc.rsplit('@', 1)` |
+| _normalize_scheme_remote | urlsplit | 1453 | `urlsplit(value)` |
+| _normalize_scheme_remote | parsed.scheme.casefold | 1458 | `parsed.scheme.casefold(data not statically known)` |
+| _normalize_scheme_remote | parsed.netloc.rsplit | 1461 | `parsed.netloc.rsplit('@', 1)` |
 
 ### Boundary effects
 
@@ -153,9 +153,9 @@ flowchart LR
 | unresolved_call | `normalize_vcs_remote` | `value.startswith` | 714 |
 | unresolved_call | `normalize_vcs_remote` | `_WINDOWS_DRIVE_PREFIX_RE.match` | 715 |
 | unresolved_call | `normalize_vcs_remote` | `_MALFORMED_PERCENT_RE.search` | 716 |
-| external_call | `_normalize_scheme_remote` | `urlsplit` | 1449 |
-| unresolved_call | `_normalize_scheme_remote` | `parsed.scheme.casefold` | 1454 |
-| unresolved_call | `_normalize_scheme_remote` | `parsed.netloc.rsplit` | 1457 |
+| external_call | `_normalize_scheme_remote` | `urlsplit` | 1453 |
+| unresolved_call | `_normalize_scheme_remote` | `parsed.scheme.casefold` | 1458 |
+| unresolved_call | `_normalize_scheme_remote` | `parsed.netloc.rsplit` | 1461 |
 | step_limit | `normalize_vcs_remote` | `first 12 steps` | 0 |
 
 ## Behavior

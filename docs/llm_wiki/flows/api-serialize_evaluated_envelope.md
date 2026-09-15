@@ -150,16 +150,16 @@ flowchart LR
 | evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
 | evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
 | evaluated_envelope_to_payload | _validated_bundle_payload | 1148 | `_validated_bundle_payload(envelope.bundle)` |
-| _validated_bundle_payload | dict (src/llm_wiki_cli/services…_validated_bundle_payload) | 1942 | `dict(bundle.snapshot.extensions)` |
-| _validated_bundle_payload | snapshot_extensions.pop | 1943 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
-| _validated_bundle_payload | replace | 1944 | `replace(bundle, snapshot=replace(...))` |
-| _validated_bundle_payload | replace | 1946 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
+| _validated_bundle_payload | dict (src/llm_wiki_cli/services…_validated_bundle_payload) | 1946 | `dict(bundle.snapshot.extensions)` |
+| _validated_bundle_payload | snapshot_extensions.pop | 1947 | `snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)` |
+| _validated_bundle_payload | replace | 1948 | `replace(bundle, snapshot=replace(...))` |
+| _validated_bundle_payload | replace | 1950 | `replace(bundle.snapshot, extensions=snapshot_extensions)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1943 |
+| mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1947 |
 
 ### Static analysis gaps
 
@@ -168,8 +168,8 @@ flowchart LR
 | external_call | `formatted_json_text` | `json.dumps` | 178 |
 | external_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
-| external_call | `_validated_bundle_payload` | `replace` | 1944 |
-| external_call | `_validated_bundle_payload` | `replace` | 1946 |
+| external_call | `_validated_bundle_payload` | `replace` | 1948 |
+| external_call | `_validated_bundle_payload` | `replace` | 1950 |
 | step_limit | `serialize_evaluated_envelope` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_evaluated_envelope` | `depth limit` | 0 |
 

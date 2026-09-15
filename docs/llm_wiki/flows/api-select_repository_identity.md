@@ -134,8 +134,8 @@ flowchart LR
 | validate_configured_public_identity | value.casefold | 695 | `value.casefold(data not statically known)` |
 | validate_configured_public_identity | KnowledgeEnvelopeError | 697 | `KnowledgeEnvelopeError('configured_public_identity', "must be a normalized public namespace path without scheme, credentials, port, query, fragment, dot segment, or '.git' suffix")` |
 | select_repository_identity | _remote_mapping | 663 | `_remote_mapping(vcs_remotes)` |
-| _remote_mapping | isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping) | 1429 | `isinstance(value, Mapping)` |
-| _remote_mapping | KnowledgeEnvelopeError | 1430 | `KnowledgeEnvelopeError('vcs_remotes', 'must be an object')` |
+| _remote_mapping | isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping) | 1433 | `isinstance(value, Mapping)` |
+| _remote_mapping | KnowledgeEnvelopeError | 1434 | `KnowledgeEnvelopeError('vcs_remotes', 'must be an object')` |
 
 ### Boundary effects
 
@@ -150,7 +150,7 @@ flowchart LR
 | unresolved_call | `validate_configured_public_identity` | `_REPOSITORY_IDENTITY_RE.fullmatch` | 694 |
 | unresolved_call | `validate_configured_public_identity` | `value.casefold().endswith` | 695 |
 | unresolved_call | `validate_configured_public_identity` | `value.casefold` | 695 |
-| external_call | `_remote_mapping` | `isinstance` | 1429 |
+| external_call | `_remote_mapping` | `isinstance` | 1433 |
 | step_limit | `select_repository_identity` | `first 12 steps` | 0 |
 
 ## Behavior
