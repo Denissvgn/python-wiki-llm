@@ -4,7 +4,7 @@ This four-module program builds a `Task`, formats it, and saves a line of text.
 You will generate its wiki, preserve an authored explanation while changing a
 field, and retrieve context without running the program or calling a model.
 
-Prerequisites: Python 3.10+ and an installed `agent-wiki-cli` 2.1.0 or newer.
+Prerequisites: Python 3.10+ and an installed `agent-wiki-cli` 2.2.0 or newer.
 No extractor helper or third-party application dependency is needed.
 Copy the [project](project/) contents, including `.gitignore`, to a fresh working
 directory. **Run every command below from that copied project directory.**

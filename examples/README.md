@@ -5,12 +5,12 @@ Start with the question you want the wiki to answer.
 | Example | What you will see | Prerequisites |
 |---|---|---|
 | [Python basics](python-basic/README.md) | Entity and module pages, a process flow, source refresh, and bounded context | Python 3.10+ |
-| [Native knowledge](native-knowledge/README.md) | Drift decisions, shared native inspection, coverage and a qualified handoff | Python 3.10+; matching installed checkout |
+| [Native knowledge](native-knowledge/README.md) | Drift decisions, shared native inspection, coverage and a qualified handoff | Python 3.10+ |
 | [FastAPI contracts](fastapi-contracts/README.md) | Two production router mounts, with test-only registrations excluded | Python 3.10+; FastAPI is optional for documentation |
 | [Go HTTP](go-http/README.md) | A process entry, a handler in another file, and package-scoped calls | A runnable Go toolchain and a prepared Go helper |
 | [Plugin hooks](plugin-hooks/README.md) | A custom task flow with a green entry node | Python 3.10+ and the bundled sample plugin |
 
-Use an activated environment with `agent-wiki-cli` 2.1.0 or newer installed.
+Use an activated environment with `agent-wiki-cli` 2.2.0 or newer installed.
 When working from a source checkout, install that checkout into your environment
 first; sample export reads the installed resources. See
 [working from source](../docs/wiki-guide.md#working-from-source).

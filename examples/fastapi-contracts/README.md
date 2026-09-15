@@ -5,7 +5,7 @@ also contains a temporary test application and a test-only registration on the
 imported production application. The generated production contract keeps the
 two real prefixes and excludes both test-origin registrations.
 
-Prerequisites: Python 3.10+ and `agent-wiki-cli` 2.1.0 or newer. Documentation
+Prerequisites: Python 3.10+ and `agent-wiki-cli` 2.2.0 or newer. Documentation
 uses static extraction: it does not import FastAPI, execute `tests/test_app.py`,
 or start a server. To run or type-check the application separately, install
 [requirements.txt](requirements.txt) in your environment. It pins

@@ -1,6 +1,6 @@
 # Integrating native knowledge
 
-Install `agent-wiki-cli` in your application's environment and use
+Install `agent-wiki-cli` 2.2.0 or newer in your application's environment and use
 `llm_wiki_cli.api` for native reads. `llm_wiki_cli.api_types` defines their
 structured return types. The wheel and source distribution include inline
 annotations with the standard `py.typed` marker. Nested extractor or versioned

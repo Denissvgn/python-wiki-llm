@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-15
+
 ### Added
 
 - Installed inline Python typing for downstream clients and public schema
@@ -55,6 +57,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   independently of defaults and unions with `undefined`. Generated attribute
   tables distinguish required properties from optional ones, and incremental
   sync detects question-token edits while preserving authored descriptions.
+
+### Compatibility
+
+- Python 3.10+ remains supported, with unchanged required runtime dependencies.
+  MCP and exact token counting remain optional extras.
+- Existing context, packet and native knowledge artifact schemas remain
+  supported. Inspection and coverage expose their own versioned response
+  contracts without changing stored knowledge records.
+- Run `llm-wiki sync` to refresh generated signatures, page mappings and native
+  projections after upgrading. Review page links when source names differ only
+  by case or Unicode normalization.
 
 ## [2.1.0] - 2026-09-13
 
@@ -1056,7 +1069,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.0...v2.0.1

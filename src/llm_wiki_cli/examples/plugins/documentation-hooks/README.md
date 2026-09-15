@@ -1,7 +1,7 @@
 # Documentation hooks sample plugin
 
 This plugin adds task entry points and bounded Mermaid style hints to LLM Wiki.
-Use `agent-wiki-cli` 2.1.0 or newer on Python 3.10+. No model service, worker
+Use `agent-wiki-cli` 2.2.0 or newer on Python 3.10+. No model service, worker
 framework, or additional Python dependency is required.
 
 | File | Role |

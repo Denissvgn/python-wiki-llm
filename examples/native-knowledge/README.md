@@ -6,12 +6,13 @@ source, when to refresh a handoff, and what an unchanged observation can tell
 you. The client uses the supported Python API from a separate consumer project.
 It does not import the application, install agent instructions, or call a model.
 
-Copy this tutorial's `project/` contents into a fresh directory. Install this
-checkout into a `.venv` there, following [working from source](../../docs/wiki-guide.md#working-from-source),
-and activate it so `llm-wiki` uses that environment. Keep the tutorial and
-installed package at the same revision: the inspection and coverage APIs are
-additions to this checkout. On Windows use `.venv\Scripts\python.exe` where
-the commands below use `.venv/bin/python`.
+Prerequisites: Python 3.10+ and `agent-wiki-cli` 2.2.0 or newer. Copy this
+tutorial's `project/` contents into a fresh directory, create a `.venv` there,
+and install the package into it. Activate that environment so `llm-wiki` uses
+the same installation. For a source checkout, follow
+[working from source](../../docs/wiki-guide.md#working-from-source).
+On Windows use `.venv\Scripts\python.exe` where the commands below use
+`.venv/bin/python`.
 
 ## Prepare and inspect
 
