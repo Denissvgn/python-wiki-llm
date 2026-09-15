@@ -1414,6 +1414,7 @@ def _git_changed_files(
     try:
         repository = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
+            input="",
             capture_output=True,
             text=True,
             check=True,
@@ -1437,6 +1438,7 @@ def _git_changed_files(
         )
         result = subprocess.run(
             ["git", "diff", "--name-status", "-z", "HEAD~1..HEAD"],
+            input="",
             capture_output=True,
             text=True,
             check=True,
@@ -1575,6 +1577,7 @@ def filter_source_diff(
         try:
             repository = subprocess.run(
                 ["git", "rev-parse", "--show-toplevel"],
+                input="",
                 capture_output=True,
                 text=True,
                 check=True,

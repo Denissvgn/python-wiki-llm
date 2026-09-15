@@ -56,6 +56,7 @@ def _git_diff(src_dir: str = ".") -> str:
     try:
         result = subprocess.run(
             ["git", "diff", "HEAD~1..HEAD"],
+            input="",
             capture_output=True,
             text=True,
             check=True,

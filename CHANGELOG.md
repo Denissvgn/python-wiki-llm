@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Git metadata reads and language extractors no longer inherit a host's input
+  stream, preventing Windows MCP requests from stalling on a shared stdin pipe.
 - Canonical packet and v3 budgeted CLI output preserve UTF-8 bytes and LF
   line endings on Windows, keeping emitted output consistent with packet
   identities and token accounting.

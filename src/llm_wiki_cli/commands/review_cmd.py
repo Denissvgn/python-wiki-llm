@@ -45,6 +45,7 @@ def _read_patch(args, *, src_dir: str | None = None) -> str:
     try:
         result = subprocess.run(
             cmd,
+            input="",
             capture_output=True,
             text=True,
             check=True,

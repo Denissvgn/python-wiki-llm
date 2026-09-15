@@ -83,6 +83,7 @@ def _git(root, *arguments) -> str:
     try:
         return subprocess.run(
             ["git", *arguments],
+            input="",
             cwd=root,
             capture_output=True,
             text=True,

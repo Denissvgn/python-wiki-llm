@@ -152,6 +152,7 @@ class RustExtractor:
         try:
             return subprocess.run(
                 cmd,
+                input="",
                 capture_output=True,
                 text=True,
                 check=True,
