@@ -1,5 +1,6 @@
 """Real packet adapter parity, error identity and safe diagnostic boundaries."""
 
+import io
 import json
 import subprocess
 import sys
@@ -71,6 +72,57 @@ def test_request_packet_real_api_cli_mcp_parity(packet_project, mode, format):
     if format == "json":
         assert set(packet.to_payload()["response"]["files"]) == {"app.py"}
     assert tree_state(packet_project) == before
+
+
+@pytest.mark.parametrize("mode", [None, "auto"])
+@pytest.mark.parametrize("request_file", [False, True])
+@pytest.mark.parametrize("output_file", [False, True])
+def test_packet_delivery_preserves_utf8_bytes_with_windows_stdout(
+    packet_project, monkeypatch, mode, request_file, output_file
+):
+    (packet_project / "app.py").write_bytes(
+        '"""Café 雪."""\ndef greet():\n    return "hello"\n'.encode("utf-8")
+    )
+    request = {
+        "protocol": "llm-wiki-context/v1" if mode is None else "llm-wiki-context/v2",
+        "budget_tokens": 32000,
+        "focus": ["all"],
+        "format": "json",
+        "filters": {},
+        "prefer_fresh": False,
+    }
+    if mode is not None:
+        request["knowledge_mode"] = mode
+    command = ["context", "--format", "packet"]
+    if request_file:
+        path = packet_project / "request.json"
+        path.write_bytes(canonical(request))
+        command += ["--request", str(path)]
+    else:
+        command += ["--budget", "32000", "--focus", "all"]
+        if mode is not None:
+            command += ["--knowledge-mode", mode]
+    output_path = packet_project.parent / "packet.json"
+    if output_file:
+        command += ["--output", str(output_path)]
+    expected = api.build_qualified_context(request=request).to_bytes()
+    assert "Café 雪".encode("utf-8") in expected
+
+    buffer = io.BytesIO()
+    with io.TextIOWrapper(
+        buffer, encoding="cp1252", errors="backslashreplace", newline="\r\n"
+    ) as stream, monkeypatch.context() as patch:
+        patch.setattr(sys, "stdout", stream)
+        patch.setattr(sys, "argv", ["llm-wiki", *command])
+        cli.main()
+        stream.flush()
+        stdout = buffer.getvalue()
+
+    actual = output_path.read_bytes() if output_file else stdout
+    assert actual == expected
+    assert api.validate_context_packet(actual).valid
+    if output_file:
+        assert stdout == b""
 
 
 @pytest.mark.parametrize("options,field", [

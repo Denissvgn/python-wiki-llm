@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Canonical packet and v3 budgeted CLI output preserve UTF-8 bytes and LF
+  line endings on Windows, keeping emitted output consistent with packet
+  identities and token accounting.
 - Unterminated fences in extracted source prose no longer hide the generated
   wiki sections that follow, including source comments with RST tilde underlines.
 - Module and entity page names remain distinct on case-insensitive and

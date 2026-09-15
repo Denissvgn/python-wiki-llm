@@ -194,11 +194,16 @@ def test_ci_pins_the_package_build_tool() -> None:
 def test_windows_provider_acceptance_uses_installed_artifacts_and_preserves_evidence():
     job = _yaml("ci.yml")["jobs"]["test"]
     check = _named_step(job, "Verify installed provider artifacts on native Windows")
+    assert check["id"] == "provider-artifacts"
     assert check["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
     assert "tests/run_provider_artifact_checks.py" in check["run"]
     assert '"pyright==1.1.411"' in check["run"]
     upload = _named_step(job, "Upload native Windows provider evidence")
-    assert "always()" in upload["if"]
+    assert " ".join(upload["if"].split()) == (
+        "${{ always() && matrix.lane == 'core-windows-3.13' && "
+        "(steps.provider-artifacts.outcome == 'success' || "
+        "steps.provider-artifacts.outcome == 'failure') }}"
+    )
     assert upload["with"]["if-no-files-found"] == "error"
 
 

@@ -47,7 +47,7 @@ from .extraction_jobs import (
     ExtractionJobRequest,
     print_extraction_job_plan,
 )
-from .io import write_text_output
+from .io import write_text_output, write_utf8_stdout
 from .infrastructure_inventory import get_yaml_infrastructure_inventory
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
 from .knowledge_consumption import (
@@ -3520,7 +3520,7 @@ def _run_packet_output(
         write_text_output(output_path, rendered)
         print(f"Context output written to: {output_path}", file=sys.stderr)
     else:
-        sys.stdout.write(rendered)
+        write_utf8_stdout(rendered)
 
 
 # ── CLI entry point ───────────────────────────────────────────────────
