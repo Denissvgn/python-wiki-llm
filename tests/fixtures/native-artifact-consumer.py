@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import runpy
 import shlex
 import shutil
 import subprocess
@@ -156,6 +157,27 @@ async def native_sdk():
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
 
+    invalid_tools = (
+        "get_concept",
+        "related_concepts",
+        "list_concept_sections",
+        "traverse_typed_graph",
+        "explain_evidence",
+        "inspect_concept",
+    )
+    probe_type = runpy.run_path(sys.argv[3])["McpProbe"]
+    probe = probe_type(
+        sys.argv[4],
+        [
+            "initialize",
+            *(
+                f"{name}-{scope}"
+                for scope in ("snapshot", "live")
+                for name in ("inspect_concept", "get_knowledge_coverage")
+            ),
+            *(f"invalid-{name}" for name in invalid_tools),
+        ],
+    )
     parameters = StdioServerParameters(
         command=sys.executable,
         args=[
@@ -174,57 +196,71 @@ async def native_sdk():
         ],
         env=environment,
     )
-    async with stdio_client(parameters) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            for live in (False, True):
-                for name, args in (
-                    (
-                        "inspect_concept",
-                        {
-                            "locator_or_exact_route": "llm-wiki://entities/Item",
-                            "live": live,
-                        },
-                    ),
-                    ("get_knowledge_coverage", {"live": live}),
-                ):
-                    response = await session.call_tool(name, args)
-                    assert response.isError is False
-                    payload = response.structuredContent or json.loads(
-                        next(
-                            item.text
-                            for item in response.content
-                            if item.type == "text"
+    with probe.session():
+        async with stdio_client(parameters) as (read, write):
+            async with ClientSession(
+                read, write, read_timeout_seconds=probe.read_timeout
+            ) as session:
+                with probe.step("initialize"):
+                    await session.initialize()
+                for live in (False, True):
+                    for name, args in (
+                        (
+                            "inspect_concept",
+                            {
+                                "locator_or_exact_route": "llm-wiki://entities/Item",
+                                "live": live,
+                            },
+                        ),
+                        ("get_knowledge_coverage", {"live": live}),
+                    ):
+                        label = f"{name}-{'live' if live else 'snapshot'}"
+                        with probe.step(label, request=args):
+                            response = await session.call_tool(name, args)
+                            probe.capture(
+                                label + "-response", response.model_dump(mode="json")
+                            )
+                            assert response.isError is False
+                            payload = response.structuredContent or json.loads(
+                                next(
+                                    item.text
+                                    for item in response.content
+                                    if item.type == "text"
+                                )
+                            )
+                            expected_payload = getattr(api, name)(
+                                src_dir="src", wiki_dir="wiki", **args
+                            )
+                            probe.capture(label + "-expected", expected_payload)
+                            assert payload == expected_payload, (
+                                f"{label}: native payload differs"
+                            )
+                for name in invalid_tools:
+                    with probe.step(f"invalid-{name}"):
+                        response = await session.call_tool(
+                            name,
+                            {
+                                "locator_or_exact_route": "llm-wiki://entities/Item",
+                                "limit": 0,
+                            },
                         )
-                    )
-                    assert payload == getattr(api, name)(
-                        src_dir="src", wiki_dir="wiki", **args
-                    )
-            for name in (
-                "get_concept",
-                "related_concepts",
-                "list_concept_sections",
-                "traverse_typed_graph",
-                "explain_evidence",
-                "inspect_concept",
-            ):
-                response = await session.call_tool(
-                    name,
-                    {"locator_or_exact_route": "llm-wiki://entities/Item", "limit": 0},
-                )
-                assert (
-                    response.isError is True and response.structuredContent is not None
-                )
-                error = response.structuredContent["error"]
-                assert error["code"] == "invalid-request" and error["details"] == {
-                    "field": "limit"
-                }
-                assert str(consumer) not in json.dumps(error)
+                        probe.capture(
+                            f"invalid-{name}-response", response.model_dump(mode="json")
+                        )
+                        assert (
+                            response.isError is True
+                            and response.structuredContent is not None
+                        )
+                        error = response.structuredContent["error"]
+                        assert error["code"] == "invalid-request" and error[
+                            "details"
+                        ] == {"field": "limit"}
+                        assert str(consumer) not in json.dumps(error)
 
 
 before = tree()
 if with_sdk:
-    asyncio.run(asyncio.wait_for(native_sdk(), timeout=45))
+    asyncio.run(native_sdk())
 assert tree() == before
 print(
     json.dumps(

@@ -677,6 +677,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
     assert "git archive --format=tar" in freeze_text
     assert "release/qualification.py" in freeze_text
     assert "tests/release_artifact_smoke.py" in freeze_text
+    assert "tests/mcp_probe.py" in freeze_text
     assert "tests/fixtures/packet-artifact-parity.py" in freeze_text
     assert "tests/fixtures/native-artifact-consumer.py" in freeze_text
     assert "tests/verify_installed_provider.py" in freeze_text
@@ -747,6 +748,16 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
     assert "release_artifact_smoke.py" in smoke_text
     assert "default-venv" in smoke_text
     assert "mcp-venv" in smoke_text
+    producer = _named_step(smoke, "Run without a source checkout")
+    assert producer["id"] == "artifact-smoke"
+    diagnostics = _named_step(smoke, "Upload MCP probe diagnostics")
+    assert "always()" in diagnostics["if"]
+    assert "steps.artifact-smoke.outcome == 'failure'" in diagnostics["if"]
+    assert "steps.artifact-smoke.outcome == 'success'" in diagnostics["if"]
+    assert diagnostics["with"]["path"] == "smoke-${{ matrix.kind }}-mcp-probes/"
+    assert diagnostics["with"]["if-no-files-found"] == "warn"
+    canonical = _named_step(smoke, "Upload canonical smoke result")
+    assert canonical["with"]["if-no-files-found"] == "error"
 
 
 def test_qualification_binds_workflow_ref_and_revision_before_candidate_code() -> None:
