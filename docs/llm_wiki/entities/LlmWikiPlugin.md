@@ -15,9 +15,9 @@ output modal rather than written into the active note.
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `settings` | `LlmWikiSettings` | `DEFAULT_SETTINGS` | — |
+| Name | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `settings` | `LlmWikiSettings` | Yes | `DEFAULT_SETTINGS` | — |
 
 ## Methods
 

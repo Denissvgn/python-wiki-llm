@@ -11,9 +11,9 @@ _Auto-generated from `LlmWikiSettingTab` in `integrations/obsidian/llm-wiki/src/
 
 ## Attributes
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `plugin` | `LlmWikiPlugin` | *required* | — |
+| Name | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `plugin` | `LlmWikiPlugin` | Yes | — | — |
 
 ## Methods
 
