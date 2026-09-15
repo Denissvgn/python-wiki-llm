@@ -17,6 +17,7 @@ build/
 /plans/
 /planning/
 /roadmap/
+/test-plans/
 reports/
 /docs/adr/
 /docs/architecture/

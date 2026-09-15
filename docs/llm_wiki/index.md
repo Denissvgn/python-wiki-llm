@@ -9,7 +9,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Entities | 552 | [Open section](#entities) |
 | Modules | 179 | [Open section](#modules) |
 | Workflows | 116 | [Open section](#workflows) |
-| Guides | 15 | [Open section](#guides) |
+| Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 445 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
@@ -874,15 +874,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 ## Guides
 
-- [Archived workflow: apply_diff](guides/archived-workflow-apply_diff.md)
-- [Archived workflow: apply_sync_changes](guides/archived-workflow-apply_sync_changes.md)
-- [Archived workflow: build_apply_diff_context](guides/archived-workflow-build_apply_diff_context.md)
-- [Archived workflow: exit_if_large_unforced_diff](guides/archived-workflow-exit_if_large_unforced_diff.md)
-- [Archived workflow: finalize_bootstrap](guides/archived-workflow-finalize_bootstrap.md)
-- [Archived workflow: generate_dependencies_md](guides/archived-workflow-generate_dependencies_md.md)
-- [Archived workflow: get_inventory](guides/archived-workflow-get_inventory.md)
-- [Archived workflow: print_dry_run_plan](guides/archived-workflow-print_dry_run_plan.md)
-- [Archived workflow: runtime_live_concept_bases](guides/archived-workflow-runtime_live_concept_bases.md)
 - [CLI and Python API](guides/cli-and-python-api.md)
 - [Getting Started](guides/getting-started.md)
 - [Integrations](guides/integrations.md)

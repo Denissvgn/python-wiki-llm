@@ -1,8 +1,8 @@
 {
   "artifact_hashes": {
-    "evaluated_envelope_hash": "sha256:5d4419f437befedf757f94545d7331810ed3887e8b9c00d3bb2dab17a3433a19",
-    "knowledge_index_hash": "sha256:458c6a2bdac1f556105f77101ef7b2a050c09028c048f02a353b1290c0961b33",
-    "surface_index_hash": "sha256:75b973cfc39a9a115546a1bda267815e53a7eefb559f944fd79fb6cc0269aa27"
+    "evaluated_envelope_hash": "sha256:593d04191e08466d8a48a8fa9ef79219037964932d750bec64eb26b6937042d3",
+    "knowledge_index_hash": "sha256:3263b2ce79c0f2ed724b1c0339a550c6dee3759ee7bd27eaa9664d3a640fddf8",
+    "surface_index_hash": "sha256:03775b6d486f1e6225da64f0b30dc133c2326c684e7c7948af9df5d606bdaab5"
   },
   "evidence_baselines": {
     "entities/Actor.md": {
@@ -7350,12 +7350,12 @@
       "generation_options_hash": "sha256:963c315eb4f1d2b1fb73b2343d545b0268798643b4c9f247f8c3633bcff03442",
       "implementation_hash": "sha256:e1e2edf99f51cc8559856db6de141ad61acddaec5ee202d44bd6e39dfd0ab1b1",
       "inventory_hash": "sha256:b6e0eef0071078ba4e9aa15d22d47ad4c39b805a83876077d9ab13ea467394c5",
-      "lifecycle_hash": "sha256:d55a69cc756859413137149a4d05521c86bc9461ded2c3886e7cff11342e1ab3",
-      "markdown_snapshot_hash": "sha256:858316ef6a7c670d803b4a42dea16036249526a78c7be3df18a3813ff5c33d17",
+      "lifecycle_hash": "sha256:e005256c8be693371184bd757cb5c66764d61bca1ddd603ca3926fcbdcbf06d9",
+      "markdown_snapshot_hash": "sha256:0aec265b080cae94d3a49d33ec8e51bf7e19201efaadddef9160e80755b1b95b",
       "observation_inputs_hash": "sha256:088dc3bcb403f8f1d74a35c371cddb9efc0574625aed9ad9f05fb4919751df90",
-      "repository_hash": "sha256:2077323ceb2fca4f1d6724fca822b6d87e1aa6d21ae0e46e777ff6c6cff29253",
+      "repository_hash": "sha256:e7aee4ab6b99f14effb2368f8deb7108475c2fff88c18c1b9313914d092bbfbe",
       "schema_version": "llm-wiki-knowledge-reuse/v1",
-      "source_snapshot_hash": "sha256:011994745dba0afae8905848fe368e4f2a9f16b71626679221dc22fab7352acb"
+      "source_snapshot_hash": "sha256:33115981d88b6e792919d4dcc44696a88ce87ba27e080a5c358e7daaf3074d26"
     },
     "llm-wiki/generation-options/v1": {
       "data_flow_enabled": true,
@@ -7370,7 +7370,7 @@
     "source_selection_inputs": {
       "inputs": [
         {
-          "content_hash": "sha256:74aa1204424607a463430b36781dd193f0923dfc6f0c6275dd92b08081af97e4",
+          "content_hash": "sha256:cbe089aceb401690c190eea3a01ecb1b6eafed1af7176a22884fc484a3bc0664",
           "path": ".gitignore"
         },
         {
