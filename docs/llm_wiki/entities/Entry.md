@@ -19,6 +19,7 @@ Private bounded cache entry containing detached read state, environment identity
 | `environment` | `str \| None` | *required* | — |
 | `expires` | `float` | *required* | — |
 | `size` | `int` | *required* | — |
+| `owner` | `object` | *required* | — |
 
 ## Methods
 
@@ -40,7 +41,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_session](../modules/context_session.md) | 0 | `environment`, `expires`, `read`, `size` |
+| [context_session](../modules/context_session.md) | 0 | `environment`, `expires`, `owner`, `read`, `size` |
 
 ### References
 

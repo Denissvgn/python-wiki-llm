@@ -22,11 +22,11 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `.request_json` | `_pairs`, `_constant` |
 | `.search_service` | `SEARCH_KINDS`, `page_records`, `search_records` |
 | `.source_snapshot` | `SourceSnapshotError` |
-| `.task_contract` | `TASK_RESULT_SCHEMA`, `TaskContext`, `normalize_task_request` |
+| `.task_contract` | `FACETS`, `MAX_SELECTORS`, `TASK_RESULT_SCHEMA`, `TaskContext`, `normalize_task_request` |
 | `.task_evidence` | `coverage`, `declaration_records`, `match_declarations`, `observe_requirement`, `query_service` |
 | `.token_counting` | `EstimatedCounter`, `TokenCounter` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
-| `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `canonical_json`, `content_id` |
+| `.workflow_profile` | `SCOPES`, `WorkflowPolicy`, `WorkflowProfile`, `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |
 | `dataclasses` | `dataclass`, `replace` |
@@ -80,4 +80,6 @@ flowchart LR
 | `_read_once` | `(request, profile, counter, source_root, wiki_root, allow_external, source_selection, helper_cache, cancelled, attempt, reused_capture = None)` | `@packets._guarded_capture` | — |
 | `build_task_context` | `(request: Mapping[str, Any], **kwargs) -> TaskContext` | — | — |
 | `reconcile_task_context` | `(rendered: str, request: Mapping[str, Any], **options) -> dict[str, Any]` | — | — |
+| `_result_fields` | `(value, keys, label)` | — | — |
+| `_validate_task_claims` | `(payload, normalized, settings)` | — | Check semantic bindings that a self-consistent content hash cannot prove. |
 | `validate_task_context` | `(rendered, request, *, profile = None, policy = None, counter = None)` | — | Check the task envelope separately from the unchanged embedded packet. |

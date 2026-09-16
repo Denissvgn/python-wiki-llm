@@ -104,7 +104,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [SessionReply](../entities/SessionReply.md) | 121 | — | Portable content and separate non-identity session work telemetry. |
 | [_Entry](../entities/Entry.md) | 140 | — | — |
-| [ContextSession](../entities/context_session_ContextSession.md) | 180 | — | A single trusted workspace. Methods serialize; events are hints only. |
+| [ContextSession](../entities/context_session_ContextSession.md) | 181 | — | A single trusted workspace. Methods serialize; events are hints only. |
 
 ## Functions
 

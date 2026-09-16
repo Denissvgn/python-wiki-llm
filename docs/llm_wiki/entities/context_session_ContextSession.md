@@ -1,6 +1,6 @@
 # ContextSession
 
-**Location:** `src/llm_wiki_cli/services/context_session.py:180`
+**Location:** `src/llm_wiki_cli/services/context_session.py:181`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_session](../modules/context_session.md)
@@ -22,6 +22,7 @@ The bounded session implementation owns capture and rendering reuse, input reval
 | `_environment` | `()` | — | — |
 | `_clear` | `()` | — | — |
 | `_drop` | `(key)` | — | — |
+| `_owns` | `(entry)` | — | — |
 | `_validate` | `(entry, environment, request, profile, counter, *, cold = False)` | — | — |
 | `_build` | `(request, *, cancelled, shared = None)` | — | — |
 | `_compatible_capture` | `(normalized, profile, environment)` | — | — |
@@ -50,7 +51,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_session](../modules/context_session.md) | 13 | — |
+| [context_session](../modules/context_session.md) | 14 | — |
 
 ### Structure
 
