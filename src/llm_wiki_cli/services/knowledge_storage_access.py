@@ -19,6 +19,7 @@ from .knowledge_storage import (
     KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, digest,
 )
 from .knowledge_storage_io import StorageReadSession
+from .knowledge_packs import PACKED_SCHEMA, open_knowledge_store
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest
 
 
@@ -59,10 +60,10 @@ def capture_knowledge_slice(
         schema = json.loads(raw).get("schema_version")
     except (ValueError, AttributeError, UnicodeError) as exc:
         raise KnowledgeStorageError("root", "invalid knowledge root") from exc
-    if schema != STORE_SCHEMA:
-        raise KnowledgeStorageError("schema_version", "selected native reads require explicit sharded-v2 adoption",
+    if schema not in {STORE_SCHEMA, PACKED_SCHEMA}:
+        raise KnowledgeStorageError("schema_version", "selected native reads require explicit sharded-v2 or packed-v3 adoption",
                                     code="unsupported-schema-version")
-    reader = KnowledgeStoreReader(raw, session.read, max_bytes=max_bytes,
+    reader = open_knowledge_store(raw, session.read, read_range=session.read_range, max_bytes=max_bytes,
                                   max_expanded_bytes=max_expanded_bytes)
     manifest_bytes = session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
     from .knowledge_artifacts import _decode_json_object

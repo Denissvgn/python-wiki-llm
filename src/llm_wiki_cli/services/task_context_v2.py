@@ -8,7 +8,7 @@ existing owners; this module composes their selected observations.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import re
 from types import SimpleNamespace
@@ -38,6 +38,7 @@ from .workflow_profile import WorkflowRequestError, canonical_json, content_id
 
 SOURCE_RECEIPT_SCHEMA = "llm-wiki-task-source/v1"
 STORAGE_RECEIPT_SCHEMA = "llm-wiki-task-storage/v1"
+PACKED_RECEIPT_SCHEMA = "llm-wiki-task-storage/v2"
 
 
 def _source_receipt(snapshot: SourceSnapshot | None) -> dict[str, Any] | None:
@@ -108,12 +109,18 @@ def _storage_receipt(native: ScopedKnowledgeRead | None, *, status: str, reason:
     selected = native.slice.to_payload()
     inputs = [{"path": path, "hash": digest(observed.content), "bytes": len(observed.content)}
               for path, observed in sorted(native.session.observations.items())]
+    ranges = [{"path": key[0], "offset": key[1], "bytes": key[2], "file_bytes": key[3],
+               "hash": digest(observed.content)}
+              for key, observed in sorted(native.session.range_observations.items())]
+    if selected.get("storage_format") == "packed-v3":
+        result.update(schema_version=PACKED_RECEIPT_SCHEMA, ranges=ranges,
+                      archive_validation_scope="selected-members")
     # One final reread is reserved in the emitted work receipt. Publication
     # checks that it actually completed with exactly this counted work.
     result.update(root_hash=selected["root_hash"], lookup_complete=selected["lookup_complete"],
         unverified_records=selected["unverified_records"], inputs=inputs,
-        read_bytes=native.session.bytes_read + sum(i["bytes"] for i in inputs),
-        read_operations=native.session.reads + len(inputs),
+        read_bytes=native.session.bytes_read + sum(i["bytes"] for i in [*inputs, *ranges]),
+        read_operations=native.session.reads + len(inputs) + len(ranges),
         expanded_bytes=selected["work"]["expanded_bytes"])
     return result
 
@@ -203,6 +210,7 @@ class ScopedTaskState:
     change_request: Any
     native_absent: bool = False
     original_work: Mapping[str, Any] | None = None
+    wiki_ranges: Mapping[tuple[str, int, int, int], ReadObservation] = field(default_factory=dict)
 
     def revalidate(self, settings, *, source_metrics=None, wiki_metrics=None):
         if self.snapshot is not None:
@@ -220,6 +228,10 @@ class ScopedTaskState:
                 raw = session.read(relative, len(expected.content))
                 if raw != expected.content or session.observations[relative] != expected:
                     raise KnowledgeStorageError(relative, "scoped input changed", code="storage-mutation")
+            for key, expected in self.wiki_ranges.items():
+                raw = session.read_range(*key)
+                if raw != expected.content or session.range_observations[key] != expected:
+                    raise KnowledgeStorageError(key[0], "scoped pack changed", code="storage-mutation")
         finally:
             if wiki_metrics is not None:
                 wiki_metrics.update(files=session.reads, bytes=session.bytes_read)
@@ -357,7 +369,8 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
     state = ScopedTaskState(source_root, wiki_root, snapshot, source_anchor,
         {} if native is None else dict(native.session.observations),
         native_status != "unavailable" and all(module.get("language") == "python" for module in inventory.values()),
-        changes, normalized["changes"], native_status == "unavailable", dict(work))
+        changes, normalized["changes"], native_status == "unavailable", dict(work),
+        {} if native is None else dict(native.session.range_observations))
     if state.native_absent and (wiki_root / ".llm-wiki-knowledge.json").exists():
         raise packets.ContextPacketSourceMutationError("wiki")
     return TaskRead(normalized, effective, None, wiki_root, wiki_id, result,
@@ -372,10 +385,12 @@ def validate_scoped_bindings(payload, normalized, profile):
     if payload["packet"] is not None:
         raise ValueError("scoped task context cannot carry a legacy full-validity packet")
     storage = payload["storage"]
+    packed = isinstance(storage, dict) and storage.get("schema_version") == PACKED_RECEIPT_SCHEMA
     _result_fields(storage, {"schema_version", "status", "reason", "validation_scope", "whole_store_validated",
                             "root_hash", "lookup_complete", "unverified_records", "inputs", "read_bytes",
-                            "read_operations", "expanded_bytes"}, "storage")
-    if (storage["schema_version"] != STORAGE_RECEIPT_SCHEMA or storage["whole_store_validated"] is not False
+                            "read_operations", "expanded_bytes"} |
+                   ({"ranges", "archive_validation_scope"} if packed else set()), "storage")
+    if (storage["schema_version"] not in {STORAGE_RECEIPT_SCHEMA, PACKED_RECEIPT_SCHEMA} or storage["whole_store_validated"] is not False
             or storage["validation_scope"] != "selected-committed-records"
             or storage["status"] not in {"off", "unavailable", "scoped"} or type(storage["lookup_complete"]) is not bool):
         raise ValueError("invalid scoped storage qualification")
@@ -393,9 +408,33 @@ def validate_scoped_bindings(payload, normalized, profile):
                 or type(item["bytes"]) is not int or item["bytes"] < 0):
             raise ValueError("invalid consumed storage input")
         names.add(item["path"])
-    if (type(storage["read_bytes"]) is not int or storage["read_bytes"] != 2 * sum(i["bytes"] for i in inputs)
+    ranges = storage.get("ranges", [])
+    if packed:
+        from .knowledge_packs import PACK_NAME, MAX_PACK_BYTES
+        if (storage["archive_validation_scope"] != "selected-members" or storage["status"] != "scoped"
+                or not isinstance(ranges, list) or len(ranges) > 100_000):
+            raise ValueError("invalid packed storage scope")
+        previous = None
+        pack_ends = {}
+        for item in ranges:
+            _result_fields(item, {"path", "offset", "bytes", "file_bytes", "hash"}, "storage range")
+            if (not isinstance(item["path"], str) or not PACK_NAME.fullmatch(item["path"]) or item["path"] in names
+                    or not packets.is_valid_sha256(item["hash"])
+                    or any(type(item[k]) is not int for k in ("offset", "bytes", "file_bytes"))
+                    or item["offset"] < 0 or not 0 < item["bytes"] <= item["file_bytes"] <= MAX_PACK_BYTES
+                    or item["offset"] + item["bytes"] > item["file_bytes"]):
+                raise ValueError("invalid consumed pack range")
+            key = (item["path"], item["offset"])
+            if previous is not None and key <= previous:
+                raise ValueError("pack ranges must be sorted and unique")
+            previous = key
+            prior = pack_ends.get(item["path"])
+            if prior is not None and (item["offset"] < prior[0] or item["file_bytes"] != prior[1]):
+                raise ValueError("pack ranges overlap or disagree on file size")
+            pack_ends[item["path"]] = (item["offset"] + item["bytes"], item["file_bytes"])
+    if (type(storage["read_bytes"]) is not int or storage["read_bytes"] != 2 * sum(i["bytes"] for i in [*inputs, *ranges])
             or storage["read_bytes"] > settings["max_wiki_bytes"]
-            or type(storage["read_operations"]) is not int or storage["read_operations"] != 2 * len(inputs)
+            or type(storage["read_operations"]) is not int or storage["read_operations"] != 2 * (len(inputs) + len(ranges))
             or type(storage["expanded_bytes"]) is not int or not 0 <= storage["expanded_bytes"] <= 16_777_216):
         raise ValueError("storage work is inconsistent or exceeds policy")
     if storage["status"] == "scoped":

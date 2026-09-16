@@ -1,7 +1,7 @@
 # Native coding workflow
 
 For large native snapshots, [knowledge storage](knowledge-storage.md) describes
-explicit sharded storage adoption and task request v2 with selected validation.
+explicit sharded or packed storage adoption and task request v2 with selected validation.
 Task request v1 retains its existing full-validation behavior.
 
 An explicit task request gathers qualified source and wiki evidence. The provider

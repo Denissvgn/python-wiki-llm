@@ -36,9 +36,9 @@ from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_by
 from .knowledge_graph import KnowledgeGraphError, typed_graph_from_knowledge_extensions
 from .knowledge_index import _validated_index_serialization, validate_knowledge_index, _model_to_payload
 from .knowledge_storage import (
-    STORE_SCHEMA, MAX_EXPANDED_BYTES, GIT_FAILURE_BYTES, KnowledgeStorageError, KnowledgeStoreReader,
-    build_knowledge_store, logical_digest,
+    STORE_SCHEMA, MAX_EXPANDED_BYTES, GIT_FAILURE_BYTES, KnowledgeStorageError, logical_digest,
 )
+from .knowledge_packs import PACKED_SCHEMA, PACKED_FORMATS, build_storage, open_knowledge_store, physical_objects
 from .immutable import freeze
 from .knowledge_model import (
     ConceptKind,
@@ -289,7 +289,7 @@ def validate_knowledge_artifacts(
     storage_objects: Mapping[str, bytes] = freeze({})
     store_reader = None
     storage_session = None
-    if schema_version == STORE_SCHEMA:
+    if schema_version in {STORE_SCHEMA, PACKED_SCHEMA}:
         if object_reader is None and wiki_dir is not None:
             from .knowledge_storage_io import StorageReadSession
             storage_session = StorageReadSession(wiki_dir)
@@ -305,9 +305,9 @@ def validate_knowledge_artifacts(
                 marker_bytes = storage_session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
                 if SyncManifest.from_payload(json.loads(marker_bytes)).to_payload() != manifest.to_payload():
                     raise KnowledgeStorageError("manifest", "changed before object capture", code="storage-mutation")
-            store_reader = KnowledgeStoreReader(knowledge_index_bytes, object_reader)
+            store_reader = open_knowledge_store(knowledge_index_bytes, object_reader)
             knowledge_payload = store_reader.materialize()
-            storage_objects = freeze(store_reader.objects)
+            storage_objects = freeze(physical_objects(store_reader))
             if storage_session is not None:
                 storage_session.recheck()
         except (KnowledgeStorageError, OSError) as exc:
@@ -463,17 +463,17 @@ def build_knowledge_commit_plan(
     """
 
     root = Path(wiki_dir)
-    if knowledge_format not in {None, "v1", "sharded-v2"}:
-        raise KnowledgeArtifactError("knowledge_format", "must be v1 or sharded-v2")
+    if knowledge_format not in {None, "v1", "sharded-v2", *PACKED_FORMATS}:
+        raise KnowledgeArtifactError("knowledge_format", "must be v1, sharded-v2, packed-v3 or packed-v3-deflate")
     if knowledge_format is None:
         knowledge_format = current_knowledge_format(root)
     if (knowledge_index_bytes is None) == (knowledge_index is None):
         raise KnowledgeArtifactError("knowledge_index", "supply exactly one logical model or canonical byte input")
     prepared_store = None
     if knowledge_index is not None:
-        if knowledge_format == "sharded-v2":
+        if knowledge_format != "v1":
             try:
-                prepared_store = build_knowledge_store(_model_to_payload(knowledge_index))
+                prepared_store = build_storage(_model_to_payload(knowledge_index), knowledge_format)
                 knowledge_index_bytes = prepared_store.root_bytes
             except KnowledgeStorageError as exc:
                 raise KnowledgeArtifactError("knowledge_index", str(exc), code=exc.code) from exc
@@ -488,9 +488,9 @@ def build_knowledge_commit_plan(
     )
     objects: tuple[PlannedArtifactWrite, ...] = ()
     knowledge_hash = validated.knowledge_index_hash
-    if knowledge_format == "sharded-v2":
+    if knowledge_format != "v1":
         try:
-            store = prepared_store or build_knowledge_store(_model_to_payload(validated.knowledge))
+            store = prepared_store or build_storage(_model_to_payload(validated.knowledge), knowledge_format)
             knowledge_index_bytes = store.root_bytes
             knowledge_hash = sha256_bytes(knowledge_index_bytes)
             objects = tuple(_planned_write(root / path, path, content, guarded=True)
@@ -521,13 +521,13 @@ def build_knowledge_commit_plan(
         root / SURFACE_INDEX_FILENAME,
         SURFACE_INDEX_FILENAME,
         surface_index_bytes,
-        guarded=knowledge_format == "sharded-v2",
+        guarded=knowledge_format != "v1",
     )
     knowledge_write = _planned_write(
         root / KNOWLEDGE_INDEX_FILENAME,
         KNOWLEDGE_INDEX_FILENAME,
         knowledge_index_bytes,
-        guarded=knowledge_format == "sharded-v2",
+        guarded=knowledge_format != "v1",
     )
     projections_change = surface.needs_write or knowledge_write.needs_write
     manifest_write = _planned_write(
@@ -535,7 +535,7 @@ def build_knowledge_commit_plan(
         MANIFEST_FILENAME,
         manifest_bytes,
         force_replace=projections_change,
-        guarded=knowledge_format == "sharded-v2",
+        guarded=knowledge_format != "v1",
     )
     return KnowledgeCommitPlan(
         surface_index=surface,
@@ -568,7 +568,7 @@ def commit_knowledge_artifacts(
     if fault_injector is not None and not callable(fault_injector):
         raise TypeError("fault_injector must be callable")
 
-    if not dry_run and plan.storage_format == "sharded-v2":
+    if not dry_run and plan.storage_format != "v1":
         _commit_sharded(plan, fault_injector)
     elif not dry_run:
         _apply_write(
@@ -646,12 +646,16 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
     from .knowledge_storage_io import read_guarded
     path = Path(wiki_dir) / KNOWLEDGE_INDEX_FILENAME
     if not path.exists() and not path.is_symlink():
+        if (path.parent / ".llm-wiki-knowledge/packs").exists():
+            raise KnowledgeArtifactError("knowledge_index_bytes", "packed root is missing; recover it or select an explicit format")
         return "sharded-v2" if (path.parent / ".llm-wiki-knowledge").exists() else "v1"
     try:
         raw = read_guarded(path, MAX_EXPANDED_BYTES).content
         try:
             payload = _decode_json_object(raw, "knowledge_index_bytes")
         except KnowledgeArtifactError:
+            if (path.parent / ".llm-wiki-knowledge/packs").exists():
+                raise KnowledgeArtifactError("knowledge_index_bytes", "packed root is invalid; recover it or select an explicit format")
             # Preserve the existing explicit v1 rebuild policy. If a sharded
             # store has ever been adopted, a broken/missing root cannot silently
             # make the writer return to a monolithic file.
@@ -659,6 +663,10 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
         version = payload.get("schema_version")
         if version == STORE_SCHEMA:
             return "sharded-v2"
+        if version == PACKED_SCHEMA:
+            from .knowledge_packs import parse_packed_root
+            packed = parse_packed_root(raw)
+            return "packed-v3-deflate" if packed["packing"]["compression"] == "deflate" else "packed-v3"
         if version == KNOWLEDGE_SCHEMA_VERSION:
             return "v1"
         raise KnowledgeArtifactError("knowledge_index_bytes.schema_version", "cannot write an unknown storage format", code="unsupported-schema-version")

@@ -1,8 +1,8 @@
 # Knowledge storage
 
-Native knowledge can use the original JSON file (`v1`) or an explicitly adopted
-indexed format (`sharded-v2`). Existing wikis keep their format. New wikis use v1
-unless you select another format.
+Native knowledge supports the original JSON file (`v1`), indexed JSON objects
+(`sharded-v2`), or indexed ZIP packs (`packed-v3`). Existing wikis keep their
+format. New wikis use v1 unless you select another format.
 
 Sharded storage keeps a small `.llm-wiki-knowledge.json` root and JSON objects in
 `.llm-wiki-knowledge/objects/`. Commit the root, referenced objects, surface index
@@ -11,6 +11,73 @@ to read that snapshot.
 
 Markdown and `.llm-wiki-governance.json` remain the authority for authored content,
 stable identity and review history. Storage migration preserves them.
+
+## Choose a format for a large repository
+
+| Format | Use it when |
+|---|---|
+| `sharded-v2` | You want bounded JSON files that ordinary text tools can inspect. |
+| `packed-v3` | You want fewer checked-out files while Git handles repository compression. |
+| `packed-v3-deflate` | You also want compressed files in the working directory. |
+
+Both packed profiles contain the same logical knowledge. `packed-v3` uses
+uncompressed ZIP members (`ZIP_STORED`); `packed-v3-deflate` compresses members
+individually. Packs grow toward 4 MiB and have an 8 MiB hard ceiling, including
+archive headers. Large collections split into additional packs. An individual
+record that cannot fit is reported before publication.
+
+The root stays at `.llm-wiki-knowledge.json`. Packed data lives in
+`.llm-wiki-knowledge/packs/`, with bounded routing files in
+`.llm-wiki-knowledge/pack-index/`. Commit all referenced files and companion
+artifacts together. Readers access selected members directly; no extraction,
+external database, network service or Git LFS is required.
+
+Git normally displays ZIP changes as binary changes. Use the logical inspection
+and comparison commands below to review the underlying records. Compression
+savings and update costs depend on the data and the breadth of each change.
+
+## Adopt packed storage
+
+Upgrade every reader and writer to support `llm-wiki-knowledge/v3` before adoption.
+Migration accepts either an existing v1 wiki or an adopted v2 wiki:
+
+```sh
+llm-wiki knowledge migrate --wiki-dir docs/llm_wiki --to packed-v3 --dry-run
+llm-wiki knowledge migrate --wiki-dir docs/llm_wiki --to packed-v3
+```
+
+Use `--to packed-v3-deflate` to select compressed members explicitly. On projects
+without Git, supply a recovery directory outside the wiki. You can return to
+indexed JSON through `--to sharded-v2`; recovery and v1 export also remain
+available. Migration preserves a verified recovery snapshot and does not remove
+old generated files. Preview and apply `prune-storage` after a successful
+migration to remove obsolete objects and packs.
+
+Generation can adopt either packed profile directly:
+
+```sh
+llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v3
+llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v3-deflate
+```
+
+Subsequent owning writes preserve the chosen profile. A missing or invalid packed
+root requires recovery or an explicitly selected rebuild format.
+
+## Review logical changes
+
+Inspect records independently of their physical storage format:
+
+```sh
+llm-wiki knowledge inspect-storage --wiki-dir docs/llm_wiki --limit 100
+llm-wiki knowledge diff-storage --wiki-dir docs/llm_wiki \
+  --against-wiki ../before/docs/llm_wiki --limit 100
+```
+
+The comparison takes another complete wiki snapshot, such as one in a separate
+Git worktree. Both commands validate the committed inputs and emit JSON with
+logical record identities, hashes and available values. `--max-bytes` bounds the
+output; omitted records or values are counted explicitly. A storage-only
+migration produces no logical differences.
 
 ## Adopt sharded storage
 
@@ -146,7 +213,7 @@ Existing task v1 requests retain their full-validation behavior.
 }
 ```
 
-For selected native concepts or semantic sections, use an adopted v2 wiki and
+For selected native concepts or semantic sections, use an adopted v2 or v3 wiki and
 `knowledge_mode: "auto"` or `"required"`. `read_scope: "snapshot"` skips live
 source extraction. Required mode requires the selected native inputs; it does
 not establish source freshness or semantic correctness.
@@ -158,3 +225,11 @@ read limit cannot turn into a complete graph or a satisfied requirement.
 
 Sessions revalidate consumed objects and source inputs before reuse. Delta v2
 binds the exact v2 base and result; v1 and v2 deltas cannot be interchanged.
+
+Packed reads use the versioned `llm-wiki-task-storage/v2` receipt. It records
+consumed file ranges and reports `archive_validation_scope: selected-members`.
+Unconsumed members and archive metadata remain unverified until a full audit.
+Sessions recheck the consumed ranges and pack identities before reuse. Actual
+routing, range and final recheck bytes count against the caller's read budget;
+compressed members also have bounded expansion. Broad requests can still exceed
+that budget, including when surface, manifest or governance companions grow.

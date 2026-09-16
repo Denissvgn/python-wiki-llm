@@ -747,7 +747,7 @@ def _add_knowledge_command(subparsers):
 
     storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
     _add_knowledge_wiki_argument(storage_migrate)
-    storage_migrate.add_argument("--to", choices=["sharded-v2"], required=True)
+    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate"], required=True)
     storage_migrate.add_argument("--recovery-dir", default=None,
                                  help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
     _add_knowledge_dry_run(storage_migrate)
@@ -768,6 +768,13 @@ def _add_knowledge_command(subparsers):
     storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
     storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
     storage_check.add_argument("--format", choices=["json"], default="json")
+    for action in ("inspect-storage", "diff-storage"):
+        review = actions.add_parser(action, help="Review logical knowledge records independently of physical storage")
+        _add_knowledge_wiki_argument(review)
+        review.add_argument("--limit", type=int, default=100, help="Maximum returned records (default: 100)")
+        review.add_argument("--max-bytes", type=int, default=262_144, help="Maximum JSON output bytes (default: 262144)")
+        if action == "diff-storage":
+            review.add_argument("--against-wiki", required=True, help="Other complete wiki snapshot to compare")
 
     initialize = actions.add_parser(
         "init",
@@ -1141,7 +1148,7 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser = subparsers.add_parser(
         "bootstrap", help="Generate initial wiki for an existing codebase"
     )
-    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2"], default=None,
+    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate"], default=None,
                                   help="Explicit native storage format; otherwise preserve the adopted format")
     bootstrap_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
@@ -1893,7 +1900,7 @@ def _add_sync_command(subparsers):
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
     )
     _add_progress_arguments(sync_parser)
-    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2"], default=None,
+    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate"], default=None,
                             help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(
         "--rebuild-knowledge",

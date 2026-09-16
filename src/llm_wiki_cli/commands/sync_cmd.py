@@ -4517,9 +4517,9 @@ def _print_selection_prune_summary(prepared: _PreparedSyncRun) -> None:
 
 def _print_sync_artifact_actions(result: KnowledgeCommitResult) -> None:
     prefix = "DRY-RUN: " if result.dry_run else ""
-    if result.storage_format == "sharded-v2":
+    if result.storage_format != "v1":
         changed = sum(artifact.needs_write for artifact in result.storage_objects)
-        print(f"{prefix}Knowledge storage: sharded-v2 ({changed} changed objects, {len(result.storage_objects)} referenced)", flush=True)
+        print(f"{prefix}Knowledge storage: {result.storage_format} ({changed} changed objects, {len(result.storage_objects)} referenced)", flush=True)
     labels = (
         ("Surface index", result.surface_index),
         ("Knowledge index", result.knowledge_index),

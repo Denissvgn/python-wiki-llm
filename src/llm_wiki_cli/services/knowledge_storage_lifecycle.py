@@ -24,6 +24,10 @@ from .knowledge_storage import (
     canonical_bytes, digest, _hash,
 )
 from .knowledge_storage_io import StorageReadSession, read_guarded, _absolute_path
+from .knowledge_packs import (
+    PACKED_SCHEMA, PACKED_FORMATS, PACK_NAME, INDEX_NAME, PACK_DIRECTORY, PACK_INDEX_DIRECTORY,
+    PackedKnowledgeStoreReader, inspect_pack,
+)
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
@@ -81,6 +85,8 @@ def _backup(directory: Path, files: dict[str, bytes], target_hash: str) -> None:
               "target_root_hash": target_hash,
               "files": {name: {"hash": digest(raw), "bytes": len(raw)} for name, raw in sorted(files.items())}}
     metadata = canonical_bytes(record)
+    if len(metadata) > MAX_OBJECT_BYTES:
+        raise KnowledgeStorageError("recovery", "recovery catalog exceeds its byte bound", code="storage-limit")
     if directory.exists() and any(directory.iterdir()):
         if not (directory / "recovery.json").exists():
             raise KnowledgeStorageError("recovery_dir", "must be empty or contain this exact recovery snapshot")
@@ -98,16 +104,19 @@ def _backup(directory: Path, files: dict[str, bytes], target_hash: str) -> None:
 
 
 def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
-                              recovery_dir: str | Path | None = None) -> dict[str, Any]:
-    """Explicitly adopt v2, retaining verified recovery bytes outside the wiki."""
+                              recovery_dir: str | Path | None = None,
+                              to: str = "sharded-v2") -> dict[str, Any]:
+    """Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
+    if to not in {"sharded-v2", *PACKED_FORMATS}:
+        raise KnowledgeStorageError("to", "unsupported migration format")
     root = _absolute_path(Path(wiki_dir))
     state, session, previous = _committed_inputs(root)
     assert state.knowledge is not None and state.manifest_basis is not None
     plan = build_knowledge_commit_plan(root, surface_index_bytes=previous[SURFACE_INDEX_FILENAME],
         knowledge_index=state.knowledge, manifest=state.manifest_basis.without_artifact_hashes(),
-        knowledge_format="sharded-v2")
+        knowledge_format=to)
     # The complete v1 logical model was validated before encoding; the plan's
     # v2 full reader independently reconstructed/validated it before publication.
     recovery = (Path(recovery_dir) if recovery_dir is not None
@@ -115,7 +124,7 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
     if recovery is not None:
         recovery = _outside_tree(recovery, root)
     report = {"schema_version": "llm-wiki-storage-migration/v1", "dry_run": dry_run,
-              "changed": plan.changed, "from": current_knowledge_format(root), "to": "sharded-v2",
+              "changed": plan.changed, "from": current_knowledge_format(root), "to": to,
               "previous_root_hash": digest(previous[ROOT_FILENAME]),
               "root_hash": plan.knowledge_index.content_hash,
               "root_bytes": len(plan.knowledge_index.content),
@@ -123,7 +132,7 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
               "object_bytes": sum(len(a.content) for a in plan.storage_objects),
               "recovery_dir": None if recovery is None else str(recovery),
               "requires_recovery_dir": plan.changed and recovery is None,
-              "minimum_reader": "llm-wiki-knowledge/v2",
+              "minimum_reader": PACKED_SCHEMA if to in PACKED_FORMATS else "llm-wiki-knowledge/v2",
               "authority_preserved": ["Markdown", "governance ledger", "review history"],
               "git_history_changed": False}
     if dry_run:
@@ -155,12 +164,16 @@ def _read_recovery(directory: Path) -> tuple[dict[str, Any], dict[str, bytes]]:
     if len(metadata["files"]) > 100_003:
         raise KnowledgeStorageError("recovery", "too many files", code="storage-limit")
     files = {}
+    total = 0
     for name, info in metadata["files"].items():
-        if name not in {ROOT_FILENAME, SURFACE_INDEX_FILENAME, MANIFEST_FILENAME} and not _OBJECT_NAME.fullmatch(name):
+        if name not in {ROOT_FILENAME, SURFACE_INDEX_FILENAME, MANIFEST_FILENAME} and not is_storage_path(name):
             raise KnowledgeStorageError("recovery", "contains a non-artifact path")
         if (not isinstance(info, dict) or set(info) != {"hash", "bytes"}
                 or type(info["bytes"]) is not int or not 0 < info["bytes"] <= MAX_EXPANDED_BYTES):
             raise KnowledgeStorageError("recovery", "invalid file descriptor")
+        total += info["bytes"]
+        if total > MAX_EXPANDED_BYTES:
+            raise KnowledgeStorageError("recovery", "snapshot exceeds its aggregate byte bound", code="storage-limit")
         raw = read_guarded(directory / name, info["bytes"]).content
         if len(raw) != info["bytes"] or digest(raw) != info["hash"]:
             raise KnowledgeStorageError("recovery", "file commitment mismatch")
@@ -208,10 +221,13 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
             state=ArtifactWriteState.UNCHANGED if old == content else ArtifactWriteState.UPDATED,
             content_hash=digest(content), content=content, needs_write=old != content, previous_content=old)
     original_format = "sharded-v2" if validated.storage_objects else "v1"
+    original_root = json.loads(files[ROOT_FILENAME])
+    if original_root.get("schema_version") == PACKED_SCHEMA:
+        original_format = "packed-v3-deflate" if original_root["packing"]["compression"] == "deflate" else "packed-v3"
     plan = KnowledgeCommitPlan(surface_index=writes[SURFACE_INDEX_FILENAME], knowledge_index=writes[ROOT_FILENAME],
         manifest=writes[MANIFEST_FILENAME], committed_manifest=manifest,
         evaluated_envelope_hash=validated.evaluated_envelope_hash,
-        storage_objects=tuple(w for name, w in writes.items() if _OBJECT_NAME.fullmatch(name)),
+        storage_objects=tuple(w for name, w in writes.items() if is_storage_path(name)),
         storage_format=original_format)
     session.recheck()
     if not dry_run:
@@ -241,13 +257,13 @@ def export_knowledge_v1(wiki_dir: str | Path, output: str | Path) -> dict[str, A
     return {"format": "v1", "bytes": len(raw), "hash": digest(raw), "output": str(path)}
 
 
+def is_storage_path(relative: str) -> bool:
+    return bool(_OBJECT_NAME.fullmatch(relative) or INDEX_NAME.fullmatch(relative) or PACK_NAME.fullmatch(relative))
+
+
 def stored_object_paths(wiki_dir: str | Path) -> tuple[list[str], list[str]]:
     """Bounded enumeration of the owned two-level object namespace, without links."""
     root = _absolute_path(Path(wiki_dir))
-    objects = root / OBJECT_DIRECTORY
-    if not objects.exists() and not objects.is_symlink():
-        return [], []
-    _absolute_path(objects)
     owned, unknown = [], []
     entries = 0
 
@@ -257,20 +273,26 @@ def stored_object_paths(wiki_dir: str | Path) -> tuple[list[str], list[str]]:
         with os.scandir(directory) as scan:
             for entry in scan:
                 entries += 1
-                if entries > 100_256:
+                if entries > 301_024:
                     raise KnowledgeStorageError("objects", "object discovery exceeds its entry limit", code="storage-limit")
                 paths.append(Path(entry.path))
         return sorted(paths)
 
-    for directory in bounded_entries(objects):
-        _absolute_path(directory)
-        if not re.fullmatch(r"[0-9a-f]{2}", directory.name) or not directory.is_dir():
-            unknown.append(directory.relative_to(root).as_posix())
+    for namespace in (OBJECT_DIRECTORY, PACK_INDEX_DIRECTORY, PACK_DIRECTORY):
+        objects = root / namespace
+        if not objects.exists() and not objects.is_symlink():
             continue
-        for path in bounded_entries(directory):
-            _absolute_path(path)
-            relative = path.relative_to(root).as_posix()
-            (owned if path.is_file() and _OBJECT_NAME.fullmatch(relative) else unknown).append(relative)
+        _absolute_path(objects)
+        for directory in bounded_entries(objects):
+            _absolute_path(directory)
+            pattern = r"[0-9a-f]{2}"
+            if not re.fullmatch(pattern, directory.name) or not directory.is_dir():
+                unknown.append(directory.relative_to(root).as_posix())
+                continue
+            for path in bounded_entries(directory):
+                _absolute_path(path)
+                relative = path.relative_to(root).as_posix()
+                (owned if path.is_file() and is_storage_path(relative) else unknown).append(relative)
     return owned, unknown
 
 
@@ -281,8 +303,8 @@ def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> di
     root = _absolute_path(Path(wiki_dir))
     state, session, _ = _committed_inputs(root)
     assert state.validated_artifacts is not None
-    if current_knowledge_format(root) != "sharded-v2":
-        raise KnowledgeStorageError("format", "cleanup requires a committed sharded-v2 root")
+    if current_knowledge_format(root) not in {"sharded-v2", *PACKED_FORMATS}:
+        raise KnowledgeStorageError("format", "cleanup requires a committed indexed root")
     owned, unknown = stored_object_paths(root)
     unused = sorted(set(owned) - set(state.validated_artifacts.storage_objects))
     safe = {}
@@ -290,13 +312,29 @@ def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> di
     _, root_bytes = validated_artifact_bytes(state.validated_artifacts)
     def object_reader(relative: str, maximum: int) -> bytes:
         return read_guarded(root / relative, maximum).content
-    inspector = KnowledgeStoreReader(root_bytes, object_reader)
+    parsed = json.loads(root_bytes)
+    logical_root = parsed["store"] if parsed.get("schema_version") == PACKED_SCHEMA else parsed
+    inspector = KnowledgeStoreReader(canonical_bytes(logical_root), object_reader)
     for name in unused:
         try:
             raw = read_guarded(root / name, MAX_OBJECT_BYTES).content
+            if PACK_NAME.fullmatch(name):
+                inspect_pack(raw, name)
+                safe[name] = raw
+                continue
             if digest(raw)[7:] != Path(name).stem:
                 raise KnowledgeStorageError(name, "unknown content identity")
             payload = decode_bytes(raw, limit=MAX_OBJECT_BYTES, field=name)
+            if INDEX_NAME.fullmatch(name):
+                kind = payload.get("kind")
+                count = (len(payload[kind]) if kind in {"members", "packs"}
+                         else sum(child["count"] for child in payload["children"].values()))
+                desc = {"hash": digest(raw), "bytes": len(raw), "count": count}
+                probe_root = canonical_bytes({"schema_version": PACKED_SCHEMA, "store": logical_root,
+                    "packing": {"compression": "stored", "catalog": desc, "pack_catalog": desc, "objects": count, "packs": count}})
+                PackedKnowledgeStoreReader(probe_root, object_reader)._index(desc, payload["prefix"], "packs" if kind == "packs" else "members")
+                safe[name] = raw
+                continue
             count = (len(payload["records"]) if payload.get("kind") == "records"
                      else sum(child["count"] for child in payload["children"].values()))
             inspector._node({"hash": digest(raw), "bytes": len(raw), "count": count},

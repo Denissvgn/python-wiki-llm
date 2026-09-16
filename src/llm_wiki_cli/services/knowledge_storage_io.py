@@ -45,19 +45,38 @@ class ReadObservation:
     directories: tuple[tuple[str, tuple[int, int]], ...]
 
 
-def read_guarded(path: Path, maximum: int) -> ReadObservation:
+def read_guarded(path: Path, maximum: int, *, offset: int = 0,
+                 length: int | None = None, file_bytes: int | None = None) -> ReadObservation:
     """Read a regular file through pinned/no-follow ancestors and bound its bytes."""
     if type(maximum) is not int or not 0 <= maximum <= MAX_EXPANDED_BYTES:
         raise KnowledgeStorageError("maximum", "invalid read limit")
+    if (type(offset) is not int or offset < 0 or
+            (length is not None and (type(length) is not int or not 0 <= length <= maximum)) or
+            (file_bytes is not None and (type(file_bytes) is not int or not 0 <= file_bytes <= MAX_EXPANDED_BYTES)) or
+            (length is None and (offset or file_bytes is not None))):
+        raise KnowledgeStorageError("range", "invalid bounded file range")
+
+    def consume(stream, before):
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+            raise KnowledgeStorageError(target.name, "must be one regular file without hard links")
+        if length is None:
+            if before.st_size > maximum:
+                raise KnowledgeStorageError(target.name, "file exceeds byte limit", code="storage-limit")
+            return stream.read(before.st_size + 1)
+        if before.st_size != file_bytes or offset + length > before.st_size:
+            raise KnowledgeStorageError(target.name, "pack size or range differs from its commitment")
+        stream.seek(offset)
+        result = stream.read(length)
+        if len(result) != length:
+            raise KnowledgeStorageError(target.name, "file range changed during read", code="storage-mutation")
+        return result
     target = _absolute_path(path)
     try:
         if os.name == "nt":
             with guard_windows_directory_chain(Path(target.anchor), target.parent.parts[1:]):
                 with open_windows_readonly_file(target) as (stream, _):
                     before = os.fstat(stream.fileno())
-                    if before.st_size > maximum or not stat.S_ISREG(before.st_mode):
-                        raise KnowledgeStorageError(target.name, "file exceeds limit or is not regular", code="storage-limit")
-                    content = stream.read(before.st_size + 1)
+                    content = consume(stream, before)
                     after = os.fstat(stream.fileno())
                     current = target.lstat()
                     directories = tuple((str(p), (p.stat().st_dev, p.stat().st_ino)) for p in target.parents)
@@ -82,11 +101,7 @@ def read_guarded(path: Path, maximum: int) -> ReadObservation:
                              | getattr(os, "O_CLOEXEC", 0), dir_fd=parent_fd)
                 with os.fdopen(fd, "rb") as stream:
                     before = os.fstat(stream.fileno())
-                    if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
-                        raise KnowledgeStorageError(target.name, "must be one regular file without hard links")
-                    if before.st_size > maximum:
-                        raise KnowledgeStorageError(target.name, "file exceeds byte limit", code="storage-limit")
-                    content = stream.read(before.st_size + 1)
+                    content = consume(stream, before)
                     after = os.fstat(stream.fileno())
                     current = os.stat(target.name, dir_fd=parent_fd, follow_symlinks=False)
                 for ancestor, name, identity in pinned:
@@ -117,6 +132,8 @@ class StorageReadSession:
         self.bytes_read = 0
         self.reads = 0
         self.observations: dict[str, ReadObservation] = {}
+        self.range_observations: dict[tuple[str, int, int, int], ReadObservation] = {}
+        self._range_files: dict[str, ReadObservation] = {}
 
     def read(self, relative: str, maximum: int) -> bytes:
         _require_relative_name(relative)
@@ -140,7 +157,29 @@ class StorageReadSession:
     def recheck(self) -> None:
         for relative, observation in tuple(self.observations.items()):
             self.read(relative, len(observation.content))
+        for relative, offset, length, size in tuple(self.range_observations):
+            self.read_range(relative, offset, length, size)
+
+    def read_range(self, relative: str, offset: int, length: int, file_bytes: int) -> bytes:
+        """Read and retain an authenticated member range, without reading its whole pack."""
+        _require_relative_name(relative)
+        if type(length) is not int or length < 0 or length > self.maximum - self.bytes_read:
+            raise KnowledgeStorageError("read", "inspection budget exhausted", code="storage-budget-exhausted")
+        observed = read_guarded(self.root / relative, length, offset=offset, length=length, file_bytes=file_bytes)
+        self.bytes_read += len(observed.content)
+        self.reads += 1
+        key = (relative, offset, length, file_bytes)
+        prior = self.range_observations.get(key)
+        if prior is not None and prior != observed:
+            raise KnowledgeStorageError(relative, "pack range changed during the request", code="storage-mutation")
+        # Two different members of one pack must share the same file/ancestor identities.
+        peers = [v for v in (self._range_files.get(relative), self.observations.get(relative)) if v is not None]
+        if any(v.identity != observed.identity or v.directories != observed.directories for v in peers):
+            raise KnowledgeStorageError(relative, "pack generation changed between members", code="storage-mutation")
+        self.range_observations[key] = observed
+        self._range_files[relative] = observed
+        return observed.content
 
     def receipt(self) -> dict[str, Any]:
         return {"bytes_read": self.bytes_read, "read_operations": self.reads,
-                "files": sorted(self.observations)}
+                "files": sorted(set(self.observations) | {k[0] for k in self.range_observations})}

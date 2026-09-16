@@ -264,6 +264,12 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
                 needs_write=False,
             )
         )
+    from .knowledge_packs import PACKED_SCHEMA
+    import json
+    storage_root = json.loads(writes[1].content)
+    storage_format = "sharded-v2" if state.artifacts.storage_objects else "v1"
+    if storage_root.get("schema_version") == PACKED_SCHEMA:
+        storage_format = "packed-v3-deflate" if storage_root["packing"]["compression"] == "deflate" else "packed-v3"
     return KnowledgeCommitResult(
         surface_index=writes[0],
         knowledge_index=writes[1],
@@ -271,7 +277,7 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
         committed_manifest=manifest,
         evaluated_envelope_hash=state.artifacts.evaluated_envelope_hash,
         dry_run=dry_run,
-        storage_format="sharded-v2" if state.artifacts.storage_objects else "v1",
+        storage_format=storage_format,
         storage_objects=tuple(PlannedArtifactWrite(
             path=state.wiki_root / name, relative_path=name, state=ArtifactWriteState.UNCHANGED,
             content_hash=sha256_bytes(content), content=content, needs_write=False, previous_content=content,

@@ -21,6 +21,10 @@ from .knowledge_storage import (
     canonical_bytes, parse_store_root,
 )
 from .knowledge_storage_io import _absolute_path, read_guarded
+from .knowledge_packs import (
+    PACKED_SCHEMA, PACK_NAME, INDEX_NAME, MAX_PACK_BYTES, MAX_INDEX_BYTES,
+    open_knowledge_store, parse_packed_root,
+)
 from .knowledge_storage_lifecycle import stored_object_paths
 from .sync_manifest import MANIFEST_FILENAME
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
@@ -179,6 +183,11 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
                         parsed = parse_store_root(raw)
                         report["format"] = "sharded-v2"
                         report["declared_records"] = {k: v["count"] for k, v in parsed["collections"].items()}
+                    elif version == PACKED_SCHEMA:
+                        parsed = parse_packed_root(raw)
+                        report["format"] = "packed-v3-deflate" if parsed["packing"]["compression"] == "deflate" else "packed-v3"
+                        report["packing"] = parsed["packing"]
+                        report["declared_records"] = {k: v["count"] for k, v in parsed["store"]["collections"].items()}
                     elif version == "llm-wiki-knowledge/v1":
                         report["format"] = "v1"
                         report["compact_bytes_by_kind"] = {k: len(canonical_bytes(v)) for k, v in data.items()}
@@ -195,7 +204,8 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
         report["object_bytes"] += size
         if report["object_bytes"] > MAX_EXPANDED_BYTES:
             raise KnowledgeStorageError("objects", "size inspection exceeds its total byte bound", code="storage-limit")
-        if size > MAX_OBJECT_BYTES:
+        ceiling = MAX_PACK_BYTES if PACK_NAME.fullmatch(name) else MAX_INDEX_BYTES if INDEX_NAME.fullmatch(name) else MAX_OBJECT_BYTES
+        if size > ceiling:
             report["failures"].append({"path": name, "bytes": size, "reason": "object-ceiling"})
         largest.append({"path": name, "bytes": size})
     report["largest_objects"] = sorted(largest, key=lambda item: (-item["bytes"], item["path"]))[:10]
@@ -249,8 +259,19 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
                     if isinstance(value, list):
                         return sum(reference_count(v) for v in value)
                     return 0
-                refs = sum(reference_count(json.loads(content)) for content in artifacts.storage_objects.values())
-                descriptors = json.loads(raw)["collections"]["values"]["count"]
+                logical_objects = artifacts.storage_objects
+                store_root = json.loads(raw)
+                if store_root.get("schema_version") == PACKED_SCHEMA:
+                    reader = open_knowledge_store(raw, lambda name, _: artifacts.storage_objects[name])
+                    reader.materialize()
+                    logical_objects = reader.objects
+                    store_root = reader.root
+                    report["physical_packs"] = sum(bool(PACK_NAME.fullmatch(name)) for name in artifacts.storage_objects)
+                    report["physical_indexes"] = sum(bool(INDEX_NAME.fullmatch(name)) for name in artifacts.storage_objects)
+                    report["logical_objects"] = len(logical_objects)
+                    report["logical_object_bytes"] = sum(map(len, logical_objects.values()))
+                refs = sum(reference_count(json.loads(content)) for content in logical_objects.values())
+                descriptors = store_root["collections"]["values"]["count"]
                 report["deduplication"] = {"descriptor_references": refs, "unique_descriptors": descriptors,
                                            "repeated_references": max(0, refs - descriptors)}
         except ValueError as exc:
@@ -260,3 +281,75 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
         report["git"] = inspect_git_range(root, base=git_base, head=git_head)
     report["ok"] = not report["failures"] and report.get("git", {"ok": True})["ok"]
     return report
+
+
+def _review_records(wiki_dir: str | Path) -> dict[str, Any]:
+    """Logical review keys preserve duplicates and avoid physical pack identities."""
+    state = load_knowledge_state(wiki_dir)
+    if state.knowledge is None or state.validated_artifacts is None:
+        raise KnowledgeStorageError("knowledge", "a fully valid committed snapshot is required")
+    data = _model_to_payload(state.knowledge)
+    rows = {"bundle": data["bundle"]}
+    for concept in data["concepts"]:
+        rows["concept:" + concept["locator"]] = concept
+    occurrences: dict[str, int] = {}
+    from .knowledge_storage import digest
+    for relationship in data["relationships"]:
+        key = digest(canonical_bytes(relationship))
+        index = occurrences.get(key, 0)
+        occurrences[key] = index + 1
+        rows[f"relationship:{key}:{index}"] = relationship
+    for key, value in data.get("extensions", {}).items():
+        if key in {TYPED_GRAPH_EXTENSION_KEY, SECTION_OWNERSHIP_EXTENSION_KEY}:
+            field = "edges" if key == TYPED_GRAPH_EXTENSION_KEY else "pages"
+            identity = "key" if field == "edges" else "page_locator"
+            rows["extension:" + key] = {k: v for k, v in value.items() if k != field}
+            for item in value[field]:
+                rows[f"{field}:{item[identity]}"] = item
+        else:
+            rows["extension:" + key] = value
+    return rows
+
+
+def review_storage(wiki_dir: str | Path, *, against: str | Path | None = None,
+                   limit: int = 100, max_bytes: int = 262_144) -> dict[str, Any]:
+    """Inspect or compare complete logical snapshots with explicitly bounded output."""
+    if type(limit) is not int or not 1 <= limit <= 10_000 or type(max_bytes) is not int or not 1024 <= max_bytes <= MAX_OBJECT_BYTES:
+        raise KnowledgeStorageError("review", "limit must be 1..10000 and max_bytes 1024..8388608")
+    from .knowledge_storage import digest
+    current = _review_records(wiki_dir)
+    previous = {} if against is None else _review_records(against)
+    result: dict[str, Any] = {"schema_version": "llm-wiki-storage-review/v1", "ok": True,
+        "operation": "inspect" if against is None else "diff", "validation_scope": "full-committed-snapshots",
+        "records": [], "total": 0, "omitted": 0, "values_omitted": 0, "complete": True}
+    used = len(canonical_bytes(result)) + 128
+    for key in sorted(current.keys() | previous.keys()):
+        if against is not None and current.get(key) == previous.get(key) and (key in current) == (key in previous):
+            continue
+        result["total"] += 1
+        if len(result["records"]) >= limit:
+            result["omitted"] += 1
+            continue
+        row: dict[str, Any] = {"key": key}
+        row["change"] = "present" if against is None else "added" if key not in previous else "removed" if key not in current else "modified"
+        values = {}
+        for label, records in (("before", previous), ("after", current)):
+            if key in records:
+                raw = canonical_bytes(records[key])
+                row[label] = {"hash": digest(raw), "bytes": len(raw)}
+                values[label] = records[key]
+        expanded = {**row, "values": values}
+        size = len(canonical_bytes(expanded)) + 1
+        if used + size <= max_bytes:
+            row = expanded
+        else:
+            row["values_omitted"] = True
+            size = len(canonical_bytes(row)) + 1
+            if used + size > max_bytes:
+                result["omitted"] += 1
+                continue
+            result["values_omitted"] += 1
+        result["records"].append(row)
+        used += size
+    result["complete"] = not result["omitted"] and not result["values_omitted"]
+    return result

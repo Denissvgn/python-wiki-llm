@@ -126,10 +126,23 @@ run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
      "--to", "sharded-v2", "--recovery-dir", "storage-recovery"])
 storage = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "storage-check", "--wiki-dir", wiki, "--full"]).stdout)
 assert storage["ok"] and storage["format"] == "sharded-v2"
+# Both packed profiles preserve the installed full and scoped consumers.
+for storage_format in ("packed-v3", "packed-v3-deflate"):
+    run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
+         "--to", storage_format, "--recovery-dir", "recovery-" + storage_format])
+    report = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "storage-check",
+                             "--wiki-dir", wiki, "--full"]).stdout)
+    assert report["ok"] and report["format"] == storage_format and report["physical_packs"]
+    assert api.validate_task_context(api.build_task_context(request, src_dir=source, wiki_dir=wiki).rendered, request)["state"] == "covered"
+    repeat = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
+                             "--to", storage_format, "--dry-run"]).stdout)
+    assert not repeat["changed"]
 scoped_request = {**request, "schema_version": "llm-wiki-task-request/v2"}
 scoped = api.build_task_context(scoped_request, src_dir=source, wiki_dir=wiki)
 scoped_payload = api.validate_task_context(scoped.rendered, scoped_request)
 assert scoped_payload["packet"] is None and scoped_payload["storage"]["whole_store_validated"] is False
+assert scoped_payload["storage"]["schema_version"] == "llm-wiki-task-storage/v2"
+assert scoped_payload["storage"]["ranges"]
 assert all(item["satisfied"] for item in scoped_payload["coverage"])
 assert run(["-I", "-m", "llm_wiki_cli.cli", "task-context", "--src-dir", source, "--wiki-dir", wiki,
             "--request", "-"], input_text=json.dumps(scoped_request)).stdout == scoped.rendered

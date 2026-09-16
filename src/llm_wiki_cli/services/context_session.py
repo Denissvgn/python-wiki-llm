@@ -302,6 +302,7 @@ class ContextSession:
                 _defer_scoped_validation=scoped, _wiki_byte_budget=budget)
             if scoped and read.scoped_state is not None:
                 initial_bytes = sum(len(item.content) for item in read.scoped_state.wiki_inputs.values())
+                initial_bytes += sum(len(item.content) for item in read.scoped_state.wiki_ranges.values())
                 self._validation_work["wiki_bytes"] = self._validation_work.get("wiki_bytes", 0) + initial_bytes
             return read
         except TaskCancelledError:
