@@ -1,0 +1,1 @@
+Change the Store handler to accept a prefix; preserve function-valued callbacks and state unresolved call targets.

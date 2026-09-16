@@ -9,3 +9,9 @@ api.inspect_concept("llm-wiki://entities/Item", unexpected=True)  # expected: re
 mode: KnowledgeMode = "invented"  # expected: reportAssignmentType
 result = api.inspect_concept("llm-wiki://entities/Item")
 count: str = result["cost"]["supplied_paths"]  # expected: reportAssignmentType
+api.search_wiki("query", limit="many")  # expected: reportArgumentType
+api.build_maintenance_queue(limit="many")  # expected: reportArgumentType
+api.build_task_context("task text")  # expected: reportArgumentType
+api.open_context_session(max_entries="many")  # expected: reportArgumentType
+api.apply_task_delta(12, {}, {})  # expected: reportArgumentType
+api.open_context_session().read({}, delta="yes")  # expected: reportArgumentType

@@ -21,6 +21,7 @@ from .commands import (
     plugins_cmd,
     prepare_extractors_cmd,
     queue_cmd,
+    query_cmd,
     release_cmd,
     review_cmd,
     search_cmd,
@@ -29,6 +30,7 @@ from .commands import (
     status_cmd,
     sync_cmd,
     team_cmd,
+    task_cmd,
     trigger_cmd,
     uninstall_cmd,
     upgrade_cmd,
@@ -183,6 +185,8 @@ _COMMAND_MODULES = {
     "docs": docs_cmd,
     "doctor": doctor_cmd,
     "queue": queue_cmd,
+    "query": query_cmd,
+    "task-context": task_cmd,
 }
 
 HELPER_CACHE_HELP = (
@@ -223,6 +227,30 @@ def _build_parser():
     return parser
 
 
+def _add_query_command(subparsers):
+    parser = subparsers.add_parser("query", help="Run an exact documentation query")
+    parser.add_argument("--request", required=True, help="JSON request file, or - for stdin (1 MiB maximum)")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--output", help="Write the JSON response to this file")
+    _add_source_selection_argument(parser)
+
+
+def _add_task_context_command(subparsers):
+    parser = subparsers.add_parser("task-context", help="Build bounded qualified context for an explicit task")
+    parser.add_argument("--request", required=True, help="JSON request file, or - for stdin")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--profile", help="Explicit workflow profile JSON")
+    parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON")
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
+    parser.add_argument("--output", help="Write canonical context to this file")
+    _add_source_selection_argument(parser)
+    _add_helper_cache_argument(parser)
+
+
 def _register_commands(subparsers):
     _add_init_command(subparsers)
     _add_extract_command(subparsers)
@@ -245,6 +273,8 @@ def _register_commands(subparsers):
     _add_uninstall_command(subparsers)
     _add_status_command(subparsers)
     _add_queue_command(subparsers)
+    _add_query_command(subparsers)
+    _add_task_context_command(subparsers)
     _add_mcp_command(subparsers)
     _add_obsidian_command(subparsers)
     _add_site_command(subparsers)
@@ -1414,6 +1444,8 @@ def _add_mcp_command(subparsers):
         help="Additional HTTP Origin allowed to call the local MCP endpoint",
     )
     _add_source_selection_argument(mcp_parser)
+    mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting")
+    mcp_parser.add_argument("--enable-sessions", action="store_true", help="Enable bounded in-memory task sessions")
 
 
 def _add_obsidian_command(subparsers):

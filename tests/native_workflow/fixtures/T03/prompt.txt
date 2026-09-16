@@ -1,0 +1,1 @@
+Add an optional limit=20 query input to the list_items operation; preserve the GET route.

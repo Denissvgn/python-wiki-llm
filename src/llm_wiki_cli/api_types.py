@@ -14,6 +14,83 @@ from typing import Any, Literal, TypedDict
 KnowledgeMode = Literal["off", "auto", "required"]
 
 
+class TaskAnchor(TypedDict):
+    kind: Literal["source", "symbol", "concept", "wiki"]
+    value: str
+
+
+class _RequirementOptions(TypedDict, total=False):
+    criterion: Literal["present", "complete"]
+
+
+class EvidenceRequirement(_RequirementOptions):
+    id: str
+    facet: Literal["source-contract", "callers", "callees", "concept", "semantic-section",
+                   "typed-relationships", "entrypoint", "dependency", "behavior"]
+    selector: str
+
+
+class _TaskOptions(TypedDict, total=False):
+    text: str
+    kind: Literal["orientation", "bug-diagnosis", "contract-change", "refactor"]
+    task_ref: str
+    anchors: list[TaskAnchor]
+    requirements: list[EvidenceRequirement]
+    changes: dict[str, Any]
+    options: dict[str, Any]
+
+
+class TaskContextRequest(_TaskOptions):
+    schema_version: Literal["llm-wiki-task-request/v1"]
+
+
+class _SearchMatchRanking(TypedDict, total=False):
+    score: float
+    reasons: list[str]
+    provenance: dict[str, str]
+
+
+class SearchMatch(_SearchMatchRanking):
+    kind: str
+    id: str
+    uri: str
+    path: str
+    title: str
+    snippet: str
+
+
+class _SearchMetadata(TypedDict, total=False):
+    ranking: str
+    corpus_id: str
+    scanned: dict[str, int]
+    resource_limits: dict[str, int]
+
+
+class SearchResult(_SearchMetadata):
+    query: str
+    mode: Literal["ranked", "substring"]
+    total: int
+    returned: int
+    count: int
+    truncated: bool
+    bounds: dict[str, ResultBounds]
+    results: list[SearchMatch]
+
+
+class MaintenanceQueueResult(TypedDict):
+    schema_version: str
+    advisory: bool
+    limit: int
+    total: int
+    returned: int
+    omitted: int
+    items: list[dict[str, Any]]
+    limitations: list[str]
+    diagnostics: list[dict[str, Any]]
+    basis: dict[str, Any]
+    queue_id: str
+
+
 class KnowledgeCoverageCounts(TypedDict):
     total: int
     modeled: int

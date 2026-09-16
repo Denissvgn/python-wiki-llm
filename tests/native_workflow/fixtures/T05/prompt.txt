@@ -1,0 +1,1 @@
+Move the public Account class to account.py and update the import and existing documentation link.

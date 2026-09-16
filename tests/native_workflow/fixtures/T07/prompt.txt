@@ -1,0 +1,1 @@
+Explain the grouped higher-order apply signature and report the raw CPP variant as unsupported without executing CPP.

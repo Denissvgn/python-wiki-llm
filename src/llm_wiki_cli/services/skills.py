@@ -60,6 +60,7 @@ SKILL_DEPENDENCIES: dict[str, tuple[str, ...]] = {
         "doc-review",
         "impact-analysis",
         "infra-review",
+        "native-coding",
         "onboarding-guide",
         "publish-docs",
         "usage-examples",

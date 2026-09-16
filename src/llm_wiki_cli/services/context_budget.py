@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import sys
 from dataclasses import dataclass, replace
@@ -30,11 +31,15 @@ class BudgetedContext:
 
 
 def validate_request(data: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(data, Mapping) or any(not isinstance(key, str) for key in data):
+        raise context.ProtocolRequestError("Request must be an object with string keys", "request")
+    if data.get("protocol", CONTEXT_BUDGET_PROTOCOL_VERSION) != CONTEXT_BUDGET_PROTOCOL_VERSION:
+        raise context.ProtocolRequestError("Unsupported context budget protocol", "protocol")
     allowed = context._V2_REQUEST_KEYS | {"budget_mode", "counter_id", "changes"}
     unknown = set(data) - allowed
     if unknown:
         raise context.ProtocolRequestError(
-            f"Unknown request field: {sorted(unknown)[0]}"
+            f"Unknown request field: {sorted(unknown)[0]}", sorted(unknown)[0]
         )
     legacy = dict(data)
     legacy["protocol"] = context.KNOWLEDGE_PROTOCOL_VERSION
@@ -87,10 +92,13 @@ def _accounted_render(render, accounting, counter):
 
 
 def fit_payload(
-    payload, request, warnings, counter, *, packet_renderer=None, changes=None
+    payload, request, warnings, counter, *, packet_renderer=None, changes=None,
+    envelope_renderer=None,
+    freshness_rank_by_source=None,
 ):
     """Select whole source entries; keep all enrichment and omission evidence."""
     payload = copy.deepcopy(payload)
+    freshness_rank_by_source = freshness_rank_by_source or {}
     budget = request["budget_tokens"]
     accounting = {
         "budget_tokens": budget,
@@ -106,6 +114,7 @@ def fit_payload(
         "ok": True,
         "format": request["format"],
         "accounting": accounting,
+        "request_id": request_identity(request),
     }
     envelope["changes"] = changes or {"request": {"mode": "legacy-last-commit"}}
     # The inner legacy budget is an allocation bound, not a compliance claim.
@@ -117,6 +126,11 @@ def fit_payload(
     )
 
     def render(accounting):
+        if "ranking_policy" in payload:
+            payload["ranking_policy"] = context._explicit_freshness_ranking_policy(
+                payload.get("knowledge", {}), freshness_rank_by_source,
+                budget_pressure=bool(payload["truncated"]),
+            )
         payload["used"] = sum(
             context._entry_tokens(p, e) for p, e in payload["files"].items()
         )
@@ -145,6 +159,8 @@ def fit_payload(
             value = {**envelope, "packet": packet_renderer(legacy_request, response)}
         else:
             value = {**envelope, "context": response}
+        if envelope_renderer is not None:
+            return envelope_renderer(value)
         return (
             json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
             + "\n"
@@ -159,7 +175,13 @@ def fit_payload(
             return BudgetedContext(
                 False, "", {**accounting, "exact_compliance": False}, "cannot-fit"
             )
-        # Existing insertion order already carries relevance and freshness ties.
+        if freshness_rank_by_source and request.get("prefer_fresh"):
+            order = {path: index for index, path in enumerate(files)}
+            priorities = {"high": 0, "medium": 1, "low": 2}
+            files = payload["files"] = dict(sorted(files.items(), key=lambda item: (
+                priorities.get(item[1]["priority"], 2),
+                freshness_rank_by_source.get(item[0], 1), order[item[0]],
+            )))
         path = next(reversed(files))
         entry = files[path]
         detail = entry["detail"]
@@ -183,7 +205,7 @@ def build_budgeted_context(
     allow_external_src=False,
     source_selection=None,
 ) -> BudgetedContext:
-    request = validate_request(request or {"budget_tokens": 32000})
+    request = validate_request({"budget_tokens": 32000} if request is None else request)
     if counter is None:
         if request["budget_mode"] == "exact":
             raise ValueError(
@@ -229,7 +251,9 @@ def build_budgeted_context(
         format="json",
         budget_tokens=2**63 - 1,
     )
-    payload, warnings = packets.build_context_from_captured_read(captured, legacy)
+    freshness_ranks: dict[str, int] = {}
+    payload, warnings = packets.build_context_from_captured_read(captured, legacy,
+                                                               freshness_ranking_out=freshness_ranks)
 
     def packet_renderer(legacy, response):
         return packets.packet_from_captured_response(
@@ -243,6 +267,7 @@ def build_budgeted_context(
         counter,
         packet_renderer=packet_renderer if request["format"] == "packet" else None,
         changes=changes,
+        freshness_rank_by_source=freshness_ranks,
     )
     packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
     packets._assert_wiki_unchanged(
@@ -250,6 +275,92 @@ def build_budgeted_context(
     )
     packets._assert_selection_unchanged(captured)
     return result
+
+
+def request_identity(request: Mapping[str, Any]) -> str:
+    normalized = validate_request(request)
+    raw = json.dumps(normalized, sort_keys=True, ensure_ascii=False,
+                     separators=(",", ":"), allow_nan=False).encode("utf-8")
+    return "sha256:" + hashlib.sha256(b"llm-wiki-context-request/v3\0" + raw).hexdigest()
+
+
+def validate_budgeted_context(
+    rendered: str, request: Mapping[str, Any], *, counter: TokenCounter,
+) -> dict[str, Any]:
+    """Independently validate the outer v3 binding, packet and emitted count."""
+    normalized = validate_request(request)
+    if not isinstance(rendered, str) or not rendered.endswith("\n"):
+        raise ValueError("Budgeted output must be canonical UTF-8 text ending in LF")
+    if normalized["format"] == "markdown":
+        prefix = "# Budgeted context\n\n```json\n"
+        if not rendered.startswith(prefix) or "\n```\n\n" not in rendered[len(prefix):]:
+            raise ValueError("Invalid budgeted markdown envelope")
+        raw = rendered[len(prefix):].split("\n```\n\n", 1)[0]
+    else:
+        raw = rendered
+    from .request_json import _pairs, _constant
+
+    try:
+        payload = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)
+    except (ValueError, RecursionError) as exc:
+        raise ValueError("Invalid budgeted context JSON") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("Budgeted context must contain an object")
+    common = {"protocol", "ok", "format", "request_id", "changes", "accounting"}
+    fields = {"markdown": {"metadata", "warnings"}, "json": {"context"}, "packet": {"packet"}}
+    if set(payload) != common | fields[normalized["format"]]:
+        raise ValueError("Invalid budgeted context envelope fields")
+    if (payload["protocol"] != CONTEXT_BUDGET_PROTOCOL_VERSION or payload["ok"] is not True
+            or payload["format"] != normalized["format"]
+            or payload["request_id"] != request_identity(normalized)):
+        raise ValueError("Budgeted context request binding mismatch")
+    accounting = payload["accounting"]
+    if not isinstance(accounting, dict) or set(accounting) != {
+        "budget_tokens", "used_tokens", "counter_id", "mode", "exact_compliance", "usage_kind", "scope"
+    }:
+        raise ValueError("Invalid accounting fields")
+    for field in ("budget_tokens", "used_tokens"):
+        if type(accounting[field]) is not int or accounting[field] < 0:
+            raise ValueError("Invalid token count")
+    count = counter.count(rendered)
+    if type(count) is not int or count < 0:
+        raise ValueError("Invalid trusted counter")
+    if (accounting["budget_tokens"] != normalized["budget_tokens"]
+            or not count <= accounting["used_tokens"] <= accounting["budget_tokens"]
+            or accounting["counter_id"] != counter.identity
+            or normalized["counter_id"] not in (None, counter.identity)
+            or accounting["mode"] != normalized["budget_mode"]
+            or accounting["exact_compliance"] is not (normalized["budget_mode"] == "exact" and bool(counter.exact))
+            or (normalized["budget_mode"] == "exact" and not counter.exact)
+            or accounting["scope"] != "emitted-text-without-host-chat-framing"
+            or accounting["usage_kind"] != "upper-bound-including-accounting"):
+        raise ValueError("Budgeted context accounting mismatch")
+    if normalized["format"] != "markdown":
+        canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True,
+                               separators=(",", ":"), allow_nan=False) + "\n"
+        if canonical != rendered:
+            raise ValueError("Budgeted context was reserialized")
+    if normalized["format"] == "packet":
+        packets.validate_context_packet(packets._encode_packet_payload(payload["packet"]))
+        inner = payload["packet"]["request"]
+    elif normalized["format"] == "json":
+        inner = payload["context"]
+        if not isinstance(inner, dict) or inner.get("protocol") != context.KNOWLEDGE_PROTOCOL_VERSION or inner.get("ok") is not True:
+            raise ValueError("Invalid embedded context")
+    else:
+        inner = None
+    if inner is not None:
+        fields = ("focus", "filters", "prefer_fresh", "knowledge_mode") if normalized["format"] == "packet" else ("focus", "filters", "prefer_fresh")
+        for field in fields:
+            if inner.get(field, False if field == "prefer_fresh" else None) != normalized.get(field):
+                raise ValueError("Embedded context request mismatch")
+    changes = payload["changes"]
+    if not isinstance(changes, dict) or not isinstance(changes.get("request"), dict):
+        raise ValueError("Invalid change selection binding")
+    expected_changes = normalized.get("changes", {"mode": "legacy-last-commit"})
+    if any(changes["request"].get(key) != value for key, value in expected_changes.items()):
+        raise ValueError("Change selection request mismatch")
+    return payload
 
 
 def run(args, request=None):

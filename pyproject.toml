@@ -100,6 +100,8 @@ where = ["src"]
     "skills/impact-analysis/reference.md",
     "skills/infra-review/SKILL.md",
     "skills/infra-review/reference.md",
+    "skills/native-coding/SKILL.md",
+    "skills/native-coding/profile.json",
     "skills/onboarding-guide/SKILL.md",
     "skills/onboarding-guide/reference.md",
     "skills/publish-docs/SKILL.md",

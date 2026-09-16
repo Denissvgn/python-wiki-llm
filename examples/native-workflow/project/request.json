@@ -1,0 +1,11 @@
+{
+  "schema_version": "llm-wiki-task-request/v1",
+  "text": "Preserve all three permitted values in a capped batch.",
+  "kind": "bug-diagnosis",
+  "task_ref": "batch-cap",
+  "anchors": [{"kind": "source", "value": "client.py"}],
+  "requirements": [
+    {"id": "cap-contract", "facet": "source-contract", "selector": "policy.py:cap"},
+    {"id": "caller-contract", "facet": "source-contract", "selector": "client.py:public_values"}
+  ]
+}

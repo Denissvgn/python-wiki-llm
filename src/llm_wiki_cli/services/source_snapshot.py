@@ -11,7 +11,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from ..config import (
     COMPOSE_PATTERNS,
@@ -107,6 +107,10 @@ class SourceSnapshotError(ValueError):
         super().__init__(f"{field}: {message}")
 
 
+class SourceSnapshotMutationError(SourceSnapshotError):
+    """Input identity changed while its content commitment was captured."""
+
+
 @dataclass(frozen=True)
 class SourceFile:
     """A source-tree file discovered relative to a snapshot root."""
@@ -155,6 +159,11 @@ class SourceSnapshot:
         default_factory=dict
     )
     captured_gitignore_paths: frozenset[str] = frozenset()
+    respect_ignores: bool = False
+    capture_byte_limit: int | None = None
+    capture_scan_limit: int | None = None
+    coherent: bool = False
+    directory_integrity: dict[str, tuple[int, ...]] = field(default_factory=dict)
 
     @property
     def source_selection_path(self) -> str | None:
@@ -429,6 +438,11 @@ class SourceSnapshot:
             only_files=self.only_files,
             captured_file_integrity=file_integrity,
             captured_gitignore_paths=self.captured_gitignore_paths,
+            respect_ignores=self.respect_ignores,
+            capture_byte_limit=self.capture_byte_limit,
+            capture_scan_limit=self.capture_scan_limit,
+            coherent=self.coherent,
+            directory_integrity=dict(self.directory_integrity),
         )
 
 
@@ -446,6 +460,13 @@ class _SnapshotBuckets:
     source_selection_policy: SourceSelectionPolicy | None
     selected_regular_paths: set[str]
     expected_gitignore_paths: frozenset[str] | None
+    respect_ignores: bool = False
+    max_control_bytes: int | None = None
+    control_bytes: int = 0
+    max_scan_entries: int | None = None
+    coherent: bool = False
+    directory_integrity: dict[str, tuple[int, ...]] = field(default_factory=dict)
+    control_integrity: dict[Path, SourceFileIntegrity] = field(default_factory=dict)
 
 
 def _new_snapshot_buckets(
@@ -453,6 +474,10 @@ def _new_snapshot_buckets(
     source_selection_policy: SourceSelectionPolicy | None = None,
     *,
     expected_gitignore_paths: frozenset[str] | None = None,
+    respect_ignores: bool = False,
+    max_control_bytes: int | None = None,
+    max_scan_entries: int | None = None,
+    coherent: bool = False,
 ) -> _SnapshotBuckets:
     return _SnapshotBuckets(
         files_by_language={language: [] for language in LANGUAGE_EXTENSIONS},
@@ -473,6 +498,10 @@ def _new_snapshot_buckets(
         source_selection_policy=source_selection_policy,
         selected_regular_paths=set(),
         expected_gitignore_paths=expected_gitignore_paths,
+        respect_ignores=respect_ignores,
+        max_control_bytes=max_control_bytes,
+        max_scan_entries=max_scan_entries,
+        coherent=coherent,
     )
 
 
@@ -580,12 +609,27 @@ def _sha256_bytes(content: bytes) -> str:
     return "sha256:" + hashlib.sha256(content).hexdigest()
 
 
-def _sha256_file(path: Path) -> str | None:
+def _sha256_file(path: Path, *, metrics: dict[str, int] | None = None, max_bytes: int | None = None,
+                 integrity_out: dict[Path, SourceFileIntegrity] | None = None) -> str | None:
     try:
         hasher = hashlib.sha256()
+        used = 0
         with path.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            before = _file_integrity_from_stat(os.fstat(handle.fileno())) if integrity_out is not None else None
+            if metrics is not None:
+                metrics["files"] = metrics.get("files", 0) + 1
+            while chunk := handle.read(1024 * 1024 if max_bytes is None else min(1024 * 1024, max_bytes - used + 1)):
+                used += len(chunk)
+                if metrics is not None:
+                    metrics["bytes"] = metrics.get("bytes", 0) + len(chunk)
+                if max_bytes is not None and used > max_bytes:
+                    raise SourceSnapshotError("max_source_bytes", "source grew beyond the capture byte limit")
                 hasher.update(chunk)
+            if integrity_out is not None:
+                after = _file_integrity_from_stat(os.fstat(handle.fileno()))
+                if before is None or before != after:
+                    raise SourceSnapshotMutationError("source", "source changed while hashing")
+                integrity_out[path] = before
     except OSError:
         return None
     return "sha256:" + hasher.hexdigest()
@@ -596,6 +640,10 @@ def _source_file_integrity(path: Path) -> SourceFileIntegrity | None:
         current = path.stat()
     except OSError:
         return None
+    return _file_integrity_from_stat(current)
+
+
+def _file_integrity_from_stat(current: os.stat_result) -> SourceFileIntegrity | None:
     if not stat.S_ISREG(current.st_mode):
         return None
     return SourceFileIntegrity(
@@ -606,6 +654,16 @@ def _source_file_integrity(path: Path) -> SourceFileIntegrity | None:
         mtime_ns=current.st_mtime_ns,
         ctime_ns=current.st_ctime_ns,
     )
+
+
+def directory_identity(path: Path) -> tuple[int, ...]:
+    """Private object/change identity, never a portable content commitment."""
+    try:
+        value = path.stat(follow_symlinks=False)
+    except FileNotFoundError:
+        return ()
+    return (value.st_dev, value.st_ino, value.st_mode, value.st_size,
+            value.st_mtime_ns, value.st_ctime_ns)
 
 
 def _captured_file_integrity(
@@ -744,6 +802,26 @@ def _is_excluded_walk_directory(rel_dir: Path, only_set: set[str] | None) -> boo
     )
 
 
+def _read_ignore_control(path: Path, buckets: _SnapshotBuckets) -> bytes:
+    if buckets.max_control_bytes is None:
+        return path.read_bytes()
+    remaining = buckets.max_control_bytes - buckets.control_bytes
+    if path.stat().st_size > remaining:
+        raise SourceSnapshotError("max_source_bytes", "selection controls exceed the capture byte limit")
+    with path.open("rb") as stream:
+        before = _file_integrity_from_stat(os.fstat(stream.fileno())) if buckets.coherent else None
+        content = stream.read(remaining + 1)
+        if buckets.coherent:
+            after = _file_integrity_from_stat(os.fstat(stream.fileno()))
+            if before is None or before != after:
+                raise SourceSnapshotMutationError("source", "selection control changed while reading")
+            buckets.control_integrity[path] = before
+    buckets.control_bytes += len(content)
+    if buckets.control_bytes > buckets.max_control_bytes:
+        raise SourceSnapshotError("max_source_bytes", "selection controls grew beyond the capture byte limit")
+    return content
+
+
 def _record_gitignore_rules(
     root: Path,
     current_dir: Path,
@@ -772,7 +850,7 @@ def _record_gitignore_rules(
                 f"new ignore control appeared during verification: {rel_path!r}",
             )
         try:
-            content = gitignore.read_bytes()
+            content = _read_ignore_control(gitignore, buckets)
         except OSError:
             content = None
         buckets.gitignore_contents[rel_path] = content
@@ -812,7 +890,7 @@ def _record_gitignore_rules(
 
     base = "" if rel_dir == Path(".") else rel_dir.as_posix()
     try:
-        content = gitignore.read_bytes()
+        content = _read_ignore_control(gitignore, buckets)
     except OSError as exc:
         raise SourceSnapshotError(
             "source_selection",
@@ -1012,7 +1090,7 @@ def _record_source_file(
         return
 
     package_source_file = _make_source_file(root, resolved, rel, None)
-    if policy is None and _is_package_marker(resolved):
+    if policy is None and not buckets.respect_ignores and _is_package_marker(resolved):
         _append_sorted(buckets.package_markers, package_source_file)
 
     language = _language_for_path(resolved, buckets.include_tests)
@@ -1024,12 +1102,16 @@ def _record_source_file(
         ignored
         and (
             policy is not None
+            or buckets.respect_ignores
             or only_set is None
             or rel_posix not in only_set
         )
         and not rescued_typescript
     ):
         return
+
+    if policy is None and buckets.respect_ignores and _is_package_marker(resolved):
+        _append_sorted(buckets.package_markers, package_source_file)
 
     if policy is not None and (not ignored or rescued_typescript):
         if filename != ".gitignore":
@@ -1046,15 +1128,43 @@ def _record_source_file(
     _record_unsupported_language_candidate(root, resolved, rel, only_set, buckets)
 
 
+def _bounded_source_walk(root: Path, maximum: int):
+    pending = [root]
+    inspected = 0
+    while pending:
+        directory = pending.pop()
+        dirs, files = [], []
+        try:
+            with os.scandir(directory) as entries:
+                for entry in entries:
+                    inspected += 1
+                    if inspected > maximum:
+                        raise SourceSnapshotError("max_scan_entries", "source discovery exceeds its metadata entry limit")
+                    if entry.is_dir(follow_symlinks=False):
+                        dirs.append(entry.name)
+                    else:
+                        files.append(entry.name)
+        except OSError as exc:
+            raise SourceSnapshotError("source", "source discovery is unavailable") from exc
+        yield str(directory), dirs, files
+        # The caller prunes this same list before traversal continues.
+        pending.extend(directory / name for name in reversed(dirs))
+
+
 def _collect_source_tree(
     root: Path, only_set: set[str] | None, buckets: _SnapshotBuckets
 ) -> None:
-    for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
+    walk = (os.walk(root, topdown=True, followlinks=False) if buckets.max_scan_entries is None
+            else _bounded_source_walk(root, buckets.max_scan_entries))
+    for dirpath, dirnames, filenames in walk:
         current_dir = Path(dirpath)
         rel_dir = _relative_to_root(current_dir, root)
         if rel_dir is None or _is_excluded_walk_directory(rel_dir, only_set):
             dirnames[:] = []
             continue
+
+        if buckets.coherent:
+            buckets.directory_integrity[rel_dir.as_posix()] = directory_identity(current_dir)
 
         _record_gitignore_rules(root, current_dir, rel_dir, buckets)
         matcher = GitIgnoreMatcher(buckets.gitignore_rules)
@@ -1090,6 +1200,7 @@ def capture_source_selection_inputs(
     *,
     source_selection: str | Path | None = None,
     selection_policy: SourceSelectionPolicy | None = None,
+    max_bytes: int | None = None,
 ) -> dict[str, object] | None:
     """Capture exact selection-control commitments before any selected-file read."""
 
@@ -1101,7 +1212,7 @@ def capture_source_selection_inputs(
     )
     if policy is None:
         return None
-    buckets = _new_snapshot_buckets(None, policy)
+    buckets = _new_snapshot_buckets(None, policy, max_control_bytes=max_bytes)
     if root.exists():
         _collect_source_selection_controls(root, buckets)
     return _selection_inputs_from_buckets(buckets)
@@ -1179,6 +1290,10 @@ def _captured_snapshot_inputs(
     package_markers: tuple[SourceFile, ...],
     gitignore_contents: Mapping[str, bytes | None],
     source_selection_policy: SourceSelectionPolicy | None,
+    max_files: int | None = None,
+    max_bytes: int | None = None,
+    metrics: dict[str, int] | None = None,
+    integrity_out: dict[Path, SourceFileIntegrity] | None = None,
 ) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]:
     candidates, files_by_path = _captured_snapshot_candidates(
         sorted_languages=sorted_languages,
@@ -1190,6 +1305,16 @@ def _captured_snapshot_inputs(
         source_selection_policy=source_selection_policy,
     )
 
+    # Bound declared capture work before reading source contents. Selection
+    # controls were read by discovery and are included in the byte disclosure.
+    if max_files is not None and len(candidates) > max_files:
+        raise SourceSnapshotError("max_files", "source capture exceeds the file limit")
+    size = sum(item.size for item in files_by_path.values()) + sum(
+        len(value) for value in gitignore_contents.values() if value is not None
+    )
+    if max_bytes is not None and size > max_bytes:
+        raise SourceSnapshotError("max_source_bytes", "source capture exceeds the byte limit")
+
     content_hashes: dict[str, str] = {}
     input_kinds: dict[str, tuple[str, ...]] = {}
     for path in sorted(candidates):
@@ -1199,7 +1324,14 @@ def _captured_snapshot_inputs(
         elif gitignore_content is not None:
             content_hash = _sha256_bytes(gitignore_content)
         else:
-            content_hash = _sha256_file(files_by_path[path].abs_path)
+            options: dict[str, Any] = {}
+            if metrics is not None:
+                options["metrics"] = metrics
+            if max_bytes is not None:
+                options["max_bytes"] = files_by_path[path].size
+            if integrity_out is not None:
+                options["integrity_out"] = integrity_out
+            content_hash = _sha256_file(files_by_path[path].abs_path, **options)
         if content_hash is None:
             continue
         content_hashes[path] = content_hash
@@ -1213,6 +1345,8 @@ def _build_source_snapshot(
     buckets: _SnapshotBuckets,
     *,
     only_files: frozenset[str] | None,
+    max_files: int | None = None,
+    max_bytes: int | None = None,
 ) -> SourceSnapshot:
     if (
         buckets.source_selection_policy is not None
@@ -1248,6 +1382,7 @@ def _build_source_snapshot(
     package_markers = tuple(
         sorted(buckets.package_markers, key=lambda item: item.rel_path)
     )
+    hashed_integrity = dict(buckets.control_integrity) if buckets.coherent else None
     captured_content_hashes, captured_input_kinds = _captured_snapshot_inputs(
         sorted_languages=sorted_languages,
         dockerfiles=dockerfiles,
@@ -1256,11 +1391,20 @@ def _build_source_snapshot(
         package_markers=package_markers,
         gitignore_contents=buckets.gitignore_contents,
         source_selection_policy=buckets.source_selection_policy,
+        max_files=max_files,
+        max_bytes=max_bytes,
+        integrity_out=hashed_integrity,
     )
     captured_file_integrity = _captured_file_integrity(
         root,
         captured_content_hashes,
     )
+    if hashed_integrity is not None:
+        for path, expected in hashed_integrity.items():
+            if captured_file_integrity.get(path.relative_to(root).as_posix()) != expected:
+                raise SourceSnapshotMutationError("source", "source changed between hashing and capture")
+        if any(directory_identity(root / path) != expected for path, expected in buckets.directory_integrity.items()):
+            raise SourceSnapshotMutationError("source", "source directory changed during capture")
 
     return SourceSnapshot(
         root=root,
@@ -1281,6 +1425,11 @@ def _build_source_snapshot(
         only_files=only_files,
         captured_file_integrity=captured_file_integrity,
         captured_gitignore_paths=frozenset(buckets.gitignore_contents),
+        respect_ignores=buckets.respect_ignores,
+        capture_byte_limit=max_bytes,
+        capture_scan_limit=buckets.max_scan_entries,
+        coherent=buckets.coherent,
+        directory_integrity=dict(buckets.directory_integrity),
     )
 
 
@@ -1384,6 +1533,23 @@ def _resolve_snapshot_selection(
     return selection_policy
 
 
+def _validate_capture_options(max_files, max_bytes, respect_ignores, coherent):
+    for name, value in (("max_files", max_files), ("max_bytes", max_bytes)):
+        if value is not None and (type(value) is not int or value < 1):
+            raise SourceSnapshotError(name, "must be a positive integer")
+    for name, value in (("respect_ignores", respect_ignores), ("coherent", coherent)):
+        if type(value) is not bool:
+            raise SourceSnapshotError(name, "must be a boolean")
+
+
+def _capture_buckets(include_tests, policy, max_files, max_bytes, respect_ignores, coherent):
+    return _new_snapshot_buckets(
+        include_tests, policy, respect_ignores=respect_ignores,
+        max_control_bytes=max_bytes, coherent=coherent,
+        max_scan_entries=None if max_files is None else min(100_000, max(4096, max_files * 128)),
+    )
+
+
 @observed_phase("source_snapshot")
 def build_source_snapshot(
     src_dir: str | Path,
@@ -1395,6 +1561,10 @@ def build_source_snapshot(
     expected_selection_inputs: Mapping[str, object] | None | object = (
         _UNSET_EXPECTED_SELECTION_INPUTS
     ),
+    max_files: int | None = None,
+    max_bytes: int | None = None,
+    respect_ignores: bool = False,
+    coherent: bool = False,
 ) -> SourceSnapshot:
     """Build a deterministic source-tree snapshot rooted at *src_dir*.
 
@@ -1403,6 +1573,7 @@ def build_source_snapshot(
     tree so command paths that restrict source extraction preserve their
     existing infrastructure and package behavior.
     """
+    _validate_capture_options(max_files, max_bytes, respect_ignores, coherent)
     root = Path(src_dir).resolve()
     policy = _resolve_snapshot_selection(
         root,
@@ -1421,7 +1592,7 @@ def build_source_snapshot(
             only_files=normalized_only_files,
         )
 
-    buckets = _new_snapshot_buckets(normalized_include_tests, policy)
+    buckets = _capture_buckets(normalized_include_tests, policy, max_files, max_bytes, respect_ignores, coherent)
     _collect_source_tree(root, only_set, buckets)
     if expected_selection_inputs is not _UNSET_EXPECTED_SELECTION_INPUTS:
         current_inputs = _selection_inputs_from_buckets(buckets)
@@ -1434,6 +1605,8 @@ def build_source_snapshot(
         root,
         buckets,
         only_files=normalized_only_files,
+        max_files=max_files,
+        max_bytes=max_bytes,
     )
 
 
@@ -1484,6 +1657,9 @@ def source_snapshot_inputs_match_current_files(snapshot: SourceSnapshot) -> bool
     if not isinstance(snapshot, SourceSnapshot):
         raise TypeError("snapshot must be a SourceSnapshot")
     root = snapshot.root.resolve()
+    if snapshot.coherent and any(directory_identity(root / path) != expected
+                                 for path, expected in snapshot.directory_integrity.items()):
+        return False
     for path, expected_hash in snapshot.captured_content_hashes.items():
         expected_integrity = snapshot.captured_file_integrity.get(path)
         if expected_integrity is not None:
@@ -1495,7 +1671,7 @@ def source_snapshot_inputs_match_current_files(snapshot: SourceSnapshot) -> bool
     return True
 
 
-def source_snapshot_matches_current_files(snapshot: SourceSnapshot) -> bool:
+def source_snapshot_matches_current_files(snapshot: SourceSnapshot, *, metrics: dict[str, int] | None = None) -> bool:
     """Return whether *snapshot* still matches the selected source tree.
 
     This is an integrity verification, not a second semantic snapshot.  It
@@ -1511,6 +1687,8 @@ def source_snapshot_matches_current_files(snapshot: SourceSnapshot) -> bool:
 
     if not isinstance(snapshot, SourceSnapshot):
         raise TypeError("snapshot must be a SourceSnapshot")
+    if snapshot.coherent and not source_snapshot_inputs_match_current_files(snapshot):
+        return False
     root = snapshot.root.resolve()
     if snapshot.source_selection_policy is None:
         try:
@@ -1539,6 +1717,9 @@ def source_snapshot_matches_current_files(snapshot: SourceSnapshot) -> bool:
         snapshot.include_tests,
         policy,
         expected_gitignore_paths=snapshot.captured_gitignore_paths,
+        respect_ignores=snapshot.respect_ignores,
+        max_control_bytes=snapshot.capture_byte_limit,
+        max_scan_entries=snapshot.capture_scan_limit,
     )
     if root.exists():
         _collect_source_tree(
@@ -1546,6 +1727,9 @@ def source_snapshot_matches_current_files(snapshot: SourceSnapshot) -> bool:
             None if snapshot.only_files is None else set(snapshot.only_files),
             buckets,
         )
+    if metrics is not None:
+        metrics["files"] = metrics.get("files", 0) + sum(value is not None for value in buckets.gitignore_contents.values())
+        metrics["bytes"] = metrics.get("bytes", 0) + sum(len(value) for value in buckets.gitignore_contents.values() if value is not None)
     if policy is not None and not buckets.selected_regular_paths:
         return False
     if _selection_inputs_from_buckets(buckets) != snapshot.source_selection_inputs:
@@ -1644,6 +1828,8 @@ def source_snapshot_matches_current_files(snapshot: SourceSnapshot) -> bool:
         package_markers=package_markers,
         gitignore_contents=buckets.gitignore_contents,
         source_selection_policy=policy,
+        metrics=metrics,
+        max_bytes=snapshot.capture_byte_limit,
     )
     for path in sorted(extra_inventory_paths):
         content_hash = _hash_extra_inventory_path(

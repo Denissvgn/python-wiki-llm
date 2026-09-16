@@ -71,7 +71,7 @@ EXPECTED_WIKI_REFERENCE_FILES = (
     "references/resources-context.md",
     "references/surfaces-naming.md",
 )
-EXPECTED_SKILL_COUNT = 16
+EXPECTED_SKILL_COUNT = 17
 _MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 _URI_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 _INTERNAL_REPORT_BASENAME = re.compile(
@@ -652,6 +652,25 @@ def _validate_provider_contract(python: Path, work: Path) -> Mapping:
     return {"consumer": dict(consumer), "typing": json.loads(output.read_text(encoding="utf-8"))}
 
 
+def _validate_workflow_consumer(python: Path, mcp_python: Path, work: Path, evidence: Path) -> Mapping:
+    probe = Path(__file__).parent / "fixtures" / "workflow-artifact-consumer.py"
+    tutorial = Path(__file__).parents[1] / "examples" / "native-workflow"
+    results = []
+    for executable, mode in ((python, "base"), (mcp_python, "mcp")):
+        result = dict(_json_output(_run(_isolated_utf8_python_command(
+            executable, "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode,
+            str(Path(__file__).with_name("mcp_probe.py")), str(evidence / f"workflow-{mode}.json"),
+        ), cwd=work), f"installed workflow ({mode})"))
+        if result.pop("sdk", None) != ("verified" if mode == "mcp" else "not-used"):
+            raise SmokeError("workflow transport acceptance is incomplete")
+        results.append(result)
+    for transport in ("stdio", "http"):
+        _validate_mcp_probe_evidence(evidence / f"workflow-mcp-{transport}.json")
+    if results[0] != results[1]:
+        raise SmokeError("installed workflow consumer profiles disagree")
+    return {**results[0], "mcp_transports": ["stdio", "http"]}
+
+
 def run_smoke(args: argparse.Namespace) -> int:
     if not Path(__file__).with_name("mcp_probe.py").is_file():
         raise SmokeError("MCP probe support is missing from the frozen harness")
@@ -828,6 +847,7 @@ def run_smoke(args: argparse.Namespace) -> int:
     evidence = output.parent / f"{output.stem}-mcp-probes"
     packet_adapters = _validate_packet_adapter_parity(python, mcp_python, work, source, wiki, evidence)
     native_consumer = _validate_native_consumer(python, mcp_python, work, evidence)
+    workflow_consumer = _validate_workflow_consumer(python, mcp_python, work, evidence)
 
     site = work / "site"
     _run(
@@ -935,6 +955,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "context_packet_sha256": _sha256(packet_path),
             "packet_adapters": packet_adapters,
             "native_consumer": native_consumer,
+            "workflow_consumer": workflow_consumer,
             "provider_contract": provider_contract,
             "site_sha256": _tree_hash(site),
             "obsidian_sha256": _tree_hash(vault),

@@ -7,6 +7,9 @@ from llm_wiki_cli.api_types import (
     KnowledgeMode,
     MarkdownContextResult,
     NativeInspectionResult,
+    TaskContextRequest,
+    SearchResult,
+    MaintenanceQueueResult,
 )
 
 
@@ -56,3 +59,16 @@ def reuse(source: str, wiki: str) -> KnowledgeCoverageResult:
     api.list_concept_sections("llm-wiki://entities/Item", service=service)
     api.traverse_typed_graph("llm-wiki://entities/Item", service=service)
     return api.get_knowledge_coverage(service=service)
+
+
+def workflow(source: str, wiki: str) -> tuple[SearchResult, MaintenanceQueueResult, api.TaskContext]:
+    request: TaskContextRequest = {"schema_version": "llm-wiki-task-request/v1",
+        "requirements": [{"id": "contract", "facet": "source-contract", "selector": "app.py:run"}]}
+    context = api.build_task_context(request, src_dir=source, wiki_dir=wiki)
+    rendered: str = context.rendered
+    identity: str | None = context.result_id
+    print(rendered, identity)
+    with api.open_context_session(src_dir=source, wiki_dir=wiki) as session:
+        reply: api.SessionReply = session.read(request)
+        print(reply.state, reply.metadata())
+    return api.search_wiki("run", src_dir=source, wiki_dir=wiki), api.build_maintenance_queue(source, wiki), context

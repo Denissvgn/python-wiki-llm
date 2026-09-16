@@ -961,6 +961,12 @@
       "reason": "requires an already prepared TypeScript helper"
     },
     {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
+    },
+    {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_capability_diagnostics.py::test_windows_text_command_preserves_literal_arguments",
       "owner_lane": "core-windows-3.13",
@@ -1961,6 +1967,12 @@
       "node_id": "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::test_root_owned_platform_alias_preserves_install_and_export",
       "owner_lane": "core-macos-3.14",
       "reason": "root-owned /var alias contract is macOS-only"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
     },
     {
       "lane": "core-windows-3.13",
@@ -3011,6 +3023,12 @@
       "node_id": "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::test_root_owned_platform_alias_preserves_install_and_export",
       "owner_lane": "core-macos-3.14",
       "reason": "root-owned /var alias contract is macOS-only"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
     }
   ],
   "schema_version": "agent-wiki-release-skip-allowlist/v1"

@@ -9,4 +9,6 @@ include docs/cli-reference.md
 include docs/automation.md
 include docs/security-model.md
 include docs/native-knowledge-provider.md
+include docs/native-agent-workflow.md
+recursive-include examples/native-workflow *.py *.json *.md
 prune reports
