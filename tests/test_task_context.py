@@ -1,5 +1,6 @@
 """Cold task composition, exact facts, scope and coherent publication."""
 
+import errno
 import os
 from pathlib import Path
 from typing import Any, cast
@@ -223,22 +224,39 @@ def test_mid_read_mutation_recaptures_one_coherent_basis(project, monkeypatch, m
     api.validate_task_context(result.rendered, request())
 
 
-def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project, monkeypatch):
+@pytest.mark.parametrize("block_restore", [False, True], ids=["native-restore", "sharing-denied"])
+def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project, monkeypatch, block_restore):
     path = project / "app.py"
     original = path.read_text()
+    modified = original.replace("= 3", "= 4")
     stat_capture = source_snapshot._captured_file_integrity
     selected_changes = task_context.context._selected_git_changed_files
     changed = False
+    restore_attempts = 0
+    restore_denied = False
 
     def change_between_hash_and_stat(root, hashes):
         nonlocal changed
         if not changed:
-            path.write_text(original.replace("= 3", "= 4"))
+            path.write_text(modified)
             changed = True
         return stat_capture(root, hashes)
 
     def restore_after_extraction(*args, **kwargs):
-        path.write_text(original)
+        nonlocal restore_attempts, restore_denied
+        restore_attempts += 1
+        try:
+            if block_restore:
+                # Exercise the sharing-denial outcome on every CI platform.
+                raise PermissionError(errno.EACCES, "simulated sharing denial", str(path))
+            path.write_text(original)
+        except PermissionError as exc:
+            # This is the injected writer, not a provider read failure. Native
+            # Windows guards deny the write while the capture holds the file.
+            assert block_restore or os.name == "nt"
+            assert exc.errno == errno.EACCES and Path(exc.filename) == path
+            assert path.read_text() == modified
+            restore_denied = True
         return selected_changes(*args, **kwargs)
 
     monkeypatch.setattr(source_snapshot, "_captured_file_integrity", change_between_hash_and_stat)
@@ -247,9 +265,19 @@ def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project,
         result = api.build_task_context(request())
     except api.WorkspaceStateError as exc:
         assert exc.code == "context-read-mutated"
+        assert not restore_denied
     else:
-        fact = result.to_payload()["facts"][0]
-        assert fact["observation"]["contract"]["params"][0]["default"] == "3"
+        payload = api.validate_task_context(result.rendered, request())
+        assert payload["work"]["capture_retries"] == 1
+        fact = payload["facts"][0]
+        assert fact["observation"]["contract"]["params"] == source_facts(path)["declarations"][0]["params"]
+        assert fact["observation"]["contract"]["params"][0]["default"] == ("4" if restore_denied else "3")
+    assert changed and restore_attempts > 0
+    assert restore_denied == (block_restore or os.name == "nt")
+    assert path.read_text() == (modified if restore_denied else original)
+    # The guard must release its handle when the read completes or fails.
+    path.write_text(original)
+    assert path.read_text() == original
 
 
 def test_wiki_changed_and_restored_around_selection_cannot_hide_a_mixed_view(project, monkeypatch):

@@ -61,6 +61,9 @@ def test_release_artifacts_reject_mismatched_sdist_identity(tmp_path, sdist_root
     "examples/fastapi-contracts/requirements.txt",
     "src/llm_wiki_cli/examples/go-http/project/go.mod",
     "llm_wiki_cli/examples/plugin-hooks/project/tasks.py",
+    "agent_wiki_cli-2.2.0/examples/native-workflow/project/src",
+    "agent_wiki_cli-2.2.0/examples/native-workflow/project/client.py",
+    "llm_wiki_cli/examples/native-workflow/project/request.json",
     "examples/README.md",
 ])
 def test_repository_tutorials_are_rejected_from_distributions(name):
