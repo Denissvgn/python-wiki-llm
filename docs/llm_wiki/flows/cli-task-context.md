@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [task_cmd](../modules/task_cmd.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 37 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 38 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -108,7 +109,7 @@ sequenceDiagram
     p20-->>p22: any (src/llm_wiki_cli/services…w_profile.py:exact_fields)
 ```
 
-> Call sequence diagram shows 30 of 766 interactions; 736 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 773 interactions; 743 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

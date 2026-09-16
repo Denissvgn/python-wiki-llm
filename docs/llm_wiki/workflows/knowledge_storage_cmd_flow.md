@@ -11,7 +11,8 @@
 3. `knowledge_storage_lifecycle.recover_knowledge_storage`
 4. `knowledge_storage_lifecycle.export_knowledge_v1`
 5. `knowledge_storage_lifecycle.prune_knowledge_storage`
-6. `knowledge_storage_diagnostics.storage_report`
+6. `knowledge_storage_diagnostics.review_storage`
+7. `knowledge_storage_diagnostics.storage_report`
 
 ## Touches
 
@@ -22,4 +23,4 @@
 
 ## Behavior
 
-Dispatches the explicit migration, recovery, export, cleanup or size-report action through shared services. It renders escaped JSON and reports failures through the command exit status. Read-only checks never stage files or rewrite Git history.
+Resolves the managed wiki and delegates the requested explicit storage operation. Migration receives the selected storage profile; inspection and comparison receive output bounds. Structured errors produce failure exits, and storage operations do not stage, rewrite history or publish to a remote.

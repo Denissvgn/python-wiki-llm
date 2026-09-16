@@ -4,7 +4,7 @@
 
 ## Description
 
-Captures the committed root, sync manifest, selected objects and the Markdown pages supporting selected concepts. Governance identities, aliases and lifecycle are compared with the committed ledger. The returned scoped read requires a final recheck and never stands for validation of unread objects or live source behavior.
+Captures selected native observations from explicitly adopted indexed storage. The root and manifest bind one committed generation; version dispatch chooses loose-object reads or authenticated pack ranges. Selected supporting Markdown and governance identities are checked before publication. The receipt identifies validated scope and leaves unread data and live source state unverified.
 
 ## Imports
 
@@ -15,6 +15,7 @@ Captures the committed root, sync manifest, selected objects and the Markdown pa
 | `.knowledge_envelope` | `EvaluatedEnvelope` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `lifecycle_state_by_uid`, `natural_key_for` |
 | `.knowledge_model` | `_parse_bundle` |
+| `.knowledge_packs` | `PACKED_SCHEMA`, `open_knowledge_store` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `digest` |
 | `.knowledge_storage_io` | `StorageReadSession` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest` |
@@ -35,18 +36,20 @@ flowchart LR
     n2["src/llm_wiki_cli/services/knowledge_envelope.py"]
     n3["src/llm_wiki_cli/services/knowledge_governance.py"]
     n4["src/llm_wiki_cli/services/knowledge_model.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n6["src/llm_wiki_cli/services/knowledge_storage_access.py"]
-    n7["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n8["src/llm_wiki_cli/services/sync_manifest.py"]
-    n9["src/llm_wiki_cli/services/task_context_v2.py"]
+    n5["src/llm_wiki_cli/services/knowledge_packs.py"]
+    n6["src/llm_wiki_cli/services/knowledge_storage.py"]
+    n7["src/llm_wiki_cli/services/knowledge_storage_access.py"]
+    n8["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n9["src/llm_wiki_cli/services/sync_manifest.py"]
+    n10["src/llm_wiki_cli/services/task_context_v2.py"]
     n1 --> n0
     n1 --> n2
     n1 --> n3
     n1 --> n4
     n1 --> n5
-    n1 --> n7
+    n1 --> n6
     n1 --> n8
+    n1 --> n9
     n2 --> n0
     n2 --> n4
     n3 --> n0
@@ -54,33 +57,37 @@ flowchart LR
     n3 --> n4
     n4 --> n0
     n4 --> n3
-    n5 --> n0
-    n5 --> n2
-    n5 --> n3
-    n5 --> n4
+    n5 --> n6
     n6 --> n0
-    n6 --> n1
     n6 --> n2
     n6 --> n3
     n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n8
+    n7 --> n0
+    n7 --> n1
+    n7 --> n2
+    n7 --> n3
+    n7 --> n4
     n7 --> n5
-    n9 --> n2
-    n9 --> n5
-    n9 --> n6
-    n9 --> n7
+    n7 --> n6
+    n7 --> n8
+    n7 --> n9
+    n8 --> n6
+    n10 --> n2
+    n10 --> n5
+    n10 --> n6
+    n10 --> n7
+    n10 --> n8
     click n0 "../modules/services_contracts.md"
     click n1 "../modules/knowledge_artifacts.md"
     click n2 "../modules/knowledge_envelope.md"
     click n3 "../modules/knowledge_governance.md"
     click n4 "../modules/knowledge_model.md"
-    click n5 "../modules/knowledge_storage.md"
-    click n6 "../modules/knowledge_storage_access.md"
-    click n7 "../modules/knowledge_storage_io.md"
-    click n8 "../modules/sync_manifest.md"
-    click n9 "../modules/task_context_v2.md"
+    click n5 "../modules/knowledge_packs.md"
+    click n6 "../modules/knowledge_storage.md"
+    click n7 "../modules/knowledge_storage_access.md"
+    click n8 "../modules/knowledge_storage_io.md"
+    click n9 "../modules/sync_manifest.md"
+    click n10 "../modules/task_context_v2.md"
 ```
 
 ### Internal neighbors
@@ -93,6 +100,7 @@ flowchart LR
 | Outbound | [knowledge_envelope](../modules/knowledge_envelope.md) |
 | Outbound | [knowledge_governance](../modules/knowledge_governance.md) |
 | Outbound | [knowledge_model](../modules/knowledge_model.md) |
+| Outbound | [knowledge_packs](../modules/knowledge_packs.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [sync_manifest](../modules/sync_manifest.md) |
@@ -101,7 +109,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedKnowledgeRead](../entities/ScopedKnowledgeRead.md) | 26 | — | Request-owned observations that require a final authoritative recheck. |
+| [ScopedKnowledgeRead](../entities/ScopedKnowledgeRead.md) | 27 | — | Request-owned observations that require a final authoritative recheck. |
 
 ## Functions
 

@@ -13,11 +13,13 @@
 3. `validation.is_portable_relative_path`
 4. `knowledge_evidence.is_valid_sha256`
 5. `task_context._result_fields`
-6. `task_context._result_fields`
-7. `knowledge_envelope.ConsumedInput`
-8. `knowledge_envelope.hash_source_snapshot`
-9. `workflow_profile.content_id`
-10. `knowledge_storage._concept_aliases`
+6. `knowledge_evidence.is_valid_sha256`
+7. `task_context._result_fields`
+8. `task_context._result_fields`
+9. `knowledge_envelope.ConsumedInput`
+10. `knowledge_envelope.hash_source_snapshot`
+11. `workflow_profile.content_id`
+12. `knowledge_storage._concept_aliases`
 
 ## Touches
 
@@ -31,4 +33,4 @@
 
 ## Behavior
 
-Validates the v2 result’s declared scope, actual storage accounting, source commitments, citations and exact selector bindings. It rejects whole-store claims, unrelated observations and legacy full-validity packets in a selected result. Content identities establish consistency, not authenticity or semantic truth.
+Validates task-v2 scope and internal receipt consistency without treating portable hashes as authenticity. Packed storage receipts require bounded sorted nonoverlapping ranges, consistent pack sizes and selected-member archive scope. Root/manifest, work totals, source inputs and fact citations must agree with the declared request and profile.

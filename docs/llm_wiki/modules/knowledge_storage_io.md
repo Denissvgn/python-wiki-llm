@@ -4,7 +4,7 @@
 
 ## Description
 
-Reads native storage through guarded regular files and retained directory identities. Each request records exact bytes and filesystem observations, charges rereads to its budget and rejects replacement or content changes. Platform guards prevent following redirected paths; a final authoritative reread is separate from a cache hit.
+Reads bounded complete files or exact pack ranges through guarded regular files and retained directory identities. Requests record content and filesystem observations, charge final rereads to their budgets and reject replacement or permission/content changes. Different ranges from one pack must share the same file and ancestor identities. Platform guards prevent following redirected paths.
 
 ## Imports
 
@@ -98,7 +98,7 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [ReadObservation](../entities/ReadObservation.md) | 42 | — | — |
-| [StorageReadSession](../entities/StorageReadSession.md) | 109 | — | Request-owned file observations, with charged authoritative rechecks. |
+| [StorageReadSession](../entities/StorageReadSession.md) | 124 | — | Request-owned file observations, with charged authoritative rechecks. |
 
 ## Functions
 
@@ -107,4 +107,4 @@ flowchart LR
 | `_identity` | `(value: os.stat_result) -> tuple[int, ...]` | — | — |
 | `_require_relative_name` | `(relative: str) -> None` | — | — |
 | `_absolute_path` | `(path: Path) -> Path` | — | — |
-| `read_guarded` | `(path: Path, maximum: int) -> ReadObservation` | — | Read a regular file through pinned/no-follow ancestors and bound its bytes. |
+| `read_guarded` | `(path: Path, maximum: int, *, offset: int = 0, length: int \| None = None, file_bytes: int \| None = None) -> ReadObservation` | — | Read a regular file through pinned/no-follow ancestors and bound its bytes. |

@@ -4,7 +4,7 @@
 
 ## Description
 
-Composes opt-in task v2 using indexed native reads and independently captured source. It reuses the source extractor, graph query, requirement coverage and output-accounting owners while carrying explicit source and storage receipts. A scoped result omits legacy whole-validity packets, preserves unknown and incomplete outcomes, and rechecks the consumed inputs before publication.
+Composes explicit task-v2 context from existing source and native evidence owners. Packed native reads use versioned storage receipts that identify consumed file ranges and selected-member archive scope. Coverage, output budgets and evidence qualification remain explicit. Sessions retain private source/file/range observations and revalidate them before reuse; no scoped result carries a legacy whole-artifact packet.
 
 ## Imports
 
@@ -18,6 +18,7 @@ Composes opt-in task v2 using indexed native reads and independently captured so
 | `.documentation_query_builder` | `assemble_documentation_query_service` |
 | `.extraction_service` | `InventoryResult` |
 | `.knowledge_envelope` | `ConsumedInput`, `hash_source_snapshot` |
+| `.knowledge_packs` | `PACK_NAME`, `MAX_PACK_BYTES` |
 | `.knowledge_storage` | `KnowledgeStorageError`, `_concept_aliases`, `digest` |
 | `.knowledge_storage_access` | `ScopedKnowledgeRead`, `capture_knowledge_slice` |
 | `.knowledge_storage_io` | `ReadObservation`, `StorageReadSession` |
@@ -32,7 +33,7 @@ Composes opt-in task v2 using indexed native reads and independently captured so
 | `.workflow_profile` | `WorkflowRequestError`, `canonical_json`, `content_id` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
-| `dataclasses` | `dataclass` |
+| `dataclasses` | `dataclass`, `field` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `types` | `SimpleNamespace` |
@@ -57,15 +58,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (21) |
+| Outbound | `src` (22) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedTaskState](../entities/ScopedTaskState.md) | 195 | — | — |
+| [ScopedTaskState](../entities/ScopedTaskState.md) | 202 | — | — |
 
 ## Functions
 

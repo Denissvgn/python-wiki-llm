@@ -18,18 +18,18 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 583,
+      "entities": 584,
       "flows": 452,
       "guides": 6,
       "index": 1,
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 195,
-      "workflows": 146
+      "modules": 196,
+      "workflows": 147
     },
     "dependency_architecture": 2,
-    "total": 1386
+    "total": 1389
   },
   "dependency_pages": {
     "count": 2,
@@ -3440,17 +3440,17 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 77,
+              "line": 96,
               "step": "read_guarded",
-              "step_index": 9,
+              "step_index": 11,
               "target": "pinned.append"
             },
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 79,
+              "line": 98,
               "step": "read_guarded",
-              "step_index": 9,
+              "step_index": 11,
               "target": "directories_list.append"
             }
           ],
@@ -3471,11 +3471,17 @@
               "kind": "unresolved_call",
               "line": 649,
               "step": "current_knowledge_format",
+              "target": "(path.parent / '.llm-wiki-knowledge/packs').exists"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 651,
+              "step": "current_knowledge_format",
               "target": "(path.parent / '.llm-wiki-knowledge').exists"
             },
             {
               "kind": "external_call",
-              "line": 50,
+              "line": 51,
               "step": "read_guarded",
               "target": "type"
             },
@@ -3504,18 +3510,19 @@
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/io.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/knowledge_governance.py",
-            "src/llm_wiki_cli/services/concept_identity.py",
-            "src/llm_wiki_cli/services/validation.py",
-            "src/llm_wiki_cli/services/wiki_media.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
-            "src/llm_wiki_cli/services/wiki_surface.py",
+            "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/immutable.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/section_ownership.py",
+            "src/llm_wiki_cli/services/concept_identity.py",
+            "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/progress.py",
@@ -3523,7 +3530,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 2432,
+          "step_count": 2345,
           "truncated": true
         }
       },
@@ -3639,9 +3646,10 @@
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/io.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/immutable.py"
           ],
-          "step_count": 3692,
+          "step_count": 3700,
           "truncated": true
         }
       },
@@ -4427,6 +4435,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/section_ownership.py",
@@ -4443,7 +4452,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 4862,
+          "step_count": 4863,
           "truncated": true
         }
       },
@@ -4603,6 +4612,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
@@ -4620,7 +4630,7 @@
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 2706,
+          "step_count": 2643,
           "truncated": true
         }
       },
@@ -4812,6 +4822,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/section_ownership.py",
@@ -4823,7 +4834,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 744,
+          "step_count": 750,
           "truncated": true
         }
       },
@@ -5471,6 +5482,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/section_ownership.py",
@@ -5484,7 +5496,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 4618,
+          "step_count": 4624,
           "truncated": true
         }
       },
@@ -6364,6 +6376,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
@@ -6374,7 +6387,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 687,
+          "step_count": 693,
           "truncated": true
         }
       },
@@ -6462,6 +6475,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
@@ -6472,7 +6486,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 685,
+          "step_count": 691,
           "truncated": true
         }
       },
@@ -9878,6 +9892,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
@@ -9896,7 +9911,7 @@
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 2273,
+          "step_count": 2279,
           "truncated": true
         }
       },
@@ -10780,6 +10795,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/section_ownership.py",
@@ -10794,7 +10810,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 3576,
+          "step_count": 3577,
           "truncated": true
         }
       },
@@ -13956,6 +13972,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
@@ -13968,7 +13985,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 1209,
+          "step_count": 1215,
           "truncated": true
         }
       },
@@ -14119,6 +14136,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
@@ -14130,7 +14148,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 1325,
+          "step_count": 1331,
           "truncated": true
         }
       },
@@ -14389,6 +14407,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/section_ownership.py",
@@ -14396,7 +14415,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py"
           ],
-          "step_count": 2077,
+          "step_count": 2083,
           "truncated": true
         }
       },
@@ -18322,7 +18341,7 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 1395,
+          "step_count": 1397,
           "truncated": true
         }
       },
@@ -18613,6 +18632,7 @@
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/extractors/common.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
@@ -18620,7 +18640,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 1807,
+          "step_count": 1813,
           "truncated": true
         }
       },
@@ -19950,6 +19970,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
@@ -19996,7 +20017,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4939,
+          "step_count": 4945,
           "truncated": true
         }
       },
@@ -23460,7 +23481,15 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 31,
+              "line": 35,
+              "step": "run",
+              "step_index": 2,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 37,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -23532,9 +23561,9 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/knowledge_model.py",
-            "src/llm_wiki_cli/services/knowledge_graph.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
+            "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
@@ -23570,7 +23599,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 3063,
+          "step_count": 3122,
           "truncated": true
         }
       },
@@ -27848,19 +27877,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 751,
+              "line": 759,
               "step": "_decode_json_object",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 754,
+              "line": 762,
               "step": "_decode_json_object",
               "target": "content.decode"
             },
             {
               "kind": "external_call",
-              "line": 758,
+              "line": 766,
               "step": "_decode_json_object",
               "target": "json.loads"
             },
@@ -27893,6 +27922,7 @@
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/extractors/common.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
@@ -27906,7 +27936,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 1780,
+          "step_count": 1786,
           "truncated": true
         }
       },
@@ -28483,25 +28513,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 751,
+              "line": 759,
               "step": "_decode_json_object",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 754,
+              "line": 762,
               "step": "_decode_json_object",
               "target": "content.decode"
             },
             {
               "kind": "external_call",
-              "line": 758,
+              "line": 766,
               "step": "_decode_json_object",
               "target": "json.loads"
             },
             {
               "kind": "external_call",
-              "line": 764,
+              "line": 772,
               "step": "_decode_json_object",
               "target": "isinstance"
             },
@@ -30442,13 +30472,14 @@
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/ci_report.py",
             "src/llm_wiki_cli/services/doctor_service.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4054,
+          "step_count": 4095,
           "truncated": true
         }
       },
@@ -31650,7 +31681,15 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 31,
+              "line": 35,
+              "step": "run",
+              "step_index": 2,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 37,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -31722,9 +31761,9 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
-            "src/llm_wiki_cli/services/knowledge_model.py",
-            "src/llm_wiki_cli/services/knowledge_graph.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
+            "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
@@ -31760,7 +31799,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 3063,
+          "step_count": 3122,
           "truncated": true
         }
       },
@@ -32425,6 +32464,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
@@ -32450,7 +32490,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py"
           ],
-          "step_count": 2848,
+          "step_count": 2849,
           "truncated": true
         }
       },
@@ -33857,6 +33897,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
@@ -33869,7 +33910,7 @@
             "src/llm_wiki_cli/services/legacy_hooks.py",
             "src/llm_wiki_cli/services/circuit_breaker.py"
           ],
-          "step_count": 1909,
+          "step_count": 1910,
           "truncated": true
         }
       },
@@ -33991,6 +34032,7 @@
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
@@ -34028,7 +34070,7 @@
             "src/llm_wiki_cli/services/module_maps.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 6465,
+          "step_count": 6473,
           "truncated": true
         }
       },
@@ -34154,6 +34196,7 @@
             "src/llm_wiki_cli/services/knowledge_storage_access.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
@@ -34174,7 +34217,7 @@
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/knowledge_verification.py"
           ],
-          "step_count": 767,
+          "step_count": 774,
           "truncated": true
         }
       },
@@ -35923,7 +35966,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2544,
+              "line": 2551,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35931,7 +35974,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2547,
+              "line": 2554,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35939,7 +35982,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2550,
+              "line": 2557,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35947,7 +35990,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 2553,
+              "line": 2560,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -35955,7 +35998,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2555,
+              "line": 2562,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35963,7 +36006,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2558,
+              "line": 2565,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -36036,7 +36079,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/resource_diagnostics.py"
           ],
-          "step_count": 645,
+          "step_count": 650,
           "truncated": false
         }
       },
@@ -36571,6 +36614,7 @@
         "entities/P0CalibrationTransitionError.md",
         "entities/P0CalibrationVerificationReport.md",
         "entities/PackageInfo.md",
+        "entities/PackedKnowledgeStoreReader.md",
         "entities/PacketWireContract.md",
         "entities/PageKind.md",
         "entities/PageRegistry.md",
@@ -37325,6 +37369,7 @@
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_projection.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
@@ -37540,6 +37585,7 @@
         "workflows/resolve_call_observation.md",
         "workflows/resolve_conflicts.md",
         "workflows/review_cmd_flow.md",
+        "workflows/review_records.md",
         "workflows/run_check.md",
         "workflows/run_packet_output.md",
         "workflows/run_protocol.md",
@@ -41212,6 +41258,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/KnowledgeSlice",
       "outgoing_internal_links": [
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_access.md"
       ],
@@ -41259,9 +41306,8 @@
       "outgoing_internal_links": [
         "modules/api.md",
         "modules/knowledge_artifacts.md",
-        "modules/knowledge_storage.md",
-        "modules/knowledge_storage_access.md",
-        "modules/knowledge_storage_diagnostics.md"
+        "modules/knowledge_packs.md",
+        "modules/knowledge_storage.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_storage.py",
@@ -41273,6 +41319,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/KnowledgeStorePlan",
       "outgoing_internal_links": [
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md"
       ],
       "role": "semantic",
@@ -41285,7 +41332,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/KnowledgeStoreReader",
       "outgoing_internal_links": [
-        "modules/knowledge_artifacts.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_access.md",
         "modules/knowledge_storage_lifecycle.md"
@@ -42529,6 +42576,20 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/packages.py",
       "title": "PackageInfo"
+    },
+    {
+      "canonical_path": "entities/PackedKnowledgeStoreReader.md",
+      "id": "PackedKnowledgeStoreReader",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/PackedKnowledgeStoreReader",
+      "outgoing_internal_links": [
+        "modules/knowledge_packs.md",
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_lifecycle.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/knowledge_packs.py",
+      "title": "PackedKnowledgeStoreReader"
     },
     {
       "canonical_path": "entities/PacketWireContract.md",
@@ -46983,6 +47044,27 @@
       "title": "knowledge_orchestration Module"
     },
     {
+      "canonical_path": "modules/knowledge_packs.md",
+      "id": "knowledge_packs",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/knowledge_packs",
+      "outgoing_internal_links": [
+        "entities/PackedKnowledgeStoreReader.md",
+        "modules/documentation_wiki_input.md",
+        "modules/knowledge_artifacts.md",
+        "modules/knowledge_packs.md",
+        "modules/knowledge_reuse.md",
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_access.md",
+        "modules/knowledge_storage_diagnostics.md",
+        "modules/knowledge_storage_lifecycle.md",
+        "modules/task_context_v2.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/knowledge_packs.py",
+      "title": "knowledge_packs Module"
+    },
+    {
       "canonical_path": "modules/knowledge_projection.md",
       "id": "knowledge_projection",
       "kind": "modules",
@@ -47037,6 +47119,7 @@
         "modules/knowledge_envelope.md",
         "modules/knowledge_governance.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_access.md",
         "modules/knowledge_storage_io.md",
@@ -47069,18 +47152,7 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/knowledge_storage_diagnostics",
       "outgoing_internal_links": [
-        "modules/ci_check_cmd.md",
-        "modules/knowledge_artifacts.md",
-        "modules/knowledge_index.md",
-        "modules/knowledge_loader.md",
-        "modules/knowledge_storage.md",
-        "modules/knowledge_storage_cmd.md",
-        "modules/knowledge_storage_diagnostics.md",
-        "modules/knowledge_storage_io.md",
-        "modules/knowledge_storage_lifecycle.md",
-        "modules/services_contracts.md",
-        "modules/sync_manifest.md",
-        "modules/wiki_surface_index.md"
+        "modules/knowledge_storage_diagnostics.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
@@ -47116,18 +47188,7 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/knowledge_storage_lifecycle",
       "outgoing_internal_links": [
-        "modules/filesystem_guard.md",
-        "modules/knowledge_artifacts.md",
-        "modules/knowledge_governance.md",
-        "modules/knowledge_index.md",
-        "modules/knowledge_loader.md",
-        "modules/knowledge_storage.md",
-        "modules/knowledge_storage_cmd.md",
-        "modules/knowledge_storage_diagnostics.md",
-        "modules/knowledge_storage_io.md",
-        "modules/knowledge_storage_lifecycle.md",
-        "modules/sync_manifest.md",
-        "modules/wiki_surface_index.md"
+        "modules/knowledge_storage_lifecycle.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
@@ -49077,6 +49138,7 @@
         "modules/knowledge_artifacts.md",
         "modules/knowledge_evidence.md",
         "modules/knowledge_index.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md"
       ],
       "role": "mixed",
@@ -49349,6 +49411,7 @@
         "modules/knowledge_envelope.md",
         "modules/knowledge_governance.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_access.md",
         "modules/knowledge_storage_io.md",
@@ -50353,6 +50416,7 @@
         "modules/filesystem_guard.md",
         "modules/knowledge_artifacts.md",
         "modules/knowledge_governance.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
         "modules/knowledge_storage_lifecycle.md"
@@ -50621,6 +50685,21 @@
       "title": "review_cmd_flow"
     },
     {
+      "canonical_path": "workflows/review_records.md",
+      "id": "review_records",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/review_records",
+      "outgoing_internal_links": [
+        "modules/knowledge_index.md",
+        "modules/knowledge_loader.md",
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_diagnostics.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
+      "title": "review_records"
+    },
+    {
       "canonical_path": "workflows/run_check.md",
       "id": "run_check",
       "kind": "workflows",
@@ -50859,6 +50938,7 @@
         "modules/knowledge_artifacts.md",
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_diagnostics.md",
         "modules/knowledge_storage_io.md",
@@ -50997,6 +51077,7 @@
         "modules/knowledge_governance.md",
         "modules/knowledge_graph.md",
         "modules/knowledge_index.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52031,6 +52112,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_links.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52066,6 +52148,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_links.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52280,6 +52363,7 @@
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52342,6 +52426,7 @@
         "modules/knowledge_links.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52399,6 +52484,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52563,6 +52649,7 @@
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52766,6 +52853,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -52796,6 +52884,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -53548,6 +53637,7 @@
         "modules/knowledge_links.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -53779,6 +53869,7 @@
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -54464,6 +54555,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -54509,6 +54601,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -54576,6 +54669,7 @@
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -55410,6 +55504,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_projection.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
@@ -55747,6 +55842,7 @@
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -56505,12 +56601,12 @@
         "modules/knowledge_evidence.md",
         "modules/knowledge_freshness.md",
         "modules/knowledge_governance.md",
-        "modules/knowledge_graph.md",
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_cmd.md",
         "modules/knowledge_storage_diagnostics.md",
@@ -57364,6 +57460,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_links.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -57908,6 +58005,7 @@
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_diagnostics.md",
         "modules/knowledge_storage_io.md",
@@ -58198,12 +58296,12 @@
         "modules/knowledge_evidence.md",
         "modules/knowledge_freshness.md",
         "modules/knowledge_governance.md",
-        "modules/knowledge_graph.md",
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_cmd.md",
         "modules/knowledge_storage_diagnostics.md",
@@ -58417,6 +58515,7 @@
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_projection.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
@@ -58727,6 +58826,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_observability.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -58783,6 +58883,7 @@
         "modules/knowledge_index.md",
         "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -58839,6 +58940,7 @@
         "modules/knowledge_governance.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_model.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_access.md",
         "modules/knowledge_storage_io.md",
@@ -59407,6 +59509,7 @@
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_projection.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
@@ -59614,6 +59717,7 @@
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
         "modules/knowledge_orchestration.md",
+        "modules/knowledge_packs.md",
         "modules/knowledge_projection.md",
         "modules/knowledge_reuse.md",
         "modules/knowledge_storage.md",
@@ -59725,5 +59829,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:eab102a2b62853e77b01af0538e4ba6b874ab513aa640c01b96ad4c69deb2f87"
+  "source_hash": "sha256:d84cfa4cf815b04f9475cf5a101606751e8ec92eb7df0b338a4a8e1f83e17abd"
 }

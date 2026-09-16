@@ -143,7 +143,7 @@ flowchart LR
 | commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 568 | `callable(fault_injector)` |
 | commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 569 | `TypeError('fault_injector must be callable')` |
 | commit_knowledge_artifacts | _commit_sharded | 572 | `_commit_sharded(plan, fault_injector)` |
-| _commit_sharded | _absolute_path | 674 | `_absolute_path(plan.knowledge_index.path.parent)` |
+| _commit_sharded | _absolute_path | 682 | `_absolute_path(plan.knowledge_index.path.parent)` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 29 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 29 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 30 | `first_unsafe_path_component(path)` |

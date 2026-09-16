@@ -10,13 +10,14 @@
 2. `knowledge_storage.digest`
 3. `knowledge_storage.canonical_bytes`
 4. `knowledge_storage.KnowledgeStorageError`
-5. `knowledge_storage_io.read_guarded`
-6. `knowledge_storage.KnowledgeStorageError`
-7. `filesystem_guard.ensure_guarded_directory`
+5. `knowledge_storage.KnowledgeStorageError`
+6. `knowledge_storage_io.read_guarded`
+7. `knowledge_storage.KnowledgeStorageError`
 8. `filesystem_guard.ensure_guarded_directory`
-9. `knowledge_storage_io.read_guarded`
-10. `knowledge_storage.KnowledgeStorageError`
-11. `filesystem_guard.atomic_write_guarded_bytes`
+9. `filesystem_guard.ensure_guarded_directory`
+10. `knowledge_storage_io.read_guarded`
+11. `knowledge_storage.KnowledgeStorageError`
+12. `filesystem_guard.atomic_write_guarded_bytes`
 
 ## Touches
 
@@ -27,4 +28,4 @@
 
 ## Behavior
 
-Creates a verified recovery snapshot outside the managed wiki before migration changes canonical artifacts. Existing recovery content must match exactly; unrelated files are never overwritten. The recovery record binds every retained artifact and the expected migration target.
+Builds a bounded recovery catalog binding original/target roots and exact generated file bytes. It accepts an empty destination or the same verified snapshot, creates guarded private directories and refuses conflicting recovery content. Backup remains outside the managed wiki and preserves the previous physical format.

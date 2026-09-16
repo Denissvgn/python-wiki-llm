@@ -29,10 +29,16 @@ Holds the encoded root, exact immutable object bytes and storage statistics for 
 ```mermaid
 flowchart LR
     n0["KnowledgeStorePlan (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n1["build_knowledge_store (src/llm_wiki_cli/services/knowledge_storage.py)"]
+    n1["build_packed_store (src/llm_wiki_cli/services/knowledge_packs.py)"]
+    n2["build_storage (src/llm_wiki_cli/services/knowledge_packs.py)"]
+    n3["build_knowledge_store (src/llm_wiki_cli/services/knowledge_storage.py)"]
     n1 --> n0
+    n2 --> n0
+    n3 --> n0
     click n0 "../modules/knowledge_storage.md"
-    click n1 "../modules/knowledge_storage.md"
+    click n1 "../modules/knowledge_packs.md"
+    click n2 "../modules/knowledge_packs.md"
+    click n3 "../modules/knowledge_storage.md"
 ```
 
 ### Summary
@@ -45,5 +51,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `build_packed_store` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
+| `build_packed_store` | type_reference | [knowledge_packs](../modules/knowledge_packs.md) | — |
+| `build_storage` | type_reference | [knowledge_packs](../modules/knowledge_packs.md) | — |
 | `build_knowledge_store` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 | `build_knowledge_store` | type_reference | [knowledge_storage](../modules/knowledge_storage.md) | — |

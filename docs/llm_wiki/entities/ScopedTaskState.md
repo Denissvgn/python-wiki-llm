@@ -1,6 +1,6 @@
 # ScopedTaskState
 
-**Location:** `src/llm_wiki_cli/services/task_context_v2.py:195`
+**Location:** `src/llm_wiki_cli/services/task_context_v2.py:202`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_context_v2](../modules/task_context_v2.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-Retains private workspace roots, source capture, consumed storage observations and change-selection bindings for a task v2 session. Revalidation accounts for work even when it fails and permits cache reuse only when the captured capabilities support it.
+Retains private workspace ownership, source captures, change selection and consumed native file/range observations for task-v2 session reuse. Revalidation checks actual bytes, permissions and file/directory identities under the active budget. Range bytes contribute to both work accounting and retained cache memory.
 
 ## Attributes
 
@@ -25,6 +25,7 @@ Retains private workspace roots, source capture, consumed storage observations a
 | `change_request` | `Any` | *required* | — |
 | `native_absent` | `bool` | `False` | — |
 | `original_work` | `Mapping[str, Any] \| None` | `None` | — |
+| `wiki_ranges` | `Mapping[tuple[str, int, int, int], ReadObservation]` | `field(default_factory=dict)` | — |
 
 ## Methods
 
@@ -48,7 +49,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [task_context_v2](../modules/task_context_v2.md) | 1 | `cacheable`, `change_request`, `changes`, `native_absent`, `original_work`, `snapshot`, `source_anchor`, `source_root`, `wiki_inputs`, `wiki_root` |
+| [task_context_v2](../modules/task_context_v2.md) | 1 | `cacheable`, `change_request`, `changes`, `native_absent`, `original_work`, `snapshot`, `source_anchor`, `source_root`, `wiki_inputs`, `wiki_ranges`, `wiki_root` |
 
 ### References
 

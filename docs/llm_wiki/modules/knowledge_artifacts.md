@@ -4,7 +4,7 @@
 
 ## Description
 
-Validates native logical content and the commitments connecting knowledge, surface and sync-manifest artifacts. Existing v1 serialization remains supported. Adopted v2 writes preserve immutable objects, publish the root only after object verification, and replace the sync manifest last under the storage lock. Interrupted or mixed generations are rejected by readers.
+Owns native artifact validation and guarded publication. Full readers reconstruct supported indexed profiles through their storage owners before granting artifact authority. Writers preserve explicit format adoption, validate complete logical content, publish immutable objects or packs before the root and commit the manifest last. Prior generations and planned bytes are rechecked at the mutation boundary.
 
 ## Imports
 
@@ -21,8 +21,9 @@ Validates native logical content and the commitments connecting knowledge, surfa
 | `.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
 | `.knowledge_index` | `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload` |
 | `.knowledge_model` | `ConceptKind`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `Origin` |
+| `.knowledge_packs` | `PACKED_SCHEMA`, `PACKED_FORMATS`, `build_storage`, `open_knowledge_store`, `physical_objects`, `parse_packed_root` |
 | `.knowledge_reuse` | `validate_reuse_artifact_parity` |
-| `.knowledge_storage` | `STORE_SCHEMA`, `MAX_EXPANDED_BYTES`, `GIT_FAILURE_BYTES`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `build_knowledge_store`, `logical_digest` |
+| `.knowledge_storage` | `STORE_SCHEMA`, `MAX_EXPANDED_BYTES`, `GIT_FAILURE_BYTES`, `KnowledgeStorageError`, `logical_digest` |
 | `.knowledge_storage_io` | `StorageReadSession`, `read_guarded`, `read_guarded`, `read_guarded`, `_absolute_path` |
 | `.progress` | `observed_phase` |
 | `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
@@ -59,9 +60,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (21) |
-| Outbound | `src` (20) |
+| Outbound | `src` (21) |
 
-> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

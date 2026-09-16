@@ -2,7 +2,7 @@
 
 **Entry point:** `load_knowledge_state` (`api`)
 **Source:** [knowledge_loader](../modules/knowledge_loader.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), and 17 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), and 18 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -88,7 +89,7 @@ sequenceDiagram
     p16-->>p17: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
 ```
 
-> Call sequence diagram shows 30 of 1324 interactions; 1294 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1330 interactions; 1300 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

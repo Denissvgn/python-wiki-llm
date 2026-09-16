@@ -2,7 +2,7 @@
 
 **Entry point:** `project_knowledge` (`api`)
 **Source:** [knowledge_projection](../modules/knowledge_projection.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 17 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 18 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_projection](../modules/knowledge_projection.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
@@ -88,7 +89,7 @@ sequenceDiagram
     p20-->>p22: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
 ```
 
-> Call sequence diagram shows 30 of 1806 interactions; 1776 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1812 interactions; 1782 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -4,13 +4,13 @@
 
 ## Description
 
-Adapts explicit storage commands to the shared lifecycle and diagnostic services. Migration and recovery offer previews, cleanup defaults to preview, and JSON output keeps unusual paths escaped. Failed checks produce a nonzero exit status without exposing a partially successful result.
+Adapts explicit storage migration, recovery, export, cleanup, diagnostics and logical review operations to the CLI. It delegates validation and mutation to their owning services, emits structured output and preserves explicit adoption and failure reporting. Logical inspection and comparison use bounded compact JSON output.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
-| `..services.knowledge_storage_diagnostics` | `storage_report` |
+| `..services.knowledge_storage_diagnostics` | `storage_report`, `review_storage` |
 | `..services.knowledge_storage_lifecycle` | `migrate_knowledge_storage`, `recover_knowledge_storage`, `export_knowledge_v1`, `prune_knowledge_storage` |
 | `.knowledge_cmd` | `_wiki_root` |
 | `__future__` | `annotations` |

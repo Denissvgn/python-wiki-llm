@@ -19,4 +19,4 @@
 
 ## Behavior
 
-Acquires the storage mutation lock, verifies the planned previous artifacts, writes immutable objects and verifies them, then publishes the root and sync manifest in order. An interruption may leave unreferenced objects; it cannot make a mixed generation pass validation.
+Uses the shared storage lock and guarded writer for indexed JSON objects and ZIP packs. It verifies prior inputs, writes immutable physical artifacts first, publishes the surface/root and commits the manifest last. Exact bytes are rechecked around publication; an interrupted or moved generation yields a failure rather than a mixed valid snapshot.

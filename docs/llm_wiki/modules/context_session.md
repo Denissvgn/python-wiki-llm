@@ -4,7 +4,7 @@
 
 ## Description
 
-Provides bounded, process-local reuse for one trusted workspace. Requests retain private root ownership, immutable results, expiry and authoritative input checks. Task v2 sessions validate their consumed source and storage inputs within the read budget; schema-bound deltas reconstruct the exact full logical result. Events only invalidate state, and unsaved buffers require save or defer guidance.
+Provides bounded context reuse with private workspace ownership and authoritative on-disk validation. Scoped native entries retain complete-file and pack-range observations; cold work and subsequent validation both count those bytes. Mutations invalidate reuse, and supported deltas reconstruct the exact task result schema. Unsaved buffers remain outside the on-disk contract.
 
 ## Imports
 

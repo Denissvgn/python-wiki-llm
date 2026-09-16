@@ -56,4 +56,4 @@
 
 ## Behavior
 
-Normalizes the explicit task and host limits, captures permitted source and selected native records, and assembles qualified requirements under one output budget. Storage and source receipts bind the emitted facts. Final checks occur after counting; the result never substitutes a partial read for a legacy full-validity packet.
+Normalizes the explicit task-v2 request, captures selected native/source evidence and composes requirement observations through existing semantic owners. Packed receipts identify member ranges and reserve their final validation work. The published context binds the committed root, selected scope, omissions and budgets; session state retains the observations needed to reproduce authoritative checks.

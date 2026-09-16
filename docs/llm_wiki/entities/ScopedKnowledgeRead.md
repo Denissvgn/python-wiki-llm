@@ -1,6 +1,6 @@
 # ScopedKnowledgeRead
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:26`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:27`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_access](../modules/knowledge_storage_access.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-Owns a selected native read, its consumed Markdown and the request-local storage session. The caller must finish the authoritative recheck before returning a result; unread parts of the store remain unverified.
+Owns a selected logical slice, supporting Markdown and request-local filesystem observations. Its finalization rechecks consumed files and pack ranges and returns their actual work receipt. It does not confer full-artifact or complete-archive validity.
 
 ## Attributes
 

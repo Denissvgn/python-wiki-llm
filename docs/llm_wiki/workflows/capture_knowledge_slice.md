@@ -1,7 +1,7 @@
 # capture_knowledge_slice
 
 **Entry point:** `knowledge_storage_access.capture_knowledge_slice`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [sync_manifest](../modules/sync_manifest.md)
 
 > Capture selected stored observations without enumerating the wiki tree.
 
@@ -17,7 +17,7 @@ evaluation. The owning request calls ``finish`` before publishing its result.
 3. `knowledge_storage_io.StorageReadSession`
 4. `knowledge_storage.KnowledgeStorageError`
 5. `knowledge_storage.KnowledgeStorageError`
-6. `knowledge_storage.KnowledgeStoreReader`
+6. `knowledge_packs.open_knowledge_store`
 7. `sync_manifest.SyncManifest.from_payload`
 8. `knowledge_artifacts._decode_json_object`
 9. `knowledge_model._parse_bundle`
@@ -48,6 +48,7 @@ evaluation. The owning request calls ``finish`` before publishing its result.
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -55,4 +56,4 @@ evaluation. The owning request calls ``finish`` before publishing its result.
 
 ## Behavior
 
-Reads a bounded root and commit manifest, follows the required routing and verifies selected records and supporting pages. Optional graph expansion remains bounded. When governance is present, selected identities and lifecycle must agree with the authoritative ledger. The owner finishes a final reread before publishing.
+Reads the bounded root and commit manifest, dispatches the stored format, and follows only the required logical routing. Packed storage adds authenticated member and pack catalogs plus guarded byte-range reads. Supporting Markdown and governance must match the committed observations. Optional graph expansion and final rereads remain bounded; unread members and metadata are not promoted to full validity.

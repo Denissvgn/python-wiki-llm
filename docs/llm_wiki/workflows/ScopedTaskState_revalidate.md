@@ -13,6 +13,7 @@
 5. `knowledge_storage_io.StorageReadSession`
 6. `knowledge_storage.KnowledgeStorageError`
 7. `knowledge_storage.KnowledgeStorageError`
+8. `knowledge_storage.KnowledgeStorageError`
 
 ## Touches
 
@@ -25,4 +26,4 @@
 
 ## Behavior
 
-Rechecks the captured source and any explicit change selection, then rereads consumed storage inputs under the remaining budget. A changed identity, new native state or mismatched content invalidates reuse. Work measurements remain available when validation fails.
+Checks retained source and change-selection observations, then rereads every consumed native file and pack range under the remaining wiki budget. Any content, file identity or ancestor mismatch invalidates reuse. Observed bytes and operations are reported even when validation fails.

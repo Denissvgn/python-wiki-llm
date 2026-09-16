@@ -1,13 +1,13 @@
 # StorageReadSession
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:109`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:124`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_io](../modules/knowledge_storage_io.md)
 
 ## Description
 
-Bounds request-owned filesystem reads and records each exact observation. Repeated access and final checks detect changed inputs and count actual bytes; portable relative paths stay inside the trusted storage root.
+Retains request-owned observations of complete files and pack ranges. It counts actual bytes and read operations, enforces a cumulative budget and rejects inconsistent file identities across members of a pack. Final rechecks reread the consumed bytes through the same guarded filesystem owner; cache reuse never substitutes for this validation.
 
 ## Attributes
 
@@ -20,6 +20,7 @@ Bounds request-owned filesystem reads and records each exact observation. Repeat
 | `__init__` | `(wiki_dir: str \| Path, *, max_bytes: int = MAX_EXPANDED_BYTES)` | — | — |
 | `read` | `(relative: str, maximum: int) -> bytes` | — | — |
 | `recheck` | `() -> None` | — | — |
+| `read_range` | `(relative: str, offset: int, length: int, file_bytes: int) -> bytes` | — | Read and retain an authenticated member range, without reading its whole pack. |
 | `receipt` | `() -> dict[str, Any]` | — | — |
 
 ## Relationships
@@ -50,7 +51,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_storage_io](../modules/knowledge_storage_io.md) | 4 | — |
+| [knowledge_storage_io](../modules/knowledge_storage_io.md) | 5 | — |
 
 ### References
 

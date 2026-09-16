@@ -32,12 +32,12 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
-- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md)
 - [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
@@ -115,7 +115,7 @@ sequenceDiagram
     p2->>p20: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 3062 interactions; 3032 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3121 interactions; 3091 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -149,8 +149,10 @@ flowchart LR
     s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(absolute.anchor)" .-> s12
     b0["output print"]
     s2 -. "output print" .-> b0
-    b1["mutation pending_parts.pop"]
-    s5 -. "mutation pending_parts.pop" .-> b1
+    b1["output print"]
+    s2 -. "output print" .-> b1
+    b2["mutation pending_parts.pop"]
+    s5 -. "mutation pending_parts.pop" .-> b2
     click s1 "../modules/knowledge_cmd.md"
     click s2 "../modules/knowledge_storage_cmd.md"
     click s3 "../modules/knowledge_cmd.md"
@@ -158,6 +160,7 @@ flowchart LR
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
+    class b2 boundary
 ```
 
 ### Step data
@@ -197,7 +200,8 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 31 |
+| output | `print` | `run` | 35 |
+| output | `print` | `run` | 37 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps

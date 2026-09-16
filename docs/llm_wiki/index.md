@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 583 | [Open section](#entities) |
-| Modules | 195 | [Open section](#modules) |
-| Workflows | 146 | [Open section](#workflows) |
+| Entities | 584 | [Open section](#entities) |
+| Modules | 196 | [Open section](#modules) |
+| Workflows | 147 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 452 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -393,6 +393,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [P0CalibrationTransitionError](entities/P0CalibrationTransitionError.md)
 - [P0CalibrationVerificationReport](entities/P0CalibrationVerificationReport.md)
 - [PackageInfo](entities/PackageInfo.md)
+- [PackedKnowledgeStoreReader](entities/PackedKnowledgeStoreReader.md)
 - [PacketWireContract](entities/PacketWireContract.md)
 - [PageKind](entities/PageKind.md)
 - [PageRegistry](entities/PageRegistry.md)
@@ -695,6 +696,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_model](modules/knowledge_model.md) - Typed contract and stdlib validation for ``llm-wiki-knowledge/v1``.
 - [knowledge_observability](modules/knowledge_observability.md) - Privacy-safe observability for native knowledge consumers.
 - [knowledge_orchestration](modules/knowledge_orchestration.md) - Command-facing orchestration for generated native knowledge artifacts.
+- [knowledge_packs](modules/knowledge_packs.md) - Immutable indexed ZIP containers for unchanged logical knowledge objects.
 - [knowledge_projection](modules/knowledge_projection.md) - Safe, deterministic projections over one validated knowledge read view.
 - [knowledge_reuse](modules/knowledge_reuse.md) - Versioned input commitments for conservative, validated sync no-ops.
 - [knowledge_storage](modules/knowledge_storage.md) - Bounded, content-addressed storage for the unchanged logical knowledge model.
@@ -917,6 +919,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [resolve_call_observation](workflows/resolve_call_observation.md) - entry: `extraction_service._resolve_call_observation`
 - [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
 - [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
+- [review_records](workflows/review_records.md) - entry: `knowledge_storage_diagnostics._review_records`
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`
 - [run_packet_output](workflows/run_packet_output.md) - entry: `context_service._run_packet_output`
 - [run_protocol](workflows/run_protocol.md) - entry: `context_service._run_protocol`

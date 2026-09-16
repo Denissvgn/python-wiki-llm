@@ -35,4 +35,4 @@
 
 ## Behavior
 
-Verifies the saved recovery record and refuses roots outside that migration or changed authored authority. It restores the exact prior artifacts through guarded publication. Restoring a historical large file does not remove an outgoing Git-size violation.
+Reads a bounded recovery catalog and verifies the saved artifacts through the supported storage reader. It refuses roots outside the recorded migration or authored authority that has changed. The guarded writer restores the exact original physical files and commitments, including the original packed compression profile when applicable.
