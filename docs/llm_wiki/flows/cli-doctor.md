@@ -101,7 +101,7 @@ sequenceDiagram
     p20-->>p23: wintypes.HANDLE
 ```
 
-> Call sequence diagram shows 30 of 1187 interactions; 1157 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1230 interactions; 1200 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

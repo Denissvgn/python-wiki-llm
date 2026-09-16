@@ -1,6 +1,6 @@
 # _ExplicitContextOption
 
-**Location:** `src/llm_wiki_cli/cli.py:57`
+**Location:** `src/llm_wiki_cli/cli.py:59`
 **Kind:** Class
 **Bases:** `argparse.Action`
 **Module:** [cli](../modules/cli.md)

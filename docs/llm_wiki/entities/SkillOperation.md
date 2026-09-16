@@ -1,6 +1,6 @@
 # SkillOperation
 
-**Location:** `src/llm_wiki_cli/services/skills.py:154`
+**Location:** `src/llm_wiki_cli/services/skills.py:155`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)

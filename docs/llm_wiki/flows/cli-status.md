@@ -101,7 +101,7 @@ sequenceDiagram
     p14-->>p24: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
 ```
 
-> Call sequence diagram shows 30 of 1837 interactions; 1807 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1880 interactions; 1850 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

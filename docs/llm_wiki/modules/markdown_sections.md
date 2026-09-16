@@ -40,6 +40,7 @@ flowchart LR
     n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
     n6["src/llm_wiki_cli/services/markdown_sections.py"]
     n7["src/llm_wiki_cli/services/section_ownership.py"]
+    n8["src/llm_wiki_cli/services/task_evidence.py"]
     n0 --> n1
     n0 --> n5
     n0 --> n6
@@ -52,6 +53,7 @@ flowchart LR
     n6 --> n5
     n7 --> n5
     n7 --> n6
+    n8 --> n6
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/record.md"
@@ -60,6 +62,7 @@ flowchart LR
     click n5 "../modules/knowledge_evidence.md"
     click n6 "../modules/markdown_sections.md"
     click n7 "../modules/section_ownership.md"
+    click n8 "../modules/task_evidence.md"
 ```
 
 ### Internal neighbors
@@ -72,6 +75,7 @@ flowchart LR
 | Inbound | [refresh](../modules/refresh.md) |
 | Inbound | [documentation_worklist](../modules/documentation_worklist.md) |
 | Inbound | [section_ownership](../modules/section_ownership.md) |
+| Inbound | [task_evidence](../modules/task_evidence.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 
 ## Classes

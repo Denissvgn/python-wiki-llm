@@ -25,17 +25,16 @@ sequenceDiagram
     participant p13 as _HOST_BROKER_AUTHENTICATOR.reset
     participant p14 as manager.__enter__
     participant p15 as _raise_api_error
-    participant p16 as isinstance (src/llm_wiki_cli/api.py:_raise_api_error)
-    participant p17 as _raise_context_packet_api_error
-    participant p18 as _raise_required_knowledge_api_error
-    participant p19 as _required_knowledge_failure
-    participant p20 as set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p21 as id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p22 as seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p23 as getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p24 as type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p25 as isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p26 as dict
+    participant p16 as _raise_required_knowledge_api_error
+    participant p17 as _required_knowledge_failure
+    participant p18 as set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p19 as id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p20 as seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p21 as getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p22 as type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p23 as isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p24 as dict
+    participant p25 as copied.get
     p0->>p1: use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py)
     p1-->>p2: isinstance (src/llm_wiki_cli/services…host_broker_authenticator)
     p1->>p3: HostBrokerAuthenticationUnavailable
@@ -53,22 +52,22 @@ sequenceDiagram
     p1-->>p13: _HOST_BROKER_AUTHENTICATOR.reset
     p0-->>p14: manager.__enter__
     p0->>p15: _raise_api_error
-    p15-->>p16: isinstance (src/llm_wiki_cli/api.py:_raise_api_error)
-    p15->>p17: _raise_context_packet_api_error
-    p17->>p18: _raise_required_knowledge_api_error
-    p18->>p19: _required_knowledge_failure
-    p19-->>p20: set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p21: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p22: seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p21: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p23: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p24: type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p23: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p25: isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p26: dict
+    p15->>p16: _raise_required_knowledge_api_error
+    p16->>p17: _required_knowledge_failure
+    p17-->>p18: set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p19: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p20: seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p19: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p21: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p22: type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p21: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p23: isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p24: dict
+    p17-->>p25: copied.get
+    p17-->>p23: isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
 ```
 
-> Call sequence diagram shows 30 of 123 interactions; 93 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 127 interactions; 97 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -126,7 +125,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 2998 | `implementation(authenticator)` |
+| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 3160 | `implementation(authenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | isinstance (src/llm_wiki_cli/services…host_broker_authenticator) | 195 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |

@@ -66,11 +66,11 @@ sequenceDiagram
     participant p16 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
     participant p17 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
     participant p18 as validate_request
-    participant p19 as set (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p20 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p21 as dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p22 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p23 as legacy.pop
+    participant p19 as isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p20 as any (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p21 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p22 as set (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p23 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
     p0->>p1: _normalise_focus
     p1-->>p2: isinstance (src/llm_wiki_cli/api.py:_normalise_focus)
     p1-->>p3: list (src/llm_wiki_cli/api.py:_normalise_focus)
@@ -91,19 +91,19 @@ sequenceDiagram
     p13->>p15: ProtocolRequestError
     p13-->>p17: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
     p13->>p18: validate_request
-    p18-->>p19: set (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p19: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p20: any (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p19: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
     p18->>p15: ProtocolRequestError
-    p18-->>p20: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    p18-->>p21: dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    p18-->>p22: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p18-->>p22: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p18-->>p22: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p18-->>p23: legacy.pop
-    p18-->>p23: legacy.pop
-    p18-->>p23: legacy.pop
+    p18-->>p21: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18->>p15: ProtocolRequestError
+    p18-->>p22: set (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18->>p15: ProtocolRequestError
+    p18-->>p23: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    p18-->>p23: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
 ```
 
-> Call sequence diagram shows 30 of 2049 interactions; 2019 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2099 interactions; 2069 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -163,16 +163,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context | _normalise_focus | 1161 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2731 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2737 | `list(focus)` |
-| build_context | _normalize_optional_knowledge_mode | 1162 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 378 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 379 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 379 | `repr(item)` |
-| _normalize_optional_knowledge_mode | InvalidRequestError | 380 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 385 | `cast(KnowledgeMode, value)` |
-| build_context | _validate_protocol_request | 1178 | `context_cmd._validate_protocol_request(request)` |
+| build_context | _normalise_focus | 1171 | `_normalise_focus(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 2893 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 2899 | `list(focus)` |
+| build_context | _normalize_optional_knowledge_mode | 1172 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 385 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 386 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 386 | `repr(item)` |
+| _normalize_optional_knowledge_mode | InvalidRequestError | 387 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 392 | `cast(KnowledgeMode, value)` |
+| build_context | _validate_protocol_request | 1188 | `context_cmd._validate_protocol_request(request)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1077 | `isinstance(data, dict)` |
 
 ### Boundary effects
@@ -183,10 +183,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 2731 |
-| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 378 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 379 |
-| external_call | `_normalize_optional_knowledge_mode` | `cast` | 385 |
+| external_call | `_normalise_focus` | `isinstance` | 2893 |
+| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 385 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 386 |
+| external_call | `_normalize_optional_knowledge_mode` | `cast` | 392 |
 | external_call | `_validate_protocol_request` | `isinstance` | 1077 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |

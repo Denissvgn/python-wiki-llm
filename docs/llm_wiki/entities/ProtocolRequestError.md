@@ -82,7 +82,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `validate_request` | call | [context_budget](../modules/context_budget.md) | 4 |
+| `validate_request` | call | [context_budget](../modules/context_budget.md) | 6 |
 | `_build_protocol_enrichment_from_captured_read` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_captured_query_service` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_normalized_request` | call | [context_packet](../modules/context_packet.md) | 1 |
@@ -95,4 +95,4 @@ flowchart LR
 | `_normalise_protocol_filters` | call | [context_service](../modules/context_service.md) | 6 |
 | `_normalise_protocol_focus` | call | [context_service](../modules/context_service.md) | 6 |
 
-> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.
+> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.

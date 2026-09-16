@@ -26,7 +26,20 @@ content; callers can restrict the selected wiki or page kinds to fit the limits.
 ## Local dependency map
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
-*No internal module dependencies detected.*
+```mermaid
+flowchart LR
+    n0["src/llm_wiki_cli/services/search_rank.py"]
+    n1["src/llm_wiki_cli/services/search_service.py"]
+    n1 --> n0
+    click n0 "../modules/search_rank.md"
+    click n1 "../modules/search_service.md"
+```
+
+### Internal neighbors
+
+| Direction | Module |
+|---|---|
+| Inbound | [search_service](../modules/search_service.md) |
 
 ## Functions
 

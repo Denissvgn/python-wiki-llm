@@ -36,7 +36,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| search_wiki | service.search_wiki | 1319 | `service.search_wiki(query, kinds=kinds, limit=limit, mode=mode)` |
+| search_wiki | service.search_wiki | 1419 | `service.search_wiki(query, kinds=kinds, limit=limit, mode=mode)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `search_wiki` | `service.search_wiki` | 1319 |
+| unresolved_call | `search_wiki` | `service.search_wiki` | 1419 |
 
 ## Behavior
 

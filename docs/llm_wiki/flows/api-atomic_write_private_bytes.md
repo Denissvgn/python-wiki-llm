@@ -141,24 +141,24 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| atomic_write_private_bytes | Path (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1548 | `Path(path)` |
-| atomic_write_private_bytes | target.is_absolute | 1549 | `target.is_absolute(data not statically known)` |
-| atomic_write_private_bytes | OSError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1550 | `OSError(...)` |
-| atomic_write_private_bytes | OSError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1552 | `OSError(...)` |
-| atomic_write_private_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1553 | `isinstance(data, bytes)` |
-| atomic_write_private_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1554 | `TypeError('Private atomic output data must be bytes.')` |
-| atomic_write_private_bytes | _atomic_write_private_bytes_windows | 1556 | `_atomic_write_private_bytes_windows(target, data, expected_existing=expected_existing)` |
-| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2450 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2451 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_private_bytes_windows | guard_windows_directory_chain | 2455 | `guard_windows_directory_chain(Path(...), relative_components)` |
+| atomic_write_private_bytes | Path (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1560 | `Path(path)` |
+| atomic_write_private_bytes | target.is_absolute | 1561 | `target.is_absolute(data not statically known)` |
+| atomic_write_private_bytes | OSError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1562 | `OSError(...)` |
+| atomic_write_private_bytes | OSError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1564 | `OSError(...)` |
+| atomic_write_private_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1565 | `isinstance(data, bytes)` |
+| atomic_write_private_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1566 | `TypeError('Private atomic output data must be bytes.')` |
+| atomic_write_private_bytes | _atomic_write_private_bytes_windows | 1568 | `_atomic_write_private_bytes_windows(target, data, expected_existing=expected_existing)` |
+| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2462 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2463 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | guard_windows_directory_chain | 2467 | `guard_windows_directory_chain(Path(...), relative_components)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `quarantine.unlink` | `_atomic_write_private_bytes_windows` | 2529 |
-| filesystem_write | `temporary.unlink` | `_atomic_write_private_bytes_windows` | 2534 |
+| filesystem_write | `quarantine.unlink` | `_atomic_write_private_bytes_windows` | 2541 |
+| filesystem_write | `temporary.unlink` | `_atomic_write_private_bytes_windows` | 2546 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
@@ -167,13 +167,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `atomic_write_private_bytes` | `target.is_absolute` | 1549 |
-| external_call | `atomic_write_private_bytes` | `OSError` | 1550 |
-| external_call | `atomic_write_private_bytes` | `OSError` | 1552 |
-| external_call | `atomic_write_private_bytes` | `isinstance` | 1553 |
-| external_call | `atomic_write_private_bytes` | `TypeError` | 1554 |
-| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2450 |
-| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2451 |
+| unresolved_call | `atomic_write_private_bytes` | `target.is_absolute` | 1561 |
+| external_call | `atomic_write_private_bytes` | `OSError` | 1562 |
+| external_call | `atomic_write_private_bytes` | `OSError` | 1564 |
+| external_call | `atomic_write_private_bytes` | `isinstance` | 1565 |
+| external_call | `atomic_write_private_bytes` | `TypeError` | 1566 |
+| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2462 |
+| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2463 |
 | step_limit | `atomic_write_private_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_private_bytes` | `depth limit` | 0 |
 

@@ -83,7 +83,7 @@ sequenceDiagram
     p23-->>p24: isinstance (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
 ```
 
-> Call sequence diagram shows 30 of 532 interactions; 502 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 552 interactions; 522 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -144,11 +144,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| traverse_typed_graph | _normalize_query_input | 1997 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1552 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1554 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1555 | `str(exc)` |
-| traverse_typed_graph | normalize_concept_coordinate | 1998 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| traverse_typed_graph | _normalize_query_input | 2146 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1701 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1703 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1704 | `str(exc)` |
+| traverse_typed_graph | normalize_concept_coordinate | 2147 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 73 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `value.strip(data not statically known)` |
@@ -164,7 +164,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1552 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1701 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |

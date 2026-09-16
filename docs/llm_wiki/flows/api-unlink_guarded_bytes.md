@@ -143,13 +143,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| unlink_guarded_bytes | Path (src/llm_wiki_cli/services…d.py:unlink_guarded_bytes) | 1669 | `Path(path)` |
-| unlink_guarded_bytes | target.is_absolute | 1670 | `target.is_absolute(data not statically known)` |
-| unlink_guarded_bytes | OSError | 1671 | `OSError(...)` |
-| unlink_guarded_bytes | isinstance | 1672 | `isinstance(expected, bytes)` |
-| unlink_guarded_bytes | TypeError | 1673 | `TypeError('Guarded unlink expected content must be bytes.')` |
-| unlink_guarded_bytes | uuid.uuid4 (src/llm_wiki_cli/services…d.py:unlink_guarded_bytes) | 1675 | `uuid.uuid4(data not statically known)` |
-| unlink_guarded_bytes | guard_windows_directory_chain | 1677 | `guard_windows_directory_chain(Path(...), ...)` |
+| unlink_guarded_bytes | Path (src/llm_wiki_cli/services…d.py:unlink_guarded_bytes) | 1681 | `Path(path)` |
+| unlink_guarded_bytes | target.is_absolute | 1682 | `target.is_absolute(data not statically known)` |
+| unlink_guarded_bytes | OSError | 1683 | `OSError(...)` |
+| unlink_guarded_bytes | isinstance | 1684 | `isinstance(expected, bytes)` |
+| unlink_guarded_bytes | TypeError | 1685 | `TypeError('Guarded unlink expected content must be bytes.')` |
+| unlink_guarded_bytes | uuid.uuid4 (src/llm_wiki_cli/services…d.py:unlink_guarded_bytes) | 1687 | `uuid.uuid4(data not statically known)` |
+| unlink_guarded_bytes | guard_windows_directory_chain | 1689 | `guard_windows_directory_chain(Path(...), ...)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 | guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
 | guard_windows_directory_chain | os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
@@ -159,9 +159,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `quarantine.unlink` | `unlink_guarded_bytes` | 1704 |
-| mutation | `chunks.append` | `unlink_guarded_bytes` | 1749 |
-| filesystem_write | `os.unlink` | `unlink_guarded_bytes` | 1756 |
+| filesystem_write | `quarantine.unlink` | `unlink_guarded_bytes` | 1716 |
+| mutation | `chunks.append` | `unlink_guarded_bytes` | 1761 |
+| filesystem_write | `os.unlink` | `unlink_guarded_bytes` | 1768 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
@@ -170,11 +170,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `unlink_guarded_bytes` | `target.is_absolute` | 1670 |
-| external_call | `unlink_guarded_bytes` | `OSError` | 1671 |
-| external_call | `unlink_guarded_bytes` | `isinstance` | 1672 |
-| external_call | `unlink_guarded_bytes` | `TypeError` | 1673 |
-| external_call | `unlink_guarded_bytes` | `uuid.uuid4` | 1675 |
+| unresolved_call | `unlink_guarded_bytes` | `target.is_absolute` | 1682 |
+| external_call | `unlink_guarded_bytes` | `OSError` | 1683 |
+| external_call | `unlink_guarded_bytes` | `isinstance` | 1684 |
+| external_call | `unlink_guarded_bytes` | `TypeError` | 1685 |
+| external_call | `unlink_guarded_bytes` | `uuid.uuid4` | 1687 |
 | external_call | `guard_windows_directory_chain` | `os.path.abspath` | 174 |
 | external_call | `guard_windows_directory_chain` | `os.fspath` | 174 |
 | step_limit | `unlink_guarded_bytes` | `first 12 steps` | 0 |

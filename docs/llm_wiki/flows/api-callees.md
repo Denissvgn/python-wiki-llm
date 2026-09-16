@@ -81,7 +81,7 @@ sequenceDiagram
     p22-->>p23: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
 ```
 
-> Call sequence diagram shows 30 of 447 interactions; 417 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 467 interactions; 437 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -141,11 +141,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| callees | _normalize_query_input | 1775 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1552 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1554 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1555 | `str(exc)` |
-| callees | normalize_documentation_query_text | 1776 | `normalize_documentation_query_text(symbol, field='symbol')` |
+| callees | _normalize_query_input | 1924 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1701 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1703 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1704 | `str(exc)` |
+| callees | normalize_documentation_query_text | 1925 | `normalize_documentation_query_text(symbol, field='symbol')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 60 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 61 | `DocumentationQueryError(...)` |
@@ -161,7 +161,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1552 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1701 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |

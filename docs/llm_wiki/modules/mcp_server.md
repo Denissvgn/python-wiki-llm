@@ -33,18 +33,23 @@ origin validation; stdio remains the default.
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
+| `.token_counting` | `TokenCounter`, `LocalTokenizerCounter` |
 | `.validation` | `posix_path_text`, `require_portable_relative_path` |
+| `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
+| `contextlib` | `asynccontextmanager` |
 | `dataclasses` | `dataclass`, `field` |
 | `ipaddress` | `ipaddress` |
 | `itertools` | `islice` |
 | `json` | `json` |
 | `mcp` | `mcp` |
 | `mcp.server.fastmcp` | `FastMCP` |
-| `mcp.types` | `CallToolResult`, `TextContent` |
+| `mcp.types` | `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent` |
 | `pathlib` | `Path` |
+| `pydantic` | `StrictBool`, `StrictInt` |
 | `re` | `re` |
+| `secrets` | `secrets` |
 | `sys` | `sys` |
 | `typing` | `Any`, `Protocol`, `TypedDict`, `cast` |
 | `urllib.parse` | `unquote`, `urlparse` |
@@ -68,32 +73,32 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (2) |
-| Outbound | `src` (21) |
+| Inbound | `src` (1) |
+| Outbound | `src` (23) |
 
 ### External packages
 
 | Language | Used packages | Undeclared packages |
 |---|---:|---:|
-| python | 2 | 1 |
+| python | 3 | 2 |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MCPDependencyError](../entities/MCPDependencyError.md) | 112 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
-| [McpWikiError](../entities/McpWikiError.md) | 116 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 213 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 217 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 221 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 229 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 236 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 249 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 268 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 355 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 397 | — | Pure read/check operations exposed through MCP tools and resources. |
+| [MCPDependencyError](../entities/MCPDependencyError.md) | 116 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
+| [McpWikiError](../entities/McpWikiError.md) | 120 | `ValueError` | Raised for invalid MCP wiki requests. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 217 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 221 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 225 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 233 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 240 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 259 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 278 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 365 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 407 | — | Pure read/check operations exposed through MCP tools and resources. |
 
 ## Functions
 

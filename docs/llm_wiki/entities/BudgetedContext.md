@@ -1,6 +1,6 @@
 # BudgetedContext
 
-**Location:** `src/llm_wiki_cli/services/context_budget.py:25`
+**Location:** `src/llm_wiki_cli/services/context_budget.py:26`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_budget](../modules/context_budget.md)

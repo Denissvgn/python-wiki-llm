@@ -145,14 +145,14 @@ flowchart LR
 | run | getattr | 46 | `getattr(args, 'skills_action', None)` |
 | run | getattr | 47 | `getattr(args, 'format', 'text')` |
 | run | list_bundled_skills | 51 | `list_bundled_skills(data not statically known)` |
-| list_bundled_skills | root.is_dir | 266 | `root.is_dir(data not statically known)` |
-| list_bundled_skills | sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills) | 270 | `sorted(root.iterdir(...), key=...)` |
-| list_bundled_skills | root.iterdir | 270 | `root.iterdir(data not statically known)` |
-| list_bundled_skills | skill_dir.is_dir | 272 | `skill_dir.is_dir(data not statically known)` |
-| list_bundled_skills | manifest.is_file | 272 | `manifest.is_file(data not statically known)` |
-| list_bundled_skills | _parse_skill_frontmatter | 274 | `_parse_skill_frontmatter(read_md(...))` |
-| _parse_skill_frontmatter | content.replace(…).replace(…).split | 1343 | `content.replace('\r\n', '\n').replace('\r', '\n').split('\n')` |
-| _parse_skill_frontmatter | content.replace(…).replace | 1343 | `content.replace('\r\n', '\n').replace('\r', '\n')` |
+| list_bundled_skills | root.is_dir | 267 | `root.is_dir(data not statically known)` |
+| list_bundled_skills | sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills) | 271 | `sorted(root.iterdir(...), key=...)` |
+| list_bundled_skills | root.iterdir | 271 | `root.iterdir(data not statically known)` |
+| list_bundled_skills | skill_dir.is_dir | 273 | `skill_dir.is_dir(data not statically known)` |
+| list_bundled_skills | manifest.is_file | 273 | `manifest.is_file(data not statically known)` |
+| list_bundled_skills | _parse_skill_frontmatter | 275 | `_parse_skill_frontmatter(read_md(...))` |
+| _parse_skill_frontmatter | content.replace(…).replace(…).split | 1344 | `content.replace('\r\n', '\n').replace('\r', '\n').split('\n')` |
+| _parse_skill_frontmatter | content.replace(…).replace | 1344 | `content.replace('\r\n', '\n').replace('\r', '\n')` |
 
 ### Boundary effects
 
@@ -162,7 +162,7 @@ flowchart LR
 | output | `print` | `run` | 55 |
 | output | `print` | `run` | 83 |
 | output | `print` | `run` | 86 |
-| mutation | `skills.append` | `list_bundled_skills` | 275 |
+| mutation | `skills.append` | `list_bundled_skills` | 276 |
 
 ### Static analysis gaps
 
@@ -170,13 +170,13 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 46 |
 | external_call | `run` | `getattr` | 47 |
-| unresolved_call | `list_bundled_skills` | `root.is_dir` | 266 |
-| external_call | `list_bundled_skills` | `sorted` | 270 |
-| unresolved_call | `list_bundled_skills` | `root.iterdir` | 270 |
-| unresolved_call | `list_bundled_skills` | `skill_dir.is_dir` | 272 |
-| unresolved_call | `list_bundled_skills` | `manifest.is_file` | 272 |
-| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace('\r', '\n').split` | 1343 |
-| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace` | 1343 |
+| unresolved_call | `list_bundled_skills` | `root.is_dir` | 267 |
+| external_call | `list_bundled_skills` | `sorted` | 271 |
+| unresolved_call | `list_bundled_skills` | `root.iterdir` | 271 |
+| unresolved_call | `list_bundled_skills` | `skill_dir.is_dir` | 273 |
+| unresolved_call | `list_bundled_skills` | `manifest.is_file` | 273 |
+| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace('\r', '\n').split` | 1344 |
+| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace` | 1344 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

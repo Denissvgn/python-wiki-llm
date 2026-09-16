@@ -119,15 +119,15 @@ flowchart LR
 |---|---|---:|---|
 | open_windows_readonly_file | WindowsFileGuardError | 339 | `WindowsFileGuardError('Windows read-only file guards are unavailable on this platform.')` |
 | open_windows_readonly_file | _open_windows_readonly_file_handle | 344 | `_open_windows_readonly_file_handle(Path(...), require_restrictive_dacl=True, require_single_link=require_single_link)` |
-| _open_windows_readonly_file_handle | ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle) | 407 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _open_windows_readonly_file_handle | create_file | 422 | `create_file(_windows_api_path(...), ..., 1, None, 3, ..., None)` |
-| _open_windows_readonly_file_handle | _windows_api_path | 423 | `_windows_api_path(path)` |
-| _windows_api_path | os.path.abspath | 1298 | `os.path.abspath(os.fspath(...))` |
-| _windows_api_path | os.fspath | 1298 | `os.fspath(path)` |
-| _windows_api_path | value.startswith | 1299 | `value.startswith('\\\\?\\')` |
-| _windows_api_path | value.startswith | 1301 | `value.startswith('\\\\')` |
-| _open_windows_readonly_file_handle | wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle) | 431 | `wintypes.HANDLE(...)` |
-| _open_windows_readonly_file_handle | ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle) | 433 | `ctypes.WinError(ctypes.get_last_error(...))` |
+| _open_windows_readonly_file_handle | ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle) | 419 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _open_windows_readonly_file_handle | create_file | 434 | `create_file(_windows_api_path(...), ..., 1, None, 3, ..., None)` |
+| _open_windows_readonly_file_handle | _windows_api_path | 435 | `_windows_api_path(path)` |
+| _windows_api_path | os.path.abspath | 1310 | `os.path.abspath(os.fspath(...))` |
+| _windows_api_path | os.fspath | 1310 | `os.fspath(path)` |
+| _windows_api_path | value.startswith | 1311 | `value.startswith('\\\\?\\')` |
+| _windows_api_path | value.startswith | 1313 | `value.startswith('\\\\')` |
+| _open_windows_readonly_file_handle | wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle) | 443 | `wintypes.HANDLE(...)` |
+| _open_windows_readonly_file_handle | ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle) | 445 | `ctypes.WinError(ctypes.get_last_error(...))` |
 
 ### Boundary effects
 
@@ -137,14 +137,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinDLL` | 407 |
-| unresolved_call | `_open_windows_readonly_file_handle` | `create_file` | 422 |
-| external_call | `_windows_api_path` | `os.path.abspath` | 1298 |
-| external_call | `_windows_api_path` | `os.fspath` | 1298 |
-| unresolved_call | `_windows_api_path` | `value.startswith` | 1299 |
-| unresolved_call | `_windows_api_path` | `value.startswith` | 1301 |
-| external_call | `_open_windows_readonly_file_handle` | `wintypes.HANDLE` | 431 |
-| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinError` | 433 |
+| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinDLL` | 419 |
+| unresolved_call | `_open_windows_readonly_file_handle` | `create_file` | 434 |
+| external_call | `_windows_api_path` | `os.path.abspath` | 1310 |
+| external_call | `_windows_api_path` | `os.fspath` | 1310 |
+| unresolved_call | `_windows_api_path` | `value.startswith` | 1311 |
+| unresolved_call | `_windows_api_path` | `value.startswith` | 1313 |
+| external_call | `_open_windows_readonly_file_handle` | `wintypes.HANDLE` | 443 |
+| external_call | `_open_windows_readonly_file_handle` | `ctypes.WinError` | 445 |
 | step_limit | `open_windows_readonly_file` | `first 12 steps` | 0 |
 
 ## Behavior

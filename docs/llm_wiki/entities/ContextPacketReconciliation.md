@@ -1,6 +1,6 @@
 # ContextPacketReconciliation
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:534`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:540`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)
@@ -36,13 +36,16 @@ Consumer-time comparison against one fresh official read.
 ```mermaid
 flowchart LR
     n0["ContextPacketReconciliation (src/llm_wiki_cli/services/context_packet.py)"]
-    n1["ContextPacketReconciliation._from_official_read (src/llm_wiki_cli/services/context_packet.py)"]
-    n2["reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py)"]
+    n1["_reconcile_packet_views (src/llm_wiki_cli/services/context_packet.py)"]
+    n2["ContextPacketReconciliation._from_official_read (src/llm_wiki_cli/services/context_packet.py)"]
+    n3["reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/context_packet.md"
     click n2 "../modules/context_packet.md"
+    click n3 "../modules/context_packet.md"
 ```
 
 ### Summary
@@ -55,5 +58,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_reconcile_packet_views` | type_reference | [context_packet](../modules/context_packet.md) | — |
 | `ContextPacketReconciliation._from_official_read` | type_reference | [context_packet](../modules/context_packet.md) | — |
 | `reconcile_context_packet` | type_reference | [context_packet](../modules/context_packet.md) | — |

@@ -105,7 +105,7 @@ sequenceDiagram
     p19-->>p26: index.is_symlink
 ```
 
-> Call sequence diagram shows 30 of 2081 interactions; 2051 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2099 interactions; 2069 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -165,8 +165,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| bootstrap_wiki | BootstrapRequest | 1019 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection)` |
-| bootstrap_wiki | execute_bootstrap | 1038 | `bootstrap_cmd.execute_bootstrap(request)` |
+| bootstrap_wiki | BootstrapRequest | 1029 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection)` |
+| bootstrap_wiki | execute_bootstrap | 1048 | `bootstrap_cmd.execute_bootstrap(request)` |
 | execute_bootstrap | io.StringIO | 6316 | `io.StringIO(data not statically known)` |
 | execute_bootstrap | _bootstrap_run_options_from_request | 6317 | `_bootstrap_run_options_from_request(request, progress_stream=stream)` |
 | _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request) | 4500 | `Path(request.source_root).expanduser().resolve(data not statically known)` |

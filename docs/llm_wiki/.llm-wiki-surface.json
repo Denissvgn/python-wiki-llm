@@ -18,18 +18,18 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 552,
-      "flows": 445,
+      "entities": 573,
+      "flows": 451,
       "guides": 6,
       "index": 1,
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 179,
-      "workflows": 116
+      "modules": 188,
+      "workflows": 130
     },
     "dependency_architecture": 2,
-    "total": 1302
+    "total": 1352
   },
   "dependency_pages": {
     "count": 2,
@@ -275,7 +275,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2871,
+              "line": 3033,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -795,7 +795,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2655,
+              "line": 2667,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 9,
               "target": "quarantine.unlink"
@@ -803,7 +803,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2660,
+              "line": 2672,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 9,
               "target": "temporary.unlink"
@@ -836,43 +836,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1604,
+              "line": 1616,
               "step": "atomic_write_guarded_bytes",
               "target": "target.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 1605,
+              "line": 1617,
               "step": "atomic_write_guarded_bytes",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1607,
+              "line": 1619,
               "step": "atomic_write_guarded_bytes",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1608,
+              "line": 1620,
               "step": "atomic_write_guarded_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1609,
+              "line": 1621,
               "step": "atomic_write_guarded_bytes",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 2566,
+              "line": 2578,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
             {
               "kind": "external_call",
-              "line": 2567,
+              "line": 2579,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
@@ -919,7 +919,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2655,
+              "line": 2667,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 8,
               "target": "quarantine.unlink"
@@ -927,7 +927,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2660,
+              "line": 2672,
               "step": "_atomic_write_guarded_bytes_windows",
               "step_index": 8,
               "target": "temporary.unlink"
@@ -960,43 +960,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1604,
+              "line": 1616,
               "step": "atomic_write_guarded_bytes",
               "target": "target.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 1605,
+              "line": 1617,
               "step": "atomic_write_guarded_bytes",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1607,
+              "line": 1619,
               "step": "atomic_write_guarded_bytes",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1608,
+              "line": 1620,
               "step": "atomic_write_guarded_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1609,
+              "line": 1621,
               "step": "atomic_write_guarded_bytes",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 2566,
+              "line": 2578,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
             {
               "kind": "external_call",
-              "line": 2567,
+              "line": 2579,
               "step": "_atomic_write_guarded_bytes_windows",
               "target": "uuid.uuid4"
             },
@@ -1043,7 +1043,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2529,
+              "line": 2541,
               "step": "_atomic_write_private_bytes_windows",
               "step_index": 8,
               "target": "quarantine.unlink"
@@ -1051,7 +1051,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2534,
+              "line": 2546,
               "step": "_atomic_write_private_bytes_windows",
               "step_index": 8,
               "target": "temporary.unlink"
@@ -1084,43 +1084,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1549,
+              "line": 1561,
               "step": "atomic_write_private_bytes",
               "target": "target.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 1550,
+              "line": 1562,
               "step": "atomic_write_private_bytes",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1552,
+              "line": 1564,
               "step": "atomic_write_private_bytes",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1553,
+              "line": 1565,
               "step": "atomic_write_private_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1554,
+              "line": 1566,
               "step": "atomic_write_private_bytes",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 2450,
+              "line": 2462,
               "step": "_atomic_write_private_bytes_windows",
               "target": "uuid.uuid4"
             },
             {
               "kind": "external_call",
-              "line": 2451,
+              "line": 2463,
               "step": "_atomic_write_private_bytes_windows",
               "target": "uuid.uuid4"
             },
@@ -1661,7 +1661,7 @@
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 2082,
+          "step_count": 2100,
           "truncated": true
         }
       },
@@ -1869,7 +1869,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 227,
+              "line": 249,
               "step": "build_budgeted_context",
               "step_index": 2,
               "target": "legacy.update"
@@ -1877,7 +1877,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 45,
+              "line": 50,
               "step": "validate_request",
               "step_index": 3,
               "target": "legacy.pop"
@@ -1885,7 +1885,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 46,
+              "line": 51,
               "step": "validate_request",
               "step_index": 3,
               "target": "legacy.pop"
@@ -1893,7 +1893,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 47,
+              "line": 52,
               "step": "validate_request",
               "step_index": 3,
               "target": "legacy.pop"
@@ -1902,21 +1902,27 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 37,
+              "line": 34,
+              "step": "validate_request",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 34,
+              "step": "validate_request",
+              "target": "any"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 36,
+              "step": "validate_request",
+              "target": "data.get"
+            },
+            {
+              "kind": "external_call",
+              "line": 42,
               "step": "validate_request",
               "target": "sorted"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 41,
-              "step": "validate_request",
-              "target": "data.get"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 43,
-              "step": "validate_request",
-              "target": "data.get"
             },
             {
               "kind": "step_limit",
@@ -1954,8 +1960,8 @@
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
+            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/imports.py",
@@ -1983,7 +1989,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py"
           ],
-          "step_count": 2785,
+          "step_count": 2982,
           "truncated": true
         }
       },
@@ -2004,7 +2010,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2871,
+              "line": 3033,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -2128,25 +2134,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2731,
+              "line": 2893,
               "step": "_normalise_focus",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 378,
+              "line": 385,
               "step": "_normalize_optional_knowledge_mode",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 379,
+              "line": 386,
               "step": "_normalize_optional_knowledge_mode",
               "target": "', '.join"
             },
             {
               "kind": "external_call",
-              "line": 385,
+              "line": 392,
               "step": "_normalize_optional_knowledge_mode",
               "target": "cast"
             },
@@ -2212,7 +2218,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 2050,
+          "step_count": 2100,
           "truncated": true
         }
       },
@@ -2233,37 +2239,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 948,
+              "line": 1028,
               "step": "build_context_from_captured_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 949,
+              "line": 1029,
               "step": "build_context_from_captured_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1825,
+              "line": 1921,
               "step": "_normalized_request",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1830,
+              "line": 1926,
               "step": "_normalized_request",
               "target": "deepcopy"
             },
             {
               "kind": "unresolved_call",
-              "line": 1831,
+              "line": 1927,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
             {
               "kind": "unresolved_call",
-              "line": 1839,
+              "line": 1935,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
@@ -2302,7 +2308,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 637,
+          "step_count": 645,
           "truncated": true
         }
       },
@@ -2565,7 +2571,7 @@
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/canonical_pages.py"
           ],
-          "step_count": 2713,
+          "step_count": 2756,
           "truncated": true
         }
       },
@@ -2694,13 +2700,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1463,
+              "line": 1612,
               "step": "build_documentation_query_service",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1469,
+              "line": 1618,
               "step": "build_documentation_query_service",
               "target": "isinstance"
             },
@@ -2750,7 +2756,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 910,
+          "step_count": 991,
           "truncated": true
         }
       },
@@ -3887,7 +3893,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/context_packet.py"
           ],
-          "step_count": 883,
+          "step_count": 967,
           "truncated": true
         }
       },
@@ -4178,31 +4184,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 378,
+              "line": 385,
               "step": "_normalize_optional_knowledge_mode",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 379,
+              "line": 386,
               "step": "_normalize_optional_knowledge_mode",
               "target": "', '.join"
             },
             {
               "kind": "external_call",
-              "line": 385,
+              "line": 392,
               "step": "_normalize_optional_knowledge_mode",
               "target": "cast"
             },
             {
               "kind": "unresolved_call",
-              "line": 1283,
+              "line": 1432,
               "step": "build_qualified_context",
               "target": "request.get"
             },
             {
               "kind": "external_call",
-              "line": 1285,
+              "line": 1434,
               "step": "build_qualified_context",
               "target": "isinstance"
             },
@@ -4241,8 +4247,8 @@
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
-            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
+            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/imports.py",
@@ -4270,7 +4276,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3225,
+          "step_count": 3409,
           "truncated": true
         }
       },
@@ -4291,25 +4297,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1825,
+              "line": 1921,
               "step": "_normalized_request",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1830,
+              "line": 1926,
               "step": "_normalized_request",
               "target": "deepcopy"
             },
             {
               "kind": "unresolved_call",
-              "line": 1831,
+              "line": 1927,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
             {
               "kind": "unresolved_call",
-              "line": 1839,
+              "line": 1935,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
@@ -4360,6 +4366,7 @@
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
+            "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
             "src/llm_wiki_cli/services/plugins.py",
@@ -4370,7 +4377,6 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/progress.py",
-            "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
@@ -4401,7 +4407,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 4523,
+          "step_count": 4834,
           "truncated": true
         }
       },
@@ -4697,7 +4703,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 4883,
+              "line": 662,
+              "step": "directory_identity",
+              "target": "path.stat"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 4986,
+              "step": "_wiki_anchor",
+              "target": "current.exists"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 4989,
               "step": "_wiki_anchor",
               "target": "root.exists"
             },
@@ -4712,24 +4730,6 @@
               "line": 198,
               "step": "sha256_bytes",
               "target": "hashlib.sha256"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 171,
-              "step": "canonical_json_bytes",
-              "target": "canonical_json_text(value).encode"
-            },
-            {
-              "kind": "external_call",
-              "line": 159,
-              "step": "canonical_json_text",
-              "target": "json.dumps"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 4933,
-              "step": "_wiki_anchor",
-              "target": "walk"
             },
             {
               "kind": "step_limit",
@@ -4753,6 +4753,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/context_packet.py",
+            "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
@@ -4773,7 +4774,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 676,
+          "step_count": 688,
           "truncated": true
         }
       },
@@ -5012,7 +5013,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -5074,7 +5075,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 448,
+          "step_count": 468,
           "truncated": true
         }
       },
@@ -5095,7 +5096,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -5157,7 +5158,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 448,
+          "step_count": 468,
           "truncated": true
         }
       },
@@ -5301,61 +5302,61 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 704,
+              "line": 755,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 705,
+              "line": 756,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 706,
+              "line": 757,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 707,
+              "line": 758,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 708,
+              "line": 759,
               "step": "capture_context_read",
               "target": "callable"
             },
             {
               "kind": "external_call",
-              "line": 709,
+              "line": 760,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 710,
+              "line": 761,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 711,
+              "line": 762,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 712,
+              "line": 763,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 713,
+              "line": 764,
               "step": "capture_context_read",
               "target": "TypeError"
             },
@@ -5432,7 +5433,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 4187,
+          "step_count": 4562,
           "truncated": true
         }
       },
@@ -6415,31 +6416,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2360,
+              "line": 2456,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2362,
+              "line": 2458,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2363,
+              "line": 2459,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2365,
+              "line": 2461,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2373,
+              "line": 2469,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -6490,31 +6491,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2360,
+              "line": 2456,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2362,
+              "line": 2458,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2363,
+              "line": 2459,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2365,
+              "line": 2461,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2373,
+              "line": 2469,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -7455,43 +7456,43 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 502,
+              "line": 514,
               "step": "create_private_windows_directory",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 511,
+              "line": 523,
               "step": "create_private_windows_directory",
               "target": "uuid.uuid4"
             },
             {
               "kind": "external_call",
-              "line": 943,
+              "line": 955,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 944,
+              "line": 956,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 949,
+              "line": 961,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.POINTER"
             },
             {
               "kind": "external_call",
-              "line": 950,
+              "line": 962,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.POINTER"
             },
             {
               "kind": "external_call",
-              "line": 992,
+              "line": 1004,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinDLL"
             },
@@ -7737,7 +7738,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -7799,7 +7800,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 448,
+          "step_count": 468,
           "truncated": true
         }
       },
@@ -7820,7 +7821,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -7864,7 +7865,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 483,
+          "step_count": 503,
           "truncated": true
         }
       },
@@ -8209,7 +8210,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2871,
+              "line": 3033,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -8434,7 +8435,7 @@
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_cli/services/sync_analysis.py"
           ],
-          "step_count": 1480,
+          "step_count": 1502,
           "truncated": true
         }
       },
@@ -8557,13 +8558,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1632,
+              "line": 1644,
               "step": "ensure_guarded_directory",
               "target": "target.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 1633,
+              "line": 1645,
               "step": "ensure_guarded_directory",
               "target": "OSError"
             },
@@ -8823,7 +8824,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 2977,
+          "step_count": 3044,
           "truncated": true
         }
       },
@@ -9214,7 +9215,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -9271,7 +9272,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 501,
+          "step_count": 521,
           "truncated": true
         }
       },
@@ -9292,13 +9293,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2850,
+              "line": 3012,
               "step": "export_documentation_run",
               "target": "cast"
             },
             {
               "kind": "unresolved_call",
-              "line": 2852,
+              "line": 3014,
               "step": "export_documentation_run",
               "target": "_export_documentation_run_impl"
             }
@@ -9653,7 +9654,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py"
           ],
-          "step_count": 2730,
+          "step_count": 2773,
           "truncated": true
         }
       },
@@ -9966,7 +9967,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -10028,7 +10029,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 448,
+          "step_count": 468,
           "truncated": true
         }
       },
@@ -10330,7 +10331,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2871,
+              "line": 3033,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -10430,7 +10431,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -10487,7 +10488,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 501,
+          "step_count": 521,
           "truncated": true
         }
       },
@@ -10594,31 +10595,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 876,
+              "line": 886,
               "step": "get_knowledge_coverage",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 880,
+              "line": 890,
               "step": "get_knowledge_coverage",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 900,
+              "line": 910,
               "step": "get_knowledge_coverage",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 901,
+              "line": 911,
               "step": "get_knowledge_coverage",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 907,
+              "line": 917,
               "step": "get_knowledge_coverage",
               "target": "cast"
             },
@@ -10663,6 +10664,7 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_service.py",
+            "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/inventory_cache.py",
             "src/llm_wiki_cli/services/plugins.py",
@@ -10673,7 +10675,6 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/progress.py",
-            "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
@@ -10702,7 +10703,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 3245,
+          "step_count": 3548,
           "truncated": true
         }
       },
@@ -11129,13 +11130,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1510,
+              "line": 1522,
               "step": "guarded_tree_manifest",
               "target": "target.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 1511,
+              "line": 1523,
               "step": "guarded_tree_manifest",
               "target": "OSError"
             },
@@ -12155,7 +12156,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -12212,8 +12213,8 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/context_service.py",
-            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
+            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/imports.py",
@@ -12240,7 +12241,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py"
           ],
-          "step_count": 2290,
+          "step_count": 2466,
           "truncated": true
         }
       },
@@ -13392,7 +13393,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -13449,7 +13450,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 507,
+          "step_count": 527,
           "truncated": true
         }
       },
@@ -14298,7 +14299,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py"
           ],
-          "step_count": 1998,
+          "step_count": 2068,
           "truncated": true
         }
       },
@@ -15302,37 +15303,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 694,
+              "line": 706,
               "step": "move_windows_path_write_through",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "unresolved_call",
-              "line": 701,
+              "line": 713,
               "step": "move_windows_path_write_through",
               "target": "move_file"
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.path.abspath"
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.fspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 1299,
+              "line": 1311,
               "step": "_windows_api_path",
               "target": "value.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 1301,
+              "line": 1313,
               "step": "_windows_api_path",
               "target": "value.startswith"
             },
@@ -16555,49 +16556,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 618,
+              "line": 630,
               "step": "open_windows_guarded_lock_file",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 943,
+              "line": 955,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 944,
+              "line": 956,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 949,
-              "step": "_private_windows_security_attributes",
-              "target": "ctypes.POINTER"
-            },
-            {
-              "kind": "external_call",
-              "line": 950,
+              "line": 961,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.POINTER"
             },
             {
               "kind": "external_call",
-              "line": 992,
+              "line": 962,
+              "step": "_private_windows_security_attributes",
+              "target": "ctypes.POINTER"
+            },
+            {
+              "kind": "external_call",
+              "line": 1004,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 993,
+              "line": 1005,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 998,
+              "line": 1010,
               "step": "_current_windows_user_sid",
               "target": "ctypes.POINTER"
             },
@@ -16638,49 +16639,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 560,
+              "line": 572,
               "step": "open_windows_private_write_file",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 943,
+              "line": 955,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 944,
+              "line": 956,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 949,
-              "step": "_private_windows_security_attributes",
-              "target": "ctypes.POINTER"
-            },
-            {
-              "kind": "external_call",
-              "line": 950,
+              "line": 961,
               "step": "_private_windows_security_attributes",
               "target": "ctypes.POINTER"
             },
             {
               "kind": "external_call",
-              "line": 992,
+              "line": 962,
+              "step": "_private_windows_security_attributes",
+              "target": "ctypes.POINTER"
+            },
+            {
+              "kind": "external_call",
+              "line": 1004,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 993,
+              "line": 1005,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 998,
+              "line": 1010,
               "step": "_current_windows_user_sid",
               "target": "ctypes.POINTER"
             },
@@ -16721,49 +16722,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 407,
+              "line": 419,
               "step": "_open_windows_readonly_file_handle",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "unresolved_call",
-              "line": 422,
+              "line": 434,
               "step": "_open_windows_readonly_file_handle",
               "target": "create_file"
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.path.abspath"
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.fspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 1299,
+              "line": 1311,
               "step": "_windows_api_path",
               "target": "value.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 1301,
+              "line": 1313,
               "step": "_windows_api_path",
               "target": "value.startswith"
             },
             {
               "kind": "external_call",
-              "line": 431,
+              "line": 443,
               "step": "_open_windows_readonly_file_handle",
               "target": "wintypes.HANDLE"
             },
             {
               "kind": "external_call",
-              "line": 433,
+              "line": 445,
               "step": "_open_windows_readonly_file_handle",
               "target": "ctypes.WinError"
             },
@@ -16804,7 +16805,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -16866,7 +16867,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 448,
+          "step_count": 468,
           "truncated": true
         }
       },
@@ -17933,7 +17934,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2871,
+              "line": 3033,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -18224,7 +18225,7 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 1393,
+          "step_count": 1394,
           "truncated": true
         }
       },
@@ -18826,7 +18827,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 2691,
+              "line": 2853,
               "step": "query_documentation",
               "step_index": 1,
               "target": "payload.update"
@@ -18834,7 +18835,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 2710,
+              "line": 2872,
               "step": "query_documentation",
               "step_index": 1,
               "target": "payload.update"
@@ -18843,37 +18844,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2221,
+              "line": 2370,
               "step": "_validate_documentation_query_request",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2227,
+              "line": 2376,
               "step": "_validate_documentation_query_request",
               "target": "next"
             },
             {
               "kind": "external_call",
-              "line": 2227,
+              "line": 2376,
               "step": "_validate_documentation_query_request",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 2234,
+              "line": 2383,
               "step": "_validate_documentation_query_request",
               "target": "request.get"
             },
             {
               "kind": "external_call",
-              "line": 2235,
+              "line": 2384,
               "step": "_validate_documentation_query_request",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 2236,
+              "line": 2385,
               "step": "_validate_documentation_query_request",
               "target": "', '.join"
             },
@@ -18919,7 +18920,7 @@
             "src/llm_wiki_cli/services/verification_contracts.py",
             "src/llm_wiki_cli/services/wiki_surface.py"
           ],
-          "step_count": 1281,
+          "step_count": 1340,
           "truncated": true
         }
       },
@@ -19113,31 +19114,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2360,
+              "line": 2456,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2362,
+              "line": 2458,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2363,
+              "line": 2459,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2365,
+              "line": 2461,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2373,
+              "line": 2469,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -19198,7 +19199,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 2117,
+          "step_count": 2193,
           "truncated": true
         }
       },
@@ -19219,31 +19220,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2360,
+              "line": 2456,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2362,
+              "line": 2458,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2363,
+              "line": 2459,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2365,
+              "line": 2461,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2373,
+              "line": 2469,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -19310,7 +19311,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 3475,
+          "step_count": 3661,
           "truncated": true
         }
       },
@@ -19415,7 +19416,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2871,
+              "line": 3033,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -19891,7 +19892,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4912,
+          "step_count": 4979,
           "truncated": true
         }
       },
@@ -19912,7 +19913,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -19969,7 +19970,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 526,
+          "step_count": 546,
           "truncated": true
         }
       },
@@ -20050,7 +20051,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1953,
+              "line": 1965,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "claimed.rmdir"
@@ -20058,7 +20059,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1966,
+              "line": 1978,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "quarantine.rmdir"
@@ -20066,7 +20067,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2170,
+              "line": 2182,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -20074,7 +20075,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2176,
+              "line": 2188,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -20082,15 +20083,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 2195,
-              "step": "remove_guarded_tree",
-              "step_index": 1,
-              "target": "os.rmdir"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "filesystem_write",
-              "line": 2205,
+              "line": 2207,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -20099,6 +20092,14 @@
               "confidence": "unknown",
               "kind": "filesystem_write",
               "line": 2217,
+              "step": "remove_guarded_tree",
+              "step_index": 1,
+              "target": "os.rmdir"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "filesystem_write",
+              "line": 2229,
               "step": "remove_guarded_tree",
               "step_index": 1,
               "target": "os.rmdir"
@@ -20115,19 +20116,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1781,
+              "line": 1793,
               "step": "remove_guarded_tree",
               "target": "target.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 1782,
+              "line": 1794,
               "step": "remove_guarded_tree",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1784,
+              "line": 1796,
               "step": "remove_guarded_tree",
               "target": "uuid.uuid4"
             },
@@ -20747,37 +20748,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 694,
+              "line": 706,
               "step": "move_windows_path_write_through",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "unresolved_call",
-              "line": 701,
+              "line": 713,
               "step": "move_windows_path_write_through",
               "target": "move_file"
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.path.abspath"
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.fspath"
             },
             {
               "kind": "unresolved_call",
-              "line": 1299,
+              "line": 1311,
               "step": "_windows_api_path",
               "target": "value.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 1301,
+              "line": 1313,
               "step": "_windows_api_path",
               "target": "value.startswith"
             },
@@ -23450,7 +23451,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 2108,
+          "step_count": 2158,
           "truncated": true
         }
       },
@@ -26146,7 +26147,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1552,
+              "line": 1701,
               "step": "_normalize_query_input",
               "target": "callback"
             },
@@ -26203,7 +26204,7 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 533,
+          "step_count": 553,
           "truncated": true
         }
       },
@@ -26430,7 +26431,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1704,
+              "line": 1716,
               "step": "unlink_guarded_bytes",
               "step_index": 1,
               "target": "quarantine.unlink"
@@ -26438,7 +26439,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1749,
+              "line": 1761,
               "step": "unlink_guarded_bytes",
               "step_index": 1,
               "target": "chunks.append"
@@ -26446,7 +26447,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1756,
+              "line": 1768,
               "step": "unlink_guarded_bytes",
               "step_index": 1,
               "target": "os.unlink"
@@ -26479,31 +26480,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1670,
+              "line": 1682,
               "step": "unlink_guarded_bytes",
               "target": "target.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 1671,
+              "line": 1683,
               "step": "unlink_guarded_bytes",
               "target": "OSError"
             },
             {
               "kind": "external_call",
-              "line": 1672,
+              "line": 1684,
               "step": "unlink_guarded_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1673,
+              "line": 1685,
               "step": "unlink_guarded_bytes",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1675,
+              "line": 1687,
               "step": "unlink_guarded_bytes",
               "target": "uuid.uuid4"
             },
@@ -26666,7 +26667,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/context_packet.py"
           ],
-          "step_count": 124,
+          "step_count": 128,
           "truncated": false
         }
       },
@@ -27175,31 +27176,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2360,
+              "line": 2456,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2362,
+              "line": 2458,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2363,
+              "line": 2459,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2365,
+              "line": 2461,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2373,
+              "line": 2469,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -27252,37 +27253,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2360,
+              "line": 2456,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2362,
+              "line": 2458,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2363,
+              "line": 2459,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2365,
+              "line": 2461,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2373,
+              "line": 2469,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 2378,
+              "line": 2474,
               "step": "_coerce_packet_bytes",
               "target": "raw.endswith"
             },
@@ -27316,7 +27317,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 717,
+          "step_count": 724,
           "truncated": true
         }
       },
@@ -28947,7 +28948,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2871,
+              "line": 3033,
               "step": "_call_calibration_controller",
               "target": "getattr"
             }
@@ -29232,13 +29233,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 722,
+              "line": 734,
               "step": "verify_windows_restrictive_dacl",
               "target": "Path(path).lstat"
             },
             {
               "kind": "external_call",
-              "line": 727,
+              "line": 739,
               "step": "verify_windows_restrictive_dacl",
               "target": "stat.S_ISDIR"
             },
@@ -29256,13 +29257,13 @@
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.path.abspath"
             },
             {
               "kind": "external_call",
-              "line": 1298,
+              "line": 1310,
               "step": "_windows_api_path",
               "target": "os.fspath"
             },
@@ -29303,55 +29304,55 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 992,
+              "line": 1004,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 993,
+              "line": 1005,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinDLL"
             },
             {
               "kind": "external_call",
-              "line": 998,
+              "line": 1010,
               "step": "_current_windows_user_sid",
               "target": "ctypes.POINTER"
             },
             {
               "kind": "external_call",
-              "line": 1007,
+              "line": 1019,
               "step": "_current_windows_user_sid",
               "target": "ctypes.POINTER"
             },
             {
               "kind": "external_call",
-              "line": 1014,
+              "line": 1026,
               "step": "_current_windows_user_sid",
               "target": "wintypes.HANDLE"
             },
             {
               "kind": "unresolved_call",
-              "line": 1015,
+              "line": 1027,
               "step": "_current_windows_user_sid",
               "target": "open_process_token"
             },
             {
               "kind": "unresolved_call",
-              "line": 1016,
+              "line": 1028,
               "step": "_current_windows_user_sid",
               "target": "get_current_process"
             },
             {
               "kind": "external_call",
-              "line": 1018,
+              "line": 1030,
               "step": "_current_windows_user_sid",
               "target": "ctypes.byref"
             },
             {
               "kind": "external_call",
-              "line": 1020,
+              "line": 1032,
               "step": "_current_windows_user_sid",
               "target": "ctypes.WinError"
             },
@@ -29885,7 +29886,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py"
           ],
-          "step_count": 4487,
+          "step_count": 4530,
           "truncated": true
         }
       },
@@ -30188,7 +30189,7 @@
             "src/llm_wiki_cli/services/doctor_service.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 3201,
+          "step_count": 3244,
           "truncated": true
         }
       },
@@ -30353,7 +30354,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1288,
+          "step_count": 1276,
           "truncated": true
         }
       },
@@ -30601,7 +30602,7 @@
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1188,
+          "step_count": 1231,
           "truncated": true
         }
       },
@@ -30792,7 +30793,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py"
           ],
-          "step_count": 2786,
+          "step_count": 2829,
           "truncated": true
         }
       },
@@ -30951,7 +30952,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/secure_file.py"
           ],
-          "step_count": 1218,
+          "step_count": 1285,
           "truncated": true
         }
       },
@@ -31485,7 +31486,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 2108,
+          "step_count": 2158,
           "truncated": true
         }
       },
@@ -31630,7 +31631,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 2820,
+          "step_count": 2863,
           "truncated": true
         }
       },
@@ -31651,7 +31652,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 72,
+              "line": 74,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -31713,7 +31714,7 @@
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py"
           ],
-          "step_count": 128,
+          "step_count": 130,
           "truncated": false
         }
       },
@@ -31837,7 +31838,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/lint_service.py"
           ],
-          "step_count": 925,
+          "step_count": 968,
           "truncated": true
         }
       },
@@ -32020,7 +32021,7 @@
             "src/llm_wiki_cli/services/knowledge_generation.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 3526,
+          "step_count": 3593,
           "truncated": true
         }
       },
@@ -32173,7 +32174,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py"
           ],
-          "step_count": 2749,
+          "step_count": 2816,
           "truncated": true
         }
       },
@@ -32453,11 +32454,127 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/extractor_helpers.py"
           ],
-          "step_count": 889,
+          "step_count": 959,
           "truncated": true
         }
       },
       "id": "cli-prepare-extractors",
+      "language": "python"
+    },
+    {
+      "category": "cli",
+      "detector": "builtin",
+      "entry_point": {
+        "label": "query",
+        "source_path": "src/llm_wiki_cli/commands/query_cmd.py",
+        "symbol": "run"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 28,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            }
+          ],
+          "gaps": [
+            {
+              "kind": "external_call",
+              "line": 41,
+              "step": "load_request",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 27,
+              "step": "parse_request",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 27,
+              "step": "parse_request",
+              "target": "raw.encode"
+            },
+            {
+              "kind": "external_call",
+              "line": 28,
+              "step": "parse_request",
+              "target": "ValueError"
+            },
+            {
+              "kind": "external_call",
+              "line": 30,
+              "step": "parse_request",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 30,
+              "step": "parse_request",
+              "target": "raw.decode"
+            },
+            {
+              "kind": "external_call",
+              "line": 31,
+              "step": "parse_request",
+              "target": "json.loads"
+            },
+            {
+              "kind": "external_call",
+              "line": 33,
+              "step": "parse_request",
+              "target": "ValueError"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "run",
+              "target": "first 12 steps"
+            },
+            {
+              "kind": "truncated_flow",
+              "line": 0,
+              "step": "run",
+              "target": "depth limit"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": true
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/commands/query_cmd.py",
+            "src/llm_wiki_cli/services/request_json.py",
+            "src/llm_wiki_cli/api.py",
+            "src/llm_wiki_cli/services/documentation_query_builder.py",
+            "src/llm_wiki_cli/services/documentation_queries.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/config.py",
+            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/source_snapshot.py",
+            "src/llm_wiki_cli/extractors/common.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/context_packet.py",
+            "src/llm_wiki_cli/services/knowledge_evidence.py",
+            "src/llm_wiki_cli/services/knowledge_consumption.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
+            "src/llm_wiki_cli/services/knowledge_verification.py",
+            "src/llm_wiki_cli/services/wiki_surface.py"
+          ],
+          "step_count": 944,
+          "truncated": true
+        }
+      },
+      "id": "cli-query",
       "language": "python"
     },
     {
@@ -32509,31 +32626,31 @@
             },
             {
               "kind": "external_call",
-              "line": 704,
+              "line": 755,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 705,
+              "line": 756,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 706,
+              "line": 757,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 707,
+              "line": 758,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 708,
+              "line": 759,
               "step": "capture_context_read",
               "target": "callable"
             },
@@ -32571,8 +32688,8 @@
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_service.py",
-            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
+            "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/imports.py",
@@ -32612,7 +32729,7 @@
             "src/llm_wiki_cli/services/documentation_worklist.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 3388,
+          "step_count": 3564,
           "truncated": true
         }
       },
@@ -32903,7 +33020,7 @@
             "src/llm_wiki_cli/services/api_contracts.py",
             "src/llm_wiki_cli/services/paths.py"
           ],
-          "step_count": 1887,
+          "step_count": 1972,
           "truncated": true
         }
       },
@@ -32924,15 +33041,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 21,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 24,
+              "line": 22,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32949,6 +33058,14 @@
               "confidence": "unknown",
               "kind": "output",
               "line": 26,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 27,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32996,12 +33113,18 @@
               "line": 0,
               "step": "run",
               "target": "first 12 steps"
+            },
+            {
+              "kind": "truncated_flow",
+              "line": 0,
+              "step": "run",
+              "target": "depth limit"
             }
           ],
           "generated": true,
           "step_count": 12,
           "transfer_count": 11,
-          "truncated": false
+          "truncated": true
         },
         "flow": {
           "modules_touched": [
@@ -33009,10 +33132,20 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/mcp_server.py"
+            "src/llm_wiki_cli/api.py",
+            "src/llm_wiki_cli/services/search_service.py",
+            "src/llm_wiki_cli/services/documentation_query_builder.py",
+            "src/llm_wiki_cli/services/documentation_queries.py",
+            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/source_snapshot.py",
+            "src/llm_wiki_cli/extractors/common.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/search_rank.py",
+            "src/llm_wiki_cli/services/wiki_surface.py"
           ],
-          "step_count": 112,
-          "truncated": false
+          "step_count": 764,
+          "truncated": true
         }
       },
       "id": "cli-search",
@@ -33198,7 +33331,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 275,
+              "line": 276,
               "step": "list_bundled_skills",
               "step_index": 4,
               "target": "skills.append"
@@ -33219,43 +33352,43 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 266,
+              "line": 267,
               "step": "list_bundled_skills",
               "target": "root.is_dir"
             },
             {
               "kind": "external_call",
-              "line": 270,
+              "line": 271,
               "step": "list_bundled_skills",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 270,
+              "line": 271,
               "step": "list_bundled_skills",
               "target": "root.iterdir"
             },
             {
               "kind": "unresolved_call",
-              "line": 272,
+              "line": 273,
               "step": "list_bundled_skills",
               "target": "skill_dir.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 272,
+              "line": 273,
               "step": "list_bundled_skills",
               "target": "manifest.is_file"
             },
             {
               "kind": "unresolved_call",
-              "line": 1343,
+              "line": 1344,
               "step": "_parse_skill_frontmatter",
               "target": "content.replace('\\r\\n', '\\n').replace('\\r', '\\n').split"
             },
             {
               "kind": "unresolved_call",
-              "line": 1343,
+              "line": 1344,
               "step": "_parse_skill_frontmatter",
               "target": "content.replace('\\r\\n', '\\n').replace"
             },
@@ -33458,7 +33591,7 @@
             "src/llm_wiki_cli/services/legacy_hooks.py",
             "src/llm_wiki_cli/services/circuit_breaker.py"
           ],
-          "step_count": 1838,
+          "step_count": 1881,
           "truncated": true
         }
       },
@@ -33615,11 +33748,148 @@
             "src/llm_wiki_cli/services/module_maps.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 6359,
+          "step_count": 6444,
           "truncated": true
         }
       },
       "id": "cli-sync",
+      "language": "python"
+    },
+    {
+      "category": "cli",
+      "detector": "builtin",
+      "entry_point": {
+        "label": "task-context",
+        "source_path": "src/llm_wiki_cli/commands/task_cmd.py",
+        "symbol": "run"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 23,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 31,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            }
+          ],
+          "gaps": [
+            {
+              "kind": "external_call",
+              "line": 41,
+              "step": "load_request",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 27,
+              "step": "parse_request",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 27,
+              "step": "parse_request",
+              "target": "raw.encode"
+            },
+            {
+              "kind": "external_call",
+              "line": 28,
+              "step": "parse_request",
+              "target": "ValueError"
+            },
+            {
+              "kind": "external_call",
+              "line": 30,
+              "step": "parse_request",
+              "target": "isinstance"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 30,
+              "step": "parse_request",
+              "target": "raw.decode"
+            },
+            {
+              "kind": "external_call",
+              "line": 31,
+              "step": "parse_request",
+              "target": "json.loads"
+            },
+            {
+              "kind": "external_call",
+              "line": 33,
+              "step": "parse_request",
+              "target": "ValueError"
+            },
+            {
+              "kind": "step_limit",
+              "line": 0,
+              "step": "run",
+              "target": "first 12 steps"
+            },
+            {
+              "kind": "truncated_flow",
+              "line": 0,
+              "step": "run",
+              "target": "depth limit"
+            }
+          ],
+          "generated": true,
+          "step_count": 12,
+          "transfer_count": 11,
+          "truncated": true
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/commands/task_cmd.py",
+            "src/llm_wiki_cli/services/request_json.py",
+            "src/llm_wiki_cli/services/workflow_profile.py",
+            "src/llm_wiki_cli/api.py",
+            "src/llm_wiki_cli/services/token_counting.py",
+            "src/llm_wiki_cli/services/task_context.py",
+            "src/llm_wiki_cli/services/task_contract.py",
+            "src/llm_wiki_cli/services/documentation_query_builder.py",
+            "src/llm_wiki_cli/services/change_selection.py",
+            "src/llm_wiki_cli/config.py",
+            "src/llm_wiki_cli/services/filesystem_guard.py",
+            "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/context_packet.py",
+            "src/llm_wiki_cli/services/source_snapshot.py",
+            "src/llm_wiki_cli/services/search_service.py",
+            "src/llm_wiki_cli/services/search_rank.py",
+            "src/llm_wiki_cli/services/wiki_surface.py",
+            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/context_service.py",
+            "src/llm_wiki_cli/services/entrypoints.py",
+            "src/llm_wiki_cli/services/plugins.py",
+            "src/llm_wiki_cli/services/extraction_service.py",
+            "src/llm_wiki_cli/services/data_flow.py",
+            "src/llm_wiki_cli/services/wiki_surface_index.py",
+            "src/llm_wiki_cli/services/dependencies.py",
+            "src/llm_wiki_cli/services/task_evidence.py",
+            "src/llm_wiki_cli/services/knowledge_consumption.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
+            "src/llm_wiki_cli/services/knowledge_verification.py",
+            "src/llm_wiki_cli/services/markdown_sections.py",
+            "src/llm_wiki_cli/services/knowledge_envelope.py",
+            "src/llm_wiki_cli/services/context_budget.py"
+          ],
+          "step_count": 608,
+          "truncated": true
+        }
+      },
+      "id": "cli-task-context",
       "language": "python"
     },
     {
@@ -33751,7 +34021,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/python_imports.py"
           ],
-          "step_count": 2143,
+          "step_count": 2186,
           "truncated": true
         }
       },
@@ -33892,7 +34162,7 @@
             "src/llm_wiki_cli/services/secure_file.py",
             "src/llm_wiki_cli/services/redaction.py"
           ],
-          "step_count": 788,
+          "step_count": 810,
           "truncated": true
         }
       },
@@ -34209,6 +34479,148 @@
       "category": "mcp",
       "detector": "builtin",
       "entry_point": {
+        "label": "build_budgeted_context",
+        "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+        "symbol": "build_budgeted_context"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 1275,
+              "step": "_native_tool_call",
+              "target": "callback"
+            },
+            {
+              "kind": "external_call",
+              "line": 1287,
+              "step": "_native_tool_call",
+              "target": "CallToolResult"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "TextContent"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "json.dumps"
+            },
+            {
+              "kind": "external_call",
+              "line": 1491,
+              "step": "build_budgeted_context",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 1492,
+              "step": "build_budgeted_context",
+              "target": "CallToolResult"
+            },
+            {
+              "kind": "external_call",
+              "line": 1492,
+              "step": "build_budgeted_context",
+              "target": "TextContent"
+            }
+          ],
+          "generated": true,
+          "step_count": 10,
+          "transfer_count": 9,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/mcp_server.py"
+          ],
+          "step_count": 10,
+          "truncated": false
+        }
+      },
+      "id": "mcp-build_budgeted_context",
+      "language": "python"
+    },
+    {
+      "category": "mcp",
+      "detector": "builtin",
+      "entry_point": {
+        "label": "build_task_context",
+        "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+        "symbol": "build_task_context"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 1275,
+              "step": "_native_tool_call",
+              "target": "callback"
+            },
+            {
+              "kind": "external_call",
+              "line": 1287,
+              "step": "_native_tool_call",
+              "target": "CallToolResult"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "TextContent"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "json.dumps"
+            },
+            {
+              "kind": "external_call",
+              "line": 1514,
+              "step": "build_task_context",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 1514,
+              "step": "build_task_context",
+              "target": "CallToolResult"
+            },
+            {
+              "kind": "external_call",
+              "line": 1514,
+              "step": "build_task_context",
+              "target": "TextContent"
+            }
+          ],
+          "generated": true,
+          "step_count": 10,
+          "transfer_count": 9,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/mcp_server.py"
+          ],
+          "step_count": 10,
+          "truncated": false
+        }
+      },
+      "id": "mcp-build_task_context",
+      "language": "python"
+    },
+    {
+      "category": "mcp",
+      "detector": "builtin",
+      "entry_point": {
         "label": "check_wiki",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py",
         "symbol": "check_wiki"
@@ -34219,7 +34631,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1374,
+              "line": 1474,
               "step": "check_wiki",
               "target": "service.check_wiki"
             }
@@ -34244,6 +34656,59 @@
       "category": "mcp",
       "detector": "builtin",
       "entry_point": {
+        "label": "close_context_session",
+        "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+        "symbol": "close_context_session"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 1275,
+              "step": "_native_tool_call",
+              "target": "callback"
+            },
+            {
+              "kind": "external_call",
+              "line": 1287,
+              "step": "_native_tool_call",
+              "target": "CallToolResult"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "TextContent"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "json.dumps"
+            }
+          ],
+          "generated": true,
+          "step_count": 7,
+          "transfer_count": 6,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/mcp_server.py"
+          ],
+          "step_count": 7,
+          "truncated": false
+        }
+      },
+      "id": "mcp-close_context_session",
+      "language": "python"
+    },
+    {
+      "category": "mcp",
+      "detector": "builtin",
+      "entry_point": {
         "label": "explain_evidence",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py",
         "symbol": "explain_evidence"
@@ -34254,25 +34719,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34307,7 +34772,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1216,
+              "line": 1316,
               "step": "get_architecture_page",
               "target": "service.get_architecture_page"
             }
@@ -34342,25 +34807,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34395,7 +34860,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1340,
+              "line": 1440,
               "step": "get_context",
               "target": "service.get_context"
             }
@@ -34430,25 +34895,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34483,7 +34948,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1201,
+              "line": 1301,
               "step": "get_entity",
               "target": "service.get_entity"
             }
@@ -34518,7 +34983,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1211,
+              "line": 1311,
               "step": "get_flow",
               "target": "service.get_flow"
             }
@@ -34553,25 +35018,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34606,7 +35071,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1206,
+              "line": 1306,
               "step": "get_module",
               "target": "service.get_module"
             }
@@ -34641,7 +35106,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1383,
+              "line": 1483,
               "step": "get_status",
               "target": "service.get_status"
             }
@@ -34676,25 +35141,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34729,25 +35194,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34772,6 +35237,59 @@
       "category": "mcp",
       "detector": "builtin",
       "entry_point": {
+        "label": "open_context_session",
+        "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+        "symbol": "open_context_session"
+      },
+      "evidence": {
+        "data_flow": {
+          "boundary_effects": [],
+          "gaps": [
+            {
+              "kind": "unresolved_call",
+              "line": 1275,
+              "step": "_native_tool_call",
+              "target": "callback"
+            },
+            {
+              "kind": "external_call",
+              "line": 1287,
+              "step": "_native_tool_call",
+              "target": "CallToolResult"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "TextContent"
+            },
+            {
+              "kind": "external_call",
+              "line": 1289,
+              "step": "_native_tool_call",
+              "target": "json.dumps"
+            }
+          ],
+          "generated": true,
+          "step_count": 7,
+          "transfer_count": 6,
+          "truncated": false
+        },
+        "flow": {
+          "modules_touched": [
+            "src/llm_wiki_cli/services/mcp_server.py"
+          ],
+          "step_count": 7,
+          "truncated": false
+        }
+      },
+      "id": "mcp-open_context_session",
+      "language": "python"
+    },
+    {
+      "category": "mcp",
+      "detector": "builtin",
+      "entry_point": {
         "label": "query_documentation",
         "source_path": "src/llm_wiki_cli/services/mcp_server.py",
         "symbol": "query_documentation"
@@ -34782,25 +35300,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34835,7 +35353,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1221,
+              "line": 1321,
               "step": "query_graph",
               "target": "service.query_graph"
             }
@@ -34870,25 +35388,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -34923,7 +35441,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1319,
+              "line": 1419,
               "step": "search_wiki",
               "target": "service.search_wiki"
             }
@@ -34958,25 +35476,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1175,
+              "line": 1275,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1187,
+              "line": 1287,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1189,
+              "line": 1289,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -35116,7 +35634,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2481,
+              "line": 2513,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35124,7 +35642,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2484,
+              "line": 2516,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35132,7 +35650,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2487,
+              "line": 2519,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35140,7 +35658,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 2490,
+              "line": 2522,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -35148,7 +35666,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2492,
+              "line": 2524,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35156,7 +35674,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2495,
+              "line": 2527,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -35165,49 +35683,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 217,
+              "line": 221,
               "step": "_build_parser",
               "target": "argparse.ArgumentParser"
             },
             {
               "kind": "unresolved_call",
-              "line": 218,
+              "line": 222,
               "step": "_build_parser",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 221,
+              "line": 225,
               "step": "_build_parser",
               "target": "parser.add_subparsers"
             },
             {
               "kind": "unresolved_call",
-              "line": 300,
+              "line": 330,
               "step": "_add_init_command",
               "target": "subparsers.add_parser"
             },
             {
               "kind": "unresolved_call",
-              "line": 303,
+              "line": 333,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 309,
+              "line": 339,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 314,
+              "line": 344,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 320,
+              "line": 350,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
@@ -35229,7 +35747,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/resource_diagnostics.py"
           ],
-          "step_count": 596,
+          "step_count": 618,
           "truncated": false
         }
       },
@@ -35389,6 +35907,7 @@
         "entities/AgentConfigInspection.md",
         "entities/AgentConfigState.md",
         "entities/AliasType.md",
+        "entities/api_ContextSession.md",
         "entities/api_types_WikiPage.md",
         "entities/ApiContractError.md",
         "entities/ApiContractResult.md",
@@ -35448,6 +35967,7 @@
         "entities/ConceptSectionsResult.md",
         "entities/ConsumedInput.md",
         "entities/ConsumedInputKind.md",
+        "entities/context_session_ContextSession.md",
         "entities/ContextBasisComparison.md",
         "entities/ContextKnowledgeContractError.md",
         "entities/ContextKnowledgeRequired.md",
@@ -35523,6 +36043,7 @@
         "entities/DocumentRecord.md",
         "entities/EdgeAccumulator.md",
         "entities/EntityModuleResult.md",
+        "entities/Entry.md",
         "entities/EntryPointDetectionResult.md",
         "entities/EnvelopeInputs.md",
         "entities/EstimatedCounter.md",
@@ -35532,6 +36053,7 @@
         "entities/EvidenceBasis.md",
         "entities/EvidenceExplanationResult.md",
         "entities/EvidenceFileSnapshot.md",
+        "entities/EvidenceRequirement.md",
         "entities/EvidenceState.md",
         "entities/ExistingPage.md",
         "entities/ExpectedLinkOutcome.md",
@@ -35683,6 +36205,7 @@
         "entities/LockAcquisitionError.md",
         "entities/MachineVerificationAvailability.md",
         "entities/MachineVerificationReadView.md",
+        "entities/MaintenanceQueueResult.md",
         "entities/ManagedLifecycleState.md",
         "entities/ManagedReferenceInboundRoute.md",
         "entities/ManagedSchemaBlock.md",
@@ -35809,6 +36332,7 @@
         "entities/RepositoryIdentitySource.md",
         "entities/RepositoryRecord.md",
         "entities/RequiredKnowledgeErrorDetails.md",
+        "entities/RequirementOptions.md",
         "entities/Resolution.md",
         "entities/ResultArtifactError.md",
         "entities/ResultBounds.md",
@@ -35835,12 +36359,17 @@
         "entities/SchemaCleanupReceipt.md",
         "entities/SchemaRenderProfile.md",
         "entities/ScopeNames.md",
+        "entities/SearchMatch.md",
+        "entities/SearchMatchRanking.md",
+        "entities/SearchMetadata.md",
+        "entities/SearchResult.md",
         "entities/SectionCondition.md",
         "entities/SectionObservation.md",
         "entities/SectionOwnership.md",
         "entities/SectionOwnershipError.md",
         "entities/SemanticFacet.md",
         "entities/SemanticMergeResult.md",
+        "entities/SessionReply.md",
         "entities/SharedValidationError.md",
         "entities/SiteExportError.md",
         "entities/SiteExportOperation.md",
@@ -35864,6 +36393,7 @@
         "entities/SourceSelectionPruneResult.md",
         "entities/SourceSnapshot.md",
         "entities/SourceSnapshotError.md",
+        "entities/SourceSnapshotMutationError.md",
         "entities/StreamCapture.md",
         "entities/StructuralFacet.md",
         "entities/StructureUpgradeResult.md",
@@ -35884,6 +36414,12 @@
         "entities/TargetClass.md",
         "entities/TargetOutcome.md",
         "entities/TargetPage.md",
+        "entities/TaskAnchor.md",
+        "entities/TaskCancelledError.md",
+        "entities/TaskContext.md",
+        "entities/TaskContextRequest.md",
+        "entities/TaskOptions.md",
+        "entities/TaskRead.md",
         "entities/TeamConfigError.md",
         "entities/TeamConventionRequest.md",
         "entities/TeamPolicyContext.md",
@@ -35933,6 +36469,9 @@
         "entities/WindowsObjectIdentity.md",
         "entities/WindowsPathHandleMetadata.md",
         "entities/WindowsSecurityGuardError.md",
+        "entities/WorkflowPolicy.md",
+        "entities/WorkflowProfile.md",
+        "entities/WorkflowRequestError.md",
         "entities/WorkflowResult.md",
         "entities/WorkingTreeState.md",
         "entities/WorkspaceStateError.md",
@@ -36347,6 +36886,7 @@
         "flows/cli-obsidian.md",
         "flows/cli-plugins.md",
         "flows/cli-prepare-extractors.md",
+        "flows/cli-query.md",
         "flows/cli-queue.md",
         "flows/cli-release.md",
         "flows/cli-review.md",
@@ -36355,11 +36895,15 @@
         "flows/cli-skills.md",
         "flows/cli-status.md",
         "flows/cli-sync.md",
+        "flows/cli-task-context.md",
         "flows/cli-team.md",
         "flows/cli-trigger-agent.md",
         "flows/cli-uninstall.md",
         "flows/cli-upgrade.md",
+        "flows/mcp-build_budgeted_context.md",
+        "flows/mcp-build_task_context.md",
         "flows/mcp-check_wiki.md",
+        "flows/mcp-close_context_session.md",
         "flows/mcp-explain_evidence.md",
         "flows/mcp-get_architecture_page.md",
         "flows/mcp-get_concept.md",
@@ -36372,6 +36916,7 @@
         "flows/mcp-get_status.md",
         "flows/mcp-inspect_concept.md",
         "flows/mcp-list_concept_sections.md",
+        "flows/mcp-open_context_session.md",
         "flows/mcp-query_documentation.md",
         "flows/mcp-query_graph.md",
         "flows/mcp-related_concepts.md",
@@ -36415,6 +36960,7 @@
         "modules/context_knowledge_contract.md",
         "modules/context_packet.md",
         "modules/context_service.md",
+        "modules/context_session.md",
         "modules/controller.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
@@ -36517,6 +37063,7 @@
         "modules/python_imports.md",
         "modules/python_observations.md",
         "modules/python_stdlib.md",
+        "modules/query_cmd.md",
         "modules/queue_cmd.md",
         "modules/record.md",
         "modules/redaction.md",
@@ -36525,6 +37072,7 @@
         "modules/release_cmd.md",
         "modules/render_summary.md",
         "modules/rendering_lifecycle.md",
+        "modules/request_json.md",
         "modules/resource_diagnostics.md",
         "modules/review_cmd.md",
         "modules/review_service.md",
@@ -36532,6 +37080,7 @@
         "modules/rust_extractor.md",
         "modules/search_cmd.md",
         "modules/search_rank.md",
+        "modules/search_service.md",
         "modules/section_ownership.md",
         "modules/secure_file.md",
         "modules/services_contracts.md",
@@ -36550,6 +37099,10 @@
         "modules/sync_analysis.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
+        "modules/task_cmd.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/task_evidence.md",
         "modules/team.md",
         "modules/team_cmd.md",
         "modules/token_counting.md",
@@ -36567,10 +37120,12 @@
         "modules/wiki_scaffold.md",
         "modules/wiki_surface.md",
         "modules/wiki_surface_index.md",
+        "modules/workflow_profile.md",
         "modules/workspace.md",
         "workflows/append_log.md",
         "workflows/apply_entity_page.md",
         "workflows/apply_module_page.md",
+        "workflows/apply_task_delta.md",
         "workflows/build_analysis.md",
         "workflows/build_budgeted_context.md",
         "workflows/build_builtin_extraction_kwargs.md",
@@ -36592,6 +37147,7 @@
         "workflows/build_surface_index_pages.md",
         "workflows/build_sync_graph_observations.md",
         "workflows/build_sync_prompt.md",
+        "workflows/build_task_read.md",
         "workflows/capture_committed_knowledge.md",
         "workflows/capture_context_read.md",
         "workflows/capture_protocol_enrichment_session.md",
@@ -36607,6 +37163,8 @@
         "workflows/committed_artifact_snapshot.md",
         "workflows/context_budget_flow.md",
         "workflows/context_service_flow.md",
+        "workflows/ContextSession___init__.md",
+        "workflows/ContextSession_read.md",
         "workflows/current_coverage.md",
         "workflows/current_markdown.md",
         "workflows/discover_infrastructure_plan.md",
@@ -36626,10 +37184,15 @@
         "workflows/load_machine_verification_read_view.md",
         "workflows/load_snapshot_knowledge_observability.md",
         "workflows/manifest_content.md",
+        "workflows/McpWikiService_build_budgeted_context.md",
+        "workflows/McpWikiService_build_task_context.md",
         "workflows/McpWikiService_get_status.md",
         "workflows/merge_explicit_consumed_input.md",
         "workflows/merge_inventory_results.md",
+        "workflows/normalize_task_request.md",
+        "workflows/observe_requirement.md",
         "workflows/persist_report.md",
+        "workflows/plan_source_read.md",
         "workflows/planned_generated_surface_prune.md",
         "workflows/plugins_cmd_flow.md",
         "workflows/preflight_bootstrap_governance.md",
@@ -36645,6 +37208,8 @@
         "workflows/print_managed_lifecycle.md",
         "workflows/projected_commit_plan.md",
         "workflows/qualify_infrastructure_page_drift.md",
+        "workflows/query_cmd_flow.md",
+        "workflows/read_once.md",
         "workflows/rebuild_surface_only_index.md",
         "workflows/record_source_file.md",
         "workflows/refresh_documentation_native_projection.md",
@@ -36665,11 +37230,13 @@
         "workflows/run_verify.md",
         "workflows/runtime_flow_entries.md",
         "workflows/scan_python_files.md",
+        "workflows/search_wiki.md",
         "workflows/SourceSnapshot_path_is_effectively_selected.md",
         "workflows/SourceSnapshot_with_captured_inventory_paths.md",
         "workflows/status_cmd_flow.md",
         "workflows/sync_run_options_from_args.md",
         "workflows/SyncManifest__validate_operational_state.md",
+        "workflows/task_cmd_flow.md",
         "workflows/try_sync_knowledge_reuse.md",
         "workflows/upgrade_cmd_flow.md",
         "workflows/validate_builder_link.md",
@@ -36677,6 +37244,7 @@
         "workflows/validate_knowledge_artifacts.md",
         "workflows/validate_live_query_source_selection.md",
         "workflows/validate_obsidian_export_source_selection.md",
+        "workflows/validate_task_context.md",
         "workflows/validated_prompt_snapshot.md",
         "workflows/validated_reserved_extensions.md",
         "workflows/validated_source.md",
@@ -36768,6 +37336,19 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/concept_identity.py",
       "title": "AliasType"
+    },
+    {
+      "canonical_path": "entities/api_ContextSession.md",
+      "id": "api_ContextSession",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/api_ContextSession",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/context_session.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api.py",
+      "title": "ContextSession"
     },
     {
       "canonical_path": "entities/api_types_WikiPage.md",
@@ -37541,6 +38122,19 @@
       "title": "ConsumedInputKind"
     },
     {
+      "canonical_path": "entities/context_session_ContextSession.md",
+      "id": "context_session_ContextSession",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/context_session_ContextSession",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/context_session.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/context_session.py",
+      "title": "ContextSession"
+    },
+    {
       "canonical_path": "entities/ContextBasisComparison.md",
       "id": "ContextBasisComparison",
       "kind": "entities",
@@ -37656,7 +38250,9 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/ContextPacketSourceMutationError",
       "outgoing_internal_links": [
-        "modules/context_packet.md"
+        "modules/context_packet.md",
+        "modules/context_session.md",
+        "modules/task_context.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/context_packet.py",
@@ -38482,6 +39078,18 @@
       "title": "_EntityModuleResult"
     },
     {
+      "canonical_path": "entities/Entry.md",
+      "id": "Entry",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/Entry",
+      "outgoing_internal_links": [
+        "modules/context_session.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/context_session.py",
+      "title": "_Entry"
+    },
+    {
       "canonical_path": "entities/EntryPointDetectionResult.md",
       "id": "EntryPointDetectionResult",
       "kind": "entities",
@@ -38513,6 +39121,7 @@
       "mcp_uri": "llm-wiki://entities/EstimatedCounter",
       "outgoing_internal_links": [
         "modules/context_budget.md",
+        "modules/task_context.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
@@ -38599,6 +39208,18 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/calibration/controller.py",
       "title": "_EvidenceFileSnapshot"
+    },
+    {
+      "canonical_path": "entities/EvidenceRequirement.md",
+      "id": "EvidenceRequirement",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/EvidenceRequirement",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "EvidenceRequirement"
     },
     {
       "canonical_path": "entities/EvidenceState.md",
@@ -40238,7 +40859,8 @@
       "mcp_uri": "llm-wiki://entities/KnowledgeRequiredUnavailableError",
       "outgoing_internal_links": [
         "modules/context_packet.md",
-        "modules/context_service.md"
+        "modules/context_service.md",
+        "modules/task_context.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/context_service.py",
@@ -40257,7 +40879,8 @@
         "modules/knowledge_loader.md",
         "modules/knowledge_observability.md",
         "modules/lint_service.md",
-        "modules/migrate_cmd.md"
+        "modules/migrate_cmd.md",
+        "modules/task_context.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_loader.py",
@@ -40541,6 +41164,8 @@
       "mcp_uri": "llm-wiki://entities/LocalTokenizerCounter",
       "outgoing_internal_links": [
         "modules/context_budget.md",
+        "modules/mcp_server.md",
+        "modules/task_cmd.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
@@ -40588,6 +41213,19 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_consumption.py",
       "title": "MachineVerificationReadView"
+    },
+    {
+      "canonical_path": "entities/MaintenanceQueueResult.md",
+      "id": "MaintenanceQueueResult",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/MaintenanceQueueResult",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "MaintenanceQueueResult"
     },
     {
       "canonical_path": "entities/ManagedLifecycleState.md",
@@ -40920,8 +41558,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/McpWikiService",
       "outgoing_internal_links": [
-        "modules/mcp_server.md",
-        "modules/search_cmd.md"
+        "modules/mcp_server.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/mcp_server.py",
@@ -42227,6 +42864,18 @@
       "title": "RequiredKnowledgeErrorDetails"
     },
     {
+      "canonical_path": "entities/RequirementOptions.md",
+      "id": "RequirementOptions",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/RequirementOptions",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "_RequirementOptions"
+    },
+    {
       "canonical_path": "entities/Resolution.md",
       "id": "Resolution",
       "kind": "entities",
@@ -42562,6 +43211,55 @@
       "title": "_ScopeNames"
     },
     {
+      "canonical_path": "entities/SearchMatch.md",
+      "id": "SearchMatch",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SearchMatch",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "SearchMatch"
+    },
+    {
+      "canonical_path": "entities/SearchMatchRanking.md",
+      "id": "SearchMatchRanking",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SearchMatchRanking",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "_SearchMatchRanking"
+    },
+    {
+      "canonical_path": "entities/SearchMetadata.md",
+      "id": "SearchMetadata",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SearchMetadata",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "_SearchMetadata"
+    },
+    {
+      "canonical_path": "entities/SearchResult.md",
+      "id": "SearchResult",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SearchResult",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "SearchResult"
+    },
+    {
       "canonical_path": "entities/SectionCondition.md",
       "id": "SectionCondition",
       "kind": "entities",
@@ -42636,6 +43334,19 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/section_ownership.py",
       "title": "SemanticMergeResult"
+    },
+    {
+      "canonical_path": "entities/SessionReply.md",
+      "id": "SessionReply",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SessionReply",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/context_session.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/context_session.py",
+      "title": "SessionReply"
     },
     {
       "canonical_path": "entities/SharedValidationError.md",
@@ -42946,6 +43657,19 @@
       "title": "SourceSnapshotError"
     },
     {
+      "canonical_path": "entities/SourceSnapshotMutationError.md",
+      "id": "SourceSnapshotMutationError",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SourceSnapshotMutationError",
+      "outgoing_internal_links": [
+        "modules/context_packet.md",
+        "modules/source_snapshot.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/source_snapshot.py",
+      "title": "SourceSnapshotMutationError"
+    },
+    {
       "canonical_path": "entities/StreamCapture.md",
       "id": "StreamCapture",
       "kind": "entities",
@@ -43211,6 +43935,83 @@
       "title": "TargetPage"
     },
     {
+      "canonical_path": "entities/TaskAnchor.md",
+      "id": "TaskAnchor",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/TaskAnchor",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "TaskAnchor"
+    },
+    {
+      "canonical_path": "entities/TaskCancelledError.md",
+      "id": "TaskCancelledError",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/TaskCancelledError",
+      "outgoing_internal_links": [
+        "modules/context_session.md",
+        "modules/task_context.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/task_context.py",
+      "title": "TaskCancelledError"
+    },
+    {
+      "canonical_path": "entities/TaskContext.md",
+      "id": "TaskContext",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/TaskContext",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/context_session.md",
+        "modules/task_context.md",
+        "modules/task_contract.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/task_contract.py",
+      "title": "TaskContext"
+    },
+    {
+      "canonical_path": "entities/TaskContextRequest.md",
+      "id": "TaskContextRequest",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/TaskContextRequest",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "TaskContextRequest"
+    },
+    {
+      "canonical_path": "entities/TaskOptions.md",
+      "id": "TaskOptions",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/TaskOptions",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "_TaskOptions"
+    },
+    {
+      "canonical_path": "entities/TaskRead.md",
+      "id": "TaskRead",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/TaskRead",
+      "outgoing_internal_links": [
+        "modules/context_session.md",
+        "modules/task_context.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/task_context.py",
+      "title": "TaskRead"
+    },
+    {
       "canonical_path": "entities/TeamConfigError.md",
       "id": "TeamConfigError",
       "kind": "entities",
@@ -43259,6 +44060,8 @@
       "outgoing_internal_links": [
         "modules/api.md",
         "modules/context_budget.md",
+        "modules/mcp_server.md",
+        "modules/task_context.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
@@ -43862,6 +44665,54 @@
       "title": "WindowsSecurityGuardError"
     },
     {
+      "canonical_path": "entities/WorkflowPolicy.md",
+      "id": "WorkflowPolicy",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/WorkflowPolicy",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/mcp_server.md",
+        "modules/task_cmd.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/workflow_profile.py",
+      "title": "WorkflowPolicy"
+    },
+    {
+      "canonical_path": "entities/WorkflowProfile.md",
+      "id": "WorkflowProfile",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/WorkflowProfile",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/mcp_server.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/workflow_profile.py",
+      "title": "WorkflowProfile"
+    },
+    {
+      "canonical_path": "entities/WorkflowRequestError.md",
+      "id": "WorkflowRequestError",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/WorkflowRequestError",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/context_session.md",
+        "modules/task_context.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/workflow_profile.py",
+      "title": "WorkflowRequestError"
+    },
+    {
       "canonical_path": "entities/WorkflowResult.md",
       "id": "WorkflowResult",
       "kind": "entities",
@@ -43905,6 +44756,7 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/api",
       "outgoing_internal_links": [
+        "entities/api_ContextSession.md",
         "entities/ArtifactIntegrityError.md",
         "entities/InvalidRequestError.md",
         "entities/LazyCalibrationAnnotations.md",
@@ -43999,6 +44851,7 @@
         "entities/DocumentationQueryRequired.md",
         "entities/DocumentationQueryResult.md",
         "entities/EvidenceExplanationResult.md",
+        "entities/EvidenceRequirement.md",
         "entities/ExtractSourceRequired.md",
         "entities/ExtractSourceResult.md",
         "entities/FlowForEntrypointResult.md",
@@ -44006,6 +44859,7 @@
         "entities/KnowledgeCoverageResult.md",
         "entities/KnowledgeMode.md",
         "entities/KnowledgeStatus.md",
+        "entities/MaintenanceQueueResult.md",
         "entities/MarkdownContextResult.md",
         "entities/NativeInspectionResult.md",
         "entities/PagesForSymbolResult.md",
@@ -44013,7 +44867,15 @@
         "entities/RankingPolicy.md",
         "entities/RelatedConceptsResult.md",
         "entities/RequiredKnowledgeErrorDetails.md",
+        "entities/RequirementOptions.md",
         "entities/ResultBounds.md",
+        "entities/SearchMatch.md",
+        "entities/SearchMatchRanking.md",
+        "entities/SearchMetadata.md",
+        "entities/SearchResult.md",
+        "entities/TaskAnchor.md",
+        "entities/TaskContextRequest.md",
+        "entities/TaskOptions.md",
         "entities/TypedGraphTraversalResult.md",
         "entities/WikiPageCounts.md",
         "entities/WikiPagesResult.md",
@@ -44211,7 +45073,9 @@
         "modules/extraction_service.md",
         "modules/impact.md",
         "modules/review_cmd.md",
-        "modules/review_service.md"
+        "modules/review_service.md",
+        "modules/task_context.md",
+        "modules/task_contract.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/change_selection.py",
@@ -44376,7 +45240,9 @@
         "modules/context_packet.md",
         "modules/context_service.md",
         "modules/io.md",
+        "modules/request_json.md",
         "modules/services_contracts.md",
+        "modules/task_context.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
@@ -44438,6 +45304,30 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/context_service.py",
       "title": "context_service Module"
+    },
+    {
+      "canonical_path": "modules/context_session.md",
+      "id": "context_session",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/context_session",
+      "outgoing_internal_links": [
+        "entities/context_session_ContextSession.md",
+        "entities/Entry.md",
+        "entities/SessionReply.md",
+        "modules/api.md",
+        "modules/config.md",
+        "modules/context_packet.md",
+        "modules/context_session.md",
+        "modules/immutable.md",
+        "modules/io.md",
+        "modules/llm_wiki_cli___init__.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/context_session.py",
+      "title": "context_session Module"
     },
     {
       "canonical_path": "modules/controller.md",
@@ -45097,6 +45987,7 @@
       "outgoing_internal_links": [
         "entities/FrozenDict.md",
         "entities/FrozenList.md",
+        "modules/context_session.md",
         "modules/immutable.md",
         "modules/knowledge_artifacts.md",
         "modules/knowledge_index.md",
@@ -45731,6 +46622,7 @@
         "modules/bootstrap_runtime.md",
         "modules/cli.md",
         "modules/context_packet.md",
+        "modules/context_session.md",
         "modules/documentation_run_dependencies.md",
         "modules/inventory_cache.md",
         "modules/knowledge_orchestration.md",
@@ -45765,6 +46657,7 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/maintenance_queue",
       "outgoing_internal_links": [
+        "modules/api.md",
         "modules/cli.md",
         "modules/context_packet.md",
         "modules/documentation_worklist.md",
@@ -45795,7 +46688,8 @@
         "modules/record.md",
         "modules/refresh.md",
         "modules/section_ownership.md",
-        "modules/sync_cmd.md"
+        "modules/sync_cmd.md",
+        "modules/task_evidence.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/markdown_sections.py",
@@ -46278,6 +47172,22 @@
       "title": "python_stdlib Module"
     },
     {
+      "canonical_path": "modules/query_cmd.md",
+      "id": "query_cmd",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/query_cmd",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/cli.md",
+        "modules/io.md",
+        "modules/query_cmd.md",
+        "modules/request_json.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/commands/query_cmd.py",
+      "title": "query_cmd Module"
+    },
+    {
       "canonical_path": "modules/queue_cmd.md",
       "id": "queue_cmd",
       "kind": "modules",
@@ -46408,6 +47318,23 @@
       "title": "rendering_lifecycle Module"
     },
     {
+      "canonical_path": "modules/request_json.md",
+      "id": "request_json",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/request_json",
+      "outgoing_internal_links": [
+        "modules/context_budget.md",
+        "modules/query_cmd.md",
+        "modules/request_json.md",
+        "modules/task_cmd.md",
+        "modules/task_context.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/request_json.py",
+      "title": "request_json Module"
+    },
+    {
       "canonical_path": "modules/resource_diagnostics.md",
       "id": "resource_diagnostics",
       "kind": "modules",
@@ -46493,9 +47420,9 @@
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/search_cmd",
       "outgoing_internal_links": [
+        "modules/api.md",
         "modules/cli.md",
         "modules/config.md",
-        "modules/mcp_server.md",
         "modules/search_cmd.md"
       ],
       "role": "semantic",
@@ -46507,10 +47434,34 @@
       "id": "search_rank",
       "kind": "modules",
       "mcp_uri": "llm-wiki://modules/search_rank",
-      "outgoing_internal_links": [],
+      "outgoing_internal_links": [
+        "modules/search_rank.md",
+        "modules/search_service.md"
+      ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/search_rank.py",
       "title": "search_rank Module"
+    },
+    {
+      "canonical_path": "modules/search_service.md",
+      "id": "search_service",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/search_service",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/config.md",
+        "modules/documentation_query_builder.md",
+        "modules/io.md",
+        "modules/search_rank.md",
+        "modules/search_service.md",
+        "modules/source_selection.md",
+        "modules/source_snapshot.md",
+        "modules/task_context.md",
+        "modules/wiki_surface.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/search_service.py",
+      "title": "search_service Module"
     },
     {
       "canonical_path": "modules/section_ownership.md",
@@ -46733,6 +47684,7 @@
         "entities/SourceFileIntegrity.md",
         "entities/SourceSnapshot.md",
         "entities/SourceSnapshotError.md",
+        "entities/SourceSnapshotMutationError.md",
         "modules/source_snapshot.md"
       ],
       "role": "semantic",
@@ -46840,6 +47792,73 @@
       "title": "sync_manifest Module"
     },
     {
+      "canonical_path": "modules/task_cmd.md",
+      "id": "task_cmd",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/task_cmd",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/cli.md",
+        "modules/io.md",
+        "modules/request_json.md",
+        "modules/task_cmd.md",
+        "modules/token_counting.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/commands/task_cmd.py",
+      "title": "task_cmd Module"
+    },
+    {
+      "canonical_path": "modules/task_context.md",
+      "id": "task_context",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/task_context",
+      "outgoing_internal_links": [
+        "entities/TaskCancelledError.md",
+        "entities/TaskRead.md",
+        "modules/task_context.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/task_context.py",
+      "title": "task_context Module"
+    },
+    {
+      "canonical_path": "modules/task_contract.md",
+      "id": "task_contract",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/task_contract",
+      "outgoing_internal_links": [
+        "entities/TaskContext.md",
+        "modules/api.md",
+        "modules/change_selection.md",
+        "modules/context_session.md",
+        "modules/documentation_query_builder.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/task_contract.py",
+      "title": "task_contract Module"
+    },
+    {
+      "canonical_path": "modules/task_evidence.md",
+      "id": "task_evidence",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/task_evidence",
+      "outgoing_internal_links": [
+        "modules/context_packet.md",
+        "modules/documentation_query_builder.md",
+        "modules/markdown_sections.md",
+        "modules/task_context.md",
+        "modules/task_evidence.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/task_evidence.py",
+      "title": "task_evidence Module"
+    },
+    {
       "canonical_path": "modules/team.md",
       "id": "team",
       "kind": "modules",
@@ -46886,6 +47905,9 @@
         "entities/TokenCounter.md",
         "modules/api.md",
         "modules/context_budget.md",
+        "modules/mcp_server.md",
+        "modules/task_cmd.md",
+        "modules/task_context.md",
         "modules/token_counting.md"
       ],
       "role": "semantic",
@@ -47150,6 +48172,28 @@
       "title": "wiki_surface_index Module"
     },
     {
+      "canonical_path": "modules/workflow_profile.md",
+      "id": "workflow_profile",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/workflow_profile",
+      "outgoing_internal_links": [
+        "entities/WorkflowPolicy.md",
+        "entities/WorkflowProfile.md",
+        "entities/WorkflowRequestError.md",
+        "modules/api.md",
+        "modules/context_session.md",
+        "modules/mcp_server.md",
+        "modules/request_json.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/task_evidence.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/workflow_profile.py",
+      "title": "workflow_profile Module"
+    },
+    {
       "canonical_path": "modules/workspace.md",
       "id": "workspace",
       "kind": "modules",
@@ -47216,6 +48260,21 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/sync_cmd.py",
       "title": "apply_module_page"
+    },
+    {
+      "canonical_path": "workflows/apply_task_delta.md",
+      "id": "apply_task_delta",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/apply_task_delta",
+      "outgoing_internal_links": [
+        "modules/context_session.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/context_session.py",
+      "title": "apply_task_delta"
     },
     {
       "canonical_path": "workflows/build_analysis.md",
@@ -47561,6 +48620,21 @@
       "title": "build_sync_prompt"
     },
     {
+      "canonical_path": "workflows/build_task_read.md",
+      "id": "build_task_read",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/build_task_read",
+      "outgoing_internal_links": [
+        "modules/config.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/task_context.py",
+      "title": "build_task_read"
+    },
+    {
       "canonical_path": "workflows/capture_committed_knowledge.md",
       "id": "capture_committed_knowledge",
       "kind": "workflows",
@@ -47810,6 +48884,38 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/context_service.py",
       "title": "context_service_flow"
+    },
+    {
+      "canonical_path": "workflows/ContextSession___init__.md",
+      "id": "ContextSession___init__",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/ContextSession___init__",
+      "outgoing_internal_links": [
+        "modules/config.md",
+        "modules/context_session.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/context_session.py",
+      "title": "ContextSession___init__"
+    },
+    {
+      "canonical_path": "workflows/ContextSession_read.md",
+      "id": "ContextSession_read",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/ContextSession_read",
+      "outgoing_internal_links": [
+        "modules/context_packet.md",
+        "modules/context_session.md",
+        "modules/immutable.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/context_session.py",
+      "title": "ContextSession_read"
     },
     {
       "canonical_path": "workflows/current_coverage.md",
@@ -48115,6 +49221,36 @@
       "title": "manifest_content"
     },
     {
+      "canonical_path": "workflows/McpWikiService_build_budgeted_context.md",
+      "id": "McpWikiService_build_budgeted_context",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/McpWikiService_build_budgeted_context",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/context_budget.md",
+        "modules/context_service.md",
+        "modules/mcp_server.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+      "title": "McpWikiService_build_budgeted_context"
+    },
+    {
+      "canonical_path": "workflows/McpWikiService_build_task_context.md",
+      "id": "McpWikiService_build_task_context",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/McpWikiService_build_task_context",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/mcp_server.md",
+        "modules/task_context.md",
+        "modules/task_contract.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+      "title": "McpWikiService_build_task_context"
+    },
+    {
       "canonical_path": "workflows/McpWikiService_get_status.md",
       "id": "McpWikiService_get_status",
       "kind": "workflows",
@@ -48162,6 +49298,36 @@
       "title": "merge_inventory_results"
     },
     {
+      "canonical_path": "workflows/normalize_task_request.md",
+      "id": "normalize_task_request",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/normalize_task_request",
+      "outgoing_internal_links": [
+        "modules/change_selection.md",
+        "modules/documentation_query_builder.md",
+        "modules/task_contract.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/task_contract.py",
+      "title": "normalize_task_request"
+    },
+    {
+      "canonical_path": "workflows/observe_requirement.md",
+      "id": "observe_requirement",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/observe_requirement",
+      "outgoing_internal_links": [
+        "modules/context_packet.md",
+        "modules/markdown_sections.md",
+        "modules/task_evidence.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/task_evidence.py",
+      "title": "observe_requirement"
+    },
+    {
       "canonical_path": "workflows/persist_report.md",
       "id": "persist_report",
       "kind": "workflows",
@@ -48175,6 +49341,22 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/ci_check_cmd.py",
       "title": "persist_report"
+    },
+    {
+      "canonical_path": "workflows/plan_source_read.md",
+      "id": "plan_source_read",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/plan_source_read",
+      "outgoing_internal_links": [
+        "modules/change_selection.md",
+        "modules/documentation_query_builder.md",
+        "modules/io.md",
+        "modules/task_context.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/task_context.py",
+      "title": "plan_source_read"
     },
     {
       "canonical_path": "workflows/planned_generated_surface_prune.md",
@@ -48410,6 +49592,45 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/sync_cmd.py",
       "title": "qualify_infrastructure_page_drift"
+    },
+    {
+      "canonical_path": "workflows/query_cmd_flow.md",
+      "id": "query_cmd_flow",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/query_cmd_flow",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/io.md",
+        "modules/query_cmd.md",
+        "modules/request_json.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/query_cmd.py",
+      "title": "query_cmd_flow"
+    },
+    {
+      "canonical_path": "workflows/read_once.md",
+      "id": "read_once",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/read_once",
+      "outgoing_internal_links": [
+        "modules/change_selection.md",
+        "modules/context_budget.md",
+        "modules/context_packet.md",
+        "modules/context_service.md",
+        "modules/documentation_query_builder.md",
+        "modules/knowledge_consumption.md",
+        "modules/knowledge_envelope.md",
+        "modules/search_service.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/task_evidence.md",
+        "modules/wiki_surface_index.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/task_context.py",
+      "title": "read_once"
     },
     {
       "canonical_path": "workflows/rebuild_surface_only_index.md",
@@ -48730,6 +49951,22 @@
       "title": "scan_python_files"
     },
     {
+      "canonical_path": "workflows/search_wiki.md",
+      "id": "search_wiki",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/search_wiki",
+      "outgoing_internal_links": [
+        "modules/config.md",
+        "modules/documentation_query_builder.md",
+        "modules/search_service.md",
+        "modules/source_selection.md",
+        "modules/source_snapshot.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/search_service.py",
+      "title": "search_wiki"
+    },
+    {
       "canonical_path": "workflows/SourceSnapshot_path_is_effectively_selected.md",
       "id": "SourceSnapshot_path_is_effectively_selected",
       "kind": "workflows",
@@ -48807,6 +50044,23 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/sync_manifest.py",
       "title": "SyncManifest__validate_operational_state"
+    },
+    {
+      "canonical_path": "workflows/task_cmd_flow.md",
+      "id": "task_cmd_flow",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/task_cmd_flow",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/io.md",
+        "modules/request_json.md",
+        "modules/task_cmd.md",
+        "modules/token_counting.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/task_cmd.py",
+      "title": "task_cmd_flow"
     },
     {
       "canonical_path": "workflows/try_sync_knowledge_reuse.md",
@@ -48926,6 +50180,22 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/obsidian.py",
       "title": "validate_obsidian_export_source_selection"
+    },
+    {
+      "canonical_path": "workflows/validate_task_context.md",
+      "id": "validate_task_context",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/validate_task_context",
+      "outgoing_internal_links": [
+        "modules/context_packet.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/task_evidence.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/task_context.py",
+      "title": "validate_task_context"
     },
     {
       "canonical_path": "workflows/validated_prompt_snapshot.md",
@@ -50227,6 +51497,7 @@
         "modules/knowledge_reuse.md",
         "modules/knowledge_verification.md",
         "modules/section_ownership.md",
+        "modules/source_snapshot.md",
         "modules/sync_manifest.md",
         "modules/verification_contracts.md",
         "modules/wiki_surface.md"
@@ -56232,6 +57503,36 @@
       "title": "prepare-extractors"
     },
     {
+      "canonical_path": "flows/cli-query.md",
+      "id": "cli-query",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/cli-query",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/common.md",
+        "modules/config.md",
+        "modules/context_packet.md",
+        "modules/documentation_queries.md",
+        "modules/documentation_query_builder.md",
+        "modules/filesystem_guard.md",
+        "modules/io.md",
+        "modules/knowledge_consumption.md",
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_loader.md",
+        "modules/knowledge_verification.md",
+        "modules/query_cmd.md",
+        "modules/request_json.md",
+        "modules/source_selection.md",
+        "modules/source_snapshot.md",
+        "modules/sync_manifest.md",
+        "modules/validation.md",
+        "modules/wiki_surface.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/query_cmd.py",
+      "title": "query"
+    },
+    {
       "canonical_path": "flows/cli-queue.md",
       "id": "cli-queue",
       "kind": "flows",
@@ -56357,11 +57658,21 @@
       "kind": "flows",
       "mcp_uri": "llm-wiki://flows/cli-search",
       "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/common.md",
         "modules/config.md",
+        "modules/documentation_queries.md",
+        "modules/documentation_query_builder.md",
         "modules/filesystem_guard.md",
         "modules/io.md",
-        "modules/mcp_server.md",
-        "modules/search_cmd.md"
+        "modules/search_cmd.md",
+        "modules/search_rank.md",
+        "modules/search_service.md",
+        "modules/source_selection.md",
+        "modules/source_snapshot.md",
+        "modules/sync_manifest.md",
+        "modules/validation.md",
+        "modules/wiki_surface.md"
       ],
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/search_cmd.py",
@@ -56524,6 +57835,49 @@
       "title": "sync"
     },
     {
+      "canonical_path": "flows/cli-task-context.md",
+      "id": "cli-task-context",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/cli-task-context",
+      "outgoing_internal_links": [
+        "modules/api.md",
+        "modules/change_selection.md",
+        "modules/config.md",
+        "modules/context_budget.md",
+        "modules/context_packet.md",
+        "modules/context_service.md",
+        "modules/data_flow.md",
+        "modules/documentation_query_builder.md",
+        "modules/entrypoints.md",
+        "modules/extraction_service.md",
+        "modules/filesystem_guard.md",
+        "modules/io.md",
+        "modules/knowledge_consumption.md",
+        "modules/knowledge_envelope.md",
+        "modules/knowledge_loader.md",
+        "modules/knowledge_verification.md",
+        "modules/markdown_sections.md",
+        "modules/plugins.md",
+        "modules/request_json.md",
+        "modules/search_rank.md",
+        "modules/search_service.md",
+        "modules/services_dependencies.md",
+        "modules/source_selection.md",
+        "modules/source_snapshot.md",
+        "modules/task_cmd.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/task_evidence.md",
+        "modules/token_counting.md",
+        "modules/wiki_surface.md",
+        "modules/wiki_surface_index.md",
+        "modules/workflow_profile.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/task_cmd.py",
+      "title": "task-context"
+    },
+    {
       "canonical_path": "flows/cli-team.md",
       "id": "cli-team",
       "kind": "flows",
@@ -56643,6 +57997,30 @@
       "title": "upgrade"
     },
     {
+      "canonical_path": "flows/mcp-build_budgeted_context.md",
+      "id": "mcp-build_budgeted_context",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/mcp-build_budgeted_context",
+      "outgoing_internal_links": [
+        "modules/mcp_server.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+      "title": "build_budgeted_context"
+    },
+    {
+      "canonical_path": "flows/mcp-build_task_context.md",
+      "id": "mcp-build_task_context",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/mcp-build_task_context",
+      "outgoing_internal_links": [
+        "modules/mcp_server.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+      "title": "build_task_context"
+    },
+    {
       "canonical_path": "flows/mcp-check_wiki.md",
       "id": "mcp-check_wiki",
       "kind": "flows",
@@ -56653,6 +58031,18 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/mcp_server.py",
       "title": "check_wiki"
+    },
+    {
+      "canonical_path": "flows/mcp-close_context_session.md",
+      "id": "mcp-close_context_session",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/mcp-close_context_session",
+      "outgoing_internal_links": [
+        "modules/mcp_server.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+      "title": "close_context_session"
     },
     {
       "canonical_path": "flows/mcp-explain_evidence.md",
@@ -56797,6 +58187,18 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/mcp_server.py",
       "title": "list_concept_sections"
+    },
+    {
+      "canonical_path": "flows/mcp-open_context_session.md",
+      "id": "mcp-open_context_session",
+      "kind": "flows",
+      "mcp_uri": "llm-wiki://flows/mcp-open_context_session",
+      "outgoing_internal_links": [
+        "modules/mcp_server.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/mcp_server.py",
+      "title": "open_context_session"
     },
     {
       "canonical_path": "flows/mcp-query_documentation.md",
@@ -56950,6 +58352,7 @@
         "modules/context_knowledge_contract.md",
         "modules/context_packet.md",
         "modules/context_service.md",
+        "modules/context_session.md",
         "modules/controller.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
@@ -57052,6 +58455,7 @@
         "modules/python_imports.md",
         "modules/python_observations.md",
         "modules/python_stdlib.md",
+        "modules/query_cmd.md",
         "modules/queue_cmd.md",
         "modules/record.md",
         "modules/redaction.md",
@@ -57060,6 +58464,7 @@
         "modules/release_cmd.md",
         "modules/render_summary.md",
         "modules/rendering_lifecycle.md",
+        "modules/request_json.md",
         "modules/resource_diagnostics.md",
         "modules/review_cmd.md",
         "modules/review_service.md",
@@ -57067,6 +58472,7 @@
         "modules/rust_extractor.md",
         "modules/search_cmd.md",
         "modules/search_rank.md",
+        "modules/search_service.md",
         "modules/section_ownership.md",
         "modules/secure_file.md",
         "modules/services_contracts.md",
@@ -57085,6 +58491,10 @@
         "modules/sync_analysis.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
+        "modules/task_cmd.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/task_evidence.md",
         "modules/team.md",
         "modules/team_cmd.md",
         "modules/token_counting.md",
@@ -57102,6 +58512,7 @@
         "modules/wiki_scaffold.md",
         "modules/wiki_surface.md",
         "modules/wiki_surface_index.md",
+        "modules/workflow_profile.md",
         "modules/workspace.md"
       ],
       "role": "mixed",
@@ -57141,6 +58552,7 @@
         "modules/context_knowledge_contract.md",
         "modules/context_packet.md",
         "modules/context_service.md",
+        "modules/context_session.md",
         "modules/controller.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
@@ -57243,6 +58655,7 @@
         "modules/python_imports.md",
         "modules/python_observations.md",
         "modules/python_stdlib.md",
+        "modules/query_cmd.md",
         "modules/queue_cmd.md",
         "modules/record.md",
         "modules/redaction.md",
@@ -57251,6 +58664,7 @@
         "modules/release_cmd.md",
         "modules/render_summary.md",
         "modules/rendering_lifecycle.md",
+        "modules/request_json.md",
         "modules/resource_diagnostics.md",
         "modules/review_cmd.md",
         "modules/review_service.md",
@@ -57258,6 +58672,7 @@
         "modules/rust_extractor.md",
         "modules/search_cmd.md",
         "modules/search_rank.md",
+        "modules/search_service.md",
         "modules/section_ownership.md",
         "modules/secure_file.md",
         "modules/services_contracts.md",
@@ -57276,6 +58691,10 @@
         "modules/sync_analysis.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
+        "modules/task_cmd.md",
+        "modules/task_context.md",
+        "modules/task_contract.md",
+        "modules/task_evidence.md",
         "modules/team.md",
         "modules/team_cmd.md",
         "modules/token_counting.md",
@@ -57293,6 +58712,7 @@
         "modules/wiki_scaffold.md",
         "modules/wiki_surface.md",
         "modules/wiki_surface_index.md",
+        "modules/workflow_profile.md",
         "modules/workspace.md"
       ],
       "role": "mixed",
@@ -57301,5 +58721,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:88beeca7d22933f99417a69d4fe8d1dd9a5b32aacc3ef05cf8de447bb7276f29"
+  "source_hash": "sha256:567355742ca3ed21b42cb8c1a0b0bfc0f3880a3c1080d5d673b88598dd9bae2b"
 }

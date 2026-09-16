@@ -1,6 +1,6 @@
 # ContextPacketSourceMutationError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:236`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:241`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -29,18 +29,30 @@ flowchart LR
     n2["_assert_selection_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
     n3["_assert_source_inputs_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
     n4["_assert_source_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
-    n5["_assert_wiki_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
+    n5["_assert_wiki_integrity (src/llm_wiki_cli/services/context_packet.py)"]
+    n6["_assert_wiki_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
+    n7["wrapped (src/llm_wiki_cli/services/context_packet.py)"]
+    n8["ContextSession.read (src/llm_wiki_cli/services/context_session.py)"]
+    n9["_read_once (src/llm_wiki_cli/services/task_context.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
+    n7 --> n0
+    n8 --> n0
+    n9 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/context_packet.md"
     click n2 "../modules/context_packet.md"
     click n3 "../modules/context_packet.md"
     click n4 "../modules/context_packet.md"
     click n5 "../modules/context_packet.md"
+    click n6 "../modules/context_packet.md"
+    click n7 "../modules/context_packet.md"
+    click n8 "../modules/context_session.md"
+    click n9 "../modules/task_context.md"
 ```
 
 ### Summary
@@ -62,4 +74,8 @@ flowchart LR
 | `_assert_selection_unchanged` | call | [context_packet](../modules/context_packet.md) | 4 |
 | `_assert_source_inputs_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
 | `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `_assert_wiki_integrity` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_assert_wiki_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `wrapped` | call | [context_packet](../modules/context_packet.md) | 1 |
+| `ContextSession.read` | call | [context_session](../modules/context_session.md) | 1 |
+| `_read_once` | call | [task_context](../modules/task_context.md) | 3 |

@@ -932,3 +932,27 @@ Append-only chronological log.
 - Pages deprecated: 0
 - Semantic fields preserved: 8
 - Moved entities: none
+
+## 2026-09-16
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.2.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:043933c0c440101d03a800d4297e3de393f733a48238f81a2a82a45ecb21977f`
+- Pages created: 50
+- Pages updated: 215
+- Pages metadata-only: 11
+- Pages skipped (unchanged): 1068
+- Pages deprecated: 0
+- Semantic fields preserved: 7
+- Moved entities: none
+- Flow pages initialized: 6 (cli=2, mcp=4)
+- Workflow pages created: 14
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Native coding context
+
+Added explicit task requirements, qualified context composition, public query/search/queue adapters and bounded validated sessions. Hosts retain control of edits, execution and context inclusion; source currentness does not approve prose or establish task completion.

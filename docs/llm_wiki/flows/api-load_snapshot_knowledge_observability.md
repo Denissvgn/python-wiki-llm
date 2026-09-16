@@ -94,7 +94,7 @@ sequenceDiagram
     p11->>p6: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 1997 interactions; 1967 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2067 interactions; 2037 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

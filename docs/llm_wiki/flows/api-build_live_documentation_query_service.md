@@ -76,7 +76,7 @@ sequenceDiagram
     p19->>p7: SharedValidationError
 ```
 
-> Call sequence diagram shows 30 of 882 interactions; 852 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 966 interactions; 936 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

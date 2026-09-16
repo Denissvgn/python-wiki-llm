@@ -47,9 +47,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (15) |
+| Inbound | `src` (16) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -75,6 +75,7 @@ flowchart LR
 | `guard_windows_directory_chain` | `(root: Path, relative_components: Sequence[str], *, create_missing: bool = False, require_restrictive_dacl: bool = False) -> Iterator[Path]` | `@contextmanager` | Pin ``root`` and each child directory without delete sharing. |
 | `_open_windows_directory_guard` | `(path: Path, *, require_restrictive_dacl: bool = False) -> int` | — | — |
 | `open_windows_readonly_file` | `(path: Path, *, require_restrictive_dacl: bool = False, require_single_link: bool = True) -> Iterator[tuple[BinaryIO, os.stat_result]]` | `@contextmanager` | Open one regular Windows file without following a reparse point. |
+| `hold_windows_readonly_file` | `(path: Path) -> Iterator[None]` | `@contextmanager` | Freeze a regular input without consuming a Python/CRT stream slot. |
 | `_open_windows_readonly_file_handle` | `(path: Path, *, require_restrictive_dacl: bool = False, require_single_link: bool = True) -> int` | — | — |
 | `create_private_windows_directory` | `(path: Path) -> None` | — | Create one private directory through a write-through atomic rename. |
 | `open_windows_private_write_file` | `(path: Path) -> int` | — | Create one private write-through file and return an owning CRT fd. |

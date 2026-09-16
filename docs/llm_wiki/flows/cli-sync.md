@@ -113,7 +113,7 @@ sequenceDiagram
     p13-->>p16: getattr (src/llm_wiki_cli/services…ion_job_request_from_args)
 ```
 
-> Call sequence diagram shows 30 of 6358 interactions; 6328 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 6443 interactions; 6413 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

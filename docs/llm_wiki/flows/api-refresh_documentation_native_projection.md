@@ -120,7 +120,7 @@ sequenceDiagram
     p21-->>p23: key.encode
 ```
 
-> Call sequence diagram shows 30 of 4911 interactions; 4881 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4978 interactions; 4948 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

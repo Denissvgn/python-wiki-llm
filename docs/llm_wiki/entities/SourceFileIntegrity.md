@@ -1,6 +1,6 @@
 # SourceFileIntegrity
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:123`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:127`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -33,12 +33,21 @@ Filesystem identity used for cheap between-stage mutation checks.
 flowchart LR
     n0["SourceFileIntegrity (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1["_captured_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n2["_source_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n2["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n3["_file_integrity_from_stat (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n4["_sha256_file (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n5["_source_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
+    n4 --> n0
+    n5 --> n0
     click n0 "../modules/source_snapshot.md"
     click n1 "../modules/source_snapshot.md"
     click n2 "../modules/source_snapshot.md"
+    click n3 "../modules/source_snapshot.md"
+    click n4 "../modules/source_snapshot.md"
+    click n5 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -52,5 +61,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
-| `_source_file_integrity` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_file_integrity_from_stat` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_file_integrity_from_stat` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_sha256_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_source_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |

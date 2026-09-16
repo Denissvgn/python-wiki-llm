@@ -1,6 +1,6 @@
 # McpWikiError
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:116`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:120`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -92,4 +92,4 @@ flowchart LR
 | `_normalise_source_path` | call | [mcp_server](../modules/mcp_server.md) | 1 |
 | `_normalize_knowledge_mode` | call | [mcp_server](../modules/mcp_server.md) | 1 |
 
-> References: showing 12 of 38 logical references; 26 omitted by the 12-row generated summary limit.
+> References: showing 12 of 44 logical references; 32 omitted by the 12-row generated summary limit.

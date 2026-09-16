@@ -1,6 +1,6 @@
 # CapturedContextRead
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:378`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:383`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)
@@ -35,6 +35,7 @@ One coordinated in-memory source/wiki read used by a packet response.
 | `allow_external_src` | `bool` | `False` | — |
 | `explicit_changes` | `bool` | `False` | — |
 | `change_selection` | `Mapping[str, Any] \| None` | `None` | — |
+| `wiki_integrity` | `Mapping[str, tuple[int, ...]] \| None` | `None` | — |
 
 ## Methods
 

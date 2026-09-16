@@ -2,7 +2,25 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [search_cmd](../modules/search_cmd.md)
-**Modules touched:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [mcp_server](../modules/mcp_server.md), [search_cmd](../modules/search_cmd.md)
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 11 more
+
+**Complete modules touched:**
+
+- [api](../modules/api.md)
+- [common](../modules/common.md)
+- [config](../modules/config.md)
+- [documentation_queries](../modules/documentation_queries.md)
+- [documentation_query_builder](../modules/documentation_query_builder.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
+- [io](../modules/io.md)
+- [search_cmd](../modules/search_cmd.md)
+- [search_rank](../modules/search_rank.md)
+- [search_service](../modules/search_service.md)
+- [source_selection](../modules/source_selection.md)
+- [source_snapshot](../modules/source_snapshot.md)
+- [sync_manifest](../modules/sync_manifest.md)
+- [validation](../modules/validation.md)
+- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -16,12 +34,12 @@ sequenceDiagram
     participant p4 as (…).resolve
     participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
     participant p6 as Path.cwd().resolve
-    participant p7 as resolved.relative_to
+    participant p7 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     participant p8 as Path(…).expanduser
     participant p9 as Path (src/llm_wiki_cli/config.py:validate_source_root)
     participant p10 as candidate.is_absolute
     participant p11 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as candidate.resolve
+    participant p12 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
     participant p13 as resolved.is_dir
     participant p14 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
     participant p15 as windows_current_user_sid
@@ -40,13 +58,13 @@ sequenceDiagram
     p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
     p2-->>p6: Path.cwd().resolve
     p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to
+    p2-->>p7: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
     p2->>p3: PathValidationError
     p1-->>p8: Path(…).expanduser
     p1-->>p9: Path (src/llm_wiki_cli/config.py:validate_source_root)
     p1-->>p10: candidate.is_absolute
     p1-->>p11: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p12: candidate.resolve
+    p1-->>p12: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
     p1->>p3: PathValidationError
     p1-->>p13: resolved.is_dir
     p1->>p3: PathValidationError
@@ -65,7 +83,9 @@ sequenceDiagram
     p17-->>p23: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 111 interactions; 81 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 763 interactions; 733 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -80,7 +100,7 @@ flowchart LR
     s6["6. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
     s7["7. Path.cwd().resolve"]
     s8["8. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s9["9. resolved.relative_to"]
+    s9["9. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
     s10["10. PathValidationError"]
     s11["11. Path(…).expanduser"]
     s12["12. Path (src/llm_wiki_cli/config.py:validate_source_root)"]
@@ -91,7 +111,7 @@ flowchart LR
     s3 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s6
     s3 -. "Path.cwd().resolve(data not statically known)" .-> s7
     s3 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
-    s3 -. "resolved.relative_to(cwd)" .-> s9
+    s3 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s9
     s3 -->|"PathValidationError(...)"| s10
     s2 -. "Path(…).expanduser(data not statically known)" .-> s11
     s2 -. "Path (src/llm_wiki_cli/config.py:validate_source_root)(path)" .-> s12
@@ -127,7 +147,7 @@ flowchart LR
 | `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 | `Path.cwd().resolve` | - | - | - | - |
 | `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `resolved.relative_to` | - | - | - | - |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 | `PathValidationError` | - | - | - | - |
 | `Path(…).expanduser` | - | - | - | - |
 | `Path (src/llm_wiki_cli/config.py:validate_source_root)` | - | - | - | - |
@@ -143,7 +163,7 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
 | validate_path | Path.cwd().resolve | 134 | `Path.cwd().resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to | 136 | `resolved.relative_to(cwd)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 138 | `PathValidationError(...)` |
 | validate_source_root | Path(…).expanduser | 161 | `Path(path).expanduser(data not statically known)` |
 | validate_source_root | Path (src/llm_wiki_cli/config.py:validate_source_root) | 161 | `Path(path)` |
@@ -152,10 +172,10 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 21 |
-| output | `print` | `run` | 24 |
+| output | `print` | `run` | 22 |
 | output | `print` | `run` | 25 |
 | output | `print` | `run` | 26 |
+| output | `print` | `run` | 27 |
 
 ### Static analysis gaps
 
@@ -168,6 +188,7 @@ flowchart LR
 | unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
 | unresolved_call | `validate_source_root` | `Path(path).expanduser` | 161 |
 | step_limit | `run` | `first 12 steps` | 0 |
+| truncated_flow | `run` | `depth limit` | 0 |
 
 ## Behavior
 

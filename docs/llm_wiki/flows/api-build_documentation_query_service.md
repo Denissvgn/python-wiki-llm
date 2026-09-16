@@ -31,7 +31,7 @@ sequenceDiagram
     participant p3 as normalize_documentation_query_limit
     participant p4 as isinstance (src/llm_wiki_cli/services…documentation_query_limit)
     participant p5 as DocumentationQueryError
-    participant p6 as min
+    participant p6 as min (src/llm_wiki_cli/services…documentation_query_limit)
     participant p7 as validate_source_root
     participant p8 as validate_path
     participant p9 as PathValidationError
@@ -56,7 +56,7 @@ sequenceDiagram
     p3-->>p4: isinstance (src/llm_wiki_cli/services…documentation_query_limit)
     p3-->>p4: isinstance (src/llm_wiki_cli/services…documentation_query_limit)
     p3->>p5: DocumentationQueryError
-    p3-->>p6: min
+    p3-->>p6: min (src/llm_wiki_cli/services…documentation_query_limit)
     p0->>p7: validate_source_root
     p7->>p8: validate_path
     p8->>p9: PathValidationError
@@ -80,7 +80,7 @@ sequenceDiagram
     p21->>p22: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 909 interactions; 879 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 990 interactions; 960 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -98,7 +98,7 @@ flowchart LR
     s7["7. isinstance (src/llm_wiki_cli/services…documentation_query_limit)"]
     s8["8. isinstance (src/llm_wiki_cli/services…documentation_query_limit)"]
     s9["9. DocumentationQueryError"]
-    s10["10. min"]
+    s10["10. min (src/llm_wiki_cli/services…documentation_query_limit)"]
     s11["11. validate_source_root"]
     s12["12. validate_path"]
     s1 -. "isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(value, bool)" .-> s2
@@ -109,7 +109,7 @@ flowchart LR
     s6 -. "isinstance (src/llm_wiki_cli/services…documentation_query_limit)(value, bool)" .-> s7
     s6 -. "isinstance (src/llm_wiki_cli/services…documentation_query_limit)(value, int)" .-> s8
     s6 -->|"DocumentationQueryError('limit must be a positive integer.')"| s9
-    s6 -. "min(value, MAX_DOCUMENTATION_QUERY_LIMIT)" .-> s10
+    s6 -. "min (src/llm_wiki_cli/services…documentation_query_limit)(value, MAX_DOCUMENTATION_QUERY_LIMIT)" .-> s10
     s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s11
     s11 -->|"validate_path(path, label)"| s12
     click s1 "../modules/api.md"
@@ -134,7 +134,7 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…documentation_query_limit)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…documentation_query_limit)` | - | - | - | - |
 | `DocumentationQueryError` | - | - | - | - |
-| `min` | - | - | - | - |
+| `min (src/llm_wiki_cli/services…documentation_query_limit)` | - | - | - | - |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 
@@ -142,16 +142,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1463 | `isinstance(value, bool)` |
-| build_documentation_query_service | InvalidRequestError | 1464 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1469 | `isinstance(helper_cache_dir, (...))` |
-| build_documentation_query_service | InvalidRequestError | 1472 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
-| build_documentation_query_service | normalize_documentation_query_limit | 1477 | `normalize_documentation_query_limit(limit)` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1612 | `isinstance(value, bool)` |
+| build_documentation_query_service | InvalidRequestError | 1613 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1618 | `isinstance(helper_cache_dir, (...))` |
+| build_documentation_query_service | InvalidRequestError | 1621 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
+| build_documentation_query_service | normalize_documentation_query_limit | 1626 | `normalize_documentation_query_limit(limit)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 52 | `isinstance(value, bool)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 52 | `isinstance(value, int)` |
 | normalize_documentation_query_limit | DocumentationQueryError | 53 | `DocumentationQueryError('limit must be a positive integer.')` |
-| normalize_documentation_query_limit | min | 54 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
-| build_documentation_query_service | validate_source_root | 1478 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| normalize_documentation_query_limit | min (src/llm_wiki_cli/services…documentation_query_limit) | 54 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
+| build_documentation_query_service | validate_source_root | 1627 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 158 | `validate_path(path, label)` |
 
 ### Boundary effects
@@ -162,8 +162,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_documentation_query_service` | `isinstance` | 1463 |
-| external_call | `build_documentation_query_service` | `isinstance` | 1469 |
+| external_call | `build_documentation_query_service` | `isinstance` | 1612 |
+| external_call | `build_documentation_query_service` | `isinstance` | 1618 |
 | external_call | `normalize_documentation_query_limit` | `isinstance` | 52 |
 | external_call | `normalize_documentation_query_limit` | `min` | 54 |
 | step_limit | `build_documentation_query_service` | `first 12 steps` | 0 |

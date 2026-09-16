@@ -124,17 +124,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| verify_windows_restrictive_dacl | WindowsSecurityGuardError | 719 | `WindowsSecurityGuardError('Windows DACL verification is unavailable on this platform.')` |
-| verify_windows_restrictive_dacl | Path(…).lstat | 722 | `Path(path).lstat(data not statically known)` |
-| verify_windows_restrictive_dacl | Path | 722 | `Path(path)` |
-| verify_windows_restrictive_dacl | WindowsSecurityGuardError | 724 | `WindowsSecurityGuardError(...)` |
-| verify_windows_restrictive_dacl | stat.S_ISDIR | 727 | `stat.S_ISDIR(payload.st_mode)` |
-| verify_windows_restrictive_dacl | _open_windows_directory_guard | 728 | `_open_windows_directory_guard(Path(...), require_restrictive_dacl=True)` |
+| verify_windows_restrictive_dacl | WindowsSecurityGuardError | 731 | `WindowsSecurityGuardError('Windows DACL verification is unavailable on this platform.')` |
+| verify_windows_restrictive_dacl | Path(…).lstat | 734 | `Path(path).lstat(data not statically known)` |
+| verify_windows_restrictive_dacl | Path | 734 | `Path(path)` |
+| verify_windows_restrictive_dacl | WindowsSecurityGuardError | 736 | `WindowsSecurityGuardError(...)` |
+| verify_windows_restrictive_dacl | stat.S_ISDIR | 739 | `stat.S_ISDIR(payload.st_mode)` |
+| verify_windows_restrictive_dacl | _open_windows_directory_guard | 740 | `_open_windows_directory_guard(Path(...), require_restrictive_dacl=True)` |
 | _open_windows_directory_guard | ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard) | 235 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
 | _open_windows_directory_guard | create_file (src/llm_wiki_cli/services…n_windows_directory_guard) | 259 | `create_file(_windows_api_path(...), desired_access, ..., None, _OPEN_EXISTING, ..., None)` |
 | _open_windows_directory_guard | _windows_api_path | 260 | `_windows_api_path(path)` |
-| _windows_api_path | os.path.abspath | 1298 | `os.path.abspath(os.fspath(...))` |
-| _windows_api_path | os.fspath | 1298 | `os.fspath(path)` |
+| _windows_api_path | os.path.abspath | 1310 | `os.path.abspath(os.fspath(...))` |
+| _windows_api_path | os.fspath | 1310 | `os.fspath(path)` |
 
 ### Boundary effects
 
@@ -144,12 +144,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `verify_windows_restrictive_dacl` | `Path(path).lstat` | 722 |
-| external_call | `verify_windows_restrictive_dacl` | `stat.S_ISDIR` | 727 |
+| unresolved_call | `verify_windows_restrictive_dacl` | `Path(path).lstat` | 734 |
+| external_call | `verify_windows_restrictive_dacl` | `stat.S_ISDIR` | 739 |
 | external_call | `_open_windows_directory_guard` | `ctypes.WinDLL` | 235 |
 | unresolved_call | `_open_windows_directory_guard` | `create_file` | 259 |
-| external_call | `_windows_api_path` | `os.path.abspath` | 1298 |
-| external_call | `_windows_api_path` | `os.fspath` | 1298 |
+| external_call | `_windows_api_path` | `os.path.abspath` | 1310 |
+| external_call | `_windows_api_path` | `os.fspath` | 1310 |
 | step_limit | `verify_windows_restrictive_dacl` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -1,6 +1,6 @@
 # SourceSnapshot
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:135`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:139`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -33,6 +33,11 @@ Filtered source-tree discovery results shared by lint/extract paths.
 | `only_files` | `frozenset[str] \| None` | `None` | — |
 | `captured_file_integrity` | `dict[str, SourceFileIntegrity]` | `field(default_factory=dict)` | — |
 | `captured_gitignore_paths` | `frozenset[str]` | `frozenset()` | — |
+| `respect_ignores` | `bool` | `False` | — |
+| `capture_byte_limit` | `int \| None` | `None` | — |
+| `capture_scan_limit` | `int \| None` | `None` | — |
+| `coherent` | `bool` | `False` | — |
+| `directory_integrity` | `dict[str, tuple[int, ...]]` | `field(default_factory=dict)` | — |
 
 ## Methods
 
@@ -100,7 +105,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [source_snapshot](../modules/source_snapshot.md) | 12 | `all_source_paths`, `captured_content_hashes`, `captured_file_integrity`, `captured_gitignore_paths`, `captured_input_kinds`, `compose_candidates`, `dockerfile_candidates`, `files_by_language`, `gitignore_fingerprint`, `gitignore_rules`, `include_tests`, `only_files` |
+| [source_snapshot](../modules/source_snapshot.md) | 12 | `all_source_paths`, `capture_byte_limit`, `capture_scan_limit`, `captured_content_hashes`, `captured_file_integrity`, `captured_gitignore_paths`, `captured_input_kinds`, `coherent`, `compose_candidates`, `directory_integrity`, `dockerfile_candidates`, `files_by_language` |
 
 ### References
 

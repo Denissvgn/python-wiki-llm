@@ -40,6 +40,8 @@ flowchart LR
     n6["src/llm_wiki_cli/services/extraction_service.py"]
     n7["src/llm_wiki_cli/services/impact.py"]
     n8["src/llm_wiki_cli/services/review_service.py"]
+    n9["src/llm_wiki_cli/services/task_context.py"]
+    n10["src/llm_wiki_cli/services/task_contract.py"]
     n0 --> n2
     n0 --> n7
     n0 --> n8
@@ -61,6 +63,12 @@ flowchart LR
     n8 --> n1
     n8 --> n2
     n8 --> n6
+    n9 --> n2
+    n9 --> n3
+    n9 --> n4
+    n9 --> n5
+    n9 --> n10
+    n10 --> n2
     click n0 "../modules/review_cmd.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/change_selection.md"
@@ -70,6 +78,8 @@ flowchart LR
     click n6 "../modules/extraction_service.md"
     click n7 "../modules/impact.md"
     click n8 "../modules/review_service.md"
+    click n9 "../modules/task_context.md"
+    click n10 "../modules/task_contract.md"
 ```
 
 ### Internal neighbors
@@ -82,6 +92,8 @@ flowchart LR
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [impact](../modules/impact.md) |
 | Inbound | [review_service](../modules/review_service.md) |
+| Inbound | [task_context](../modules/task_context.md) |
+| Inbound | [task_contract](../modules/task_contract.md) |
 | Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
 | Outbound | [extraction_service](../modules/extraction_service.md) |
 

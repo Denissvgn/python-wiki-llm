@@ -60,11 +60,11 @@ sequenceDiagram
     participant p15 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
     participant p16 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
     participant p17 as validate_request
-    participant p18 as set (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p19 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p20 as dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p21 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p22 as legacy.pop
+    participant p18 as isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p19 as any (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p20 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p21 as set (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p22 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
     p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)
     p0->>p2: _run_protocol
     p2-->>p3: getattr (src/llm_wiki_cli/services…_service.py:_run_protocol)
@@ -86,18 +86,18 @@ sequenceDiagram
     p13->>p8: ProtocolRequestError
     p13-->>p16: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
     p13->>p17: validate_request
-    p17-->>p18: set (src/llm_wiki_cli/services…udget.py:validate_request)
+    p17-->>p18: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    p17-->>p19: any (src/llm_wiki_cli/services…udget.py:validate_request)
+    p17-->>p18: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
     p17->>p8: ProtocolRequestError
-    p17-->>p19: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    p17-->>p20: dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    p17-->>p21: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p17-->>p21: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p17-->>p21: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p17-->>p22: legacy.pop
-    p17-->>p22: legacy.pop
+    p17-->>p20: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p17->>p8: ProtocolRequestError
+    p17-->>p21: set (src/llm_wiki_cli/services…udget.py:validate_request)
+    p17->>p8: ProtocolRequestError
+    p17-->>p22: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
 ```
 
-> Call sequence diagram shows 30 of 1287 interactions; 1257 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1275 interactions; 1245 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

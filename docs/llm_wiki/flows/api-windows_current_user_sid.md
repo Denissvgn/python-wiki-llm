@@ -114,17 +114,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| windows_current_user_sid | WindowsSecurityGuardError | 742 | `WindowsSecurityGuardError('Windows user SID lookup is unavailable on this platform.')` |
-| windows_current_user_sid | _current_windows_user_sid | 745 | `_current_windows_user_sid(data not statically known)` |
-| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…:_current_windows_user_sid) | 992 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…:_current_windows_user_sid) | 993 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…:_current_windows_user_sid) | 998 | `ctypes.POINTER(wintypes.HANDLE)` |
-| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1007 | `ctypes.POINTER(wintypes.DWORD)` |
-| _current_windows_user_sid | wintypes.HANDLE (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1014 | `wintypes.HANDLE(data not statically known)` |
-| _current_windows_user_sid | open_process_token | 1015 | `open_process_token(get_current_process(...), 8, ctypes.byref(...))` |
-| _current_windows_user_sid | get_current_process | 1016 | `get_current_process(data not statically known)` |
-| _current_windows_user_sid | ctypes.byref (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1018 | `ctypes.byref(token)` |
-| _current_windows_user_sid | ctypes.WinError (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1020 | `ctypes.WinError(ctypes.get_last_error(...))` |
+| windows_current_user_sid | WindowsSecurityGuardError | 754 | `WindowsSecurityGuardError('Windows user SID lookup is unavailable on this platform.')` |
+| windows_current_user_sid | _current_windows_user_sid | 757 | `_current_windows_user_sid(data not statically known)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1004 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1005 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1010 | `ctypes.POINTER(wintypes.HANDLE)` |
+| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1019 | `ctypes.POINTER(wintypes.DWORD)` |
+| _current_windows_user_sid | wintypes.HANDLE (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1026 | `wintypes.HANDLE(data not statically known)` |
+| _current_windows_user_sid | open_process_token | 1027 | `open_process_token(get_current_process(...), 8, ctypes.byref(...))` |
+| _current_windows_user_sid | get_current_process | 1028 | `get_current_process(data not statically known)` |
+| _current_windows_user_sid | ctypes.byref (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1030 | `ctypes.byref(token)` |
+| _current_windows_user_sid | ctypes.WinError (src/llm_wiki_cli/services…:_current_windows_user_sid) | 1032 | `ctypes.WinError(ctypes.get_last_error(...))` |
 
 ### Boundary effects
 
@@ -134,15 +134,15 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 992 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 993 |
-| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 998 |
-| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 1007 |
-| external_call | `_current_windows_user_sid` | `wintypes.HANDLE` | 1014 |
-| unresolved_call | `_current_windows_user_sid` | `open_process_token` | 1015 |
-| unresolved_call | `_current_windows_user_sid` | `get_current_process` | 1016 |
-| external_call | `_current_windows_user_sid` | `ctypes.byref` | 1018 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinError` | 1020 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 1004 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 1005 |
+| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 1010 |
+| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 1019 |
+| external_call | `_current_windows_user_sid` | `wintypes.HANDLE` | 1026 |
+| unresolved_call | `_current_windows_user_sid` | `open_process_token` | 1027 |
+| unresolved_call | `_current_windows_user_sid` | `get_current_process` | 1028 |
+| external_call | `_current_windows_user_sid` | `ctypes.byref` | 1030 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinError` | 1032 |
 | step_limit | `windows_current_user_sid` | `first 12 steps` | 0 |
 
 ## Behavior
