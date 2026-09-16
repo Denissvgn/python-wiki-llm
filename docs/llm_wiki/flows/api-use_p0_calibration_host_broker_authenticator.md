@@ -19,8 +19,8 @@ sequenceDiagram
     participant p7 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
     participant p8 as len
     participant p9 as value.strip
-    participant p10 as any
-    participant p11 as ord
+    participant p10 as contains_control_character
+    participant p11 as pattern.search
     participant p12 as HostBrokerAuthenticationError
     participant p13 as _HOST_BROKER_AUTHENTICATOR.set
     participant p14 as _HOST_BROKER_AUTHENTICATOR.reset
@@ -34,9 +34,8 @@ sequenceDiagram
     p6-->>p8: len
     p6-->>p8: len
     p6-->>p9: value.strip
-    p6-->>p10: any
-    p6-->>p11: ord
-    p6-->>p11: ord
+    p6->>p10: contains_control_character
+    p10-->>p11: pattern.search
     p5->>p12: HostBrokerAuthenticationError
     p2-->>p13: _HOST_BROKER_AUTHENTICATOR.set
     p2-->>p14: _HOST_BROKER_AUTHENTICATOR.reset
@@ -58,7 +57,7 @@ flowchart LR
     s9["9. len"]
     s10["10. len"]
     s11["11. value.strip"]
-    s12["12. any"]
+    s12["12. contains_control_character"]
     s1 -. "warnings.warn(…)" .-> s2
     s1 -->|"use_calibration_host_broker_authenticator(..., **=kwargs)"| s3
     s3 -. "isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)(authenticator, HostBrokerAuthenticator)" .-> s4
@@ -69,12 +68,13 @@ flowchart LR
     s7 -. "len(value)" .-> s9
     s7 -. "len(value)" .-> s10
     s7 -. "value.strip(data not statically known)" .-> s11
-    s7 -. "any(...)" .-> s12
+    s7 -->|"contains_control_character(value, reject_delete_character=reject_delete_character)"| s12
     click s1 "../modules/host_broker.md"
     click s3 "../modules/host_broker.md"
     click s5 "../modules/host_broker.md"
     click s6 "../modules/host_broker.md"
     click s7 "../modules/validation.md"
+    click s12 "../modules/validation.md"
 ```
 
 ### Step data
@@ -92,7 +92,7 @@ flowchart LR
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
 
 ### Call data
 
@@ -104,11 +104,11 @@ flowchart LR
 | use_calibration_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 605 | `isinstance(value, str)` |
-| require_bounded_text | len | 606 | `len(value)` |
-| require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
-| require_bounded_text | any | 611 | `any(...)` |
+| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 650 | `isinstance(value, str)` |
+| require_bounded_text | len | 651 | `len(value)` |
+| require_bounded_text | len | 652 | `len(value)` |
+| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
 
 ### Boundary effects
 
@@ -120,9 +120,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `use_p0_calibration_host_broker_authenticator` | `warnings.warn` | 214 |
 | external_call | `use_calibration_host_broker_authenticator` | `isinstance` | 195 |
-| external_call | `require_bounded_text` | `isinstance` | 605 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 608 |
-| external_call | `require_bounded_text` | `any` | 611 |
+| external_call | `require_bounded_text` | `isinstance` | 650 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
 | step_limit | `use_p0_calibration_host_broker_authenticator` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -154,7 +154,7 @@ flowchart LR
 | validate_governance_projection | GovernanceError | 1833 | `GovernanceError('extensions', 'contains an incomplete governance projection', code='governance-projection-mismatch')` |
 | validate_governance_projection | _object (src/llm_wiki_cli/services/knowledge_governance.py) | 1839 | `_object(raw, 'governance_projection')` |
 | _object (src/llm_wiki_cli/services/knowledge_governance.py) | require_mapping | 3140 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
@@ -174,7 +174,7 @@ flowchart LR
 | unresolved_call | `validate_governance_projection` | `knowledge.bundle.snapshot.extensions.get` | 1822 |
 | unresolved_call | `validate_governance_projection` | `concept.extensions.get` | 1826 |
 | external_call | `validate_governance_projection` | `any` | 1830 |
-| external_call | `require_mapping` | `isinstance` | 727 |
+| external_call | `require_mapping` | `isinstance` | 765 |
 | step_limit | `governance_hash_from_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `governance_hash_from_knowledge` | `depth limit` | 0 |
 

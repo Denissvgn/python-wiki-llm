@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [search_cmd](../modules/search_cmd.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 11 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 14 more
 
 **Complete modules touched:**
 
@@ -13,6 +13,9 @@
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [search_cmd](../modules/search_cmd.md)
 - [search_rank](../modules/search_rank.md)
 - [search_service](../modules/search_service.md)
@@ -83,7 +86,7 @@ sequenceDiagram
     p17-->>p23: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 763 interactions; 733 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 786 interactions; 756 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -157,16 +160,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | validate_source_root | 10 | `validate_source_root(args.src_dir, '--src-dir', allow_external=args.allow_external_src)` |
-| validate_source_root | validate_path | 159 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 133 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 134 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve | 135 | `Path.cwd().resolve(data not statically known)` |
+| validate_source_root | validate_path | 160 | `validate_path(path, label)` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 137 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 139 | `PathValidationError(...)` |
-| validate_source_root | Path(…).expanduser | 162 | `Path(path).expanduser(data not statically known)` |
-| validate_source_root | Path (src/llm_wiki_cli/config.py:validate_source_root) | 162 | `Path(path)` |
+| validate_path | Path.cwd().resolve | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
+| validate_source_root | Path(…).expanduser | 163 | `Path(path).expanduser(data not statically known)` |
+| validate_source_root | Path (src/llm_wiki_cli/config.py:validate_source_root) | 163 | `Path(path)` |
 
 ### Boundary effects
 
@@ -181,12 +184,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 135 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
 | external_call | `validate_path` | `Path.cwd` | 135 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 137 |
-| unresolved_call | `validate_source_root` | `Path(path).expanduser` | 162 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
+| unresolved_call | `validate_source_root` | `Path(path).expanduser` | 163 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

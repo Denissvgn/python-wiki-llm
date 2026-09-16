@@ -63,7 +63,7 @@ sequenceDiagram
     p19-->>p21: value.strip
 ```
 
-> Call sequence diagram shows 30 of 331 interactions; 301 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 345 interactions; 315 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -135,14 +135,14 @@ flowchart LR
 | reconcile_claim_evidence_records | _normalize_claim_record | 400 | `_normalize_claim_record(raw, 'claim_evidence')` |
 | _normalize_claim_record | _mapping | 592 | `_mapping(value, field_name)` |
 | _mapping | require_mapping | 1423 | `require_mapping(value, error=DocumentationClaimEvidenceError(...), require_string_keys=True)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
 | _mapping | DocumentationClaimEvidenceError | 1425 | `DocumentationClaimEvidenceError(...)` |
 | _normalize_claim_record | _exact_fields | 593 | `_exact_fields(record, _CLAIM_FIELDS, _CLAIM_REQUIRED, field_name)` |
 | _exact_fields | require_exact_fields | 1447 | `require_exact_fields(value, allowed=allowed, required=required, mapping_error=DocumentationClaimEvidenceError(...), missing_error=..., unknown_error=...)` |
-| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1205 | `isinstance(value, Mapping)` |
-| require_exact_fields | str (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1207 | `str(key)` |
+| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1243 | `isinstance(value, Mapping)` |
+| require_exact_fields | str (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1245 | `str(key)` |
 
 ### Boundary effects
 
@@ -155,10 +155,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
-| external_call | `require_exact_fields` | `isinstance` | 1205 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
+| external_call | `require_exact_fields` | `isinstance` | 1243 |
 | step_limit | `reconcile_claim_evidence_records` | `first 12 steps` | 0 |
 | truncated_flow | `reconcile_claim_evidence_records` | `depth limit` | 0 |
 

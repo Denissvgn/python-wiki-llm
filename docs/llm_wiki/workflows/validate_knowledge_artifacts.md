@@ -9,28 +9,34 @@
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `immutable.freeze`
-2. `knowledge_storage_io.StorageReadSession`
-3. `knowledge_storage.KnowledgeStorageError`
-4. `knowledge_storage.KnowledgeStorageError`
-5. `sync_manifest.SyncManifest.from_payload`
-6. `knowledge_storage.KnowledgeStorageError`
-7. `knowledge_packs.open_knowledge_store`
-8. `immutable.freeze`
-9. `knowledge_packs.physical_objects`
-10. `knowledge_index._validated_index_serialization`
+2. `immutable.freeze`
+3. `knowledge_storage_io.StorageReadSession`
+4. `sync_manifest.SyncManifest.from_payload`
+5. `immutable.freeze`
+6. `knowledge_storage_io.StorageReadSession`
+7. `knowledge_storage.KnowledgeStorageError`
+8. `knowledge_storage.KnowledgeStorageError`
+9. `sync_manifest.SyncManifest.from_payload`
+10. `knowledge_storage.KnowledgeStorageError`
 11. `immutable.freeze`
-12. `knowledge_index.validate_knowledge_index`
-13. `knowledge_storage.logical_digest`
-14. `knowledge_index._model_to_payload`
-15. `knowledge_storage.KnowledgeStorageError`
-16. `knowledge_evidence.sha256_bytes`
-17. `knowledge_graph.typed_graph_from_knowledge_extensions`
-18. `section_ownership.validate_section_ownership`
-19. `knowledge_reuse.validate_reuse_artifact_parity`
-20. `knowledge_governance.governance_hash_from_knowledge`
+12. `knowledge_packs.open_knowledge_store`
+13. `immutable.freeze`
+14. `knowledge_packs.physical_objects`
+15. `immutable.freeze`
+16. `knowledge_index._validated_index_serialization`
+17. `knowledge_index.validate_knowledge_index`
+18. `knowledge_storage.logical_digest`
+19. `knowledge_index._model_to_payload`
+20. `knowledge_storage.KnowledgeStorageError`
 21. `immutable.freeze`
 22. `knowledge_evidence.sha256_bytes`
-23. `knowledge_envelope.EvaluatedEnvelope`
+23. `knowledge_graph.typed_graph_from_knowledge_extensions`
+24. `section_ownership.validate_section_ownership`
+25. `knowledge_reuse.validate_reuse_artifact_parity`
+26. `knowledge_governance.governance_hash_from_knowledge`
+27. `immutable.freeze`
+28. `knowledge_evidence.sha256_bytes`
+29. `knowledge_envelope.EvaluatedEnvelope`
 
 ## Touches
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 31 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 34 more
 
 **Complete modules touched:**
 
@@ -29,7 +29,10 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
 - [python_imports](../modules/python_imports.md)
@@ -103,7 +106,7 @@ sequenceDiagram
     p18-->>p23: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
 ```
 
-> Call sequence diagram shows 30 of 2099 interactions; 2069 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2122 interactions; 2092 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 38 more
+**Modules touched:** [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 41 more
 
 **Complete modules touched:**
 
@@ -33,7 +33,10 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
 - [plugins](../modules/plugins.md)
@@ -65,7 +68,7 @@ sequenceDiagram
     participant p8 as raw.startswith
     participant p9 as raw.endswith
     participant p10 as _strict_json_payload
-    participant p11 as raw.decode
+    participant p11 as raw.decode (src/llm_wiki_cli/services…t.py:_strict_json_payload)
     participant p12 as json.loads (src/llm_wiki_cli/services…t.py:_strict_json_payload)
     participant p13 as isinstance (src/llm_wiki_cli/services…t.py:_strict_json_payload)
     participant p14 as _validate_json_tree
@@ -90,7 +93,7 @@ sequenceDiagram
     p2-->>p9: raw.endswith
     p2->>p6: ContextPacketMalformedError
     p1->>p10: _strict_json_payload
-    p10-->>p11: raw.decode
+    p10-->>p11: raw.decode (src/llm_wiki_cli/services…t.py:_strict_json_payload)
     p10->>p6: ContextPacketMalformedError
     p10-->>p12: json.loads (src/llm_wiki_cli/services…t.py:_strict_json_payload)
     p10->>p6: ContextPacketMalformedError
@@ -107,7 +110,7 @@ sequenceDiagram
     p1-->>p20: payload.get (src/llm_wiki_cli/services…y:validate_context_packet)
 ```
 
-> Call sequence diagram shows 30 of 3660 interactions; 3630 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3683 interactions; 3653 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -13,6 +13,7 @@ Service-level persistence boundary for the sync manifest v5 contract.
 | `..extractors.common` | `LANGUAGE_EXTENSIONS`, `inventory_language_for_path` |
 | `.io` | `write_json_atomic` |
 | `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
+| `.knowledge_reuse` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `portable_page_component`, `portable_path_key`, `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
@@ -44,10 +45,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (28) |
-| Outbound | `src` (6) |
+| Inbound | `src` (30) |
+| Outbound | `src` (7) |
 
-> All 34 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 37 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -59,7 +60,7 @@ flowchart LR
 | [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 253 | — | Known or explicitly unknown evidence for one active concept page. |
 | [ManifestTombstone](../entities/ManifestTombstone.md) | 358 | — | Evidence retained for a stale module/entity page. |
 | [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 447 | — | All-or-none exact-byte commitment to the generated artifact set. |
-| [SyncManifest](../entities/SyncManifest.md) | 939 | — | Persistent v5 operational state used to generate the wiki. |
+| [SyncManifest](../entities/SyncManifest.md) | 973 | — | Persistent v5 operational state used to generate the wiki. |
 
 ## Functions
 
@@ -87,4 +88,5 @@ flowchart LR
 | `_copy_sources` | `(value: object, field_name: str) -> dict[str, dict]` | — | — |
 | `_copy_mapping` | `(value: object, field_name: str) -> dict[str, object]` | — | — |
 | `_captured_source_hashes` | `(inventory: Mapping[str, object], value: Mapping[str, str] \| None) -> dict[str, str] \| None` | — | Validate an optional exact-hash replacement for source file reads. |
+| `validate_manifest_policy` | `(generation_inputs: Mapping[str, Any]) -> None` | — | Validate policy commitments without pretending to have source records. |
 | `prune_manifest_for_source_selection` | `(manifest: SyncManifest, policy: SourceSelectionPolicy \| None, *, source_snapshot: SourceSnapshot \| None = None) -> SourceSelectionPruneResult` | — | Erase prior source/page state excluded by the current selection policy. |

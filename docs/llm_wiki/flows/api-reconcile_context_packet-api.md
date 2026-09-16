@@ -2,7 +2,7 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 32 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 34 more
 
 **Complete modules touched:**
 
@@ -29,6 +29,8 @@
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [packet_field_policy](../modules/packet_field_policy.md)
 - [plugins](../modules/plugins.md)
@@ -101,7 +103,7 @@ sequenceDiagram
     p18->>p7: ContextPacketMalformedError
 ```
 
-> Call sequence diagram shows 30 of 2192 interactions; 2162 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2199 interactions; 2169 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

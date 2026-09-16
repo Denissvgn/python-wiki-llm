@@ -1,6 +1,6 @@
 # SyncManifest
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:939`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:973`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -22,12 +22,14 @@ Persistent v5 operational state used to generate the wiki.
 | `evidence_baselines` | `dict[str, ManifestEvidenceBaseline]` | `field(default_factory=dict)` | — |
 | `tombstones` | `dict[str, ManifestTombstone]` | `field(default_factory=dict)` | — |
 | `artifact_hashes` | `ManifestArtifactHashes \| None` | `None` | — |
+| `storage_version` | `int` | `field(default=5, repr=False, compare=False)` | — |
+| `storage_objects` | `dict[str, bytes]` | `field(default_factory=dict, repr=False, compare=False)` | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `from_payload` | `(value: object) -> SyncManifest` | `@classmethod` | Validate and migrate one decoded manifest payload. |
+| `from_payload` | `(value: object, *, object_reader = None) -> SyncManifest` | `@classmethod` | Validate and migrate one decoded manifest payload. |
 | `load` | `(wiki_dir: Path) -> SyncManifest` | `@classmethod` | Load a manifest; raise ``FileNotFoundError`` when it is absent. |
 | `_validate_operational_state` | `() -> None` | — | — |
 | `_validate_basis_mapping` | `(basis: ConceptObservationBasis \| None, mapping: ManifestPageSource, field_name: str) -> None` | `@staticmethod` | — |
@@ -88,7 +90,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_manifest](../modules/sync_manifest.md) | 11 | `artifact_hashes`, `evidence_baselines`, `generation_inputs`, `page_source_mappings`, `sources`, `surfaces`, `tombstones` |
+| [sync_manifest](../modules/sync_manifest.md) | 11 | `artifact_hashes`, `evidence_baselines`, `generation_inputs`, `page_source_mappings`, `sources`, `storage_objects`, `storage_version`, `surfaces`, `tombstones` |
 
 ### References
 

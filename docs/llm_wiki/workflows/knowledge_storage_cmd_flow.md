@@ -1,7 +1,7 @@
 # knowledge_storage_cmd_flow
 
 **Entry point:** `knowledge_storage_cmd.run`
-**Modules involved:** [knowledge_cmd](../modules/knowledge_cmd.md), [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+**Modules involved:** [knowledge_cmd](../modules/knowledge_cmd.md), [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
 
 ## Sequence
 
@@ -12,7 +12,8 @@
 4. `knowledge_storage_lifecycle.export_knowledge_v1`
 5. `knowledge_storage_lifecycle.prune_knowledge_storage`
 6. `knowledge_storage_diagnostics.review_storage`
-7. `knowledge_storage_diagnostics.storage_report`
+7. `knowledge_stream_audit.audit_knowledge_stream`
+8. `knowledge_storage_diagnostics.storage_report`
 
 ## Touches
 
@@ -20,6 +21,7 @@
 - [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md)
 - [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+- [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
 
 ## Behavior
 

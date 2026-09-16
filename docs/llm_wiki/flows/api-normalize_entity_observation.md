@@ -14,8 +14,8 @@ sequenceDiagram
     participant p2 as require_nonempty_text
     participant p3 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p4 as value.strip
-    participant p5 as any
-    participant p6 as ord
+    participant p5 as contains_control_character
+    participant p6 as pattern.search
     participant p7 as ValueError
     participant p8 as require_positive_int
     participant p9 as require_nonnegative_int
@@ -30,13 +30,13 @@ sequenceDiagram
     participant p18 as _record_array
     participant p19 as isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
     participant p20 as all (src/llm_wiki_cli/services…evidence.py:_record_array)
+    participant p21 as _record_name
     p0->>p1: _validate_entity_coordinate
     p1->>p2: require_nonempty_text
     p2-->>p3: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p2-->>p4: value.strip
-    p2-->>p5: any
-    p2-->>p6: ord
-    p2-->>p6: ord
+    p2->>p5: contains_control_character
+    p5-->>p6: pattern.search
     p1-->>p7: ValueError
     p1->>p8: require_positive_int
     p8->>p9: require_nonnegative_int
@@ -60,9 +60,10 @@ sequenceDiagram
     p18-->>p20: all (src/llm_wiki_cli/services…evidence.py:_record_array)
     p18-->>p19: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
     p18->>p15: _InventoryNormalizationError
+    p12->>p21: _record_name
 ```
 
-> Call sequence diagram shows 30 of 110 interactions; 80 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 109 interactions; 79 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -76,30 +77,31 @@ flowchart LR
     s3["3. require_nonempty_text"]
     s4["4. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
     s5["5. value.strip"]
-    s6["6. any"]
-    s7["7. ord"]
-    s8["8. ord"]
-    s9["9. ValueError"]
-    s10["10. require_positive_int"]
-    s11["11. require_nonnegative_int"]
-    s12["12. require_int"]
+    s6["6. contains_control_character"]
+    s7["7. pattern.search"]
+    s8["8. ValueError"]
+    s9["9. require_positive_int"]
+    s10["10. require_nonnegative_int"]
+    s11["11. require_int"]
+    s12["12. isinstance (src/llm_wiki_cli/services/validation.py:require_int)"]
     s1 -->|"_validate_entity_coordinate(entity_name, occurrence)"| s2
     s2 -->|"require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)"| s3
     s3 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s4
     s3 -. "value.strip(data not statically known)" .-> s5
-    s3 -. "any(...)" .-> s6
-    s3 -. "ord(character)" .-> s7
-    s3 -. "ord(character)" .-> s8
-    s2 -. "ValueError('entity_name must be a non-empty string')" .-> s9
-    s2 -->|"require_positive_int(occurrence, invalid_error=ValueError(...))"| s10
-    s10 -->|"require_nonnegative_int(value, error=invalid_error)"| s11
-    s11 -->|"require_int(value, error=error)"| s12
+    s3 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s6
+    s6 -. "pattern.search(value)" .-> s7
+    s2 -. "ValueError('entity_name must be a non-empty string')" .-> s8
+    s2 -->|"require_positive_int(occurrence, invalid_error=ValueError(...))"| s9
+    s9 -->|"require_nonnegative_int(value, error=invalid_error)"| s10
+    s10 -->|"require_int(value, error=error)"| s11
+    s11 -. "isinstance (src/llm_wiki_cli/services/validation.py:require_int)(value, bool)" .-> s12
     click s1 "../modules/knowledge_evidence.md"
     click s2 "../modules/knowledge_evidence.md"
     click s3 "../modules/validation.md"
+    click s6 "../modules/validation.md"
+    click s9 "../modules/validation.md"
     click s10 "../modules/validation.md"
     click s11 "../modules/validation.md"
-    click s12 "../modules/validation.md"
 ```
 
 ### Step data
@@ -111,13 +113,13 @@ flowchart LR
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 | `ValueError` | - | - | - | - |
 | `require_positive_int` | `value: object`, `invalid_error: Exception`, `zero_error: Exception \| None` | - | - | `parsed` |
 | `require_nonnegative_int` | `value: object`, `error: Exception` | - | - | `parsed` |
 | `require_int` | `value: object`, `error: Exception` | - | - | `value` |
+| `isinstance (src/llm_wiki_cli/services/validation.py:require_int)` | - | - | - | - |
 
 ### Call data
 
@@ -125,15 +127,15 @@ flowchart LR
 |---|---|---:|---|
 | normalize_entity_observation | _validate_entity_coordinate | 237 | `_validate_entity_coordinate(entity_name, occurrence)` |
 | _validate_entity_coordinate | require_nonempty_text | 908 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 574 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
-| require_nonempty_text | any | 582 | `any(...)` |
-| require_nonempty_text | ord | 583 | `ord(character)` |
-| require_nonempty_text | ord | 584 | `ord(character)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
 | _validate_entity_coordinate | ValueError | 910 | `ValueError('entity_name must be a non-empty string')` |
 | _validate_entity_coordinate | require_positive_int | 913 | `require_positive_int(occurrence, invalid_error=ValueError(...))` |
-| require_positive_int | require_nonnegative_int | 810 | `require_nonnegative_int(value, error=invalid_error)` |
-| require_nonnegative_int | require_int | 788 | `require_int(value, error=error)` |
+| require_positive_int | require_nonnegative_int | 848 | `require_nonnegative_int(value, error=invalid_error)` |
+| require_nonnegative_int | require_int | 826 | `require_int(value, error=error)` |
+| require_int | isinstance (src/llm_wiki_cli/services/validation.py:require_int) | 818 | `isinstance(value, bool)` |
 
 ### Boundary effects
 
@@ -143,12 +145,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 574 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| external_call | `require_nonempty_text` | `any` | 582 |
-| external_call | `require_nonempty_text` | `ord` | 583 |
-| external_call | `require_nonempty_text` | `ord` | 584 |
+| external_call | `require_nonempty_text` | `isinstance` | 623 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
 | external_call | `_validate_entity_coordinate` | `ValueError` | 910 |
+| external_call | `require_int` | `isinstance` | 818 |
 | step_limit | `normalize_entity_observation` | `first 12 steps` | 0 |
 | truncated_flow | `normalize_entity_observation` | `depth limit` | 0 |
 

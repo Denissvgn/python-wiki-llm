@@ -1,6 +1,6 @@
 # ScopedKnowledgeRead
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:27`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:28`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_access](../modules/knowledge_storage_access.md)
@@ -9,14 +9,14 @@
 
 ## Description
 
-Owns a selected logical slice, supporting Markdown and request-local filesystem observations. Its finalization rechecks consumed files and pack ranges and returns their actual work receipt. It does not confer full-artifact or complete-archive validity.
+Owns a selected logical slice, its validated manifest header, consumed Markdown and guarded read observations. Calling `finish` rechecks the consumed files and ranges before publication. It does not issue a full-artifact validation token.
 
 ## Attributes
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `slice` | `KnowledgeSlice` | *required* | — |
-| `manifest` | `SyncManifest` | *required* | — |
+| `manifest` | `ValidatedManifestHeader` | *required* | — |
 | `markdown` | `dict[str, str]` | *required* | — |
 | `reader` | `KnowledgeStoreReader` | `field(repr=False)` | — |
 | `session` | `StorageReadSession` | `field(repr=False)` | — |

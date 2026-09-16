@@ -56,7 +56,7 @@ sequenceDiagram
     p8->>p3: KnowledgeArtifactError
 ```
 
-> Call sequence diagram shows 30 of 334 interactions; 304 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 348 interactions; 318 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -119,17 +119,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_surface_index_bytes | _decode_json_object | 248 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 759 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 760 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | content.decode | 762 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 764 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | json.loads | 766 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 768 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 787 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 769 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 793 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 772 | `isinstance(exc, KnowledgeArtifactError)` |
+| validate_surface_index_bytes | _decode_json_object | 252 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 815 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 816 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | content.decode | 818 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 820 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | json.loads | 822 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 824 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 843 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 825 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 849 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 828 | `isinstance(exc, KnowledgeArtifactError)` |
 
 ### Boundary effects
 
@@ -139,10 +139,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_decode_json_object` | `isinstance` | 759 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 762 |
-| external_call | `_decode_json_object` | `json.loads` | 766 |
-| external_call | `_decode_json_object` | `isinstance` | 772 |
+| external_call | `_decode_json_object` | `isinstance` | 815 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 818 |
+| external_call | `_decode_json_object` | `json.loads` | 822 |
+| external_call | `_decode_json_object` | `isinstance` | 828 |
 | step_limit | `validate_surface_index_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `validate_surface_index_bytes` | `depth limit` | 0 |
 

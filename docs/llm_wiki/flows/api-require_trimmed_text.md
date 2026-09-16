@@ -13,14 +13,13 @@ sequenceDiagram
     participant p1 as require_nonempty_text
     participant p2 as isinstance
     participant p3 as value.strip
-    participant p4 as any
-    participant p5 as ord
+    participant p4 as contains_control_character
+    participant p5 as pattern.search
     p0->>p1: require_nonempty_text
     p1-->>p2: isinstance
     p1-->>p3: value.strip
-    p1-->>p4: any
-    p1-->>p5: ord
-    p1-->>p5: ord
+    p1->>p4: contains_control_character
+    p4-->>p5: pattern.search
 ```
 
 ## Data flow
@@ -32,17 +31,16 @@ flowchart LR
     s2["2. require_nonempty_text"]
     s3["3. isinstance"]
     s4["4. value.strip"]
-    s5["5. any"]
-    s6["6. ord"]
-    s7["7. ord"]
+    s5["5. contains_control_character"]
+    s6["6. pattern.search"]
     s1 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s2
     s2 -. "isinstance(value, str)" .-> s3
     s2 -. "value.strip(data not statically known)" .-> s4
-    s2 -. "any(...)" .-> s5
-    s2 -. "ord(character)" .-> s6
-    s2 -. "ord(character)" .-> s7
+    s2 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s5
+    s5 -. "pattern.search(value)" .-> s6
     click s1 "../modules/validation.md"
     click s2 "../modules/validation.md"
+    click s5 "../modules/validation.md"
 ```
 
 ### Step data
@@ -53,20 +51,18 @@ flowchart LR
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_trimmed_text | require_nonempty_text | 658 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance | 574 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
-| require_nonempty_text | any | 582 | `any(...)` |
-| require_nonempty_text | ord | 583 | `ord(character)` |
-| require_nonempty_text | ord | 584 | `ord(character)` |
+| require_trimmed_text | require_nonempty_text | 696 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance | 623 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -76,11 +72,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 574 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| external_call | `require_nonempty_text` | `any` | 582 |
-| external_call | `require_nonempty_text` | `ord` | 583 |
-| external_call | `require_nonempty_text` | `ord` | 584 |
+| external_call | `require_nonempty_text` | `isinstance` | 623 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
 
 ## Behavior
 

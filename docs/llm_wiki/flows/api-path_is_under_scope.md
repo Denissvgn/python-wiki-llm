@@ -57,11 +57,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| path_is_under_scope | path.replace(…).strip | 424 | `path.replace('\\', '/').strip('/')` |
-| path_is_under_scope | path.replace | 424 | `path.replace('\\', '/')` |
-| path_is_under_scope | path_is_under | 425 | `path_is_under(normalized, scope_root)` |
-| path_is_under | bool | 418 | `bool(prefix)` |
-| path_is_under | path.startswith | 418 | `path.startswith(...)` |
+| path_is_under_scope | path.replace(…).strip | 473 | `path.replace('\\', '/').strip('/')` |
+| path_is_under_scope | path.replace | 473 | `path.replace('\\', '/')` |
+| path_is_under_scope | path_is_under | 474 | `path_is_under(normalized, scope_root)` |
+| path_is_under | bool | 467 | `bool(prefix)` |
+| path_is_under | path.startswith | 467 | `path.startswith(...)` |
 
 ### Boundary effects
 
@@ -71,9 +71,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `path_is_under_scope` | `path.replace('\\', '/').strip` | 424 |
-| unresolved_call | `path_is_under_scope` | `path.replace` | 424 |
-| unresolved_call | `path_is_under` | `path.startswith` | 418 |
+| unresolved_call | `path_is_under_scope` | `path.replace('\\', '/').strip` | 473 |
+| unresolved_call | `path_is_under_scope` | `path.replace` | 473 |
+| unresolved_call | `path_is_under` | `path.startswith` | 467 |
 
 ## Behavior
 

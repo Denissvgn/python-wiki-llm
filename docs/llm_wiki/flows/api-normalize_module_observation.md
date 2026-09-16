@@ -60,7 +60,7 @@ sequenceDiagram
     p17->>p18: require_bool
 ```
 
-> Call sequence diagram shows 30 of 121 interactions; 91 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 120 interactions; 90 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 

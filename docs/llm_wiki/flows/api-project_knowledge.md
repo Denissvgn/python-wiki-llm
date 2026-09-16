@@ -2,10 +2,11 @@
 
 **Entry point:** `project_knowledge` (`api`)
 **Source:** [knowledge_projection](../modules/knowledge_projection.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 18 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 20 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [immutable](../modules/immutable.md)
@@ -23,6 +24,7 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -89,7 +91,7 @@ sequenceDiagram
     p20-->>p22: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
 ```
 
-> Call sequence diagram shows 30 of 1812 interactions; 1782 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1862 interactions; 1832 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

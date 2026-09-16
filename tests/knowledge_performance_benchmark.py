@@ -215,7 +215,7 @@ def worker(workload, profiled):
                    "physical_files": len(value.validated_artifacts.storage_objects)}
     elif workload in {"storage_full", "inspect_one", "inspect_scoped", "audit_stream"}:
         assert value["ok"]
-        details = {k: value[k] for k in ["format", "objects", "object_bytes", "total", "omitted", "complete"] if k in value}
+        details = dict(value)
     elif workload in {"plan_unchanged", "plan_reuse", "incremental", "incremental_write"}:
         assert value.changed == (workload in {"incremental", "incremental_write"})
         details = {"changed": value.changed, "planned_files": len(value.storage_objects),

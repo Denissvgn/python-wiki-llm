@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [trigger_cmd](../modules/trigger_cmd.md)
-**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [extraction_service](../modules/extraction_service.md), and 18 more
+**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [extraction_service](../modules/extraction_service.md), and 21 more
 
 **Complete modules touched:**
 
@@ -15,7 +15,10 @@
 - [imports](../modules/imports.md)
 - [io](../modules/io.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [lockfile](../modules/lockfile.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -93,7 +96,7 @@ sequenceDiagram
     p22-->>p26: Path.cwd().resolve
 ```
 
-> Call sequence diagram shows 30 of 809 interactions; 779 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 832 interactions; 802 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

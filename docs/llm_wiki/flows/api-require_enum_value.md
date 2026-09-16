@@ -57,11 +57,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_enum_value | require_string | 1069 | `require_string(value, error=text_error)` |
-| require_string | isinstance | 706 | `isinstance(value, str)` |
-| require_string | value.encode | 710 | `value.encode('utf-8')` |
-| require_enum_value | enum_type | 1071 | `enum_type(parsed)` |
-| require_enum_value | choice_error | 1073 | `choice_error(data not statically known)` |
+| require_enum_value | require_string | 1107 | `require_string(value, error=text_error)` |
+| require_string | isinstance | 744 | `isinstance(value, str)` |
+| require_string | value.encode | 748 | `value.encode('utf-8')` |
+| require_enum_value | enum_type | 1109 | `enum_type(parsed)` |
+| require_enum_value | choice_error | 1111 | `choice_error(data not statically known)` |
 
 ### Boundary effects
 
@@ -71,10 +71,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_string` | `isinstance` | 706 |
-| unresolved_call | `require_string` | `value.encode` | 710 |
-| unresolved_call | `require_enum_value` | `enum_type` | 1071 |
-| unresolved_call | `require_enum_value` | `choice_error` | 1073 |
+| external_call | `require_string` | `isinstance` | 744 |
+| unresolved_call | `require_string` | `value.encode` | 748 |
+| unresolved_call | `require_enum_value` | `enum_type` | 1109 |
+| unresolved_call | `require_enum_value` | `choice_error` | 1111 |
 
 ## Behavior
 

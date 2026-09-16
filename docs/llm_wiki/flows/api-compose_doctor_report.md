@@ -2,7 +2,17 @@
 
 **Entry point:** `compose_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [doctor_service](../modules/doctor_service.md), [knowledge_observability](../modules/knowledge_observability.md), [sync_manifest](../modules/sync_manifest.md), [validation](../modules/validation.md)
+**Modules touched:** [doctor_service](../modules/doctor_service.md), [knowledge_observability](../modules/knowledge_observability.md), [knowledge_storage](../modules/knowledge_storage.md), and 4 more
+
+**Complete modules touched:**
+
+- [doctor_service](../modules/doctor_service.md)
+- [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
+- [sync_manifest](../modules/sync_manifest.md)
+- [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -20,17 +30,21 @@ sequenceDiagram
     participant p8 as SyncManifest.load
     participant p9 as manifest_path.exists
     participant p10 as FileNotFoundError
-    participant p11 as json.loads
+    participant p11 as json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     participant p12 as manifest_path.read_text
-    participant p13 as SyncManifest.from_payload
-    participant p14 as _mapping_value
-    participant p15 as require_mapping
-    participant p16 as SyncManifestError
-    participant p17 as data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p18 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p19 as _copy_sources
-    participant p20 as data.items
-    participant p21 as isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
+    participant p13 as isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    participant p14 as data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    participant p15 as StorageReadSession
+    participant p16 as session.read
+    participant p17 as SyncManifest.from_payload
+    participant p18 as _mapping_value
+    participant p19 as require_mapping
+    participant p20 as SyncManifestError
+    participant p21 as data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    participant p22 as type
+    participant p23 as ManifestStoreReader
+    participant p24 as reader.materialize
+    participant p25 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
     p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)
     p0-->>p2: TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)
     p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)
@@ -43,27 +57,27 @@ sequenceDiagram
     p5->>p8: SyncManifest.load
     p8-->>p9: manifest_path.exists
     p8-->>p10: FileNotFoundError
-    p8-->>p11: json.loads
+    p8-->>p11: json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     p8-->>p12: manifest_path.read_text
-    p8->>p13: SyncManifest.from_payload
-    p13->>p14: _mapping_value
-    p14->>p15: require_mapping
-    p14->>p16: SyncManifestError
-    p14->>p16: SyncManifestError
-    p13-->>p17: data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p13-->>p18: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p13-->>p18: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p13->>p16: SyncManifestError
-    p13->>p16: SyncManifestError
-    p13->>p16: SyncManifestError
-    p13->>p19: _copy_sources
-    p19->>p14: _mapping_value
-    p19-->>p20: data.items
-    p19-->>p21: isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p19->>p16: SyncManifestError
+    p8-->>p13: isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    p8-->>p14: data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    p8->>p15: StorageReadSession
+    p8-->>p16: session.read
+    p8->>p17: SyncManifest.from_payload
+    p17->>p18: _mapping_value
+    p18->>p19: require_mapping
+    p18->>p20: SyncManifestError
+    p18->>p20: SyncManifestError
+    p17-->>p21: data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p17-->>p22: type
+    p17->>p20: SyncManifestError
+    p17->>p23: ManifestStoreReader
+    p17->>p17: SyncManifest.from_payload
+    p17-->>p24: reader.materialize
+    p17-->>p25: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
 ```
 
-> Call sequence diagram shows 30 of 234 interactions; 204 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 261 interactions; 231 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -119,7 +133,7 @@ flowchart LR
 | `_knowledge_declared` | `wiki_root: Path` | `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `GOVERNANCE_FILENAME`, `VERIFICATION_RECEIPT_FILENAME` | - | `True`, `False`, `...` |
 | `path.exists` | - | - | - | - |
 | `path.is_symlink` | - | - | - | - |
-| `SyncManifest.load` | `wiki_dir: Path` | `MANIFEST_FILENAME` | - | `cls.from_payload(...)` |
+| `SyncManifest.load` | `wiki_dir: Path` | `MANIFEST_FILENAME`, `MANIFEST_FILENAME` | - | `manifest`, `cls.from_payload(...)` |
 | `manifest_path.exists` | - | - | - | - |
 
 ### Call data
@@ -136,13 +150,13 @@ flowchart LR
 | _knowledge_declared | path.exists | 323 | `path.exists(data not statically known)` |
 | _knowledge_declared | path.is_symlink | 323 | `path.is_symlink(data not statically known)` |
 | _knowledge_declared | SyncManifest.load | 326 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1080 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | manifest_path.exists | 1125 | `manifest_path.exists(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1101 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1146 |
 
 ### Static analysis gaps
 
@@ -154,7 +168,7 @@ flowchart LR
 | external_call | `compose_doctor_report` | `TypeError` | 179 |
 | unresolved_call | `_knowledge_declared` | `path.exists` | 323 |
 | unresolved_call | `_knowledge_declared` | `path.is_symlink` | 323 |
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1080 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1125 |
 | step_limit | `compose_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `compose_doctor_report` | `depth limit` | 0 |
 

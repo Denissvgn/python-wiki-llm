@@ -2,7 +2,7 @@
 
 **Entry point:** `build_documentation_query_service` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 9 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 12 more
 
 **Complete modules touched:**
 
@@ -15,6 +15,9 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -80,7 +83,7 @@ sequenceDiagram
     p21->>p22: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 990 interactions; 960 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1031 interactions; 1001 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -152,7 +155,7 @@ flowchart LR
 | normalize_documentation_query_limit | DocumentationQueryError | 53 | `DocumentationQueryError('limit must be a positive integer.')` |
 | normalize_documentation_query_limit | min (src/llm_wiki_cli/services…documentation_query_limit) | 54 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
 | build_documentation_query_service | validate_source_root | 1637 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 159 | `validate_path(path, label)` |
+| validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 
 ### Boundary effects
 

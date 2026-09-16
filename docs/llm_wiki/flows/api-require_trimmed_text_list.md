@@ -88,34 +88,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_trimmed_text_list | isinstance | 680 | `isinstance(value, container_type)` |
-| require_trimmed_text_list | isinstance | 680 | `isinstance(value, Iterable)` |
-| require_trimmed_text_list | isinstance | 684 | `isinstance(item, str)` |
-| require_trimmed_text_list | item.strip | 684 | `item.strip(data not statically known)` |
-| require_trimmed_text_list | item.strip | 686 | `item.strip(data not statically known)` |
-| require_trimmed_text_list | any | 688 | `any(...)` |
-| require_trimmed_text_list | ord | 689 | `ord(character)` |
-| require_trimmed_text_list | items.append | 692 | `items.append(item)` |
-| require_trimmed_text_list | len | 693 | `len(set(...))` |
-| require_trimmed_text_list | set | 693 | `set(items)` |
-| require_trimmed_text_list | len | 693 | `len(items)` |
+| require_trimmed_text_list | isinstance | 718 | `isinstance(value, container_type)` |
+| require_trimmed_text_list | isinstance | 718 | `isinstance(value, Iterable)` |
+| require_trimmed_text_list | isinstance | 722 | `isinstance(item, str)` |
+| require_trimmed_text_list | item.strip | 722 | `item.strip(data not statically known)` |
+| require_trimmed_text_list | item.strip | 724 | `item.strip(data not statically known)` |
+| require_trimmed_text_list | any | 726 | `any(...)` |
+| require_trimmed_text_list | ord | 727 | `ord(character)` |
+| require_trimmed_text_list | items.append | 730 | `items.append(item)` |
+| require_trimmed_text_list | len | 731 | `len(set(...))` |
+| require_trimmed_text_list | set | 731 | `set(items)` |
+| require_trimmed_text_list | len | 731 | `len(items)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `items.append` | `require_trimmed_text_list` | 692 |
+| mutation | `items.append` | `require_trimmed_text_list` | 730 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_trimmed_text_list` | `isinstance` | 680 |
-| external_call | `require_trimmed_text_list` | `isinstance` | 684 |
-| unresolved_call | `require_trimmed_text_list` | `item.strip` | 684 |
-| unresolved_call | `require_trimmed_text_list` | `item.strip` | 686 |
-| external_call | `require_trimmed_text_list` | `any` | 688 |
-| external_call | `require_trimmed_text_list` | `ord` | 689 |
+| external_call | `require_trimmed_text_list` | `isinstance` | 718 |
+| external_call | `require_trimmed_text_list` | `isinstance` | 722 |
+| unresolved_call | `require_trimmed_text_list` | `item.strip` | 722 |
+| unresolved_call | `require_trimmed_text_list` | `item.strip` | 724 |
+| external_call | `require_trimmed_text_list` | `any` | 726 |
+| external_call | `require_trimmed_text_list` | `ord` | 727 |
 | step_limit | `require_trimmed_text_list` | `first 12 steps` | 0 |
 
 ## Behavior

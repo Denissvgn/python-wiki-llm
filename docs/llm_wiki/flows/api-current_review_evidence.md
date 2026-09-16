@@ -27,10 +27,11 @@ sequenceDiagram
     participant p15 as require_no_control_characters
     participant p16 as isinstance (src/llm_wiki_cli/services…uire_no_control_characters)
     participant p17 as contains_control_character
-    participant p18 as any (src/llm_wiki_cli/services…contains_control_character)
-    participant p19 as ord (src/llm_wiki_cli/services…contains_control_character)
-    participant p20 as _SENSITIVE_RE.search
-    participant p21 as contains_uri_authority_userinfo
+    participant p18 as pattern.search
+    participant p19 as _SENSITIVE_RE.search
+    participant p20 as contains_uri_authority_userinfo
+    participant p21 as value.strip (src/llm_wiki_cli/services…ins_uri_authority_userinfo)
+    participant p22 as text.startswith
     p0-->>p1: isinstance (src/llm_wiki_cli/services…py:current_review_evidence)
     p0-->>p2: TypeError
     p0->>p3: ReviewEvidence
@@ -54,16 +55,16 @@ sequenceDiagram
     p14->>p15: require_no_control_characters
     p15-->>p16: isinstance (src/llm_wiki_cli/services…uire_no_control_characters)
     p15->>p17: contains_control_character
-    p17-->>p18: any (src/llm_wiki_cli/services…contains_control_character)
-    p17-->>p19: ord (src/llm_wiki_cli/services…contains_control_character)
-    p17-->>p19: ord (src/llm_wiki_cli/services…contains_control_character)
+    p17-->>p18: pattern.search
     p14->>p6: GovernanceError
-    p14-->>p20: _SENSITIVE_RE.search
+    p14-->>p19: _SENSITIVE_RE.search
     p14->>p6: GovernanceError
-    p14->>p21: contains_uri_authority_userinfo
+    p14->>p20: contains_uri_authority_userinfo
+    p20-->>p21: value.strip (src/llm_wiki_cli/services…ins_uri_authority_userinfo)
+    p20-->>p22: text.startswith
 ```
 
-> Call sequence diagram shows 30 of 71 interactions; 41 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 67 interactions; 37 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 

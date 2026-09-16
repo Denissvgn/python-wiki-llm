@@ -18,8 +18,8 @@ sequenceDiagram
     participant p6 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
     participant p7 as len
     participant p8 as value.strip
-    participant p9 as any
-    participant p10 as ord
+    participant p9 as contains_control_character
+    participant p10 as pattern.search
     participant p11 as HostBrokerAuthenticationError
     p0-->>p1: _HOST_BROKER_AUTHENTICATOR.get
     p0->>p2: HostBrokerAuthenticationUnavailable
@@ -31,9 +31,8 @@ sequenceDiagram
     p5-->>p7: len
     p5-->>p7: len
     p5-->>p8: value.strip
-    p5-->>p9: any
-    p5-->>p10: ord
-    p5-->>p10: ord
+    p5->>p9: contains_control_character
+    p9-->>p10: pattern.search
     p4->>p11: HostBrokerAuthenticationError
 ```
 
@@ -53,7 +52,7 @@ flowchart LR
     s9["9. len"]
     s10["10. len"]
     s11["11. value.strip"]
-    s12["12. any"]
+    s12["12. contains_control_character"]
     s1 -. "_HOST_BROKER_AUTHENTICATOR.get(data not statically known)" .-> s2
     s1 -->|"HostBrokerAuthenticationUnavailable('External admission requires a separately authenticated host broker; this process has no host authenticator.')"| s3
     s1 -. "isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)(authenticator, HostBrokerAuthenticator)" .-> s4
@@ -64,12 +63,13 @@ flowchart LR
     s7 -. "len(value)" .-> s9
     s7 -. "len(value)" .-> s10
     s7 -. "value.strip(data not statically known)" .-> s11
-    s7 -. "any(...)" .-> s12
+    s7 -->|"contains_control_character(value, reject_delete_character=reject_delete_character)"| s12
     click s1 "../modules/host_broker.md"
     click s3 "../modules/host_broker.md"
     click s5 "../modules/host_broker.md"
     click s6 "../modules/host_broker.md"
     click s7 "../modules/validation.md"
+    click s12 "../modules/validation.md"
 ```
 
 ### Step data
@@ -87,7 +87,7 @@ flowchart LR
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
 
 ### Call data
 
@@ -99,11 +99,11 @@ flowchart LR
 | require_process_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 241 | `HostBrokerAuthenticationUnavailable('The process host broker authenticator is malformed.')` |
 | require_process_host_broker_authenticator | _require_bounded_text | 244 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 605 | `isinstance(value, str)` |
-| require_bounded_text | len | 606 | `len(value)` |
-| require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
-| require_bounded_text | any | 611 | `any(...)` |
+| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 650 | `isinstance(value, str)` |
+| require_bounded_text | len | 651 | `len(value)` |
+| require_bounded_text | len | 652 | `len(value)` |
+| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
 
 ### Boundary effects
 
@@ -115,9 +115,8 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `require_process_host_broker_authenticator` | `_HOST_BROKER_AUTHENTICATOR.get` | 234 |
 | external_call | `require_process_host_broker_authenticator` | `isinstance` | 240 |
-| external_call | `require_bounded_text` | `isinstance` | 605 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 608 |
-| external_call | `require_bounded_text` | `any` | 611 |
+| external_call | `require_bounded_text` | `isinstance` | 650 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
 | step_limit | `require_process_host_broker_authenticator` | `first 12 steps` | 0 |
 
 ## Behavior

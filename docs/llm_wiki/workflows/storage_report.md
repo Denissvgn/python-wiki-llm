@@ -1,7 +1,7 @@
 # storage_report
 
 **Entry point:** `knowledge_storage_diagnostics.storage_report`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_loader](../modules/knowledge_loader.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 
 ## Sequence
 
@@ -19,16 +19,16 @@
 11. `knowledge_loader.load_knowledge_state`
 12. `knowledge_storage.KnowledgeStorageError`
 13. `knowledge_artifacts.validated_artifact_bytes`
-14. `knowledge_index._model_to_payload`
-15. `knowledge_storage.canonical_bytes`
+14. `knowledge_model._concept_to_payload`
+15. `knowledge_model._relationship_to_payload`
 16. `knowledge_storage.canonical_bytes`
-17. `knowledge_packs.open_knowledge_store`
+17. `knowledge_storage.canonical_bytes`
 
 ## Touches
 
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
-- [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
@@ -37,4 +37,4 @@
 
 ## Behavior
 
-Quick reporting measures canonical artifacts and recognized storage files without claiming a full integrity verdict. Full reporting validates the entire committed snapshot and reports reachable/unreachable storage, logical records, pack/index counts and deduplication. Optional outgoing-history inspection uses explicit local Git endpoints and retains incomplete checks as failures.
+Inspect physical sizes and, when requested, validate the complete committed snapshot once. Reuse captured audit statistics and serialize records individually for size summaries. Explicit scoped inspection and streaming storage audit have separate validation boundaries.

@@ -72,7 +72,7 @@ sequenceDiagram
     p19-->>p21: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
 ```
 
-> Call sequence diagram shows 30 of 358 interactions; 328 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 357 interactions; 327 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

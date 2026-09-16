@@ -2,10 +2,11 @@
 
 **Entry point:** `load_knowledge_state` (`api`)
 **Source:** [knowledge_loader](../modules/knowledge_loader.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), and 18 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 20 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [concept_identity](../modules/concept_identity.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -22,6 +23,7 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -89,7 +91,7 @@ sequenceDiagram
     p16-->>p17: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
 ```
 
-> Call sequence diagram shows 30 of 1330 interactions; 1300 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1391 interactions; 1361 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 584 | [Open section](#entities) |
-| Modules | 196 | [Open section](#modules) |
-| Workflows | 147 | [Open section](#workflows) |
+| Entities | 595 | [Open section](#entities) |
+| Modules | 202 | [Open section](#modules) |
+| Workflows | 151 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 452 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -51,9 +51,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [BundleRecord](entities/BundleRecord.md)
 - [BundledSkill](entities/BundledSkill.md)
 - [ByteResultBounds](entities/ByteResultBounds.md)
+- [ByteSpool](entities/ByteSpool.md)
 - [CalleesResult](entities/CalleesResult.md)
 - [CallersResult](entities/CallersResult.md)
 - [Candidate](entities/Candidate.md)
+- [CanonicalArray](entities/CanonicalArray.md)
 - [CapturedContextRead](entities/CapturedContextRead.md)
 - [CapturedStream](entities/CapturedStream.md)
 - [CheckerContract](entities/CheckerContract.md)
@@ -99,9 +101,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DataEffectVisitor](entities/DataEffectVisitor.md)
 - [DataFlowAnalysisContext](entities/DataFlowAnalysisContext.md)
 - [DataFlowForEntrypointResult](entities/DataFlowForEntrypointResult.md)
+- [DecodeCache](entities/DecodeCache.md)
 - [DependencyNeighborhoodResult](entities/DependencyNeighborhoodResult.md)
 - [DependencyResult](entities/DependencyResult.md)
 - [DiagnosticCoverage](entities/DiagnosticCoverage.md)
+- [DigestSession](entities/DigestSession.md)
 - [DiscoveredInboundRoute](entities/DiscoveredInboundRoute.md)
 - [DoctorAvailability](entities/DoctorAvailability.md)
 - [DoctorDrift](entities/DoctorDrift.md)
@@ -172,6 +176,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ExistingPage](entities/ExistingPage.md)
 - [ExpectedLinkOutcome](entities/ExpectedLinkOutcome.md)
 - [ExplicitContextOption](entities/ExplicitContextOption.md)
+- [Extensions](entities/Extensions.md)
 - [ExternalBrokerAuthenticationUnavailable](entities/ExternalBrokerAuthenticationUnavailable.md)
 - [ExternalSourceOptions](entities/ExternalSourceOptions.md)
 - [ExtractPayloadResult](entities/ExtractPayloadResult.md)
@@ -258,6 +263,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [InventoryRequest](entities/InventoryRequest.md)
 - [InventoryResult](entities/InventoryResult.md)
 - [JoinedPage](entities/JoinedPage.md)
+- [JsonSpool](entities/JsonSpool.md)
 - [KnowledgeAggregateSummary](entities/KnowledgeAggregateSummary.md)
 - [KnowledgeArtifactError](entities/KnowledgeArtifactError.md)
 - [KnowledgeAvailability](entities/KnowledgeAvailability.md)
@@ -336,6 +342,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ManifestEvidenceBaseline](entities/ManifestEvidenceBaseline.md)
 - [ManifestPageSource](entities/ManifestPageSource.md)
 - [ManifestScope](entities/ManifestScope.md)
+- [ManifestStore](entities/ManifestStore.md)
+- [ManifestStoreReader](entities/ManifestStoreReader.md)
 - [ManifestTombstone](entities/ManifestTombstone.md)
 - [MarkdownContextResult](entities/MarkdownContextResult.md)
 - [MarkdownHeading](entities/MarkdownHeading.md)
@@ -503,6 +511,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SnapshotBuckets](entities/SnapshotBuckets.md)
 - [SnapshotKnowledgeObservability](entities/SnapshotKnowledgeObservability.md)
 - [SnapshotRecord](entities/SnapshotRecord.md)
+- [SortedRuns](entities/SortedRuns.md)
 - [SourceCleanupOutcome](entities/SourceCleanupOutcome.md)
 - [SourceFile](entities/SourceFile.md)
 - [SourceFileIntegrity](entities/SourceFileIntegrity.md)
@@ -514,6 +523,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SourceSnapshot](entities/SourceSnapshot.md)
 - [SourceSnapshotError](entities/SourceSnapshotError.md)
 - [SourceSnapshotMutationError](entities/SourceSnapshotMutationError.md)
+- [SpooledArtifactWrite](entities/SpooledArtifactWrite.md)
 - [StorageReadSession](entities/StorageReadSession.md)
 - [StreamCapture](entities/StreamCapture.md)
 - [StructuralFacet](entities/StructuralFacet.md)
@@ -557,6 +567,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [UnsafeUninstallPathError](entities/UnsafeUninstallPathError.md)
 - [ValidatedKnowledgeArtifacts](entities/ValidatedKnowledgeArtifacts.md)
 - [ValidatedLiveEvaluation](entities/ValidatedLiveEvaluation.md)
+- [ValidatedManifestHeader](entities/ValidatedManifestHeader.md)
 - [ValidatedWikiMetadata](entities/ValidatedWikiMetadata.md)
 - [Verification](entities/Verification.md)
 - [VerificationCheckResult](entities/VerificationCheckResult.md)
@@ -616,6 +627,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [bump_cmd](modules/bump_cmd.md) - `src/llm_wiki_cli/commands/bump_cmd.py`
 - [calibration___init__](modules/calibration___init__.md) - Isolated calibration services.
 - [calibration_contracts](modules/calibration_contracts.md) - Deterministic evidence contracts for standalone documentation calibration.
+- [canonical_json](modules/canonical_json.md) - Bounded canonical JSON chunks and exact scalar sizes.
 - [canonical_pages](modules/canonical_pages.md) - Canonical generated page names and explicitly retained removal history.
 - [capability_diagnostics](modules/capability_diagnostics.md) - Read-only provider preparation and plugin metadata diagnostics.
 - [change_selection](modules/change_selection.md) - Portable, explicit change selection and shared source-to-page mapping.
@@ -681,6 +693,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [inventory_cache](modules/inventory_cache.md) - Persistent inventory cache used by lint and CI validation.
 - [io](modules/io.md) - Encoding-safe and atomic I/O helpers for wiki artifacts.
 - [knowledge_artifacts](modules/knowledge_artifacts.md) - Deterministic commit protocol for generated knowledge artifacts.
+- [knowledge_audit](modules/knowledge_audit.md) - Independent logical membership checks, without rebuilding physical storage.
 - [knowledge_cmd](modules/knowledge_cmd.md) - Explicit durable-knowledge governance and verification commands.
 - [knowledge_consumption](modules/knowledge_consumption.md) - One read-only knowledge session shared by native consumers.
 - [knowledge_coverage](modules/knowledge_coverage.md) - Bounded native coverage diagnostics, separate from frozen context payloads.
@@ -705,6 +718,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) - Read-only storage size and explicit outgoing Git object checks.
 - [knowledge_storage_io](modules/knowledge_storage_io.md) - Guarded, bounded filesystem access for committed knowledge objects.
 - [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) - Explicit migration, recovery, export and cleanup of generated knowledge.
+- [knowledge_stream_audit](modules/knowledge_stream_audit.md) - Complete storage/routing audit without constructing a complete native model.
 - [knowledge_verification](modules/knowledge_verification.md) - Read-only machine-verification evaluation for native knowledge sessions.
 - [legacy_hooks](modules/legacy_hooks.md) - Recognize and retire historical LLM Wiki Git hooks without installing hooks.
 - [lint_service](modules/lint_service.md) - `src/llm_wiki_cli/services/lint_service.py`
@@ -712,6 +726,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) - LLM Wiki CLI.
 - [lockfile](modules/lockfile.md) - `src/llm_wiki_cli/services/lockfile.py`
 - [maintenance_queue](modules/maintenance_queue.md) - Advisory managed-page selection from existing freshness and worklist evidence.
+- [manifest_storage](modules/manifest_storage.md) - Bounded manifest v6 commit roots and immutable field catalogs.
 - [markdown_sections](modules/markdown_sections.md) - Deterministic Markdown section parsing and legacy sync splice helpers.
 - [mcp_cmd](modules/mcp_cmd.md) - Run llm-wiki as a local Model Context Protocol server.
 - [mcp_server](modules/mcp_server.md) - Read-only MCP service helpers for exposing an LLM Wiki to agents.
@@ -773,6 +788,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [source_snapshot](modules/source_snapshot.md) - Shared source-tree discovery for inventory, Docker, and package scans.
 - [src_main](modules/src_main.md) - `integrations/obsidian/llm-wiki/src/main.ts`
 - [status_cmd](modules/status_cmd.md) - `src/llm_wiki_cli/commands/status_cmd.py`
+- [storage_sort](modules/storage_sort.md) - Bounded private merge runs for complete storage audits.
+- [storage_spool](modules/storage_spool.md) - Private bounded spill buffers; never an on-disk source of authority.
 - [styles](modules/styles.md) - Sample bounded diagram-style hooks for LLM Wiki plugins.
 - [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
 - [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
@@ -812,11 +829,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ScopedTaskState_revalidate](workflows/ScopedTaskState_revalidate.md) - entry: `task_context_v2.ScopedTaskState.revalidate`
 - [SourceSnapshot_path_is_effectively_selected](workflows/SourceSnapshot_path_is_effectively_selected.md) - entry: `source_snapshot.SourceSnapshot.path_is_effectively_selected`
 - [SourceSnapshot_with_captured_inventory_paths](workflows/SourceSnapshot_with_captured_inventory_paths.md) - entry: `source_snapshot.SourceSnapshot.with_captured_inventory_paths`
-- [SyncManifest__validate_operational_state](workflows/SyncManifest__validate_operational_state.md) - entry: `sync_manifest.SyncManifest._validate_operational_state`
+- [SyncManifest_save](workflows/SyncManifest_save.md) - entry: `sync_manifest.SyncManifest.save`
 - [append_log](workflows/append_log.md) - entry: `sync_cmd._append_log`
 - [apply_entity_page](workflows/apply_entity_page.md) - entry: `sync_cmd._apply_entity_page`
 - [apply_module_page](workflows/apply_module_page.md) - entry: `sync_cmd._apply_module_page`
 - [apply_task_delta](workflows/apply_task_delta.md) - entry: `context_session.apply_task_delta`
+- [audit_knowledge_stream](workflows/audit_knowledge_stream.md) - entry: `knowledge_stream_audit.audit_knowledge_stream`
 - [backup](workflows/backup.md) - entry: `knowledge_storage_lifecycle._backup`
 - [build_analysis](workflows/build_analysis.md) - entry: `review_service.build_analysis`
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
@@ -832,6 +850,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_knowledge_generation_plan](workflows/build_knowledge_generation_plan.md) - entry: `knowledge_generation._build_knowledge_generation_plan`
 - [build_live_documentation_query_service](workflows/build_live_documentation_query_service.md) - entry: `documentation_query_builder.build_live_documentation_query_service`
 - [build_maintenance_queue](workflows/build_maintenance_queue.md) - entry: `maintenance_queue.build_maintenance_queue`
+- [build_manifest_store](workflows/build_manifest_store.md) - entry: `manifest_storage.build_manifest_store`
 - [build_migration_plan](workflows/build_migration_plan.md) - entry: `migrate_cmd._build_migration_plan`
 - [build_protocol_enrichment_from_captured_read](workflows/build_protocol_enrichment_from_captured_read.md) - entry: `context_packet._build_protocol_enrichment_from_captured_read`
 - [build_reuse_input_basis](workflows/build_reuse_input_basis.md) - entry: `knowledge_reuse.build_reuse_input_basis`
@@ -890,6 +909,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [persist_report](workflows/persist_report.md) - entry: `ci_check_cmd._persist_report`
 - [plan_source_read](workflows/plan_source_read.md) - entry: `task_context.plan_source_read`
 - [planned_generated_surface_prune](workflows/planned_generated_surface_prune.md) - entry: `sync_cmd._planned_generated_surface_prune`
+- [planned_write](workflows/planned_write.md) - entry: `knowledge_artifacts._planned_write`
 - [plugins_cmd_flow](workflows/plugins_cmd_flow.md) - entry: `plugins_cmd.run`
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
 - [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
@@ -905,6 +925,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prune_knowledge_storage](workflows/prune_knowledge_storage.md) - entry: `knowledge_storage_lifecycle.prune_knowledge_storage`
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
 - [query_cmd_flow](workflows/query_cmd_flow.md) - entry: `query_cmd.run`
+- [read_manifest_header](workflows/read_manifest_header.md) - entry: `manifest_storage.read_manifest_header`
 - [read_once](workflows/read_once.md) - entry: `task_context._read_once`
 - [rebuild_surface_only_index](workflows/rebuild_surface_only_index.md) - entry: `sync_cmd._rebuild_surface_only_index`
 - [record_source_file](workflows/record_source_file.md) - entry: `source_snapshot._record_source_file`

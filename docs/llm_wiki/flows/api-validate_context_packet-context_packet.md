@@ -74,7 +74,7 @@ sequenceDiagram
     p0-->>p20: len (src/llm_wiki_cli/services…y:validate_context_packet)
 ```
 
-> Call sequence diagram shows 30 of 723 interactions; 693 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 726 interactions; 696 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

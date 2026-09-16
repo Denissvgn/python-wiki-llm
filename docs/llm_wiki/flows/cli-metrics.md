@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [metrics_cmd](../modules/metrics_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 21 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), and 24 more
 
 **Complete modules touched:**
 
@@ -19,7 +19,10 @@
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [lint_service](../modules/lint_service.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [metrics_cmd](../modules/metrics_cmd.md)
 - [packages](../modules/packages.md)
@@ -90,7 +93,7 @@ sequenceDiagram
     p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 967 interactions; 937 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 990 interactions; 960 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -163,10 +166,10 @@ flowchart LR
 | run | bool (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `bool(getattr(...))` |
 | run | getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run) | 115 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 116 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 159 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 133 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 134 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
+| validate_source_root | validate_path | 160 | `validate_path(path, label)` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
 
 ### Boundary effects
 
@@ -184,8 +187,8 @@ flowchart LR
 | external_call | `run` | `getattr` | 112 |
 | external_call | `run` | `getattr` | 113 |
 | external_call | `run` | `getattr` | 115 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

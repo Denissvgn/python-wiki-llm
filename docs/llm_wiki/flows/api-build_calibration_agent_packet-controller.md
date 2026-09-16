@@ -26,8 +26,8 @@ sequenceDiagram
     participant p4 as require_nonempty_text
     participant p5 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p6 as value.strip
-    participant p7 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p8 as ord
+    participant p7 as contains_control_character
+    participant p8 as pattern.search
     participant p9 as frozenset (src/llm_wiki_cli/services…idation.py:require_choice)
     participant p10 as choice_error
     participant p11 as P0CalibrationSchemaError
@@ -53,9 +53,8 @@ sequenceDiagram
     p3->>p4: require_nonempty_text
     p4-->>p5: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p4-->>p6: value.strip
-    p4-->>p7: any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p4-->>p8: ord
-    p4-->>p8: ord
+    p4->>p7: contains_control_character
+    p7-->>p8: pattern.search
     p2-->>p9: frozenset (src/llm_wiki_cli/services…idation.py:require_choice)
     p2-->>p10: choice_error
     p1->>p11: P0CalibrationSchemaError
@@ -77,9 +76,10 @@ sequenceDiagram
     p24-->>p26: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
     p24-->>p27: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
     p24-->>p27: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p24-->>p27: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
 ```
 
-> Call sequence diagram shows 30 of 1428 interactions; 1398 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1427 interactions; 1397 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -95,27 +95,29 @@ flowchart LR
     s5["5. require_nonempty_text"]
     s6["6. isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)"]
     s7["7. value.strip"]
-    s8["8. any (src/llm_wiki_cli/services….py:require_nonempty_text)"]
-    s9["9. ord"]
-    s10["10. ord"]
-    s11["11. frozenset (src/llm_wiki_cli/services…idation.py:require_choice)"]
-    s12["12. choice_error"]
+    s8["8. contains_control_character"]
+    s9["9. pattern.search"]
+    s10["10. frozenset (src/llm_wiki_cli/services…idation.py:require_choice)"]
+    s11["11. choice_error"]
+    s12["12. P0CalibrationSchemaError"]
     s1 -->|"_require_choice(role, CALIBRATION_ROLES, 'packet role')"| s2
     s2 -->|"require_choice(value, choices, text_error=P0CalibrationSchemaError(...), choice_error=..., reject_control_characters=False)"| s3
     s3 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s4
     s4 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
     s5 -. "isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)" .-> s6
     s5 -. "value.strip(data not statically known)" .-> s7
-    s5 -. "any (src/llm_wiki_cli/services….py:require_nonempty_text)(...)" .-> s8
-    s5 -. "ord(character)" .-> s9
-    s5 -. "ord(character)" .-> s10
-    s3 -. "frozenset (src/llm_wiki_cli/services…idation.py:require_choice)(choices)" .-> s11
-    s3 -. "choice_error(allowed)" .-> s12
+    s5 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s8
+    s8 -. "pattern.search(value)" .-> s9
+    s3 -. "frozenset (src/llm_wiki_cli/services…idation.py:require_choice)(choices)" .-> s10
+    s3 -. "choice_error(allowed)" .-> s11
+    s2 -->|"P0CalibrationSchemaError(...)"| s12
     click s1 "../modules/controller.md"
     click s2 "../modules/controller.md"
     click s3 "../modules/validation.md"
     click s4 "../modules/validation.md"
     click s5 "../modules/validation.md"
+    click s8 "../modules/validation.md"
+    click s12 "../modules/controller.md"
 ```
 
 ### Step data
@@ -129,11 +131,11 @@ flowchart LR
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any (src/llm_wiki_cli/services….py:require_nonempty_text)` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 | `frozenset (src/llm_wiki_cli/services…idation.py:require_choice)` | - | - | - | - |
 | `choice_error` | - | - | - | - |
+| `P0CalibrationSchemaError` | - | - | - | - |
 
 ### Call data
 
@@ -141,15 +143,15 @@ flowchart LR
 |---|---|---:|---|
 | build_calibration_agent_packet | _require_choice | 1290 | `_require_choice(role, CALIBRATION_ROLES, 'packet role')` |
 | _require_choice | require_choice | 6741 | `require_shared_choice(value, choices, text_error=P0CalibrationSchemaError(...), choice_error=..., reject_control_characters=False)` |
-| require_choice | require_trimmed_text | 1035 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
-| require_trimmed_text | require_nonempty_text | 658 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 574 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
-| require_nonempty_text | any (src/llm_wiki_cli/services….py:require_nonempty_text) | 582 | `any(...)` |
-| require_nonempty_text | ord | 583 | `ord(character)` |
-| require_nonempty_text | ord | 584 | `ord(character)` |
-| require_choice | frozenset (src/llm_wiki_cli/services…idation.py:require_choice) | 1040 | `frozenset(choices)` |
-| require_choice | choice_error | 1042 | `choice_error(allowed)` |
+| require_choice | require_trimmed_text | 1073 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
+| require_trimmed_text | require_nonempty_text | 696 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_choice | frozenset (src/llm_wiki_cli/services…idation.py:require_choice) | 1078 | `frozenset(choices)` |
+| require_choice | choice_error | 1080 | `choice_error(allowed)` |
+| _require_choice | P0CalibrationSchemaError | 6744 | `P0CalibrationSchemaError(...)` |
 
 ### Boundary effects
 
@@ -159,13 +161,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 574 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| external_call | `require_nonempty_text` | `any` | 582 |
-| external_call | `require_nonempty_text` | `ord` | 583 |
-| external_call | `require_nonempty_text` | `ord` | 584 |
-| external_call | `require_choice` | `frozenset` | 1040 |
-| unresolved_call | `require_choice` | `choice_error` | 1042 |
+| external_call | `require_nonempty_text` | `isinstance` | 623 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_choice` | `frozenset` | 1078 |
+| unresolved_call | `require_choice` | `choice_error` | 1080 |
 | step_limit | `build_calibration_agent_packet` | `first 12 steps` | 0 |
 | truncated_flow | `build_calibration_agent_packet` | `depth limit` | 0 |
 

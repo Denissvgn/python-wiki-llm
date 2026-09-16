@@ -30,15 +30,15 @@ sequenceDiagram
     participant p10 as require_nonempty_text
     participant p11 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p12 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p13 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p14 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p15 as _SHA256_RE.fullmatch
-    participant p16 as _require_mapping
-    participant p17 as require_mapping
-    participant p18 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p19 as key.encode
-    participant p20 as _validate_projection_diagnostics
-    participant p21 as isinstance (src/llm_wiki_cli/services…te_projection_diagnostics)
+    participant p13 as contains_control_character
+    participant p14 as _SHA256_RE.fullmatch
+    participant p15 as _require_mapping
+    participant p16 as require_mapping
+    participant p17 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    participant p18 as key.encode
+    participant p19 as _validate_projection_diagnostics
+    participant p20 as isinstance (src/llm_wiki_cli/services…te_projection_diagnostics)
+    participant p21 as any (src/llm_wiki_cli/services…te_projection_diagnostics)
     p0-->>p1: isinstance (src/llm_wiki_cli/services…rojection_concept_summary)
     p0-->>p2: TypeError
     p0->>p3: _validate_projection_structure
@@ -54,24 +54,24 @@ sequenceDiagram
     p9->>p10: require_nonempty_text
     p10-->>p11: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p10-->>p12: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p13: any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p7-->>p15: _SHA256_RE.fullmatch
+    p10->>p13: contains_control_character
+    p7-->>p14: _SHA256_RE.fullmatch
     p6->>p5: KnowledgeProjectionError
-    p3->>p16: _require_mapping
-    p16->>p17: require_mapping
-    p17-->>p18: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p17-->>p18: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p17-->>p19: key.encode
-    p16->>p5: KnowledgeProjectionError
-    p3->>p16: _require_mapping
-    p3->>p20: _validate_projection_diagnostics
-    p20-->>p21: isinstance (src/llm_wiki_cli/services…te_projection_diagnostics)
-    p20-->>p21: isinstance (src/llm_wiki_cli/services…te_projection_diagnostics)
+    p3->>p15: _require_mapping
+    p15->>p16: require_mapping
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p16-->>p18: key.encode
+    p15->>p5: KnowledgeProjectionError
+    p3->>p15: _require_mapping
+    p3->>p19: _validate_projection_diagnostics
+    p19-->>p20: isinstance (src/llm_wiki_cli/services…te_projection_diagnostics)
+    p19-->>p20: isinstance (src/llm_wiki_cli/services…te_projection_diagnostics)
+    p19-->>p21: any (src/llm_wiki_cli/services…te_projection_diagnostics)
+    p19-->>p20: isinstance (src/llm_wiki_cli/services…te_projection_diagnostics)
 ```
 
-> Call sequence diagram shows 30 of 614 interactions; 584 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 626 interactions; 596 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -143,7 +143,7 @@ flowchart LR
 | _validate_projection_structure | KnowledgeProjectionError | 821 | `KnowledgeProjectionError('projection-profile-invalid', 'profile', "must be 'internal' or 'public-portable'")` |
 | _validate_projection_structure | _require_sha256 | 826 | `_require_sha256(projection.source_knowledge_hash, 'source_knowledge_hash', code='projection-source-hash-invalid')` |
 | _require_sha256 | require_sha256 | 2240 | `require_shared_sha256(value, digest_error=KnowledgeProjectionError(...))` |
-| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1100 | `isinstance(value, str)` |
+| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1138 | `isinstance(value, str)` |
 
 ### Boundary effects
 
@@ -157,7 +157,7 @@ flowchart LR
 | external_call | `projection_concept_summary` | `TypeError` | 415 |
 | external_call | `_validate_projection_structure` | `isinstance` | 808 |
 | external_call | `_validate_projection_structure` | `isinstance` | 820 |
-| external_call | `require_sha256` | `isinstance` | 1100 |
+| external_call | `require_sha256` | `isinstance` | 1138 |
 | step_limit | `projection_concept_summary` | `first 12 steps` | 0 |
 | truncated_flow | `projection_concept_summary` | `depth limit` | 0 |
 

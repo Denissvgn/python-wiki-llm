@@ -149,7 +149,7 @@ flowchart LR
 | _parse_extensions | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1600 | `_object(value, path)` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1667 | `dict(require_mapping(...))` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1668 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
@@ -163,7 +163,7 @@ flowchart LR
 | external_call | `knowledge_index_to_payload` | `isinstance` | 651 |
 | external_call | `knowledge_index_to_payload` | `TypeError` | 652 |
 | external_call | `_emit_extensions` | `isinstance` | 1976 |
-| external_call | `require_mapping` | `isinstance` | 727 |
+| external_call | `require_mapping` | `isinstance` | 765 |
 | step_limit | `serialize_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_knowledge_index` | `depth limit` | 0 |
 

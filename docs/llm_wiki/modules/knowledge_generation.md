@@ -19,7 +19,7 @@ filesystem reads are the target-state comparisons performed by
 |--------|---------|
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
-| `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `validate_surface_index_bytes` |
+| `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes` |
 | `.knowledge_envelope` | `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record` |
 | `.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
@@ -66,8 +66,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 86 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
-| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 96 | — | Complete already-evaluated inputs for one generated artifact set. |
+| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 87 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
+| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 97 | — | Complete already-evaluated inputs for one generated artifact set. |
 
 ## Functions
 

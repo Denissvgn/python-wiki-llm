@@ -4,7 +4,7 @@
 
 ## Description
 
-Reports physical and logical storage sizes, record counts, deduplication and explicit full-audit results. It inspects complete outgoing Git ranges without guessing refs or changing history. Logical inspection and comparison use stable record identities across storage formats and report omitted records or values when output bounds are reached.
+Reports physical sizes and complete integrity through one native materialization, using statistics captured during that validation. Logical inspection and comparison retain full snapshot validation by default. Explicit selectors provide a separate scoped inspection whose output names its narrower validation boundary.
 
 ## Imports
 
@@ -14,10 +14,13 @@ Reports physical and logical storage sizes, record counts, deduplication and exp
 | `.knowledge_artifacts` | `validated_artifact_bytes` |
 | `.knowledge_index` | `_model_to_payload` |
 | `.knowledge_loader` | `load_knowledge_state` |
-| `.knowledge_packs` | `PACKED_SCHEMA`, `PACK_NAME`, `INDEX_NAME`, `MAX_PACK_BYTES`, `MAX_INDEX_BYTES`, `open_knowledge_store`, `parse_packed_root` |
+| `.knowledge_model` | `_concept_to_payload`, `_relationship_to_payload` |
+| `.knowledge_packs` | `PACKED_SCHEMA`, `PACK_NAME`, `INDEX_NAME`, `MAX_PACK_BYTES`, `MAX_INDEX_BYTES`, `parse_packed_root` |
 | `.knowledge_storage` | `GIT_FAILURE_BYTES`, `GIT_WARNING_BYTES`, `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeStorageError`, `canonical_bytes`, `parse_store_root`, `digest`, `digest` |
+| `.knowledge_storage_access` | `capture_knowledge_slice` |
 | `.knowledge_storage_io` | `_absolute_path`, `read_guarded` |
 | `.knowledge_storage_lifecycle` | `stored_object_paths` |
+| `.manifest_storage` | `OBJECT_NAME`, `OBJECT_LIMIT` |
 | `.sync_manifest` | `MANIFEST_FILENAME` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
@@ -49,9 +52,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (10) |
+| Outbound | `src` (13) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -61,4 +64,4 @@ flowchart LR
 | `inspect_git_range` | `(project: str \| Path, *, base: str, head: str) -> dict[str, Any]` | — | Inspect every blob in head minus base, including subsequently deleted files. |
 | `storage_report` | `(wiki_dir: str \| Path, *, full: bool = False, git_base: str \| None = None, git_head: str \| None = None) -> dict[str, Any]` | — | — |
 | `_review_records` | `(wiki_dir: str \| Path) -> dict[str, Any]` | — | Logical review keys preserve duplicates and avoid physical pack identities. |
-| `review_storage` | `(wiki_dir: str \| Path, *, against: str \| Path \| None = None, limit: int = 100, max_bytes: int = 262144) -> dict[str, Any]` | — | Inspect or compare complete logical snapshots with explicitly bounded output. |
+| `review_storage` | `(wiki_dir: str \| Path, *, against: str \| Path \| None = None, limit: int = 100, max_bytes: int = 262144, selectors = None) -> dict[str, Any]` | — | Inspect or compare complete logical snapshots with explicitly bounded output. |

@@ -2,10 +2,11 @@
 
 **Entry point:** `committed_runtime_provenance` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [common](../modules/common.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 16 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 18 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -21,6 +22,7 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -45,16 +47,14 @@ sequenceDiagram
     participant p10 as key.encode
     participant p11 as SyncManifestError
     participant p12 as data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p13 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p14 as _copy_sources
-    participant p15 as data.items
-    participant p16 as isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p17 as deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p18 as dict (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p19 as _infer_language_from_path
-    participant p20 as Path (src/llm_wiki_cli/services…_infer_language_from_path)
-    participant p21 as LANGUAGE_EXTENSIONS.items
-    participant p22 as inventory_language_for_path
+    participant p13 as type (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    participant p14 as ManifestStoreReader
+    participant p15 as reader.materialize
+    participant p16 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    participant p17 as _copy_sources
+    participant p18 as data.items
+    participant p19 as isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
+    participant p20 as deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
     p0->>p1: _previous_committed_artifacts
     p1->>p2: capture_committed_knowledge
     p2-->>p3: Path(…).resolve
@@ -69,25 +69,25 @@ sequenceDiagram
     p7->>p11: SyncManifestError
     p7->>p11: SyncManifestError
     p6-->>p12: data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p6-->>p13: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p6-->>p13: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p6-->>p13: type (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p6->>p11: SyncManifestError
+    p6->>p14: ManifestStoreReader
+    p6->>p6: SyncManifest.from_payload
+    p6-->>p15: reader.materialize
+    p6-->>p16: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p6-->>p16: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
     p6->>p11: SyncManifestError
     p6->>p11: SyncManifestError
     p6->>p11: SyncManifestError
-    p6->>p14: _copy_sources
-    p14->>p7: _mapping_value
-    p14-->>p15: data.items
-    p14-->>p16: isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p14->>p11: SyncManifestError
-    p14-->>p17: deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p14-->>p18: dict (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p14->>p19: _infer_language_from_path
-    p19-->>p20: Path (src/llm_wiki_cli/services…_infer_language_from_path)
-    p19-->>p21: LANGUAGE_EXTENSIONS.items
-    p19->>p22: inventory_language_for_path
+    p6->>p17: _copy_sources
+    p17->>p7: _mapping_value
+    p17-->>p18: data.items
+    p17-->>p19: isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
+    p17->>p11: SyncManifestError
+    p17-->>p20: deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
 ```
 
-> Call sequence diagram shows 30 of 690 interactions; 660 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 729 interactions; 699 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -113,7 +113,7 @@ flowchart LR
     s3 -. "Path(…).resolve(data not statically known)" .-> s4
     s3 -. "Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)" .-> s5
     s3 -. "(…).read_bytes(data not statically known)" .-> s6
-    s3 -->|"SyncManifest.from_payload(_decode_json_object(...))"| s7
+    s3 -->|"SyncManifest.from_payload(_decode_json_object(...), object_reader=...)"| s7
     s7 -->|"_mapping_value(value, 'manifest')"| s8
     s8 -->|"require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))"| s9
     s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s10
@@ -141,7 +141,7 @@ flowchart LR
 | `Path(…).resolve` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | - | - | - | - |
 | `(…).read_bytes` | - | - | - | - |
-| `SyncManifest.from_payload` | `value: object` | `MANIFEST_VERSION`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `Mapping` | `legacy_surfaces[...]`, `surfaces[...]` | `manifest`, `manifest` |
+| `SyncManifest.from_payload` | `value: object`, `object_reader` | `MANIFEST_VERSION`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `Mapping` | `manifest.storage_version`, `manifest.storage_objects`, `legacy_surfaces[...]`, `surfaces[...]` | `manifest`, `manifest`, `manifest` |
 | `_mapping_value` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
 | `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
@@ -152,33 +152,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_runtime_provenance | _previous_committed_artifacts | 723 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 694 | `capture_committed_knowledge(wiki_dir, manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 227 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 227 | `Path(wiki_dir)` |
-| capture_committed_knowledge | (…).read_bytes | 231 | `(root / name).read_bytes(data not statically known)` |
-| capture_committed_knowledge | SyncManifest.from_payload | 238 | `SyncManifest.from_payload(_decode_json_object(...))` |
-| SyncManifest.from_payload | _mapping_value | 956 | `_mapping_value(value, 'manifest')` |
+| committed_runtime_provenance | _previous_committed_artifacts | 726 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 697 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| capture_committed_knowledge | Path(…).resolve | 228 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 228 | `Path(wiki_dir)` |
+| capture_committed_knowledge | (…).read_bytes | 232 | `(root / name).read_bytes(data not statically known)` |
+| capture_committed_knowledge | SyncManifest.from_payload | 239 | `SyncManifest.from_payload(_decode_json_object(...), object_reader=...)` |
+| SyncManifest.from_payload | _mapping_value | 992 | `_mapping_value(value, 'manifest')` |
 | _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 252 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 254 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 227 |
-| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 231 |
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 228 |
+| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 232 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
 | step_limit | `committed_runtime_provenance` | `first 12 steps` | 0 |
 | truncated_flow | `committed_runtime_provenance` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # SharedValidationError
 
-**Location:** `src/llm_wiki_cli/services/validation.py:47`
+**Location:** `src/llm_wiki_cli/services/validation.py:93`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [validation](../modules/validation.md)
@@ -24,10 +24,10 @@ Raised when a caller uses a shared validator without a domain adapter.
 flowchart LR
     n0["SharedValidationError (src/llm_wiki_cli/services/validation.py)"]
     n1["ValueError"]
-    n2["_default_path_error (src/llm_wiki_cli/services/validation.py)"]
-    n3["is_canonical_uuid (src/llm_wiki_cli/services/validation.py)"]
-    n4["require_portable_path_component (src/llm_wiki_cli/services/validation.py)"]
-    n5["require_portable_relative_path (src/llm_wiki_cli/services/validation.py)"]
+    n2["_check_path_collision (src/llm_wiki_cli/services/validation.py)"]
+    n3["_default_path_error (src/llm_wiki_cli/services/validation.py)"]
+    n4["is_canonical_uuid (src/llm_wiki_cli/services/validation.py)"]
+    n5["require_portable_path_component (src/llm_wiki_cli/services/validation.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -56,8 +56,8 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_check_path_collision` | call | [validation](../modules/validation.md) | 1 |
 | `_default_path_error` | call | [validation](../modules/validation.md) | 1 |
 | `_default_path_error` | type_reference | [validation](../modules/validation.md) | — |
 | `is_canonical_uuid` | call | [validation](../modules/validation.md) | 1 |
 | `require_portable_path_component` | call | [validation](../modules/validation.md) | 5 |
-| `require_portable_relative_path` | call | [validation](../modules/validation.md) | 1 |

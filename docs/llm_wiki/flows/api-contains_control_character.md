@@ -10,11 +10,8 @@
 ```mermaid
 sequenceDiagram
     participant p0 as contains_control_character
-    participant p1 as any
-    participant p2 as ord
-    p0-->>p1: any
-    p0-->>p2: ord
-    p0-->>p2: ord
+    participant p1 as pattern.search
+    p0-->>p1: pattern.search
 ```
 
 ## Data flow
@@ -23,12 +20,8 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. contains_control_character"]
-    s2["2. any"]
-    s3["3. ord"]
-    s4["4. ord"]
-    s1 -. "any(...)" .-> s2
-    s1 -. "ord(character)" .-> s3
-    s1 -. "ord(character)" .-> s4
+    s2["2. pattern.search"]
+    s1 -. "pattern.search(value)" .-> s2
     click s1 "../modules/validation.md"
 ```
 
@@ -36,18 +29,14 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `contains_control_character` | `value: str`, `reject_delete_character: bool` | - | - | `any(...)` |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| contains_control_character | any | 643 | `any(...)` |
-| contains_control_character | ord | 644 | `ord(character)` |
-| contains_control_character | ord | 645 | `ord(character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -57,9 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `contains_control_character` | `any` | 643 |
-| external_call | `contains_control_character` | `ord` | 644 |
-| external_call | `contains_control_character` | `ord` | 645 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
 
 ## Behavior
 

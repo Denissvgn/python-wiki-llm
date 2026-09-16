@@ -36,7 +36,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_bool | isinstance | 772 | `isinstance(value, bool)` |
+| require_bool | isinstance | 810 | `isinstance(value, bool)` |
 
 ### Boundary effects
 
@@ -46,7 +46,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bool` | `isinstance` | 772 |
+| external_call | `require_bool` | `isinstance` | 810 |
 
 ## Behavior
 

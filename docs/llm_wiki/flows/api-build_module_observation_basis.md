@@ -14,57 +14,61 @@ sequenceDiagram
     participant p2 as _validate_source_path
     participant p3 as require_repository_relative_path
     participant p4 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p5 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p6 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p7 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p8 as value.startswith
-    participant p9 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p10 as value.split
-    participant p11 as PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p12 as posixpath.normpath
-    participant p13 as require_portable_relative_path
-    participant p14 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p15 as _default_path_error
-    participant p16 as SharedValidationError
-    participant p17 as os.fspath
-    participant p18 as raw.encode
-    participant p19 as raw.replace
-    participant p20 as PurePosixPath (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p21 as path.is_absolute
-    participant p22 as _WINDOWS_ABSOLUTE_RE.match
+    participant p5 as _syntax_key
+    participant p6 as type
+    participant p7 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p8 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p9 as _known_syntax
+    participant p10 as _PATH_SYNTAX.get
+    participant p11 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    participant p12 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p13 as any (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p14 as ord (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p15 as value.startswith
+    participant p16 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p17 as value.split
+    participant p18 as PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p19 as posixpath.normpath
+    participant p20 as require_portable_relative_path
+    participant p21 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    participant p22 as _default_path_error
+    participant p23 as SharedValidationError
+    participant p24 as os.fspath
     p0->>p1: _validate_basis_inputs
     p1->>p2: _validate_source_path
     p2->>p3: require_repository_relative_path
     p3-->>p4: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p5: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p6: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p7: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p7: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p8: value.startswith
-    p3-->>p8: value.startswith
-    p3-->>p9: _WINDOWS_DRIVE_PREFIX_RE.match
-    p3-->>p10: value.split
-    p3-->>p11: PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p6: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p12: posixpath.normpath
-    p3->>p13: require_portable_relative_path
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p13->>p15: _default_path_error
-    p15->>p16: SharedValidationError
-    p13-->>p17: os.fspath
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p13->>p15: _default_path_error
-    p13-->>p18: raw.encode
-    p13->>p15: _default_path_error
-    p13->>p15: _default_path_error
-    p13-->>p19: raw.replace
-    p13-->>p20: PurePosixPath (src/llm_wiki_cli/services…re_portable_relative_path)
-    p13-->>p21: path.is_absolute
-    p13-->>p22: _WINDOWS_ABSOLUTE_RE.match
-    p13->>p15: _default_path_error
+    p3->>p5: _syntax_key
+    p5-->>p6: type
+    p5-->>p7: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p5-->>p8: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p5-->>p6: type
+    p5-->>p6: type
+    p5-->>p7: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p3->>p9: _known_syntax
+    p9-->>p10: _PATH_SYNTAX.get
+    p9-->>p11: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    p3-->>p12: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    p3-->>p13: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p3-->>p14: ord (src/llm_wiki_cli/services…_repository_relative_path)
+    p3-->>p14: ord (src/llm_wiki_cli/services…_repository_relative_path)
+    p3-->>p15: value.startswith
+    p3-->>p15: value.startswith
+    p3-->>p16: _WINDOWS_DRIVE_PREFIX_RE.match
+    p3-->>p17: value.split
+    p3-->>p18: PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
+    p3-->>p13: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p3-->>p19: posixpath.normpath
+    p3->>p20: require_portable_relative_path
+    p20-->>p21: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    p20->>p22: _default_path_error
+    p22->>p23: SharedValidationError
+    p20-->>p24: os.fspath
 ```
 
-> Call sequence diagram shows 30 of 210 interactions; 180 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 225 interactions; 195 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -76,28 +80,29 @@ flowchart LR
     s3["3. _validate_source_path"]
     s4["4. require_repository_relative_path"]
     s5["5. isinstance (src/llm_wiki_cli/services…_repository_relative_path)"]
-    s6["6. value.strip (src/llm_wiki_cli/services…_repository_relative_path)"]
-    s7["7. any (src/llm_wiki_cli/services…_repository_relative_path)"]
-    s8["8. ord (src/llm_wiki_cli/services…_repository_relative_path)"]
-    s9["9. ord (src/llm_wiki_cli/services…_repository_relative_path)"]
-    s10["10. value.startswith"]
-    s11["11. value.startswith"]
-    s12["12. _WINDOWS_DRIVE_PREFIX_RE.match"]
+    s6["6. _syntax_key"]
+    s7["7. type"]
+    s8["8. len (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
+    s9["9. any (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
+    s10["10. type"]
+    s11["11. type"]
+    s12["12. len (src/llm_wiki_cli/services/validation.py:_syntax_key)"]
     s1 -->|"_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)"| s2
     s2 -->|"_validate_source_path(source_path)"| s3
     s3 -->|"require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))"| s4
     s4 -. "isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)" .-> s5
-    s4 -. "value.strip (src/llm_wiki_cli/services…_repository_relative_path)(data not statically known)" .-> s6
-    s4 -. "any (src/llm_wiki_cli/services…_repository_relative_path)(...)" .-> s7
-    s4 -. "ord (src/llm_wiki_cli/services…_repository_relative_path)(character)" .-> s8
-    s4 -. "ord (src/llm_wiki_cli/services…_repository_relative_path)(character)" .-> s9
-    s4 -. "value.startswith('/')" .-> s10
-    s4 -. "value.startswith('\\')" .-> s11
-    s4 -. "_WINDOWS_DRIVE_PREFIX_RE.match(value)" .-> s12
+    s4 -->|"_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)"| s6
+    s6 -. "type(value)" .-> s7
+    s6 -. "len (src/llm_wiki_cli/services/validation.py:_syntax_key)(value)" .-> s8
+    s6 -. "any (src/llm_wiki_cli/services/validation.py:_syntax_key)(...)" .-> s9
+    s6 -. "type(v)" .-> s10
+    s6 -. "type(v)" .-> s11
+    s6 -. "len (src/llm_wiki_cli/services/validation.py:_syntax_key)(v)" .-> s12
     click s1 "../modules/knowledge_evidence.md"
     click s2 "../modules/knowledge_evidence.md"
     click s3 "../modules/knowledge_evidence.md"
     click s4 "../modules/validation.md"
+    click s6 "../modules/validation.md"
 ```
 
 ### Step data
@@ -107,15 +112,15 @@ flowchart LR
 | `build_module_observation_basis` | `source_path: str`, `file_data: Mapping[str, Any] \| None`, `source_content_hash: str`, `extractor_ref: str`, `inventory_complete: bool` | `MODULE_OBSERVATION_SCOPE`, `UNKNOWN_INSUFFICIENT_INVENTORY`, `_InventoryNormalizationError`, `MODULE_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `UNKNOWN_INVALID_INVENTORY`, `MODULE_OBSERVATION_SCOPE` | - | `_unknown_basis(...)`, `_unknown_basis(...)`, `_unknown_basis(...)`, `ConceptObservationBasis(...)` |
 | `_validate_basis_inputs` | `source_path: object`, `source_content_hash: object`, `extractor_ref: object`, `inventory_complete: object` | - | - | - |
 | `_validate_source_path` | `source_path: object` | - | - | - |
-| `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `require_portable_relative_path(...)` |
+| `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
 | `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
-| `value.strip (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
-| `ord (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
-| `ord (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
-| `value.startswith` | - | - | - | - |
-| `value.startswith` | - | - | - | - |
-| `_WINDOWS_DRIVE_PREFIX_RE.match` | - | - | - | - |
+| `_syntax_key` | `kind`, `value`, `options` | - | - | `None`, `(...)` |
+| `type` | - | - | - | - |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
+| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
+| `type` | - | - | - | - |
+| `type` | - | - | - | - |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | - | - | - | - |
 
 ### Call data
 
@@ -124,14 +129,14 @@ flowchart LR
 | build_module_observation_basis | _validate_basis_inputs | 296 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
 | _validate_basis_inputs | _validate_source_path | 845 | `_validate_source_path(source_path)` |
 | _validate_source_path | require_repository_relative_path | 873 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 256 | `isinstance(value, str)` |
-| require_repository_relative_path | value.strip (src/llm_wiki_cli/services…_repository_relative_path) | 258 | `value.strip(data not statically known)` |
-| require_repository_relative_path | any (src/llm_wiki_cli/services…_repository_relative_path) | 260 | `any(...)` |
-| require_repository_relative_path | ord (src/llm_wiki_cli/services…_repository_relative_path) | 261 | `ord(character)` |
-| require_repository_relative_path | ord (src/llm_wiki_cli/services…_repository_relative_path) | 262 | `ord(character)` |
-| require_repository_relative_path | value.startswith | 268 | `value.startswith('/')` |
-| require_repository_relative_path | value.startswith | 269 | `value.startswith('\\')` |
-| require_repository_relative_path | _WINDOWS_DRIVE_PREFIX_RE.match | 270 | `_WINDOWS_DRIVE_PREFIX_RE.match(value)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
+| require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
+| _syntax_key | type | 54 | `type(value)` |
+| _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `len(value)` |
+| _syntax_key | any (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `any(...)` |
+| _syntax_key | type | 55 | `type(v)` |
+| _syntax_key | type | 55 | `type(v)` |
+| _syntax_key | len (src/llm_wiki_cli/services/validation.py:_syntax_key) | 55 | `len(v)` |
 
 ### Boundary effects
 
@@ -141,15 +146,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_repository_relative_path` | `isinstance` | 256 |
-| unresolved_call | `require_repository_relative_path` | `value.strip` | 258 |
-| external_call | `require_repository_relative_path` | `any` | 260 |
-| external_call | `require_repository_relative_path` | `ord` | 261 |
-| external_call | `require_repository_relative_path` | `ord` | 262 |
-| unresolved_call | `require_repository_relative_path` | `value.startswith` | 268 |
-| unresolved_call | `require_repository_relative_path` | `value.startswith` | 269 |
-| unresolved_call | `require_repository_relative_path` | `_WINDOWS_DRIVE_PREFIX_RE.match` | 270 |
+| external_call | `require_repository_relative_path` | `isinstance` | 299 |
+| external_call | `_syntax_key` | `type` | 54 |
+| external_call | `_syntax_key` | `any` | 55 |
+| external_call | `_syntax_key` | `type` | 55 |
 | step_limit | `build_module_observation_basis` | `first 12 steps` | 0 |
+| truncated_flow | `build_module_observation_basis` | `depth limit` | 0 |
 
 ## Behavior
 

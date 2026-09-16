@@ -2,11 +2,12 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 46 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 57 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
@@ -25,6 +26,7 @@
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_audit](../modules/knowledge_audit.md)
 - [knowledge_cmd](../modules/knowledge_cmd.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_coverage](../modules/knowledge_coverage.md)
@@ -32,24 +34,33 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md)
 - [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+- [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [manifest_storage](../modules/manifest_storage.md)
+- [markdown_sections](../modules/markdown_sections.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
 - [python_imports](../modules/python_imports.md)
+- [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [storage_sort](../modules/storage_sort.md)
+- [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
@@ -115,7 +126,7 @@ sequenceDiagram
     p2->>p20: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 3121 interactions; 3091 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4001 interactions; 3971 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -184,7 +195,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run (src/llm_wiki_cli/commands/knowledge_cmd.py) | run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | 964 | `run_storage(args)` |
+| run (src/llm_wiki_cli/commands/knowledge_cmd.py) | run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | 965 | `run_storage(args)` |
 | run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | _wiki_root | 16 | `_wiki_root(args.wiki_dir)` |
 | _wiki_root | Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root) | 106 | `Path(value)` |
 | _wiki_root | first_unsafe_path_component | 107 | `first_unsafe_path_component(root)` |
@@ -200,8 +211,8 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 35 |
-| output | `print` | `run` | 37 |
+| output | `print` | `run` | 42 |
+| output | `print` | `run` | 44 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps

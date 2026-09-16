@@ -41,8 +41,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| path_is_under | bool | 418 | `bool(prefix)` |
-| path_is_under | path.startswith | 418 | `path.startswith(...)` |
+| path_is_under | bool | 467 | `bool(prefix)` |
+| path_is_under | path.startswith | 467 | `path.startswith(...)` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `path_is_under` | `path.startswith` | 418 |
+| unresolved_call | `path_is_under` | `path.startswith` | 467 |
 
 ## Behavior
 

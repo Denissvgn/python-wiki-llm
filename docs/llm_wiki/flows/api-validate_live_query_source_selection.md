@@ -2,7 +2,7 @@
 
 **Entry point:** `validate_live_query_source_selection` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [common](../modules/common.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 4 more
+**Modules touched:** [common](../modules/common.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 7 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,9 @@
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [source_selection](../modules/source_selection.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -23,58 +26,57 @@ sequenceDiagram
     participant p1 as SyncManifest.load
     participant p2 as manifest_path.exists
     participant p3 as FileNotFoundError
-    participant p4 as json.loads
+    participant p4 as json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     participant p5 as manifest_path.read_text
-    participant p6 as SyncManifest.from_payload
-    participant p7 as _mapping_value
-    participant p8 as require_mapping
-    participant p9 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p10 as key.encode
-    participant p11 as SyncManifestError
-    participant p12 as data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p13 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p14 as _copy_sources
-    participant p15 as data.items
-    participant p16 as isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p17 as deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p18 as dict (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p19 as _infer_language_from_path
-    participant p20 as Path (src/llm_wiki_cli/services…_infer_language_from_path)
-    participant p21 as LANGUAGE_EXTENSIONS.items
-    participant p22 as inventory_language_for_path
+    participant p6 as isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    participant p7 as data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    participant p8 as StorageReadSession
+    participant p9 as session.read
+    participant p10 as SyncManifest.from_payload
+    participant p11 as _mapping_value
+    participant p12 as require_mapping
+    participant p13 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    participant p14 as key.encode
+    participant p15 as SyncManifestError
+    participant p16 as data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    participant p17 as type
+    participant p18 as ManifestStoreReader
+    participant p19 as reader.materialize
+    participant p20 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    participant p21 as _copy_sources
     p0->>p1: SyncManifest.load
     p1-->>p2: manifest_path.exists
     p1-->>p3: FileNotFoundError
-    p1-->>p4: json.loads
+    p1-->>p4: json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     p1-->>p5: manifest_path.read_text
-    p1->>p6: SyncManifest.from_payload
-    p6->>p7: _mapping_value
-    p7->>p8: require_mapping
-    p8-->>p9: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p8-->>p9: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p8-->>p10: key.encode
-    p7->>p11: SyncManifestError
-    p7->>p11: SyncManifestError
-    p6-->>p12: data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p6-->>p13: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p6-->>p13: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p6->>p11: SyncManifestError
-    p6->>p11: SyncManifestError
-    p6->>p11: SyncManifestError
-    p6->>p14: _copy_sources
-    p14->>p7: _mapping_value
-    p14-->>p15: data.items
-    p14-->>p16: isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p14->>p11: SyncManifestError
-    p14-->>p17: deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p14-->>p18: dict (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p14->>p19: _infer_language_from_path
-    p19-->>p20: Path (src/llm_wiki_cli/services…_infer_language_from_path)
-    p19-->>p21: LANGUAGE_EXTENSIONS.items
-    p19->>p22: inventory_language_for_path
+    p1-->>p6: isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    p1-->>p7: data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    p1->>p8: StorageReadSession
+    p1-->>p9: session.read
+    p1->>p10: SyncManifest.from_payload
+    p10->>p11: _mapping_value
+    p11->>p12: require_mapping
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p12-->>p13: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
+    p12-->>p14: key.encode
+    p11->>p15: SyncManifestError
+    p11->>p15: SyncManifestError
+    p10-->>p16: data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p10-->>p17: type
+    p10->>p15: SyncManifestError
+    p10->>p18: ManifestStoreReader
+    p10->>p10: SyncManifest.from_payload
+    p10-->>p19: reader.materialize
+    p10-->>p20: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p10-->>p20: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p10->>p15: SyncManifestError
+    p10->>p15: SyncManifestError
+    p10->>p15: SyncManifestError
+    p10->>p21: _copy_sources
+    p21->>p11: _mapping_value
 ```
 
-> Call sequence diagram shows 30 of 286 interactions; 256 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 316 interactions; 286 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -87,32 +89,32 @@ flowchart LR
     s2["2. SyncManifest.load"]
     s3["3. manifest_path.exists"]
     s4["4. FileNotFoundError"]
-    s5["5. json.loads"]
+    s5["5. json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)"]
     s6["6. manifest_path.read_text"]
-    s7["7. SyncManifest.from_payload"]
-    s8["8. _mapping_value"]
-    s9["9. require_mapping"]
-    s10["10. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s11["11. isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)"]
-    s12["12. key.encode"]
+    s7["7. isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)"]
+    s8["8. data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)"]
+    s9["9. StorageReadSession"]
+    s10["10. session.read"]
+    s11["11. SyncManifest.from_payload"]
+    s12["12. _mapping_value"]
     s1 -->|"SyncManifest.load(wiki_root)"| s2
     s2 -. "manifest_path.exists(data not statically known)" .-> s3
     s2 -. "FileNotFoundError(manifest_path)" .-> s4
-    s2 -. "json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)" .-> s5
+    s2 -. "json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)" .-> s5
     s2 -. "manifest_path.read_text(encoding='utf-8')" .-> s6
-    s2 -->|"SyncManifest.from_payload(data)"| s7
-    s7 -->|"_mapping_value(value, 'manifest')"| s8
-    s8 -->|"require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))"| s9
-    s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s10
-    s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s11
-    s9 -. "key.encode('utf-8')" .-> s12
+    s2 -. "isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)(data, dict)" .-> s7
+    s2 -. "data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)('version')" .-> s8
+    s2 -->|"StorageReadSession(wiki_dir)"| s9
+    s2 -. "session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)" .-> s10
+    s2 -->|"SyncManifest.from_payload(decode_bytes(...), object_reader=session.read)"| s11
+    s11 -->|"_mapping_value(value, 'manifest')"| s12
     b0["filesystem_read manifest_path.read_text"]
     s2 -. "filesystem_read manifest_path.read_text" .-> b0
     click s1 "../modules/documentation_query_builder.md"
     click s2 "../modules/sync_manifest.md"
-    click s7 "../modules/sync_manifest.md"
-    click s8 "../modules/sync_manifest.md"
-    click s9 "../modules/validation.md"
+    click s9 "../modules/knowledge_storage_io.md"
+    click s11 "../modules/sync_manifest.md"
+    click s12 "../modules/sync_manifest.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
 ```
@@ -122,50 +124,50 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `validate_live_query_source_selection` | `source_root: Path`, `wiki_root: Path`, `live_identity: Mapping[str, object] \| None`, `live_selection_inputs: Mapping[str, object] \| None \| object`, `operation: str`, `allow_empty_wiki: bool` | `SyncManifestError`, `_UNSET_LIVE_SELECTION_INPUTS`, `SourceSelectionError` | - | `none` |
-| `SyncManifest.load` | `wiki_dir: Path` | `MANIFEST_FILENAME` | - | `cls.from_payload(...)` |
+| `SyncManifest.load` | `wiki_dir: Path` | `MANIFEST_FILENAME`, `MANIFEST_FILENAME` | - | `manifest`, `cls.from_payload(...)` |
 | `manifest_path.exists` | - | - | - | - |
 | `FileNotFoundError` | - | - | - | - |
-| `json.loads` | - | - | - | - |
+| `json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | - | - | - | - |
 | `manifest_path.read_text` | - | - | - | - |
-| `SyncManifest.from_payload` | `value: object` | `MANIFEST_VERSION`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `Mapping` | `legacy_surfaces[...]`, `surfaces[...]` | `manifest`, `manifest` |
+| `isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | - | - | - | - |
+| `data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | - | - | - | - |
+| `StorageReadSession` | - | - | - | - |
+| `session.read` | - | - | - | - |
+| `SyncManifest.from_payload` | `value: object`, `object_reader` | `MANIFEST_VERSION`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `Mapping` | `manifest.storage_version`, `manifest.storage_objects`, `legacy_surfaces[...]`, `surfaces[...]` | `manifest`, `manifest`, `manifest` |
 | `_mapping_value` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
-| `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
-| `key.encode` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_live_query_source_selection | SyncManifest.load | 298 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1080 | `manifest_path.exists(data not statically known)` |
-| SyncManifest.load | FileNotFoundError | 1081 | `FileNotFoundError(manifest_path)` |
-| SyncManifest.load | json.loads | 1100 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
-| SyncManifest.load | manifest_path.read_text | 1101 | `manifest_path.read_text(encoding='utf-8')` |
-| SyncManifest.load | SyncManifest.from_payload | 1105 | `cls.from_payload(data)` |
-| SyncManifest.from_payload | _mapping_value | 956 | `_mapping_value(value, 'manifest')` |
-| _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| SyncManifest.load | manifest_path.exists | 1125 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | FileNotFoundError | 1126 | `FileNotFoundError(manifest_path)` |
+| SyncManifest.load | json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1145 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
+| SyncManifest.load | manifest_path.read_text | 1146 | `manifest_path.read_text(encoding='utf-8')` |
+| SyncManifest.load | isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1150 | `isinstance(data, dict)` |
+| SyncManifest.load | data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1150 | `data.get('version')` |
+| SyncManifest.load | StorageReadSession | 1153 | `StorageReadSession(wiki_dir)` |
+| SyncManifest.load | session.read | 1154 | `session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)` |
+| SyncManifest.load | SyncManifest.from_payload | 1155 | `cls.from_payload(decode_bytes(...), object_reader=session.read)` |
+| SyncManifest.from_payload | _mapping_value | 992 | `_mapping_value(value, 'manifest')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1101 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1146 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1080 |
-| external_call | `SyncManifest.load` | `FileNotFoundError` | 1081 |
-| external_call | `SyncManifest.load` | `json.loads` | 1100 |
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1125 |
+| external_call | `SyncManifest.load` | `FileNotFoundError` | 1126 |
+| external_call | `SyncManifest.load` | `json.loads` | 1145 |
+| external_call | `SyncManifest.load` | `isinstance` | 1150 |
+| unresolved_call | `SyncManifest.load` | `data.get` | 1150 |
+| unresolved_call | `SyncManifest.load` | `session.read` | 1154 |
 | step_limit | `validate_live_query_source_selection` | `first 12 steps` | 0 |
 | truncated_flow | `validate_live_query_source_selection` | `depth limit` | 0 |
 

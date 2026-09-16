@@ -136,14 +136,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 564 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 565 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 566 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 567 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 568 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 569 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | _commit_sharded | 572 | `_commit_sharded(plan, fault_injector)` |
-| _commit_sharded | _absolute_path | 682 | `_absolute_path(plan.knowledge_index.path.parent)` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 618 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 619 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 620 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 621 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 622 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 623 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | _commit_sharded | 626 | `_commit_sharded(plan, fault_injector)` |
+| _commit_sharded | _absolute_path | 738 | `_absolute_path(plan.knowledge_index.path.parent)` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 29 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 29 | `os.path.abspath(path)` |
 | _absolute_path | first_unsafe_path_component | 30 | `first_unsafe_path_component(path)` |
@@ -158,12 +158,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 564 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 565 |
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 566 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 567 |
-| external_call | `commit_knowledge_artifacts` | `callable` | 568 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 569 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 618 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 619 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 620 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 621 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 622 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 623 |
 | external_call | `_absolute_path` | `os.path.abspath` | 29 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |

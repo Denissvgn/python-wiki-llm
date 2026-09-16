@@ -1,6 +1,6 @@
 # KnowledgeCommitResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:215`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:219`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -15,13 +15,13 @@ Outcome of a real or dry-run commit.
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `surface_index` | `PlannedArtifactWrite` | *required* | — |
-| `knowledge_index` | `PlannedArtifactWrite` | *required* | — |
-| `manifest` | `PlannedArtifactWrite` | *required* | — |
+| `surface_index` | `PlannedArtifactWrite \| SpooledArtifactWrite` | *required* | — |
+| `knowledge_index` | `PlannedArtifactWrite \| SpooledArtifactWrite` | *required* | — |
+| `manifest` | `PlannedArtifactWrite \| SpooledArtifactWrite` | *required* | — |
 | `committed_manifest` | `SyncManifest` | *required* | — |
 | `evaluated_envelope_hash` | `str` | *required* | — |
 | `dry_run` | `bool` | *required* | — |
-| `storage_objects` | `tuple[PlannedArtifactWrite, ...]` | `()` | — |
+| `storage_objects` | `tuple[PlannedArtifactWrite \| SpooledArtifactWrite, ...]` | `()` | — |
 | `storage_format` | `str` | `'v1'` | — |
 
 ## Methods

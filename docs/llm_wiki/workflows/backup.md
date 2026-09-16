@@ -8,16 +8,17 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_storage.digest`
 2. `knowledge_storage.digest`
-3. `knowledge_storage.canonical_bytes`
-4. `knowledge_storage.KnowledgeStorageError`
+3. `knowledge_storage.digest`
+4. `knowledge_storage.canonical_bytes`
 5. `knowledge_storage.KnowledgeStorageError`
-6. `knowledge_storage_io.read_guarded`
-7. `knowledge_storage.KnowledgeStorageError`
-8. `filesystem_guard.ensure_guarded_directory`
+6. `knowledge_storage.KnowledgeStorageError`
+7. `knowledge_storage_io.read_guarded`
+8. `knowledge_storage.KnowledgeStorageError`
 9. `filesystem_guard.ensure_guarded_directory`
-10. `knowledge_storage_io.read_guarded`
-11. `knowledge_storage.KnowledgeStorageError`
-12. `filesystem_guard.atomic_write_guarded_bytes`
+10. `filesystem_guard.ensure_guarded_directory`
+11. `knowledge_storage_io.read_guarded`
+12. `knowledge_storage.KnowledgeStorageError`
+13. `filesystem_guard.atomic_write_guarded_bytes`
 
 ## Touches
 

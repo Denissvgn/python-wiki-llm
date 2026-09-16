@@ -136,13 +136,13 @@ flowchart LR
 |---|---|---:|---|
 | list_wiki_pages | _validate_wiki_dir | 1559 | `_validate_wiki_dir(wiki_dir)` |
 | _validate_wiki_dir | validate_path | 2913 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 133 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 134 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 137 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 139 | `PathValidationError(...)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
 | list_wiki_pages | _wiki_page_payload | 1561 | `_wiki_page_payload(page)` |
 | list_wiki_pages | collect_wiki_pages | 1562 | `wiki_surface.collect_wiki_pages(wiki_root)` |
 
@@ -157,11 +157,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 135 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
 | external_call | `validate_path` | `Path.cwd` | 135 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 137 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
 | step_limit | `list_wiki_pages` | `first 12 steps` | 0 |
 
 ## Behavior

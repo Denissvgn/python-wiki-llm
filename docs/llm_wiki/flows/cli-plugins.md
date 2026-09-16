@@ -75,7 +75,7 @@ sequenceDiagram
     p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)
 ```
 
-> Call sequence diagram shows 30 of 359 interactions; 329 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 360 interactions; 330 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -76,7 +76,7 @@ sequenceDiagram
     p20-->>p22: walk (src/llm_wiki_cli/services…pe.py:_validate_json_tree)
 ```
 
-> Call sequence diagram shows 30 of 494 interactions; 464 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 511 interactions; 481 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

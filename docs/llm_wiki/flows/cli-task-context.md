@@ -29,6 +29,7 @@
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [plugins](../modules/plugins.md)
 - [request_json](../modules/request_json.md)
@@ -38,7 +39,6 @@
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
-- [sync_manifest](../modules/sync_manifest.md)
 - [task_cmd](../modules/task_cmd.md)
 - [task_context](../modules/task_context.md)
 - [task_context_v2](../modules/task_context_v2.md)
@@ -109,7 +109,7 @@ sequenceDiagram
     p20-->>p22: any (src/llm_wiki_cli/services…w_profile.py:exact_fields)
 ```
 
-> Call sequence diagram shows 30 of 773 interactions; 743 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 772 interactions; 742 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

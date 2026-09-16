@@ -58,12 +58,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| filtered_trimmed_text_list | isinstance | 936 | `isinstance(value, Sequence)` |
-| filtered_trimmed_text_list | isinstance | 936 | `isinstance(value, (...))` |
-| filtered_trimmed_text_list | sorted | 938 | `sorted(...)` |
-| filtered_trimmed_text_list | item.strip | 939 | `item.strip(data not statically known)` |
-| filtered_trimmed_text_list | isinstance | 939 | `isinstance(item, str)` |
-| filtered_trimmed_text_list | item.strip | 939 | `item.strip(data not statically known)` |
+| filtered_trimmed_text_list | isinstance | 974 | `isinstance(value, Sequence)` |
+| filtered_trimmed_text_list | isinstance | 974 | `isinstance(value, (...))` |
+| filtered_trimmed_text_list | sorted | 976 | `sorted(...)` |
+| filtered_trimmed_text_list | item.strip | 977 | `item.strip(data not statically known)` |
+| filtered_trimmed_text_list | isinstance | 977 | `isinstance(item, str)` |
+| filtered_trimmed_text_list | item.strip | 977 | `item.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -73,10 +73,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `filtered_trimmed_text_list` | `isinstance` | 936 |
-| external_call | `filtered_trimmed_text_list` | `sorted` | 938 |
-| unresolved_call | `filtered_trimmed_text_list` | `item.strip` | 939 |
-| external_call | `filtered_trimmed_text_list` | `isinstance` | 939 |
+| external_call | `filtered_trimmed_text_list` | `isinstance` | 974 |
+| external_call | `filtered_trimmed_text_list` | `sorted` | 976 |
+| unresolved_call | `filtered_trimmed_text_list` | `item.strip` | 977 |
+| external_call | `filtered_trimmed_text_list` | `isinstance` | 977 |
 
 ## Behavior
 

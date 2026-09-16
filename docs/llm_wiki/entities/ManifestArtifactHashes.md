@@ -35,15 +35,18 @@ All-or-none exact-byte commitment to the generated artifact set.
 flowchart LR
     n0["ManifestArtifactHashes (src/llm_wiki_cli/services/sync_manifest.py)"]
     n1["_validate_native_marker (src/llm_wiki_cli/services/documentation_wiki_input.py)"]
-    n2["ManifestArtifactHashes.from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n3["SyncManifest.with_artifact_hashes (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n2["src/llm_wiki_cli/services/manifest_storage.py"]
+    n3["ManifestArtifactHashes.from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n4["SyncManifest.with_artifact_hashes (src/llm_wiki_cli/services/sync_manifest.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/sync_manifest.md"
     click n1 "../modules/documentation_wiki_input.md"
-    click n2 "../modules/sync_manifest.md"
+    click n2 "../modules/manifest_storage.md"
     click n3 "../modules/sync_manifest.md"
+    click n4 "../modules/sync_manifest.md"
 ```
 
 ### Summary
@@ -57,6 +60,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_validate_native_marker` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `manifest_storage` | import | [manifest_storage](../modules/manifest_storage.md) | — |
 | `ManifestArtifactHashes.from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 | `ManifestArtifactHashes.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `SyncManifest.with_artifact_hashes` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |

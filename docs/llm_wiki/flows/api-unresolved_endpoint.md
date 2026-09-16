@@ -34,16 +34,15 @@ sequenceDiagram
     participant p14 as require_nonempty_text
     participant p15 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p16 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p17 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p18 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p19 as frozenset
-    participant p20 as choice_error
-    participant p21 as endpoint.get
-    participant p22 as _only_fields
-    participant p23 as require_exact_fields
-    participant p24 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p25 as str
-    participant p26 as set
+    participant p17 as contains_control_character
+    participant p18 as frozenset
+    participant p19 as choice_error
+    participant p20 as endpoint.get
+    participant p21 as _only_fields
+    participant p22 as require_exact_fields
+    participant p23 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p24 as str
+    participant p25 as set
     p0-->>p1: list
     p0->>p2: _normalise_endpoint
     p2->>p3: _object
@@ -63,20 +62,20 @@ sequenceDiagram
     p13->>p14: require_nonempty_text
     p14-->>p15: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p14-->>p16: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p14-->>p17: any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p14-->>p18: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p14-->>p18: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p12-->>p19: frozenset
-    p12-->>p20: choice_error
-    p2-->>p21: endpoint.get
-    p2->>p22: _only_fields
-    p22->>p23: require_exact_fields
-    p23-->>p24: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p23-->>p25: str
-    p23-->>p26: set
+    p14->>p17: contains_control_character
+    p12-->>p18: frozenset
+    p12-->>p19: choice_error
+    p2-->>p20: endpoint.get
+    p2->>p21: _only_fields
+    p21->>p22: require_exact_fields
+    p22-->>p23: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p22-->>p24: str
+    p22-->>p25: set
+    p22-->>p25: set
+    p22-->>p25: set
 ```
 
-> Call sequence diagram shows 30 of 202 interactions; 172 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 217 interactions; 187 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -142,9 +141,9 @@ flowchart LR
 | unresolved_endpoint | _normalise_endpoint | 297 | `_normalise_endpoint(value, 'endpoint')` |
 | _normalise_endpoint | _object | 1404 | `_object(value, path)` |
 | _object | require_mapping | 2302 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
 | _object | KnowledgeGraphError | 2304 | `KnowledgeGraphError(path, 'must be an object')` |
 | _object | KnowledgeGraphError | 2306 | `KnowledgeGraphError(path, 'object keys must be strings')` |
 | _object | dict | 2308 | `dict(selected)` |
@@ -158,9 +157,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
 | step_limit | `unresolved_endpoint` | `first 12 steps` | 0 |
 | truncated_flow | `unresolved_endpoint` | `depth limit` | 0 |
 

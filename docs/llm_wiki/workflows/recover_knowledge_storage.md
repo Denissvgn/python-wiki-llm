@@ -20,10 +20,12 @@
 10. `knowledge_storage.KnowledgeStorageError`
 11. `knowledge_storage.digest`
 12. `knowledge_storage.KnowledgeStorageError`
-13. `knowledge_artifacts.PlannedArtifactWrite`
-14. `knowledge_storage.digest`
-15. `knowledge_artifacts.KnowledgeCommitPlan`
-16. `knowledge_artifacts._commit_sharded`
+13. `knowledge_storage.digest`
+14. `knowledge_storage.KnowledgeStorageError`
+15. `knowledge_artifacts.PlannedArtifactWrite`
+16. `knowledge_storage.digest`
+17. `knowledge_artifacts.KnowledgeCommitPlan`
+18. `knowledge_artifacts._commit_sharded`
 
 ## Touches
 
@@ -35,4 +37,4 @@
 
 ## Behavior
 
-Reads a bounded recovery catalog and verifies the saved artifacts through the supported storage reader. It refuses roots outside the recorded migration or authored authority that has changed. The guarded writer restores the exact original physical files and commitments, including the original packed compression profile when applicable.
+Verify recovery metadata, historical artifacts and current authored authority. Refuse a knowledge or manifest root outside the recorded migration, then restore exact historical bytes with the manifest last. Recovery changes no Git history.

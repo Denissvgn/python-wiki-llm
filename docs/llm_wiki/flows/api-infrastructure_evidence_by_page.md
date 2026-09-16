@@ -27,8 +27,10 @@ sequenceDiagram
     participant p15 as _default_path_error
     participant p16 as SharedValidationError
     participant p17 as os.fspath
-    participant p18 as raw.encode
-    participant p19 as raw.replace
+    participant p18 as _syntax_key
+    participant p19 as type
+    participant p20 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p21 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
     p0->>p1: _prior_infrastructure_state
     p1-->>p2: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)
     p1-->>p2: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)
@@ -55,13 +57,15 @@ sequenceDiagram
     p13-->>p17: os.fspath
     p13-->>p14: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
     p13->>p15: _default_path_error
-    p13-->>p18: raw.encode
-    p13->>p15: _default_path_error
-    p13->>p15: _default_path_error
-    p13-->>p19: raw.replace
+    p13->>p18: _syntax_key
+    p18-->>p19: type
+    p18-->>p20: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p18-->>p21: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
 ```
 
-> Call sequence diagram shows 30 of 150 interactions; 120 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 165 interactions; 135 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -152,6 +156,7 @@ flowchart LR
 | external_call | `_prior_infrastructure_state` | `deepcopy` | 121 |
 | external_call | `_record_mapping` | `isinstance` | 149 |
 | step_limit | `infrastructure_evidence_by_page` | `first 12 steps` | 0 |
+| truncated_flow | `infrastructure_evidence_by_page` | `depth limit` | 0 |
 
 ## Behavior
 

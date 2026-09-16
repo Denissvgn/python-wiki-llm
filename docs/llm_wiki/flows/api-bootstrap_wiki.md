@@ -2,7 +2,7 @@
 
 **Entry point:** `bootstrap_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), and 30 more
+**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), and 33 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,9 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_maps](../modules/module_maps.md)
 - [paths](../modules/paths.md)
@@ -105,7 +108,7 @@ sequenceDiagram
     p19-->>p26: index.is_symlink
 ```
 
-> Call sequence diagram shows 30 of 2099 interactions; 2069 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2122 interactions; 2092 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

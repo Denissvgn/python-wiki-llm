@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [query_cmd](../modules/query_cmd.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 15 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 17 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,8 @@
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [query_cmd](../modules/query_cmd.md)
 - [request_json](../modules/request_json.md)
@@ -84,7 +86,7 @@ sequenceDiagram
     p14->>p16: InvalidRequestError
 ```
 
-> Call sequence diagram shows 30 of 943 interactions; 913 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 951 interactions; 921 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

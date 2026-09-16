@@ -22,6 +22,7 @@ documentation-run service to persist ``wiki-input.json`` later.
 | `.knowledge_model` | `ComputedFreshness` |
 | `.knowledge_observability` | `knowledge_freshness_hint` |
 | `.knowledge_packs` | `PACK_NAME`, `INDEX_NAME` |
+| `.manifest_storage` | `OBJECT_NAME` |
 | `.source_selection` | `SOURCE_SELECTION_GENERATION_INPUT_KEY`, `SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY`, `SourceSelectionError`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `LEGACY_MANIFEST_VERSION`, `MANIFEST_VERSION`, `ManifestArtifactHashes`, `SyncManifest`, `SyncManifestError` |
@@ -61,9 +62,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (14) |
+| Outbound | `src` (15) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -128,7 +129,7 @@ flowchart LR
 | `_decode_json_object` | `(raw: bytes, entry: _InputFile, label: str) -> dict[str, Any]` | — | — |
 | `_read_verified_bytes` | `(entry: _InputFile) -> bytes` | — | — |
 | `_validated_manifest_version` | `(manifest: Mapping[str, Any]) -> int` | — | — |
-| `_validated_sync_manifest` | `(manifest: Mapping[str, Any]) -> SyncManifest` | — | — |
+| `_validated_sync_manifest` | `(manifest: Mapping[str, Any], *, files = None) -> SyncManifest` | — | — |
 | `_validate_legacy_manifest` | `(manifest: Mapping[str, Any]) -> None` | — | — |
 | `_validate_generation_inputs` | `(generation_inputs: Mapping[str, Any]) -> None` | — | — |
 | `_validated_native_surface` | `(surface_bytes: bytes) -> Mapping[str, Any]` | — | — |

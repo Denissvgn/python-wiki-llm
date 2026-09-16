@@ -1,6 +1,6 @@
 # _TreeBuilder
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:213`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage.py:212`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage](../modules/knowledge_storage.md)
@@ -17,7 +17,7 @@ Builds deterministic radix catalogs and record objects from stable owner and rec
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(target: int)` | — | — |
+| `__init__` | `(target: int, objects = None)` | — | — |
 | `emit` | `(payload: dict[str, Any], count: int) -> dict[str, Any]` | — | — |
 | `tree` | `(collection: str, records: list[dict[str, Any]], prefix: str = '') -> dict[str, Any]` | — | — |
 

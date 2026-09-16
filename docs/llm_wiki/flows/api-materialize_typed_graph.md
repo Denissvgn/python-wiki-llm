@@ -30,8 +30,8 @@ sequenceDiagram
     participant p10 as require_nonempty_text
     participant p11 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p12 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p13 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p14 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p13 as contains_control_character
+    participant p14 as pattern.search
     participant p15 as validate_exact_page_coordinate
     participant p16 as isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)
     participant p17 as value.strip (src/llm_wiki_cli/services…ate_exact_page_coordinate)
@@ -56,9 +56,8 @@ sequenceDiagram
     p9->>p10: require_nonempty_text
     p10-->>p11: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p10-->>p12: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p13: any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p10->>p13: contains_control_character
+    p13-->>p14: pattern.search
     p9->>p3: KnowledgeGraphError
     p8->>p15: validate_exact_page_coordinate
     p15-->>p16: isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)
@@ -68,9 +67,10 @@ sequenceDiagram
     p15-->>p19: any (src/llm_wiki_cli/services…ate_exact_page_coordinate)
     p15-->>p20: ord (src/llm_wiki_cli/services…ate_exact_page_coordinate)
     p15-->>p20: ord (src/llm_wiki_cli/services…ate_exact_page_coordinate)
+    p15->>p18: WikiSurfaceError
 ```
 
-> Call sequence diagram shows 30 of 851 interactions; 821 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 867 interactions; 837 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -34,7 +34,6 @@
 - [knowledge_generation](../modules/knowledge_generation.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
-- [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
@@ -46,6 +45,7 @@
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
@@ -121,7 +121,7 @@ sequenceDiagram
     p4->>p6: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 4094 interactions; 4064 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4062 interactions; 4032 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

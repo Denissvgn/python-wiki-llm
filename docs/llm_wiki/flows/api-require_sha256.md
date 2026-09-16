@@ -15,17 +15,16 @@ sequenceDiagram
     participant p3 as require_nonempty_text
     participant p4 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
     participant p5 as value.strip
-    participant p6 as any
-    participant p7 as ord
+    participant p6 as contains_control_character
+    participant p7 as pattern.search
     participant p8 as _SHA256_RE.fullmatch
     p0-->>p1: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
     p0->>p2: require_trimmed_text
     p2->>p3: require_nonempty_text
     p3-->>p4: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
     p3-->>p5: value.strip
-    p3-->>p6: any
-    p3-->>p7: ord
-    p3-->>p7: ord
+    p3->>p6: contains_control_character
+    p6-->>p7: pattern.search
     p0-->>p8: _SHA256_RE.fullmatch
 ```
 
@@ -40,22 +39,21 @@ flowchart LR
     s4["4. require_nonempty_text"]
     s5["5. isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)"]
     s6["6. value.strip"]
-    s7["7. any"]
-    s8["8. ord"]
-    s9["9. ord"]
-    s10["10. _SHA256_RE.fullmatch"]
+    s7["7. contains_control_character"]
+    s8["8. pattern.search"]
+    s9["9. _SHA256_RE.fullmatch"]
     s1 -. "isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)" .-> s2
     s1 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s3
     s3 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s4
     s4 -. "isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)" .-> s5
     s4 -. "value.strip(data not statically known)" .-> s6
-    s4 -. "any(...)" .-> s7
-    s4 -. "ord(character)" .-> s8
-    s4 -. "ord(character)" .-> s9
-    s1 -. "_SHA256_RE.fullmatch(parsed)" .-> s10
+    s4 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s7
+    s7 -. "pattern.search(value)" .-> s8
+    s1 -. "_SHA256_RE.fullmatch(parsed)" .-> s9
     click s1 "../modules/validation.md"
     click s3 "../modules/validation.md"
     click s4 "../modules/validation.md"
+    click s7 "../modules/validation.md"
 ```
 
 ### Step data
@@ -68,24 +66,22 @@ flowchart LR
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 | `_SHA256_RE.fullmatch` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_sha256 | isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256) | 1100 | `isinstance(value, str)` |
-| require_sha256 | require_trimmed_text | 1104 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
-| require_trimmed_text | require_nonempty_text | 658 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text) | 574 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
-| require_nonempty_text | any | 582 | `any(...)` |
-| require_nonempty_text | ord | 583 | `ord(character)` |
-| require_nonempty_text | ord | 584 | `ord(character)` |
-| require_sha256 | _SHA256_RE.fullmatch | 1111 | `_SHA256_RE.fullmatch(parsed)` |
+| require_sha256 | isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256) | 1138 | `isinstance(value, str)` |
+| require_sha256 | require_trimmed_text | 1142 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
+| require_trimmed_text | require_nonempty_text | 696 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text) | 623 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_sha256 | _SHA256_RE.fullmatch | 1149 | `_SHA256_RE.fullmatch(parsed)` |
 
 ### Boundary effects
 
@@ -95,13 +91,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_sha256` | `isinstance` | 1100 |
-| external_call | `require_nonempty_text` | `isinstance` | 574 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| external_call | `require_nonempty_text` | `any` | 582 |
-| external_call | `require_nonempty_text` | `ord` | 583 |
-| external_call | `require_nonempty_text` | `ord` | 584 |
-| unresolved_call | `require_sha256` | `_SHA256_RE.fullmatch` | 1111 |
+| external_call | `require_sha256` | `isinstance` | 1138 |
+| external_call | `require_nonempty_text` | `isinstance` | 623 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| unresolved_call | `require_sha256` | `_SHA256_RE.fullmatch` | 1149 |
 
 ## Behavior
 

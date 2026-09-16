@@ -17,8 +17,8 @@ sequenceDiagram
     participant p5 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
     participant p6 as len
     participant p7 as value.strip
-    participant p8 as any
-    participant p9 as ord
+    participant p8 as contains_control_character
+    participant p9 as pattern.search
     participant p10 as HostBrokerAuthenticationError
     participant p11 as _HOST_BROKER_AUTHENTICATOR.set
     participant p12 as _HOST_BROKER_AUTHENTICATOR.reset
@@ -30,9 +30,8 @@ sequenceDiagram
     p4-->>p6: len
     p4-->>p6: len
     p4-->>p7: value.strip
-    p4-->>p8: any
-    p4-->>p9: ord
-    p4-->>p9: ord
+    p4->>p8: contains_control_character
+    p8-->>p9: pattern.search
     p3->>p10: HostBrokerAuthenticationError
     p0-->>p11: _HOST_BROKER_AUTHENTICATOR.set
     p0-->>p12: _HOST_BROKER_AUTHENTICATOR.reset
@@ -52,9 +51,9 @@ flowchart LR
     s7["7. len"]
     s8["8. len"]
     s9["9. value.strip"]
-    s10["10. any"]
-    s11["11. ord"]
-    s12["12. ord"]
+    s10["10. contains_control_character"]
+    s11["11. pattern.search"]
+    s12["12. HostBrokerAuthenticationError"]
     s1 -. "isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)(authenticator, HostBrokerAuthenticator)" .-> s2
     s1 -->|"HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')"| s3
     s1 -->|"_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')"| s4
@@ -63,13 +62,15 @@ flowchart LR
     s5 -. "len(value)" .-> s7
     s5 -. "len(value)" .-> s8
     s5 -. "value.strip(data not statically known)" .-> s9
-    s5 -. "any(...)" .-> s10
-    s5 -. "ord(character)" .-> s11
-    s5 -. "ord(character)" .-> s12
+    s5 -->|"contains_control_character(value, reject_delete_character=reject_delete_character)"| s10
+    s10 -. "pattern.search(value)" .-> s11
+    s4 -->|"HostBrokerAuthenticationError(...)"| s12
     click s1 "../modules/host_broker.md"
     click s3 "../modules/host_broker.md"
     click s4 "../modules/host_broker.md"
     click s5 "../modules/validation.md"
+    click s10 "../modules/validation.md"
+    click s12 "../modules/host_broker.md"
 ```
 
 ### Step data
@@ -85,9 +86,9 @@ flowchart LR
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
+| `HostBrokerAuthenticationError` | - | - | - | - |
 
 ### Call data
 
@@ -97,13 +98,13 @@ flowchart LR
 | use_calibration_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 605 | `isinstance(value, str)` |
-| require_bounded_text | len | 606 | `len(value)` |
-| require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
-| require_bounded_text | any | 611 | `any(...)` |
-| require_bounded_text | ord | 612 | `ord(character)` |
-| require_bounded_text | ord | 613 | `ord(character)` |
+| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 650 | `isinstance(value, str)` |
+| require_bounded_text | len | 651 | `len(value)` |
+| require_bounded_text | len | 652 | `len(value)` |
+| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| _require_bounded_text | HostBrokerAuthenticationError | 324 | `HostBrokerAuthenticationError(...)` |
 
 ### Boundary effects
 
@@ -114,11 +115,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `use_calibration_host_broker_authenticator` | `isinstance` | 195 |
-| external_call | `require_bounded_text` | `isinstance` | 605 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 608 |
-| external_call | `require_bounded_text` | `any` | 611 |
-| external_call | `require_bounded_text` | `ord` | 612 |
-| external_call | `require_bounded_text` | `ord` | 613 |
+| external_call | `require_bounded_text` | `isinstance` | 650 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
 | step_limit | `use_calibration_host_broker_authenticator` | `first 12 steps` | 0 |
 
 ## Behavior

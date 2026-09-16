@@ -51,11 +51,11 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [PathValidationError](../entities/PathValidationError.md) | Class | 122 | `ValueError` | Raised when a user-provided path escapes the project root. |
-| [AgentConfigState](../entities/AgentConfigState.md) | Enum | 314 | `str`, `Enum` | Compatibility classification for the local agent configuration. |
-| [AgentConfigInspection](../entities/AgentConfigInspection.md) | Class | 324 | — | One safe configuration read with provenance for status reporting. |
-| [_GitignoreRule](../entities/GitignoreRule.md) | Class | 374 | — | — |
-| [GitIgnoreMatcher](../entities/GitIgnoreMatcher.md) | Class | 382 | — | Ordered gitignore matcher for repository scans. |
+| [PathValidationError](../entities/PathValidationError.md) | Class | 123 | `ValueError` | Raised when a user-provided path escapes the project root. |
+| [AgentConfigState](../entities/AgentConfigState.md) | Enum | 315 | `str`, `Enum` | Compatibility classification for the local agent configuration. |
+| [AgentConfigInspection](../entities/AgentConfigInspection.md) | Class | 325 | — | One safe configuration read with provenance for status reporting. |
+| [_GitignoreRule](../entities/GitignoreRule.md) | Class | 375 | — | — |
+| [GitIgnoreMatcher](../entities/GitIgnoreMatcher.md) | Class | 383 | — | Ordered gitignore matcher for repository scans. |
 
 ## Functions
 

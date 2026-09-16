@@ -70,7 +70,7 @@ sequenceDiagram
     p9-->>p10: payload.get (src/llm_wiki_cli/services…validate_dispatch_receipt)
 ```
 
-> Call sequence diagram shows 30 of 1721 interactions; 1691 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1719 interactions; 1689 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

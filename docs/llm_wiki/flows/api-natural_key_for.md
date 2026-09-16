@@ -27,11 +27,10 @@ sequenceDiagram
     participant p15 as _relative_path
     participant p16 as require_repository_relative_path
     participant p17 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p18 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p19 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p20 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p21 as value.startswith (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p22 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p18 as _syntax_key
+    participant p19 as type
+    participant p20 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p21 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
     p0->>p1: _concept_kind
     p1->>p2: validate_concept_kind
     p2->>p3: _machine_text
@@ -55,16 +54,16 @@ sequenceDiagram
     p0->>p15: _relative_path
     p15->>p16: require_repository_relative_path
     p16-->>p17: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p16-->>p18: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p16-->>p19: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p16-->>p20: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p16-->>p20: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p16-->>p21: value.startswith (src/llm_wiki_cli/services…_repository_relative_path)
-    p16-->>p21: value.startswith (src/llm_wiki_cli/services…_repository_relative_path)
-    p16-->>p22: _WINDOWS_DRIVE_PREFIX_RE.match
+    p16->>p18: _syntax_key
+    p18-->>p19: type
+    p18-->>p20: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p18-->>p21: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p18-->>p19: type
+    p18-->>p19: type
+    p18-->>p20: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
 ```
 
-> Call sequence diagram shows 30 of 165 interactions; 135 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 

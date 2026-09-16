@@ -2,10 +2,11 @@
 
 **Entry point:** `build_knowledge_commit_plan` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 20 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 23 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -24,8 +25,10 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
+- [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -39,15 +42,15 @@ sequenceDiagram
     participant p0 as build_knowledge_commit_plan
     participant p1 as Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
     participant p2 as KnowledgeArtifactError
-    participant p3 as current_knowledge_format
-    participant p4 as Path (src/llm_wiki_cli/services…:current_knowledge_format)
-    participant p5 as path.exists (src/llm_wiki_cli/services…:current_knowledge_format)
-    participant p6 as path.is_symlink (src/llm_wiki_cli/services…:current_knowledge_format)
-    participant p7 as (…).exists (src/llm_wiki_cli/services…rrent_knowledge_format, 1)
-    participant p8 as (…).exists (src/llm_wiki_cli/services…:current_knowledge_format)
-    participant p9 as read_guarded
-    participant p10 as type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
-    participant p11 as KnowledgeStorageError
+    participant p3 as current_manifest_format
+    participant p4 as Path (src/llm_wiki_cli/services…y:current_manifest_format)
+    participant p5 as path.exists (src/llm_wiki_cli/services…y:current_manifest_format)
+    participant p6 as path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)
+    participant p7 as (…).exists (src/llm_wiki_cli/services…y:current_manifest_format)
+    participant p8 as KnowledgeStorageError
+    participant p9 as json.loads (src/llm_wiki_cli/services…y:current_manifest_format)
+    participant p10 as read_guarded
+    participant p11 as type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
     participant p12 as _absolute_path
     participant p13 as Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
     participant p14 as os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
@@ -62,21 +65,21 @@ sequenceDiagram
     participant p23 as current.lstat
     p0-->>p1: Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
     p0->>p2: KnowledgeArtifactError
-    p0->>p3: current_knowledge_format
-    p3-->>p4: Path (src/llm_wiki_cli/services…:current_knowledge_format)
-    p3-->>p5: path.exists (src/llm_wiki_cli/services…:current_knowledge_format)
-    p3-->>p6: path.is_symlink (src/llm_wiki_cli/services…:current_knowledge_format)
-    p3-->>p7: (…).exists (src/llm_wiki_cli/services…rrent_knowledge_format, 1)
-    p3->>p2: KnowledgeArtifactError
-    p3-->>p8: (…).exists (src/llm_wiki_cli/services…:current_knowledge_format)
-    p3->>p9: read_guarded
-    p9-->>p10: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
-    p9->>p11: KnowledgeStorageError
-    p9-->>p10: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
-    p9-->>p10: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
-    p9-->>p10: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
-    p9->>p11: KnowledgeStorageError
-    p9->>p12: _absolute_path
+    p0->>p3: current_manifest_format
+    p3-->>p4: Path (src/llm_wiki_cli/services…y:current_manifest_format)
+    p3-->>p5: path.exists (src/llm_wiki_cli/services…y:current_manifest_format)
+    p3-->>p6: path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)
+    p3-->>p7: (…).exists (src/llm_wiki_cli/services…y:current_manifest_format)
+    p3->>p8: KnowledgeStorageError
+    p3-->>p9: json.loads (src/llm_wiki_cli/services…y:current_manifest_format)
+    p3->>p10: read_guarded
+    p10-->>p11: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
+    p10->>p8: KnowledgeStorageError
+    p10-->>p11: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
+    p10-->>p11: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
+    p10-->>p11: type (src/llm_wiki_cli/services…torage_io.py:read_guarded)
+    p10->>p8: KnowledgeStorageError
+    p10->>p12: _absolute_path
     p12-->>p13: Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
     p12-->>p14: os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
     p12->>p15: first_unsafe_path_component
@@ -92,7 +95,7 @@ sequenceDiagram
     p15-->>p23: current.lstat
 ```
 
-> Call sequence diagram shows 30 of 2344 interactions; 2314 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2432 interactions; 2402 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -104,24 +107,24 @@ flowchart LR
     s1["1. build_knowledge_commit_plan"]
     s2["2. Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)"]
     s3["3. KnowledgeArtifactError"]
-    s4["4. current_knowledge_format"]
-    s5["5. Path (src/llm_wiki_cli/services…:current_knowledge_format)"]
-    s6["6. path.exists (src/llm_wiki_cli/services…:current_knowledge_format)"]
-    s7["7. path.is_symlink (src/llm_wiki_cli/services…:current_knowledge_format)"]
-    s8["8. (…).exists (src/llm_wiki_cli/services…rrent_knowledge_format, 1)"]
-    s9["9. KnowledgeArtifactError"]
-    s10["10. (…).exists (src/llm_wiki_cli/services…:current_knowledge_format)"]
+    s4["4. current_manifest_format"]
+    s5["5. Path (src/llm_wiki_cli/services…y:current_manifest_format)"]
+    s6["6. path.exists (src/llm_wiki_cli/services…y:current_manifest_format)"]
+    s7["7. path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)"]
+    s8["8. (…).exists (src/llm_wiki_cli/services…y:current_manifest_format)"]
+    s9["9. KnowledgeStorageError"]
+    s10["10. json.loads (src/llm_wiki_cli/services…y:current_manifest_format)"]
     s11["11. read_guarded"]
     s12["12. type (src/llm_wiki_cli/services…torage_io.py:read_guarded)"]
     s1 -. "Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)(wiki_dir)" .-> s2
-    s1 -->|"KnowledgeArtifactError('knowledge_format', 'must be v1, sharded-v2, packed-v3 or packed-v3-deflate')"| s3
-    s1 -->|"current_knowledge_format(root)"| s4
-    s4 -. "Path (src/llm_wiki_cli/services…:current_knowledge_format)(wiki_dir)" .-> s5
-    s4 -. "path.exists (src/llm_wiki_cli/services…:current_knowledge_format)(data not statically known)" .-> s6
-    s4 -. "path.is_symlink (src/llm_wiki_cli/services…:current_knowledge_format)(data not statically known)" .-> s7
-    s4 -. "(…).exists (src/llm_wiki_cli/services…rrent_knowledge_format, 1)(data not statically known)" .-> s8
-    s4 -->|"KnowledgeArtifactError('knowledge_index_bytes', 'packed root is missing; recover it or select an explicit format')"| s9
-    s4 -. "(…).exists (src/llm_wiki_cli/services…:current_knowledge_format)(data not statically known)" .-> s10
+    s1 -->|"KnowledgeArtifactError('manifest_format', 'must be v5 or indexed-v6')"| s3
+    s1 -->|"current_manifest_format(root)"| s4
+    s4 -. "Path (src/llm_wiki_cli/services…y:current_manifest_format)(wiki_dir)" .-> s5
+    s4 -. "path.exists (src/llm_wiki_cli/services…y:current_manifest_format)(data not statically known)" .-> s6
+    s4 -. "path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)(data not statically known)" .-> s7
+    s4 -. "(…).exists (src/llm_wiki_cli/services…y:current_manifest_format)(data not statically known)" .-> s8
+    s4 -->|"KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')"| s9
+    s4 -. "json.loads (src/llm_wiki_cli/services…y:current_manifest_format)(...)" .-> s10
     s4 -->|"read_guarded(path, MAX_EXPANDED_BYTES)"| s11
     s11 -. "type (src/llm_wiki_cli/services…torage_io.py:read_guarded)(maximum)" .-> s12
     b0["mutation pinned.append"]
@@ -130,8 +133,8 @@ flowchart LR
     s11 -. "mutation directories_list.append" .-> b1
     click s1 "../modules/knowledge_artifacts.md"
     click s3 "../modules/knowledge_artifacts.md"
-    click s4 "../modules/knowledge_artifacts.md"
-    click s9 "../modules/knowledge_artifacts.md"
+    click s4 "../modules/manifest_storage.md"
+    click s9 "../modules/knowledge_storage.md"
     click s11 "../modules/knowledge_storage_io.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
@@ -142,16 +145,16 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_knowledge_commit_plan` | `wiki_dir: str \| Path`, `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes \| None`, `manifest: SyncManifest`, `knowledge_format: str \| None`, `knowledge_index: KnowledgeIndex \| None` | `PACKED_FORMATS`, `KnowledgeStorageError`, `KnowledgeStorageError`, `SyncManifest`, `SURFACE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME` | - | `KnowledgeCommitPlan(...)` |
+| `build_knowledge_commit_plan` | `wiki_dir: str \| Path`, `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes \| None`, `manifest: SyncManifest`, `knowledge_format: str \| None`, `knowledge_index: KnowledgeIndex \| None`, `manifest_format: str \| None`, `prior: ValidatedKnowledgeArtifacts \| None` | `PACKED_FORMATS`, `KnowledgeStorageError`, `KnowledgeStorageError`, `SyncManifest`, `SURFACE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME` | `committed_manifest.storage_version`, `committed_manifest.storage_objects`, `committed_manifest.storage_version`, `committed_manifest.storage_objects` | `KnowledgeCommitPlan(...)` |
 | `Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)` | - | - | - | - |
 | `KnowledgeArtifactError` | - | - | - | - |
-| `current_knowledge_format` | `wiki_dir: str \| Path` | `KNOWLEDGE_INDEX_FILENAME`, `MAX_EXPANDED_BYTES`, `KnowledgeArtifactError`, `STORE_SCHEMA`, `PACKED_SCHEMA`, `KNOWLEDGE_SCHEMA_VERSION`, `KnowledgeStorageError` | - | `...`, `...`, `'sharded-v2'`, `...`, `'v1'` |
-| `Path (src/llm_wiki_cli/services…:current_knowledge_format)` | - | - | - | - |
-| `path.exists (src/llm_wiki_cli/services…:current_knowledge_format)` | - | - | - | - |
-| `path.is_symlink (src/llm_wiki_cli/services…:current_knowledge_format)` | - | - | - | - |
-| `(…).exists (src/llm_wiki_cli/services…rrent_knowledge_format, 1)` | - | - | - | - |
-| `KnowledgeArtifactError` | - | - | - | - |
-| `(…).exists (src/llm_wiki_cli/services…:current_knowledge_format)` | - | - | - | - |
+| `current_manifest_format` | `wiki_dir: str \| Path` | `MAX_EXPANDED_BYTES`, `VERSION` | - | `'v5'`, `'v5'`, `'v5'`, `'indexed-v6'` |
+| `Path (src/llm_wiki_cli/services…y:current_manifest_format)` | - | - | - | - |
+| `path.exists (src/llm_wiki_cli/services…y:current_manifest_format)` | - | - | - | - |
+| `path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)` | - | - | - | - |
+| `(…).exists (src/llm_wiki_cli/services…y:current_manifest_format)` | - | - | - | - |
+| `KnowledgeStorageError` | - | - | - | - |
+| `json.loads (src/llm_wiki_cli/services…y:current_manifest_format)` | - | - | - | - |
 | `read_guarded` | `path: Path`, `maximum: int`, `offset: int`, `length: int \| None`, `file_bytes: int \| None` | `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES`, `os`, `os`, `os`, `os`, `os`, `os` | - | `ReadObservation(...)` |
 | `type (src/llm_wiki_cli/services…torage_io.py:read_guarded)` | - | - | - | - |
 
@@ -159,16 +162,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 465 | `Path(wiki_dir)` |
-| build_knowledge_commit_plan | KnowledgeArtifactError | 467 | `KnowledgeArtifactError('knowledge_format', 'must be v1, sharded-v2, packed-v3 or packed-v3-deflate')` |
-| build_knowledge_commit_plan | current_knowledge_format | 469 | `current_knowledge_format(root)` |
-| current_knowledge_format | Path (src/llm_wiki_cli/services…:current_knowledge_format) | 647 | `Path(wiki_dir)` |
-| current_knowledge_format | path.exists (src/llm_wiki_cli/services…:current_knowledge_format) | 648 | `path.exists(data not statically known)` |
-| current_knowledge_format | path.is_symlink (src/llm_wiki_cli/services…:current_knowledge_format) | 648 | `path.is_symlink(data not statically known)` |
-| current_knowledge_format | (…).exists (src/llm_wiki_cli/services…rrent_knowledge_format, 1) | 649 | `(path.parent / '.llm-wiki-knowledge/packs').exists(data not statically known)` |
-| current_knowledge_format | KnowledgeArtifactError | 650 | `KnowledgeArtifactError('knowledge_index_bytes', 'packed root is missing; recover it or select an explicit format')` |
-| current_knowledge_format | (…).exists (src/llm_wiki_cli/services…:current_knowledge_format) | 651 | `(path.parent / '.llm-wiki-knowledge').exists(data not statically known)` |
-| current_knowledge_format | read_guarded | 653 | `read_guarded(path, MAX_EXPANDED_BYTES)` |
+| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 500 | `Path(wiki_dir)` |
+| build_knowledge_commit_plan | KnowledgeArtifactError | 503 | `KnowledgeArtifactError('manifest_format', 'must be v5 or indexed-v6')` |
+| build_knowledge_commit_plan | current_manifest_format | 504 | `current_manifest_format(root)` |
+| current_manifest_format | Path (src/llm_wiki_cli/services…y:current_manifest_format) | 239 | `Path(wiki_dir)` |
+| current_manifest_format | path.exists (src/llm_wiki_cli/services…y:current_manifest_format) | 240 | `path.exists(data not statically known)` |
+| current_manifest_format | path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format) | 240 | `path.is_symlink(data not statically known)` |
+| current_manifest_format | (…).exists (src/llm_wiki_cli/services…y:current_manifest_format) | 241 | `(path.parent / '.llm-wiki-manifest').exists(data not statically known)` |
+| current_manifest_format | KnowledgeStorageError | 242 | `KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')` |
+| current_manifest_format | json.loads (src/llm_wiki_cli/services…y:current_manifest_format) | 245 | `json.loads(...)` |
+| current_manifest_format | read_guarded | 245 | `read_guarded(path, MAX_EXPANDED_BYTES)` |
 | read_guarded | type (src/llm_wiki_cli/services…torage_io.py:read_guarded) | 51 | `type(maximum)` |
 
 ### Boundary effects
@@ -182,10 +185,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `current_knowledge_format` | `path.exists` | 648 |
-| unresolved_call | `current_knowledge_format` | `path.is_symlink` | 648 |
-| unresolved_call | `current_knowledge_format` | `(path.parent / '.llm-wiki-knowledge/packs').exists` | 649 |
-| unresolved_call | `current_knowledge_format` | `(path.parent / '.llm-wiki-knowledge').exists` | 651 |
+| unresolved_call | `current_manifest_format` | `path.exists` | 240 |
+| unresolved_call | `current_manifest_format` | `path.is_symlink` | 240 |
+| unresolved_call | `current_manifest_format` | `(path.parent / '.llm-wiki-manifest').exists` | 241 |
+| external_call | `current_manifest_format` | `json.loads` | 245 |
 | external_call | `read_guarded` | `type` | 51 |
 | step_limit | `build_knowledge_commit_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_commit_plan` | `depth limit` | 0 |

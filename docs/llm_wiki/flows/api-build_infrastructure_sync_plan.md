@@ -76,7 +76,9 @@ sequenceDiagram
     p24->>p26: InfrastructureSyncError
 ```
 
-> Call sequence diagram shows 30 of 270 interactions; 240 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 284 interactions; 254 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -171,6 +173,7 @@ flowchart LR
 | unresolved_call | `infrastructure_page_name` | `source_path.replace` | 28 |
 | unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 46 |
 | step_limit | `build_infrastructure_sync_plan` | `first 12 steps` | 0 |
+| truncated_flow | `build_infrastructure_sync_plan` | `depth limit` | 0 |
 
 ## Behavior
 

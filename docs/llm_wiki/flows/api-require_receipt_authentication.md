@@ -19,8 +19,8 @@ sequenceDiagram
     participant p7 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
     participant p8 as len
     participant p9 as value.strip
-    participant p10 as any
-    participant p11 as ord
+    participant p10 as contains_control_character
+    participant p11 as pattern.search
     participant p12 as HostBrokerAuthenticationError
     participant p13 as authenticator.authenticate_receipt
     participant p14 as isinstance (src/llm_wiki_cli/services…ire_receipt_authentication)
@@ -35,9 +35,8 @@ sequenceDiagram
     p6-->>p8: len
     p6-->>p8: len
     p6-->>p9: value.strip
-    p6-->>p10: any
-    p6-->>p11: ord
-    p6-->>p11: ord
+    p6->>p10: contains_control_character
+    p10-->>p11: pattern.search
     p5->>p12: HostBrokerAuthenticationError
     p0-->>p13: authenticator.authenticate_receipt
     p0->>p12: HostBrokerAuthenticationError
@@ -110,10 +109,10 @@ flowchart LR
 | require_process_host_broker_authenticator | HostBrokerAuthenticationUnavailable | 241 | `HostBrokerAuthenticationUnavailable('The process host broker authenticator is malformed.')` |
 | require_process_host_broker_authenticator | _require_bounded_text | 244 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 605 | `isinstance(value, str)` |
-| require_bounded_text | len | 606 | `len(value)` |
-| require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
+| require_bounded_text | isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text) | 650 | `isinstance(value, str)` |
+| require_bounded_text | len | 651 | `len(value)` |
+| require_bounded_text | len | 652 | `len(value)` |
+| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -125,8 +124,8 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `require_process_host_broker_authenticator` | `_HOST_BROKER_AUTHENTICATOR.get` | 234 |
 | external_call | `require_process_host_broker_authenticator` | `isinstance` | 240 |
-| external_call | `require_bounded_text` | `isinstance` | 605 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 608 |
+| external_call | `require_bounded_text` | `isinstance` | 650 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
 | step_limit | `require_receipt_authentication` | `first 12 steps` | 0 |
 
 ## Behavior

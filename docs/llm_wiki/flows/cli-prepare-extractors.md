@@ -73,7 +73,7 @@ sequenceDiagram
     p7->>p9: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 958 interactions; 928 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 961 interactions; 931 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

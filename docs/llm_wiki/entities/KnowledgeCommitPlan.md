@@ -1,6 +1,6 @@
 # KnowledgeCommitPlan
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:190`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:194`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -15,12 +15,12 @@ A fully validated, immutable three-artifact commit plan.
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `surface_index` | `PlannedArtifactWrite` | *required* | — |
-| `knowledge_index` | `PlannedArtifactWrite` | *required* | — |
-| `manifest` | `PlannedArtifactWrite` | *required* | — |
+| `surface_index` | `PlannedArtifactWrite \| SpooledArtifactWrite` | *required* | — |
+| `knowledge_index` | `PlannedArtifactWrite \| SpooledArtifactWrite` | *required* | — |
+| `manifest` | `PlannedArtifactWrite \| SpooledArtifactWrite` | *required* | — |
 | `committed_manifest` | `SyncManifest` | *required* | — |
 | `evaluated_envelope_hash` | `str` | *required* | — |
-| `storage_objects` | `tuple[PlannedArtifactWrite, ...]` | `()` | — |
+| `storage_objects` | `tuple[PlannedArtifactWrite \| SpooledArtifactWrite, ...]` | `()` | — |
 | `storage_format` | `str` | `'v1'` | — |
 
 ## Methods

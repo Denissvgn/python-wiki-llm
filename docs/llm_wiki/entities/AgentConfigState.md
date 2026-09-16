@@ -1,6 +1,6 @@
 # AgentConfigState
 
-**Location:** `src/llm_wiki_cli/config.py:314`
+**Location:** `src/llm_wiki_cli/config.py:315`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [config](../modules/config.md)

@@ -10,6 +10,7 @@ Encodes the logical native knowledge model as a bounded root and immutable JSON 
 
 | Source | Symbols |
 |--------|---------|
+| `.canonical_json` | `canonical_chunks`, `scalar_size` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_governance` | `natural_key_for` |
@@ -18,8 +19,8 @@ Encodes the logical native knowledge model as a bounded root and immutable JSON 
 | `.section_ownership` | `validate_section_ownership` |
 | `__future__` | `annotations` |
 | `collections` | `Counter`, `defaultdict` |
-| `collections.abc` | `Callable`, `Iterable`, `Mapping` |
-| `dataclasses` | `dataclass` |
+| `collections.abc` | `MutableMapping`, `Callable`, `Iterable`, `Mapping` |
+| `dataclasses` | `dataclass`, `field` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `re` | `re` |
@@ -43,21 +44,21 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (8) |
-| Outbound | `src` (6) |
+| Inbound | `src` (13) |
+| Outbound | `src` (7) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 44 | `ValueError` | A storage contract, integrity or bounded-work failure. |
-| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 181 | — | — |
-| [_Encoder](../entities/Encoder.md) | 187 | — | — |
-| [_TreeBuilder](../entities/TreeBuilder.md) | 213 | — | — |
-| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 454 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
-| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 463 | — | Read committed objects through a caller-owned bounded I/O boundary. |
+| [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 45 | `ValueError` | A storage contract, integrity or bounded-work failure. |
+| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 179 | — | — |
+| [_Encoder](../entities/Encoder.md) | 186 | — | — |
+| [_TreeBuilder](../entities/TreeBuilder.md) | 212 | — | — |
+| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 456 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
+| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 465 | — | Read committed objects through a caller-owned bounded I/O boundary. |
 
 ## Functions
 
@@ -79,6 +80,6 @@ flowchart LR
 | `_owner` | `(concept: Mapping[str, Any]) -> str` | — | — |
 | `_node_aliases` | `(node: Any) -> set[str]` | — | — |
 | `_concept_aliases` | `(concept: Mapping[str, Any]) -> set[str]` | — | — |
-| `build_knowledge_store` | `(payload: Mapping[str, Any], *, target_bytes: int = TARGET_OBJECT_BYTES) -> KnowledgeStorePlan` | — | Encode a canonical logical v1 payload after its semantic validation. |
+| `build_knowledge_store` | `(payload: Mapping[str, Any], *, target_bytes: int = TARGET_OBJECT_BYTES, objects = None) -> KnowledgeStorePlan` | — | Encode a canonical logical v1 payload after its semantic validation. |
 | `parse_store_root` | `(raw: bytes) -> dict[str, Any]` | — | — |
 | `_validate_selected_record` | `(collection: str, row: dict[str, Any], value: Any) -> None` | — | Reuse semantic record owners without issuing a whole-bundle verdict. |

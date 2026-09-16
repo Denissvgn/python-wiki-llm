@@ -82,7 +82,7 @@ sequenceDiagram
     p7->>p28: is_valid_sha256
 ```
 
-> Call sequence diagram shows 30 of 599 interactions; 569 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 602 interactions; 572 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

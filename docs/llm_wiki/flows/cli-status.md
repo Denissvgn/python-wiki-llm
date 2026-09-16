@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [status_cmd](../modules/status_cmd.md)
-**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), and 31 more
+**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), and 32 more
 
 **Complete modules touched:**
 
@@ -27,6 +27,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [legacy_hooks](../modules/legacy_hooks.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [paths](../modules/paths.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -104,7 +105,7 @@ sequenceDiagram
     p14-->>p24: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
 ```
 
-> Call sequence diagram shows 30 of 1909 interactions; 1879 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1956 interactions; 1926 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -191,13 +192,13 @@ flowchart LR
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/status_cmd.py:run) | 855 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | validate_path | 856 | `validate_path(str(...), '--wiki-dir')` |
-| validate_path | PathValidationError | 133 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 134 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 137 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 139 | `PathValidationError(...)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
 | run | str (src/llm_wiki_cli/commands/status_cmd.py:run) | 856 | `str(wiki_dir)` |
 | run | require_safe_wiki_scaffold | 858 | `require_safe_wiki_scaffold(wiki_dir)` |
 
@@ -219,11 +220,11 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 855 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 135 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
 | external_call | `validate_path` | `Path.cwd` | 135 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 137 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

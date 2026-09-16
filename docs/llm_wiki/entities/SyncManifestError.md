@@ -95,4 +95,4 @@ flowchart LR
 | `_captured_source_hashes` | call | [sync_manifest](../modules/sync_manifest.md) | 5 |
 | `_copy_sources` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 
-> References: showing 12 of 33 logical references; 21 omitted by the 12-row generated summary limit.
+> References: showing 12 of 34 logical references; 22 omitted by the 12-row generated summary limit.

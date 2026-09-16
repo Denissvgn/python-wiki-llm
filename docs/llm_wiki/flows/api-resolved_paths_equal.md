@@ -50,10 +50,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolved_paths_equal | Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal) | 450 | `Path(left).resolve(data not statically known)` |
-| resolved_paths_equal | Path | 450 | `Path(left)` |
-| resolved_paths_equal | Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1) | 450 | `Path(left).resolve(data not statically known)` |
-| resolved_paths_equal | Path | 450 | `Path(right)` |
+| resolved_paths_equal | Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal) | 499 | `Path(left).resolve(data not statically known)` |
+| resolved_paths_equal | Path | 499 | `Path(left)` |
+| resolved_paths_equal | Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1) | 499 | `Path(left).resolve(data not statically known)` |
+| resolved_paths_equal | Path | 499 | `Path(right)` |
 
 ### Boundary effects
 
@@ -63,8 +63,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `resolved_paths_equal` | `Path(left).resolve` | 450 |
-| unresolved_call | `resolved_paths_equal` | `Path(right).resolve` | 450 |
+| unresolved_call | `resolved_paths_equal` | `Path(left).resolve` | 499 |
+| unresolved_call | `resolved_paths_equal` | `Path(right).resolve` | 499 |
 
 ## Behavior
 

@@ -74,7 +74,7 @@ sequenceDiagram
     p19-->>p23: any (src/llm_wiki_cli/services…e_portable_path_component)
 ```
 
-> Call sequence diagram shows 30 of 405 interactions; 375 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 406 interactions; 376 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

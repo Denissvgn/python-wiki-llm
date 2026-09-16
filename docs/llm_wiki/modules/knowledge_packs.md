@@ -4,16 +4,19 @@
 
 ## Description
 
-Implements the explicit packed knowledge v3 format while retaining the v2 logical object model. Stable hash buckets group objects into bounded immutable ZIP files. Separate bounded catalogs map logical object hashes to member coordinates and pack buckets to container commitments. Selected reads authenticate individual ranges and disclose unread archive scope; full reads additionally validate complete ZIP structure, pack hashes and exact membership. Both stored and individually compressed members preserve the same native records.
+Stores unchanged logical knowledge objects in bounded indexed ZIP containers. Full capture inflates each member once and reconciles its verified content with all ZIP headers and routing coordinates. Generation can reuse compatible whole packs or copy verified compressed member payloads; the resulting generation still undergoes complete validation.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
+| `.knowledge_artifacts` | `require_validated_artifacts`, `validated_artifact_bytes` |
 | `.knowledge_storage` | `COLLECTIONS`, `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_READ_OBJECTS`, `MAX_ROOT_BYTES`, `OBJECT_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStorePlan`, `KnowledgeStoreReader`, `build_knowledge_store`, `canonical_bytes`, `decode_bytes`, `digest`, `parse_store_root`, `_fields`, `_hash`, `_integer` |
+| `.storage_spool` | `ByteSpool` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
-| `collections.abc` | `Callable`, `Mapping` |
+| `collections.abc` | `Callable`, `Mapping`, `MutableMapping` |
+| `contextlib` | `nullcontext` |
 | `hashlib` | `hashlib` |
 | `io` | `io` |
 | `json` | `json` |
@@ -36,13 +39,18 @@ flowchart LR
     n5["src/llm_wiki_cli/services/knowledge_storage_access.py"]
     n6["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
     n7["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
-    n8["src/llm_wiki_cli/services/task_context_v2.py"]
+    n8["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n9["src/llm_wiki_cli/services/storage_spool.py"]
+    n10["src/llm_wiki_cli/services/task_context_v2.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2
     n1 --> n3
     n1 --> n4
+    n1 --> n9
+    n2 --> n1
     n2 --> n4
+    n2 --> n9
     n3 --> n1
     n3 --> n2
     n5 --> n1
@@ -51,13 +59,18 @@ flowchart LR
     n6 --> n1
     n6 --> n2
     n6 --> n4
+    n6 --> n5
     n6 --> n7
     n7 --> n1
     n7 --> n2
     n7 --> n4
     n8 --> n2
     n8 --> n4
-    n8 --> n5
+    n8 --> n9
+    n9 --> n4
+    n10 --> n2
+    n10 --> n4
+    n10 --> n5
     click n0 "../modules/documentation_wiki_input.md"
     click n1 "../modules/knowledge_artifacts.md"
     click n2 "../modules/knowledge_packs.md"
@@ -66,7 +79,9 @@ flowchart LR
     click n5 "../modules/knowledge_storage_access.md"
     click n6 "../modules/knowledge_storage_diagnostics.md"
     click n7 "../modules/knowledge_storage_lifecycle.md"
-    click n8 "../modules/task_context_v2.md"
+    click n8 "../modules/knowledge_stream_audit.md"
+    click n9 "../modules/storage_spool.md"
+    click n10 "../modules/task_context_v2.md"
 ```
 
 ### Internal neighbors
@@ -79,14 +94,17 @@ flowchart LR
 | Inbound | [knowledge_storage_access](../modules/knowledge_storage_access.md) |
 | Inbound | [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md) |
 | Inbound | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) |
+| Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
 | Inbound | [task_context_v2](../modules/task_context_v2.md) |
+| Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
+| Outbound | [storage_spool](../modules/storage_spool.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PackedKnowledgeStoreReader](../entities/PackedKnowledgeStoreReader.md) | 328 | `KnowledgeStoreReader` | — |
+| [PackedKnowledgeStoreReader](../entities/PackedKnowledgeStoreReader.md) | 428 | `KnowledgeStoreReader` | — |
 
 ## Functions
 
@@ -102,12 +120,16 @@ flowchart LR
 | `_pack_descriptor` | `(value: Any) -> dict[str, Any]` | — | — |
 | `parse_packed_root` | `(raw: bytes) -> dict[str, Any]` | — | — |
 | `_zip_bytes` | `(members: Mapping[str, bytes], compression: str) -> tuple[bytes, dict[str, list[Any]]]` | — | — |
-| `build_packed_store` | `(payload: Mapping[str, Any], *, compression: str = 'stored') -> KnowledgeStorePlan` | — | — |
+| `_zip_reusing` | `(members: Mapping[str, bytes], compression: str, reusable: Mapping[str, tuple[bytes, int]]) -> tuple[bytes, dict[str, list[Any]]]` | — | Write the pinned ZIP profile, copying verified compressed payloads verbatim. |
+| `build_packed_store` | `(payload: Mapping[str, Any], *, compression: str = 'stored', prior = None, objects = None) -> KnowledgeStorePlan` | — | — |
+| `_pack_logical` | `(logical, compression, prior, objects)` | — | — |
 | `_coordinates` | `(value: Any) -> tuple[str, list[Any]]` | — | — |
 | `_position` | `(value: Any, descriptor: dict[str, Any]) -> tuple[dict[str, Any], list[Any]]` | — | — |
-| `decode_member` | `(raw: bytes, position: list[Any], compression: str, commitment: str) -> bytes` | — | — |
-| `validate_pack` | `(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]` | — | Validate a complete bounded archive, including all otherwise unread metadata. |
+| `_member_header` | `(position: list[Any], compression: str) -> bytes` | — | — |
+| `decode_member` | `(raw: bytes, position: list[Any], compression: str, commitment: str \| None, *, verify_name: bool = True) -> bytes` | — | — |
+| `_pack_structure` | `(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]` | — | Check all container/header bytes; member content validation is separate. |
+| `validate_pack` | `(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]` | — | Validate a whole archive and each logical member, inflating each once. |
 | `inspect_pack` | `(raw: bytes, relative: str) -> dict[str, Any]` | — | Recognize a complete generated archive for diagnostics and orphan cleanup. |
 | `open_knowledge_store` | `(root_bytes: bytes, read_file: Callable[[str, int], bytes], *, read_range: RangeReader \| None = None, **limits) -> KnowledgeStoreReader` | — | — |
 | `physical_objects` | `(reader: KnowledgeStoreReader) -> Mapping[str, bytes]` | — | — |
-| `build_storage` | `(payload: Mapping[str, Any], storage_format: str) -> KnowledgeStorePlan` | — | — |
+| `build_storage` | `(payload: Mapping[str, Any], storage_format: str, *, prior = None, objects = None) -> KnowledgeStorePlan` | — | — |

@@ -40,7 +40,7 @@ sequenceDiagram
     participant p20 as _relative_path
     participant p21 as require_repository_relative_path
     participant p22 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p23 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p23 as _syntax_key
     p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)
     p0-->>p2: TypeError
     p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)
@@ -70,10 +70,10 @@ sequenceDiagram
     p5->>p20: _relative_path
     p20->>p21: require_repository_relative_path
     p21-->>p22: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p21-->>p23: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    p21->>p23: _syntax_key
 ```
 
-> Call sequence diagram shows 30 of 223 interactions; 193 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 238 interactions; 208 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

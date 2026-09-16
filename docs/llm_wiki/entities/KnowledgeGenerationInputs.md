@@ -1,6 +1,6 @@
 # KnowledgeGenerationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:96`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:97`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -45,6 +45,7 @@ inventory source.
 | `plugins` | `Sequence[ProducerComponentInput]` | `()` | — |
 | `previous_producer` | `ProducerRecord \| None` | `None` | — |
 | `configured_public_identity` | `str \| None` | `None` | — |
+| `prior_artifacts` | `ValidatedKnowledgeArtifacts \| None` | `None` | — |
 | `previous_manifest` | `SyncManifest \| None` | `None` | — |
 | `next_manifest` | `SyncManifest \| None` | `None` | — |
 | `asset_paths` | `AbstractSet[str]` | `frozenset()` | — |
