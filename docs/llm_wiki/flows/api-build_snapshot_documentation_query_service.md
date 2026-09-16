@@ -163,7 +163,7 @@ flowchart LR
 | build_snapshot_documentation_query_service | _wiki_anchor | 424 | `_wiki_anchor(wiki_root)` |
 | _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 4985 | `str(current)` |
 | _wiki_anchor | directory_identity | 4985 | `directory_identity(current)` |
-| directory_identity | path.stat | 662 | `path.stat(follow_symlinks=False)` |
+| directory_identity | path.stat | 686 | `path.stat(follow_symlinks=False)` |
 | _wiki_anchor | current.exists | 4986 | `current.exists(data not statically known)` |
 | _wiki_anchor | root.exists | 4989 | `root.exists(data not statically known)` |
 | _wiki_anchor | _domain_hash | 4990 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
@@ -180,7 +180,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `directory_identity` | `path.stat` | 662 |
+| unresolved_call | `directory_identity` | `path.stat` | 686 |
 | unresolved_call | `_wiki_anchor` | `current.exists` | 4986 |
 | unresolved_call | `_wiki_anchor` | `root.exists` | 4989 |
 | unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 198 |

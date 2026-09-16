@@ -2,7 +2,7 @@
 
 **Entry point:** `build_live_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [documentation_queries](../modules/documentation_queries.md), and 9 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [documentation_queries](../modules/documentation_queries.md), and 10 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,7 @@
 - [context_packet](../modules/context_packet.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -80,7 +81,7 @@ sequenceDiagram
     p4->>p6: _default_path_error
 ```
 
-> Call sequence diagram shows 30 of 1012 interactions; 982 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1031 interactions; 1001 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

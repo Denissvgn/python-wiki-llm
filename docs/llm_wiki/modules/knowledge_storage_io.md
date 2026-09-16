@@ -10,7 +10,7 @@ Reads bounded complete files or exact pack ranges through guarded regular files 
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `guard_windows_directory_chain`, `open_windows_readonly_file` |
+| `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_storage` | `KnowledgeStorageError`, `MAX_EXPANDED_BYTES` |
 | `.validation` | `is_portable_relative_path` |
@@ -49,14 +49,15 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ReadObservation](../entities/ReadObservation.md) | 42 | — | — |
-| [StorageReadSession](../entities/StorageReadSession.md) | 124 | — | Request-owned file observations, with charged authoritative rechecks. |
+| [ReadObservation](../entities/ReadObservation.md) | 57 | — | — |
+| [StorageReadSession](../entities/StorageReadSession.md) | 149 | — | Request-owned file observations, with charged authoritative rechecks. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_identity` | `(value: os.stat_result) -> tuple[int, ...]` | — | — |
+| `_assert_windows_file_binding` | `(path: Path, named: os.stat_result, opened: os.stat_result) -> None` | — | Compare stable Windows fields across pathname and descriptor channels. |
 | `_require_relative_name` | `(relative: str) -> None` | — | — |
 | `_absolute_path` | `(path: Path) -> Path` | — | — |
 | `read_guarded` | `(path: Path, maximum: int, *, offset: int = 0, length: int \| None = None, file_bytes: int \| None = None) -> ReadObservation` | — | Read a regular file through pinned/no-follow ancestors and bound its bytes. |

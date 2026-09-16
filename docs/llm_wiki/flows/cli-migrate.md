@@ -103,7 +103,7 @@ sequenceDiagram
     p18->>p19: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 3621 interactions; 3591 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3627 interactions; 3597 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

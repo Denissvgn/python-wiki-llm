@@ -93,4 +93,4 @@ flowchart LR
 | `hold_windows_readonly_file` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
 | `open_windows_guarded_lock_file` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
 
-> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

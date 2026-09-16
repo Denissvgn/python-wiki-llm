@@ -20,6 +20,7 @@ respect the same directory and ignore boundaries as other discovered inputs.
 |--------|---------|
 | `..config` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text`, `is_agent_worktree_path` |
 | `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `LANGUAGE_EXTENSIONS`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
+| `.filesystem_guard` | `fresh_no_follow_stat`, `windows_object_identity`, `_windows_path_handle_metadata` |
 | `.knowledge_envelope` | `ConsumedInput` |
 | `.progress` | `observed_phase` |
 | `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
@@ -53,20 +54,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (39) |
-| Outbound | `src` (6) |
+| Outbound | `src` (7) |
 
-> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 101 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
-| [SourceSnapshotMutationError](../entities/SourceSnapshotMutationError.md) | 110 | `SourceSnapshotError` | Input identity changed while its content commitment was captured. |
-| [SourceFile](../entities/SourceFile.md) | 115 | — | A source-tree file discovered relative to a snapshot root. |
-| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 127 | — | Filesystem identity used for cheap between-stage mutation checks. |
-| [SourceSnapshot](../entities/SourceSnapshot.md) | 139 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 450 | — | — |
+| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 102 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
+| [SourceSnapshotMutationError](../entities/SourceSnapshotMutationError.md) | 111 | `SourceSnapshotError` | Input identity changed while its content commitment was captured. |
+| [SourceFile](../entities/SourceFile.md) | 116 | — | A source-tree file discovered relative to a snapshot root. |
+| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 128 | — | Filesystem identity used for cheap between-stage mutation checks. |
+| [SourceSnapshot](../entities/SourceSnapshot.md) | 140 | — | Filtered source-tree discovery results shared by lint/extract paths. |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 451 | — | — |
 
 ## Functions
 
@@ -85,6 +86,7 @@ flowchart LR
 | `_sha256_bytes` | `(content: bytes) -> str` | — | — |
 | `_sha256_file` | `(path: Path, *, metrics: dict[str, int] \| None = None, max_bytes: int \| None = None, integrity_out: dict[Path, SourceFileIntegrity] \| None = None) -> str \| None` | — | — |
 | `_source_file_integrity` | `(path: Path) -> SourceFileIntegrity \| None` | — | — |
+| `_path_bound_file_integrity` | `(path: Path, opened: os.stat_result) -> SourceFileIntegrity \| None` | — | Retain path metadata after binding it to the actual Windows read handle. |
 | `_file_integrity_from_stat` | `(current: os.stat_result) -> SourceFileIntegrity \| None` | — | — |
 | `directory_identity` | `(path: Path) -> tuple[int, ...]` | — | Private object/change identity, never a portable content commitment. |
 | `_captured_file_integrity` | `(root: Path, content_hashes: Mapping[str, str]) -> dict[str, SourceFileIntegrity]` | — | — |

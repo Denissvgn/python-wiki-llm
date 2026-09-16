@@ -1,6 +1,6 @@
 # StorageReadSession
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:124`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:149`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_io](../modules/knowledge_storage_io.md)

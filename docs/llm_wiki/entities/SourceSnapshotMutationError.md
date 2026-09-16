@@ -1,6 +1,6 @@
 # SourceSnapshotMutationError
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:110`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:111`
 **Kind:** Class
 **Bases:** `SourceSnapshotError`
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -26,19 +26,22 @@ flowchart LR
     n1["SourceSnapshotError (src/llm_wiki_cli/services/source_snapshot.py)"]
     n2["src/llm_wiki_cli/services/context_packet.py"]
     n3["_build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n4["_read_ignore_control (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n5["_sha256_file (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n4["_path_bound_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n5["_read_ignore_control (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n6["_sha256_file (src/llm_wiki_cli/services/source_snapshot.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/source_snapshot.md"
     click n1 "../modules/source_snapshot.md"
     click n2 "../modules/context_packet.md"
     click n3 "../modules/source_snapshot.md"
     click n4 "../modules/source_snapshot.md"
     click n5 "../modules/source_snapshot.md"
+    click n6 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -59,5 +62,6 @@ flowchart LR
 |---|---|---|---:|
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `_build_source_snapshot` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
-| `_read_ignore_control` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
-| `_sha256_file` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_path_bound_file_integrity` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
+| `_read_ignore_control` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
+| `_sha256_file` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |

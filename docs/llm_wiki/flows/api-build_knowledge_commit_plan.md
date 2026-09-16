@@ -95,7 +95,7 @@ sequenceDiagram
     p15-->>p23: current.lstat
 ```
 
-> Call sequence diagram shows 30 of 2432 interactions; 2402 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2454 interactions; 2424 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -172,14 +172,14 @@ flowchart LR
 | current_manifest_format | KnowledgeStorageError | 242 | `KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')` |
 | current_manifest_format | json.loads (src/llm_wiki_cli/services…y:current_manifest_format) | 245 | `json.loads(...)` |
 | current_manifest_format | read_guarded | 245 | `read_guarded(path, MAX_EXPANDED_BYTES)` |
-| read_guarded | type (src/llm_wiki_cli/services…torage_io.py:read_guarded) | 51 | `type(maximum)` |
+| read_guarded | type (src/llm_wiki_cli/services…torage_io.py:read_guarded) | 66 | `type(maximum)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pinned.append` | `read_guarded` | 96 |
-| mutation | `directories_list.append` | `read_guarded` | 98 |
+| mutation | `pinned.append` | `read_guarded` | 117 |
+| mutation | `directories_list.append` | `read_guarded` | 119 |
 
 ### Static analysis gaps
 
@@ -189,7 +189,7 @@ flowchart LR
 | unresolved_call | `current_manifest_format` | `path.is_symlink` | 240 |
 | unresolved_call | `current_manifest_format` | `(path.parent / '.llm-wiki-manifest').exists` | 241 |
 | external_call | `current_manifest_format` | `json.loads` | 245 |
-| external_call | `read_guarded` | `type` | 51 |
+| external_call | `read_guarded` | `type` | 66 |
 | step_limit | `build_knowledge_commit_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_commit_plan` | `depth limit` | 0 |
 

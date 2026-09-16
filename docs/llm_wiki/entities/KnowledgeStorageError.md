@@ -95,4 +95,4 @@ flowchart LR
 | `_fail` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 | `_validate_selected_record` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 
-> References: showing 12 of 54 logical references; 42 omitted by the 12-row generated summary limit.
+> References: showing 12 of 55 logical references; 43 omitted by the 12-row generated summary limit.

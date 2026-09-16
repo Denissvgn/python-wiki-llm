@@ -1,6 +1,6 @@
 # SourceFile
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:115`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:116`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -94,4 +94,4 @@ flowchart LR
 | `_file_integrity_from_stat` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_make_source_file` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
 
-> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

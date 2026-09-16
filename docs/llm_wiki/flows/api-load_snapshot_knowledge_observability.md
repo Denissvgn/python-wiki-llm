@@ -2,13 +2,14 @@
 
 **Entry point:** `load_snapshot_knowledge_observability` (`api`)
 **Source:** [knowledge_observability](../modules/knowledge_observability.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), [immutable](../modules/immutable.md), and 28 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), and 29 more
 
 **Complete modules touched:**
 
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
@@ -102,7 +103,7 @@ sequenceDiagram
     p12->>p25: _remember_syntax
 ```
 
-> Call sequence diagram shows 30 of 2145 interactions; 2115 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2164 interactions; 2134 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

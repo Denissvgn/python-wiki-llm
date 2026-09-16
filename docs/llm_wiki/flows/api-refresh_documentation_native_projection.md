@@ -127,7 +127,7 @@ sequenceDiagram
     p23->>p24: _mapping_value
 ```
 
-> Call sequence diagram shows 30 of 5006 interactions; 4976 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 5012 interactions; 4982 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

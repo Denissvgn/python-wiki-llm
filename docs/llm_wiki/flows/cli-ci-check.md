@@ -121,7 +121,7 @@ sequenceDiagram
     p4->>p6: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 4062 interactions; 4032 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4084 interactions; 4054 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

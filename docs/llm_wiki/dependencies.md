@@ -32,20 +32,20 @@ flowchart TD
 |--------|--------|---------|
 | [validation](modules/validation.md) | 56 | 0 |
 | [config](modules/config.md) | 55 | 3 |
-| [source_snapshot](modules/source_snapshot.md) | 39 | 6 |
+| [source_snapshot](modules/source_snapshot.md) | 39 | 7 |
 | [services_contracts](modules/services_contracts.md) | 38 | 0 |
 | [io](modules/io.md) | 38 | 1 |
 | [wiki_surface](modules/wiki_surface.md) | 32 | 1 |
 | [source_selection](modules/source_selection.md) | 31 | 2 |
-| [sync_manifest](modules/sync_manifest.md) | 30 | 7 |
+| [sync_manifest](modules/sync_manifest.md) | 31 | 7 |
 | [knowledge_model](modules/knowledge_model.md) | 27 | 10 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 26 | 1 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 24 | 5 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 23 | 23 |
 | [extraction_service](modules/extraction_service.md) | 21 | 26 |
+| [filesystem_guard](modules/filesystem_guard.md) | 20 | 0 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 20 | 6 |
 | [knowledge_governance](modules/knowledge_governance.md) | 20 | 9 |
-| [filesystem_guard](modules/filesystem_guard.md) | 19 | 0 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 19 | 5 |
 | [plugins](modules/plugins.md) | 17 | 3 |
 | [bootstrap_runtime](modules/bootstrap_runtime.md) | 15 | 31 |
@@ -96,7 +96,7 @@ flowchart TD
 | [section_ownership](modules/section_ownership.md) | 6 | 5 |
 | [api](modules/api.md) | 5 | 40 |
 | [concept_identity](modules/concept_identity.md) | 5 | 1 |
-| [refresh](modules/refresh.md) | 5 | 8 |
+| [refresh](modules/refresh.md) | 5 | 9 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
 | [legacy_hooks](modules/legacy_hooks.md) | 5 | 4 |
 | [metrics](modules/metrics.md) | 5 | 9 |

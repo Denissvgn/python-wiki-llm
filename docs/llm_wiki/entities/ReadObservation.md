@@ -1,6 +1,6 @@
 # ReadObservation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:42`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:57`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_io](../modules/knowledge_storage_io.md)
