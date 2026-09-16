@@ -118,6 +118,22 @@ assert all(item["satisfied"] for item in client("read", "--no-session")["coverag
 client("handoff", "--no-session")
 assert client("resume", "--no-session")["basis_matches"] is True
 
+# Adopt through the installed CLI and keep the legacy workflow usable.
+preview = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
+                          "--to", "sharded-v2", "--dry-run", "--recovery-dir", "storage-recovery"]).stdout)
+assert preview["changed"]
+run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
+     "--to", "sharded-v2", "--recovery-dir", "storage-recovery"])
+storage = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "storage-check", "--wiki-dir", wiki, "--full"]).stdout)
+assert storage["ok"] and storage["format"] == "sharded-v2"
+scoped_request = {**request, "schema_version": "llm-wiki-task-request/v2"}
+scoped = api.build_task_context(scoped_request, src_dir=source, wiki_dir=wiki)
+scoped_payload = api.validate_task_context(scoped.rendered, scoped_request)
+assert scoped_payload["packet"] is None and scoped_payload["storage"]["whole_store_validated"] is False
+assert all(item["satisfied"] for item in scoped_payload["coverage"])
+assert run(["-I", "-m", "llm_wiki_cli.cli", "task-context", "--src-dir", source, "--wiki-dir", wiki,
+            "--request", "-"], input_text=json.dumps(scoped_request)).stdout == scoped.rendered
+
 
 async def transport(transport_name):
     from mcp import ClientSession, StdioServerParameters
@@ -126,7 +142,7 @@ async def transport(transport_name):
 
     probe_type = runpy.run_path(probe_path)["McpProbe"]
     output = Path(receipt).with_name(Path(receipt).stem + "-" + transport_name + ".json")
-    probe = probe_type(output, ["initialize", "v3", "task", "invalid", "session", "mutation", "close"])
+    probe = probe_type(output, ["initialize", "v3", "task", "scoped", "invalid", "session", "mutation", "close"])
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
@@ -193,6 +209,19 @@ run_mcp_server(McpServerConfig(src_dir="src", wiki_dir="wiki", counter=Counter()
                     result = await session.call_tool("build_task_context", {"request": request})
                     assert not result.isError and result.structuredContent is None and len(result.content) == 1
                     assert text_of(result) == expected.rendered
+                with probe.step("scoped"):
+                    expected_scoped = api.build_task_context(scoped_request, src_dir=source, wiki_dir=wiki, counter=ByteCounter())
+                    result = await session.call_tool("build_task_context", {"request": scoped_request})
+                    assert result.structuredContent is None and text_of(result) == expected_scoped.rendered
+                    api.validate_task_context(text_of(result), scoped_request, counter=ByteCounter())
+                    opened_scoped = await session.call_tool("open_context_session", {})
+                    scoped_handle = structured(opened_scoped)["session_id"]
+                    scoped_first = await session.call_tool("read_context_session", {"session_id": scoped_handle, "request": scoped_request})
+                    scoped_id = structured(scoped_first)["result_id"]
+                    scoped_warm = await session.call_tool("read_context_session", {"session_id": scoped_handle,
+                        "request": scoped_request, "if_result_id": scoped_id})
+                    assert structured(scoped_warm)["state"] == "unchanged"
+                    await session.call_tool("close_context_session", {"session_id": scoped_handle})
                 with probe.step("invalid"):
                     for bad in ({"protocol": "future", "budget_tokens": 10000},
                                 {**req, "tokenizer": "/outside"}, {**req, "budget_tokens": True},
@@ -240,4 +269,5 @@ if mode == "mcp":
 print(json.dumps({"sdk": "verified" if mode == "mcp" else "not-used",
     "task_facts": 2, "canonical_cli_parity": True, "read_only": True,
     "edit_and_behavior": True, "semantic_note_preserved": True, "resume_detects_drift": True,
-    "cold_resume": True, "real_model_execution": False}, sort_keys=True))
+    "cold_resume": True, "sharded_migration": True, "scoped_task_v2": True,
+    "real_model_execution": False}, sort_keys=True))

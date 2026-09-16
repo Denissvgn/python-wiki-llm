@@ -2222,6 +2222,7 @@ def _load_and_validate_metadata(
         surface_bytes=surface_bytes,
         knowledge_bytes=knowledge_bytes,
         manifest=sync_manifest,
+        files=files,
     )
     _validate_native_marker(marker, validated)
     _validate_native_markdown_snapshot(
@@ -2480,12 +2481,22 @@ def _validated_native_artifacts(
     surface_bytes: bytes,
     knowledge_bytes: bytes,
     manifest: SyncManifest,
+    files: Mapping[str, _InputFile] | None = None,
 ) -> ValidatedKnowledgeArtifacts:
+    def read_object(path: str, maximum: int) -> bytes:
+        entry = None if files is None else files.get(path)
+        if entry is None:
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects", "a committed object is absent")
+        raw = _read_verified_bytes(entry)
+        if len(raw) > maximum:
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects", "object exceeds its declared size")
+        return raw
     try:
         return validate_knowledge_artifacts(
             surface_index_bytes=surface_bytes,
             knowledge_index_bytes=knowledge_bytes,
             manifest=manifest,
+            object_reader=read_object,
         )
     except KnowledgeArtifactError as exc:
         if exc.field.startswith("knowledge_index"):
@@ -2710,6 +2721,8 @@ def _unknown_entries(files: tuple[_InputFile, ...]) -> tuple[str, ...]:
 
 
 def _is_known_wiki_path(relative_path: str) -> bool:
+    if re.fullmatch(r"\.llm-wiki-knowledge/objects/([0-9a-f]{2})/\1[0-9a-f]{62}\.json", relative_path):
+        return True
     path = PurePosixPath(relative_path)
     if len(path.parts) == 1:
         return relative_path in _CANONICAL_ROOT_FILES

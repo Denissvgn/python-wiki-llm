@@ -560,6 +560,9 @@ def _add_ci_check_command(subparsers):
         "ci-check", help="Run strict wiki validation and write a CI report"
     )
     _add_progress_arguments(ci_parser)
+    ci_parser.add_argument("--storage-check", action="store_true", help="Include native storage size policy in the existing report")
+    ci_parser.add_argument("--storage-git-base", default=None, help="Explicit excluded ref for the storage Git check")
+    ci_parser.add_argument("--storage-git-head", default=None, help="Explicit included ref for the storage Git check")
     ci_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
     ci_parser.add_argument(
         "--allow-external-src",
@@ -741,6 +744,30 @@ def _add_knowledge_command(subparsers):
         help="Manage durable concept identity, lifecycle, review, and verification",
     )
     actions = knowledge.add_subparsers(dest="knowledge_action", required=True)
+
+    storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
+    _add_knowledge_wiki_argument(storage_migrate)
+    storage_migrate.add_argument("--to", choices=["sharded-v2"], required=True)
+    storage_migrate.add_argument("--recovery-dir", default=None,
+                                 help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
+    _add_knowledge_dry_run(storage_migrate)
+    storage_recover = actions.add_parser("recover-storage", help="Restore the verified snapshot of an interrupted storage migration")
+    _add_knowledge_wiki_argument(storage_recover)
+    storage_recover.add_argument("--recovery-dir", required=True)
+    _add_knowledge_dry_run(storage_recover)
+    storage_export = actions.add_parser("export-storage", help="Export complete bounded v1 knowledge for an older consumer")
+    _add_knowledge_wiki_argument(storage_export)
+    storage_export.add_argument("--to", choices=["v1"], required=True)
+    storage_export.add_argument("--output", required=True, help="New output file outside the managed wiki")
+    storage_prune = actions.add_parser("prune-storage", help="Preview cleanup of owned unreferenced storage objects")
+    _add_knowledge_wiki_argument(storage_prune)
+    storage_prune.add_argument("--apply", action="store_true", help="Remove the listed safe objects after full validation")
+    storage_check = actions.add_parser("storage-check", help="Inspect native artifact sizes and an explicit outgoing Git range")
+    _add_knowledge_wiki_argument(storage_check)
+    storage_check.add_argument("--full", action="store_true", help="Audit complete artifacts, routing and Markdown")
+    storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
+    storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
+    storage_check.add_argument("--format", choices=["json"], default="json")
 
     initialize = actions.add_parser(
         "init",
@@ -1114,6 +1141,8 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser = subparsers.add_parser(
         "bootstrap", help="Generate initial wiki for an existing codebase"
     )
+    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2"], default=None,
+                                  help="Explicit native storage format; otherwise preserve the adopted format")
     bootstrap_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
     )
@@ -1864,6 +1893,8 @@ def _add_sync_command(subparsers):
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
     )
     _add_progress_arguments(sync_parser)
+    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2"], default=None,
+                            help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(
         "--rebuild-knowledge",
         action="store_true",

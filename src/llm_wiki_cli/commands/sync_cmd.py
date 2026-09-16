@@ -1610,6 +1610,7 @@ class _SyncRunOptions:
     clear_openapi_file: bool
     source_selection: str | Path | None
     rebuild_knowledge: bool = False
+    knowledge_format: str | None = None
 
 
 @dataclass(frozen=True)
@@ -2319,6 +2320,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         wiki_dir=wiki_dir,
         allow_external_src=allow_external_src,
         rebuild_knowledge=bool(getattr(args, "rebuild_knowledge", False)),
+        knowledge_format=getattr(args, "knowledge_format", None),
         cache_options=cache_options,
         cache_stats_enabled=cache_stats_enabled,
         parallel_jobs=parallel_jobs,
@@ -3690,6 +3692,7 @@ def _prepare_sync_run(
     )
     if (
         not options.rebuild_knowledge
+        and options.knowledge_format is None
         and not options.initialize_surfaces
         and not seed_manifest
         and not repair_only
@@ -4349,6 +4352,7 @@ def _finalize_prepared_sync(
     artifact_result = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
             target_wiki_dir=target,
+            knowledge_format=options.knowledge_format,
             inventory=prepared.inventory,
             surface=surface,
             source_snapshot=prepared.source_snapshot,
@@ -4513,6 +4517,9 @@ def _print_selection_prune_summary(prepared: _PreparedSyncRun) -> None:
 
 def _print_sync_artifact_actions(result: KnowledgeCommitResult) -> None:
     prefix = "DRY-RUN: " if result.dry_run else ""
+    if result.storage_format == "sharded-v2":
+        changed = sum(artifact.needs_write for artifact in result.storage_objects)
+        print(f"{prefix}Knowledge storage: sharded-v2 ({changed} changed objects, {len(result.storage_objects)} referenced)", flush=True)
     labels = (
         ("Surface index", result.surface_index),
         ("Knowledge index", result.knowledge_index),

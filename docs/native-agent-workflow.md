@@ -1,5 +1,9 @@
 # Native coding workflow
 
+For large native snapshots, [knowledge storage](knowledge-storage.md) describes
+explicit sharded storage adoption and task request v2 with selected validation.
+Task request v1 retains its existing full-validation behavior.
+
 An explicit task request gathers qualified source and wiki evidence. The provider
 reads and reports; your coding host decides what to include, edit, execute and
 publish. Existing context calls retain their defaults.

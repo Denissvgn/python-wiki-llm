@@ -21,12 +21,13 @@ from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from . import context_packet as packets
 from .immutable import freeze
 from .io import first_unsafe_path_component
-from .task_contract import TaskContext, normalize_task_request
+from .task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
 from .task_context import TaskCancelledError, TaskRead, _counter, build_task_read, plan_source_read, validate_task_context
 from .workflow_profile import WorkflowRequestError, bounded_int, canonical_json, content_id, exact_fields
 
 SESSION_SCHEMA = "llm-wiki-context-session/v1"
 DELTA_SCHEMA = "llm-wiki-task-delta/v1"
+DELTA_SCHEMA_V2 = "llm-wiki-task-delta/v2"
 
 
 def _memory_size(value, seen=None):
@@ -147,9 +148,11 @@ class _Entry:
 
 def build_delta(base: TaskContext, current: TaskContext) -> dict[str, Any]:
     before, after = base.to_payload(), current.to_payload()
-    if before.get("request_id") != after.get("request_id") or not base.ok or not current.ok:
+    if (before.get("request_id") != after.get("request_id") or before.get("schema_version") != after.get("schema_version")
+            or not base.ok or not current.ok):
         raise WorkflowRequestError("delta", "base and result requests must match")
-    return {"schema_version": DELTA_SCHEMA, "base_id": base.result_id, "result_id": current.result_id,
+    return {"schema_version": DELTA_SCHEMA_V2 if after.get("schema_version") == TASK_RESULT_SCHEMA_V2 else DELTA_SCHEMA,
+            "base_id": base.result_id, "result_id": current.result_id,
             "request_id": after["request_id"],
             "updates": {key: value for key, value in after.items() if before.get(key) != value},
             "removals": sorted(set(before) - set(after))}
@@ -157,7 +160,8 @@ def build_delta(base: TaskContext, current: TaskContext) -> dict[str, Any]:
 
 def apply_task_delta(base: str, delta: Mapping[str, Any], request: Mapping[str, Any], **options) -> TaskContext:
     data = exact_fields(delta, {"schema_version", "base_id", "result_id", "request_id", "updates", "removals"}, "delta")
-    if set(data) != {"schema_version", "base_id", "result_id", "request_id", "updates", "removals"} or data["schema_version"] != DELTA_SCHEMA:
+    expected_schema = DELTA_SCHEMA_V2 if request.get("schema_version") == TASK_REQUEST_SCHEMA_V2 else DELTA_SCHEMA
+    if set(data) != {"schema_version", "base_id", "result_id", "request_id", "updates", "removals"} or data["schema_version"] != expected_schema:
         raise WorkflowRequestError("delta", "unsupported delta schema")
     payload = validate_task_context(base, request, **options)
     if data["base_id"] != payload["result_id"] or data["request_id"] != payload["request_id"]:
@@ -175,7 +179,7 @@ def apply_task_delta(base: str, delta: Mapping[str, Any], request: Mapping[str, 
     validated = validate_task_context(rendered, request, **options)
     if validated["result_id"] != data["result_id"]:
         raise WorkflowRequestError("delta", "reconstructed result identity mismatch")
-    return TaskContext(True, rendered, validated["accounting"])
+    return TaskContext(True, rendered, validated["accounting"], schema_version=validated["schema_version"])
 
 
 class ContextSession:
@@ -241,6 +245,8 @@ class ContextSession:
         captured = read.captured
         if entry.owner is not self._owner or read.wiki_root != self._wiki:
             return False
+        if read.source_root is not None and read.source_root != self._source:
+            return False
         if captured is not None and (captured.source_root != self._source or captured.wiki_root != self._wiki
                                      or captured.source_snapshot.root != self._source):
             return False
@@ -258,6 +264,18 @@ class ContextSession:
             validate_task_context(read.result.rendered, request, profile=self._options["profile"],
                                   policy=self._options["policy"], counter=counter)
             self._validation_work["passes"] = self._validation_work.get("passes", 0) + 1
+            if read.scoped_state is not None:
+                from .task_context_v2 import ScopedTaskState
+                state = read.scoped_state
+                if (not isinstance(state, ScopedTaskState) or state.source_root != self._source
+                        or state.wiki_root != self._wiki or (not cold and not state.cacheable)):
+                    return False
+                settings = dict(profile.settings)
+                settings["max_wiki_bytes"] -= self._validation_work.get("wiki_bytes", 0)
+                if settings["max_wiki_bytes"] <= 0:
+                    return False
+                state.revalidate(settings, source_metrics=source_work, wiki_metrics=wiki_work)
+                return True
             if captured is not None:
                 packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor, metrics=source_work)
                 packets._assert_selection_unchanged(captured)
@@ -275,12 +293,24 @@ class ContextSession:
 
     def _build(self, request, *, cancelled, shared=None):
         try:
-            return build_task_read(request, **self._options, cancelled=cancelled, _reused_capture=shared)
+            scoped = request.get("schema_version") == TASK_REQUEST_SCHEMA_V2
+            budget = None
+            if scoped:
+                _, profile = normalize_task_request(request, profile=self._options["profile"], policy=self._options["policy"])
+                budget = profile.settings["max_wiki_bytes"] - self._validation_work.get("wiki_bytes", 0)
+            read = build_task_read(request, **self._options, cancelled=cancelled, _reused_capture=shared,
+                _defer_scoped_validation=scoped, _wiki_byte_budget=budget)
+            if scoped and read.scoped_state is not None:
+                initial_bytes = sum(len(item.content) for item in read.scoped_state.wiki_inputs.values())
+                self._validation_work["wiki_bytes"] = self._validation_work.get("wiki_bytes", 0) + initial_bytes
+            return read
         except TaskCancelledError:
             self._clear()
             raise
 
     def _compatible_capture(self, normalized, profile, environment):
+        if normalized["schema_version"] == TASK_REQUEST_SCHEMA_V2:
+            return None
         paths, _, live, scope = plan_source_read(normalized, profile.settings, self._source)
         if not live:
             return None
@@ -359,7 +389,7 @@ class ContextSession:
             self._dirty = False
             # A second independent validation guards the interval between a hit
             # check and publication. Failure discards state and performs one cold read.
-            if reused and not self._validate(entry, self._environment(), request, profile, counter):
+            if reused and read.scoped_state is None and not self._validate(entry, self._environment(), request, profile, counter):
                 self._drop(key)
                 read = self._build(request, cancelled=cancelled)
                 reused = False
@@ -390,10 +420,12 @@ class ContextSession:
                 if reconstructed is not None and len(canonical_json(candidate)) < len(current.rendered.encode("utf-8")):
                     state, delta_payload = "delta", candidate
             snapshot = read.captured.source_snapshot if read.captured else None
+            original_work = (read.scoped_state.original_work if read.scoped_state is not None
+                             else current.to_payload().get("work", {})) or {}
             metadata = {"schema_version": SESSION_SCHEMA, "state": state, "result_id": current.result_id,
                         "request_id": normalized["request_id"], "base_id": if_result_id,
                         "reuse": {"capture": capture_reused, "selection": reused, "rendering": reused},
-                        "work": {"captures": 0 if capture_reused else current.to_payload().get("work", {}).get("captures", 0),
+                        "work": {"captures": 0 if capture_reused else original_work.get("captures", 0),
                                  "validation_passes": self._validation_work.get("passes", 0),
                                  "validation_observed": dict(self._validation_work),
                                  "validation_source_files_per_pass": len(snapshot.captured_content_hashes) if snapshot else 0,

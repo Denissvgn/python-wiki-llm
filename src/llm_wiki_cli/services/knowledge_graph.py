@@ -404,6 +404,19 @@ def validate_typed_graph(
     concept_kinds: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Validate and canonicalize one ``llm-wiki-typed-graph/v1`` payload."""
+    return _parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)
+
+
+def validate_typed_graph_slice(
+    payload: object, *, concept_kinds: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    """Validate consumed edges and bases without asserting full graph counts."""
+    return _parse_typed_graph(payload, concept_kinds=concept_kinds, complete=False)
+
+
+def _parse_typed_graph(
+    payload: object, *, concept_kinds: Mapping[str, str] | None, complete: bool,
+) -> dict[str, Any]:
 
     graph = _object(payload, "typed_graph")
     _only_fields(
@@ -480,7 +493,7 @@ def validate_typed_graph(
         edges.append(edge)
     edges.sort(key=lambda value: value["key"])
     coverage.sort(key=lambda value: value["analyzer"])
-    _validate_graph_bindings(input_hashes, coverage, edges)
+    _validate_graph_bindings(input_hashes, coverage, edges, complete=complete)
     return {
         "schema_version": TYPED_GRAPH_SCHEMA_VERSION,
         "input_hashes": input_hashes,
@@ -1732,6 +1745,7 @@ def _validate_graph_bindings(
     input_hashes: Mapping[str, str],
     coverage: Sequence[Mapping[str, Any]],
     edges: Sequence[Mapping[str, Any]],
+    *, complete: bool = True,
 ) -> None:
     coverage_by_analyzer = {
         str(record["analyzer"]): record for record in coverage
@@ -1778,6 +1792,11 @@ def _validate_graph_bindings(
     edge_analyzers = set(_CORE_KIND_ANALYZERS.values())
     for analyzer, emitted in emitted_by_analyzer.items():
         if analyzer not in edge_analyzers:
+            continue
+        if not complete:
+            if emitted > coverage_by_analyzer[analyzer]["emitted"]:
+                raise KnowledgeGraphError(f"typed_graph.coverage.{analyzer}.emitted",
+                                          "selected observations exceed the declared total")
             continue
         if coverage_by_analyzer[analyzer]["emitted"] != emitted:
             raise KnowledgeGraphError(
@@ -2450,4 +2469,5 @@ __all__ = [
     "typed_graph_from_knowledge_extensions",
     "unresolved_endpoint",
     "validate_typed_graph",
+    "validate_typed_graph_slice",
 ]

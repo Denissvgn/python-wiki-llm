@@ -851,9 +851,13 @@ def save_governance(
 
 
 @contextmanager
-def governance_lock(wiki_dir: str | Path) -> Iterator[None]:
+def governance_lock(
+    wiki_dir: str | Path, *, _lock_filename: str = GOVERNANCE_LOCK_FILENAME,
+) -> Iterator[None]:
     """Hold the dedicated non-blocking governance mutation lock."""
 
+    if _lock_filename not in {GOVERNANCE_LOCK_FILENAME, "llm-wiki-storage.lock"}:
+        raise GovernanceError("lock", "unknown mutation lock")
     root = Path(wiki_dir)
     if first_unsafe_path_component(root) is not None:
         raise GovernanceError(
@@ -862,10 +866,10 @@ def governance_lock(wiki_dir: str | Path) -> Iterator[None]:
         )
     lock_root = _governance_lock_root(root)
     lock_root.mkdir(parents=True, exist_ok=True)
-    lock_path = lock_root / GOVERNANCE_LOCK_FILENAME
+    lock_path = lock_root / _lock_filename
     if first_unsafe_path_component(lock_path) is not None:
         raise GovernanceError(
-            GOVERNANCE_LOCK_FILENAME,
+            _lock_filename,
             "must be a regular file without symbolic-link or reparse components",
         )
     flags = os.O_RDWR | os.O_CREAT
@@ -875,14 +879,14 @@ def governance_lock(wiki_dir: str | Path) -> Iterator[None]:
         file_descriptor = os.open(lock_path, flags, 0o600)
     except OSError as exc:
         raise GovernanceError(
-            GOVERNANCE_LOCK_FILENAME,
+            _lock_filename,
             "could not be opened safely",
         ) from exc
     try:
         metadata = os.fstat(file_descriptor)
         if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
             raise GovernanceError(
-                GOVERNANCE_LOCK_FILENAME,
+                _lock_filename,
                 "must be one regular file without hard links",
             )
         if sys.platform == "win32" and metadata.st_size == 0:

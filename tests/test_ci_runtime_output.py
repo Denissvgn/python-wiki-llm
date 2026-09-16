@@ -71,6 +71,17 @@ def test_no_report_preserves_check_exit_and_json(
     assert compute.call_count == 1
 
 
+def test_optional_storage_gate_uses_the_existing_report_and_exit(report_setup, monkeypatch, capsys):
+    from llm_wiki_cli.services import knowledge_storage_diagnostics
+    monkeypatch.setattr(knowledge_storage_diagnostics, "storage_report", lambda *a, **kw: {
+        "ok": False, "failures": [{"path": ".llm-wiki-knowledge.json", "reason": "git-file-policy"}],
+        "warnings": [], "git": {"ok": False, "complete": False}})
+    code, payload, _ = invoke(capsys, no_report=True, storage_check=True,
+                              storage_git_base="base", storage_git_head="head")
+    assert code == 1 and not payload["ok"]
+    assert any(issue.category == "knowledge-storage" for issue in report_setup[0].issues)
+
+
 @pytest.mark.parametrize("passing", [True, False])
 def test_implicit_report_preflight_failure_retains_result(
     report_setup, monkeypatch, capsys, passing

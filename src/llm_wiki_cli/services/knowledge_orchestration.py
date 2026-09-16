@@ -171,6 +171,7 @@ class RuntimeKnowledgeInputs:
         default=None, repr=False, compare=False
     )
     reuse_input_basis: Mapping[str, object] | None = None
+    knowledge_format: str | None = None
 
 
 @dataclass(frozen=True)
@@ -246,7 +247,9 @@ def capture_committed_knowledge(
                 surface_index_bytes=captured[SURFACE_INDEX_FILENAME],
                 knowledge_index_bytes=captured[KNOWLEDGE_INDEX_FILENAME],
                 manifest=recorded_manifest,
+                wiki_dir=root,
             )
+            captured.update(candidate.storage_objects)
             marker = recorded_manifest.artifact_hashes
             if marker is not None and (
                 candidate.surface_index_hash == marker.surface_index_hash
@@ -467,6 +470,7 @@ def build_runtime_knowledge_plan(
             graph_evidence_limit=inputs.graph_evidence_limit,
             governance=governance,
             reuse_input_basis=inputs.reuse_input_basis,
+            knowledge_format=inputs.knowledge_format,
         ),
     )
 

@@ -67,6 +67,8 @@ where = ["src"]
 "llm_wiki_cli" = [
     "py.typed",
     "schemas/llm-wiki-knowledge-v1.schema.json",
+    "schemas/llm-wiki-knowledge-v2.schema.json",
+    "schemas/llm-wiki-knowledge-object-v1.schema.json",
     "extractors/ts_scripts/package.json",
     "extractors/ts_scripts/package-lock.json",
     "extractors/ts_scripts/extract.js",

@@ -33,6 +33,7 @@ EXCLUDED_DIRS: set[str] = {
     ".eggs",
     ".env",
     ".git",
+    ".llm-wiki-knowledge",
     ".mypy_cache",
     ".next",
     ".nox",

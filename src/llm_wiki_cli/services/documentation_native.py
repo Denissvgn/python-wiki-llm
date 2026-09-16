@@ -920,6 +920,7 @@ def _validate_refresh_artifact_basis(
             surface_index_bytes=(wiki_root / SURFACE_INDEX_FILENAME).read_bytes(),
             knowledge_index_bytes=(wiki_root / KNOWLEDGE_INDEX_FILENAME).read_bytes(),
             manifest=manifest,
+            wiki_dir=wiki_root,
         )
     except (KnowledgeArtifactError, OSError, TypeError, ValueError) as exc:
         raise DocumentationNativeError(

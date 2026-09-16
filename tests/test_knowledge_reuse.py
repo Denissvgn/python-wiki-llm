@@ -220,7 +220,7 @@ def test_proven_noop_skips_graph_plan_serialization_and_writes(
         knowledge_orchestration, "build_knowledge_generation_plan", unexpected
     )
     monkeypatch.setattr(knowledge_generation, "materialize_typed_graph", unexpected)
-    monkeypatch.setattr(knowledge_generation, "serialize_knowledge_index", unexpected)
+    monkeypatch.setattr(knowledge_generation, "build_knowledge_commit_plan", unexpected)
     monkeypatch.setattr(knowledge_artifacts, "write_bytes_atomic", unexpected)
     with patch.object(
         knowledge_orchestration,

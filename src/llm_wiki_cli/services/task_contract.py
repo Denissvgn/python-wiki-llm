@@ -17,6 +17,8 @@ from .workflow_profile import (
 
 TASK_REQUEST_SCHEMA = "llm-wiki-task-request/v1"
 TASK_RESULT_SCHEMA = "llm-wiki-task-context/v1"
+TASK_REQUEST_SCHEMA_V2 = "llm-wiki-task-request/v2"
+TASK_RESULT_SCHEMA_V2 = "llm-wiki-task-context/v2"
 FACETS = frozenset({"source-contract", "callers", "callees", "concept", "semantic-section",
                     "typed-relationships", "entrypoint", "dependency", "behavior"})
 ANCHOR_KINDS = frozenset({"source", "symbol", "concept", "wiki"})
@@ -50,7 +52,8 @@ def normalize_task_request(
 ) -> tuple[dict[str, Any], WorkflowProfile]:
     raw = exact_fields(request, {"schema_version", "text", "kind", "task_ref", "anchors",
                                 "requirements", "changes", "options"}, "request")
-    if raw.get("schema_version") != TASK_REQUEST_SCHEMA:
+    request_schema = raw.get("schema_version")
+    if not isinstance(request_schema, str) or request_schema not in {TASK_REQUEST_SCHEMA, TASK_REQUEST_SCHEMA_V2}:
         raise WorkflowRequestError("schema_version", "unsupported task request schema")
     text = bounded_text(raw.get("text", ""), "text", 16384, empty=True)
     kind = raw.get("kind", "orientation")
@@ -91,13 +94,13 @@ def normalize_task_request(
             raise WorkflowRequestError("changes", "too many supplied paths")
         changes["paths"] = list(normalize_supplied_paths(changes["paths"]))
     effective = normalize_profile(profile, policy=policy, overrides=raw.get("options"))
-    normalized = {"schema_version": TASK_REQUEST_SCHEMA, "text": text, "kind": kind,
+    normalized = {"schema_version": request_schema, "text": text, "kind": kind,
                   "task_ref": task_ref, "anchors": anchors, "requirements": requirements,
                   "changes": changes, "profile": effective.to_payload()}
     # The host label is attribution, not provider content identity.
-    normalized["task_id"] = content_id("llm-wiki-task-intent/v1", {
+    normalized["task_id"] = content_id("llm-wiki-task-intent/v2" if request_schema == TASK_REQUEST_SCHEMA_V2 else "llm-wiki-task-intent/v1", {
         key: value for key, value in normalized.items() if key not in {"task_ref", "profile"}})
-    normalized["request_id"] = content_id(TASK_REQUEST_SCHEMA, {
+    normalized["request_id"] = content_id(request_schema, {
         key: value for key, value in normalized.items() if key != "task_ref"})
     return normalized, effective
 
@@ -110,13 +113,14 @@ class TaskContext:
     rendered: str
     accounting: Mapping[str, Any]
     error: str | None = None
+    schema_version: str = TASK_RESULT_SCHEMA
 
     def __post_init__(self):
         object.__setattr__(self, "accounting", MappingProxyType(dict(self.accounting)))
 
     def to_payload(self) -> dict[str, Any]:
         if not self.ok:
-            return {"schema_version": TASK_RESULT_SCHEMA, "ok": False,
+            return {"schema_version": self.schema_version, "ok": False,
                     "error": self.error, "accounting": dict(self.accounting)}
         return json.loads(self.rendered)
 

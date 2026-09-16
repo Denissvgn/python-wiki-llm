@@ -72,3 +72,9 @@ def workflow(source: str, wiki: str) -> tuple[SearchResult, MaintenanceQueueResu
         reply: api.SessionReply = session.read(request)
         print(reply.state, reply.metadata())
     return api.search_wiki("run", src_dir=source, wiki_dir=wiki), api.build_maintenance_queue(source, wiki), context
+
+
+def scoped_workflow(source: str, wiki: str) -> api.TaskContext:
+    request: TaskContextRequest = {"schema_version": "llm-wiki-task-request/v2",
+        "requirements": [{"id": "contract", "facet": "source-contract", "selector": "app.py:run"}]}
+    return api.build_task_context(request, src_dir=source, wiki_dir=wiki)

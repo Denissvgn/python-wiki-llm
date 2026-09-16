@@ -302,6 +302,7 @@ class KnowledgeReadView:
     machine_verification: MachineVerificationReadView = field(
         default_factory=MachineVerificationReadView
     )
+    validated_artifacts: Any = field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if not isinstance(
@@ -605,6 +606,7 @@ def build_knowledge_read_view(
             projection_findings=load_result.issues,
             load_state=load_result.status,
             underlying_load_state=load_result.underlying_status,
+            validated_artifacts=load_result.validated_artifacts,
         )
 
     if effective_state is KnowledgeLoadState.ABSENT:

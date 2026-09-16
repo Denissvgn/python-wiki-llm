@@ -1338,10 +1338,10 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     assert "tests/test_mcp_sdk.py" in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     mcp_verifier = _named_step(
-        mcp, "Enforce the single MCP SDK registration contract"
+        mcp, "Enforce MCP SDK registration and canonical delivery"
     )["run"]
-    assert "--minimum-collected 1" in mcp_verifier
-    assert "--minimum-passed 1" in mcp_verifier
+    assert "--minimum-collected 2" in mcp_verifier
+    assert "--minimum-passed 2" in mcp_verifier
 
 
 def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> None:
@@ -1514,8 +1514,8 @@ def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
     mcp_verifier = _named_step(
         mcp, "Enforce the dedicated MCP SDK contract"
     )["run"]
-    assert "--minimum-collected 1" in mcp_verifier
-    assert "--minimum-passed 1" in mcp_verifier
+    assert "--minimum-collected 2" in mcp_verifier
+    assert "--minimum-passed 2" in mcp_verifier
 
     build = workflow["jobs"]["build"]
     assert build["strategy"]["matrix"]["include"] == [

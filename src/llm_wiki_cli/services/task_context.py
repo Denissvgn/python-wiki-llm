@@ -20,7 +20,7 @@ from .knowledge_envelope import hash_source_snapshot
 from .io import first_unsafe_path_component
 from .search_service import SEARCH_KINDS, page_records, search_records
 from .source_snapshot import SourceSnapshotError
-from .task_contract import FACETS, MAX_SELECTORS, TASK_RESULT_SCHEMA, TaskContext, normalize_task_request
+from .task_contract import FACETS, MAX_SELECTORS, TASK_RESULT_SCHEMA, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2, TaskContext, normalize_task_request
 from .task_evidence import coverage, declaration_records, match_declarations, observe_requirement, query_service
 from .token_counting import EstimatedCounter, TokenCounter
 from .wiki_surface_index import evaluate_surface_index
@@ -54,6 +54,8 @@ class TaskRead:
     wiki_anchor: str
     result: TaskContext
     wiki_integrity: Mapping[str, tuple[int, ...]] | None = None
+    scoped_state: Any = None
+    source_root: Path | None = None
 
 
 def _counter(settings, supplied):
@@ -178,7 +180,15 @@ def build_task_read(
     allow_external_src: bool = False, source_selection: str | Path | None = None,
     helper_cache_dir: str | None = None, cancelled: Callable[[], bool] | None = None,
     _reused_capture: packets.CapturedContextRead | None = None,
+    _defer_scoped_validation: bool = False,
+    _wiki_byte_budget: int | None = None,
 ) -> TaskRead:
+    if isinstance(request, Mapping) and request.get("schema_version") == TASK_REQUEST_SCHEMA_V2:
+        from .task_context_v2 import build_scoped_task_read
+        return build_scoped_task_read(request, src_dir=src_dir, wiki_dir=wiki_dir,
+            profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src,
+            source_selection=source_selection, helper_cache_dir=helper_cache_dir, cancelled=cancelled,
+            _defer_validation=_defer_scoped_validation, _wiki_byte_budget=_wiki_byte_budget)
     normalized, effective = normalize_task_request(request, profile=profile, policy=policy)
     settings = effective.settings
     counter = _counter(settings, counter)
@@ -510,25 +520,28 @@ def _validate_task_claims(payload, normalized, settings):
 def validate_task_context(rendered, request, *, profile=None, policy=None, counter=None):
     """Check the task envelope separately from the unchanged embedded packet."""
     normalized, effective = normalize_task_request(request, profile=profile, policy=policy)
+    scoped = normalized["schema_version"] == TASK_REQUEST_SCHEMA_V2
+    schema = TASK_RESULT_SCHEMA_V2 if scoped else TASK_RESULT_SCHEMA
     counter = _counter(effective.settings, counter)
     try:
         from .request_json import _pairs, _constant
         payload = json.loads(rendered, object_pairs_hook=_pairs, parse_constant=_constant)
-        if not isinstance(payload, dict) or set(payload) != {
+        required_fields = {
             "schema_version", "ok", "state", "task_id", "task_ref", "request_id", "profile_id",
             "profile", "basis", "plan", "anchors", "facts", "coverage", "omissions", "followups",
             "work", "packet", "accounting", "limitations", "result_id"
-        }:
+        } | ({"storage", "source_capture"} if scoped else set())
+        if not isinstance(payload, dict) or set(payload) != required_fields:
             raise ValueError("invalid task envelope fields")
         if canonical_json(payload).decode("utf-8") != rendered:
             raise ValueError("task response is not canonical")
-        if payload["schema_version"] != TASK_RESULT_SCHEMA or payload["ok"] is not True:
+        if payload["schema_version"] != schema or payload["ok"] is not True:
             raise ValueError("unsupported task response")
         if (payload["request_id"] != normalized["request_id"] or payload["task_id"] != normalized["task_id"]
                 or payload["profile_id"] != effective.profile_id or payload["profile"] != effective.to_payload()
                 or payload["task_ref"] != normalized["task_ref"]):
             raise ValueError("task/profile/request binding mismatch")
-        if payload["result_id"] != content_id(TASK_RESULT_SCHEMA, {k: v for k, v in payload.items() if k != "result_id"}):
+        if payload["result_id"] != content_id(schema, {k: v for k, v in payload.items() if k != "result_id"}):
             raise ValueError("task result identity mismatch")
         _validate_task_claims(payload, normalized, effective.settings)
         accounting = payload["accounting"]
@@ -612,9 +625,9 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
         if payload["omissions"] != [item for item in payload["coverage"] if not item["satisfied"]]:
             raise ValueError("missing omission disclosure")
         basis = payload["basis"]
-        if basis["capture_id"] != content_id("llm-wiki-task-basis/v1", {k: v for k, v in basis.items() if k != "capture_id"}):
+        if basis["capture_id"] != content_id("llm-wiki-task-basis/v2" if scoped else "llm-wiki-task-basis/v1", {k: v for k, v in basis.items() if k != "capture_id"}):
             raise ValueError("capture identity mismatch")
-        if (payload["packet"] is None) != (basis["source"] is None):
+        if not scoped and (payload["packet"] is None) != (basis["source"] is None):
             raise ValueError("required captured packet is missing")
         if any(fact["qualification"]["analysis_scope"] != basis["scope"] for fact in facts.values()):
             raise ValueError("fact scope differs from the captured basis")
@@ -630,6 +643,9 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
             raise ValueError("too many followups")
         if any(item["automatic"] is not False or item["requires_host_authorization"] is not True for item in payload["followups"]):
             raise ValueError("followups cannot grant authority")
+        if scoped:
+            from .task_context_v2 import validate_scoped_bindings
+            validate_scoped_bindings(payload, normalized, effective)
     except (KeyError, TypeError, ValueError, RecursionError) as exc:
         raise WorkflowRequestError("result", str(exc)) from exc
     return payload

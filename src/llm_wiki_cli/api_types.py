@@ -41,7 +41,7 @@ class _TaskOptions(TypedDict, total=False):
 
 
 class TaskContextRequest(_TaskOptions):
-    schema_version: Literal["llm-wiki-task-request/v1"]
+    schema_version: Literal["llm-wiki-task-request/v1", "llm-wiki-task-request/v2"]
 
 
 class _SearchMatchRanking(TypedDict, total=False):

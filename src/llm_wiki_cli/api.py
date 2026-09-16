@@ -705,6 +705,7 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
 def _raise_native_query_api_error(exc: Exception) -> NoReturn:
     """Retain public catch points while exposing only fixed query diagnostics."""
     from .services.knowledge_loader import KnowledgeStateLoadError
+    from .services.knowledge_storage import KnowledgeStorageError
     from .services.validation import require_portable_relative_path
 
     chain: list[BaseException] = []
@@ -771,6 +772,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
         load_error = next(
             (item for item in chain if isinstance(item, KnowledgeStateLoadError)), None
         )
+        storage_error = next((item for item in chain if isinstance(item, KnowledgeStorageError)), None)
         if mutation is not None:
             leaf, code = WorkspaceStateError, "context-read-mutated"
             field = "wiki_dir" if mutation.facet == "wiki" else "src_dir"
@@ -788,6 +790,14 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
             for item in chain
         ):
             leaf, code = WorkspaceStateError, "workspace-state-error"
+        elif storage_error is not None:
+            field = "wiki_dir"
+            if storage_error.code == "storage-mutation":
+                leaf, code = WorkspaceStateError, "context-read-mutated"
+            elif storage_error.code in {"storage-budget-exhausted", "storage-limit"}:
+                leaf, code, field = WorkspaceStateError, "workspace-state-error", "max_wiki_bytes"
+            else:
+                leaf, code = ArtifactIntegrityError, "artifact-integrity-error"
         elif load_error is not None:
             missing = all(
                 issue.code == "artifact-absent" for issue in load_error.issues

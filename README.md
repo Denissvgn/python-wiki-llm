@@ -133,6 +133,7 @@ Use `llm-wiki <command> --help` for available options.
 | [Standalone documentation](docs/standalone-documentation.md) | An isolated documentation workspace, agent handoffs, and export |
 | [Native knowledge](docs/native-knowledge.md) | Evidence, freshness, durable identity, and read APIs |
 | [Native coding workflow](docs/native-agent-workflow.md) | Explicit task evidence, bounded context, sessions, and resumable handoffs |
+| [Knowledge storage](docs/knowledge-storage.md) | Sharded snapshots, explicit migration, bounded reads, and Git size checks |
 | [Qualified context packets](docs/qualified-context-packets.md) | Validated context handoffs and packet contracts |
 | [Automation](docs/automation.md) | CI integrity, diagnostics, and explicit triggers |
 | [Changelog](CHANGELOG.md) | Release history and compatibility changes |

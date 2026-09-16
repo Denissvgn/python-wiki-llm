@@ -679,7 +679,7 @@ def test_load_fixture_matrix_covers_every_load_state_and_policy_boundary():
     unsupported = by_name["invalid-unsupported-version"]
     assert unsupported.knowledge_bytes is not None
     assert json.loads(unsupported.knowledge_bytes)["schema_version"] == (
-        "llm-wiki-knowledge/v2"
+        "llm-wiki-knowledge/v99"
     )
     orphan = by_name["invalid-orphan-without-capable-marker"]
     assert orphan.knowledge_bytes is not None

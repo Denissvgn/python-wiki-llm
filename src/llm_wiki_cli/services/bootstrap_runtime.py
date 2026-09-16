@@ -4344,6 +4344,7 @@ class _BootstrapRunOptions:
     source_selection: str | Path | None
     progress_stream: TextIO
     diagnostic_stream: TextIO | None = None
+    knowledge_format: str | None = None
 
 
 @dataclass
@@ -4489,6 +4490,7 @@ def _bootstrap_run_options_from_args(args) -> _BootstrapRunOptions:
         source_selection=getattr(args, "source_selection", None),
         progress_stream=sys.stderr if json_mode else sys.stdout,
         diagnostic_stream=sys.stderr,
+        knowledge_format=getattr(args, "knowledge_format", None),
     )
 
 
@@ -5851,6 +5853,7 @@ def _finalize_bootstrap_artifacts(
     committed = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
             target_wiki_dir=state.options.wiki_dir,
+            knowledge_format=state.options.knowledge_format,
             inventory=inventory,
             surface=surface,
             source_snapshot=state.source_snapshot,
@@ -5899,6 +5902,7 @@ def _finalize_bootstrap_artifacts(
         committed.surface_index,
         committed.knowledge_index,
         committed.manifest,
+        *committed.storage_objects,
     ):
         _record_bootstrap_artifact(
             state,

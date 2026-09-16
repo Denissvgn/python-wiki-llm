@@ -271,4 +271,9 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
         committed_manifest=manifest,
         evaluated_envelope_hash=state.artifacts.evaluated_envelope_hash,
         dry_run=dry_run,
+        storage_format="sharded-v2" if state.artifacts.storage_objects else "v1",
+        storage_objects=tuple(PlannedArtifactWrite(
+            path=state.wiki_root / name, relative_path=name, state=ArtifactWriteState.UNCHANGED,
+            content_hash=sha256_bytes(content), content=content, needs_write=False, previous_content=content,
+        ) for name, content in sorted(state.artifacts.storage_objects.items())),
     )

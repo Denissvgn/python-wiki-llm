@@ -56,7 +56,6 @@ from ..services.knowledge_governance import (
     strip_governance_projection,
     validate_governance_ledger,
 )
-from ..services.knowledge_index import serialize_knowledge_index
 from ..services.io import first_unsafe_path_component
 from ..services.knowledge_loader import (
     KnowledgeMismatchPolicy,
@@ -190,6 +189,7 @@ def _committed_artifact_snapshot(wiki_dir: Path) -> _ArtifactSnapshot:
         surface_index_bytes=surface_bytes,
         knowledge_index_bytes=knowledge_bytes,
         manifest=manifest,
+        wiki_dir=wiki_dir,
     )
     marker = manifest.artifact_hashes
     if marker is None:
@@ -228,6 +228,10 @@ def _assert_snapshot_unchanged(
     wiki_dir: Path,
     snapshot: _ArtifactSnapshot,
 ) -> None:
+    from ..services.knowledge_storage_io import read_guarded
+    for relative, expected_object in snapshot.validated.storage_objects.items():
+        if read_guarded(wiki_dir / relative, len(expected_object)).content != expected_object:
+            raise GovernanceError("knowledge", "committed storage object changed", code="governance-conflict")
     observed = (
         _read_bytes(wiki_dir / SURFACE_INDEX_FILENAME, SURFACE_INDEX_FILENAME),
         _read_bytes(wiki_dir / KNOWLEDGE_INDEX_FILENAME, KNOWLEDGE_INDEX_FILENAME),
@@ -281,7 +285,7 @@ def _projected_commit_plan(
     return build_knowledge_commit_plan(
         wiki_dir,
         surface_index_bytes=snapshot.surface_bytes,
-        knowledge_index_bytes=serialize_knowledge_index(projected).encode("utf-8"),
+        knowledge_index=projected,
         manifest=snapshot.manifest,
     )
 
@@ -955,7 +959,10 @@ def _run_verify(args) -> None:
 
 def run(args) -> None:
     action = args.knowledge_action
-    if action == "init":
+    if action in {"migrate", "recover-storage", "export-storage", "prune-storage", "storage-check"}:
+        from .knowledge_storage_cmd import run as run_storage
+        run_storage(args)
+    elif action == "init":
         _run_init(args)
     elif action == "status":
         _run_status(args)

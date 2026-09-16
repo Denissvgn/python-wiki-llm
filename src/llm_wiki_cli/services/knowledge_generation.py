@@ -44,7 +44,6 @@ from .knowledge_index import (
     KnowledgeIndexBuildError,
     KnowledgeIndexInputs,
     build_knowledge_index,
-    serialize_knowledge_index,
 )
 from .knowledge_graph import (
     DEFAULT_EVIDENCE_LIMIT,
@@ -153,6 +152,7 @@ class KnowledgeGenerationInputs:
     graph_evidence_limit: int = DEFAULT_EVIDENCE_LIMIT
     governance: GovernanceLedger | None = None
     reuse_input_basis: Mapping[str, object] | None = None
+    knowledge_format: str | None = None
 
 
 def build_knowledge_generation_plan(
@@ -415,12 +415,12 @@ def _build_knowledge_generation_plan(
             knowledge,
             inputs.governance,
         )
-    knowledge_bytes = serialize_knowledge_index(knowledge).encode("utf-8")
     return build_knowledge_commit_plan(
         inputs.wiki_dir,
         surface_index_bytes=surface_bytes,
-        knowledge_index_bytes=knowledge_bytes,
+        knowledge_index=knowledge,
         manifest=manifest,
+        knowledge_format=inputs.knowledge_format,
     )
 
 
