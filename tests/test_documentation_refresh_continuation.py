@@ -19,6 +19,52 @@ from llm_wiki_cli.services.documentation_run import (
     record_documentation_agent_result,
 )
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
+from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
+
+
+def _write_description_manifest(wiki: Path, version: int) -> None:
+    manifest = SyncManifest(sources={
+        "app.py": {
+            "hash": "sha256:" + "1" * 64,
+            "language": "python",
+            "module_page": "app",
+            "entity_pages": {"Worker": "Worker"},
+            "generated_semantics": {
+                "module": {"description": "Generated module description."},
+                "entities": {"Worker": {"description": "Generated entity description."}},
+            },
+        },
+    })
+    payload = manifest.to_payload()
+    if version == 6:
+        from llm_wiki_cli.services.manifest_storage import build_manifest_store
+        store = build_manifest_store(payload)
+        for name, raw in store.objects.items():
+            path = wiki / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(raw)
+        (wiki / MANIFEST_FILENAME).write_bytes(store.root_bytes)
+    else:
+        payload["version"] = version
+        (wiki / MANIFEST_FILENAME).write_text(json.dumps(payload), encoding="utf-8")
+
+
+@pytest.mark.parametrize("version", [4, 5, 6])
+def test_prior_generated_descriptions_follow_manifest_storage(tmp_path, version):
+    _write_description_manifest(tmp_path, version)
+    assert documentation_run_service._prior_generated_descriptions(tmp_path) == {
+        "modules/app.md": "Generated module description.",
+        "entities/Worker.md": "Generated entity description.",
+    }
+
+
+def test_prior_generated_descriptions_reject_missing_catalog(tmp_path):
+    from llm_wiki_cli.services.manifest_storage import object_path
+    _write_description_manifest(tmp_path, 6)
+    root = json.loads((tmp_path / MANIFEST_FILENAME).read_bytes())
+    (tmp_path / object_path(root["catalogs"]["sources"]["hash"])).unlink()
+    with pytest.raises(DocumentationIntegrityError, match="prior manifest"):
+        documentation_run_service._prior_generated_descriptions(tmp_path)
 
 
 def _install_fake_bootstrap(monkeypatch: pytest.MonkeyPatch) -> None:

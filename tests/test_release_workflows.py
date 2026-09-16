@@ -14,6 +14,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests import release_artifact_smoke
 
 
@@ -87,15 +88,11 @@ def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None
                 conflicts.append((pattern, assignment))
     assert conflicts == []
 
-    manifest = json.loads(
-        (ROOT / "docs" / "llm_wiki" / ".llm-wiki-manifest.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    selected_sources = set(manifest["sources"])
+    manifest = SyncManifest.load(ROOT / "docs" / "llm_wiki")
+    selected_sources = set(manifest.sources)
     selection_inputs = {
         item["path"]
-        for item in manifest["generation_inputs"]["source_selection_inputs"][
+        for item in manifest.generation_inputs["source_selection_inputs"][
             "inputs"
         ]
     }
