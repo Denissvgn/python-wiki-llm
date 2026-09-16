@@ -41,6 +41,7 @@ from .source_selection import (
     selection_may_contain_path,
 )
 from .validation import portable_path_key, require_repository_relative_path
+from .filesystem_guard import fresh_no_follow_stat, windows_object_identity, _windows_path_handle_metadata
 
 if TYPE_CHECKING:
     from .knowledge_envelope import ConsumedInput
@@ -615,7 +616,9 @@ def _sha256_file(path: Path, *, metrics: dict[str, int] | None = None, max_bytes
         hasher = hashlib.sha256()
         used = 0
         with path.open("rb") as handle:
-            before = _file_integrity_from_stat(os.fstat(handle.fileno())) if integrity_out is not None else None
+            opened = os.fstat(handle.fileno()) if integrity_out is not None else None
+            before = _file_integrity_from_stat(opened) if opened is not None else None
+            named_before = _path_bound_file_integrity(path, opened) if opened is not None else None
             if metrics is not None:
                 metrics["files"] = metrics.get("files", 0) + 1
             while chunk := handle.read(1024 * 1024 if max_bytes is None else min(1024 * 1024, max_bytes - used + 1)):
@@ -626,10 +629,14 @@ def _sha256_file(path: Path, *, metrics: dict[str, int] | None = None, max_bytes
                     raise SourceSnapshotError("max_source_bytes", "source grew beyond the capture byte limit")
                 hasher.update(chunk)
             if integrity_out is not None:
-                after = _file_integrity_from_stat(os.fstat(handle.fileno()))
+                after_stat = os.fstat(handle.fileno())
+                after = _file_integrity_from_stat(after_stat)
                 if before is None or before != after:
                     raise SourceSnapshotMutationError("source", "source changed while hashing")
-                integrity_out[path] = before
+                named_after = _path_bound_file_integrity(path, after_stat)
+                if named_before is None or named_before != named_after:
+                    raise SourceSnapshotMutationError("source", "source path changed while hashing")
+                integrity_out[path] = named_before
     except OSError:
         return None
     return "sha256:" + hasher.hexdigest()
@@ -641,6 +648,23 @@ def _source_file_integrity(path: Path) -> SourceFileIntegrity | None:
     except OSError:
         return None
     return _file_integrity_from_stat(current)
+
+
+def _path_bound_file_integrity(path: Path, opened: os.stat_result) -> SourceFileIntegrity | None:
+    """Retain path metadata after binding it to the actual Windows read handle."""
+    if os.name != "nt":
+        return _file_integrity_from_stat(opened)
+    try:
+        named = fresh_no_follow_stat(path)
+        result = _file_integrity_from_stat(named)
+        if (result is None or _file_integrity_from_stat(opened) is None
+                or getattr(named, "st_file_attributes", 0) & 0x400
+                or windows_object_identity(named, context=str(path)) != windows_object_identity(opened, context=str(path))
+                or _windows_path_handle_metadata(named) != _windows_path_handle_metadata(opened)):
+            raise SourceSnapshotMutationError("source", "source path differs from the captured file")
+        return result
+    except OSError as exc:
+        raise SourceSnapshotMutationError("source", "source path identity is unavailable") from exc
 
 
 def _file_integrity_from_stat(current: os.stat_result) -> SourceFileIntegrity | None:
@@ -809,13 +833,19 @@ def _read_ignore_control(path: Path, buckets: _SnapshotBuckets) -> bytes:
     if path.stat().st_size > remaining:
         raise SourceSnapshotError("max_source_bytes", "selection controls exceed the capture byte limit")
     with path.open("rb") as stream:
-        before = _file_integrity_from_stat(os.fstat(stream.fileno())) if buckets.coherent else None
+        opened = os.fstat(stream.fileno()) if buckets.coherent else None
+        before = _file_integrity_from_stat(opened) if opened is not None else None
+        named_before = _path_bound_file_integrity(path, opened) if opened is not None else None
         content = stream.read(remaining + 1)
         if buckets.coherent:
-            after = _file_integrity_from_stat(os.fstat(stream.fileno()))
+            after_stat = os.fstat(stream.fileno())
+            after = _file_integrity_from_stat(after_stat)
             if before is None or before != after:
                 raise SourceSnapshotMutationError("source", "selection control changed while reading")
-            buckets.control_integrity[path] = before
+            named_after = _path_bound_file_integrity(path, after_stat)
+            if named_before is None or named_before != named_after:
+                raise SourceSnapshotMutationError("source", "selection control path changed while reading")
+            buckets.control_integrity[path] = named_before
     buckets.control_bytes += len(content)
     if buckets.control_bytes > buckets.max_control_bytes:
         raise SourceSnapshotError("max_source_bytes", "selection controls grew beyond the capture byte limit")

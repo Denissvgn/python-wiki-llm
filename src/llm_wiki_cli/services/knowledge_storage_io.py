@@ -9,7 +9,11 @@ from pathlib import Path
 import stat
 from typing import Any
 
-from .filesystem_guard import guard_windows_directory_chain, open_windows_readonly_file
+from .filesystem_guard import (
+    WindowsDirectoryGuardError, WindowsFileGuardError,
+    fresh_no_follow_stat, guard_windows_directory_chain, open_windows_readonly_file,
+    windows_object_identity, _windows_path_handle_metadata,
+)
 from .io import first_unsafe_path_component
 from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
 from .validation import is_portable_relative_path
@@ -18,6 +22,17 @@ from .validation import is_portable_relative_path
 def _identity(value: os.stat_result) -> tuple[int, ...]:
     return (value.st_dev, value.st_ino, value.st_mode, value.st_size,
             value.st_mtime_ns, value.st_ctime_ns)
+
+
+def _assert_windows_file_binding(path: Path, named: os.stat_result, opened: os.stat_result) -> None:
+    """Compare stable Windows fields across pathname and descriptor channels."""
+    for observed in (named, opened):
+        if (not stat.S_ISREG(observed.st_mode) or observed.st_nlink != 1
+                or getattr(observed, "st_file_attributes", 0) & 0x400):
+            raise KnowledgeStorageError(path.name, "must be one regular file without links or reparse points")
+    if (windows_object_identity(named, context=str(path)) != windows_object_identity(opened, context=str(path))
+            or _windows_path_handle_metadata(named) != _windows_path_handle_metadata(opened)):
+        raise KnowledgeStorageError(path.name, "file changed during read", code="storage-mutation")
 
 
 def _require_relative_name(relative: str) -> None:
@@ -74,11 +89,17 @@ def read_guarded(path: Path, maximum: int, *, offset: int = 0,
     try:
         if os.name == "nt":
             with guard_windows_directory_chain(Path(target.anchor), target.parent.parts[1:]):
-                with open_windows_readonly_file(target) as (stream, _):
-                    before = os.fstat(stream.fileno())
-                    content = consume(stream, before)
-                    after = os.fstat(stream.fileno())
-                    current = target.lstat()
+                with open_windows_readonly_file(target) as (stream, opened):
+                    before = fresh_no_follow_stat(target)
+                    _assert_windows_file_binding(target, before, opened)
+                    content = consume(stream, opened)
+                    handle_after = os.fstat(stream.fileno())
+                    after = current = fresh_no_follow_stat(target)
+                    # Keep timestamp/mode checks within each observation channel:
+                    # Windows stat/fstat can give st_ctime different meanings.
+                    if _identity(opened) != _identity(handle_after):
+                        raise KnowledgeStorageError(target.name, "file changed during read", code="storage-mutation")
+                    _assert_windows_file_binding(target, after, handle_after)
                     directories = tuple((str(p), (p.stat().st_dev, p.stat().st_ino)) for p in target.parents)
         else:
             flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
@@ -117,8 +138,12 @@ def read_guarded(path: Path, maximum: int, *, offset: int = 0,
     except KnowledgeStorageError:
         raise
     except OSError as exc:
+        missing = isinstance(exc, FileNotFoundError) or (
+            isinstance(exc, (WindowsDirectoryGuardError, WindowsFileGuardError))
+            and isinstance(exc.__cause__, FileNotFoundError)
+        )
         raise KnowledgeStorageError(target.name, "required file is missing or cannot be read safely",
-                                    code="storage-missing" if isinstance(exc, FileNotFoundError) else "storage-invalid") from exc
+                                    code="storage-missing" if missing else "storage-invalid") from exc
 
 
 class StorageReadSession:

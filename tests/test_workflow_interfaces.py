@@ -122,7 +122,9 @@ def test_real_sdk_preserves_single_counted_representation(project):
 
 @pytest.mark.parametrize("raw", [b'{"a":1,"a":2}', b'{"a":NaN}', b'[]', b'\xff',
                                   b' ' * (MAX_REQUEST_BYTES + 1), b'[' * 3000,
-                                  '{"a":1}'.encode("utf-16")])
+                                  '{"a":1}'.encode("utf-16")],
+                         ids=["duplicate-key", "nonfinite", "non-object", "invalid-utf8",
+                              "over-budget", "excessive-depth", "utf16"])
 def test_request_json_rejects_ambiguous_unbounded_input(raw):
     with pytest.raises(ValueError):
         parse_request(raw)
