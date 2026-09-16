@@ -336,6 +336,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         self._indexes: dict[str, dict[str, Any]] = {}
         self._pack_descriptors: dict[str, dict[str, Any]] = {}
         self._selected_locations: dict[str, tuple[dict[str, Any], list[Any]]] = {}
+        self._verified_pack_hashes: set[str] = set()
         self._physical_bytes = len(root_bytes)
         super().__init__(canonical_bytes(packed["store"]), self._read_member, **limits)
         self.bytes_read += len(root_bytes) - len(self.root_bytes)
@@ -347,6 +348,8 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
             if self._physical_bytes + size > self.max_bytes or len(self.physical_objects) >= self.max_objects:
                 _fail("read", "physical storage budget exhausted", "storage-budget-exhausted")
             raw = self.read_file(path, size)
+            if not isinstance(raw, bytes):
+                _fail(path, "physical reads must return immutable bytes")
             self._physical_bytes += len(raw)
             if len(raw) != size:
                 _fail(path, "physical file size differs")
@@ -359,10 +362,10 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         _index_descriptor(descriptor)
         path = index_path(descriptor["hash"])
         raw = self._physical(path, descriptor["bytes"])
-        if digest(raw) != descriptor["hash"]:
-            _fail(path, "routing index checksum differs")
         node = self._indexes.get(path)
         if node is None:
+            if digest(raw) != descriptor["hash"]:
+                _fail(path, "routing index checksum differs")
             node = decode_bytes(raw, limit=MAX_INDEX_BYTES, field=path)
             _fields(node, {"schema_version", "prefix", "kind"} |
                     ({"children"} if node.get("kind") == "catalog" else {leaf_kind}), path)
@@ -425,8 +428,10 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
 
     def _pack(self, descriptor: dict[str, Any]) -> bytes:
         raw = self._physical(pack_path(descriptor), descriptor["bytes"])
-        if digest(raw) != descriptor["hash"]:
-            _fail("pack", "pack checksum differs")
+        if descriptor["hash"] not in self._verified_pack_hashes:
+            if digest(raw) != descriptor["hash"]:
+                _fail("pack", "pack checksum differs")
+            self._verified_pack_hashes.add(descriptor["hash"])
         return raw
 
     def _read_member(self, logical_path: str, maximum: int) -> bytes:

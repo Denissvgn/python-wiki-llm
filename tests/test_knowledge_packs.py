@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 import sys
+from typing import Any
 import zlib
 
 import pytest
@@ -89,6 +90,30 @@ def test_schemas_resolve_offline_for_both_physical_encodings(compression):
     for name, raw in plan.objects.items():
         if packs.INDEX_NAME.fullmatch(name):
             Draft202012Validator(schemas[3], registry=registry).validate(json.loads(raw))
+
+
+def test_full_audit_hash_work_does_not_grow_with_members_per_pack(monkeypatch, compression):
+    logical, plan = store(compression)
+    observations = {raw: 0 for raw in plan.objects.values()}
+    original = packs.digest
+    def counted(raw):
+        if raw in observations:
+            observations[raw] += 1
+        return original(raw)
+    monkeypatch.setattr(packs, "digest", counted)
+    assert reader(plan).materialize() == logical
+    for name, raw in plan.objects.items():
+        # Once before exposing members; once again in the complete ZIP audit.
+        expected = 2 if packs.PACK_NAME.fullmatch(name) else 1
+        assert observations[raw] == expected
+
+
+def test_pack_cache_rejects_mutable_input_buffers():
+    _, plan = store()
+    def mutable(name, maximum) -> Any:
+        return bytearray(plan.objects[name])
+    with pytest.raises(KnowledgeStorageError, match="immutable bytes"):
+        packs.PackedKnowledgeStoreReader(plan.root_bytes, mutable).materialize()
 
 
 def test_selected_read_does_not_promote_unread_archive_metadata(compression):
