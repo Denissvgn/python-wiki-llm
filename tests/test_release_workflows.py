@@ -1553,6 +1553,32 @@ def test_committed_skip_contract_nodes_resolve_to_test_definitions() -> None:
     assert unresolved == []
 
 
+def test_packed_range_link_skips_match_their_parameterized_contract() -> None:
+    from tests.test_knowledge_packs import test_ranges_never_follow_untrusted_links
+
+    test = test_ranges_never_follow_untrusted_links
+    marks = {mark.name: mark for mark in test.pytestmark}
+    parameters = marks["parametrize"]
+    assert parameters.args[0] == "link"
+    selector = f"tests/test_knowledge_packs.py::{test.__name__}"
+    entries = json.loads(
+        (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")
+    )["entries"]
+    actual = [entry for entry in entries if entry["node_id"].startswith(selector)]
+    assert actual == [
+        {
+            "lane": "core-windows-3.13",
+            "node_id": f"{selector}[{link}]",
+            "owner_lane": "core-ubuntu-3.10",
+            "reason": marks["skipif"].kwargs["reason"],
+        }
+        for link in sorted(parameters.args[1])
+    ]
+    for workflow, job in (("ci.yml", "test"), ("release-qualification.yml", "core")):
+        lanes = _yaml(workflow)["jobs"][job]["strategy"]["matrix"]["include"]
+        assert any(lane["lane"] == "core-ubuntu-3.10" for lane in lanes)
+
+
 def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -> None:
     payload = json.loads(
         (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")

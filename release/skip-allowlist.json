@@ -2492,6 +2492,24 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_knowledge_packs.py::test_ranges_never_follow_untrusted_links[hard]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX link setup; native Windows guard lane owns its equivalent"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_knowledge_packs.py::test_ranges_never_follow_untrusted_links[parent]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX link setup; native Windows guard lane owns its equivalent"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_knowledge_packs.py::test_ranges_never_follow_untrusted_links[symbolic]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX link setup; native Windows guard lane owns its equivalent"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_lint.py::TestLintDependencyCoverage::test_typescript_src_lib_alias_resolves_under_root_lib_ignore",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
