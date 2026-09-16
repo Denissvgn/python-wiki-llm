@@ -224,16 +224,26 @@ def test_mid_read_mutation_recaptures_one_coherent_basis(project, monkeypatch, m
     api.validate_task_context(result.rendered, request())
 
 
-@pytest.mark.parametrize("block_restore", [False, True], ids=["native-restore", "sharing-denied"])
-def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project, monkeypatch, block_restore):
+@pytest.mark.parametrize("restore_policy", ["native", "deny-all", "deny-during-capture"])
+def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project, monkeypatch, restore_policy):
     path = project / "app.py"
     original = path.read_text()
     modified = original.replace("= 3", "= 4")
     stat_capture = source_snapshot._captured_file_integrity
     selected_changes = task_context.context._selected_git_changed_files
+    capture_read = task_context.packets.capture_context_read
     changed = False
-    restore_attempts = 0
-    restore_denied = False
+    capture_active = False
+    restore_outcomes = []
+    req = request(options={"max_retries": 1})
+
+    def capture(*args, **kwargs):
+        nonlocal capture_active
+        capture_active = True
+        try:
+            return capture_read(*args, **kwargs)
+        finally:
+            capture_active = False
 
     def change_between_hash_and_stat(root, hashes):
         nonlocal changed
@@ -243,38 +253,51 @@ def test_hash_then_extract_then_restore_cannot_publish_a_false_contract(project,
         return stat_capture(root, hashes)
 
     def restore_after_extraction(*args, **kwargs):
-        nonlocal restore_attempts, restore_denied
-        restore_attempts += 1
         try:
-            if block_restore:
-                # Exercise the sharing-denial outcome on every CI platform.
+            if restore_policy == "deny-all" or (restore_policy == "deny-during-capture" and capture_active):
+                # Model both persistent denial and the native Windows guard's
+                # lifetime. Later selection checks run after capture releases it.
                 raise PermissionError(errno.EACCES, "simulated sharing denial", str(path))
             path.write_text(original)
         except PermissionError as exc:
             # This is the injected writer, not a provider read failure. Native
             # Windows guards deny the write while the capture holds the file.
-            assert block_restore or os.name == "nt"
+            assert restore_policy != "native" or os.name == "nt"
             assert exc.errno == errno.EACCES and Path(exc.filename) == path
             assert path.read_text() == modified
-            restore_denied = True
+            restore_outcomes.append((capture_active, "denied"))
+        else:
+            restore_outcomes.append((capture_active, "restored"))
         return selected_changes(*args, **kwargs)
 
+    monkeypatch.setattr(task_context.packets, "capture_context_read", capture)
     monkeypatch.setattr(source_snapshot, "_captured_file_integrity", change_between_hash_and_stat)
     monkeypatch.setattr(task_context.context, "_selected_git_changed_files", restore_after_extraction)
     try:
-        result = api.build_task_context(request())
+        result = api.build_task_context(req)
     except api.WorkspaceStateError as exc:
         assert exc.code == "context-read-mutated"
-        assert not restore_denied
+        # A denied write does not rule out a later successful restore after the
+        # capture guard closes. That change must prevent publication too.
+        assert any(outcome == "restored" for _, outcome in restore_outcomes)
     else:
-        payload = api.validate_task_context(result.rendered, request())
+        assert all(outcome == "denied" for _, outcome in restore_outcomes)
+        payload = api.validate_task_context(result.rendered, req)
         assert payload["work"]["capture_retries"] == 1
         fact = payload["facts"][0]
         assert fact["observation"]["contract"]["params"] == source_facts(path)["declarations"][0]["params"]
-        assert fact["observation"]["contract"]["params"][0]["default"] == ("4" if restore_denied else "3")
-    assert changed and restore_attempts > 0
-    assert restore_denied == (block_restore or os.name == "nt")
-    assert path.read_text() == (modified if restore_denied else original)
+        assert fact["observation"]["contract"]["params"][0]["default"] == "4"
+    assert changed and restore_outcomes
+    if restore_policy == "deny-all":
+        assert all(outcome == "denied" for _, outcome in restore_outcomes)
+        assert path.read_text() == modified
+    else:
+        if restore_policy == "deny-during-capture" or os.name == "nt":
+            assert restore_outcomes[0] == (True, "denied")
+            assert (False, "restored") in restore_outcomes
+        else:
+            assert restore_outcomes[0] == (True, "restored")
+        assert path.read_text() == original
     # The guard must release its handle when the read completes or fails.
     path.write_text(original)
     assert path.read_text() == original
