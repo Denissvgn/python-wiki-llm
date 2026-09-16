@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:schema:manifest-catalog:v1",
+  "title": "Bounded manifest field catalog",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "data"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-manifest-catalog/v1"
+        },
+        "kind": {
+          "const": "data"
+        },
+        "data": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 43692,
+          "contentEncoding": "base64"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "children"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-manifest-catalog/v1"
+        },
+        "kind": {
+          "const": "branch"
+        },
+        "children": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/descriptor"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hash",
+        "bytes",
+        "expanded_bytes"
+      ],
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        },
+        "expanded_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        }
+      }
+    }
+  },
+  "description": "Maximum 65536 canonical encoded bytes. Data contains 1..32768 canonical JSON bytes. Branch expansion equals the sum of its children. Depth <= 8; at most 100000 node visits per reader; aggregate expanded catalogs <= 1073741824 bytes."
+}

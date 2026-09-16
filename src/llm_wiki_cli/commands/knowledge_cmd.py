@@ -287,6 +287,7 @@ def _projected_commit_plan(
         surface_index_bytes=snapshot.surface_bytes,
         knowledge_index=projected,
         manifest=snapshot.manifest,
+        prior=snapshot.validated,
     )
 
 

@@ -223,6 +223,7 @@ def capture_committed_knowledge(
 ) -> CommittedKnowledgeState:
     from .immutable import freeze
     from .knowledge_artifacts import _decode_json_object
+    from .knowledge_storage_io import read_guarded
 
     root = Path(wiki_dir).resolve()
     captured = {}
@@ -236,7 +237,8 @@ def capture_committed_knowledge(
     if manifest is not None and manifest.artifact_hashes is not None:
         try:
             recorded_manifest = SyncManifest.from_payload(
-                _decode_json_object(captured[MANIFEST_FILENAME], "manifest")
+                _decode_json_object(captured[MANIFEST_FILENAME], "manifest"),
+                object_reader=lambda name, maximum: read_guarded(root / name, maximum).content,
             )
             if recorded_manifest.to_payload() != manifest.to_payload():
                 manifest_changed = True
@@ -415,6 +417,7 @@ def build_runtime_knowledge_plan(
     return _stabilize_revision_only_noop(
         inputs,
         KnowledgeGenerationInputs(
+            prior_artifacts=committed_state.artifacts,
             wiki_dir=inputs.target_wiki_dir,
             inventory=inputs.inventory,
             pages=inputs.surface.pages,

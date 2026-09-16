@@ -23,10 +23,11 @@ from .knowledge_storage import (
 from .knowledge_storage_io import _absolute_path, read_guarded
 from .knowledge_packs import (
     PACKED_SCHEMA, PACK_NAME, INDEX_NAME, MAX_PACK_BYTES, MAX_INDEX_BYTES,
-    open_knowledge_store, parse_packed_root,
+    parse_packed_root,
 )
 from .knowledge_storage_lifecycle import stored_object_paths
 from .sync_manifest import MANIFEST_FILENAME
+from .manifest_storage import OBJECT_NAME as MANIFEST_OBJECT_NAME, OBJECT_LIMIT as MANIFEST_OBJECT_LIMIT
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
@@ -204,7 +205,7 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
         report["object_bytes"] += size
         if report["object_bytes"] > MAX_EXPANDED_BYTES:
             raise KnowledgeStorageError("objects", "size inspection exceeds its total byte bound", code="storage-limit")
-        ceiling = MAX_PACK_BYTES if PACK_NAME.fullmatch(name) else MAX_INDEX_BYTES if INDEX_NAME.fullmatch(name) else MAX_OBJECT_BYTES
+        ceiling = MANIFEST_OBJECT_LIMIT if MANIFEST_OBJECT_NAME.fullmatch(name) else MAX_PACK_BYTES if PACK_NAME.fullmatch(name) else MAX_INDEX_BYTES if INDEX_NAME.fullmatch(name) else MAX_OBJECT_BYTES
         if size > ceiling:
             report["failures"].append({"path": name, "bytes": size, "reason": "object-ceiling"})
         largest.append({"path": name, "bytes": size})
@@ -221,9 +222,10 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
             report["referenced_object_bytes"] = sum(map(len, artifacts.storage_objects.values()))
             _, raw = validated_artifact_bytes(artifacts)
             report["root_bytes"] = len(raw)
-            logical = _model_to_payload(state.knowledge)
-            extensions = logical.get("extensions", {})
-            groups = {"concepts": logical["concepts"], "relationships": logical["relationships"],
+            from .knowledge_model import _concept_to_payload, _relationship_to_payload
+            extensions = state.knowledge.extensions
+            groups = {"concepts": (_concept_to_payload(c) for c in state.knowledge.concepts),
+                      "relationships": (_relationship_to_payload(r) for r in state.knowledge.relationships),
                       "edges": extensions.get(TYPED_GRAPH_EXTENSION_KEY, {}).get("edges", []),
                       "sections": extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY, {}).get("pages", [])}
             sizes: dict[str, int] = {}
@@ -252,28 +254,8 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
                     heapq.heapreplace(largest_records, item)
             report["logical_record_bytes_by_kind"] = sizes
             report["largest_records"] = [{"bytes": n, "kind": k, "id": i} for n, k, i in sorted(largest_records, reverse=True)]
-            if artifacts.storage_objects:
-                def reference_count(value):
-                    if isinstance(value, dict):
-                        return int(set(value) == {"$value"}) + sum(reference_count(v) for v in value.values())
-                    if isinstance(value, list):
-                        return sum(reference_count(v) for v in value)
-                    return 0
-                logical_objects = artifacts.storage_objects
-                store_root = json.loads(raw)
-                if store_root.get("schema_version") == PACKED_SCHEMA:
-                    reader = open_knowledge_store(raw, lambda name, _: artifacts.storage_objects[name])
-                    reader.materialize()
-                    logical_objects = reader.objects
-                    store_root = reader.root
-                    report["physical_packs"] = sum(bool(PACK_NAME.fullmatch(name)) for name in artifacts.storage_objects)
-                    report["physical_indexes"] = sum(bool(INDEX_NAME.fullmatch(name)) for name in artifacts.storage_objects)
-                    report["logical_objects"] = len(logical_objects)
-                    report["logical_object_bytes"] = sum(map(len, logical_objects.values()))
-                refs = sum(reference_count(json.loads(content)) for content in logical_objects.values())
-                descriptors = store_root["collections"]["values"]["count"]
-                report["deduplication"] = {"descriptor_references": refs, "unique_descriptors": descriptors,
-                                           "repeated_references": max(0, refs - descriptors)}
+            if artifacts.storage_statistics:
+                report.update(artifacts.storage_statistics)
         except ValueError as exc:
             report["integrity"] = "invalid"
             report["failures"].append({"reason": "full-audit-failed", "message": str(exc)})
@@ -312,16 +294,28 @@ def _review_records(wiki_dir: str | Path) -> dict[str, Any]:
 
 
 def review_storage(wiki_dir: str | Path, *, against: str | Path | None = None,
-                   limit: int = 100, max_bytes: int = 262_144) -> dict[str, Any]:
+                   limit: int = 100, max_bytes: int = 262_144, selectors=None) -> dict[str, Any]:
     """Inspect or compare complete logical snapshots with explicitly bounded output."""
     if type(limit) is not int or not 1 <= limit <= 10_000 or type(max_bytes) is not int or not 1024 <= max_bytes <= MAX_OBJECT_BYTES:
         raise KnowledgeStorageError("review", "limit must be 1..10000 and max_bytes 1024..8388608")
     from .knowledge_storage import digest
-    current = _review_records(wiki_dir)
+    capture = None
+    if selectors is None:
+        current = _review_records(wiki_dir)
+    else:
+        if against is not None:
+            raise KnowledgeStorageError("selectors", "scoped comparison is not supported")
+        from .knowledge_storage_access import capture_knowledge_slice
+        capture = capture_knowledge_slice(wiki_dir, selectors, max_records=10_000)
+        current = {f"{kind}:{row['owner']}:{row['id']}": row["value"]
+                   for kind, rows in capture.slice.to_payload()["records"].items() for row in rows}
     previous = {} if against is None else _review_records(against)
     result: dict[str, Any] = {"schema_version": "llm-wiki-storage-review/v1", "ok": True,
         "operation": "inspect" if against is None else "diff", "validation_scope": "full-committed-snapshots",
         "records": [], "total": 0, "omitted": 0, "values_omitted": 0, "complete": True}
+    if capture is not None:
+        result.update(schema_version="llm-wiki-storage-review/v2", validation_scope="selected-records-and-policy",
+                      whole_snapshot_validated=False)
     used = len(canonical_bytes(result)) + 128
     for key in sorted(current.keys() | previous.keys()):
         if against is not None and current.get(key) == previous.get(key) and (key in current) == (key in previous):
@@ -352,4 +346,6 @@ def review_storage(wiki_dir: str | Path, *, against: str | Path | None = None,
         result["records"].append(row)
         used += size
     result["complete"] = not result["omitted"] and not result["values_omitted"]
+    if capture is not None:
+        capture.finish()
     return result

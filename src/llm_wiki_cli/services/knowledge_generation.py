@@ -23,6 +23,7 @@ from .knowledge_artifacts import (
     KnowledgeArtifactError,
     KnowledgeCommitPlan,
     build_knowledge_commit_plan,
+    ValidatedKnowledgeArtifacts,
     validate_surface_index_bytes,
 )
 from .knowledge_envelope import (
@@ -127,6 +128,7 @@ class KnowledgeGenerationInputs:
     plugins: Sequence[ProducerComponentInput] = ()
     previous_producer: ProducerRecord | None = None
     configured_public_identity: str | None = None
+    prior_artifacts: ValidatedKnowledgeArtifacts | None = None
     previous_manifest: SyncManifest | None = None
     next_manifest: SyncManifest | None = None
     asset_paths: AbstractSet[str] = frozenset()
@@ -417,6 +419,7 @@ def _build_knowledge_generation_plan(
         )
     return build_knowledge_commit_plan(
         inputs.wiki_dir,
+        prior=inputs.prior_artifacts,
         surface_index_bytes=surface_bytes,
         knowledge_index=knowledge,
         manifest=manifest,

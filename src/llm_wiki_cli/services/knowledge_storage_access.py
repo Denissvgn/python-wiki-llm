@@ -20,7 +20,8 @@ from .knowledge_storage import (
 )
 from .knowledge_storage_io import StorageReadSession
 from .knowledge_packs import PACKED_SCHEMA, open_knowledge_store
-from .sync_manifest import MANIFEST_FILENAME, SyncManifest
+from .sync_manifest import MANIFEST_FILENAME
+from .manifest_storage import ValidatedManifestHeader, read_manifest_header
 
 
 @dataclass
@@ -28,7 +29,7 @@ class ScopedKnowledgeRead:
     """Request-owned observations that require a final authoritative recheck."""
 
     slice: KnowledgeSlice
-    manifest: SyncManifest
+    manifest: ValidatedManifestHeader
     markdown: dict[str, str]
     reader: KnowledgeStoreReader = field(repr=False)
     session: StorageReadSession = field(repr=False)
@@ -45,7 +46,7 @@ def capture_knowledge_slice(
 ) -> ScopedKnowledgeRead:
     """Capture selected stored observations without enumerating the wiki tree.
 
-    The manifest is read completely. Unread surface/record shards remain
+    The v6 commit header and policy are read completely. Unread catalogs remain
     unverified; the receipt never represents a full artifact or a live source
     evaluation. The owning request calls ``finish`` before publishing its result.
     """
@@ -60,7 +61,7 @@ def capture_knowledge_slice(
         schema = json.loads(raw).get("schema_version")
     except (ValueError, AttributeError, UnicodeError) as exc:
         raise KnowledgeStorageError("root", "invalid knowledge root") from exc
-    if schema not in {STORE_SCHEMA, PACKED_SCHEMA}:
+    if schema not in (STORE_SCHEMA, PACKED_SCHEMA):
         raise KnowledgeStorageError("schema_version", "selected native reads require explicit sharded-v2 or packed-v3 adoption",
                                     code="unsupported-schema-version")
     reader = open_knowledge_store(raw, session.read, read_range=session.read_range, max_bytes=max_bytes,
@@ -68,7 +69,7 @@ def capture_knowledge_slice(
     manifest_bytes = session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
     from .knowledge_artifacts import _decode_json_object
     try:
-        manifest = SyncManifest.from_payload(_decode_json_object(manifest_bytes, "manifest"))
+        manifest = read_manifest_header(manifest_bytes, session.read)
         bundle = _parse_bundle(reader.root["bundle"], "bundle")
     except ValueError as exc:
         raise KnowledgeStorageError("manifest", str(exc)) from exc

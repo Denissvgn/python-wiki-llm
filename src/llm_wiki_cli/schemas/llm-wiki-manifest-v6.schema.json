@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:schema:manifest:v6",
+  "title": "Bounded sync manifest v6 commit root",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "logical_version",
+    "logical_hash",
+    "header",
+    "catalogs"
+  ],
+  "properties": {
+    "version": {
+      "const": 6
+    },
+    "logical_version": {
+      "const": 5
+    },
+    "logical_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generation_inputs": {
+          "type": "object"
+        },
+        "surfaces": {
+          "type": "object"
+        }
+      }
+    },
+    "catalogs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sources": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "surfaces": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "generation_inputs": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "page_source_mappings": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "evidence_baselines": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "tombstones": {
+          "$ref": "#/$defs/descriptor"
+        }
+      }
+    },
+    "artifact_hashes": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hash",
+        "bytes",
+        "expanded_bytes"
+      ],
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        },
+        "expanded_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        }
+      }
+    }
+  },
+  "description": "Canonical UTF-8 compact JSON plus LF; maximum root 65536 bytes. Each logical field is present exactly once in header or catalogs. Inline fields are at most 8192 encoded bytes. The logical hash commits the complete canonical v5 value.",
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "header": {
+              "required": [
+                "sources"
+              ]
+            },
+            "catalogs": {
+              "not": {
+                "required": [
+                  "sources"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "catalogs": {
+              "required": [
+                "sources"
+              ]
+            },
+            "header": {
+              "not": {
+                "required": [
+                  "sources"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "header": {
+              "required": [
+                "surfaces"
+              ]
+            },
+            "catalogs": {
+              "not": {
+                "required": [
+                  "surfaces"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "catalogs": {
+              "required": [
+                "surfaces"
+              ]
+            },
+            "header": {
+              "not": {
+                "required": [
+                  "surfaces"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "header": {
+              "required": [
+                "generation_inputs"
+              ]
+            },
+            "catalogs": {
+              "not": {
+                "required": [
+                  "generation_inputs"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "catalogs": {
+              "required": [
+                "generation_inputs"
+              ]
+            },
+            "header": {
+              "not": {
+                "required": [
+                  "generation_inputs"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "header": {
+              "required": [
+                "page_source_mappings"
+              ]
+            },
+            "catalogs": {
+              "not": {
+                "required": [
+                  "page_source_mappings"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "catalogs": {
+              "required": [
+                "page_source_mappings"
+              ]
+            },
+            "header": {
+              "not": {
+                "required": [
+                  "page_source_mappings"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "header": {
+              "required": [
+                "evidence_baselines"
+              ]
+            },
+            "catalogs": {
+              "not": {
+                "required": [
+                  "evidence_baselines"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "catalogs": {
+              "required": [
+                "evidence_baselines"
+              ]
+            },
+            "header": {
+              "not": {
+                "required": [
+                  "evidence_baselines"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "header": {
+              "required": [
+                "tombstones"
+              ]
+            },
+            "catalogs": {
+              "not": {
+                "required": [
+                  "tombstones"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "catalogs": {
+              "required": [
+                "tombstones"
+              ]
+            },
+            "header": {
+              "not": {
+                "required": [
+                  "tombstones"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

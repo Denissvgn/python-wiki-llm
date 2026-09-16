@@ -13,6 +13,7 @@ import posixpath
 import re
 import unicodedata
 import uuid
+from collections import OrderedDict
 from collections.abc import (
     Callable,
     Container,
@@ -24,6 +25,7 @@ from collections.abc import (
 from datetime import datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Any, TypeVar
+from threading import RLock
 
 
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:[/\\]")
@@ -39,6 +41,50 @@ _WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
 _UNSAFE_PAGE_COMPONENT_RE = re.compile(r"[^A-Za-z0-9_.-]+")
 _SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _ZERO_UTC_OFFSET = timedelta(0)
+_PATH_SYNTAX_LIMIT = 8192
+_PATH_SYNTAX: OrderedDict[tuple, str] = OrderedDict()
+_PATH_SYNTAX_LOCK = RLock()
+_ASCII_CONTROL = re.compile(r"[\x00-\x1f]")
+_ASCII_CONTROL_DELETE = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def _syntax_key(kind, value, *options):
+    # Successful pure grammar checks only. Long/adversarial keys cannot turn
+    # this into an unbounded content cache, and no filesystem result is stored.
+    if (type(value) is not str or len(value) > 512 or
+            any(type(v) is not bool and v is not None and not (type(v) is str and len(v) <= 64) for v in options)):
+        return None
+    return kind, value, *options
+
+
+def _known_syntax(key):
+    if key is None:
+        return None
+    with _PATH_SYNTAX_LOCK:
+        value = _PATH_SYNTAX.get(key)
+        if value is not None:
+            _PATH_SYNTAX.move_to_end(key)
+        return value
+
+
+def _remember_syntax(key, value):
+    if key is not None:
+        with _PATH_SYNTAX_LOCK:
+            _PATH_SYNTAX[key] = value
+            _PATH_SYNTAX.move_to_end(key)
+            while len(_PATH_SYNTAX) > _PATH_SYNTAX_LIMIT:
+                _PATH_SYNTAX.popitem(last=False)
+    return value
+
+
+def _check_path_collision(canonical, collision_seen, collision_error):
+    if collision_seen is not None:
+        key = portable_path_key(canonical)
+        previous = collision_seen.setdefault(key, canonical)
+        if previous != canonical:
+            if collision_error is None:
+                raise SharedValidationError(f"Paths collide across supported filesystems: {previous!r} and {canonical!r}")
+            raise collision_error(previous, canonical)
 
 _ErrorFactory = Callable[[tuple[str, ...]], Exception]
 _EnumValue = TypeVar("_EnumValue")
@@ -172,6 +218,12 @@ def require_portable_relative_path(
     raw = os.fspath(value)
     if not isinstance(raw, str):
         raise text_error or _default_path_error(value)
+    syntax_key = _syntax_key("portable", raw, normalize_backslashes, normalize_posix_spelling,
+                             required_suffix, defer_non_nfc_error, reject_delete_character)
+    cached = _known_syntax(syntax_key)
+    if cached is not None:
+        _check_path_collision(cached, collision_seen, collision_error)
+        return cached
     try:
         raw.encode("utf-8")
     except UnicodeEncodeError:
@@ -216,17 +268,8 @@ def require_portable_relative_path(
             nonportable_error=nonportable_error,
             reserved_error=reserved_error,
         )
-    if collision_seen is not None:
-        key = portable_path_key(canonical)
-        previous = collision_seen.setdefault(key, canonical)
-        if previous != canonical:
-            if collision_error is None:
-                raise SharedValidationError(
-                    f"Paths collide across supported filesystems: "
-                    f"{previous!r} and {canonical!r}"
-                )
-            raise collision_error(previous, canonical)
-    return canonical
+    _check_path_collision(canonical, collision_seen, collision_error)
+    return _remember_syntax(syntax_key, canonical)
 
 
 def require_repository_relative_path(
@@ -255,6 +298,11 @@ def require_repository_relative_path(
 
     if not isinstance(value, str) or not value:
         raise text_error
+    syntax_key = _syntax_key("repository", value, reject_delete_character, control_after_normalization,
+                             leading_backslash_is_absolute, normalize_posix_spelling)
+    cached = _known_syntax(syntax_key)
+    if cached is not None:
+        return cached
     if value != value.strip():
         raise posix_error
     has_control_character = any(
@@ -284,7 +332,7 @@ def require_repository_relative_path(
     if has_control_character:
         raise control_error or posix_error
     strict_error = portability_error or normalized_error
-    return require_portable_relative_path(
+    result = require_portable_relative_path(
         value,
         normalize_posix_spelling=normalize_posix_spelling,
         text_error=text_error,
@@ -298,6 +346,7 @@ def require_repository_relative_path(
         nonportable_error=strict_error,
         reserved_error=strict_error,
     )
+    return _remember_syntax(syntax_key, result)
 
 
 def is_portable_relative_path(
@@ -579,11 +628,7 @@ def require_nonempty_text(
         raise error
     if require_trimmed and trimmed != value:
         raise trim_error or error
-    if reject_control_characters and any(
-        ord(character) < 0x20
-        or (reject_delete_character and ord(character) == 0x7F)
-        for character in parsed
-    ):
+    if reject_control_characters and contains_control_character(parsed, reject_delete_character=reject_delete_character):
         raise error
     return parsed
 
@@ -608,11 +653,7 @@ def require_bounded_text(
         or (require_trimmed and value != value.strip())
     ):
         raise error
-    if reject_control_characters and any(
-        ord(character) < 0x20
-        or (reject_delete_character and ord(character) == 0x7F)
-        for character in value
-    ):
+    if reject_control_characters and contains_control_character(value, reject_delete_character=reject_delete_character):
         raise control_error or error
     return value
 
@@ -640,11 +681,8 @@ def contains_control_character(
 ) -> bool:
     """Return whether text contains an ASCII control selected by policy."""
 
-    return any(
-        ord(character) < 0x20
-        or (reject_delete_character and ord(character) == 0x7F)
-        for character in value
-    )
+    pattern = _ASCII_CONTROL_DELETE if reject_delete_character else _ASCII_CONTROL
+    return pattern.search(value) is not None
 
 
 def require_trimmed_text(

@@ -935,6 +935,40 @@ def _captured_source_hashes(
     return captured
 
 
+def validate_manifest_policy(generation_inputs: Mapping[str, Any]) -> None:
+    """Validate policy commitments without pretending to have source records."""
+
+    from .knowledge_reuse import REUSE_INPUT_KEY, validate_reuse_commitment
+
+    if REUSE_INPUT_KEY in generation_inputs:
+        try:
+            validate_reuse_commitment(generation_inputs[REUSE_INPUT_KEY])
+        except ValueError as exc:
+            raise SyncManifestError(
+                f"generation_inputs.{REUSE_INPUT_KEY}", str(exc)
+            ) from exc
+    try:
+        selection_identity = source_selection_identity_from_generation_inputs(
+            generation_inputs
+        )
+        selection_inputs = source_selection_inputs_from_generation_inputs(
+            generation_inputs
+        )
+    except SourceSelectionError as exc:
+        raise SyncManifestError(exc.field, exc.message) from exc
+    if (selection_identity is None) != (selection_inputs is None):
+        missing_field = (
+            "generation_inputs.source_selection_inputs"
+            if selection_inputs is None
+            else "generation_inputs.source_selection"
+        )
+        raise SyncManifestError(
+            missing_field,
+            "must be present exactly when the paired source-selection state is present",
+        )
+
+
+
 @dataclass
 class SyncManifest:
     """Persistent v5 operational state used to generate the wiki."""
@@ -948,13 +982,24 @@ class SyncManifest:
     )
     tombstones: dict[str, ManifestTombstone] = field(default_factory=dict)
     artifact_hashes: ManifestArtifactHashes | None = None
+    storage_version: int = field(default=5, repr=False, compare=False)
+    storage_objects: dict[str, bytes] = field(default_factory=dict, repr=False, compare=False)
 
     @classmethod
-    def from_payload(cls, value: object) -> SyncManifest:
+    def from_payload(cls, value: object, *, object_reader=None) -> SyncManifest:
         """Validate and migrate one decoded manifest payload."""
 
         data = _mapping_value(value, "manifest")
         version = data.get("version")
+        if type(version) is int and version == 6:
+            from .manifest_storage import ManifestStoreReader
+            if object_reader is None:
+                raise SyncManifestError("catalogs", "v6 requires its committed catalog objects")
+            reader = ManifestStoreReader(data, object_reader)
+            manifest = cls.from_payload(reader.materialize())
+            manifest.storage_version = 6
+            manifest.storage_objects = reader.objects
+            return manifest
         if isinstance(version, bool) or not isinstance(version, int):
             raise SyncManifestError("version", "must be an integer")
         if version < 1:
@@ -1102,37 +1147,19 @@ class SyncManifest:
             object_pairs_hook=unique_object,
             parse_constant=reject_constant,
         )
+        if isinstance(data, dict) and data.get("version") == 6:
+            from .knowledge_storage_io import StorageReadSession
+            from .knowledge_storage import decode_bytes, MAX_EXPANDED_BYTES
+            session = StorageReadSession(wiki_dir)
+            raw = session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
+            manifest = cls.from_payload(decode_bytes(raw, limit=MAX_EXPANDED_BYTES, field="manifest"),
+                                        object_reader=session.read)
+            session.recheck()
+            return manifest
         return cls.from_payload(data)
 
     def _validate_operational_state(self) -> None:
-        from .knowledge_reuse import REUSE_INPUT_KEY, validate_reuse_commitment
-
-        if REUSE_INPUT_KEY in self.generation_inputs:
-            try:
-                validate_reuse_commitment(self.generation_inputs[REUSE_INPUT_KEY])
-            except ValueError as exc:
-                raise SyncManifestError(
-                    f"generation_inputs.{REUSE_INPUT_KEY}", str(exc)
-                ) from exc
-        try:
-            selection_identity = source_selection_identity_from_generation_inputs(
-                self.generation_inputs
-            )
-            selection_inputs = source_selection_inputs_from_generation_inputs(
-                self.generation_inputs
-            )
-        except SourceSelectionError as exc:
-            raise SyncManifestError(exc.field, exc.message) from exc
-        if (selection_identity is None) != (selection_inputs is None):
-            missing_field = (
-                "generation_inputs.source_selection_inputs"
-                if selection_inputs is None
-                else "generation_inputs.source_selection"
-            )
-            raise SyncManifestError(
-                missing_field,
-                "must be present exactly when the paired source-selection state is present",
-            )
+        validate_manifest_policy(self.generation_inputs)
 
         for filepath in self.sources:
             _validate_repository_path(filepath, f"sources.{filepath}")
@@ -1287,7 +1314,29 @@ class SyncManifest:
     def save(self, wiki_dir: Path) -> None:
         """Atomically write the manifest through the shared JSON boundary."""
 
-        write_json_atomic(wiki_dir / MANIFEST_FILENAME, self.to_payload())
+        from .manifest_storage import build_manifest_store, current_manifest_format
+        if current_manifest_format(wiki_dir) == "indexed-v6" or self.storage_version == 6:
+            from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+            from .knowledge_governance import governance_lock
+            from .knowledge_storage_io import read_guarded
+            from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
+            store = build_manifest_store(self.to_payload())
+            with governance_lock(wiki_dir, _lock_filename="llm-wiki-storage.lock"):
+                for name, content in store.objects.items():
+                    path = wiki_dir / name
+                    ensure_guarded_directory(path.parent)
+                    if path.exists() or path.is_symlink():
+                        if read_guarded(path, len(content)).content != content:
+                            raise KnowledgeStorageError(name, "existing immutable catalog is corrupt")
+                    else:
+                        atomic_write_guarded_bytes(path, content, mode=0o644, expected_existing=None)
+                path = wiki_dir / MANIFEST_FILENAME
+                old = read_guarded(path, MAX_EXPANDED_BYTES).content if path.exists() else None
+                atomic_write_guarded_bytes(path, store.root_bytes, mode=0o644, expected_existing=old)
+            self.storage_objects = dict(store.objects)
+            self.storage_version = 6
+        else:
+            write_json_atomic(wiki_dir / MANIFEST_FILENAME, self.to_payload())
 
     def with_artifact_hashes(
         self,

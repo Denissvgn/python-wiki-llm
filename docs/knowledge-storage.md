@@ -63,6 +63,32 @@ llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v3-
 Subsequent owning writes preserve the chosen profile. A missing or invalid packed
 root requires recovery or an explicitly selected rebuild format.
 
+## Keep manifest reads small
+
+Manifest v6 stores artifact commitments and small generation policy in
+`.llm-wiki-manifest.json`. Large source, evidence and page-mapping fields live in
+bounded catalogs under `.llm-wiki-manifest/objects/`. The commit root and every
+catalog have a 64 KiB ceiling. Large policy values also use committed catalogs;
+reading them still counts against the request's byte budget.
+
+Upgrade every reader and writer to support manifest v6, then adopt it explicitly:
+
+```sh
+llm-wiki knowledge migrate --wiki-dir docs/llm_wiki --to indexed-v6 --dry-run
+llm-wiki knowledge migrate --wiki-dir docs/llm_wiki --to indexed-v6
+```
+
+This setting is independent of the knowledge pack profile. Full readers recover
+all manifest entries; selected queries read the commit header and policy.
+Generation, governance and review writes preserve adoption and publish the
+manifest last. Commit its referenced catalogs alongside the other artifacts.
+Older manifest writers reject version 6. A conflicted v6 root requires restoring
+one complete committed root before sync can rebuild it.
+
+Unchanged packed members and compatible compressed bytes can be reused during
+generation. Global logical hashing and complete validation still run where
+required. Compression profile changes explicitly invalidate compressed reuse.
+
 ## Review logical changes
 
 Inspect records independently of their physical storage format:
@@ -78,6 +104,17 @@ Git worktree. Both commands validate the committed inputs and emit JSON with
 logical record identities, hashes and available values. `--max-bytes` bounds the
 output; omitted records or values are counted explicitly. A storage-only
 migration produces no logical differences.
+
+For a bounded selected read, supply a selector explicitly:
+
+```sh
+llm-wiki knowledge inspect-storage --wiki-dir docs/llm_wiki \
+  --selector page:modules/app.md --limit 10
+```
+
+This mode reports `selected-records-and-policy`; unread records and companion
+authority remain unverified. Without a selector, inspection validates the full
+snapshot even when `--limit` is small.
 
 ## Adopt sharded storage
 
@@ -129,6 +166,18 @@ not claim that the complete snapshot is valid. `--full` validates all referenced
 objects, native records, routing and current Markdown; it also identifies
 unreferenced objects. Both commands return JSON and use a nonzero exit status for
 failed checks.
+
+`storage-check --stream` audits every referenced storage object, native record
+shape, logical commitment, reference and routing membership using private spill
+files. It reports `complete-storage-and-routing`. Surface/Markdown/governance
+authority and complete native projection parity require `--full`.
+
+The streaming mode limits each expanded record to 1 MiB, each alias group to
+8 MiB, each spill index to 16 MiB of charged key metadata, and each spill file to
+2 GiB of writes. Merge batches use 1 MiB and at most 32 input handles. Decoder
+caches are bounded separately; process memory also includes decoded JSON and
+the bounded physical routing tables. Exceeding a limit produces an explicit
+failure. Private files are removed when the operation ends or is cancelled.
 
 To include the size policy in an existing report, use `ci-check --storage-check`.
 Optional `--storage-git-base` and `--storage-git-head` add the explicit Git range

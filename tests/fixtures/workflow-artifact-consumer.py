@@ -137,6 +137,16 @@ for storage_format in ("packed-v3", "packed-v3-deflate"):
     repeat = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
                              "--to", storage_format, "--dry-run"]).stdout)
     assert not repeat["changed"]
+run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
+     "--to", "indexed-v6", "--recovery-dir", "recovery-manifest-v6"])
+manifest_root = Path(wiki, ".llm-wiki-manifest.json").read_bytes()
+assert json.loads(manifest_root)["version"] == 6 and len(manifest_root) < 16_384
+streamed = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "storage-check",
+                          "--wiki-dir", wiki, "--stream"]).stdout)
+assert streamed["ok"] and not streamed["whole_snapshot_validated"]
+inspection = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "inspect-storage",
+                            "--wiki-dir", wiki, "--selector", "page:modules/policy.md", "--limit", "1"]).stdout)
+assert inspection["validation_scope"] == "selected-records-and-policy" and inspection["records"]
 scoped_request = {**request, "schema_version": "llm-wiki-task-request/v2"}
 scoped = api.build_task_context(scoped_request, src_dir=source, wiki_dir=wiki)
 scoped_payload = api.validate_task_context(scoped.rendered, scoped_request)

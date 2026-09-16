@@ -29,9 +29,10 @@ from .knowledge_packs import (
     PackedKnowledgeStoreReader, inspect_pack,
 )
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest
+from .manifest_storage import OBJECT_NAME as MANIFEST_OBJECT_NAME, DIRECTORY as MANIFEST_DIRECTORY, validate_catalog
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
-RECOVERY_SCHEMA = "llm-wiki-knowledge-recovery/v1"
+RECOVERY_SCHEMA = "llm-wiki-knowledge-recovery/v2"
 _OBJECT_NAME = re.compile(r"\.llm-wiki-knowledge/objects/([0-9a-f]{2})/\1[0-9a-f]{62}\.json\Z")
 
 
@@ -47,7 +48,7 @@ def _committed_inputs(wiki_dir: str | Path):
         if session.read(name, len(content)) != content:
             raise KnowledgeStorageError(name, "changed after validation", code="storage-mutation")
     manifest_bytes = session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
-    if SyncManifest.from_payload(json.loads(manifest_bytes)).to_payload() != state.manifest_basis.to_payload():
+    if SyncManifest.from_payload(json.loads(manifest_bytes), object_reader=session.read).to_payload() != state.manifest_basis.to_payload():
         raise KnowledgeStorageError("manifest", "changed after validation", code="storage-mutation")
     expected[MANIFEST_FILENAME] = manifest_bytes
     for concept in state.knowledge.concepts:
@@ -80,9 +81,11 @@ def _outside_tree(directory: Path, root: Path) -> Path:
     return directory
 
 
-def _backup(directory: Path, files: dict[str, bytes], target_hash: str) -> None:
+def _backup(directory: Path, files: dict[str, bytes], target_hash: str, target_manifest_hash: str) -> None:
     record = {"schema_version": RECOVERY_SCHEMA, "original_root_hash": digest(files[ROOT_FILENAME]),
               "target_root_hash": target_hash,
+              "original_manifest_hash": digest(files[MANIFEST_FILENAME]),
+              "target_manifest_hash": target_manifest_hash,
               "files": {name: {"hash": digest(raw), "bytes": len(raw)} for name, raw in sorted(files.items())}}
     metadata = canonical_bytes(record)
     if len(metadata) > MAX_OBJECT_BYTES:
@@ -109,18 +112,20 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
     """Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
-    if to not in {"sharded-v2", *PACKED_FORMATS}:
+    if to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6"}:
         raise KnowledgeStorageError("to", "unsupported migration format")
     root = _absolute_path(Path(wiki_dir))
     state, session, previous = _committed_inputs(root)
     assert state.knowledge is not None and state.manifest_basis is not None
     plan = build_knowledge_commit_plan(root, surface_index_bytes=previous[SURFACE_INDEX_FILENAME],
         knowledge_index=state.knowledge, manifest=state.manifest_basis.without_artifact_hashes(),
-        knowledge_format=to)
+        knowledge_format=None if to == "indexed-v6" else to,
+        manifest_format="indexed-v6" if to == "indexed-v6" else None,
+        prior=state.validated_artifacts)
     # The complete v1 logical model was validated before encoding; the plan's
     # v2 full reader independently reconstructed/validated it before publication.
     recovery = (Path(recovery_dir) if recovery_dir is not None
-                else _default_recovery_directory(root, digest(previous[ROOT_FILENAME])))
+                else _default_recovery_directory(root, digest(previous[ROOT_FILENAME] + previous[MANIFEST_FILENAME])))
     if recovery is not None:
         recovery = _outside_tree(recovery, root)
     report = {"schema_version": "llm-wiki-storage-migration/v1", "dry_run": dry_run,
@@ -132,7 +137,7 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
               "object_bytes": sum(len(a.content) for a in plan.storage_objects),
               "recovery_dir": None if recovery is None else str(recovery),
               "requires_recovery_dir": plan.changed and recovery is None,
-              "minimum_reader": PACKED_SCHEMA if to in PACKED_FORMATS else "llm-wiki-knowledge/v2",
+              "minimum_reader": "manifest/v6" if to == "indexed-v6" else PACKED_SCHEMA if to in PACKED_FORMATS else "llm-wiki-knowledge/v2",
               "authority_preserved": ["Markdown", "governance ledger", "review history"],
               "git_history_changed": False}
     if dry_run:
@@ -141,7 +146,7 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
     if plan.changed:
         if recovery is None:
             raise KnowledgeStorageError("recovery_dir", "supply --recovery-dir outside the wiki for a non-Git project")
-        _backup(recovery, previous, plan.knowledge_index.content_hash)
+        _backup(recovery, previous, plan.knowledge_index.content_hash, plan.manifest.content_hash)
         session.recheck()
         commit_knowledge_artifacts(plan)
         # Authority is never replaced; recheck it even after generated commits.
@@ -156,11 +161,18 @@ def _read_recovery(directory: Path) -> tuple[dict[str, Any], dict[str, bytes]]:
     from .knowledge_storage import decode_bytes
     metadata = decode_bytes(read_guarded(directory / "recovery.json", MAX_OBJECT_BYTES).content,
                             limit=MAX_OBJECT_BYTES, field="recovery")
-    if (set(metadata) != {"schema_version", "original_root_hash", "target_root_hash", "files"}
-            or metadata["schema_version"] != RECOVERY_SCHEMA or not isinstance(metadata["files"], dict)):
+    fields = {"schema_version", "original_root_hash", "target_root_hash", "files"}
+    if metadata.get("schema_version") == RECOVERY_SCHEMA:
+        fields |= {"original_manifest_hash", "target_manifest_hash"}
+    if (set(metadata) != fields
+            or metadata["schema_version"] not in (RECOVERY_SCHEMA, "llm-wiki-knowledge-recovery/v1")
+            or not isinstance(metadata["files"], dict)):
         raise KnowledgeStorageError("recovery", "unsupported recovery record")
     _hash(metadata["original_root_hash"], "recovery.original_root_hash")
     _hash(metadata["target_root_hash"], "recovery.target_root_hash")
+    if metadata["schema_version"] == RECOVERY_SCHEMA:
+        _hash(metadata["original_manifest_hash"], "recovery.original_manifest_hash")
+        _hash(metadata["target_manifest_hash"], "recovery.target_manifest_hash")
     if len(metadata["files"]) > 100_003:
         raise KnowledgeStorageError("recovery", "too many files", code="storage-limit")
     files = {}
@@ -182,6 +194,8 @@ def _read_recovery(directory: Path) -> tuple[dict[str, Any], dict[str, bytes]]:
         raise KnowledgeStorageError("recovery", "missing original artifacts")
     if digest(files[ROOT_FILENAME]) != metadata["original_root_hash"]:
         raise KnowledgeStorageError("recovery", "original root commitment mismatch")
+    if metadata["schema_version"] == RECOVERY_SCHEMA and digest(files[MANIFEST_FILENAME]) != metadata["original_manifest_hash"]:
+        raise KnowledgeStorageError("recovery", "original manifest commitment mismatch")
     return metadata, files
 
 
@@ -193,7 +207,7 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
     root = _absolute_path(Path(wiki_dir))
     directory = _outside_tree(Path(recovery_dir), root)
     metadata, files = _read_recovery(directory)
-    manifest = SyncManifest.from_payload(json.loads(files[MANIFEST_FILENAME]))
+    manifest = SyncManifest.from_payload(json.loads(files[MANIFEST_FILENAME]), object_reader=lambda path, _: files[path])
     validated = validate_knowledge_artifacts(surface_index_bytes=files[SURFACE_INDEX_FILENAME],
         knowledge_index_bytes=files[ROOT_FILENAME], manifest=manifest,
         object_reader=lambda path, _: files[path])
@@ -207,6 +221,10 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
     existing_root = session.read(ROOT_FILENAME, MAX_EXPANDED_BYTES)
     if digest(existing_root) not in {metadata["original_root_hash"], metadata["target_root_hash"]}:
         raise KnowledgeStorageError("recovery", "current root is outside this migration; refusing to overwrite it")
+    if metadata["schema_version"] == RECOVERY_SCHEMA:
+        existing_manifest = session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
+        if digest(existing_manifest) not in {metadata["original_manifest_hash"], metadata["target_manifest_hash"]}:
+            raise KnowledgeStorageError("recovery", "current manifest is outside this migration; refusing to overwrite it")
     for concept in validated.knowledge.concepts:
         if digest(session.read(concept.document.canonical_path, MAX_EXPANDED_BYTES)) != concept.facets.semantics.page_hash:
             raise KnowledgeStorageError("recovery", "current Markdown differs from the original generation")
@@ -220,7 +238,7 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
         writes[name] = PlannedArtifactWrite(path=path, relative_path=name,
             state=ArtifactWriteState.UNCHANGED if old == content else ArtifactWriteState.UPDATED,
             content_hash=digest(content), content=content, needs_write=old != content, previous_content=old)
-    original_format = "sharded-v2" if validated.storage_objects else "v1"
+    original_format = "sharded-v2" if json.loads(files[ROOT_FILENAME]).get("schema_version") == "llm-wiki-knowledge/v2" else "v1"
     original_root = json.loads(files[ROOT_FILENAME])
     if original_root.get("schema_version") == PACKED_SCHEMA:
         original_format = "packed-v3-deflate" if original_root["packing"]["compression"] == "deflate" else "packed-v3"
@@ -258,7 +276,8 @@ def export_knowledge_v1(wiki_dir: str | Path, output: str | Path) -> dict[str, A
 
 
 def is_storage_path(relative: str) -> bool:
-    return bool(_OBJECT_NAME.fullmatch(relative) or INDEX_NAME.fullmatch(relative) or PACK_NAME.fullmatch(relative))
+    return bool(_OBJECT_NAME.fullmatch(relative) or INDEX_NAME.fullmatch(relative) or PACK_NAME.fullmatch(relative)
+                or MANIFEST_OBJECT_NAME.fullmatch(relative))
 
 
 def stored_object_paths(wiki_dir: str | Path) -> tuple[list[str], list[str]]:
@@ -278,7 +297,7 @@ def stored_object_paths(wiki_dir: str | Path) -> tuple[list[str], list[str]]:
                 paths.append(Path(entry.path))
         return sorted(paths)
 
-    for namespace in (OBJECT_DIRECTORY, PACK_INDEX_DIRECTORY, PACK_DIRECTORY):
+    for namespace in (OBJECT_DIRECTORY, PACK_INDEX_DIRECTORY, PACK_DIRECTORY, MANIFEST_DIRECTORY):
         objects = root / namespace
         if not objects.exists() and not objects.is_symlink():
             continue
@@ -302,8 +321,8 @@ def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> di
         raise KnowledgeStorageError("dry_run", "must be boolean")
     root = _absolute_path(Path(wiki_dir))
     state, session, _ = _committed_inputs(root)
-    assert state.validated_artifacts is not None
-    if current_knowledge_format(root) not in {"sharded-v2", *PACKED_FORMATS}:
+    assert state.validated_artifacts is not None and state.manifest_basis is not None
+    if current_knowledge_format(root) not in {"sharded-v2", *PACKED_FORMATS} and state.manifest_basis.storage_version != 6:
         raise KnowledgeStorageError("format", "cleanup requires a committed indexed root")
     owned, unknown = stored_object_paths(root)
     unused = sorted(set(owned) - set(state.validated_artifacts.storage_objects))
@@ -314,7 +333,7 @@ def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> di
         return read_guarded(root / relative, maximum).content
     parsed = json.loads(root_bytes)
     logical_root = parsed["store"] if parsed.get("schema_version") == PACKED_SCHEMA else parsed
-    inspector = KnowledgeStoreReader(canonical_bytes(logical_root), object_reader)
+    inspector = KnowledgeStoreReader(canonical_bytes(logical_root), object_reader) if current_knowledge_format(root) != "v1" else None
     for name in unused:
         try:
             raw = read_guarded(root / name, MAX_OBJECT_BYTES).content
@@ -324,6 +343,10 @@ def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> di
                 continue
             if digest(raw)[7:] != Path(name).stem:
                 raise KnowledgeStorageError(name, "unknown content identity")
+            if MANIFEST_OBJECT_NAME.fullmatch(name):
+                validate_catalog(raw)
+                safe[name] = raw
+                continue
             payload = decode_bytes(raw, limit=MAX_OBJECT_BYTES, field=name)
             if INDEX_NAME.fullmatch(name):
                 kind = payload.get("kind")
@@ -337,6 +360,9 @@ def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> di
                 continue
             count = (len(payload["records"]) if payload.get("kind") == "records"
                      else sum(child["count"] for child in payload["children"].values()))
+            if inspector is None:
+                retained.append(name)
+                continue
             inspector._node({"hash": digest(raw), "bytes": len(raw), "count": count},
                             payload["collection"], payload["prefix"])
         except (KnowledgeStorageError, KeyError, TypeError):

@@ -902,7 +902,7 @@ def _validate_refresh_artifact_basis(
             )
         surface_bytes = (wiki_root / SURFACE_INDEX_FILENAME).read_bytes()
         try:
-            if manifest_version == MANIFEST_VERSION:
+            if manifest_version in {MANIFEST_VERSION, 6}:
                 validate_surface_index_bytes(surface_bytes)
             else:
                 _validate_legacy_surface_bytes(surface_bytes)
@@ -951,10 +951,10 @@ def _refresh_manifest_version(wiki_root: Path) -> int:
             "Native projection refresh manifest must contain an object."
         )
     version = payload.get("version")
-    if version not in {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION}:
+    if version not in {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION, 6}:
         raise DocumentationNativeError(
             "Native projection refresh requires manifest version "
-            f"{LEGACY_MANIFEST_VERSION} or {MANIFEST_VERSION}."
+            f"{LEGACY_MANIFEST_VERSION}, {MANIFEST_VERSION} or 6."
         )
     assert isinstance(version, int)
     return version

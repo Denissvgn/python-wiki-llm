@@ -7,7 +7,7 @@ Full readers additionally validate ZIP structure and exact locator membership.
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, MutableMapping
 import hashlib
 import io
 import json
@@ -128,24 +128,90 @@ def _zip_bytes(members: Mapping[str, bytes], compression: str) -> tuple[bytes, d
     return output.getvalue(), coordinates
 
 
-def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored") -> KnowledgeStorePlan:
+def _zip_reusing(members: Mapping[str, bytes], compression: str,
+                reusable: Mapping[str, tuple[bytes, int]]) -> tuple[bytes, dict[str, list[Any]]]:
+    """Write the pinned ZIP profile, copying verified compressed payloads verbatim."""
+    output = io.BytesIO()
+    central = io.BytesIO()
+    coordinates = {}
+    method = 0 if compression == "stored" else 8
+    for name, raw in sorted(members.items()):
+        retained = reusable.get(name)
+        if retained is not None:
+            body, crc = retained
+        else:
+            crc = zlib.crc32(raw)
+            if method == 8:
+                encoder = zlib.compressobj(6, zlib.DEFLATED, -15)
+                body = encoder.compress(raw) + encoder.flush()
+            else:
+                body = raw
+        position = [name, output.tell(), len(body), len(raw), crc]
+        coordinates[digest(raw)[7:]] = position
+        output.write(_member_header(position, compression))
+        output.write(body)
+        central.write(struct.pack("<4s6H3I5H2I", b"PK\x01\x02", 788, 20, 0, method, 0, 33,
+                                  crc, len(body), len(raw), len(name), 0, 0, 0, 0,
+                                  0o100644 << 16, position[1]))
+        central.write(name.encode("ascii"))
+    offset = output.tell()
+    directory = central.getvalue()
+    output.write(directory)
+    output.write(_END.pack(b"PK\x05\x06", 0, 0, len(members), len(members), len(directory), offset, 0))
+    return output.getvalue(), coordinates
+
+
+def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored", prior=None, objects=None) -> KnowledgeStorePlan:
     if not isinstance(compression, str) or compression not in {"stored", "deflate"}:
         _fail("compression", "must be stored or deflate")
-    logical = build_knowledge_store(payload)
-    members = {_member_name(raw): raw for raw in logical.objects.values()}
+    from contextlib import nullcontext
+    from .storage_spool import ByteSpool
+    with ByteSpool() if objects is not None else nullcontext(None) as staging:
+        logical = build_knowledge_store(payload, objects=staging)
+        return _pack_logical(logical, compression, prior, objects)
+
+
+def _pack_logical(logical, compression, prior, objects):
+    members = {name: path for path, name in logical.member_names.items()}
+    sizes = {name: len(logical.objects[path]) for name, path in members.items()}
     if len(members) != len(logical.objects):
         _fail("members", "logical identities collide")
-    files: dict[str, bytes] = {}
+    files = {} if objects is None else objects
     locations: dict[str, tuple[dict[str, Any], list[Any]]] = {}
     pack_directory: dict[str, dict[str, Any]] = {}
+    prior_reader = None
+    reused_packs = reused_members = 0
+    if prior is not None:
+        from .knowledge_artifacts import require_validated_artifacts, validated_artifact_bytes
+        require_validated_artifacts(prior)
+        _, previous_root = validated_artifact_bytes(prior)
+        if json.loads(previous_root).get("schema_version") == PACKED_SCHEMA:
+            previous = parse_packed_root(previous_root)
+            if previous["packing"]["compression"] == compression:
+                prior_reader = PackedKnowledgeStoreReader(previous_root, lambda path, _: prior.storage_objects[path])
 
-    def pack(group: dict[str, bytes], prefix: str):
+    def previous_member(name, content):
+        if prior_reader is None:
+            return None
+        key = digest(content)[7:]
+        try:
+            descriptor, position = prior_reader._find(key)
+        except KnowledgeStorageError as exc:
+            if "has no member" in exc.message or "has no routing branch" in exc.message:
+                return None
+            raise
+        if position[0] != name or position[3] != len(content):
+            _fail("reuse", "prior logical identity differs")
+        return descriptor, position
+
+    def pack(group: dict[str, str], prefix: str):
+        nonlocal reused_packs, reused_members
         # Size on uncompressed data bounds both stored and expanded packs.
-        upper_size = 22 + sum(len(raw) + 76 + 2 * len(name) for name, raw in group.items())
+        upper_size = 22 + sum(sizes[name] + 76 + 2 * len(name) for name in group)
         if (upper_size > PACK_TARGET_BYTES or len(group) > MAX_PACK_MEMBERS) and len(group) > 1:
             if len(prefix) >= 64:
                 _fail("pack", "colliding logical members exceed pack limits", "storage-limit")
-            groups: dict[str, dict[str, bytes]] = defaultdict(dict)
+            groups: dict[str, dict[str, str]] = defaultdict(dict)
             for name, raw in group.items():
                 groups[_bucket(name)[len(prefix)]][name] = raw
             for bit, child in sorted(groups.items()):
@@ -153,11 +219,32 @@ def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored
             return
         if upper_size > MAX_PACK_BYTES:
             _fail(next(iter(group)), "member and ZIP headers exceed the 8 MiB pack ceiling", "storage-limit")
-        raw, coordinates = _zip_bytes(group, compression)
+        encoded = {name: logical.objects[path] for name, path in group.items()}
+        previous = {name: location for name, content in encoded.items()
+                    if (location := previous_member(name, content)) is not None}
+        descriptors = {location[0]["hash"] for location in previous.values()}
+        descriptor = next(iter(previous.values()))[0] if previous else None
+        if (len(previous) == len(group) and len(descriptors) == 1 and descriptor is not None
+                and descriptor["bucket"] == prefix and descriptor["members"] == len(group)):
+            assert prior_reader is not None
+            raw = prior_reader._pack(descriptor)
+            coordinates = {digest(encoded[name])[7:]: position for name, (_, position) in previous.items()}
+            reused_packs += 1
+        elif previous:
+            assert prior_reader is not None
+            reusable = {}
+            for name, (old_descriptor, position) in previous.items():
+                _, offset, size, _, crc = position
+                start = offset + 30 + len(name)
+                reusable[name] = (prior_reader._pack(old_descriptor)[start:start + size], crc)
+            raw, coordinates = _zip_reusing(encoded, compression, reusable)
+        else:
+            raw, coordinates = _zip_bytes(encoded, compression)
+        reused_members += len(previous)
         if len(raw) > MAX_PACK_BYTES:
             _fail("pack", "encoded pack exceeds the 8 MiB ceiling", "storage-limit")
         descriptor = {"hash": digest(raw), "bytes": len(raw), "bucket": prefix,
-                      "members": len(group), "expanded_bytes": sum(map(len, group.values()))}
+                      "members": len(group), "expanded_bytes": sum(sizes[name] for name in group)}
         files[pack_path(descriptor)] = raw
         pack_directory[prefix] = descriptor
         for key, position in coordinates.items():
@@ -192,7 +279,9 @@ def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored
         _fail("packing", "physical store exceeds its object/byte bound", "storage-limit")
     return KnowledgeStorePlan(root, files, {"packs": pack_count, "indexes": len(files) - pack_count,
         "objects": len(locations), "physical_bytes": sum(map(len, files.values())),
-        "logical_object_bytes": sum(map(len, logical.objects.values()))})
+        "logical_object_bytes": sum(sizes.values()),
+        "reused_packs": reused_packs, "reused_members": reused_members,
+        "encoded_members": len(locations) - reused_members})
 
 
 def _coordinates(value: Any) -> tuple[str, list[Any]]:
@@ -221,11 +310,17 @@ def _position(value: Any, descriptor: dict[str, Any]) -> tuple[dict[str, Any], l
     return descriptor, value[1:]
 
 
-def decode_member(raw: bytes, position: list[Any], compression: str, commitment: str) -> bytes:
+def _member_header(position: list[Any], compression: str) -> bytes:
+    name, _, compressed, expanded, crc = position
+    return _LOCAL_HEADER.pack(b"PK\x03\x04", 20, 0, 0 if compression == "stored" else 8,
+                              0, 33, crc, compressed, expanded, len(name), 0) + name.encode("ascii")
+
+
+def decode_member(raw: bytes, position: list[Any], compression: str, commitment: str | None,
+                  *, verify_name: bool = True) -> bytes:
     name, _, compressed, expanded, crc = position
     method = 0 if compression == "stored" else 8
-    wanted = (b"PK\x03\x04", 20, 0, method, 0, 33, crc, compressed, expanded, len(name), 0)
-    if len(raw) != 30 + len(name) + compressed or _LOCAL_HEADER.unpack(raw[:30]) != wanted:
+    if len(raw) != 30 + len(name) + compressed or not raw.startswith(_member_header(position, compression)):
         _fail("member", "ZIP header differs from authenticated coordinates")
     if raw[30:30 + len(name)] != name.encode("ascii"):
         _fail("member", "ZIP member name differs from its locator")
@@ -240,15 +335,16 @@ def decode_member(raw: bytes, position: list[Any], compression: str, commitment:
             _fail("member", "DEFLATE stream exceeds or differs from its declared expansion", "storage-limit")
     else:
         content = body
-    if len(content) != expanded or zlib.crc32(content) != crc or digest(content) != commitment:
+    if (len(content) != expanded or zlib.crc32(content) != crc
+            or (commitment is not None and digest(content) != commitment)):
         _fail("member", "member checksum, size or logical commitment differs")
-    if _member_name(content) != name:
+    if verify_name and _member_name(content) != name:
         _fail("member", "logical object identity differs from its member name")
     return content
 
 
-def validate_pack(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]:
-    """Validate a complete bounded archive, including all otherwise unread metadata."""
+def _pack_structure(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]:
+    """Check all container/header bytes; member content validation is separate."""
     _pack_descriptor(descriptor)
     if len(raw) != descriptor["bytes"] or digest(raw) != descriptor["hash"]:
         _fail("pack", "pack checksum or size differs")
@@ -278,18 +374,9 @@ def validate_pack(raw: bytes, descriptor: dict[str, Any], compression: str) -> d
                 value = [descriptor["bucket"], name, offset, info.compress_size, info.file_size, info.CRC]
                 _, position = _position(value, descriptor)
                 end = offset + 30 + len(name) + info.compress_size
-                # The full index audit below binds this independently computed identity.
-                chunk = raw[offset:end]
-                if compression == "stored":
-                    content = chunk[30 + len(name):]
-                else:
-                    decoder = zlib.decompressobj(-15)
-                    content = decoder.decompress(chunk[30 + len(name):], info.file_size + 1)
-                commitment = digest(content)
-                decode_member(chunk, position, compression, commitment)
-                if commitment[7:] in positions:
-                    _fail("pack", "duplicate logical object")
-                positions[commitment[7:]] = position
+                if raw[offset:offset + 30 + len(name)] != _member_header(position, compression):
+                    _fail("pack", "local header differs from its complete directory")
+                positions[name] = position
                 previous_name, offset = name, end
                 expanded_total += info.file_size
                 if expanded_total > MAX_PACK_BYTES:
@@ -299,6 +386,19 @@ def validate_pack(raw: bytes, descriptor: dict[str, Any], compression: str) -> d
     if offset != start or expanded_total != descriptor["expanded_bytes"]:
         _fail("pack", "directory offset or expanded total differs")
     return positions
+
+
+def validate_pack(raw: bytes, descriptor: dict[str, Any], compression: str) -> dict[str, list[Any]]:
+    """Validate a whole archive and each logical member, inflating each once."""
+    result = {}
+    for position in _pack_structure(raw, descriptor, compression).values():
+        name, offset, compressed, _, _ = position
+        content = decode_member(raw[offset:offset + 30 + len(name) + compressed], position, compression, None)
+        key = digest(content)[7:]
+        if key in result:
+            _fail("pack", "duplicate logical object")
+        result[key] = position
+    return result
 
 
 def inspect_pack(raw: bytes, relative: str) -> dict[str, Any]:
@@ -332,8 +432,8 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         self.packing = packed["packing"]
         self.read_file = read_file
         self.read_range = read_range
-        self.physical_objects: dict[str, bytes] = {}
-        self._indexes: dict[str, dict[str, Any]] = {}
+        self.physical_objects: MutableMapping[str, bytes] = {}
+        self._indexes: MutableMapping[str, dict[str, Any]] = {}
         self._pack_descriptors: dict[str, dict[str, Any]] = {}
         self._selected_locations: dict[str, tuple[dict[str, Any], list[Any]]] = {}
         self._verified_pack_hashes: set[str] = set()
@@ -448,12 +548,24 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
                 _fail("read", "member read budget exhausted", "storage-budget-exhausted")
             raw = self.read_range(pack_path(descriptor), offset, length, descriptor["bytes"])
             self._physical_bytes += len(raw)
-        content = decode_member(raw, position, self.packing["compression"], "sha256:" + key)
+        content = decode_member(raw, position, self.packing["compression"], "sha256:" + key, verify_name=False)
         self._selected_locations[key] = descriptor, position
         return content
 
+    def _node(self, desc, collection, prefix):
+        node = super()._node(desc, collection, prefix)
+        expected_name = f"{collection}/{node['prefix'] or 'root'}.json"
+        if self._selected_locations[desc["hash"][7:]][1][0] != expected_name:
+            _fail("member", "logical object identity differs from its member name")
+        return node
+
     def materialize(self, *, audit_routes: bool = True) -> dict[str, Any]:
         payload = super().materialize(audit_routes=audit_routes)
+        self.audit_containers()
+        return payload
+
+    def audit_containers(self) -> None:
+        """Reconcile all captured logical members with complete archive routing."""
         locations = {}
         pack_locations = {}
         def walk(descriptor, prefix, kind, output):
@@ -478,9 +590,19 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
             _fail("packing", "pack count differs")
         actual = {}
         buckets = []
+        verified = {}
+        for key, (descriptor, position) in self._selected_locations.items():
+            slot = descriptor["hash"], position[0]
+            if slot in verified:
+                _fail("packing", "duplicate logical member name")
+            verified[slot] = key, position
         for descriptor in self._pack_descriptors.values():
             buckets.append(descriptor["bucket"])
-            for key, position in validate_pack(self._pack(descriptor), descriptor, self.packing["compression"]).items():
+            for name, position in _pack_structure(self._pack(descriptor), descriptor, self.packing["compression"]).items():
+                observed = verified.get((descriptor["hash"], name))
+                if observed is None or observed[1] != position:
+                    _fail("index", "archive member was not validated at its committed coordinates")
+                key = observed[0]
                 if key in actual:
                     _fail("packing", "logical object duplicated across packs")
                 actual[key] = descriptor, position
@@ -489,7 +611,6 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
             _fail("packing", "pack bucket boundaries overlap")
         if actual != locations:
             _fail("index", "locator coordinates differ from complete archive membership")
-        return payload
 
     def select(self, selectors, *, max_records: int = 1000) -> KnowledgeSlice:
         payload = super().select(selectors, max_records=max_records).to_payload()
@@ -497,6 +618,18 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
                        archive_validation_scope="selected-members")
         payload["work"]["physical_bytes"] = self._physical_bytes
         return KnowledgeSlice(canonical_bytes(payload))
+
+    def statistics(self) -> dict[str, Any]:
+        return {**super().statistics(), "physical_packs": self.packing["packs"],
+                "physical_indexes": sum(bool(INDEX_NAME.fullmatch(p)) for p in self.physical_objects)}
+
+    def release_capture(self) -> None:
+        super().release_capture()
+        self.physical_objects.clear()
+        self._indexes.clear()
+        self._pack_descriptors.clear()
+        self._selected_locations.clear()
+        self._verified_pack_hashes.clear()
 
 
 def open_knowledge_store(root_bytes: bytes, read_file: Callable[[str, int], bytes], *,
@@ -511,9 +644,9 @@ def physical_objects(reader: KnowledgeStoreReader) -> Mapping[str, bytes]:
     return reader.physical_objects if isinstance(reader, PackedKnowledgeStoreReader) else reader.objects
 
 
-def build_storage(payload: Mapping[str, Any], storage_format: str) -> KnowledgeStorePlan:
+def build_storage(payload: Mapping[str, Any], storage_format: str, *, prior=None, objects=None) -> KnowledgeStorePlan:
     if storage_format in PACKED_FORMATS:
-        return build_packed_store(payload, compression="deflate" if storage_format.endswith("-deflate") else "stored")
+        return build_packed_store(payload, compression="deflate" if storage_format.endswith("-deflate") else "stored", prior=prior, objects=objects)
     if storage_format == "sharded-v2":
-        return build_knowledge_store(payload)
+        return build_knowledge_store(payload, objects=objects)
     _fail("format", "unsupported object storage format")

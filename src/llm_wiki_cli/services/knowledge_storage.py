@@ -8,14 +8,15 @@ only describes the committed records actually read, never a full-validity proof.
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from collections.abc import Callable, Iterable, Mapping
-from dataclasses import dataclass
+from collections.abc import MutableMapping, Callable, Iterable, Mapping
+from dataclasses import dataclass, field as dataclass_field
 import hashlib
 import json
 import re
 from typing import Any, NoReturn
 
 from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
+from .canonical_json import canonical_chunks, scalar_size
 
 STORE_SCHEMA = "llm-wiki-knowledge/v2"
 OBJECT_SCHEMA = "llm-wiki-knowledge-object/v1"
@@ -64,11 +65,8 @@ def digest(data: bytes) -> str:
 def logical_digest(value: Any) -> str:
     """Hash logical JSON without allocating a second monolithic serialization."""
     result = hashlib.sha256()
-    encoder = json.JSONEncoder(sort_keys=True, ensure_ascii=False,
-                               separators=(",", ":"), allow_nan=False)
-    for part in encoder.iterencode(value):
-        result.update(part.encode("utf-8"))
-    result.update(b"\n")
+    for part in canonical_chunks(value):
+        result.update(part)
     return "sha256:" + result.hexdigest()
 
 
@@ -182,12 +180,13 @@ class KnowledgeStorePlan:
     root_bytes: bytes
     objects: Mapping[str, bytes]
     statistics: Mapping[str, Any]
+    member_names: Mapping[str, str] = dataclass_field(default_factory=dict, repr=False)
 
 
 class _Encoder:
     def __init__(self, basis: dict[str, str]):
         self.basis = {value: key for key, value in sorted(basis.items(), reverse=True)}
-        self.values: dict[str, Any] = {}
+        self.values: MutableMapping[str, Any] = {}
 
     def encode(self, value: Any, *, field: str = "", depth: int = 0) -> Any:
         if depth > MAX_VALUE_DEPTH:
@@ -211,9 +210,10 @@ class _Encoder:
 
 
 class _TreeBuilder:
-    def __init__(self, target: int):
+    def __init__(self, target: int, objects=None):
         self.target = _integer(target, "target_bytes", MAX_OBJECT_BYTES, 512)
-        self.objects: dict[str, bytes] = {}
+        self.objects = {} if objects is None else objects
+        self.member_names: dict[str, str] = {}
 
     def emit(self, payload: dict[str, Any], count: int) -> dict[str, Any]:
         raw = canonical_bytes(payload)
@@ -224,6 +224,7 @@ class _TreeBuilder:
         if path in self.objects and self.objects[path] != raw:
             _fail(path, "content hash collision")
         self.objects[path] = raw
+        self.member_names[path] = f"{payload['collection']}/{payload['prefix'] or 'root'}.json"
         return {"hash": key, "bytes": len(raw), "count": count}
 
     def tree(self, collection: str, records: list[dict[str, Any]], prefix: str = "") -> dict[str, Any]:
@@ -264,7 +265,8 @@ class _TreeBuilder:
                           "prefix": prefix, "kind": "catalog", "children": children}, len(records))
 
 
-def build_knowledge_store(payload: Mapping[str, Any], *, target_bytes: int = TARGET_OBJECT_BYTES) -> KnowledgeStorePlan:
+def build_knowledge_store(payload: Mapping[str, Any], *, target_bytes: int = TARGET_OBJECT_BYTES,
+                          objects=None) -> KnowledgeStorePlan:
     """Encode a canonical logical v1 payload after its semantic validation.
 
     Arrays retain the logical model's canonical order; no global ordinal is
@@ -347,7 +349,7 @@ def build_knowledge_store(payload: Mapping[str, Any], *, target_bytes: int = TAR
         add_lookup(alias, kind, owner, sorted(ids))
     records["values"] = [{"id": key, "owner": "shared", "value": value}
                          for key, value in encoder.values.items()]
-    builder = _TreeBuilder(target_bytes)
+    builder = _TreeBuilder(target_bytes, objects)
     collections = {}
     for kind, rows in records.items():
         rows.sort(key=lambda r: (r["owner"], r["id"]))
@@ -368,7 +370,7 @@ def build_knowledge_store(payload: Mapping[str, Any], *, target_bytes: int = TAR
     stats = {"root_bytes": len(root_bytes), "object_bytes": sum(map(len, builder.objects.values())),
              "object_count": len(builder.objects), "records": {k: len(v) for k, v in records.items()},
              "largest_object_bytes": max(map(len, builder.objects.values()), default=0)}
-    return KnowledgeStorePlan(root_bytes, builder.objects, stats)
+    return KnowledgeStorePlan(root_bytes, builder.objects, stats, builder.member_names)
 
 
 def parse_store_root(raw: bytes) -> dict[str, Any]:
@@ -474,10 +476,10 @@ class KnowledgeStoreReader:
         self.max_expanded_bytes = _integer(max_expanded_bytes, "max_expanded_bytes", MAX_EXPANDED_BYTES, 1)
         self.bytes_read = len(root_bytes)
         self.expanded_bytes = 0
-        self.objects: dict[str, bytes] = {}
-        self._nodes: dict[str, dict[str, Any]] = {}
-        self._validated_nodes: dict[tuple[str, str, str], dict[str, Any]] = {}
-        self._values: dict[str, Any] = {}
+        self.objects: MutableMapping[str, bytes] = {}
+        self._nodes: MutableMapping[str, dict[str, Any]] = {}
+        self._validated_nodes: MutableMapping[tuple[str, str, str], dict[str, Any]] = {}
+        self._values: MutableMapping[str, Any] = {}
         self._concept_owners: dict[str, str] = {}
         self.consumed_concepts: dict[str, dict[str, Any]] = {}
         self._validated_records: dict[str, set[tuple[str, str]]] = {k: set() for k in COLLECTIONS[:5]}
@@ -486,6 +488,29 @@ class KnowledgeStoreReader:
     def _check_budget(self) -> None:
         if self.bytes_read > self.max_bytes or len(self.objects) > self.max_objects:
             _fail("read", "storage inspection budget exhausted", "storage-budget-exhausted")
+
+    def statistics(self) -> dict[str, Any]:
+        """Statistics from the captured wire nodes; no second parse or audit."""
+        def references(value):
+            if isinstance(value, dict):
+                return int(set(value) == {"$value"}) + sum(references(v) for v in value.values())
+            if isinstance(value, list):
+                return sum(references(v) for v in value)
+            return 0
+        count = sum(references(v) for v in self._nodes.values())
+        unique = self.root["collections"]["values"]["count"]
+        return {"logical_objects": len(self.objects), "logical_object_bytes": sum(map(len, self.objects.values())),
+                "deduplication": {"descriptor_references": count, "unique_descriptors": unique,
+                                  "repeated_references": max(0, count - unique)}}
+
+    def release_capture(self) -> None:
+        """Release decoder intermediates after their owner has retained physical bytes."""
+        self.objects.clear()
+        self._nodes.clear()
+        self._validated_nodes.clear()
+        self._values.clear()
+        self._concept_owners.clear()
+        self.consumed_concepts.clear()
 
     def _node(self, desc: dict[str, Any], collection: str, prefix: str) -> dict[str, Any]:
         _descriptor(desc, "object")
@@ -499,7 +524,6 @@ class KnowledgeStoreReader:
             if len(raw) != desc["bytes"] or digest(raw) != desc["hash"]:
                 _fail(path, "object bytes do not match their commitment")
             self.objects[path] = raw
-            self._nodes[path] = decode_bytes(raw, limit=MAX_OBJECT_BYTES, field=path)
             self._check_budget()
         elif len(raw) != desc["bytes"]:
             _fail(path, "inconsistent object size descriptor")
@@ -511,7 +535,10 @@ class KnowledgeStoreReader:
             if count != desc["count"]:
                 _fail(path, "inconsistent object count descriptor")
             return cached
-        node = self._nodes[path]
+        node = self._nodes.get(path)
+        if node is None:
+            node = decode_bytes(raw, limit=MAX_OBJECT_BYTES, field=path)
+            self._nodes[path] = node
         kind = node.get("kind")
         _fields(node, {"schema_version", "collection", "prefix", "kind"}
                 | ({"children"} if kind == "catalog" else {"records", "owners"}), path)
@@ -603,25 +630,26 @@ class KnowledgeStoreReader:
             self._charge_expanded(2 + max(0, len(value) - 1))
             return [self._expand(v, stack=stack, depth=depth + 1) for v in value]
         if not isinstance(value, dict):
-            self._charge_expanded(len(canonical_bytes(value)) - 1)
+            self._charge_expanded(scalar_size(value))
             return value
         if set(value) == {"$basis"}:
             key = value["$basis"]
             if not isinstance(key, str) or key not in self.root["basis"]:
                 _fail("basis", "missing basis reference")
             result = self.root["basis"][key]
-            self._charge_expanded(len(canonical_bytes(result)) - 1)
+            self._charge_expanded(scalar_size(result))
             return result
         if set(value) == {"$value"}:
             key = _hash(value["$value"], "value.ref")
             if key in stack:
                 _fail("value", "cyclic reference")
-            if key not in self._values:
+            encoded = self._values.get(key)
+            if encoded is None:
                 encoded = self.record("values", "shared", key)["value"]
                 if digest(canonical_bytes(encoded)) != key:
                     _fail("value", "descriptor identity mismatch")
                 self._values[key] = encoded
-            return self._expand(self._values[key], stack=(*stack, key), depth=depth + 1)
+            return self._expand(encoded, stack=(*stack, key), depth=depth + 1)
         if set(value) == {"$object"}:
             pairs = value["$object"]
             if not isinstance(pairs, list):
@@ -635,13 +663,13 @@ class KnowledgeStoreReader:
                 if previous is not None and pair[0] <= previous:
                     _fail("value", "escaped keys must be unique and sorted")
                 previous = pair[0]
-                self._charge_expanded(len(canonical_bytes(pair[0])))
+                self._charge_expanded(scalar_size(pair[0]) + 1)
                 result[pair[0]] = self._expand(pair[1], stack=stack, depth=depth + 1)
             return result
         if set(value) & _RESERVED:
             _fail("value", "unescaped reserved storage key")
         self._charge_expanded(2 + max(0, len(value) - 1)
-                              + sum(len(canonical_bytes(k)) for k in value))
+                              + sum(scalar_size(k) + 1 for k in value))
         return {k: self._expand(v, stack=stack, depth=depth + 1) for k, v in value.items()}
 
     def expand_record(self, row: dict[str, Any]) -> Any:
@@ -683,16 +711,10 @@ class KnowledgeStoreReader:
         return payload
 
     def _audit_lookup(self, payload: dict[str, Any]) -> None:
-        # Rebuild expected index from logical facts, independently of supplied
-        # catalog membership. A missing record with recomputed object hashes is
-        # therefore still an invalid full store.
-        expected = build_knowledge_store(payload)
-        reader = KnowledgeStoreReader(expected.root_bytes, lambda path, _: expected.objects[path])
-        for collection in COLLECTIONS:
-            wanted = {(r["owner"], r["id"]): r["value"] for r in reader.records(collection)}
-            actual = {(r["owner"], r["id"]): r["value"] for r in self.records(collection)}
-            if actual != wanted:
-                _fail(collection, "does not exactly index the logical knowledge")
+        # Derive expected records from facts, independently of supplied routing.
+        # No second physical store is built to perform this comparison.
+        from .knowledge_audit import audit_logical_records
+        audit_logical_records(self, payload)
 
     def _lookup_references(self, selector: str) -> Iterable[dict[str, str]]:
         for row in self.records("lookup", owner=selector):

@@ -747,7 +747,7 @@ def _add_knowledge_command(subparsers):
 
     storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
     _add_knowledge_wiki_argument(storage_migrate)
-    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate"], required=True)
+    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "indexed-v6"], required=True)
     storage_migrate.add_argument("--recovery-dir", default=None,
                                  help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
     _add_knowledge_dry_run(storage_migrate)
@@ -765,6 +765,8 @@ def _add_knowledge_command(subparsers):
     storage_check = actions.add_parser("storage-check", help="Inspect native artifact sizes and an explicit outgoing Git range")
     _add_knowledge_wiki_argument(storage_check)
     storage_check.add_argument("--full", action="store_true", help="Audit complete artifacts, routing and Markdown")
+    storage_check.add_argument("--stream", action="store_true",
+                               help="Bounded complete storage/routing audit; companion authority is outside this scope")
     storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
     storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
     storage_check.add_argument("--format", choices=["json"], default="json")
@@ -775,6 +777,9 @@ def _add_knowledge_command(subparsers):
         review.add_argument("--max-bytes", type=int, default=262_144, help="Maximum JSON output bytes (default: 262144)")
         if action == "diff-storage":
             review.add_argument("--against-wiki", required=True, help="Other complete wiki snapshot to compare")
+        else:
+            review.add_argument("--selector", action="append", default=None,
+                                help="Explicit scoped inspection (repeatable); unread records remain unverified")
 
     initialize = actions.add_parser(
         "init",

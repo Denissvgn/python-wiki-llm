@@ -25,9 +25,16 @@ def run(args) -> None:
             result = prune_knowledge_storage(root, dry_run=not args.apply)
         elif args.knowledge_action in {"inspect-storage", "diff-storage"}:
             result = review_storage(root, against=getattr(args, "against_wiki", None),
-                                    limit=args.limit, max_bytes=args.max_bytes)
+                                    limit=args.limit, max_bytes=args.max_bytes,
+                                    selectors=getattr(args, "selector", None))
         else:
-            result = storage_report(root, full=args.full, git_base=args.git_base, git_head=args.git_head)
+            if args.stream:
+                if args.full or args.git_base is not None or args.git_head is not None:
+                    raise ValueError("--stream is a separate audit scope; omit --full and Git range options")
+                from ..services.knowledge_stream_audit import audit_knowledge_stream
+                result = audit_knowledge_stream(root)
+            else:
+                result = storage_report(root, full=args.full, git_base=args.git_base, git_head=args.git_head)
     except (ValueError, OSError) as exc:
         result = {"ok": False, "error": {"code": getattr(exc, "code", "storage-invalid"), "message": str(exc)}}
     # Structured output keeps unusual paths and control characters escaped.
