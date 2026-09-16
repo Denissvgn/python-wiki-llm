@@ -20,12 +20,12 @@ from .knowledge_envelope import hash_source_snapshot
 from .io import first_unsafe_path_component
 from .search_service import SEARCH_KINDS, page_records, search_records
 from .source_snapshot import SourceSnapshotError
-from .task_contract import TASK_RESULT_SCHEMA, TaskContext, normalize_task_request
+from .task_contract import FACETS, MAX_SELECTORS, TASK_RESULT_SCHEMA, TaskContext, normalize_task_request
 from .task_evidence import coverage, declaration_records, match_declarations, observe_requirement, query_service
 from .token_counting import EstimatedCounter, TokenCounter
 from .wiki_surface_index import evaluate_surface_index
 from .workflow_profile import (
-    WorkflowPolicy, WorkflowProfile, WorkflowRequestError, canonical_json, content_id,
+    SCOPES, WorkflowPolicy, WorkflowProfile, WorkflowRequestError, canonical_json, content_id,
 )
 
 _LIVE_FACETS = frozenset({"source-contract", "callers", "callees", "entrypoint", "dependency"})
@@ -404,6 +404,109 @@ def reconcile_task_context(rendered: str, request: Mapping[str, Any], **options)
             "semantic_adequacy": "not-evaluated", "context": current}
 
 
+def _result_fields(value, keys, label):
+    if not isinstance(value, dict) or set(value) != set(keys):
+        raise ValueError(f"invalid {label} fields")
+
+
+def _validate_task_claims(payload, normalized, settings):
+    """Check semantic bindings that a self-consistent content hash cannot prove."""
+    accounting = payload["accounting"]
+    _result_fields(accounting, {"budget_tokens", "used_tokens", "counter_id", "mode",
+                              "exact_compliance", "usage_kind", "scope"}, "accounting")
+    if accounting["usage_kind"] != "upper-bound-including-accounting":
+        raise ValueError("accounting qualification was lost")
+    basis = payload["basis"]
+    _result_fields(basis, {"source", "wiki", "consumed_source", "scope", "paths", "changes",
+                          "source_selection_compatible", "native_availability_required", "capture_id"}, "basis")
+    scope = basis["scope"]
+    if scope not in SCOPES or SCOPES.index(scope) > SCOPES.index(settings["read_scope"]):
+        raise ValueError("captured scope exceeds the effective profile")
+    if basis["native_availability_required"] is not (settings["knowledge_mode"] == "required"):
+        raise ValueError("native availability requirement was changed")
+    for field in ("source", "wiki", "consumed_source", "capture_id"):
+        if basis[field] is None and field in {"source", "consumed_source"}:
+            continue
+        if not packets.is_valid_sha256(basis[field]):
+            raise ValueError("invalid capture commitment")
+    if (basis["source"] is None) != (basis["consumed_source"] is None):
+        raise ValueError("source commitments disagree")
+    if basis["source"] is None:
+        if basis["source_selection_compatible"] is not None:
+            raise ValueError("uncaptured source cannot claim selection compatibility")
+    elif type(basis["source_selection_compatible"]) is not bool or scope == "snapshot":
+        raise ValueError("snapshot scope cannot claim a live source capture")
+    paths = basis["paths"]
+    if not isinstance(paths, list) or len(paths) > settings["max_files"] or paths != sorted(normalize_supplied_paths(paths)):
+        raise ValueError("invalid captured path bounds")
+    expected_paths = _paths(normalized)
+    changes = normalized["changes"]
+    if changes is None:
+        if basis["changes"] is not None:
+            raise ValueError("unexpected change selection")
+    else:
+        selected = basis["changes"]
+        if not isinstance(selected, dict) or not isinstance(selected.get("request"), dict):
+            raise ValueError("missing change selection binding")
+        if any(selected["request"].get(key) != value for key, value in changes.items()):
+            raise ValueError("change selection differs from the task request")
+        selected_paths = list(normalize_supplied_paths(selected.get("paths")))
+        if changes["mode"] == "paths" and selected_paths != changes["paths"]:
+            raise ValueError("explicit change paths were changed")
+        expected_paths.update(selected_paths)
+    if set(paths) != expected_paths:
+        raise ValueError("capture paths differ from the declared selectors")
+    work = payload["work"]
+    _result_fields(work, {"captures", "source_files", "source_bytes", "queries", "capture_retries",
+                         "scope", "source_byte_measure"}, "work")
+    for field, maximum in (("captures", 1), ("source_files", settings["max_files"]),
+                           ("source_bytes", settings["max_source_bytes"]),
+                           ("queries", settings["max_read_rounds"]), ("capture_retries", settings["max_retries"])):
+        if type(work[field]) is not int or not 0 <= work[field] <= maximum:
+            raise ValueError("reported work exceeds its declared limits")
+    if work["scope"] != scope or work["captures"] != int(basis["source"] is not None):
+        raise ValueError("work scope differs from the captured basis")
+    if work["source_byte_measure"] != "unique-captured-inputs; excludes parser and validation rereads":
+        raise ValueError("source work qualification was lost")
+    if payload["limitations"] != _LIMITATIONS:
+        raise ValueError("task limitations were changed or dropped")
+    for key in ("facts", "coverage", "omissions", "followups", "anchors", "plan"):
+        if not isinstance(payload[key], list):
+            raise ValueError("task collections must be arrays")
+    if len(payload["facts"]) > settings["max_read_rounds"] or len(payload["coverage"]) > MAX_SELECTORS:
+        raise ValueError("task evidence exceeds the declared collection bounds")
+    coverage_states = {"present", "partial", "stale", "missing", "unknown", "omitted", "ambiguous", "unsupported", "unavailable"}
+    for item in payload["coverage"]:
+        _result_fields(item, {"requirement_id", "state", "satisfied", "fact_ids", "reason"}, "coverage")
+        if item["state"] not in coverage_states or type(item["satisfied"]) is not bool:
+            raise ValueError("invalid requirement coverage state")
+        if not isinstance(item["fact_ids"], list) or len(item["fact_ids"]) > 1 or len(set(item["fact_ids"])) != len(item["fact_ids"]):
+            raise ValueError("invalid requirement evidence references")
+    if normalized["requirements"]:
+        expected_state = "covered" if all(item["satisfied"] for item in payload["coverage"]) else "incomplete"
+    else:
+        expected_state = "discovery" if payload["anchors"] else "empty"
+    if payload["state"] != expected_state:
+        raise ValueError("task state contradicts requirement coverage")
+    requirements = {item["id"]: item for item in normalized["requirements"]}
+    seen = set()
+    for proposal in payload["followups"]:
+        _result_fields(proposal, {"requirement_id", "facet", "selector", "reason", "operation", "needed_scope",
+                                 "requires_host_authorization", "automatic", "remaining_read_rounds"}, "followup")
+        requirement = requirements.get(proposal["requirement_id"])
+        if requirement is None or any(proposal[field] != requirement[field] for field in ("facet", "selector")):
+            raise ValueError("followup differs from its declared requirement")
+        operation = "host-verification" if requirement["facet"] == "behavior" else "task-context"
+        if proposal["operation"] != operation or proposal["needed_scope"] not in {*SCOPES, "host-execution"}:
+            raise ValueError("invalid followup operation or scope")
+        if type(proposal["remaining_read_rounds"]) is not int or proposal["remaining_read_rounds"] != 0:
+            raise ValueError("followups cannot grant additional read rounds")
+        key = (proposal["facet"], proposal["selector"], proposal["reason"])
+        if key in seen:
+            raise ValueError("duplicate followup proposal")
+        seen.add(key)
+
+
 def validate_task_context(rendered, request, *, profile=None, policy=None, counter=None):
     """Check the task envelope separately from the unchanged embedded packet."""
     normalized, effective = normalize_task_request(request, profile=profile, policy=policy)
@@ -427,6 +530,7 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
             raise ValueError("task/profile/request binding mismatch")
         if payload["result_id"] != content_id(TASK_RESULT_SCHEMA, {k: v for k, v in payload.items() if k != "result_id"}):
             raise ValueError("task result identity mismatch")
+        _validate_task_claims(payload, normalized, effective.settings)
         accounting = payload["accounting"]
         count = counter.count(rendered)
         if type(count) is not int or count < 0:
@@ -447,6 +551,8 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
                 raise ValueError("invalid fact fields")
             if fact_id != content_id("llm-wiki-task-fact/v1", {k: v for k, v in fact.items() if k != "fact_id"}):
                 raise ValueError("fact identity mismatch")
+            if fact["facet"] not in FACETS - {"behavior"} or fact["state"] not in {"present", "partial", "stale"}:
+                raise ValueError("invalid emitted evidence facet or state")
             qualifiers = fact["qualification"]
             if qualifiers["semantic_review"] != "not-evaluated" or qualifiers["behavior"] != "not-evaluated" or qualifiers["negative_claim_supported"] is not False:
                 raise ValueError("required evidence qualification was lost")
@@ -473,6 +579,13 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
                 concept = observed.get("concept") or {}
                 if not {"freshness", "evidence", "verification", "lifecycle"} <= set(concept):
                     raise ValueError("native concept qualifications were lost")
+                freshness = concept["freshness"] or {}
+                if freshness.get("state") in {"source-changed", "source-missing", "stale"} and fact["state"] != "stale":
+                    raise ValueError("stale native evidence cannot establish present coverage")
+            if qualifiers["freshness"] == "stale" and fact["state"] != "stale":
+                raise ValueError("stale qualification contradicts fact state")
+            if fact["facet"] in _LIVE_FACETS and payload["basis"]["source"] is None:
+                raise ValueError("live evidence requires a captured source basis")
             if fact["facet"] in {"callers", "callees", "dependency", "typed-relationships"}:
                 if qualifiers.get("graph_completeness") != "static-observations-only":
                     raise ValueError("static graph limitation was lost")

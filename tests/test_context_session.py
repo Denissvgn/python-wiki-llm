@@ -241,3 +241,22 @@ def test_cancellation_during_a_cold_read_releases_prior_entries(project):
     with pytest.raises(api.WorkspaceStateError, match="cancelled"):
         session.read(request(text="changed intent"), cancelled=cancelled)
     assert not session._entries and session._bytes == 0
+
+
+@pytest.mark.parametrize("retain_owner", [False, True])
+def test_foreign_capture_is_rejected_even_when_request_and_environment_keys_collide(project, retain_owner):
+    for name, default in (("a", 3), ("b", 9)):
+        source = project / name
+        source.mkdir()
+        (source / "app.py").write_text(f"def limit(value={default}):\n    return value\n")
+    with api.open_context_session(src_dir="a", wiki_dir="wiki-a") as first, api.open_context_session(src_dir="b", wiki_dir="wiki-b") as second:
+        first.read(request())
+        foreign = second.read(request())
+        key = next(iter(first._entries))
+        foreign_entry = next(iter(second._entries.values()))
+        assert key == next(iter(second._entries))
+        first._entries[key] = replace(foreign_entry, owner=first._owner) if retain_owner else foreign_entry
+        result = first.read(request(), if_result_id=foreign.result_id, delta=True)
+        assert result.state == "full"
+        assert result.metadata()["reuse"]["capture"] is False
+        assert _full(result).to_payload()["facts"][0]["observation"]["contract"]["params"][0]["default"] == "3"

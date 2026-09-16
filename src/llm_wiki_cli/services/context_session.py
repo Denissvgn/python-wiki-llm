@@ -142,6 +142,7 @@ class _Entry:
     environment: str | None
     expires: float
     size: int
+    owner: object
 
 
 def build_delta(base: TaskContext, current: TaskContext) -> dict[str, Any]:
@@ -201,6 +202,7 @@ class ContextSession:
         self._options["profile"] = effective
         self._limit, self._max_bytes, self._ttl = max_entries, max_bytes, ttl_seconds
         self._entries: OrderedDict[str, _Entry] = OrderedDict()
+        self._owner = object()
         self._bytes = 0
         self._closed = False
         self._lock = RLock()
@@ -234,8 +236,18 @@ class ContextSession:
         if entry is not None:
             self._bytes -= entry.size
 
+    def _owns(self, entry):
+        read = entry.read
+        captured = read.captured
+        if entry.owner is not self._owner or read.wiki_root != self._wiki:
+            return False
+        if captured is not None and (captured.source_root != self._source or captured.wiki_root != self._wiki
+                                     or captured.source_snapshot.root != self._source):
+            return False
+        return True
+
     def _validate(self, entry, environment, request, profile, counter, *, cold=False):
-        if entry.environment != environment or (environment is None and not cold):
+        if not self._owns(entry) or entry.environment != environment or (environment is None and not cold):
             return False
         read = entry.read
         captured = read.captured
@@ -330,7 +342,7 @@ class ContextSession:
                 "counter": counter.identity, "counter_exact": counter.exact})
             entry = self._entries.get(key)
             base = next((item.read.result for item in self._entries.values()
-                         if item.read.result.result_id == if_result_id), None) if if_result_id else None
+                         if self._owns(item) and item.read.result.result_id == if_result_id), None) if if_result_id else None
             reused = bool(reuse and not self._dirty and entry is not None
                           and self._validate(entry, environment, request, profile, counter))
             if reused:
@@ -362,7 +374,7 @@ class ContextSession:
                 if size <= self._max_bytes:
                     while self._entries and (len(self._entries) >= self._limit or self._bytes + size > self._max_bytes):
                         self._drop(next(iter(self._entries)))
-                    self._entries[key] = _Entry(detached, environment, time.monotonic() + self._ttl, size)
+                    self._entries[key] = _Entry(detached, environment, time.monotonic() + self._ttl, size, self._owner)
                     self._bytes += size
             current = read.result
             state, delta_payload = "full", None
@@ -400,7 +412,7 @@ class ContextSession:
                                         "embedded task work describes its originating read", "helper-backed captures use cold reads"]}
             # Counter callbacks and delta reconstruction happen before this final
             # check, so neither can mutate inputs and leave a false live claim.
-            if current.ok and not self._validate(_Entry(read, environment, 0, 0), self._environment(),
+            if current.ok and not self._validate(_Entry(read, environment, 0, 0, self._owner), self._environment(),
                                                 request, profile, counter, cold=True):
                 self._clear()
                 raise packets.ContextPacketSourceMutationError("session-inputs")

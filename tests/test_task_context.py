@@ -309,3 +309,71 @@ def test_independent_outer_validator_catches_rehashed_corruption(project, corrup
     payload["result_id"] = content_id(TASK_RESULT_SCHEMA, {k: v for k, v in payload.items() if k != "result_id"})
     with pytest.raises(api.InvalidRequestError):
         api.validate_task_context(canonical_json(payload).decode(), req)
+
+
+def _reseal_claims(payload):
+    """Keep content hashes valid so a negative control reaches claim validation."""
+    remap = {}
+    for fact in payload["facts"]:
+        old = fact["fact_id"]
+        fact["fact_id"] = content_id("llm-wiki-task-fact/v1", {k: v for k, v in fact.items() if k != "fact_id"})
+        remap[old] = fact["fact_id"]
+    for item in [*payload["coverage"], *payload["omissions"]]:
+        item["fact_ids"] = [remap.get(value, value) for value in item["fact_ids"]]
+    basis = payload["basis"]
+    basis["capture_id"] = content_id("llm-wiki-task-basis/v1", {k: v for k, v in basis.items() if k != "capture_id"})
+    payload["accounting"]["used_tokens"] = payload["accounting"]["budget_tokens"]
+    payload["result_id"] = content_id(TASK_RESULT_SCHEMA, {k: v for k, v in payload.items() if k != "result_id"})
+    return canonical_json(payload).decode()
+
+
+def test_missing_evidence_cannot_be_relabelled_covered(project):
+    req = request("app.py:missing")
+    payload = api.build_task_context(req).to_payload()
+    assert payload["coverage"][0]["satisfied"] is False
+    payload["state"] = "covered"
+    with pytest.raises(api.InvalidRequestError, match="state contradicts"):
+        api.validate_task_context(_reseal_claims(payload), req)
+
+
+def test_selected_capture_cannot_claim_repository_wide_scope(project):
+    req = request()
+    payload = api.build_task_context(req).to_payload()
+    payload["basis"]["scope"] = "full-inventory"
+    payload["work"]["scope"] = "full-inventory"
+    for fact in payload["facts"]:
+        fact["qualification"]["analysis_scope"] = "full-inventory"
+    with pytest.raises(api.InvalidRequestError, match="scope exceeds"):
+        api.validate_task_context(_reseal_claims(payload), req)
+
+
+@pytest.mark.parametrize("corruption,reason", [
+    ("paths", "declared selectors"), ("work", "declared limits"),
+    ("limitations", "limitations"), ("followup", "followup differs"),
+    ("accounting", "accounting qualification"), ("native-required", "availability requirement"),
+])
+def test_corrupt_qualifications_cannot_pass_with_valid_content_hashes(project, corruption, reason):
+    req = request("app.py:missing")
+    payload = api.build_task_context(req).to_payload()
+    if corruption == "paths":
+        payload["basis"]["paths"] = ["unrequested.py"]
+    elif corruption == "work":
+        payload["work"]["queries"] = 999
+    elif corruption == "limitations":
+        payload["limitations"] = []
+    elif corruption == "followup":
+        payload["followups"][0]["selector"] = "unrequested.py:secret"
+    elif corruption == "accounting":
+        payload["accounting"]["usage_kind"] = "host-window-exact"
+    else:
+        payload["basis"]["native_availability_required"] = True
+    with pytest.raises(api.InvalidRequestError, match=reason):
+        api.validate_task_context(_reseal_claims(payload), req)
+
+
+def test_stale_fact_cannot_support_present_coverage(project):
+    req = request()
+    payload = api.build_task_context(req).to_payload()
+    payload["facts"][0]["qualification"]["freshness"] = "stale"
+    with pytest.raises(api.InvalidRequestError, match="stale qualification"):
+        api.validate_task_context(_reseal_claims(payload), req)
