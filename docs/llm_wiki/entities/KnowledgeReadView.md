@@ -27,6 +27,7 @@ Validated, immutable-by-contract state for one native read operation.
 | `load_state` | `KnowledgeLoadState` | *required* | — |
 | `underlying_load_state` | `KnowledgeLoadState \| None` | `None` | — |
 | `machine_verification` | `MachineVerificationReadView` | `field(default_factory=MachineVerificationReadView)` | — |
+| `validated_artifacts` | `Any` | `field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 

@@ -38,6 +38,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
 | `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.services.knowledge_loader` | `KnowledgeStateLoadError` |
+| `.services.knowledge_storage` | `KnowledgeStorageError` |
 | `.services.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `.services.maintenance_queue` | `build_maintenance_queue` |
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
@@ -81,9 +82,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (39) |
+| Outbound | `src` (40) |
 
-> All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -94,7 +95,7 @@ flowchart LR
 | [InvalidRequestError](../entities/InvalidRequestError.md) | 357 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
 | [WorkspaceStateError](../entities/WorkspaceStateError.md) | 361 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
 | [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 365 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1349 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [ContextSession](../entities/api_ContextSession.md) | 1359 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 

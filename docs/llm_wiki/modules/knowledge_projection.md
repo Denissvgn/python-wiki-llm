@@ -21,7 +21,7 @@ identities, and non-parity hashes are never visited while constructing it.
 |--------|---------|
 | `.concept_identity` | `ConceptIdentityError`, `validate_bundle_id`, `validate_concept_uid` |
 | `.contracts` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_HASH_EXTENSION_KEY`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
-| `.knowledge_artifacts` | `validate_knowledge_artifacts` |
+| `.knowledge_artifacts` | `validate_knowledge_artifacts`, `require_validated_artifacts` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability` |
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `validate_configured_public_identity` |
 | `.knowledge_evidence` | `sha256_bytes` |

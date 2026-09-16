@@ -147,12 +147,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| reconcile_concepts | validate_governance_ledger | 936 | `validate_governance_ledger(ledger)` |
+| reconcile_concepts | validate_governance_ledger | 940 | `validate_governance_ledger(ledger)` |
 | validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 523 | `isinstance(ledger, GovernanceLedger)` |
 | validate_governance_ledger | TypeError | 524 | `TypeError('ledger must be a GovernanceLedger')` |
 | validate_governance_ledger | GovernanceError | 526 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
 | validate_governance_ledger | _bundle_id | 531 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3357 | `validate_bundle_id(value)` |
+| _bundle_id | validate_bundle_id | 3361 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
@@ -163,9 +163,9 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `aliases.pop` | `reconcile_concepts` | 1016 |
-| mutation | `by_locator.pop` | `reconcile_concepts` | 1034 |
-| mutation | `by_natural_key.pop` | `reconcile_concepts` | 1044 |
+| mutation | `aliases.pop` | `reconcile_concepts` | 1020 |
+| mutation | `by_locator.pop` | `reconcile_concepts` | 1038 |
+| mutation | `by_natural_key.pop` | `reconcile_concepts` | 1048 |
 
 ### Static analysis gaps
 

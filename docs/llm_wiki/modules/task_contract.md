@@ -30,30 +30,38 @@ flowchart LR
     n2["src/llm_wiki_cli/services/context_session.py"]
     n3["src/llm_wiki_cli/services/documentation_query_builder.py"]
     n4["src/llm_wiki_cli/services/task_context.py"]
-    n5["src/llm_wiki_cli/services/task_contract.py"]
-    n6["src/llm_wiki_cli/services/workflow_profile.py"]
+    n5["src/llm_wiki_cli/services/task_context_v2.py"]
+    n6["src/llm_wiki_cli/services/task_contract.py"]
+    n7["src/llm_wiki_cli/services/workflow_profile.py"]
     n0 --> n2
     n0 --> n3
     n0 --> n4
-    n0 --> n5
     n0 --> n6
+    n0 --> n7
     n2 --> n4
-    n2 --> n5
     n2 --> n6
+    n2 --> n7
     n4 --> n1
     n4 --> n3
     n4 --> n5
     n4 --> n6
+    n4 --> n7
     n5 --> n1
     n5 --> n3
+    n5 --> n4
     n5 --> n6
+    n5 --> n7
+    n6 --> n1
+    n6 --> n3
+    n6 --> n7
     click n0 "../modules/api.md"
     click n1 "../modules/change_selection.md"
     click n2 "../modules/context_session.md"
     click n3 "../modules/documentation_query_builder.md"
     click n4 "../modules/task_context.md"
-    click n5 "../modules/task_contract.md"
-    click n6 "../modules/workflow_profile.md"
+    click n5 "../modules/task_context_v2.md"
+    click n6 "../modules/task_contract.md"
+    click n7 "../modules/workflow_profile.md"
 ```
 
 ### Internal neighbors
@@ -63,6 +71,7 @@ flowchart LR
 | Inbound | [api](../modules/api.md) |
 | Inbound | [context_session](../modules/context_session.md) |
 | Inbound | [task_context](../modules/task_context.md) |
+| Inbound | [task_context_v2](../modules/task_context_v2.md) |
 | Outbound | [change_selection](../modules/change_selection.md) |
 | Outbound | [documentation_query_builder](../modules/documentation_query_builder.md) |
 | Outbound | [workflow_profile](../modules/workflow_profile.md) |
@@ -71,7 +80,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TaskContext](../entities/TaskContext.md) | 106 | — | Detached canonical task output; unsuccessful budgets contain no context. |
+| [TaskContext](../entities/TaskContext.md) | 109 | — | Detached canonical task output; unsuccessful budgets contain no context. |
 
 ## Functions
 

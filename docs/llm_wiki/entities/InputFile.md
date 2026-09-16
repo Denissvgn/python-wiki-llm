@@ -97,4 +97,4 @@ flowchart LR
 | `_open_windows_input_leaf` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_read_json_object` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 
-> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

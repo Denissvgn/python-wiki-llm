@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`api`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 39 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 46 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -31,11 +32,17 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md)
+- [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
@@ -55,8 +62,8 @@
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
-    participant p0 as run
-    participant p1 as _run_init
+    participant p0 as run (src/llm_wiki_cli/commands/knowledge_cmd.py)
+    participant p1 as run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)
     participant p2 as _wiki_root
     participant p3 as Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)
     participant p4 as first_unsafe_path_component
@@ -76,7 +83,7 @@ sequenceDiagram
     participant p18 as os.readlink
     participant p19 as link_target.is_absolute
     participant p20 as GovernanceError
-    p0->>p1: _run_init
+    p0->>p1: run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)
     p1->>p2: _wiki_root
     p2-->>p3: Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)
     p2->>p4: first_unsafe_path_component
@@ -108,7 +115,7 @@ sequenceDiagram
     p2->>p20: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 2157 interactions; 2127 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3062 interactions; 3032 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -117,8 +124,8 @@ sequenceDiagram
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
 ```mermaid
 flowchart LR
-    s1["1. run"]
-    s2["2. _run_init"]
+    s1["1. run (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
+    s2["2. run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)"]
     s3["3. _wiki_root"]
     s4["4. Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)"]
     s5["5. first_unsafe_path_component"]
@@ -129,7 +136,7 @@ flowchart LR
     s10["10. lexical.is_absolute"]
     s11["11. Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
     s12["12. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
-    s1 -->|"_run_init(args)"| s2
+    s1 -->|"run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)(args)"| s2
     s2 -->|"_wiki_root(args.wiki_dir)"| s3
     s3 -. "Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)(value)" .-> s4
     s3 -->|"first_unsafe_path_component(root)"| s5
@@ -140,22 +147,25 @@ flowchart LR
     s5 -. "lexical.is_absolute(data not statically known)" .-> s10
     s5 -. "Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)(data not statically known)" .-> s11
     s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(absolute.anchor)" .-> s12
-    b0["mutation pending_parts.pop"]
-    s5 -. "mutation pending_parts.pop" .-> b0
+    b0["output print"]
+    s2 -. "output print" .-> b0
+    b1["mutation pending_parts.pop"]
+    s5 -. "mutation pending_parts.pop" .-> b1
     click s1 "../modules/knowledge_cmd.md"
-    click s2 "../modules/knowledge_cmd.md"
+    click s2 "../modules/knowledge_storage_cmd.md"
     click s3 "../modules/knowledge_cmd.md"
     click s5 "../modules/io.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
+    class b1 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `Lifecycle`, `Lifecycle`, `Lifecycle`, `Lifecycle` | - | - |
-| `_run_init` | `args` | - | - | `none` |
+| `run (src/llm_wiki_cli/commands/knowledge_cmd.py)` | `args` | `Lifecycle`, `Lifecycle`, `Lifecycle`, `Lifecycle` | - | - |
+| `run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)` | `args` | - | - | - |
 | `_wiki_root` | `value: str \| Path` | - | - | `root` |
 | `Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
@@ -171,10 +181,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _run_init | 959 | `_run_init(args)` |
-| _run_init | _wiki_root | 420 | `_wiki_root(args.wiki_dir)` |
-| _wiki_root | Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root) | 107 | `Path(value)` |
-| _wiki_root | first_unsafe_path_component | 108 | `first_unsafe_path_component(root)` |
+| run (src/llm_wiki_cli/commands/knowledge_cmd.py) | run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | 964 | `run_storage(args)` |
+| run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | _wiki_root | 16 | `_wiki_root(args.wiki_dir)` |
+| _wiki_root | Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root) | 106 | `Path(value)` |
+| _wiki_root | first_unsafe_path_component | 107 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
@@ -187,6 +197,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
+| output | `print` | `run` | 31 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps

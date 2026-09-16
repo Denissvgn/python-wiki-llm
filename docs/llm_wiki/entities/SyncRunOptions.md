@@ -36,6 +36,7 @@ _Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py
 | `clear_openapi_file` | `bool` | *required* | — |
 | `source_selection` | `str \| Path \| None` | *required* | — |
 | `rebuild_knowledge` | `bool` | `False` | — |
+| `knowledge_format` | `str \| None` | `None` | — |
 
 ## Methods
 

@@ -1,6 +1,6 @@
 # ContextSession
 
-**Location:** `src/llm_wiki_cli/api.py:1349`
+**Location:** `src/llm_wiki_cli/api.py:1359`
 **Kind:** Class
 **Bases:** `_ContextSession`
 **Module:** [api](../modules/api.md)

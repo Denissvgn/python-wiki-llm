@@ -2,7 +2,7 @@
 
 **Entry point:** `committed_runtime_provenance` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [common](../modules/common.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 13 more
+**Modules touched:** [common](../modules/common.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 15 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,8 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -84,7 +86,7 @@ sequenceDiagram
     p19->>p22: inventory_language_for_path
 ```
 
-> Call sequence diagram shows 30 of 674 interactions; 644 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 684 interactions; 654 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -116,12 +118,16 @@ flowchart LR
     s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s10
     s9 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s11
     s9 -. "key.encode('utf-8')" .-> s12
+    b0["mutation captured.update"]
+    s3 -. "mutation captured.update" .-> b0
     click s1 "../modules/knowledge_orchestration.md"
     click s2 "../modules/knowledge_orchestration.md"
     click s3 "../modules/knowledge_orchestration.md"
     click s7 "../modules/sync_manifest.md"
     click s8 "../modules/sync_manifest.md"
     click s9 "../modules/validation.md"
+    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
+    class b0 boundary
 ```
 
 ### Step data
@@ -145,12 +151,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_runtime_provenance | _previous_committed_artifacts | 719 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 690 | `capture_committed_knowledge(wiki_dir, manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 226 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 226 | `Path(wiki_dir)` |
-| capture_committed_knowledge | (…).read_bytes | 230 | `(root / name).read_bytes(data not statically known)` |
-| capture_committed_knowledge | SyncManifest.from_payload | 237 | `SyncManifest.from_payload(_decode_json_object(...))` |
+| committed_runtime_provenance | _previous_committed_artifacts | 723 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 694 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| capture_committed_knowledge | Path(…).resolve | 227 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 227 | `Path(wiki_dir)` |
+| capture_committed_knowledge | (…).read_bytes | 231 | `(root / name).read_bytes(data not statically known)` |
+| capture_committed_knowledge | SyncManifest.from_payload | 238 | `SyncManifest.from_payload(_decode_json_object(...))` |
 | SyncManifest.from_payload | _mapping_value | 956 | `_mapping_value(value, 'manifest')` |
 | _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
@@ -159,14 +165,16 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+| Kind | Target | Step | Line |
+|---|---|---|---:|
+| mutation | `captured.update` | `capture_committed_knowledge` | 252 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 226 |
-| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 230 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 227 |
+| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 231 |
 | external_call | `require_mapping` | `isinstance` | 727 |
 | external_call | `require_mapping` | `isinstance` | 731 |
 | unresolved_call | `require_mapping` | `key.encode` | 736 |

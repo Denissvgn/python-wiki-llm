@@ -69,10 +69,10 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 131 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 177 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 270 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 279 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 300 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 178 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 273 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 282 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 303 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 

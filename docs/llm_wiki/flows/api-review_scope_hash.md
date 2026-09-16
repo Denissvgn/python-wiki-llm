@@ -128,13 +128,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| review_scope_hash | _section_locator | 1536 | `_section_locator(section_locator, 'section_locator')` |
-| _section_locator | isinstance (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3323 | `isinstance(value, str)` |
-| _section_locator | value.startswith (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3324 | `value.startswith('llm-wiki://')` |
-| _section_locator | value.strip (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3327 | `value.strip(data not statically known)` |
-| _section_locator | GovernanceError | 3329 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
-| _section_locator | _safe_text | 3333 | `_safe_text(value, path)` |
-| _safe_text | require_no_control_characters | 3241 | `require_no_control_characters(value, error=GovernanceError(...), reject_delete_character=True)` |
+| review_scope_hash | _section_locator | 1540 | `_section_locator(section_locator, 'section_locator')` |
+| _section_locator | isinstance (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3327 | `isinstance(value, str)` |
+| _section_locator | value.startswith (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3328 | `value.startswith('llm-wiki://')` |
+| _section_locator | value.strip (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3331 | `value.strip(data not statically known)` |
+| _section_locator | GovernanceError | 3333 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
+| _section_locator | _safe_text | 3337 | `_safe_text(value, path)` |
+| _safe_text | require_no_control_characters | 3245 | `require_no_control_characters(value, error=GovernanceError(...), reject_delete_character=True)` |
 | require_no_control_characters | isinstance (src/llm_wiki_cli/services…uire_no_control_characters) | 628 | `isinstance(value, str)` |
 | require_no_control_characters | contains_control_character | 628 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
 | contains_control_character | any | 643 | `any(...)` |
@@ -148,9 +148,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_section_locator` | `isinstance` | 3323 |
-| unresolved_call | `_section_locator` | `value.startswith` | 3324 |
-| unresolved_call | `_section_locator` | `value.strip` | 3327 |
+| external_call | `_section_locator` | `isinstance` | 3327 |
+| unresolved_call | `_section_locator` | `value.startswith` | 3328 |
+| unresolved_call | `_section_locator` | `value.strip` | 3331 |
 | external_call | `require_no_control_characters` | `isinstance` | 628 |
 | external_call | `contains_control_character` | `any` | 643 |
 | external_call | `contains_control_character` | `ord` | 644 |

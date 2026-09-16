@@ -1,6 +1,6 @@
 # RuntimeLiveEvaluationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:279`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:282`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)

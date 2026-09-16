@@ -2,7 +2,7 @@
 
 **Entry point:** `load_snapshot_knowledge_observability` (`api`)
 **Source:** [knowledge_observability](../modules/knowledge_observability.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 23 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 25 more
 
 **Complete modules touched:**
 
@@ -23,6 +23,8 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [paths](../modules/paths.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -94,7 +96,7 @@ sequenceDiagram
     p11->>p6: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 2067 interactions; 2037 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2076 interactions; 2046 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

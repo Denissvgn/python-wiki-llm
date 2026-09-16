@@ -107,4 +107,4 @@ flowchart LR
 | `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) | — |
 | `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
 
-> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.
+> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.

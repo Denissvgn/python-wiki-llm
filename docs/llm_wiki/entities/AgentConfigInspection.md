@@ -1,6 +1,6 @@
 # AgentConfigInspection
 
-**Location:** `src/llm_wiki_cli/config.py:323`
+**Location:** `src/llm_wiki_cli/config.py:324`
 **Kind:** Class
 **Bases:** —
 **Module:** [config](../modules/config.md)

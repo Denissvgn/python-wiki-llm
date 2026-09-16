@@ -74,7 +74,7 @@ sequenceDiagram
     p14->>p8: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 1116 interactions; 1086 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1037 interactions; 1007 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -144,36 +144,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| governance_hash_from_knowledge | validate_governance_projection | 2002 | `validate_governance_projection(knowledge)` |
-| validate_governance_projection | isinstance (src/llm_wiki_cli/services…ate_governance_projection) | 1815 | `isinstance(knowledge, KnowledgeIndex)` |
-| validate_governance_projection | TypeError (src/llm_wiki_cli/services…ate_governance_projection) | 1816 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| validate_governance_projection | knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection) | 1817 | `knowledge.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
-| validate_governance_projection | knowledge.bundle.snapshot.extensions.get | 1818 | `knowledge.bundle.snapshot.extensions.get(GOVERNANCE_HASH_EXTENSION_KEY)` |
-| validate_governance_projection | concept.extensions.get | 1822 | `concept.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
-| validate_governance_projection | any (src/llm_wiki_cli/services…ate_governance_projection) | 1826 | `any(...)` |
-| validate_governance_projection | GovernanceError | 1829 | `GovernanceError('extensions', 'contains an incomplete governance projection', code='governance-projection-mismatch')` |
-| validate_governance_projection | _object (src/llm_wiki_cli/services/knowledge_governance.py) | 1835 | `_object(raw, 'governance_projection')` |
-| _object (src/llm_wiki_cli/services/knowledge_governance.py) | require_mapping | 3136 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| governance_hash_from_knowledge | validate_governance_projection | 2006 | `validate_governance_projection(knowledge)` |
+| validate_governance_projection | isinstance (src/llm_wiki_cli/services…ate_governance_projection) | 1819 | `isinstance(knowledge, KnowledgeIndex)` |
+| validate_governance_projection | TypeError (src/llm_wiki_cli/services…ate_governance_projection) | 1820 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| validate_governance_projection | knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection) | 1821 | `knowledge.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
+| validate_governance_projection | knowledge.bundle.snapshot.extensions.get | 1822 | `knowledge.bundle.snapshot.extensions.get(GOVERNANCE_HASH_EXTENSION_KEY)` |
+| validate_governance_projection | concept.extensions.get | 1826 | `concept.extensions.get(GOVERNANCE_EXTENSION_KEY)` |
+| validate_governance_projection | any (src/llm_wiki_cli/services…ate_governance_projection) | 1830 | `any(...)` |
+| validate_governance_projection | GovernanceError | 1833 | `GovernanceError('extensions', 'contains an incomplete governance projection', code='governance-projection-mismatch')` |
+| validate_governance_projection | _object (src/llm_wiki_cli/services/knowledge_governance.py) | 1839 | `_object(raw, 'governance_projection')` |
+| _object (src/llm_wiki_cli/services/knowledge_governance.py) | require_mapping | 3140 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `declared_limits.add` | `validate_governance_projection` | 1920 |
-| mutation | `seen_uids.add` | `validate_governance_projection` | 1927 |
-| mutation | `successor_pairs.add` | `validate_governance_projection` | 1942 |
+| mutation | `declared_limits.add` | `validate_governance_projection` | 1924 |
+| mutation | `seen_uids.add` | `validate_governance_projection` | 1931 |
+| mutation | `successor_pairs.add` | `validate_governance_projection` | 1946 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_governance_projection` | `isinstance` | 1815 |
-| external_call | `validate_governance_projection` | `TypeError` | 1816 |
-| unresolved_call | `validate_governance_projection` | `knowledge.extensions.get` | 1817 |
-| unresolved_call | `validate_governance_projection` | `knowledge.bundle.snapshot.extensions.get` | 1818 |
-| unresolved_call | `validate_governance_projection` | `concept.extensions.get` | 1822 |
-| external_call | `validate_governance_projection` | `any` | 1826 |
+| external_call | `validate_governance_projection` | `isinstance` | 1819 |
+| external_call | `validate_governance_projection` | `TypeError` | 1820 |
+| unresolved_call | `validate_governance_projection` | `knowledge.extensions.get` | 1821 |
+| unresolved_call | `validate_governance_projection` | `knowledge.bundle.snapshot.extensions.get` | 1822 |
+| unresolved_call | `validate_governance_projection` | `concept.extensions.get` | 1826 |
+| external_call | `validate_governance_projection` | `any` | 1830 |
 | external_call | `require_mapping` | `isinstance` | 727 |
 | step_limit | `governance_hash_from_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `governance_hash_from_knowledge` | `depth limit` | 0 |

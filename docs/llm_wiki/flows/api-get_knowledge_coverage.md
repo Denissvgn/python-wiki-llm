@@ -2,7 +2,7 @@
 
 **Entry point:** `get_knowledge_coverage` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 49 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 51 more
 
 **Complete modules touched:**
 
@@ -40,6 +40,8 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
@@ -119,7 +121,7 @@ sequenceDiagram
     p5-->>p21: len (src/llm_wiki_cli/services…:build_knowledge_coverage)
 ```
 
-> Call sequence diagram shows 30 of 3547 interactions; 3517 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3575 interactions; 3545 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -184,16 +186,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 886 | `isinstance(value, bool)` |
-| get_knowledge_coverage | InvalidRequestError | 887 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
-| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 890 | `isinstance(helper_cache_dir, (...))` |
-| get_knowledge_coverage | InvalidRequestError | 891 | `InvalidRequestError('helper cache must be a path', code='invalid-request', details={...})` |
-| get_knowledge_coverage | InvalidRequestError | 905 | `InvalidRequestError('service owns its read scope', code='invalid-request', details={...})` |
-| get_knowledge_coverage | getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 910 | `getattr(service, 'knowledge_view', None)` |
-| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 911 | `isinstance(view, KnowledgeReadView)` |
-| get_knowledge_coverage | InvalidRequestError | 912 | `InvalidRequestError('service requires a native read view', code='invalid-request', details={...})` |
-| get_knowledge_coverage | cast | 917 | `cast(KnowledgeCoverageResult, build_knowledge_coverage(...))` |
-| get_knowledge_coverage | build_knowledge_coverage | 917 | `build_knowledge_coverage(view)` |
+| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 896 | `isinstance(value, bool)` |
+| get_knowledge_coverage | InvalidRequestError | 897 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
+| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 900 | `isinstance(helper_cache_dir, (...))` |
+| get_knowledge_coverage | InvalidRequestError | 901 | `InvalidRequestError('helper cache must be a path', code='invalid-request', details={...})` |
+| get_knowledge_coverage | InvalidRequestError | 915 | `InvalidRequestError('service owns its read scope', code='invalid-request', details={...})` |
+| get_knowledge_coverage | getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 920 | `getattr(service, 'knowledge_view', None)` |
+| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 921 | `isinstance(view, KnowledgeReadView)` |
+| get_knowledge_coverage | InvalidRequestError | 922 | `InvalidRequestError('service requires a native read view', code='invalid-request', details={...})` |
+| get_knowledge_coverage | cast | 927 | `cast(KnowledgeCoverageResult, build_knowledge_coverage(...))` |
+| get_knowledge_coverage | build_knowledge_coverage | 927 | `build_knowledge_coverage(view)` |
 | build_knowledge_coverage | isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage) | 23 | `isinstance(view, KnowledgeReadView)` |
 
 ### Boundary effects
@@ -206,11 +208,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `get_knowledge_coverage` | `isinstance` | 886 |
-| external_call | `get_knowledge_coverage` | `isinstance` | 890 |
-| external_call | `get_knowledge_coverage` | `getattr` | 910 |
-| external_call | `get_knowledge_coverage` | `isinstance` | 911 |
-| external_call | `get_knowledge_coverage` | `cast` | 917 |
+| external_call | `get_knowledge_coverage` | `isinstance` | 896 |
+| external_call | `get_knowledge_coverage` | `isinstance` | 900 |
+| external_call | `get_knowledge_coverage` | `getattr` | 920 |
+| external_call | `get_knowledge_coverage` | `isinstance` | 921 |
+| external_call | `get_knowledge_coverage` | `cast` | 927 |
 | external_call | `build_knowledge_coverage` | `isinstance` | 23 |
 | step_limit | `get_knowledge_coverage` | `first 12 steps` | 0 |
 | truncated_flow | `get_knowledge_coverage` | `depth limit` | 0 |

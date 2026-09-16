@@ -133,7 +133,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_context_packet (src/llm_wiki_cli/api.py) | validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | 1490 | `context_packet_service.validate_context_packet(packet_bytes)` |
+| validate_context_packet (src/llm_wiki_cli/api.py) | validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | 1500 | `context_packet_service.validate_context_packet(packet_bytes)` |
 | validate_context_packet (src/llm_wiki_cli/services/context_packet.py) | _coerce_packet_bytes | 1676 | `_coerce_packet_bytes(packet_bytes)` |
 | _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2456 | `isinstance(value, bytes)` |
 | _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2458 | `isinstance(value, (...))` |

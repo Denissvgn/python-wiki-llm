@@ -2,7 +2,7 @@
 
 **Entry point:** `build_snapshot_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [context_packet](../modules/context_packet.md), [documentation_query_builder](../modules/documentation_query_builder.md), [immutable](../modules/immutable.md), and 19 more
+**Modules touched:** [context_packet](../modules/context_packet.md), [documentation_query_builder](../modules/documentation_query_builder.md), [immutable](../modules/immutable.md), and 21 more
 
 **Complete modules touched:**
 
@@ -22,6 +22,8 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -44,7 +46,7 @@ sequenceDiagram
     participant p7 as _domain_hash
     participant p8 as sha256_bytes
     participant p9 as hashlib.sha256(…).hexdigest
-    participant p10 as hashlib.sha256
+    participant p10 as hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)
     participant p11 as canonical_json_bytes
     participant p12 as canonical_json_text(…).encode
     participant p13 as canonical_json_text
@@ -72,7 +74,7 @@ sequenceDiagram
     p1->>p7: _domain_hash
     p7->>p8: sha256_bytes
     p8-->>p9: hashlib.sha256(…).hexdigest
-    p8-->>p10: hashlib.sha256
+    p8-->>p10: hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)
     p7->>p11: canonical_json_bytes
     p11-->>p12: canonical_json_text(…).encode
     p11->>p13: canonical_json_text
@@ -95,7 +97,7 @@ sequenceDiagram
     p26->>p28: KnowledgeMismatchPolicy
 ```
 
-> Call sequence diagram shows 30 of 687 interactions; 657 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 743 interactions; 713 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -114,7 +116,7 @@ flowchart LR
     s8["8. _domain_hash"]
     s9["9. sha256_bytes"]
     s10["10. hashlib.sha256(…).hexdigest"]
-    s11["11. hashlib.sha256"]
+    s11["11. hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)"]
     s12["12. canonical_json_bytes"]
     s1 -->|"_wiki_anchor(wiki_root)"| s2
     s2 -. "str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)" .-> s3
@@ -125,7 +127,7 @@ flowchart LR
     s2 -->|"_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})"| s8
     s8 -->|"sha256_bytes(canonical_json_bytes(...))"| s9
     s9 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s10
-    s9 -. "hashlib.sha256(value)" .-> s11
+    s9 -. "hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)(value)" .-> s11
     s8 -->|"canonical_json_bytes({...})"| s12
     click s1 "../modules/documentation_query_builder.md"
     click s2 "../modules/context_packet.md"
@@ -149,7 +151,7 @@ flowchart LR
 | `_domain_hash` | `domain: str`, `value: Mapping[str, Any]` | - | - | `sha256_bytes(...)` |
 | `sha256_bytes` | `value: bytes` | - | - | `...` |
 | `hashlib.sha256(…).hexdigest` | - | - | - | - |
-| `hashlib.sha256` | - | - | - | - |
+| `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | - | - | - | - |
 | `canonical_json_bytes` | `value: Any` | - | - | `...` |
 
 ### Call data
@@ -165,7 +167,7 @@ flowchart LR
 | _wiki_anchor | _domain_hash | 4990 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
 | _domain_hash | sha256_bytes | 5120 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_bytes | hashlib.sha256(…).hexdigest | 198 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 198 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 198 | `hashlib.sha256(value)` |
 | _domain_hash | canonical_json_bytes | 5121 | `canonical_json_bytes({...})` |
 
 ### Boundary effects

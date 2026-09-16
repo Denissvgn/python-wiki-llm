@@ -122,15 +122,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1396 | `isinstance(source_snapshot, SourceSnapshot)` |
-| runtime_consumed_inputs | TypeError | 1397 | `TypeError('source_snapshot must be a SourceSnapshot')` |
-| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1398 | `isinstance(generation_inputs, Mapping)` |
-| runtime_consumed_inputs | TypeError | 1399 | `TypeError('generation_inputs must be a mapping')` |
-| runtime_consumed_inputs | source_snapshot.to_consumed_inputs | 1401 | `source_snapshot.to_consumed_inputs(data not statically known)` |
-| runtime_consumed_inputs | _merge_explicit_consumed_input | 1403 | `_merge_explicit_consumed_input(consumed_by_path, path=plugin_lock_path, content_hash=plugin_lock_hash, kind=ConsumedInputKind.PLUGIN, field='plugin_lock')` |
-| _merge_explicit_consumed_input | KnowledgeGenerationError | 1469 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
-| _merge_explicit_consumed_input | KnowledgeGenerationError | 1476 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
-| _merge_explicit_consumed_input | is_valid_sha256 | 1480 | `is_valid_sha256(content_hash)` |
+| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1400 | `isinstance(source_snapshot, SourceSnapshot)` |
+| runtime_consumed_inputs | TypeError | 1401 | `TypeError('source_snapshot must be a SourceSnapshot')` |
+| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1402 | `isinstance(generation_inputs, Mapping)` |
+| runtime_consumed_inputs | TypeError | 1403 | `TypeError('generation_inputs must be a mapping')` |
+| runtime_consumed_inputs | source_snapshot.to_consumed_inputs | 1405 | `source_snapshot.to_consumed_inputs(data not statically known)` |
+| runtime_consumed_inputs | _merge_explicit_consumed_input | 1407 | `_merge_explicit_consumed_input(consumed_by_path, path=plugin_lock_path, content_hash=plugin_lock_hash, kind=ConsumedInputKind.PLUGIN, field='plugin_lock')` |
+| _merge_explicit_consumed_input | KnowledgeGenerationError | 1473 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
+| _merge_explicit_consumed_input | KnowledgeGenerationError | 1480 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
+| _merge_explicit_consumed_input | is_valid_sha256 | 1484 | `is_valid_sha256(content_hash)` |
 | is_valid_sha256 | isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256) | 153 | `isinstance(value, str)` |
 | is_valid_sha256 | _SHA256_RE.fullmatch | 153 | `_SHA256_RE.fullmatch(value)` |
 
@@ -142,11 +142,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `runtime_consumed_inputs` | `isinstance` | 1396 |
-| external_call | `runtime_consumed_inputs` | `TypeError` | 1397 |
-| external_call | `runtime_consumed_inputs` | `isinstance` | 1398 |
-| external_call | `runtime_consumed_inputs` | `TypeError` | 1399 |
-| unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1401 |
+| external_call | `runtime_consumed_inputs` | `isinstance` | 1400 |
+| external_call | `runtime_consumed_inputs` | `TypeError` | 1401 |
+| external_call | `runtime_consumed_inputs` | `isinstance` | 1402 |
+| external_call | `runtime_consumed_inputs` | `TypeError` | 1403 |
+| unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1405 |
 | external_call | `is_valid_sha256` | `isinstance` | 153 |
 | unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 153 |
 | step_limit | `runtime_consumed_inputs` | `first 12 steps` | 0 |

@@ -42,20 +42,20 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (54) |
+| Inbound | `src` (55) |
 | Outbound | `src` (3) |
 
-> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 58 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [PathValidationError](../entities/PathValidationError.md) | Class | 121 | `ValueError` | Raised when a user-provided path escapes the project root. |
-| [AgentConfigState](../entities/AgentConfigState.md) | Enum | 313 | `str`, `Enum` | Compatibility classification for the local agent configuration. |
-| [AgentConfigInspection](../entities/AgentConfigInspection.md) | Class | 323 | — | One safe configuration read with provenance for status reporting. |
-| [_GitignoreRule](../entities/GitignoreRule.md) | Class | 373 | — | — |
-| [GitIgnoreMatcher](../entities/GitIgnoreMatcher.md) | Class | 381 | — | Ordered gitignore matcher for repository scans. |
+| [PathValidationError](../entities/PathValidationError.md) | Class | 122 | `ValueError` | Raised when a user-provided path escapes the project root. |
+| [AgentConfigState](../entities/AgentConfigState.md) | Enum | 314 | `str`, `Enum` | Compatibility classification for the local agent configuration. |
+| [AgentConfigInspection](../entities/AgentConfigInspection.md) | Class | 324 | — | One safe configuration read with provenance for status reporting. |
+| [_GitignoreRule](../entities/GitignoreRule.md) | Class | 374 | — | — |
+| [GitIgnoreMatcher](../entities/GitIgnoreMatcher.md) | Class | 382 | — | Ordered gitignore matcher for repository scans. |
 
 ## Functions
 

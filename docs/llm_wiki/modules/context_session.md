@@ -4,7 +4,7 @@
 
 ## Description
 
-Owns explicit, bounded in-memory reuse for one workspace and host policy. Cached inputs are validated by content, membership, wiki commitments, producer settings and repository metadata before reuse. Results remain detached; expiry, eviction, cancellation and corrupt entries discard optimization state. Deltas require an exact base and validate the reconstructed context.
+Provides bounded, process-local reuse for one trusted workspace. Requests retain private root ownership, immutable results, expiry and authoritative input checks. Task v2 sessions validate their consumed source and storage inputs within the read budget; schema-bound deltas reconstruct the exact full logical result. Events only invalidate state, and unsaved buffers require save or defer guidance.
 
 ## Imports
 
@@ -16,7 +16,7 @@ Owns explicit, bounded in-memory reuse for one workspace and host policy. Cached
 | `.immutable` | `freeze` |
 | `.io` | `first_unsafe_path_component` |
 | `.task_context` | `TaskCancelledError`, `TaskRead`, `_counter`, `build_task_read`, `plan_source_read`, `validate_task_context` |
-| `.task_contract` | `TaskContext`, `normalize_task_request` |
+| `.task_contract` | `TaskContext`, `normalize_task_request`, `TASK_REQUEST_SCHEMA_V2`, `TASK_RESULT_SCHEMA_V2` |
 | `.workflow_profile` | `WorkflowRequestError`, `bounded_int`, `canonical_json`, `content_id`, `exact_fields` |
 | `__future__` | `annotations` |
 | `collections` | `OrderedDict` |
@@ -102,9 +102,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SessionReply](../entities/SessionReply.md) | 121 | — | Portable content and separate non-identity session work telemetry. |
-| [_Entry](../entities/Entry.md) | 140 | — | — |
-| [ContextSession](../entities/context_session_ContextSession.md) | 181 | — | A single trusted workspace. Methods serialize; events are hints only. |
+| [SessionReply](../entities/SessionReply.md) | 122 | — | Portable content and separate non-identity session work telemetry. |
+| [_Entry](../entities/Entry.md) | 141 | — | — |
+| [ContextSession](../entities/context_session_ContextSession.md) | 185 | — | A single trusted workspace. Methods serialize; events are hints only. |
 
 ## Functions
 

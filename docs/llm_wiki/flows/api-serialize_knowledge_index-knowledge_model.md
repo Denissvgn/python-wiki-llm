@@ -78,7 +78,7 @@ sequenceDiagram
     p18-->>p22: id
 ```
 
-> Call sequence diagram shows 30 of 1080 interactions; 1050 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1054 interactions; 1024 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

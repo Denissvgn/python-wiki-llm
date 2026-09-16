@@ -87,7 +87,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_assert_bundle_continuity` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
-| `_assert_snapshot_unchanged` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |
+| `_assert_snapshot_unchanged` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 2 |
 | `_committed_artifact_snapshot` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 2 |
 | `_concept_for_uid` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 2 |
 | `_init_ledger` | call | [knowledge_cmd](../modules/knowledge_cmd.md) | 1 |

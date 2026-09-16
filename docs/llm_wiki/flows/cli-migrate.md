@@ -100,7 +100,7 @@ sequenceDiagram
     p18->>p19: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 3592 interactions; 3562 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3593 interactions; 3563 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -193,7 +193,7 @@ flowchart LR
 | run | bool (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `bool(getattr(...))` |
 | run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 1679 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 158 | `validate_path(path, label)` |
+| validate_source_root | validate_path | 159 | `validate_path(path, label)` |
 
 ### Boundary effects
 

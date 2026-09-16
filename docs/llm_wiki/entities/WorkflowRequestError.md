@@ -95,4 +95,4 @@ flowchart LR
 | `plan_source_read` | call | [task_context](../modules/task_context.md) | 2 |
 | `validate_task_context` | call | [task_context](../modules/task_context.md) | 1 |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.

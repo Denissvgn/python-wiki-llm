@@ -22,7 +22,8 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 | `.request_json` | `_pairs`, `_constant` |
 | `.search_service` | `SEARCH_KINDS`, `page_records`, `search_records` |
 | `.source_snapshot` | `SourceSnapshotError` |
-| `.task_contract` | `FACETS`, `MAX_SELECTORS`, `TASK_RESULT_SCHEMA`, `TaskContext`, `normalize_task_request` |
+| `.task_context_v2` | `build_scoped_task_read`, `validate_scoped_bindings` |
+| `.task_contract` | `FACETS`, `MAX_SELECTORS`, `TASK_RESULT_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_RESULT_SCHEMA_V2`, `TaskContext`, `normalize_task_request` |
 | `.task_evidence` | `coverage`, `declaration_records`, `match_declarations`, `observe_requirement`, `query_service` |
 | `.token_counting` | `EstimatedCounter`, `TokenCounter` |
 | `.wiki_surface_index` | `evaluate_surface_index` |
@@ -53,10 +54,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (2) |
-| Outbound | `src` (18) |
+| Inbound | `src` (3) |
+| Outbound | `src` (19) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -76,7 +77,7 @@ flowchart LR
 | `_followups` | `(requirements, observed, settings)` | — | — |
 | `_result_body` | `(request, profile, basis, plan, anchors, work, observations, facts, packet, accounting)` | — | — |
 | `_empty_render` | `(request, profile, counter, basis, plan, anchors, work, observations, facts)` | — | — |
-| `build_task_read` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, cancelled: Callable[[], bool] \| None = None, _reused_capture: packets.CapturedContextRead \| None = None) -> TaskRead` | — | — |
+| `build_task_read` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, cancelled: Callable[[], bool] \| None = None, _reused_capture: packets.CapturedContextRead \| None = None, _defer_scoped_validation: bool = False, _wiki_byte_budget: int \| None = None) -> TaskRead` | — | — |
 | `_read_once` | `(request, profile, counter, source_root, wiki_root, allow_external, source_selection, helper_cache, cancelled, attempt, reused_capture = None)` | `@packets._guarded_capture` | — |
 | `build_task_context` | `(request: Mapping[str, Any], **kwargs) -> TaskContext` | — | — |
 | `reconcile_task_context` | `(rendered: str, request: Mapping[str, Any], **options) -> dict[str, Any]` | — | — |

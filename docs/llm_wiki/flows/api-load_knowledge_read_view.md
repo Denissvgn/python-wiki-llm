@@ -2,7 +2,7 @@
 
 **Entry point:** `load_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 17 more
+**Modules touched:** [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 19 more
 
 **Complete modules touched:**
 
@@ -20,6 +20,8 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -90,7 +92,7 @@ sequenceDiagram
     p24->>p21: KnowledgeArtifactError
 ```
 
-> Call sequence diagram shows 30 of 1199 interactions; 1169 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1208 interactions; 1178 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -149,9 +151,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 671 | `isinstance(include_machine_verification, bool)` |
-| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 672 | `TypeError('include_machine_verification must be a boolean')` |
-| load_knowledge_read_view | load_knowledge_state | 674 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
+| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 673 | `isinstance(include_machine_verification, bool)` |
+| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 674 | `TypeError('include_machine_verification must be a boolean')` |
+| load_knowledge_read_view | load_knowledge_state | 676 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
 | load_knowledge_state | isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 112 | `isinstance(policy, KnowledgeMismatchPolicy)` |
 | load_knowledge_state | KnowledgeMismatchPolicy | 113 | `KnowledgeMismatchPolicy(policy)` |
 | load_knowledge_state | ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 116 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
@@ -169,8 +171,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_knowledge_read_view` | `isinstance` | 671 |
-| external_call | `load_knowledge_read_view` | `TypeError` | 672 |
+| external_call | `load_knowledge_read_view` | `isinstance` | 673 |
+| external_call | `load_knowledge_read_view` | `TypeError` | 674 |
 | external_call | `load_knowledge_state` | `isinstance` | 112 |
 | external_call | `load_knowledge_state` | `ValueError` | 116 |
 | external_call | `load_knowledge_state` | `ValueError` | 118 |

@@ -36,6 +36,7 @@ _Auto-generated from `_BootstrapRunOptions` in `src/llm_wiki_cli/services/bootst
 | `source_selection` | `str \| Path \| None` | *required* | — |
 | `progress_stream` | `TextIO` | *required* | — |
 | `diagnostic_stream` | `TextIO \| None` | `None` | — |
+| `knowledge_format` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -72,7 +73,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `api_contracts`, `deep`, `dependency_graph_detail`, `depth`, `diagnostic_stream`, `helper_cache_dir`, `include_tests`, `json_mode`, `openapi_file`, `overwrite`, `progress_stream`, `skip_data_flow` |
+| [bootstrap_runtime](../modules/bootstrap_runtime.md) | 0 | `api_contracts`, `deep`, `dependency_graph_detail`, `depth`, `diagnostic_stream`, `helper_cache_dir`, `include_tests`, `json_mode`, `knowledge_format`, `openapi_file`, `overwrite`, `progress_stream` |
 
 ### References
 

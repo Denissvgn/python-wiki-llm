@@ -1,6 +1,6 @@
 # TaskContext
 
-**Location:** `src/llm_wiki_cli/services/task_contract.py:106`
+**Location:** `src/llm_wiki_cli/services/task_contract.py:109`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_contract](../modules/task_contract.md)
@@ -19,6 +19,7 @@ Canonical task output with complete-representation accounting. Successful constr
 | `rendered` | `str` | *required* | — |
 | `accounting` | `Mapping[str, Any]` | *required* | — |
 | `error` | `str \| None` | `None` | — |
+| `schema_version` | `str` | `TASK_RESULT_SCHEMA` | — |
 
 ## Methods
 
@@ -41,6 +42,7 @@ flowchart LR
     n5["_empty_render (src/llm_wiki_cli/services/task_context.py)"]
     n6["_read_once (src/llm_wiki_cli/services/task_context.py)"]
     n7["build_task_context (src/llm_wiki_cli/services/task_context.py)"]
+    n8["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -48,6 +50,7 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/task_contract.md"
     click n1 "../modules/api.md"
     click n2 "../modules/api.md"
@@ -56,13 +59,14 @@ flowchart LR
     click n5 "../modules/task_context.md"
     click n6 "../modules/task_context.md"
     click n7 "../modules/task_context.md"
+    click n8 "../modules/task_context_v2.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [task_contract](../modules/task_contract.md) | 3 | `accounting`, `error`, `ok`, `rendered` |
+| [task_contract](../modules/task_contract.md) | 3 | `accounting`, `error`, `ok`, `rendered`, `schema_version` |
 
 ### References
 
@@ -76,3 +80,4 @@ flowchart LR
 | `_empty_render` | call | [task_context](../modules/task_context.md) | 2 |
 | `_read_once` | call | [task_context](../modules/task_context.md) | 1 |
 | `build_task_context` | type_reference | [task_context](../modules/task_context.md) | — |
+| `build_scoped_task_read` | call | [task_context_v2](../modules/task_context_v2.md) | 2 |

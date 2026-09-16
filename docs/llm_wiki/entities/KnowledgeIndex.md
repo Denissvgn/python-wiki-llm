@@ -42,11 +42,11 @@ flowchart LR
     n5["evaluate_documentation_native_freshness (src/llm_wiki_cli/services/documentation_native.py)"]
     n6["_validate_manifest_knowledge_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n7["_validate_surface_knowledge_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n8["_knowledge_counts (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n9["KnowledgeReadView.knowledge_index (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n10["_validated_bundle_payload (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n11["_basis_incompatibility_reason (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n12["_evaluate_concept (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n8["build_knowledge_commit_plan (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n9["_knowledge_counts (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n10["KnowledgeReadView.knowledge_index (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n11["_validated_bundle_payload (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n12["_basis_incompatibility_reason (src/llm_wiki_cli/services/knowledge_freshness.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -67,10 +67,10 @@ flowchart LR
     click n5 "../modules/documentation_native.md"
     click n6 "../modules/knowledge_artifacts.md"
     click n7 "../modules/knowledge_artifacts.md"
-    click n8 "../modules/knowledge_consumption.md"
+    click n8 "../modules/knowledge_artifacts.md"
     click n9 "../modules/knowledge_consumption.md"
-    click n10 "../modules/knowledge_envelope.md"
-    click n11 "../modules/knowledge_freshness.md"
+    click n10 "../modules/knowledge_consumption.md"
+    click n11 "../modules/knowledge_envelope.md"
     click n12 "../modules/knowledge_freshness.md"
 ```
 
@@ -91,10 +91,10 @@ flowchart LR
 | `evaluate_documentation_native_freshness` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
 | `_validate_manifest_knowledge_parity` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_validate_surface_knowledge_parity` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
+| `build_knowledge_commit_plan` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_knowledge_counts` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `KnowledgeReadView.knowledge_index` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `_validated_bundle_payload` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `_basis_incompatibility_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
-| `_evaluate_concept` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 
-> References: showing 12 of 55 logical references; 43 omitted by the 12-row generated summary limit.
+> References: showing 12 of 56 logical references; 44 omitted by the 12-row generated summary limit.

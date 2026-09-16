@@ -2,14 +2,16 @@
 
 **Entry point:** `build_knowledge_generation_plan` (`api`)
 **Source:** [knowledge_generation](../modules/knowledge_generation.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 17 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 21 more
 
 **Complete modules touched:**
 
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
+- [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -20,6 +22,8 @@
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -82,7 +86,7 @@ sequenceDiagram
     p12->>p16: _raise_page_map_parity
 ```
 
-> Call sequence diagram shows 30 of 3244 interactions; 3214 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3691 interactions; 3661 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

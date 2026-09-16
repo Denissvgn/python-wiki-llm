@@ -131,7 +131,7 @@ flowchart LR
 | `_validate_legacy_manifest` | `(manifest: Mapping[str, Any]) -> None` | — | — |
 | `_validate_generation_inputs` | `(generation_inputs: Mapping[str, Any]) -> None` | — | — |
 | `_validated_native_surface` | `(surface_bytes: bytes) -> Mapping[str, Any]` | — | — |
-| `_validated_native_artifacts` | `(*, surface_bytes: bytes, knowledge_bytes: bytes, manifest: SyncManifest) -> ValidatedKnowledgeArtifacts` | — | — |
+| `_validated_native_artifacts` | `(*, surface_bytes: bytes, knowledge_bytes: bytes, manifest: SyncManifest, files: Mapping[str, _InputFile] \| None = None) -> ValidatedKnowledgeArtifacts` | — | — |
 | `_validate_native_marker` | `(marker: ManifestArtifactHashes, validated: ValidatedKnowledgeArtifacts) -> None` | — | — |
 | `_validate_native_page_parity` | `(surface: Mapping[str, Any], files: Mapping[str, _InputFile]) -> Mapping[str, _InputFile]` | — | — |
 | `_canonical_markdown_entries` | `(files: Mapping[str, _InputFile]) -> dict[str, _InputFile]` | — | — |

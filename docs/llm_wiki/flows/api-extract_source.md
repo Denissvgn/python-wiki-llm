@@ -156,17 +156,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| extract_source | build_extract_payload | 1073 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
+| extract_source | build_extract_payload | 1083 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
 | build_extract_payload | validate_source_root | 1993 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 158 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_source_root | validate_path | 159 | `validate_path(path, label)` |
+| validate_path | PathValidationError | 133 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 134 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| validate_source_root | Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root) | 161 | `Path(path).expanduser(data not statically known)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 137 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 139 | `PathValidationError(...)` |
+| validate_source_root | Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root) | 162 | `Path(path).expanduser(data not statically known)` |
 
 ### Boundary effects
 
@@ -176,12 +176,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
-| external_call | `validate_path` | `Path.cwd` | 133 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 134 |
 | external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
-| unresolved_call | `validate_source_root` | `Path(path).expanduser` | 161 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 137 |
+| unresolved_call | `validate_source_root` | `Path(path).expanduser` | 162 |
 | step_limit | `extract_source` | `first 12 steps` | 0 |
 | truncated_flow | `extract_source` | `depth limit` | 0 |
 

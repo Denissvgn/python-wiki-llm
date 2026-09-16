@@ -1,7 +1,7 @@
 # validate_task_context
 
 **Entry point:** `task_context.validate_task_context`
-**Modules involved:** [context_packet](../modules/context_packet.md), [task_context](../modules/task_context.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [context_packet](../modules/context_packet.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [workflow_profile](../modules/workflow_profile.md)
 
 > Check the task envelope separately from the unchanged embedded packet.
 
@@ -16,12 +16,14 @@
 6. `workflow_profile.content_id`
 7. `context_packet.validate_context_packet`
 8. `context_packet._encode_packet_payload`
-9. `workflow_profile.WorkflowRequestError`
+9. `task_context_v2.validate_scoped_bindings`
+10. `workflow_profile.WorkflowRequestError`
 
 ## Touches
 
 - [context_packet](../modules/context_packet.md)
 - [task_context](../modules/task_context.md)
+- [task_context_v2](../modules/task_context_v2.md)
 - [task_contract](../modules/task_contract.md)
 - [task_evidence](../modules/task_evidence.md)
 - [workflow_profile](../modules/workflow_profile.md)

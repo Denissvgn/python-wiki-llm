@@ -1,6 +1,6 @@
 # CommitStage
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:92`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:96`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -13,6 +13,7 @@ Fault-injection points reached after each successful atomic replacement.
 
 | Name | Declared value | Description |
 |------|-------|-------------|
+| `KNOWLEDGE_OBJECTS_WRITTEN` | `'knowledge-objects-written'` | — |
 | `SURFACE_INDEX_WRITTEN` | `'surface-index-written'` | — |
 | `KNOWLEDGE_INDEX_WRITTEN` | `'knowledge-index-written'` | — |
 | `MANIFEST_WRITTEN` | `'manifest-written'` | — |
@@ -44,7 +45,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `KNOWLEDGE_INDEX_WRITTEN`, `MANIFEST_WRITTEN`, `SURFACE_INDEX_WRITTEN` |
+| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `KNOWLEDGE_INDEX_WRITTEN`, `KNOWLEDGE_OBJECTS_WRITTEN`, `MANIFEST_WRITTEN`, `SURFACE_INDEX_WRITTEN` |
 
 ### Structure
 

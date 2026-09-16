@@ -144,11 +144,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_concept | _normalize_query_input | 2021 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1701 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1703 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1704 | `str(exc)` |
-| get_concept | normalize_concept_coordinate | 2022 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| get_concept | _normalize_query_input | 2031 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1711 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1713 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1714 | `str(exc)` |
+| get_concept | normalize_concept_coordinate | 2032 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 73 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `value.strip(data not statically known)` |
@@ -164,7 +164,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1701 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1711 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |

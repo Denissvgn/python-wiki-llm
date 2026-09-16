@@ -79,7 +79,7 @@ sequenceDiagram
     p17->>p19: _string
 ```
 
-> Call sequence diagram shows 30 of 2042 interactions; 2012 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1970 interactions; 1940 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

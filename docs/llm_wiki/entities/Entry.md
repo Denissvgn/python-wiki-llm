@@ -1,6 +1,6 @@
 # _Entry
 
-**Location:** `src/llm_wiki_cli/services/context_session.py:140`
+**Location:** `src/llm_wiki_cli/services/context_session.py:141`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_session](../modules/context_session.md)

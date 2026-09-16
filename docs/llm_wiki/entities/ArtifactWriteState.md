@@ -1,6 +1,6 @@
 # ArtifactWriteState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:84`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:88`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -33,17 +33,20 @@ flowchart LR
     n4["src/llm_wiki_cli/commands/sync_cmd.py"]
     n5["_record_bootstrap_artifact (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n6["src/llm_wiki_cli/services/knowledge_reuse.py"]
+    n7["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/knowledge_artifacts.md"
     click n3 "../modules/migrate_cmd.md"
     click n4 "../modules/sync_cmd.md"
     click n5 "../modules/bootstrap_runtime.md"
     click n6 "../modules/knowledge_reuse.md"
+    click n7 "../modules/knowledge_storage_lifecycle.md"
 ```
 
 ### Summary
@@ -67,3 +70,4 @@ flowchart LR
 | `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_record_bootstrap_artifact` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `knowledge_reuse` | import | [knowledge_reuse](../modules/knowledge_reuse.md) | — |
+| `knowledge_storage_lifecycle` | import | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | — |

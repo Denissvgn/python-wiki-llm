@@ -142,17 +142,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1612 | `isinstance(value, bool)` |
-| build_documentation_query_service | InvalidRequestError | 1613 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1618 | `isinstance(helper_cache_dir, (...))` |
-| build_documentation_query_service | InvalidRequestError | 1621 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
-| build_documentation_query_service | normalize_documentation_query_limit | 1626 | `normalize_documentation_query_limit(limit)` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1622 | `isinstance(value, bool)` |
+| build_documentation_query_service | InvalidRequestError | 1623 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1628 | `isinstance(helper_cache_dir, (...))` |
+| build_documentation_query_service | InvalidRequestError | 1631 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
+| build_documentation_query_service | normalize_documentation_query_limit | 1636 | `normalize_documentation_query_limit(limit)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 52 | `isinstance(value, bool)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 52 | `isinstance(value, int)` |
 | normalize_documentation_query_limit | DocumentationQueryError | 53 | `DocumentationQueryError('limit must be a positive integer.')` |
 | normalize_documentation_query_limit | min (src/llm_wiki_cli/services…documentation_query_limit) | 54 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
-| build_documentation_query_service | validate_source_root | 1627 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 158 | `validate_path(path, label)` |
+| build_documentation_query_service | validate_source_root | 1637 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| validate_source_root | validate_path | 159 | `validate_path(path, label)` |
 
 ### Boundary effects
 
@@ -162,8 +162,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_documentation_query_service` | `isinstance` | 1612 |
-| external_call | `build_documentation_query_service` | `isinstance` | 1618 |
+| external_call | `build_documentation_query_service` | `isinstance` | 1622 |
+| external_call | `build_documentation_query_service` | `isinstance` | 1628 |
 | external_call | `normalize_documentation_query_limit` | `isinstance` | 52 |
 | external_call | `normalize_documentation_query_limit` | `min` | 54 |
 | step_limit | `build_documentation_query_service` | `first 12 steps` | 0 |

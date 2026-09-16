@@ -64,7 +64,7 @@ flowchart LR
 |---|---|---|---:|
 | `cli` | import | [cli](../modules/cli.md) | — |
 | `_report_destination` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 2 |
-| `run` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 1 |
+| `run` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 2 |
 | `cache_options_from_args` | call | [inventory_cache](../modules/inventory_cache.md) | 2 |
 | `prepare_cache_options` | call | [inventory_cache](../modules/inventory_cache.md) | 1 |
 | `prepare_destination` | call | [runtime_output](../modules/runtime_output.md) | 1 |

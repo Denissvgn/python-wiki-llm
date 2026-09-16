@@ -2,7 +2,7 @@
 
 **Entry point:** `build_runtime_knowledge_plan` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 20 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 22 more
 
 **Complete modules touched:**
 
@@ -22,6 +22,8 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -91,7 +93,7 @@ sequenceDiagram
     p20-->>p22: LANGUAGE_EXTENSIONS.items
 ```
 
-> Call sequence diagram shows 30 of 2646 interactions; 2616 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2705 interactions; 2675 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -123,11 +125,15 @@ flowchart LR
     s9 -->|"require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))"| s10
     s10 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s11
     s10 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s12
+    b0["mutation captured.update"]
+    s4 -. "mutation captured.update" .-> b0
     click s1 "../modules/knowledge_orchestration.md"
     click s4 "../modules/knowledge_orchestration.md"
     click s8 "../modules/sync_manifest.md"
     click s9 "../modules/sync_manifest.md"
     click s10 "../modules/validation.md"
+    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
+    class b0 boundary
 ```
 
 ### Step data
@@ -151,13 +157,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 360 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 361 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| build_runtime_knowledge_plan | capture_committed_knowledge | 364 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 226 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 226 | `Path(wiki_dir)` |
-| capture_committed_knowledge | (…).read_bytes | 230 | `(root / name).read_bytes(data not statically known)` |
-| capture_committed_knowledge | SyncManifest.from_payload | 237 | `SyncManifest.from_payload(_decode_json_object(...))` |
+| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 363 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 364 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| build_runtime_knowledge_plan | capture_committed_knowledge | 367 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| capture_committed_knowledge | Path(…).resolve | 227 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 227 | `Path(wiki_dir)` |
+| capture_committed_knowledge | (…).read_bytes | 231 | `(root / name).read_bytes(data not statically known)` |
+| capture_committed_knowledge | SyncManifest.from_payload | 238 | `SyncManifest.from_payload(_decode_json_object(...))` |
 | SyncManifest.from_payload | _mapping_value | 956 | `_mapping_value(value, 'manifest')` |
 | _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
@@ -165,16 +171,18 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+| Kind | Target | Step | Line |
+|---|---|---|---:|
+| mutation | `captured.update` | `capture_committed_knowledge` | 252 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_runtime_knowledge_plan` | `isinstance` | 360 |
-| external_call | `build_runtime_knowledge_plan` | `TypeError` | 361 |
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 226 |
-| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 230 |
+| external_call | `build_runtime_knowledge_plan` | `isinstance` | 363 |
+| external_call | `build_runtime_knowledge_plan` | `TypeError` | 364 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 227 |
+| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 231 |
 | external_call | `require_mapping` | `isinstance` | 727 |
 | external_call | `require_mapping` | `isinstance` | 731 |
 | step_limit | `build_runtime_knowledge_plan` | `first 12 steps` | 0 |

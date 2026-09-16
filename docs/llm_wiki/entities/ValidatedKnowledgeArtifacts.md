@@ -1,6 +1,6 @@
 # ValidatedKnowledgeArtifacts
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:113`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:119`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -21,6 +21,7 @@ Validated canonical projections and their exact-byte commitments.
 | `knowledge_index_hash` | `str` | *required* | — |
 | `evaluated_envelope_hash` | `str` | *required* | — |
 | `governance_hash` | `str \| None` | `None` | — |
+| `storage_objects` | `Mapping[str, bytes]` | `field(default_factory=dict, repr=False)` | — |
 | `_validation` | `_ArtifactValidation \| None` | `field(default=None, init=False, repr=False, compare=False)` | — |
 
 ## Methods
@@ -73,7 +74,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `_validation`, `evaluated_envelope_hash`, `governance_hash`, `knowledge`, `knowledge_index_hash`, `surface_index_hash`, `surface_payload` |
+| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `_validation`, `evaluated_envelope_hash`, `governance_hash`, `knowledge`, `knowledge_index_hash`, `storage_objects`, `surface_index_hash`, `surface_payload` |
 
 ### References
 

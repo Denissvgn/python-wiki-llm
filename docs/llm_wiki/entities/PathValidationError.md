@@ -1,6 +1,6 @@
 # PathValidationError
 
-**Location:** `src/llm_wiki_cli/config.py:121`
+**Location:** `src/llm_wiki_cli/config.py:122`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [config](../modules/config.md)

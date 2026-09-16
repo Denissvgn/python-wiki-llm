@@ -49,14 +49,15 @@ flowchart LR
     n7["src/llm_wiki_cli/services/io.py"]
     n8["src/llm_wiki_cli/services/request_json.py"]
     n9["src/llm_wiki_cli/services/task_context.py"]
-    n10["src/llm_wiki_cli/services/token_counting.py"]
+    n10["src/llm_wiki_cli/services/task_context_v2.py"]
+    n11["src/llm_wiki_cli/services/token_counting.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n4
     n0 --> n5
     n0 --> n6
     n0 --> n9
-    n0 --> n10
+    n0 --> n11
     n1 --> n7
     n3 --> n1
     n3 --> n2
@@ -65,7 +66,7 @@ flowchart LR
     n3 --> n6
     n3 --> n7
     n3 --> n8
-    n3 --> n10
+    n3 --> n11
     n4 --> n1
     n4 --> n2
     n4 --> n5
@@ -84,6 +85,13 @@ flowchart LR
     n9 --> n7
     n9 --> n8
     n9 --> n10
+    n9 --> n11
+    n10 --> n1
+    n10 --> n2
+    n10 --> n3
+    n10 --> n4
+    n10 --> n5
+    n10 --> n9
     click n0 "../modules/api.md"
     click n1 "../modules/config.md"
     click n2 "../modules/change_selection.md"
@@ -94,7 +102,8 @@ flowchart LR
     click n7 "../modules/io.md"
     click n8 "../modules/request_json.md"
     click n9 "../modules/task_context.md"
-    click n10 "../modules/token_counting.md"
+    click n10 "../modules/task_context_v2.md"
+    click n11 "../modules/token_counting.md"
 ```
 
 ### Internal neighbors
@@ -104,6 +113,7 @@ flowchart LR
 | Inbound | [api](../modules/api.md) |
 | Inbound | [context_service](../modules/context_service.md) |
 | Inbound | [task_context](../modules/task_context.md) |
+| Inbound | [task_context_v2](../modules/task_context_v2.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [change_selection](../modules/change_selection.md) |
 | Outbound | [context_packet](../modules/context_packet.md) |

@@ -215,6 +215,7 @@ def test_explicit_git_range_finds_oversized_blob_deleted_at_head(tmp_path):
     before = git(tmp_path, "rev-parse", "HEAD")
     assert not path.exists()
     assert git(tmp_path, "rev-parse", "HEAD") == before
+    rejected_head = before.decode().strip()
     # Retain the rejected history and construct the intended small final state
     # on a separate, explicitly nontracking branch from the same base.
     git(tmp_path, "switch", "--no-track", "-c", "corrected", base)
@@ -223,6 +224,9 @@ def test_explicit_git_range_finds_oversized_blob_deleted_at_head(tmp_path):
     git(tmp_path, "add", "retained-change.txt")
     git(tmp_path, "commit", "-q", "-m", "corrected small final state")
     assert inspect_git_range(tmp_path, base=base, head="HEAD")["ok"]
+    git(tmp_path, "merge", "--no-ff", "--no-edit", rejected_head)
+    merged = inspect_git_range(tmp_path, base=base, head="HEAD")
+    assert merged["complete"] and not merged["ok"] and not path.exists()
     assert not git(tmp_path, "for-each-ref", "--format=%(upstream:short)", "refs/heads").strip()
 
 
@@ -236,3 +240,34 @@ def test_git_check_never_guesses_refs_or_accepts_partial_repository(tmp_path):
     report = inspect_git_range(tmp_path, base="HEAD", head="HEAD")
     assert not report["complete"] and not report["network_used"]
     assert "promisor" in report["error"]["message"]
+
+
+@pytest.mark.parametrize("size,warnings,failures", [
+    (50 * 1_048_576, 0, 0), (50 * 1_048_576 + 1, 1, 0),
+    (95 * 1_048_576 - 1, 1, 0), (95 * 1_048_576, 0, 1), (100 * 1_048_576 + 1, 0, 1),
+])
+def test_git_metadata_policy_boundaries(tmp_path, monkeypatch, size, warnings, failures):
+    from llm_wiki_cli.services import knowledge_storage_diagnostics as diagnostics
+    oid = b"a" * 40
+    def metadata(root, arguments, **options):
+        if arguments[0] == "config":
+            return 1, b""
+        if "--is-shallow-repository" in arguments:
+            return 0, b"false\n"
+        if arguments[0] in {"rev-parse", "rev-list"}:
+            return 0, oid + b"\n"
+        assert arguments[0] == "cat-file"
+        return 0, oid + b" blob " + str(size).encode() + b"\n"
+    monkeypatch.setattr(diagnostics, "_git", metadata)
+    report = diagnostics.inspect_git_range(tmp_path, base="base", head="head")
+    assert report["complete"] and len(report["warnings"]) == warnings and len(report["failures"]) == failures
+
+
+def test_shallow_history_is_incomplete_before_object_inspection(tmp_path, monkeypatch):
+    from llm_wiki_cli.services import knowledge_storage_diagnostics as diagnostics
+    def shallow(root, arguments, **options):
+        assert arguments == ["rev-parse", "--is-shallow-repository"]
+        return 0, b"true\n"
+    monkeypatch.setattr(diagnostics, "_git", shallow)
+    result = diagnostics.inspect_git_range(tmp_path, base="base", head="head")
+    assert not result["complete"] and not result["ok"]

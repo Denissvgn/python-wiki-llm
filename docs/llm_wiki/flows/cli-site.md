@@ -86,7 +86,7 @@ sequenceDiagram
     p15->>p17: SiteExportError
 ```
 
-> Call sequence diagram shows 30 of 2489 interactions; 2459 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2493 interactions; 2463 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -156,12 +156,12 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/site_cmd.py:run) | 143 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands/site_cmd.py:run) | 144 | `getattr(args, 'out_dir')` |
 | run | validate_path | 145 | `validate_path(out_dir, '--out-dir')` |
-| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd | 133 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve | 134 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | PathValidationError | 133 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 134 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd | 134 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
+| validate_path | Path.cwd().resolve | 135 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd | 135 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 137 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
@@ -178,11 +178,11 @@ flowchart LR
 | external_call | `run` | `getattr` | 139 |
 | external_call | `run` | `getattr` | 143 |
 | external_call | `run` | `getattr` | 144 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
-| external_call | `validate_path` | `Path.cwd` | 133 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 134 |
 | external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 137 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

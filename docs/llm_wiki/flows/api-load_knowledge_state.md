@@ -2,7 +2,7 @@
 
 **Entry point:** `load_knowledge_state` (`api`)
 **Source:** [knowledge_loader](../modules/knowledge_loader.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), and 15 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), [io](../modules/io.md), and 17 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,8 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -86,7 +88,7 @@ sequenceDiagram
     p16-->>p17: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
 ```
 
-> Call sequence diagram shows 30 of 1372 interactions; 1342 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1324 interactions; 1294 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -159,14 +161,14 @@ flowchart LR
 | load_knowledge_state | Path (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 122 | `Path(wiki_dir)` |
 | load_knowledge_state | _load_once | 123 | `_load_once(root, markdown_pages=markdown_pages)` |
 | _load_once | _read_artifact | 156 | `_read_artifact(root, SURFACE_INDEX_FILENAME)` |
-| _read_artifact | path.is_symlink (src/llm_wiki_cli/services…_loader.py:_read_artifact) | 483 | `path.is_symlink(data not statically known)` |
-| _read_artifact | KnowledgeLoadIssue | 484 | `KnowledgeLoadIssue(code='artifact-not-regular', artifact_path=filename, message='artifact must be a regular file, not a symbolic link')` |
+| _read_artifact | path.is_symlink (src/llm_wiki_cli/services…_loader.py:_read_artifact) | 484 | `path.is_symlink(data not statically known)` |
+| _read_artifact | KnowledgeLoadIssue | 485 | `KnowledgeLoadIssue(code='artifact-not-regular', artifact_path=filename, message='artifact must be a regular file, not a symbolic link')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `_read_artifact` | 504 |
+| filesystem_read | `path.read_bytes` | `_read_artifact` | 505 |
 
 ### Static analysis gaps
 
@@ -177,7 +179,7 @@ flowchart LR
 | external_call | `load_knowledge_state` | `ValueError` | 118 |
 | external_call | `load_knowledge_state` | `callable` | 119 |
 | external_call | `load_knowledge_state` | `TypeError` | 120 |
-| unresolved_call | `_read_artifact` | `path.is_symlink` | 483 |
+| unresolved_call | `_read_artifact` | `path.is_symlink` | 484 |
 | step_limit | `load_knowledge_state` | `first 12 steps` | 0 |
 | truncated_flow | `load_knowledge_state` | `depth limit` | 0 |
 

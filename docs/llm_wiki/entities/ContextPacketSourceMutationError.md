@@ -34,6 +34,8 @@ flowchart LR
     n7["wrapped (src/llm_wiki_cli/services/context_packet.py)"]
     n8["ContextSession.read (src/llm_wiki_cli/services/context_session.py)"]
     n9["_read_once (src/llm_wiki_cli/services/task_context.py)"]
+    n10["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n11["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -43,6 +45,8 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
+    n11 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/context_packet.md"
     click n2 "../modules/context_packet.md"
@@ -53,6 +57,8 @@ flowchart LR
     click n7 "../modules/context_packet.md"
     click n8 "../modules/context_session.md"
     click n9 "../modules/task_context.md"
+    click n10 "../modules/task_context_v2.md"
+    click n11 "../modules/task_context_v2.md"
 ```
 
 ### Summary
@@ -79,3 +85,5 @@ flowchart LR
 | `wrapped` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `ContextSession.read` | call | [context_session](../modules/context_session.md) | 1 |
 | `_read_once` | call | [task_context](../modules/task_context.md) | 3 |
+| `build_scoped_task_read` | call | [task_context_v2](../modules/task_context_v2.md) | 2 |
+| `ScopedTaskState.revalidate` | call | [task_context_v2](../modules/task_context_v2.md) | 1 |

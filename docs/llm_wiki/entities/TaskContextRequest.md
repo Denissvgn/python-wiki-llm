@@ -13,7 +13,7 @@ The versioned task request, combining bounded intent, exact anchors, observable 
 
 | Name | Type | Presence | Description |
 |------|------|----------|-------------|
-| `schema_version` | `Literal['llm-wiki-task-request/v1']` | *required* | — |
+| `schema_version` | `Literal['llm-wiki-task-request/v1', 'llm-wiki-task-request/v2']` | *required* | — |
 
 ## Methods
 
