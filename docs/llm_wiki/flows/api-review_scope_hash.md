@@ -130,17 +130,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| review_scope_hash | _section_locator | 1540 | `_section_locator(section_locator, 'section_locator')` |
-| _section_locator | isinstance (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3327 | `isinstance(value, str)` |
-| _section_locator | value.startswith (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3328 | `value.startswith('llm-wiki://')` |
-| _section_locator | value.strip (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3331 | `value.strip(data not statically known)` |
-| _section_locator | GovernanceError | 3333 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
-| _section_locator | _safe_text | 3337 | `_safe_text(value, path)` |
-| _safe_text | require_no_control_characters | 3245 | `require_no_control_characters(value, error=GovernanceError(...), reject_delete_character=True)` |
+| review_scope_hash | _section_locator | 1547 | `_section_locator(section_locator, 'section_locator')` |
+| _section_locator | isinstance (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3334 | `isinstance(value, str)` |
+| _section_locator | value.startswith (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3335 | `value.startswith('llm-wiki://')` |
+| _section_locator | value.strip (src/llm_wiki_cli/services…rnance.py:_section_locator) | 3338 | `value.strip(data not statically known)` |
+| _section_locator | GovernanceError | 3340 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
+| _section_locator | _safe_text | 3344 | `_safe_text(value, path)` |
+| _safe_text | require_no_control_characters | 3252 | `require_no_control_characters(value, error=GovernanceError(...), reject_delete_character=True)` |
 | require_no_control_characters | isinstance (src/llm_wiki_cli/services…uire_no_control_characters) | 669 | `isinstance(value, str)` |
 | require_no_control_characters | contains_control_character | 669 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
 | contains_control_character | pattern.search | 685 | `pattern.search(value)` |
-| _safe_text | GovernanceError | 3247 | `GovernanceError(path, 'must not contain control characters')` |
+| _safe_text | GovernanceError | 3254 | `GovernanceError(path, 'must not contain control characters')` |
 
 ### Boundary effects
 
@@ -150,9 +150,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_section_locator` | `isinstance` | 3327 |
-| unresolved_call | `_section_locator` | `value.startswith` | 3328 |
-| unresolved_call | `_section_locator` | `value.strip` | 3331 |
+| external_call | `_section_locator` | `isinstance` | 3334 |
+| unresolved_call | `_section_locator` | `value.startswith` | 3335 |
+| unresolved_call | `_section_locator` | `value.strip` | 3338 |
 | external_call | `require_no_control_characters` | `isinstance` | 669 |
 | unresolved_call | `contains_control_character` | `pattern.search` | 685 |
 | step_limit | `review_scope_hash` | `first 12 steps` | 0 |

@@ -156,12 +156,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluate_review_event | validate_governance_ledger | 1567 | `validate_governance_ledger(ledger)` |
+| evaluate_review_event | validate_governance_ledger | 1574 | `validate_governance_ledger(ledger)` |
 | validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 523 | `isinstance(ledger, GovernanceLedger)` |
 | validate_governance_ledger | TypeError (src/llm_wiki_cli/services…alidate_governance_ledger) | 524 | `TypeError('ledger must be a GovernanceLedger')` |
 | validate_governance_ledger | GovernanceError | 526 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
 | validate_governance_ledger | _bundle_id | 531 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3361 | `validate_bundle_id(value)` |
+| _bundle_id | validate_bundle_id | 3368 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
@@ -172,12 +172,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `reasons.append` | `evaluate_review_event` | 1578 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1581 |
 | mutation | `reasons.append` | `evaluate_review_event` | 1585 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1587 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1591 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1596 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1588 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1592 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1594 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1598 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1603 |
 
 ### Static analysis gaps
 

@@ -124,7 +124,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | natural_key_for | _concept_kind | 394 | `_concept_kind(concept_kind, 'concept_kind')` |
-| _concept_kind | validate_concept_kind | 3368 | `validate_concept_kind(value)` |
+| _concept_kind | validate_concept_kind | 3375 | `validate_concept_kind(value)` |
 | validate_concept_kind | _machine_text | 305 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |

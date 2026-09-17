@@ -1,6 +1,6 @@
 # StorageReadSession
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:149`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:296`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -17,10 +17,15 @@ Retains request-owned observations of complete files and pack ranges. It counts 
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(wiki_dir: str \| Path, *, max_bytes: int = MAX_EXPANDED_BYTES)` | — | — |
+| `__init__` | `(wiki_dir: str \| Path, *, max_bytes: int = MAX_EXPANDED_BYTES, max_handles: int = 128, cancelled = None, coalesce_rechecks: bool = False)` | — | — |
+| `phase` | `()` | `@contextmanager` | Reuse bounded descriptors, then release them before final revalidation. |
+| `_read_guarded` | `(*args, **kwargs)` | — | — |
 | `read` | `(relative: str, maximum: int) -> bytes` | — | — |
 | `recheck` | `() -> None` | — | — |
 | `read_range` | `(relative: str, offset: int, length: int, file_bytes: int) -> bytes` | — | Read and retain an authenticated member range, without reading its whole pack. |
+| `_remember_range` | `(key, observed)` | — | — |
+| `read_ranges` | `(ranges)` | — | Coalesce exact neighbours only: zero speculative or uncharged bytes. |
+| `recheck_work` | `()` | — | — |
 | `receipt` | `() -> dict[str, Any]` | — | — |
 
 ## Relationships
@@ -54,7 +59,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_storage_io](../modules/knowledge_storage_io.md) | 5 | — |
+| [knowledge_storage_io](../modules/knowledge_storage_io.md) | 10 | — |
 
 ### References
 

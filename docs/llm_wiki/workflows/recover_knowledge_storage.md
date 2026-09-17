@@ -1,7 +1,7 @@
 # recover_knowledge_storage
 
 **Entry point:** `knowledge_storage_lifecycle.recover_knowledge_storage`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [sync_manifest](../modules/sync_manifest.md)
+**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [sync_manifest](../modules/sync_manifest.md)
 
 > Restore an exact interrupted migration; refuse unrelated newer roots.
 
@@ -24,12 +24,14 @@
 14. `knowledge_storage.KnowledgeStorageError`
 15. `knowledge_artifacts.PlannedArtifactWrite`
 16. `knowledge_storage.digest`
-17. `knowledge_artifacts.KnowledgeCommitPlan`
-18. `knowledge_artifacts._commit_sharded`
+17. `knowledge_packs.packed_format`
+18. `knowledge_artifacts.KnowledgeCommitPlan`
+19. `knowledge_artifacts._commit_sharded`
 
 ## Touches
 
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)

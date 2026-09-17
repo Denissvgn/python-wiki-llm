@@ -29,10 +29,10 @@ Traverses hash-bound catalogs and expands only the records needed by a selected 
 | `expand_record` | `(row: dict[str, Any]) -> Any` | — | — |
 | `materialize` | `(*, audit_routes: bool = True) -> dict[str, Any]` | — | — |
 | `_audit_lookup` | `(payload: dict[str, Any]) -> None` | — | — |
-| `_lookup_references` | `(selector: str) -> Iterable[dict[str, str]]` | — | — |
+| `_lookup_references` | `(selector: str, *, collections = None) -> Iterable[dict[str, str]]` | — | — |
 | `_concept_owner` | `(locator: str) -> str` | — | — |
 | `_record_aliases` | `(collection: str, row: dict[str, Any], value: Any) -> set[str]` | — | — |
-| `select` | `(selectors: Iterable[str], *, max_records: int = 1000) -> KnowledgeSlice` | — | — |
+| `select` | `(selectors: Iterable[str], *, max_records: int = 1000, collections: Iterable[str] \| None = None) -> KnowledgeSlice` | — | — |
 
 ## Relationships
 
@@ -44,7 +44,7 @@ flowchart LR
     n2["open_knowledge_store (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n3["physical_objects (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n4["src/llm_wiki_cli/services/knowledge_storage_access.py"]
-    n5["prune_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n5["_prune_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -78,4 +78,4 @@ flowchart LR
 | `open_knowledge_store` | type_reference | [knowledge_packs](../modules/knowledge_packs.md) | — |
 | `physical_objects` | type_reference | [knowledge_packs](../modules/knowledge_packs.md) | — |
 | `knowledge_storage_access` | import | [knowledge_storage_access](../modules/knowledge_storage_access.md) | — |
-| `prune_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `_prune_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |

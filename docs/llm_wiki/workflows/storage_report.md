@@ -12,17 +12,18 @@
 4. `knowledge_storage_io.read_guarded`
 5. `knowledge_storage.parse_store_root`
 6. `knowledge_packs.parse_packed_root`
-7. `knowledge_storage.canonical_bytes`
-8. `knowledge_storage.KnowledgeStorageError`
-9. `knowledge_storage_lifecycle.stored_object_paths`
-10. `knowledge_storage.KnowledgeStorageError`
-11. `knowledge_loader.load_knowledge_state`
-12. `knowledge_storage.KnowledgeStorageError`
-13. `knowledge_artifacts.validated_artifact_bytes`
-14. `knowledge_model._concept_to_payload`
-15. `knowledge_model._relationship_to_payload`
-16. `knowledge_storage.canonical_bytes`
+7. `knowledge_packs.packed_format`
+8. `knowledge_storage.canonical_bytes`
+9. `knowledge_storage.KnowledgeStorageError`
+10. `knowledge_storage_lifecycle.stored_object_paths`
+11. `knowledge_storage.KnowledgeStorageError`
+12. `knowledge_loader.load_knowledge_state`
+13. `knowledge_storage.KnowledgeStorageError`
+14. `knowledge_artifacts.validated_artifact_bytes`
+15. `knowledge_model._concept_to_payload`
+16. `knowledge_model._relationship_to_payload`
 17. `knowledge_storage.canonical_bytes`
+18. `knowledge_storage.canonical_bytes`
 
 ## Touches
 

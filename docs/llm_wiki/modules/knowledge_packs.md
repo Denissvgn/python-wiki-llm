@@ -4,7 +4,7 @@
 
 ## Description
 
-Stores unchanged logical knowledge objects in bounded indexed ZIP containers. Full capture inflates each member once and reconciles its verified content with all ZIP headers and routing coordinates. Generation can reuse compatible whole packs or copy verified compressed member payloads; the resulting generation still undergoes complete validation.
+Stores logical knowledge objects in bounded indexed ZIP containers. V3 retains its original layout; explicit v4 adoption uses smaller data packs and bounded locator pages grouped into content-addressed containers. Selected reads authenticate the consumed page/member ranges; full capture verifies complete container membership and routing. Compatible generation reuses verified packs and compressed payloads while retaining complete validation.
 
 ## Imports
 
@@ -40,17 +40,18 @@ flowchart LR
     n6["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
     n7["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
     n8["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n9["src/llm_wiki_cli/services/storage_spool.py"]
-    n10["src/llm_wiki_cli/services/task_context_v2.py"]
+    n9["src/llm_wiki_cli/services/storage_receipts.py"]
+    n10["src/llm_wiki_cli/services/storage_spool.py"]
+    n11["src/llm_wiki_cli/services/task_context_v2.py"]
     n0 --> n1
     n0 --> n2
     n1 --> n2
     n1 --> n3
     n1 --> n4
-    n1 --> n9
+    n1 --> n10
     n2 --> n1
     n2 --> n4
-    n2 --> n9
+    n2 --> n10
     n3 --> n1
     n3 --> n2
     n5 --> n1
@@ -64,13 +65,17 @@ flowchart LR
     n7 --> n1
     n7 --> n2
     n7 --> n4
+    n7 --> n10
     n8 --> n2
     n8 --> n4
-    n8 --> n9
+    n8 --> n10
+    n9 --> n2
     n9 --> n4
-    n10 --> n2
     n10 --> n4
-    n10 --> n5
+    n11 --> n2
+    n11 --> n4
+    n11 --> n5
+    n11 --> n9
     click n0 "../modules/documentation_wiki_input.md"
     click n1 "../modules/knowledge_artifacts.md"
     click n2 "../modules/knowledge_packs.md"
@@ -80,8 +85,9 @@ flowchart LR
     click n6 "../modules/knowledge_storage_diagnostics.md"
     click n7 "../modules/knowledge_storage_lifecycle.md"
     click n8 "../modules/knowledge_stream_audit.md"
-    click n9 "../modules/storage_spool.md"
-    click n10 "../modules/task_context_v2.md"
+    click n9 "../modules/storage_receipts.md"
+    click n10 "../modules/storage_spool.md"
+    click n11 "../modules/task_context_v2.md"
 ```
 
 ### Internal neighbors
@@ -95,6 +101,7 @@ flowchart LR
 | Inbound | [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md) |
 | Inbound | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) |
 | Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
+| Inbound | [storage_receipts](../modules/storage_receipts.md) |
 | Inbound | [task_context_v2](../modules/task_context_v2.md) |
 | Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
@@ -104,7 +111,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PackedKnowledgeStoreReader](../entities/PackedKnowledgeStoreReader.md) | 428 | `KnowledgeStoreReader` | — |
+| [PackedKnowledgeStoreReader](../entities/PackedKnowledgeStoreReader.md) | 568 | `KnowledgeStoreReader` | — |
 
 ## Functions
 
@@ -116,14 +123,18 @@ flowchart LR
 | `_member_name` | `(raw: bytes) -> str` | — | — |
 | `pack_path` | `(descriptor: Mapping[str, Any]) -> str` | — | — |
 | `index_path` | `(commitment: str) -> str` | — | — |
-| `_index_descriptor` | `(value: Any) -> dict[str, Any]` | — | — |
+| `index_page_path` | `(commitment)` | — | — |
+| `_index_descriptor` | `(value: Any, *, paged: bool = False) -> dict[str, Any]` | — | — |
 | `_pack_descriptor` | `(value: Any) -> dict[str, Any]` | — | — |
 | `parse_packed_root` | `(raw: bytes) -> dict[str, Any]` | — | — |
+| `packed_format` | `(root: Mapping[str, Any]) -> str` | — | Return the explicitly adopted physical format of a validated packed root. |
 | `_zip_bytes` | `(members: Mapping[str, bytes], compression: str) -> tuple[bytes, dict[str, list[Any]]]` | — | — |
 | `_zip_reusing` | `(members: Mapping[str, bytes], compression: str, reusable: Mapping[str, tuple[bytes, int]]) -> tuple[bytes, dict[str, list[Any]]]` | — | Write the pinned ZIP profile, copying verified compressed payloads verbatim. |
-| `build_packed_store` | `(payload: Mapping[str, Any], *, compression: str = 'stored', prior = None, objects = None) -> KnowledgeStorePlan` | — | — |
-| `_pack_logical` | `(logical, compression, prior, objects)` | — | — |
+| `build_packed_store` | `(payload: Mapping[str, Any], *, compression: str = 'stored', prior = None, objects = None, profile: str = 'standard') -> KnowledgeStorePlan` | — | — |
+| `_pack_logical` | `(logical, compression, prior, objects, profile = 'standard')` | — | — |
+| `_paged_indexes` | `(members, packs, files)` | — | Pack locator pages bottom-up, so every extent has an acyclic commitment. |
 | `_coordinates` | `(value: Any) -> tuple[str, list[Any]]` | — | — |
+| `inspect_index_pages` | `(raw: bytes, relative: str) -> dict[str, Any]` | — | Validate intrinsic page-container syntax without claiming reachability. |
 | `_position` | `(value: Any, descriptor: dict[str, Any]) -> tuple[dict[str, Any], list[Any]]` | — | — |
 | `_member_header` | `(position: list[Any], compression: str) -> bytes` | — | — |
 | `decode_member` | `(raw: bytes, position: list[Any], compression: str, commitment: str \| None, *, verify_name: bool = True) -> bytes` | — | — |

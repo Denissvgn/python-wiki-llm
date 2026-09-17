@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 595 | [Open section](#entities) |
-| Modules | 202 | [Open section](#modules) |
-| Workflows | 151 | [Open section](#workflows) |
+| Entities | 596 | [Open section](#entities) |
+| Modules | 203 | [Open section](#modules) |
+| Workflows | 155 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 452 | [Open section](#entry-point-flows) |
+| Entry-point flows | 453 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -436,6 +436,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [QueryCostDisclosure](entities/QueryCostDisclosure.md)
 - [RankingPolicy](entities/RankingPolicy.md)
 - [ReadObservation](entities/ReadObservation.md)
+- [ReadPhase](entities/ReadPhase.md)
 - [ReferenceCleanupOutcome](entities/ReferenceCleanupOutcome.md)
 - [ReferenceSkillInspection](entities/ReferenceSkillInspection.md)
 - [ReferenceSkillProvisionResult](entities/ReferenceSkillProvisionResult.md)
@@ -788,6 +789,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [source_snapshot](modules/source_snapshot.md) - Shared source-tree discovery for inventory, Docker, and package scans.
 - [src_main](modules/src_main.md) - `integrations/obsidian/llm-wiki/src/main.ts`
 - [status_cmd](modules/status_cmd.md) - `src/llm_wiki_cli/commands/status_cmd.py`
+- [storage_receipts](modules/storage_receipts.md) - Lossless portable encodings for versioned selected-storage receipts.
 - [storage_sort](modules/storage_sort.md) - Bounded private merge runs for complete storage audits.
 - [storage_spool](modules/storage_spool.md) - Private bounded spill buffers; never an on-disk source of authority.
 - [styles](modules/styles.md) - Sample bounded diagram-style hooks for LLM Wiki plugins.
@@ -863,8 +865,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_task_read](workflows/build_task_read.md) - entry: `task_context.build_task_read`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
 - [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet.capture_context_read`
-- [capture_knowledge_slice](workflows/capture_knowledge_slice.md) - entry: `knowledge_storage_access.capture_knowledge_slice`
 - [capture_protocol_enrichment_session](workflows/capture_protocol_enrichment_session.md) - entry: `context_service._capture_protocol_enrichment_session`
+- [capture_slice](workflows/capture_slice.md) - entry: `knowledge_storage_access._capture_slice`
 - [captured_query_service](workflows/captured_query_service.md) - entry: `context_packet._captured_query_service`
 - [check_data_flow_diagnostics](workflows/check_data_flow_diagnostics.md) - entry: `lint_service._check_data_flow_diagnostics`
 - [check_site_mirror](workflows/check_site_mirror.md) - entry: `site_export.check_site_mirror`
@@ -883,6 +885,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [current_markdown](workflows/current_markdown.md) - entry: `knowledge_loader._current_markdown`
 - [discover_infrastructure_plan](workflows/discover_infrastructure_plan.md) - entry: `sync_cmd._discover_infrastructure_plan`
 - [doctor_cmd_flow](workflows/doctor_cmd_flow.md) - entry: `doctor_cmd.run`
+- [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
 - [export_knowledge_v1](workflows/export_knowledge_v1.md) - entry: `knowledge_storage_lifecycle.export_knowledge_v1`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
@@ -922,7 +925,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prepare_migration_governance_plan](workflows/prepare_migration_governance_plan.md) - entry: `migrate_cmd._prepare_migration_governance_plan`
 - [prepare_sync_run](workflows/prepare_sync_run.md) - entry: `sync_cmd._prepare_sync_run`
 - [print_managed_lifecycle](workflows/print_managed_lifecycle.md) - entry: `status_cmd._print_managed_lifecycle`
-- [prune_knowledge_storage](workflows/prune_knowledge_storage.md) - entry: `knowledge_storage_lifecycle.prune_knowledge_storage`
+- [prune_backup](workflows/prune_backup.md) - entry: `knowledge_storage_lifecycle._prune_backup`
+- [prune_storage](workflows/prune_storage.md) - entry: `knowledge_storage_lifecycle._prune_storage`
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
 - [query_cmd_flow](workflows/query_cmd_flow.md) - entry: `query_cmd.run`
 - [read_manifest_header](workflows/read_manifest_header.md) - entry: `manifest_storage.read_manifest_header`
@@ -939,6 +943,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [resolve_call](workflows/resolve_call.md) - entry: `extraction_service._resolve_call`
 - [resolve_call_observation](workflows/resolve_call_observation.md) - entry: `extraction_service._resolve_call_observation`
 - [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
+- [restore_pruned_storage](workflows/restore_pruned_storage.md) - entry: `knowledge_storage_lifecycle.restore_pruned_storage`
 - [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
 - [review_records](workflows/review_records.md) - entry: `knowledge_storage_diagnostics._review_records`
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`
@@ -956,6 +961,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [sync_run_options_from_args](workflows/sync_run_options_from_args.md) - entry: `sync_cmd._sync_run_options_from_args`
 - [task_cmd_flow](workflows/task_cmd_flow.md) - entry: `task_cmd.run`
 - [try_sync_knowledge_reuse](workflows/try_sync_knowledge_reuse.md) - entry: `sync_cmd._try_sync_knowledge_reuse`
+- [unchanged_commit_result](workflows/unchanged_commit_result.md) - entry: `knowledge_reuse.unchanged_commit_result`
 - [upgrade_cmd_flow](workflows/upgrade_cmd_flow.md) - entry: `upgrade_cmd.run`
 - [validate_builder_link](workflows/validate_builder_link.md) - entry: `knowledge_index._validate_builder_link`
 - [validate_default_selection_contract](workflows/validate_default_selection_contract.md) - entry: `ci_installer._validate_default_selection_contract`
@@ -1096,6 +1102,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-evaluate_review_event](flows/api-evaluate_review_event.md) - entry: `evaluate_review_event`
 - [api-evaluate_verification_receipt](flows/api-evaluate_verification_receipt.md) - entry: `evaluate_verification_receipt`
 - [api-evaluated_envelope_to_payload](flows/api-evaluated_envelope_to_payload.md) - entry: `evaluated_envelope_to_payload`
+- [api-expand_task_storage_receipt](flows/api-expand_task_storage_receipt.md) - entry: `expand_task_storage_receipt`
 - [api-explain_evidence](flows/api-explain_evidence.md) - entry: `explain_evidence`
 - [api-export_documentation_run-api](flows/api-export_documentation_run-api.md) - entry: `export_documentation_run`
 - [api-export_documentation_run-export](flows/api-export_documentation_run-export.md) - entry: `export_documentation_run`

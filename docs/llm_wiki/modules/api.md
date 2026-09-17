@@ -45,6 +45,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.search_service` | `search_wiki` |
 | `.services.source_selection` | `SourceSelectionError` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
+| `.services.storage_receipts` | `expand_storage_receipt` |
 | `.services.task_context` | `build_task_context`, `validate_task_context`, `reconcile_task_context` |
 | `.services.task_contract` | `TaskContext` |
 | `.services.token_counting` | `TokenCounter` |
@@ -82,9 +83,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (40) |
+| Outbound | `src` (41) |
 
-> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -95,7 +96,7 @@ flowchart LR
 | [InvalidRequestError](../entities/InvalidRequestError.md) | 357 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
 | [WorkspaceStateError](../entities/WorkspaceStateError.md) | 361 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
 | [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 365 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1359 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [ContextSession](../entities/api_ContextSession.md) | 1367 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -132,6 +133,7 @@ flowchart LR
 | `load_workflow_profile` | `(path: str \| Path, *, policy: WorkflowPolicy \| None = None) -> WorkflowProfile` | `@_api_boundary` | Load an explicitly selected profile within trusted host ceilings. |
 | `build_task_context` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, cancelled: Callable[[], bool] \| None = None) -> TaskContext` | `@_api_boundary` | Compose bounded qualified evidence; coverage does not mean task correctness. |
 | `validate_task_context` | `(rendered: str, request: Mapping[str, Any], *, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None) -> dict[str, Any]` | `@_api_boundary` | Validate task/request binding, evidence coverage, packet and accounting. |
+| `expand_task_storage_receipt` | `(receipt: Mapping[str, Any]) -> dict[str, Any]` | `@_api_boundary` | Expand compact storage proof data; validate its task binding separately. |
 | `reconcile_task_context` | `(rendered: str, request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Validate saved task context and reconcile through one fresh scoped read. |
 | `open_context_session` | `(*, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, allow_external_src: bool = False, max_entries: int = 8, max_bytes: int = 16777216, ttl_seconds: float = 300) -> ContextSession` | `@_api_boundary` | Create an explicitly owned, bounded, in-memory context session. |
 | `apply_task_delta` | `(base: str, delta: Mapping[str, Any], request: Mapping[str, Any], *, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None) -> TaskContext` | `@_api_boundary` | Reconstruct and validate a delta against its exact canonical base. |

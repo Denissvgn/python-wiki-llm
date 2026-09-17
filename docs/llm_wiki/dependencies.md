@@ -30,7 +30,7 @@ flowchart TD
 
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
-| [validation](modules/validation.md) | 56 | 0 |
+| [validation](modules/validation.md) | 57 | 0 |
 | [config](modules/config.md) | 55 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 39 | 7 |
 | [services_contracts](modules/services_contracts.md) | 38 | 0 |
@@ -43,19 +43,19 @@ flowchart TD
 | [wiki_surface_index](modules/wiki_surface_index.md) | 24 | 5 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 23 | 23 |
 | [extraction_service](modules/extraction_service.md) | 21 | 26 |
-| [filesystem_guard](modules/filesystem_guard.md) | 20 | 0 |
+| [filesystem_guard](modules/filesystem_guard.md) | 21 | 0 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 20 | 6 |
 | [knowledge_governance](modules/knowledge_governance.md) | 20 | 9 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 19 | 5 |
 | [plugins](modules/plugins.md) | 17 | 3 |
 | [bootstrap_runtime](modules/bootstrap_runtime.md) | 15 | 31 |
+| [knowledge_storage](modules/knowledge_storage.md) | 15 | 7 |
 | [common](modules/common.md) | 14 | 1 |
 | [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 15 |
 | [knowledge_observability](modules/knowledge_observability.md) | 14 | 9 |
 | [progress](modules/progress.md) | 14 | 1 |
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
 | [knowledge_graph](modules/knowledge_graph.md) | 13 | 6 |
-| [knowledge_storage](modules/knowledge_storage.md) | 13 | 7 |
 | [wiki_media](modules/wiki_media.md) | 13 | 0 |
 | [context_packet](modules/context_packet.md) | 12 | 26 |
 | [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) | 11 | 0 |
@@ -65,18 +65,18 @@ flowchart TD
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | 10 | 3 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [knowledge_loader](modules/knowledge_loader.md) | 10 | 9 |
+| [knowledge_storage_io](modules/knowledge_storage_io.md) | 10 | 4 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
 | [change_selection](modules/change_selection.md) | 9 | 2 |
 | [context_service](modules/context_service.md) | 9 | 28 |
 | [documentation_queries](modules/documentation_queries.md) | 9 | 9 |
-| [knowledge_storage_io](modules/knowledge_storage_io.md) | 9 | 4 |
+| [knowledge_packs](modules/knowledge_packs.md) | 9 | 3 |
 | [skills](modules/skills.md) | 9 | 2 |
 | [workspace](modules/workspace.md) | 8 | 3 |
 | [entrypoints](modules/entrypoints.md) | 8 | 4 |
 | [imports](modules/imports.md) | 8 | 4 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 1 |
 | [inventory_cache](modules/inventory_cache.md) | 8 | 8 |
-| [knowledge_packs](modules/knowledge_packs.md) | 8 | 3 |
 | [lint_service](modules/lint_service.md) | 8 | 35 |
 | [markdown_sections](modules/markdown_sections.md) | 8 | 1 |
 | [integrity](modules/integrity.md) | 7 | 7 |
@@ -94,13 +94,14 @@ flowchart TD
 | [manifest_storage](modules/manifest_storage.md) | 6 | 6 |
 | [python_imports](modules/python_imports.md) | 6 | 1 |
 | [section_ownership](modules/section_ownership.md) | 6 | 5 |
-| [api](modules/api.md) | 5 | 40 |
+| [api](modules/api.md) | 5 | 41 |
 | [concept_identity](modules/concept_identity.md) | 5 | 1 |
 | [refresh](modules/refresh.md) | 5 | 9 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
 | [legacy_hooks](modules/legacy_hooks.md) | 5 | 4 |
 | [metrics](modules/metrics.md) | 5 | 9 |
 | [request_json](modules/request_json.md) | 5 | 0 |
+| [storage_spool](modules/storage_spool.md) | 5 | 1 |
 | [token_counting](modules/token_counting.md) | 5 | 0 |
 | [verification_contracts](modules/verification_contracts.md) | 5 | 5 |
 | [calibration___init__](modules/calibration___init__.md) | 4 | 4 |
@@ -110,7 +111,6 @@ flowchart TD
 | [knowledge_index](modules/knowledge_index.md) | 4 | 13 |
 | [redaction](modules/redaction.md) | 4 | 0 |
 | [rendering_lifecycle](modules/rendering_lifecycle.md) | 4 | 2 |
-| [storage_spool](modules/storage_spool.md) | 4 | 1 |
 | [task_contract](modules/task_contract.md) | 4 | 3 |
 | [team](modules/team.md) | 4 | 12 |
 | [api_types](modules/api_types.md) | 3 | 0 |
@@ -143,7 +143,7 @@ flowchart TD
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [knowledge_storage_access](modules/knowledge_storage_access.md) | 2 | 10 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
-| [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 2 | 11 |
+| [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 2 | 12 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
 | [python_observations](modules/python_observations.md) | 2 | 2 |
 | [python_stdlib](modules/python_stdlib.md) | 2 | 0 |
@@ -154,6 +154,7 @@ flowchart TD
 | [secure_file](modules/secure_file.md) | 2 | 0 |
 | [site_export](modules/site_export.md) | 2 | 8 |
 | [site_html_check](modules/site_html_check.md) | 2 | 1 |
+| [storage_receipts](modules/storage_receipts.md) | 2 | 3 |
 | [storage_sort](modules/storage_sort.md) | 2 | 1 |
 | [sync_analysis](modules/sync_analysis.md) | 2 | 3 |
 | [task_evidence](modules/task_evidence.md) | 2 | 4 |
@@ -166,7 +167,7 @@ flowchart TD
 | [init_cmd](modules/init_cmd.md) | 1 | 7 |
 | [install_ci_cmd](modules/install_ci_cmd.md) | 1 | 2 |
 | [install_cmd](modules/install_cmd.md) | 1 | 3 |
-| [knowledge_storage_cmd](modules/knowledge_storage_cmd.md) | 1 | 4 |
+| [knowledge_storage_cmd](modules/knowledge_storage_cmd.md) | 1 | 7 |
 | [mcp_cmd](modules/mcp_cmd.md) | 1 | 2 |
 | [metrics_cmd](modules/metrics_cmd.md) | 1 | 2 |
 | [migrate_cmd](modules/migrate_cmd.md) | 1 | 19 |
@@ -218,7 +219,7 @@ flowchart TD
 | [protected_artifacts](modules/protected_artifacts.md) | 1 | 2 |
 | [python_calls](modules/python_calls.md) | 1 | 1 |
 | [search_rank](modules/search_rank.md) | 1 | 0 |
-| [task_context_v2](modules/task_context_v2.md) | 1 | 22 |
+| [task_context_v2](modules/task_context_v2.md) | 1 | 23 |
 | [wiki_git_policy](modules/wiki_git_policy.md) | 1 | 0 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 1 | 0 |
 | [render_summary](modules/render_summary.md) | 0 | 1 |

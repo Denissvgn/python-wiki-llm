@@ -144,9 +144,9 @@ flowchart LR
 | commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 623 | `TypeError('fault_injector must be callable')` |
 | commit_knowledge_artifacts | _commit_sharded | 626 | `_commit_sharded(plan, fault_injector)` |
 | _commit_sharded | _absolute_path | 738 | `_absolute_path(plan.knowledge_index.path.parent)` |
-| _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 44 | `Path(os.path.abspath(...))` |
-| _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 44 | `os.path.abspath(path)` |
-| _absolute_path | first_unsafe_path_component | 45 | `first_unsafe_path_component(path)` |
+| _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
+| _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
+| _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
 
 ### Boundary effects
 
@@ -164,7 +164,7 @@ flowchart LR
 | external_call | `commit_knowledge_artifacts` | `TypeError` | 621 |
 | external_call | `commit_knowledge_artifacts` | `callable` | 622 |
 | external_call | `commit_knowledge_artifacts` | `TypeError` | 623 |
-| external_call | `_absolute_path` | `os.path.abspath` | 44 |
+| external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |
 

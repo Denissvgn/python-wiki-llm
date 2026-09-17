@@ -23,8 +23,11 @@
 15. `workflow_profile.WorkflowRequestError`
 16. `documentation_query_builder.normalize_supplied_paths`
 17. `workflow_profile.normalize_profile`
-18. `workflow_profile.content_id`
-19. `workflow_profile.content_id`
+18. `workflow_profile.WorkflowRequestError`
+19. `workflow_profile.exact_fields`
+20. `workflow_profile.WorkflowRequestError`
+21. `workflow_profile.content_id`
+22. `workflow_profile.content_id`
 
 ## Touches
 

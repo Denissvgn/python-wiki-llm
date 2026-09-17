@@ -82,7 +82,7 @@ sequenceDiagram
     p20->>p25: KnowledgeModelError
 ```
 
-> Call sequence diagram shows 30 of 1084 interactions; 1054 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1086 interactions; 1056 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

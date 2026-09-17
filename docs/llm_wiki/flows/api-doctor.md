@@ -161,7 +161,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 1595 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| doctor | build_doctor_report | 1603 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 125 | `isinstance(strict, bool)` |
 | build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 126 | `TypeError('strict must be a boolean')` |
 | build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 127 | `isinstance(allow_external_src, bool)` |

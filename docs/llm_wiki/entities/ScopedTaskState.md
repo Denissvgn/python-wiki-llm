@@ -1,6 +1,6 @@
 # ScopedTaskState
 
-**Location:** `src/llm_wiki_cli/services/task_context_v2.py:202`
+**Location:** `src/llm_wiki_cli/services/task_context_v2.py:232`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_context_v2](../modules/task_context_v2.md)
@@ -26,6 +26,7 @@ Retains private workspace ownership, source captures, change selection and consu
 | `native_absent` | `bool` | `False` | — |
 | `original_work` | `Mapping[str, Any] \| None` | `None` | — |
 | `wiki_ranges` | `Mapping[tuple[str, int, int, int], ReadObservation]` | `field(default_factory=dict)` | — |
+| `batched` | `bool` | `False` | — |
 
 ## Methods
 
@@ -49,7 +50,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [task_context_v2](../modules/task_context_v2.md) | 1 | `cacheable`, `change_request`, `changes`, `native_absent`, `original_work`, `snapshot`, `source_anchor`, `source_root`, `wiki_inputs`, `wiki_ranges`, `wiki_root` |
+| [task_context_v2](../modules/task_context_v2.md) | 1 | `batched`, `cacheable`, `change_request`, `changes`, `native_absent`, `original_work`, `snapshot`, `source_anchor`, `source_root`, `wiki_inputs`, `wiki_ranges`, `wiki_root` |
 
 ### References
 

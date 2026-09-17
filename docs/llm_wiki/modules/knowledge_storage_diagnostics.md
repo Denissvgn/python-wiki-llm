@@ -15,7 +15,7 @@ Reports physical sizes and complete integrity through one native materialization
 | `.knowledge_index` | `_model_to_payload` |
 | `.knowledge_loader` | `load_knowledge_state` |
 | `.knowledge_model` | `_concept_to_payload`, `_relationship_to_payload` |
-| `.knowledge_packs` | `PACKED_SCHEMA`, `PACK_NAME`, `INDEX_NAME`, `MAX_PACK_BYTES`, `MAX_INDEX_BYTES`, `parse_packed_root` |
+| `.knowledge_packs` | `PACKED_SCHEMAS`, `packed_format`, `PACK_NAME`, `INDEX_NAME`, `INDEX_PAGE_NAME`, `INDEX_PAGE_BYTES`, `MAX_PACK_BYTES`, `MAX_INDEX_BYTES`, `parse_packed_root` |
 | `.knowledge_storage` | `GIT_FAILURE_BYTES`, `GIT_WARNING_BYTES`, `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeStorageError`, `canonical_bytes`, `parse_store_root`, `digest`, `digest` |
 | `.knowledge_storage_access` | `capture_knowledge_slice` |
 | `.knowledge_storage_io` | `_absolute_path`, `read_guarded` |

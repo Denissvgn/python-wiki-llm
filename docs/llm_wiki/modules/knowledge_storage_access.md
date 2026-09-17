@@ -6,6 +6,8 @@
 
 Captures selected knowledge records, their Markdown and required governance observations through guarded filesystem reads. Manifest v6 uses the committed header and necessary policy catalogs; legacy manifests retain complete parsing. The owning request performs final rechecks before publishing a result, and unread records remain outside the validated scope.
 
+Read the knowledge root and committed manifest policy, verify generation commitments, then resolve the requested records and required authority. Manifest v6 leaves unrelated source and page catalogs unread. The caller must run the final guarded recheck before using the selected result.
+
 ## Imports
 
 | Source | Symbols |
@@ -15,7 +17,7 @@ Captures selected knowledge records, their Markdown and required governance obse
 | `.knowledge_envelope` | `EvaluatedEnvelope` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `lifecycle_state_by_uid`, `natural_key_for` |
 | `.knowledge_model` | `_parse_bundle` |
-| `.knowledge_packs` | `PACKED_SCHEMA`, `open_knowledge_store` |
+| `.knowledge_packs` | `PACKED_SCHEMAS`, `open_knowledge_store` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `digest` |
 | `.knowledge_storage_io` | `StorageReadSession` |
 | `.manifest_storage` | `ValidatedManifestHeader`, `read_manifest_header` |
@@ -60,4 +62,5 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `capture_knowledge_slice` | `(wiki_dir: str \| Path, selectors: Iterable[str], *, max_bytes: int = 8388608, max_records: int = 1000, max_expanded_bytes: int = 16777216, include_graph: bool = False) -> ScopedKnowledgeRead` | — | Capture selected stored observations without enumerating the wiki tree. |
+| `capture_knowledge_slice` | `(wiki_dir: str \| Path, selectors: Iterable[str], *, max_bytes: int = 8388608, max_records: int = 1000, max_expanded_bytes: int = 16777216, include_graph: bool = False, collections: Iterable[str] \| None = None, coalesce_rechecks: bool = False, cancelled = None) -> ScopedKnowledgeRead` | — | Capture selected stored observations without enumerating the wiki tree. |
+| `_capture_slice` | `(session, keys, max_bytes, max_records, max_expanded_bytes, include_graph, collections)` | — | — |

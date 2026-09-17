@@ -21,7 +21,7 @@ Validates native projections and plans a manifest-last artifact commit. Indexed 
 | `.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
 | `.knowledge_index` | `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload` |
 | `.knowledge_model` | `ConceptKind`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `Origin` |
-| `.knowledge_packs` | `PACKED_SCHEMA`, `PACKED_FORMATS`, `build_storage`, `open_knowledge_store`, `physical_objects`, `parse_packed_root` |
+| `.knowledge_packs` | `PACKED_SCHEMAS`, `PACKED_FORMATS`, `build_storage`, `open_knowledge_store`, `physical_objects`, `packed_format`, `parse_packed_root` |
 | `.knowledge_reuse` | `validate_reuse_artifact_parity` |
 | `.knowledge_storage` | `STORE_SCHEMA`, `MAX_EXPANDED_BYTES`, `GIT_FAILURE_BYTES`, `KnowledgeStorageError`, `logical_digest` |
 | `.knowledge_storage_io` | `StorageReadSession`, `StorageReadSession`, `read_guarded`, `read_guarded`, `read_guarded`, `_absolute_path` |

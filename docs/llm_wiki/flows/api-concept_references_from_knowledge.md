@@ -139,14 +139,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1465 | `isinstance(knowledge, KnowledgeIndex)` |
-| concept_references_from_knowledge | TypeError | 1466 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1471 | `isinstance(concept.concept_kind, ConceptKind)` |
-| concept_references_from_knowledge | references.append (src/llm_wiki_cli/services…references_from_knowledge) | 1474 | `references.append(ConceptGovernanceReference(...))` |
-| concept_references_from_knowledge | ConceptGovernanceReference | 1475 | `ConceptGovernanceReference(locator=concept.locator, concept_kind=kind, natural_key=natural_key_for(...))` |
-| concept_references_from_knowledge | natural_key_for | 1478 | `natural_key_for(kind, concept.document.canonical_path)` |
+| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1472 | `isinstance(knowledge, KnowledgeIndex)` |
+| concept_references_from_knowledge | TypeError | 1473 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1478 | `isinstance(concept.concept_kind, ConceptKind)` |
+| concept_references_from_knowledge | references.append (src/llm_wiki_cli/services…references_from_knowledge) | 1481 | `references.append(ConceptGovernanceReference(...))` |
+| concept_references_from_knowledge | ConceptGovernanceReference | 1482 | `ConceptGovernanceReference(locator=concept.locator, concept_kind=kind, natural_key=natural_key_for(...))` |
+| concept_references_from_knowledge | natural_key_for | 1485 | `natural_key_for(kind, concept.document.canonical_path)` |
 | natural_key_for | _concept_kind | 394 | `_concept_kind(concept_kind, 'concept_kind')` |
-| _concept_kind | validate_concept_kind | 3368 | `validate_concept_kind(value)` |
+| _concept_kind | validate_concept_kind | 3375 | `validate_concept_kind(value)` |
 | validate_concept_kind | _machine_text | 305 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
@@ -155,15 +155,15 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `references.append` | `concept_references_from_knowledge` | 1474 |
+| mutation | `references.append` | `concept_references_from_knowledge` | 1481 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `concept_references_from_knowledge` | `isinstance` | 1465 |
-| external_call | `concept_references_from_knowledge` | `TypeError` | 1466 |
-| external_call | `concept_references_from_knowledge` | `isinstance` | 1471 |
+| external_call | `concept_references_from_knowledge` | `isinstance` | 1472 |
+| external_call | `concept_references_from_knowledge` | `TypeError` | 1473 |
+| external_call | `concept_references_from_knowledge` | `isinstance` | 1478 |
 | external_call | `_machine_text` | `isinstance` | 912 |
 | step_limit | `concept_references_from_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `concept_references_from_knowledge` | `depth limit` | 0 |

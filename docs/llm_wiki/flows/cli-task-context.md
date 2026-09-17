@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [task_cmd](../modules/task_cmd.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 38 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 34 more
 
 **Complete modules touched:**
 
@@ -18,18 +18,13 @@
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
-- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
-- [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
-- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [plugins](../modules/plugins.md)
 - [request_json](../modules/request_json.md)
@@ -39,6 +34,7 @@
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [storage_receipts](../modules/storage_receipts.md)
 - [task_cmd](../modules/task_cmd.md)
 - [task_context](../modules/task_context.md)
 - [task_context_v2](../modules/task_context_v2.md)
@@ -63,7 +59,7 @@ sequenceDiagram
     participant p6 as raw.encode
     participant p7 as ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)
     participant p8 as raw.decode
-    participant p9 as json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)
+    participant p9 as json.loads
     participant p10 as stream.read
     participant p11 as Path(…).open
     participant p12 as Path (src/llm_wiki_cli/services…uest_json.py:load_request)
@@ -86,7 +82,7 @@ sequenceDiagram
     p3-->>p7: ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)
     p3-->>p5: isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)
     p3-->>p8: raw.decode
-    p3-->>p9: json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)
+    p3-->>p9: json.loads
     p3-->>p7: ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)
     p3-->>p5: isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)
     p3-->>p7: ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)
@@ -109,7 +105,7 @@ sequenceDiagram
     p20-->>p22: any (src/llm_wiki_cli/services…w_profile.py:exact_fields)
 ```
 
-> Call sequence diagram shows 30 of 772 interactions; 742 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 738 interactions; 708 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -128,7 +124,7 @@ flowchart LR
     s8["8. ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)"]
     s9["9. isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)"]
     s10["10. raw.decode"]
-    s11["11. json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)"]
+    s11["11. json.loads"]
     s12["12. ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)"]
     s1 -->|"load_request(args.request)"| s2
     s2 -. "getattr (src/llm_wiki_cli/services…uest_json.py:load_request)(sys.stdin, 'buffer', sys.stdin)" .-> s3
@@ -139,7 +135,7 @@ flowchart LR
     s4 -. "ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)('Request exceeds 1 MiB')" .-> s8
     s4 -. "isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)(raw, bytes)" .-> s9
     s4 -. "raw.decode('utf-8')" .-> s10
-    s4 -. "json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)(text, object_pairs_hook=_pairs, parse_constant=_constant)" .-> s11
+    s4 -. "json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)" .-> s11
     s4 -. "ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)('Request must be a UTF-8 JSON object')" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
@@ -167,7 +163,7 @@ flowchart LR
 | `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
 | `raw.decode` | - | - | - | - |
-| `json.loads (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
+| `json.loads` | - | - | - | - |
 | `ValueError (src/llm_wiki_cli/services…est_json.py:parse_request)` | - | - | - | - |
 
 ### Call data
@@ -183,7 +179,7 @@ flowchart LR
 | parse_request | ValueError (src/llm_wiki_cli/services…est_json.py:parse_request) | 28 | `ValueError('Request exceeds 1 MiB')` |
 | parse_request | isinstance (src/llm_wiki_cli/services…est_json.py:parse_request) | 30 | `isinstance(raw, bytes)` |
 | parse_request | raw.decode | 30 | `raw.decode('utf-8')` |
-| parse_request | json.loads (src/llm_wiki_cli/services…est_json.py:parse_request) | 31 | `json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)` |
+| parse_request | json.loads | 31 | `json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)` |
 | parse_request | ValueError (src/llm_wiki_cli/services…est_json.py:parse_request) | 33 | `ValueError('Request must be a UTF-8 JSON object')` |
 
 ### Boundary effects

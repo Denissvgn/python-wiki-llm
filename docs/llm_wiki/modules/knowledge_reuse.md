@@ -19,7 +19,7 @@ Reuses validated committed knowledge only when producer, source, Markdown and ge
 | `.knowledge_evidence` | `hash_json`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_orchestration` | `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
-| `.knowledge_packs` | `PACKED_SCHEMA` |
+| `.knowledge_packs` | `PACKED_SCHEMAS`, `packed_format` |
 | `.validation` | `resolve_portable_workspace_path` |
 | `.wiki_media` | `build_asset_index` |
 | `.wiki_surface` | `collect_wiki_pages` |

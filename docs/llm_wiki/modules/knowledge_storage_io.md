@@ -4,23 +4,23 @@
 
 ## Description
 
-Reads bounded complete files or exact pack ranges through guarded regular files and retained directory identities. Requests record content and filesystem observations, charge final rereads to their budgets and reject replacement or permission/content changes. Different ranges from one pack must share the same file and ancestor identities. Platform guards prevent following redirected paths.
+Reads complete files and exact ranges through bounded request-owned handles and pinned ancestors. It preserves separate Windows path/descriptor metadata channels, supports positional reads with a guarded fallback, and closes handles before independent final revalidation. Adjacent ranges can be batched without extra bytes. Content, identity, mode, links and ancestor changes invalidate the observations; cancellation releases the handles.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
-| `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata` |
+| `.filesystem_guard` | `WindowsDirectoryGuardError`, `WindowsFileGuardError`, `fresh_no_follow_stat`, `guard_windows_directory_chain`, `open_windows_readonly_file`, `windows_object_identity`, `_windows_path_handle_metadata`, `_open_windows_directory_guard`, `_close_windows_handle` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_storage` | `KnowledgeStorageError`, `MAX_EXPANDED_BYTES` |
 | `.validation` | `is_portable_relative_path` |
 | `__future__` | `annotations` |
-| `contextlib` | `ExitStack` |
+| `contextlib` | `ExitStack`, `contextmanager` |
 | `dataclasses` | `dataclass` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
-| `typing` | `Any` |
+| `typing` | `Any`, `NoReturn` |
 
 ## Local dependency map
 
@@ -40,24 +40,29 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (9) |
+| Inbound | `src` (10) |
 | Outbound | `src` (4) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ReadObservation](../entities/ReadObservation.md) | 57 | — | — |
-| [StorageReadSession](../entities/StorageReadSession.md) | 149 | — | Request-owned file observations, with charged authoritative rechecks. |
+| [ReadObservation](../entities/ReadObservation.md) | 62 | — | — |
+| [_ReadPhase](../entities/ReadPhase.md) | 68 | — | Bounded handles owned by one read phase, never by a reusable result. |
+| [StorageReadSession](../entities/StorageReadSession.md) | 296 | — | Request-owned file observations, with charged authoritative rechecks. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_identity` | `(value: os.stat_result) -> tuple[int, ...]` | — | — |
+| `_directory_identity` | `(value)` | — | — |
 | `_assert_windows_file_binding` | `(path: Path, named: os.stat_result, opened: os.stat_result) -> None` | — | Compare stable Windows fields across pathname and descriptor channels. |
 | `_require_relative_name` | `(relative: str) -> None` | — | — |
 | `_absolute_path` | `(path: Path) -> Path` | — | — |
+| `_validate_range` | `(maximum, offset, length, file_bytes)` | — | — |
+| `_raise_io_error` | `(target, exc) -> NoReturn` | — | — |
 | `read_guarded` | `(path: Path, maximum: int, *, offset: int = 0, length: int \| None = None, file_bytes: int \| None = None) -> ReadObservation` | — | Read a regular file through pinned/no-follow ancestors and bound its bytes. |
+| `range_batches` | `(ranges)` | — | Plan bounded disjoint ranges, without reading their contents or metadata. |

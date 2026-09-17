@@ -33,13 +33,16 @@ Owns a selected logical slice, its validated manifest header, consumed Markdown 
 ```mermaid
 flowchart LR
     n0["ScopedKnowledgeRead (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n1["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n2["_storage_receipt (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n1["_capture_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
+    n2["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
+    n3["_storage_receipt (src/llm_wiki_cli/services/task_context_v2.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/knowledge_storage_access.md"
     click n1 "../modules/knowledge_storage_access.md"
-    click n2 "../modules/task_context_v2.md"
+    click n2 "../modules/knowledge_storage_access.md"
+    click n3 "../modules/task_context_v2.md"
 ```
 
 ### Summary
@@ -52,6 +55,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
+| `_capture_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
 | `capture_knowledge_slice` | type_reference | [knowledge_storage_access](../modules/knowledge_storage_access.md) | — |
 | `_storage_receipt` | type_reference | [task_context_v2](../modules/task_context_v2.md) | — |
