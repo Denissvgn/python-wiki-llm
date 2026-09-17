@@ -1447,8 +1447,15 @@ def lifecycle_state_by_uid(
 
     current = validate_governance_ledger(ledger)
     result: dict[str, tuple[Lifecycle, str | None, LifecycleEvent | None]] = {}
+    # The complete ledger and every event chain were validated above. Resolve
+    # terminal events in one pass instead of revalidating the ledger per UID.
+    predecessors = {event.previous_event_id for event in current.lifecycle_events.values()
+                    if event.previous_event_id is not None}
+    terminal = {event.concept_uid: event for event in current.lifecycle_events.values()
+                if event.event_id not in predecessors}
     for uid in current.concepts:
-        state, event = current_lifecycle(current, uid)
+        event = terminal.get(uid)
+        state = event.to_state if event is not None else Lifecycle.UNKNOWN
         result[uid] = (
             state,
             event.successor_uid if event is not None else None,

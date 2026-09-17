@@ -126,8 +126,8 @@ run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
      "--to", "sharded-v2", "--recovery-dir", "storage-recovery"])
 storage = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "storage-check", "--wiki-dir", wiki, "--full"]).stdout)
 assert storage["ok"] and storage["format"] == "sharded-v2"
-# Both packed profiles preserve the installed full and scoped consumers.
-for storage_format in ("packed-v3", "packed-v3-deflate"):
+# Every explicit packed profile preserves the installed full and scoped consumers.
+for storage_format in ("packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"):
     run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "migrate", "--wiki-dir", wiki,
          "--to", storage_format, "--recovery-dir", "recovery-" + storage_format])
     report = json.loads(run(["-I", "-m", "llm_wiki_cli.cli", "knowledge", "storage-check",
@@ -151,11 +151,19 @@ scoped_request = {**request, "schema_version": "llm-wiki-task-request/v2"}
 scoped = api.build_task_context(scoped_request, src_dir=source, wiki_dir=wiki)
 scoped_payload = api.validate_task_context(scoped.rendered, scoped_request)
 assert scoped_payload["packet"] is None and scoped_payload["storage"]["whole_store_validated"] is False
-assert scoped_payload["storage"]["schema_version"] == "llm-wiki-task-storage/v2"
+assert scoped_payload["storage"]["schema_version"] == "llm-wiki-task-storage/v3"
 assert scoped_payload["storage"]["ranges"]
 assert all(item["satisfied"] for item in scoped_payload["coverage"])
 assert run(["-I", "-m", "llm_wiki_cli.cli", "task-context", "--src-dir", source, "--wiki-dir", wiki,
             "--request", "-"], input_text=json.dumps(scoped_request)).stdout == scoped.rendered
+compact_request = {**scoped_request, "storage_options": {
+    "selection": "required-facets-v1", "receipt": "compact-v1"}}
+compact = api.build_task_context(compact_request, src_dir=source, wiki_dir=wiki)
+compact_payload = api.validate_task_context(compact.rendered, compact_request)
+assert compact_payload["storage"]["layout"] == "compact-v1"
+assert api.expand_task_storage_receipt(compact_payload["storage"])["collections"] == ["concepts"]
+assert run(["-I", "-m", "llm_wiki_cli.cli", "task-context", "--src-dir", source, "--wiki-dir", wiki,
+            "--request", "-"], input_text=json.dumps(compact_request)).stdout == compact.rendered
 
 
 async def transport(transport_name):
@@ -233,6 +241,10 @@ run_mcp_server(McpServerConfig(src_dir="src", wiki_dir="wiki", counter=Counter()
                     assert not result.isError and result.structuredContent is None and len(result.content) == 1
                     assert text_of(result) == expected.rendered
                 with probe.step("scoped"):
+                    expected_compact = api.build_task_context(compact_request, src_dir=source, wiki_dir=wiki, counter=ByteCounter())
+                    compact_result = await session.call_tool("build_task_context", {"request": compact_request})
+                    assert compact_result.structuredContent is None and text_of(compact_result) == expected_compact.rendered
+                    api.validate_task_context(text_of(compact_result), compact_request, counter=ByteCounter())
                     expected_scoped = api.build_task_context(scoped_request, src_dir=source, wiki_dir=wiki, counter=ByteCounter())
                     result = await session.call_tool("build_task_context", {"request": scoped_request})
                     assert result.structuredContent is None and text_of(result) == expected_scoped.rendered
@@ -293,4 +305,5 @@ print(json.dumps({"sdk": "verified" if mode == "mcp" else "not-used",
     "task_facts": 2, "canonical_cli_parity": True, "read_only": True,
     "edit_and_behavior": True, "semantic_note_preserved": True, "resume_detects_drift": True,
     "cold_resume": True, "sharded_migration": True, "scoped_task_v2": True,
+    "paged_pack_migration": True, "compact_scoped_receipts": True,
     "real_model_execution": False}, sort_keys=True))

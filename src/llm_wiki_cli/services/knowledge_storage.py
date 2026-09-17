@@ -716,11 +716,13 @@ class KnowledgeStoreReader:
         from .knowledge_audit import audit_logical_records
         audit_logical_records(self, payload)
 
-    def _lookup_references(self, selector: str) -> Iterable[dict[str, str]]:
+    def _lookup_references(self, selector: str, *, collections=None) -> Iterable[dict[str, str]]:
         for row in self.records("lookup", owner=selector):
             value = _fields(row["value"], {"collection", "owner", "prefix", "ids"}, "lookup.value")
             if value["collection"] not in COLLECTIONS[:5]:
                 _fail("lookup", "invalid target collection")
+            if collections is not None and value["collection"] not in collections:
+                continue
             owner = _text(value["owner"], "lookup.owner")
             prefix, ids = value["prefix"], value["ids"]
             if not isinstance(prefix, str) or not re.fullmatch(r"[0-9a-f]{0,64}", prefix) or not isinstance(ids, list):
@@ -783,7 +785,14 @@ class KnowledgeStoreReader:
             _fail(collection, "record owner does not match its source concept")
         return aliases
 
-    def select(self, selectors: Iterable[str], *, max_records: int = 1000) -> KnowledgeSlice:
+    def select(self, selectors: Iterable[str], *, max_records: int = 1000,
+               collections: Iterable[str] | None = None) -> KnowledgeSlice:
+        projected = collections is not None
+        if isinstance(collections, (str, bytes)):
+            _fail("collections", "requires a collection of record collection names")
+        selected_collections = set(COLLECTIONS[:5] if collections is None else collections)
+        if not selected_collections or not selected_collections <= set(COLLECTIONS[:5]):
+            _fail("collections", "requires known record collections")
         selectors = sorted(set(selectors))
         if len(selectors) > 100:
             _fail("selectors", "at most 100 selectors are supported", "storage-limit")
@@ -793,7 +802,9 @@ class KnowledgeStoreReader:
         complete = True
         for selector in selectors:
             _text(selector, "selector")
-            for ref in self._lookup_references(selector):
+            for ref in self._lookup_references(selector, collections=selected_collections if projected else None):
+                if ref["collection"] not in selected_collections:
+                    continue
                 key = (ref["collection"], _text(ref["owner"], "lookup.owner"), _text(ref["id"], "lookup.id"))
                 if key not in refs and len(refs) >= max_records:
                     complete = False
@@ -830,4 +841,8 @@ class KnowledgeStoreReader:
                            "objects": len(self.objects), "expanded_bytes": self.expanded_bytes},
                   "unverified_records": {name: self.root["collections"][name]["count"] - len(self._validated_records[name])
                                      for name in COLLECTIONS[:5]}}
+        if projected:
+            result.update(schema_version="llm-wiki-knowledge-slice/v3",
+                          validation_scope="selected-committed-collections",
+                          selected_collections=sorted(selected_collections))
         return KnowledgeSlice(canonical_bytes(result))

@@ -271,6 +271,9 @@ def test_ranges_never_follow_untrusted_links(tmp_path, link):
         name = "parent/bytes"
     with pytest.raises(KnowledgeStorageError):
         StorageReadSession(root).read_range(name, 0, 1, 3)
+    with pytest.raises(KnowledgeStorageError):
+        with StorageReadSession(root).phase() as session:
+            session.read_range(name, 0, 1, 3)
 
 
 def test_explicit_migration_cleanup_recovery_and_export_preserve_authority(tmp_path, compression):

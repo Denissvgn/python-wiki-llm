@@ -22,7 +22,7 @@ from .knowledge_storage import (
 )
 from .knowledge_storage_io import _absolute_path, read_guarded
 from .knowledge_packs import (
-    PACKED_SCHEMA, PACK_NAME, INDEX_NAME, MAX_PACK_BYTES, MAX_INDEX_BYTES,
+    PACKED_SCHEMAS, packed_format, PACK_NAME, INDEX_NAME, INDEX_PAGE_NAME, INDEX_PAGE_BYTES, MAX_PACK_BYTES, MAX_INDEX_BYTES,
     parse_packed_root,
 )
 from .knowledge_storage_lifecycle import stored_object_paths
@@ -184,9 +184,9 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
                         parsed = parse_store_root(raw)
                         report["format"] = "sharded-v2"
                         report["declared_records"] = {k: v["count"] for k, v in parsed["collections"].items()}
-                    elif version == PACKED_SCHEMA:
+                    elif version in PACKED_SCHEMAS:
                         parsed = parse_packed_root(raw)
-                        report["format"] = "packed-v3-deflate" if parsed["packing"]["compression"] == "deflate" else "packed-v3"
+                        report["format"] = packed_format(parsed)
                         report["packing"] = parsed["packing"]
                         report["declared_records"] = {k: v["count"] for k, v in parsed["store"]["collections"].items()}
                     elif version == "llm-wiki-knowledge/v1":
@@ -205,7 +205,8 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
         report["object_bytes"] += size
         if report["object_bytes"] > MAX_EXPANDED_BYTES:
             raise KnowledgeStorageError("objects", "size inspection exceeds its total byte bound", code="storage-limit")
-        ceiling = MANIFEST_OBJECT_LIMIT if MANIFEST_OBJECT_NAME.fullmatch(name) else MAX_PACK_BYTES if PACK_NAME.fullmatch(name) else MAX_INDEX_BYTES if INDEX_NAME.fullmatch(name) else MAX_OBJECT_BYTES
+        ceiling = (MANIFEST_OBJECT_LIMIT if MANIFEST_OBJECT_NAME.fullmatch(name) else MAX_PACK_BYTES if PACK_NAME.fullmatch(name)
+                   else INDEX_PAGE_BYTES if INDEX_PAGE_NAME.fullmatch(name) else MAX_INDEX_BYTES if INDEX_NAME.fullmatch(name) else MAX_OBJECT_BYTES)
         if size > ceiling:
             report["failures"].append({"path": name, "bytes": size, "reason": "object-ceiling"})
         largest.append({"path": name, "bytes": size})

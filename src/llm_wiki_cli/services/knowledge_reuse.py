@@ -264,12 +264,12 @@ def unchanged_commit_result(state, manifest, *, dry_run: bool = False):
                 needs_write=False,
             )
         )
-    from .knowledge_packs import PACKED_SCHEMA
+    from .knowledge_packs import PACKED_SCHEMAS, packed_format
     import json
     storage_root = json.loads(writes[1].content)
     storage_format = "sharded-v2" if state.artifacts.storage_objects else "v1"
-    if storage_root.get("schema_version") == PACKED_SCHEMA:
-        storage_format = "packed-v3-deflate" if storage_root["packing"]["compression"] == "deflate" else "packed-v3"
+    if storage_root.get("schema_version") in PACKED_SCHEMAS:
+        storage_format = packed_format(storage_root)
     return KnowledgeCommitResult(
         surface_index=writes[0],
         knowledge_index=writes[1],

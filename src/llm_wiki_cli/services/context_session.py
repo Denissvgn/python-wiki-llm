@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass, replace
 import hashlib
 import math
 import os
@@ -72,13 +72,13 @@ def _git_identity(root, metrics=None):
         except (OSError, subprocess.TimeoutExpired):
             return None
         return result.stdout.strip() if result.returncode == 0 else None
-    git_dir = git("rev-parse", "--absolute-git-dir")
-    if git_dir is None:
+    discovery = git("rev-parse", "--absolute-git-dir", "--git-path", "index")
+    if discovery is None:
         return {"state": "no-git"}
-    index_name = git("rev-parse", "--git-path", "index")
-    if index_name is None:
+    names = discovery.splitlines()
+    if len(names) != 2 or not names[0] or not names[1]:
         return None
-    path = Path(os.fsdecode(index_name))
+    path = Path(os.fsdecode(names[1]))
     if not path.is_absolute():
         path = root / path
     if path.exists():
@@ -238,7 +238,25 @@ class ContextSession:
     def _drop(self, key):
         entry = self._entries.pop(key, None)
         if entry is not None:
-            self._bytes -= entry.size
+            self._bytes = _memory_size(self._entries) if self._entries else 0
+
+    def _share_inputs(self, read):
+        """Intern immutable bytes within this workspace; receipts stay per entry."""
+        if read.scoped_state is None:
+            return read
+        pool = {}
+        for entry in self._entries.values():
+            if not self._owns(entry) or entry.read.scoped_state is None:
+                continue
+            state = entry.read.scoped_state
+            for observation in (*state.wiki_inputs.values(), *state.wiki_ranges.values()):
+                pool.setdefault(observation.content, observation.content)
+        state = read.scoped_state
+        inputs = {key: replace(value, content=pool.setdefault(value.content, value.content))
+                  for key, value in state.wiki_inputs.items()}
+        ranges = {key: replace(value, content=pool.setdefault(value.content, value.content))
+                  for key, value in state.wiki_ranges.items()}
+        return replace(read, scoped_state=freeze(replace(state, wiki_inputs=inputs, wiki_ranges=ranges)))
 
     def _owns(self, entry):
         read = entry.read
@@ -400,13 +418,13 @@ class ContextSession:
                 self._clear()
                 raise WorkflowRequestError("cancelled", "session read cancelled")
             if read.result.ok and environment is not None and reuse and not reused and self._limit and self._max_bytes:
-                detached = freeze(read)
+                detached = self._share_inputs(freeze(read))
                 size = _memory_size(detached)
                 if size <= self._max_bytes:
-                    while self._entries and (len(self._entries) >= self._limit or self._bytes + size > self._max_bytes):
-                        self._drop(next(iter(self._entries)))
                     self._entries[key] = _Entry(detached, environment, time.monotonic() + self._ttl, size, self._owner)
-                    self._bytes += size
+                    self._bytes = _memory_size(self._entries)
+                    while self._entries and (len(self._entries) > self._limit or self._bytes > self._max_bytes):
+                        self._drop(next(iter(self._entries)))
             current = read.result
             state, delta_payload = "full", None
             if current.ok and environment is not None and current.result_id == if_result_id:

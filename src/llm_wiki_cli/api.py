@@ -1341,6 +1341,14 @@ def validate_task_context(
 
 
 @_api_boundary
+def expand_task_storage_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
+    """Expand compact storage proof data; validate its task binding separately."""
+    from .services.storage_receipts import expand_storage_receipt
+
+    return expand_storage_receipt(receipt)
+
+
+@_api_boundary
 def reconcile_task_context(
     rendered: str, request: Mapping[str, Any], *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
     profile: WorkflowProfile | Mapping[str, Any] | None = None,
@@ -3281,6 +3289,7 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "expand_task_storage_receipt",
     "KNOWLEDGE_COVERAGE_SCHEMA_VERSION",
     "NATIVE_INSPECTION_SCHEMA_VERSION",
     "NativeInspectionResult",

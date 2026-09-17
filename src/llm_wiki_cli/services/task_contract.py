@@ -51,7 +51,7 @@ def normalize_task_request(
     policy: WorkflowPolicy | None = None,
 ) -> tuple[dict[str, Any], WorkflowProfile]:
     raw = exact_fields(request, {"schema_version", "text", "kind", "task_ref", "anchors",
-                                "requirements", "changes", "options"}, "request")
+                                "requirements", "changes", "options", "storage_options"}, "request")
     request_schema = raw.get("schema_version")
     if not isinstance(request_schema, str) or request_schema not in {TASK_REQUEST_SCHEMA, TASK_REQUEST_SCHEMA_V2}:
         raise WorkflowRequestError("schema_version", "unsupported task request schema")
@@ -97,6 +97,16 @@ def normalize_task_request(
     normalized = {"schema_version": request_schema, "text": text, "kind": kind,
                   "task_ref": task_ref, "anchors": anchors, "requirements": requirements,
                   "changes": changes, "profile": effective.to_payload()}
+    if "storage_options" in raw:
+        if request_schema != TASK_REQUEST_SCHEMA_V2:
+            raise WorkflowRequestError("storage_options", "requires task request v2")
+        storage = exact_fields(raw["storage_options"], {"selection", "receipt"}, "storage_options")
+        choices = {"selection": {"all-collections-v1", "required-facets-v1"},
+                   "receipt": {"expanded-v1", "compact-v1"}}
+        for field, value in storage.items():
+            if not isinstance(value, str) or value not in choices[field]:
+                raise WorkflowRequestError("storage_options." + field, "unsupported storage option")
+        normalized["storage_options"] = {"selection": "all-collections-v1", "receipt": "expanded-v1", **storage}
     # The host label is attribution, not provider content identity.
     normalized["task_id"] = content_id("llm-wiki-task-intent/v2" if request_schema == TASK_REQUEST_SCHEMA_V2 else "llm-wiki-task-intent/v1", {
         key: value for key, value in normalized.items() if key not in {"task_ref", "profile"}})

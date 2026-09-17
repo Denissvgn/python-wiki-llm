@@ -960,7 +960,7 @@ def _run_verify(args) -> None:
 
 def run(args) -> None:
     action = args.knowledge_action
-    if action in {"migrate", "recover-storage", "export-storage", "prune-storage", "storage-check", "inspect-storage", "diff-storage"}:
+    if action in {"migrate", "recover-storage", "export-storage", "prune-storage", "restore-pruned", "storage-check", "inspect-storage", "diff-storage"}:
         from .knowledge_storage_cmd import run as run_storage
         run_storage(args)
     elif action == "init":
