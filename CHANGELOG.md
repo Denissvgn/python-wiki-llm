@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Native task context through Python, CLI and MCP, with explicit evidence
+  requirements, workflow profiles, scoped reads, output budgets and reported
+  coverage gaps. See the [native coding workflow](docs/native-agent-workflow.md).
+- Optional workspace-bound context sessions with validated reuse, portable
+  deltas and reconciliation of saved task context against current inputs.
+- Indexed JSON (`sharded-v2`) and ZIP knowledge storage (`packed-v3` and
+  `packed-v3-deflate`), with bounded objects, direct member reads and optional
+  compression. Manifest v6 moves large metadata fields into bounded catalogs.
+- Opt-in `packed-v4` and `packed-v4-deflate` storage with smaller data packs
+  and finer lookup pages for smaller selected reads and localized rewrites.
+  Shared page containers limit the number of metadata files; data pack counts
+  can be higher than v3. See [knowledge storage](docs/knowledge-storage.md).
+- Knowledge storage migration, verified recovery, v1 export, logical inspection
+  and comparison, streaming integrity audits, and explicit outgoing Git range
+  checks for oversized blobs, including versions absent from the latest tree.
+- Task request v2 with selected storage validation, explicit collection
+  selection and compact verification receipts. Python, CLI and MCP preserve
+  the same evidence commitments; `api.expand_task_storage_receipt` reconstructs
+  compact proof fields for consumers.
+- Saved cleanup plans for obsolete storage objects, with bounded inspection
+  and verified recovery copies before deletion. `knowledge restore-pruned`
+  restores absent objects while preserving differing files and active authority.
+
+### Changed
+
+- Knowledge generation streams canonical hashing and reuses unchanged packs
+  and compatible compressed members, reducing temporary memory and compression
+  work while retaining complete validation where required.
+- Selected storage reads reuse bounded file handles and shared directory
+  checks within each read phase, and batch adjacent ranges. Independent final
+  validation reopens paths and rereads consumed bytes.
+- Context sessions batch Git discovery and share identical immutable input
+  buffers within the same session, with retained-memory accounting and current
+  input validation preserved.
+- Bulk governance lifecycle resolution validates the ledger once and derives
+  terminal events in one pass, retaining allocation, alias and history checks.
+
+### Fixed
+
+- Windows guarded storage reads compare pathname and descriptor metadata
+  consistently, avoiding false concurrent-change failures while preserving
+  missing-file errors and mutation detection.
+- Documentation continuation and refresh preserve descriptions stored in
+  manifest v6 catalogs.
+
+### Compatibility
+
+- Existing storage and task request formats remain supported. New wikis still
+  default to v1; adopting indexed or packed storage and manifest v6 is explicit
+  and requires compatible readers and writers. Storage migration preserves
+  logical knowledge, authored Markdown and review history; subsequent writes
+  preserve the selected format.
+- Selected validation reports its scope and leaves unread collections
+  unverified. Compact receipts preserve those limits; they do not establish
+  full-store validity, source freshness or semantic approval.
+
 ## [2.2.0] - 2026-09-15
 
 ### Added
