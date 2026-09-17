@@ -83,6 +83,25 @@ def test_handle_budget_is_bounded_and_cancellation_closes_everything(tmp_path):
     assert not phase.files and not phase.directories
 
 
+def test_phase_boundary_rejects_an_ancestor_move_or_native_guard_blocks_it(tmp_path):
+    folder = tmp_path / 'objects'
+    folder.mkdir()
+    (folder / 'pack').write_bytes(b'012345')
+    session = storage.StorageReadSession(tmp_path)
+    if os.name == 'nt':
+        with session.phase():
+            session.read_range('objects/pack', 0, 3, 6)
+            with pytest.raises(OSError):
+                folder.rename(tmp_path / 'moved')
+        folder.rename(tmp_path / 'released')
+    else:
+        with pytest.raises(KnowledgeStorageError, match='phase inputs|parent changed'):
+            with session.phase():
+                session.read_range('objects/pack', 0, 3, 6)
+                folder.rename(tmp_path / 'moved')
+    assert session._phase is None
+
+
 def test_short_positional_reads_are_completed_without_overreading(tmp_path, monkeypatch):
     (tmp_path / 'pack').write_bytes(b'0123456789')
     amounts = []

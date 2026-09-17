@@ -81,6 +81,23 @@ class _ReadPhase:
         self.directories.clear()
         self.files.clear()
 
+    def validate(self):
+        """Check every pinned namespace binding before a phase can succeed."""
+        self.check_cancelled()
+        try:
+            self._check_parents(list(self.directories))
+            for path, (stream, opened) in self.files.items():
+                current = os.fstat(stream.fileno())
+                named = fresh_no_follow_stat(path)
+                if current.st_nlink != 1 or _identity(opened) != _identity(current):
+                    raise KnowledgeStorageError(path.name, "file changed within the read phase", code="storage-mutation")
+                if os.name == "nt":
+                    _assert_windows_file_binding(path, named, current)
+                elif named.st_nlink != 1 or _identity(current) != _identity(named):
+                    raise KnowledgeStorageError(path.name, "file name changed within the read phase", code="storage-mutation")
+        except OSError as exc:
+            raise KnowledgeStorageError("read", "phase inputs changed or access was lost", code="storage-mutation") from exc
+
     def check_cancelled(self):
         if self.cancelled is not None and self.cancelled():
             raise KnowledgeStorageError("read", "storage read cancelled", code="storage-cancelled")
@@ -89,6 +106,7 @@ class _ReadPhase:
         paths = list(reversed(target.parents))
         needed = sum(path not in self.directories for path in paths) + int(target not in self.files)
         if len(self.directories) + len(self.files) + needed > self.maximum_handles:
+            self.validate()
             self.close()
         if len(paths) + 1 > self.maximum_handles:
             raise KnowledgeStorageError("read", "ancestor chain exceeds the handle budget", code="storage-limit")
@@ -106,7 +124,6 @@ class _ReadPhase:
                     self.stack.callback(os.close, handle)
                     observed = os.fstat(handle)
                 self.directories[path] = (handle, _directory_identity(observed))
-        self._check_parents(paths)
         return paths
 
     def _check_parents(self, paths):
@@ -126,7 +143,8 @@ class _ReadPhase:
         _validate_range(maximum, offset, length, file_bytes)
         target = Path(path)
         # Cached files already have a normalized spelling and pinned ancestry.
-        # The live ancestor and leaf bindings below are still checked per read.
+        # Leaf bindings are checked per read; the pinned ancestor bindings are
+        # checked before eviction and before the phase can return successfully.
         if target not in self.files:
             target = _absolute_path(target)
         try:
@@ -183,7 +201,6 @@ class _ReadPhase:
             current = fresh_no_follow_stat(target)
             if any(not stat.S_ISREG(value.st_mode) or value.st_nlink != 1 for value in (after, current)):
                 raise KnowledgeStorageError(target.name, "file acquired links or changed kind", code="storage-mutation")
-            self._check_parents(parents)
             if _identity(before) != _identity(after) or _identity(named) != _identity(current):
                 raise KnowledgeStorageError(target.name, "file changed during read", code="storage-mutation")
             if os.name == "nt":
@@ -318,13 +335,14 @@ class StorageReadSession:
 
     @contextmanager
     def phase(self):
-        """Reuse bounded descriptors, then release them before final revalidation."""
+        """Keep observations provisional until successful phase validation and release."""
         if self._phase is not None:
             raise KnowledgeStorageError("phase", "read phases cannot be nested")
         phase = _ReadPhase(self.max_handles, self.cancelled)
         self._phase = phase
         try:
             yield self
+            phase.validate()
         finally:
             self._phase = None
             phase.close()
