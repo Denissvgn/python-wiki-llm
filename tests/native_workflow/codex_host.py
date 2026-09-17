@@ -126,8 +126,9 @@ def run_bounded(argv: list[str], *, cwd: Path, input_bytes: bytes, timeout: floa
                     except ProcessLookupError:
                         pass
                     except PermissionError as error:
-                        # Best-effort root cleanup is not evidence that group
-                        # containment works. Refuse this host after reaping it.
+                        # Reap the root, then require independent confirmation
+                        # that the group is gone. A persistent denial refuses
+                        # the host instead of claiming successful cleanup.
                         cleanup_error = error
                         process.kill()
                 process.wait(timeout=5)
@@ -140,7 +141,10 @@ def run_bounded(argv: list[str], *, cwd: Path, input_bytes: bytes, timeout: floa
                 try:
                     os.killpg(process.pid, signal.SIGKILL)
                 except ProcessLookupError:
-                    pass
+                    # macOS can report EPERM while the root is exiting. Once
+                    # it is reaped, ESRCH establishes that its group is gone.
+                    # A persistent denial still fails closed below.
+                    cleanup_error = None
                 except PermissionError as error:
                     cleanup_error = error
                 else:

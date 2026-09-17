@@ -208,6 +208,40 @@ def test_owned_posix_descendants_are_reaped_even_after_closing_output(tmp_path):
     assert result.disposition == 'descendants-terminated'
 
 
+def test_exited_group_is_rechecked_after_a_signal_race(tmp_path, monkeypatch):
+    if os.name == 'nt':
+        return
+    original = host.os.killpg
+    denied = []
+
+    def exiting_group(pid, sig):
+        if not denied:
+            original(pid, sig)
+            denied.append(True)
+            raise PermissionError('owned group exited during the first signal')
+        return original(pid, sig)
+
+    monkeypatch.setattr(host.os, 'killpg', exiting_group)
+    result = host.run_bounded([sys.executable, '-I', '-c', 'import time; time.sleep(2)'],
+                              cwd=tmp_path, input_bytes=b'', timeout=0.1)
+    assert denied and result.disposition == 'timed-out'
+
+
+def test_persistent_process_group_denial_cannot_claim_cleanup(tmp_path, monkeypatch):
+    if os.name == 'nt':
+        return
+
+    def denied(*args):
+        raise PermissionError('synthetic persistent signal denial')
+
+    monkeypatch.setattr(host.os, 'killpg', denied)
+    with pytest.raises(host.HostError, match='cleanup is unavailable') as error:
+        host.run_bounded([sys.executable, '-I', '-c', 'import time; time.sleep(2)'],
+                         cwd=tmp_path, input_bytes=b'', timeout=0.1)
+    received = error.value.observation
+    assert received is not None and received.disposition == 'cleanup-failed'
+
+
 def manifest(selected):
     pin = identity(b'synthetic control only; no execution admission')
     return {'schema_version': 'native-workflow-run-trace/v1', 'attempt_id': 'probe-A-0',
