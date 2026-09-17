@@ -5,10 +5,13 @@ from contextlib import contextmanager
 from datetime import timedelta
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
 from tests.mcp_probe import McpProbe
+from tests import release_artifact_smoke as smoke
 from tests.release_artifact_smoke import SmokeError, _validate_mcp_probe_evidence
 
 
@@ -127,7 +130,7 @@ def test_probe_keeps_request_deadlines_bounded(tmp_path, value):
 
 
 @pytest.mark.parametrize(
-    "filename", ["packet-artifact-parity.py", "native-artifact-consumer.py"]
+    "filename", ["packet-artifact-parity.py", "native-artifact-consumer.py", "workflow-artifact-consumer.py"]
 )
 def test_installed_probes_use_sdk_rpc_deadlines_without_outer_session_cancellation(
     filename,
@@ -159,3 +162,70 @@ def test_smoke_rejects_missing_or_incomplete_probe_receipts(tmp_path, payload):
         path.write_text(json.dumps(payload))
     with pytest.raises(SmokeError, match="unavailable|incomplete"):
         _validate_mcp_probe_evidence(path)
+
+
+def test_workflow_budget_covers_setup_and_both_transports_without_relaxing_other_commands(tmp_path, monkeypatch):
+    evidence = tmp_path / 'evidence'
+    calls = []
+
+    def windows_paced_run(command, **kwargs):
+        mode = command[-3] if len(command) > 3 else 'ordinary'
+        # Replay a workload whose individual stages fit the ordinary deadline,
+        # but whose setup plus two transports cannot finish within 120 seconds.
+        elapsed = {'base': 60, 'mcp': 60 + 71 + 71, 'ordinary': 121}[mode]
+        calls.append(mode)
+        if elapsed > kwargs['timeout']:
+            raise subprocess.TimeoutExpired(command, kwargs['timeout'])
+        if mode == 'mcp':
+            for transport in ('stdio', 'http'):
+                probe = McpProbe(evidence / f'workflow-mcp-{transport}.json', ['verified'])
+                with probe.session(), probe.step('verified'):
+                    pass
+        return subprocess.CompletedProcess(command, 0, json.dumps({
+            'sdk': 'verified' if mode == 'mcp' else 'not-used', 'canonical_cli_parity': True,
+        }), '')
+
+    monkeypatch.setattr(smoke.subprocess, 'run', windows_paced_run)
+    result = smoke._validate_workflow_consumer(Path(sys.executable), Path(sys.executable), tmp_path, evidence)
+    assert result == {'canonical_cli_parity': True, 'mcp_transports': ['stdio', 'http']}
+    assert calls == ['base', 'mcp']
+    records = [json.loads((evidence / f'workflow-{mode}-execution.json').read_text()) for mode in calls]
+    assert all(record['status'] == 'pass' and record['elapsed_seconds'] >= 0 for record in records)
+    assert records[0]['timeout_seconds'] < 202 <= records[1]['timeout_seconds'] < 900
+    with pytest.raises(subprocess.TimeoutExpired):
+        smoke._run(['ordinary'], cwd=tmp_path)
+
+
+@pytest.mark.parametrize('mode', ['base', 'mcp'])
+@pytest.mark.parametrize('failure', ['timeout', 'assertion'])
+def test_workflow_deadline_still_fails_and_retains_process_diagnostics(tmp_path, monkeypatch, mode, failure):
+    evidence = tmp_path / 'evidence'
+
+    def failed_run(command, **kwargs):
+        current = command[-3]
+        if current != mode:
+            return subprocess.CompletedProcess(command, 0, json.dumps({'sdk': 'not-used'}), '')
+        record = json.loads((evidence / f'workflow-{current}-execution.json').read_text())
+        assert record['status'] == 'running' and record['timeout_seconds'] == kwargs['timeout']
+        if failure == 'timeout':
+            raise subprocess.TimeoutExpired(command, kwargs['timeout'],
+                                            output=b'partial output', stderr='last step: session — started')
+        return subprocess.CompletedProcess(command, 1, '', 'assertion failed')
+
+    monkeypatch.setattr(smoke.subprocess, 'run', failed_run)
+    expected = f'workflow \\({mode}\\) exceeded its' if failure == 'timeout' else 'command returned 1'
+    with pytest.raises(SmokeError, match=expected):
+        smoke._validate_workflow_consumer(Path(sys.executable), Path(sys.executable), tmp_path, evidence)
+    path = evidence / f'workflow-{mode}-execution.json'
+    record = json.loads(path.read_text())
+    assert record['status'] == ('timeout' if failure == 'timeout' else 'fail')
+    assert record['elapsed_seconds'] >= 0
+    if failure == 'timeout':
+        assert path.with_suffix('.stdout').read_bytes() == b'partial output'
+        assert path.with_suffix('.stderr').read_text(encoding='utf-8') == 'last step: session — started'
+
+
+def test_smoke_subprocess_enforces_its_explicit_deadline(tmp_path):
+    command = smoke._isolated_utf8_python_command(sys.executable, '-c', 'import time; time.sleep(2)')
+    with pytest.raises(subprocess.TimeoutExpired):
+        smoke._run(command, cwd=tmp_path, timeout=0.1)

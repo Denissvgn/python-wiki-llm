@@ -2,7 +2,6 @@
 
 import asyncio
 from contextlib import asynccontextmanager
-from datetime import timedelta
 import hashlib
 import json
 import os
@@ -220,7 +219,7 @@ run_mcp_server(McpServerConfig(src_dir="src", wiki_dir="wiki", counter=Counter()
 
     with probe.session():
         async with connection() as (read, write):
-            async with ClientSession(read, write, read_timeout_seconds=timedelta(seconds=45)) as session:
+            async with ClientSession(read, write, read_timeout_seconds=probe.read_timeout) as session:
                 with probe.step("initialize"):
                     await session.initialize()
                     names = {tool.name for tool in (await session.list_tools()).tools}

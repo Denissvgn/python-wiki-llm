@@ -27,6 +27,7 @@ from urllib.parse import unquote
 
 
 SCHEMA_VERSION = "agent-wiki-artifact-smoke/v1"
+COMMAND_TIMEOUT_SECONDS = 120
 EXPECTED_SUBCOMMANDS = (
     "bootstrap",
     "bump",
@@ -100,6 +101,7 @@ def _run(
     cwd: Path,
     expected: int = 0,
     input_text: str | None = None,
+    timeout: float = COMMAND_TIMEOUT_SECONDS,
 ) -> subprocess.CompletedProcess[str]:
     environment = {
         **os.environ,
@@ -116,7 +118,7 @@ def _run(
         encoding="utf-8",
         errors="strict",
         input=input_text,
-        timeout=120,
+        timeout=timeout,
     )
     if completed.returncode != expected:
         raise SmokeError(
@@ -657,12 +659,40 @@ def _validate_workflow_consumer(python: Path, mcp_python: Path, work: Path, evid
     tutorial = Path(__file__).parents[1] / "examples" / "native-workflow"
     results = []
     for executable, mode in ((python, "base"), (mcp_python, "mcp")):
-        result = dict(_json_output(_run(_isolated_utf8_python_command(
-            executable, "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode,
-            str(Path(__file__).with_name("mcp_probe.py")), str(evidence / f"workflow-{mode}.json"),
-        ), cwd=work), f"installed workflow ({mode})"))
-        if result.pop("sdk", None) != ("verified" if mode == "mcp" else "not-used"):
-            raise SmokeError("workflow transport acceptance is incomplete")
+        # The MCP consumer runs the complete setup/migration workflow followed
+        # by both transports. Give each portion the ordinary command allowance;
+        # the SDK still bounds each RPC at 45s and fixture CLI calls at 60s.
+        timeout = COMMAND_TIMEOUT_SECONDS * (3 if mode == "mcp" else 1)
+        diagnostic = {"schema_version": "agent-wiki-workflow-execution/v1", "mode": mode,
+                      "timeout_seconds": timeout, "status": "running"}
+        record = evidence / f"workflow-{mode}-execution.json"
+        evidence.mkdir(parents=True, exist_ok=True)
+        record.write_text(json.dumps(diagnostic, indent=2) + "\n", encoding="utf-8")
+        started = time.monotonic()
+        try:
+            result = dict(_json_output(_run(_isolated_utf8_python_command(
+                executable, "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode,
+                str(Path(__file__).with_name("mcp_probe.py")), str(evidence / f"workflow-{mode}.json"),
+            ), cwd=work, timeout=timeout), f"installed workflow ({mode})"))
+            if result.pop("sdk", None) != ("verified" if mode == "mcp" else "not-used"):
+                raise SmokeError("workflow transport acceptance is incomplete")
+        except subprocess.TimeoutExpired as exc:
+            diagnostic["status"] = "timeout"
+            for name, value in (("stdout", exc.stdout), ("stderr", exc.stderr)):
+                raw = value.encode("utf-8") if isinstance(value, str) else value or b""
+                record.with_suffix("." + name).write_bytes(raw)
+            raise SmokeError(
+                f"installed workflow ({mode}) exceeded its {timeout}s process budget; "
+                f"see {record.name}, its stdout/stderr and the retained MCP probe receipts"
+            ) from exc
+        except BaseException:
+            diagnostic["status"] = "fail"
+            raise
+        else:
+            diagnostic["status"] = "pass"
+        finally:
+            diagnostic["elapsed_seconds"] = round(time.monotonic() - started, 6)
+            record.write_text(json.dumps(diagnostic, indent=2) + "\n", encoding="utf-8")
         results.append(result)
     for transport in ("stdio", "http"):
         _validate_mcp_probe_evidence(evidence / f"workflow-mcp-{transport}.json")
