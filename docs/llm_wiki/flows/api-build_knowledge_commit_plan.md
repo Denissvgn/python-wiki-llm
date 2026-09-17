@@ -173,14 +173,14 @@ flowchart LR
 | current_manifest_format | KnowledgeStorageError | 242 | `KnowledgeStorageError('manifest', 'indexed manifest root is missing; recover it first')` |
 | current_manifest_format | json.loads (src/llm_wiki_cli/services…y:current_manifest_format) | 245 | `json.loads(...)` |
 | current_manifest_format | read_guarded | 245 | `read_guarded(path, MAX_EXPANDED_BYTES)` |
-| read_guarded | _validate_range | 223 | `_validate_range(maximum, offset, length, file_bytes)` |
+| read_guarded | _validate_range | 240 | `_validate_range(maximum, offset, length, file_bytes)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `pinned.append` | `read_guarded` | 268 |
-| mutation | `directories_list.append` | `read_guarded` | 270 |
+| mutation | `pinned.append` | `read_guarded` | 285 |
+| mutation | `directories_list.append` | `read_guarded` | 287 |
 
 ### Static analysis gaps
 

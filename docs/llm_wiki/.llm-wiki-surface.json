@@ -3389,7 +3389,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 268,
+              "line": 285,
               "step": "read_guarded",
               "step_index": 11,
               "target": "pinned.append"
@@ -3397,7 +3397,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 270,
+              "line": 287,
               "step": "read_guarded",
               "step_index": 11,
               "target": "directories_list.append"
@@ -60445,5 +60445,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:bd82ed5aa935b767cc2d5e30d28a3b9e9c2decf4aa9bb7e1a3e7540cee574c36"
+  "source_hash": "sha256:6e6a90dedff032df5cc7a2a3ebbb439e1979a30cf68121123e03ec18be07adb1"
 }

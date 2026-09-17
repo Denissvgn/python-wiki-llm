@@ -1,6 +1,6 @@
 # StorageReadSession
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:296`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_io.py:313`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -18,7 +18,7 @@ Retains request-owned observations of complete files and pack ranges. It counts 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__init__` | `(wiki_dir: str \| Path, *, max_bytes: int = MAX_EXPANDED_BYTES, max_handles: int = 128, cancelled = None, coalesce_rechecks: bool = False)` | — | — |
-| `phase` | `()` | `@contextmanager` | Reuse bounded descriptors, then release them before final revalidation. |
+| `phase` | `()` | `@contextmanager` | Keep observations provisional until successful phase validation and release. |
 | `_read_guarded` | `(*args, **kwargs)` | — | — |
 | `read` | `(relative: str, maximum: int) -> bytes` | — | — |
 | `recheck` | `() -> None` | — | — |

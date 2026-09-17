@@ -19,6 +19,7 @@ Bounded handles owned by one read phase, never by a reusable result.
 |--------|-----------|------------|-------------|
 | `__init__` | `(maximum_handles = 128, cancelled = None)` | — | — |
 | `close` | `()` | — | — |
+| `validate` | `()` | — | Check every pinned namespace binding before a phase can succeed. |
 | `check_cancelled` | `()` | — | — |
 | `_parents` | `(target)` | — | — |
 | `_check_parents` | `(paths)` | — | — |
@@ -40,7 +41,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_storage_io](../modules/knowledge_storage_io.md) | 6 | — |
+| [knowledge_storage_io](../modules/knowledge_storage_io.md) | 7 | — |
 
 ### References
 

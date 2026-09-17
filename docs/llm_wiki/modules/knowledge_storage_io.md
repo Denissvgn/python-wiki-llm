@@ -51,7 +51,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ReadObservation](../entities/ReadObservation.md) | 62 | — | — |
 | [_ReadPhase](../entities/ReadPhase.md) | 68 | — | Bounded handles owned by one read phase, never by a reusable result. |
-| [StorageReadSession](../entities/StorageReadSession.md) | 296 | — | Request-owned file observations, with charged authoritative rechecks. |
+| [StorageReadSession](../entities/StorageReadSession.md) | 313 | — | Request-owned file observations, with charged authoritative rechecks. |
 
 ## Functions
 
