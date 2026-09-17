@@ -88,7 +88,7 @@ MANIFEST_FILENAME = ".llm-wiki-manifest.json"
 # itself uses the explicit set below.
 SUPPORTED_MANIFEST_VERSION = LEGACY_MANIFEST_VERSION
 SUPPORTED_MANIFEST_VERSIONS = frozenset(
-    {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION}
+    {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION, 6}
 )
 
 # Fixed fail-closed bounds for untrusted existing-wiki inputs.  These limits are
@@ -2189,7 +2189,7 @@ def _load_and_validate_metadata(
             legacy_index_only=False,
         )
 
-    sync_manifest = _validated_sync_manifest(manifest)
+    sync_manifest = _validated_sync_manifest(manifest, files=files)
     surface = _validated_native_surface(surface_bytes)
     canonical_markdown = _validate_native_page_parity(surface, files)
     marker = sync_manifest.artifact_hashes
@@ -2206,7 +2206,7 @@ def _load_and_validate_metadata(
             surface_payload=surface,
             sync_manifest=sync_manifest,
             knowledge_artifacts=None,
-            artifact_form="manifest_v5_surface",
+            artifact_form=f"manifest_v{manifest_version}_surface",
             legacy_index_only=False,
         )
 
@@ -2222,6 +2222,7 @@ def _load_and_validate_metadata(
         surface_bytes=surface_bytes,
         knowledge_bytes=knowledge_bytes,
         manifest=sync_manifest,
+        files=files,
     )
     _validate_native_marker(marker, validated)
     _validate_native_markdown_snapshot(
@@ -2234,7 +2235,7 @@ def _load_and_validate_metadata(
         surface_payload=validated.surface_payload,
         sync_manifest=sync_manifest,
         knowledge_artifacts=validated,
-        artifact_form="manifest_v5_native",
+        artifact_form=f"manifest_v{manifest_version}_native",
         legacy_index_only=False,
     )
 
@@ -2322,26 +2323,34 @@ def _validated_manifest_version(manifest: Mapping[str, Any]) -> int:
         relation = "future" if version > MANIFEST_VERSION else "unsupported"
         raise DocumentationWikiInputError(
             f"Manifest version {version} is {relation}; supported versions are "
-            f"{LEGACY_MANIFEST_VERSION} and {MANIFEST_VERSION}.",
+            f"{LEGACY_MANIFEST_VERSION}, {MANIFEST_VERSION} and 6.",
             category="manifest_schema_unsupported",
             path=MANIFEST_FILENAME,
         )
     return version
 
 
-def _validated_sync_manifest(manifest: Mapping[str, Any]) -> SyncManifest:
+def _validated_sync_manifest(manifest: Mapping[str, Any], *, files=None) -> SyncManifest:
+    def read_object(name, maximum):
+        entry = None if files is None else files.get(name)
+        if entry is None:
+            raise SyncManifestError("catalogs", "a committed manifest catalog is absent")
+        raw = _read_verified_bytes(entry)
+        if len(raw) > maximum:
+            raise SyncManifestError("catalogs", "manifest catalog exceeds its declared size")
+        return raw
     try:
-        return SyncManifest.from_payload(manifest)
-    except SyncManifestError as exc:
+        return SyncManifest.from_payload(manifest, object_reader=read_object)
+    except ValueError as exc:
         raise DocumentationWikiInputError(
             f"Manifest metadata is invalid: {exc}",
             category=(
                 "manifest_schema_unsupported"
-                if exc.code == "unsupported-version"
+                if getattr(exc, "code", None) == "unsupported-version"
                 else "manifest_schema_invalid"
             ),
             path=MANIFEST_FILENAME,
-            diagnostics=(f"field={exc.field}",),
+            diagnostics=(f"field={getattr(exc, 'field', 'manifest')}",),
         ) from exc
 
 
@@ -2480,12 +2489,22 @@ def _validated_native_artifacts(
     surface_bytes: bytes,
     knowledge_bytes: bytes,
     manifest: SyncManifest,
+    files: Mapping[str, _InputFile] | None = None,
 ) -> ValidatedKnowledgeArtifacts:
+    def read_object(path: str, maximum: int) -> bytes:
+        entry = None if files is None else files.get(path)
+        if entry is None:
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects", "a committed object is absent")
+        raw = _read_verified_bytes(entry)
+        if len(raw) > maximum:
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects", "object exceeds its declared size")
+        return raw
     try:
         return validate_knowledge_artifacts(
             surface_index_bytes=surface_bytes,
             knowledge_index_bytes=knowledge_bytes,
             manifest=manifest,
+            object_reader=read_object,
         )
     except KnowledgeArtifactError as exc:
         if exc.field.startswith("knowledge_index"):
@@ -2710,6 +2729,14 @@ def _unknown_entries(files: tuple[_InputFile, ...]) -> tuple[str, ...]:
 
 
 def _is_known_wiki_path(relative_path: str) -> bool:
+    from .knowledge_packs import PACK_NAME, INDEX_NAME
+    from .manifest_storage import OBJECT_NAME
+    if OBJECT_NAME.fullmatch(relative_path):
+        return True
+    if PACK_NAME.fullmatch(relative_path) or INDEX_NAME.fullmatch(relative_path):
+        return True
+    if re.fullmatch(r"\.llm-wiki-knowledge/objects/([0-9a-f]{2})/\1[0-9a-f]{62}\.json", relative_path):
+        return True
     path = PurePosixPath(relative_path)
     if len(path.parts) == 1:
         return relative_path in _CANONICAL_ROOT_FILES
@@ -3034,7 +3061,7 @@ def _resolve_metadata_freshness(
     available together on ``metadata`` and no input path needs to be reopened.
     """
 
-    if metadata.artifact_form == "manifest_v5_surface":
+    if metadata.artifact_form in {"manifest_v5_surface", "manifest_v6_surface"}:
         if source_root is None:
             return (
                 "unverified",
@@ -3051,7 +3078,7 @@ def _resolve_metadata_freshness(
             ],
             (),
         )
-    if metadata.artifact_form == "manifest_v5_native":
+    if metadata.artifact_form in {"manifest_v5_native", "manifest_v6_native"}:
         if source_root is None:
             return (
                 "unverified",

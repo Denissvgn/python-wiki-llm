@@ -13,15 +13,14 @@ sequenceDiagram
     participant p1 as isinstance
     participant p2 as len
     participant p3 as value.strip
-    participant p4 as any
-    participant p5 as ord
+    participant p4 as contains_control_character
+    participant p5 as pattern.search
     p0-->>p1: isinstance
     p0-->>p2: len
     p0-->>p2: len
     p0-->>p3: value.strip
-    p0-->>p4: any
-    p0-->>p5: ord
-    p0-->>p5: ord
+    p0->>p4: contains_control_character
+    p4-->>p5: pattern.search
 ```
 
 ## Data flow
@@ -34,17 +33,16 @@ flowchart LR
     s3["3. len"]
     s4["4. len"]
     s5["5. value.strip"]
-    s6["6. any"]
-    s7["7. ord"]
-    s8["8. ord"]
+    s6["6. contains_control_character"]
+    s7["7. pattern.search"]
     s1 -. "isinstance(value, str)" .-> s2
     s1 -. "len(value)" .-> s3
     s1 -. "len(value)" .-> s4
     s1 -. "value.strip(data not statically known)" .-> s5
-    s1 -. "any(...)" .-> s6
-    s1 -. "ord(character)" .-> s7
-    s1 -. "ord(character)" .-> s8
+    s1 -->|"contains_control_character(value, reject_delete_character=reject_delete_character)"| s6
+    s6 -. "pattern.search(value)" .-> s7
     click s1 "../modules/validation.md"
+    click s6 "../modules/validation.md"
 ```
 
 ### Step data
@@ -56,21 +54,19 @@ flowchart LR
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_bounded_text | isinstance | 605 | `isinstance(value, str)` |
-| require_bounded_text | len | 606 | `len(value)` |
-| require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
-| require_bounded_text | any | 611 | `any(...)` |
-| require_bounded_text | ord | 612 | `ord(character)` |
-| require_bounded_text | ord | 613 | `ord(character)` |
+| require_bounded_text | isinstance | 650 | `isinstance(value, str)` |
+| require_bounded_text | len | 651 | `len(value)` |
+| require_bounded_text | len | 652 | `len(value)` |
+| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -80,11 +76,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bounded_text` | `isinstance` | 605 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 608 |
-| external_call | `require_bounded_text` | `any` | 611 |
-| external_call | `require_bounded_text` | `ord` | 612 |
-| external_call | `require_bounded_text` | `ord` | 613 |
+| external_call | `require_bounded_text` | `isinstance` | 650 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
 
 ## Behavior
 

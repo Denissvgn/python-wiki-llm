@@ -22,8 +22,8 @@ sequenceDiagram
     participant p10 as require_nonempty_text
     participant p11 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
     participant p12 as value.strip
-    participant p13 as any
-    participant p14 as ord
+    participant p13 as contains_control_character
+    participant p14 as pattern.search
     participant p15 as _REPOSITORY_IDENTITY_RE.fullmatch
     participant p16 as text.lower().endswith
     participant p17 as text.lower
@@ -41,9 +41,8 @@ sequenceDiagram
     p4->>p10: require_nonempty_text
     p10-->>p11: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
     p10-->>p12: value.strip
-    p10-->>p13: any
-    p10-->>p14: ord
-    p10-->>p14: ord
+    p10->>p13: contains_control_character
+    p13-->>p14: pattern.search
     p4->>p9: KnowledgeModelError
     p3-->>p15: _REPOSITORY_IDENTITY_RE.fullmatch
     p3->>p9: KnowledgeModelError
@@ -118,8 +117,8 @@ flowchart LR
 | _repository_identity | _nonempty_string | 1796 | `_nonempty_string(value, path)` |
 | _nonempty_string | _string | 1703 | `_string(value, path)` |
 | _string | require_string | 1692 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 706 | `isinstance(value, str)` |
-| require_string | value.encode | 710 | `value.encode('utf-8')` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 744 | `isinstance(value, str)` |
+| require_string | value.encode | 748 | `value.encode('utf-8')` |
 | _string | KnowledgeModelError | 1694 | `KnowledgeModelError(path, 'must be a string')` |
 | _string | KnowledgeModelError | 1695 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
 
@@ -133,8 +132,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `repository_identities_match` | `isinstance` | 503 |
 | external_call | `repository_identities_match` | `TypeError` | 506 |
-| external_call | `require_string` | `isinstance` | 706 |
-| unresolved_call | `require_string` | `value.encode` | 710 |
+| external_call | `require_string` | `isinstance` | 744 |
+| unresolved_call | `require_string` | `value.encode` | 748 |
 | step_limit | `repository_identities_match` | `first 12 steps` | 0 |
 
 ## Behavior

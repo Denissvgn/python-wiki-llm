@@ -14,15 +14,16 @@ callers to depend on typed results rather than CLI namespaces or console text.
 
 | Source | Symbols |
 |--------|---------|
-| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult` |
+| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult` |
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
 | `.services.calibration` | `controller`, `host_broker`, `controller`, `host_broker`, `controller` |
 | `.services.calibration.controller` | `P0CalibrationAgentPacket`, `P0CalibrationAgentResult`, `P0CalibrationDispatchReceipt`, `P0CalibrationError`, `P0CalibrationIntegrityError`, `P0CalibrationRecoveryError`, `P0CalibrationRun`, `P0CalibrationSchemaError`, `P0CalibrationStatus`, `P0CalibrationTransitionError`, `P0CalibrationVerificationReport` |
 | `.services.calibration.host_broker` | `HostBrokerAuthenticationError`, `HostBrokerAuthenticationProof`, `HostBrokerAuthenticationUnavailable`, `HostBrokerAuthenticator`, `use_calibration_host_broker_authenticator` |
-| `.services.context_budget` | `BudgetedContext`, `build_budgeted_context` |
+| `.services.context_budget` | `BudgetedContext`, `build_budgeted_context`, `validate_budgeted_context` |
 | `.services.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES` |
+| `.services.context_session` | `ContextSession`, `SessionReply`, `apply_task_delta` |
 | `.services.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `DOCUMENTATION_AGENT_PACKET_SCHEMA_VERSION`, `DOCUMENTATION_AGENT_RESULT_SCHEMA_VERSION`, `DOCUMENTATION_FINAL_REPORT_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_ROUTING_SCHEMA_VERSION`, `DOCUMENTATION_MODEL_SELECTION_SCHEMA_VERSION`, `DOCUMENTATION_RUN_SCHEMA_VERSION`, `DOCUMENTATION_VERIFICATION_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_PACKET_SCHEMA_VERSION`, `P0_CALIBRATION_AGENT_RESULT_SCHEMA_VERSION`, `P0_CALIBRATION_DECISION_SCOPE`, `P0_CALIBRATION_DISPATCH_RECEIPT_SCHEMA_VERSION`, `P0_CALIBRATION_RUN_SCHEMA_VERSION`, `P0_CALIBRATION_VERIFICATION_REPORT_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION`, `QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION` |
 | `.services.dependencies` | `analyze_dependencies` |
 | `.services.doctor_service` | `build_doctor_report` |
@@ -37,13 +38,19 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
 | `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.services.knowledge_loader` | `KnowledgeStateLoadError` |
+| `.services.knowledge_storage` | `KnowledgeStorageError` |
 | `.services.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `.services.maintenance_queue` | `build_maintenance_queue` |
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
+| `.services.search_service` | `search_wiki` |
 | `.services.source_selection` | `SourceSelectionError` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
+| `.services.task_context` | `build_task_context`, `validate_task_context`, `reconcile_task_context` |
+| `.services.task_contract` | `TaskContext` |
 | `.services.token_counting` | `TokenCounter` |
 | `.services.validation` | `require_portable_relative_path` |
 | `.services.wiki_surface_index` | `evaluate_surface_index` |
+| `.services.workflow_profile` | `WorkflowProfile`, `WorkflowPolicy`, `WorkflowRequestError`, `load_profile` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping`, `Sequence` |
 | `contextlib` | `contextmanager` |
@@ -74,20 +81,21 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (2) |
-| Outbound | `src` (33) |
+| Inbound | `src` (5) |
+| Outbound | `src` (40) |
 
-> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 254 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 335 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 350 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 354 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 358 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 261 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 342 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 357 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 361 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 365 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [ContextSession](../entities/api_ContextSession.md) | 1359 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -119,6 +127,15 @@ flowchart LR
 | `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str, focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> ContextPayload \| MarkdownContextResult` | `@overload` | — |
 | `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str = 'json', focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> ContextPayload \| MarkdownContextResult` | `@_api_boundary` | Return a supported context payload without depending on CLI internals. |
 | `build_budgeted_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None) -> BudgetedContext` | `@_api_boundary` | Render opt-in v3 context with a trusted complete-output token counter. |
+| `search_wiki` | `(query: str, *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, kinds: list[str] \| None = None, limit: int = 20, mode: Literal['ranked', 'substring'] = 'ranked', source_selection: str \| Path \| None = None, allow_external_src: bool = False) -> SearchResult` | `@_api_boundary` | Search canonical wiki pages with bounded, deterministic lexical ranking. |
+| `validate_budgeted_context` | `(rendered: str, request: Mapping[str, Any], *, counter: TokenCounter) -> dict[str, Any]` | `@_api_boundary` | Validate a v3 canonical response and its declared accounting boundary. |
+| `load_workflow_profile` | `(path: str \| Path, *, policy: WorkflowPolicy \| None = None) -> WorkflowProfile` | `@_api_boundary` | Load an explicitly selected profile within trusted host ceilings. |
+| `build_task_context` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, cancelled: Callable[[], bool] \| None = None) -> TaskContext` | `@_api_boundary` | Compose bounded qualified evidence; coverage does not mean task correctness. |
+| `validate_task_context` | `(rendered: str, request: Mapping[str, Any], *, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None) -> dict[str, Any]` | `@_api_boundary` | Validate task/request binding, evidence coverage, packet and accounting. |
+| `reconcile_task_context` | `(rendered: str, request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None) -> dict[str, Any]` | `@_api_boundary` | Validate saved task context and reconcile through one fresh scoped read. |
+| `open_context_session` | `(*, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, allow_external_src: bool = False, max_entries: int = 8, max_bytes: int = 16777216, ttl_seconds: float = 300) -> ContextSession` | `@_api_boundary` | Create an explicitly owned, bounded, in-memory context session. |
+| `apply_task_delta` | `(base: str, delta: Mapping[str, Any], request: Mapping[str, Any], *, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None) -> TaskContext` | `@_api_boundary` | Reconstruct and validate a delta against its exact canonical base. |
+| `build_maintenance_queue` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, *, limit: int = 30, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None) -> MaintenanceQueueResult` | `@_api_boundary` | Return advisory maintenance evidence without applying recommendations. |
 | `build_qualified_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> QualifiedContextPacket` | `@_api_boundary` | Build a canonical in-memory qualified-context packet. |
 | `validate_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview) -> ContextPacketValidation` | `@_api_boundary` | Validate canonical packet bytes without claiming live currentness. |
 | `compare_context_packet_basis` | `(packet_bytes: bytes \| bytearray \| memoryview, expected_basis: Mapping[str, Any]) -> ContextBasisComparison` | `@_api_boundary` | Compare caller basis without upgrading it to a currentness claim. |

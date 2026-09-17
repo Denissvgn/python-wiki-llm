@@ -2,12 +2,13 @@
 
 **Entry point:** `refresh_documentation_native_projection` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 48 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 54 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
@@ -17,6 +18,7 @@
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
@@ -37,8 +39,12 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
@@ -83,11 +89,12 @@ sequenceDiagram
     participant p16 as FileNotFoundError (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     participant p17 as json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     participant p18 as manifest_path.read_text
-    participant p19 as SyncManifest.from_payload
-    participant p20 as _mapping_value
-    participant p21 as require_mapping
-    participant p22 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p23 as key.encode
+    participant p19 as isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    participant p20 as data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    participant p21 as StorageReadSession
+    participant p22 as session.read
+    participant p23 as SyncManifest.from_payload
+    participant p24 as _mapping_value
     p0->>p1: _validated_directory
     p1-->>p2: Path(…).expanduser
     p1-->>p3: Path (src/llm_wiki_cli/services…e.py:_validated_directory)
@@ -112,15 +119,15 @@ sequenceDiagram
     p14-->>p16: FileNotFoundError (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     p14-->>p17: json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
     p14-->>p18: manifest_path.read_text
-    p14->>p19: SyncManifest.from_payload
-    p19->>p20: _mapping_value
-    p20->>p21: require_mapping
-    p21-->>p22: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p21-->>p22: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p21-->>p23: key.encode
+    p14-->>p19: isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    p14-->>p20: data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
+    p14->>p21: StorageReadSession
+    p14-->>p22: session.read
+    p14->>p23: SyncManifest.from_payload
+    p23->>p24: _mapping_value
 ```
 
-> Call sequence diagram shows 30 of 4911 interactions; 4881 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 5012 interactions; 4982 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -186,14 +193,14 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | refresh_documentation_native_projection | _validated_directory | 313 | `_validated_directory(source_root, 'source_root')` |
-| _validated_directory | Path(…).expanduser | 1078 | `Path(value).expanduser(data not statically known)` |
-| _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1078 | `Path(value)` |
-| _validated_directory | candidate.lstat | 1080 | `candidate.lstat(data not statically known)` |
-| _validated_directory | DocumentationNativeError | 1082 | `DocumentationNativeError(...)` |
-| _validated_directory | stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory) | 1085 | `stat.S_ISLNK(metadata.st_mode)` |
-| _validated_directory | stat.S_ISDIR (src/llm_wiki_cli/services…e.py:_validated_directory) | 1085 | `stat.S_ISDIR(metadata.st_mode)` |
-| _validated_directory | DocumentationNativeError | 1086 | `DocumentationNativeError(...)` |
-| _validated_directory | candidate.resolve (src/llm_wiki_cli/services…e.py:_validated_directory) | 1089 | `candidate.resolve(data not statically known)` |
+| _validated_directory | Path(…).expanduser | 1079 | `Path(value).expanduser(data not statically known)` |
+| _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1079 | `Path(value)` |
+| _validated_directory | candidate.lstat | 1081 | `candidate.lstat(data not statically known)` |
+| _validated_directory | DocumentationNativeError | 1083 | `DocumentationNativeError(...)` |
+| _validated_directory | stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory) | 1086 | `stat.S_ISLNK(metadata.st_mode)` |
+| _validated_directory | stat.S_ISDIR (src/llm_wiki_cli/services…e.py:_validated_directory) | 1086 | `stat.S_ISDIR(metadata.st_mode)` |
+| _validated_directory | DocumentationNativeError | 1087 | `DocumentationNativeError(...)` |
+| _validated_directory | candidate.resolve (src/llm_wiki_cli/services…e.py:_validated_directory) | 1090 | `candidate.resolve(data not statically known)` |
 | refresh_documentation_native_projection | _validated_directory | 314 | `_validated_directory(wiki_root, 'wiki_root')` |
 | refresh_documentation_native_projection | _refresh_manifest_version | 315 | `_refresh_manifest_version(wiki)` |
 
@@ -201,17 +208,17 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_text` | `_refresh_manifest_version` | 943 |
+| filesystem_read | `path.read_text` | `_refresh_manifest_version` | 944 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_validated_directory` | `Path(value).expanduser` | 1078 |
-| unresolved_call | `_validated_directory` | `candidate.lstat` | 1080 |
-| external_call | `_validated_directory` | `stat.S_ISLNK` | 1085 |
-| external_call | `_validated_directory` | `stat.S_ISDIR` | 1085 |
-| unresolved_call | `_validated_directory` | `candidate.resolve` | 1089 |
+| unresolved_call | `_validated_directory` | `Path(value).expanduser` | 1079 |
+| unresolved_call | `_validated_directory` | `candidate.lstat` | 1081 |
+| external_call | `_validated_directory` | `stat.S_ISLNK` | 1086 |
+| external_call | `_validated_directory` | `stat.S_ISDIR` | 1086 |
+| unresolved_call | `_validated_directory` | `candidate.resolve` | 1090 |
 | step_limit | `refresh_documentation_native_projection` | `first 12 steps` | 0 |
 | truncated_flow | `refresh_documentation_native_projection` | `depth limit` | 0 |
 

@@ -79,16 +79,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_mapping_tuple | require_sequence | 996 | `require_sequence(value, error=error, container_type=container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 752 | `isinstance(value, (...))` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 753 | `isinstance(value, Mapping)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 754 | `isinstance(value, container_type)` |
-| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 757 | `isinstance(value, Sequence)` |
-| require_mapping_tuple | tuple | 1001 | `tuple(...)` |
-| require_mapping_tuple | require_mapping | 1002 | `require_mapping(item, error=...)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| require_mapping_tuple | require_sequence | 1034 | `require_sequence(value, error=error, container_type=container_type)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 790 | `isinstance(value, (...))` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 791 | `isinstance(value, Mapping)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 792 | `isinstance(value, container_type)` |
+| require_sequence | isinstance (src/llm_wiki_cli/services…dation.py:require_sequence) | 795 | `isinstance(value, Sequence)` |
+| require_mapping_tuple | tuple | 1039 | `tuple(...)` |
+| require_mapping_tuple | require_mapping | 1040 | `require_mapping(item, error=...)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -98,13 +98,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_sequence` | `isinstance` | 752 |
-| external_call | `require_sequence` | `isinstance` | 753 |
-| external_call | `require_sequence` | `isinstance` | 754 |
-| external_call | `require_sequence` | `isinstance` | 757 |
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| external_call | `require_sequence` | `isinstance` | 790 |
+| external_call | `require_sequence` | `isinstance` | 791 |
+| external_call | `require_sequence` | `isinstance` | 792 |
+| external_call | `require_sequence` | `isinstance` | 795 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
 
 ## Behavior
 

@@ -47,9 +47,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| paths_overlap | path_is_within | 441 | `path_is_within(left, right)` |
-| path_is_within | path.relative_to | 432 | `path.relative_to(root)` |
-| paths_overlap | path_is_within | 441 | `path_is_within(right, left)` |
+| paths_overlap | path_is_within | 490 | `path_is_within(left, right)` |
+| path_is_within | path.relative_to | 481 | `path.relative_to(root)` |
+| paths_overlap | path_is_within | 490 | `path_is_within(right, left)` |
 
 ### Boundary effects
 
@@ -59,7 +59,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `path_is_within` | `path.relative_to` | 432 |
+| unresolved_call | `path_is_within` | `path.relative_to` | 481 |
 
 ## Behavior
 

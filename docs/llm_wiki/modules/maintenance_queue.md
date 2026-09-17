@@ -29,35 +29,40 @@ construction preserves the captured source/wiki basis and does not edit pages.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/cli.py"]
-    n1["src/llm_wiki_cli/commands/queue_cmd.py"]
-    n2["src/llm_wiki_cli/services/context_packet.py"]
-    n3["src/llm_wiki_cli/services/documentation_worklist.py"]
-    n4["src/llm_wiki_cli/services/inventory_cache.py"]
-    n5["src/llm_wiki_cli/services/lint_service.py"]
-    n6["src/llm_wiki_cli/services/maintenance_queue.py"]
-    n0 --> n1
-    n0 --> n5
-    n0 --> n6
+    n0["src/llm_wiki_cli/api.py"]
+    n1["src/llm_wiki_cli/cli.py"]
+    n2["src/llm_wiki_cli/commands/queue_cmd.py"]
+    n3["src/llm_wiki_cli/services/context_packet.py"]
+    n4["src/llm_wiki_cli/services/documentation_worklist.py"]
+    n5["src/llm_wiki_cli/services/inventory_cache.py"]
+    n6["src/llm_wiki_cli/services/lint_service.py"]
+    n7["src/llm_wiki_cli/services/maintenance_queue.py"]
+    n0 --> n3
+    n0 --> n7
+    n1 --> n2
     n1 --> n6
-    n5 --> n4
-    n6 --> n2
-    n6 --> n3
-    n6 --> n4
+    n1 --> n7
+    n2 --> n7
     n6 --> n5
-    click n0 "../modules/cli.md"
-    click n1 "../modules/queue_cmd.md"
-    click n2 "../modules/context_packet.md"
-    click n3 "../modules/documentation_worklist.md"
-    click n4 "../modules/inventory_cache.md"
-    click n5 "../modules/lint_service.md"
-    click n6 "../modules/maintenance_queue.md"
+    n7 --> n3
+    n7 --> n4
+    n7 --> n5
+    n7 --> n6
+    click n0 "../modules/api.md"
+    click n1 "../modules/cli.md"
+    click n2 "../modules/queue_cmd.md"
+    click n3 "../modules/context_packet.md"
+    click n4 "../modules/documentation_worklist.md"
+    click n5 "../modules/inventory_cache.md"
+    click n6 "../modules/lint_service.md"
+    click n7 "../modules/maintenance_queue.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [api](../modules/api.md) |
 | Inbound | [cli](../modules/cli.md) |
 | Inbound | [queue_cmd](../modules/queue_cmd.md) |
 | Outbound | [context_packet](../modules/context_packet.md) |

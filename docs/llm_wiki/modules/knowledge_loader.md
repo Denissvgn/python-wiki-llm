@@ -4,7 +4,7 @@
 
 ## Description
 
-Authoritative validation and fallback boundary for generated knowledge state.
+Loads one coherent committed native snapshot under the caller’s reject, rebuild or degraded policy. Full v2 loading reconstructs the logical v1 model and audits every referenced object before issuing full validation authority. A rebuild remains an explicit callback; ordinary reads never repair or migrate data.
 
 ## Imports
 
@@ -44,10 +44,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (7) |
+| Inbound | `src` (10) |
 | Outbound | `src` (9) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

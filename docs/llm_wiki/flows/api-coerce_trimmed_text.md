@@ -41,8 +41,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| coerce_trimmed_text | str(…).strip | 907 | `str(value).strip(data not statically known)` |
-| coerce_trimmed_text | str | 907 | `str(value)` |
+| coerce_trimmed_text | str(…).strip | 945 | `str(value).strip(data not statically known)` |
+| coerce_trimmed_text | str | 945 | `str(value)` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `coerce_trimmed_text` | `str(value).strip` | 907 |
+| unresolved_call | `coerce_trimmed_text` | `str(value).strip` | 945 |
 
 ## Behavior
 

@@ -130,17 +130,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_read_view | isinstance (src/llm_wiki_cli/services…build_knowledge_read_view) | 574 | `isinstance(load_result, KnowledgeLoadResult)` |
-| build_knowledge_read_view | TypeError (src/llm_wiki_cli/services…build_knowledge_read_view) | 575 | `TypeError('load_result must be a KnowledgeLoadResult')` |
-| build_knowledge_read_view | _read_mode | 576 | `_read_mode(snapshot_only=snapshot_only, mode=mode)` |
-| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 713 | `isinstance(snapshot_only, bool)` |
-| _read_mode | TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 714 | `TypeError('snapshot_only must be a boolean')` |
-| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 724 | `isinstance(mode, KnowledgeReadMode)` |
-| _read_mode | KnowledgeReadMode | 725 | `KnowledgeReadMode(mode)` |
-| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 728 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
-| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 732 | `ValueError('snapshot_only conflicts with the requested mode')` |
-| build_knowledge_read_view | _validate_load_result | 577 | `_validate_load_result(load_result)` |
-| _validate_load_result | isinstance (src/llm_wiki_cli/services….py:_validate_load_result) | 749 | `isinstance(result.status, KnowledgeLoadState)` |
+| build_knowledge_read_view | isinstance (src/llm_wiki_cli/services…build_knowledge_read_view) | 575 | `isinstance(load_result, KnowledgeLoadResult)` |
+| build_knowledge_read_view | TypeError (src/llm_wiki_cli/services…build_knowledge_read_view) | 576 | `TypeError('load_result must be a KnowledgeLoadResult')` |
+| build_knowledge_read_view | _read_mode | 577 | `_read_mode(snapshot_only=snapshot_only, mode=mode)` |
+| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 715 | `isinstance(snapshot_only, bool)` |
+| _read_mode | TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 716 | `TypeError('snapshot_only must be a boolean')` |
+| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 726 | `isinstance(mode, KnowledgeReadMode)` |
+| _read_mode | KnowledgeReadMode | 727 | `KnowledgeReadMode(mode)` |
+| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 730 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
+| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 734 | `ValueError('snapshot_only conflicts with the requested mode')` |
+| build_knowledge_read_view | _validate_load_result | 578 | `_validate_load_result(load_result)` |
+| _validate_load_result | isinstance (src/llm_wiki_cli/services….py:_validate_load_result) | 751 | `isinstance(result.status, KnowledgeLoadState)` |
 
 ### Boundary effects
 
@@ -150,14 +150,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_knowledge_read_view` | `isinstance` | 574 |
-| external_call | `build_knowledge_read_view` | `TypeError` | 575 |
-| external_call | `_read_mode` | `isinstance` | 713 |
-| external_call | `_read_mode` | `TypeError` | 714 |
-| external_call | `_read_mode` | `isinstance` | 724 |
-| external_call | `_read_mode` | `ValueError` | 728 |
-| external_call | `_read_mode` | `ValueError` | 732 |
-| external_call | `_validate_load_result` | `isinstance` | 749 |
+| external_call | `build_knowledge_read_view` | `isinstance` | 575 |
+| external_call | `build_knowledge_read_view` | `TypeError` | 576 |
+| external_call | `_read_mode` | `isinstance` | 715 |
+| external_call | `_read_mode` | `TypeError` | 716 |
+| external_call | `_read_mode` | `isinstance` | 726 |
+| external_call | `_read_mode` | `ValueError` | 730 |
+| external_call | `_read_mode` | `ValueError` | 734 |
+| external_call | `_validate_load_result` | `isinstance` | 751 |
 | step_limit | `build_knowledge_read_view` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_read_view` | `depth limit` | 0 |
 

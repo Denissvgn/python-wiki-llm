@@ -48,10 +48,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_sequence | isinstance | 752 | `isinstance(value, (...))` |
-| require_sequence | isinstance | 753 | `isinstance(value, Mapping)` |
-| require_sequence | isinstance | 754 | `isinstance(value, container_type)` |
-| require_sequence | isinstance | 757 | `isinstance(value, Sequence)` |
+| require_sequence | isinstance | 790 | `isinstance(value, (...))` |
+| require_sequence | isinstance | 791 | `isinstance(value, Mapping)` |
+| require_sequence | isinstance | 792 | `isinstance(value, container_type)` |
+| require_sequence | isinstance | 795 | `isinstance(value, Sequence)` |
 
 ### Boundary effects
 
@@ -61,10 +61,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_sequence` | `isinstance` | 752 |
-| external_call | `require_sequence` | `isinstance` | 753 |
-| external_call | `require_sequence` | `isinstance` | 754 |
-| external_call | `require_sequence` | `isinstance` | 757 |
+| external_call | `require_sequence` | `isinstance` | 790 |
+| external_call | `require_sequence` | `isinstance` | 791 |
+| external_call | `require_sequence` | `isinstance` | 792 |
+| external_call | `require_sequence` | `isinstance` | 795 |
 
 ## Behavior
 

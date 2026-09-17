@@ -60,7 +60,9 @@ sequenceDiagram
     p16->>p18: _default_path_error
 ```
 
-> Call sequence diagram shows 30 of 103 interactions; 73 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 117 interactions; 87 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -150,6 +152,7 @@ flowchart LR
 | unresolved_call | `supplied_paths_from_unified_diff` | `line.startswith` | 188 |
 | external_call | `supplied_paths_from_unified_diff` | `shlex.split` | 194 |
 | step_limit | `supplied_paths_from_unified_diff` | `first 12 steps` | 0 |
+| truncated_flow | `supplied_paths_from_unified_diff` | `depth limit` | 0 |
 
 ## Behavior
 

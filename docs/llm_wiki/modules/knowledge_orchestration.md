@@ -29,6 +29,7 @@ extraction of its own.
 | `.knowledge_generation` | `KnowledgeGenerationError`, `KnowledgeGenerationInputs`, `build_knowledge_generation_plan` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `governance_bundle_id_from_knowledge`, `governance_lock`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
 | `.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind` |
+| `.knowledge_storage_io` | `read_guarded` |
 | `.progress` | `observed_phase` |
 | `.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
 | `.source_snapshot` | `SourceSnapshot` |
@@ -60,19 +61,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (18) |
+| Outbound | `src` (19) |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 131 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 177 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 270 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 279 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 300 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 178 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 275 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 284 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 305 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 

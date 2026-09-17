@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:schema:knowledge-pack-index:v1",
+  "title": "Bounded knowledge pack routing index",
+  "description": "Runtime checks additionally enforce byte bounds, prefix ownership, pack membership and ZIP coordinates.",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-knowledge-pack-index/v1"
+        },
+        "kind": {
+          "const": "members"
+        },
+        "prefix": {
+          "type": "string",
+          "pattern": "^[01]{0,64}$"
+        },
+        "members": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 100000,
+          "propertyNames": {
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "prefixItems": [
+              {
+                "type": "string",
+                "pattern": "^[01]{0,64}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^(concepts|relationships|edges|sections|extensions|values|lookup)/(root|[0-9a-f]{1,128})\\.json$"
+              },
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 8388608
+              },
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8388608
+              },
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8388608
+              },
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            ],
+            "items": false
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "prefix",
+        "members"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-knowledge-pack-index/v1"
+        },
+        "kind": {
+          "const": "catalog"
+        },
+        "prefix": {
+          "type": "string",
+          "pattern": "^[01]{0,64}$"
+        },
+        "children": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 2,
+          "propertyNames": {
+            "enum": [
+              "0",
+              "1"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "hash": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65536
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              }
+            },
+            "required": [
+              "hash",
+              "bytes",
+              "count"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "prefix",
+        "children"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "llm-wiki-knowledge-pack-index/v1"
+        },
+        "kind": {
+          "const": "packs"
+        },
+        "prefix": {
+          "type": "string",
+          "pattern": "^[01]{0,64}$"
+        },
+        "packs": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 100000,
+          "propertyNames": {
+            "pattern": "^[01]{0,64}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "hash": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 22,
+                "maximum": 8388608
+              },
+              "bucket": {
+                "type": "string",
+                "pattern": "^[01]{0,64}$"
+              },
+              "members": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 512
+              },
+              "expanded_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8388608
+              }
+            },
+            "required": [
+              "hash",
+              "bytes",
+              "bucket",
+              "members",
+              "expanded_bytes"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "prefix",
+        "packs"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "descriptor": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "hash",
+        "bytes",
+        "count"
+      ],
+      "additionalProperties": false
+    },
+    "pack": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 22,
+          "maximum": 8388608
+        },
+        "bucket": {
+          "type": "string",
+          "pattern": "^[01]{0,64}$"
+        },
+        "members": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "expanded_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8388608
+        }
+      },
+      "required": [
+        "hash",
+        "bytes",
+        "bucket",
+        "members",
+        "expanded_bytes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

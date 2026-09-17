@@ -2,7 +2,7 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [prepare](../modules/prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 31 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 33 more
 
 **Complete modules touched:**
 
@@ -28,6 +28,8 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [module_maps](../modules/module_maps.md)
 - [paths](../modules/paths.md)
 - [prepare](../modules/prepare.md)
@@ -97,7 +99,7 @@ sequenceDiagram
     p3-->>p13: run_path.is_file
 ```
 
-> Call sequence diagram shows 30 of 1392 interactions; 1362 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1406 interactions; 1376 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

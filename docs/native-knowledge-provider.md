@@ -1,5 +1,8 @@
 # Integrating native knowledge
 
+For explicit task composition, ranked search, advisory queues and optional
+validated sessions, see the [native coding workflow](native-agent-workflow.md).
+
 Install `agent-wiki-cli` 2.2.0 or newer in your application's environment and use
 `llm_wiki_cli.api` for native reads. `llm_wiki_cli.api_types` defines their
 structured return types. The wheel and source distribution include inline

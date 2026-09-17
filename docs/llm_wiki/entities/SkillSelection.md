@@ -1,6 +1,6 @@
 # _SkillSelection
 
-**Location:** `src/llm_wiki_cli/services/skills.py:808`
+**Location:** `src/llm_wiki_cli/services/skills.py:809`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)

@@ -53,6 +53,7 @@ flowchart LR
     n3 --> n4
     n3 --> n5
     n3 --> n6
+    n6 --> n4
     n6 --> n5
     click n0 "../modules/api.md"
     click n1 "../modules/controller.md"

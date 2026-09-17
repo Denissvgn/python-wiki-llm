@@ -40,8 +40,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| portable_page_component | sanitize | 559 | `sanitize(value)` |
-| portable_page_component | sanitize | 559 | `sanitize(fallback)` |
+| portable_page_component | sanitize | 608 | `sanitize(value)` |
+| portable_page_component | sanitize | 608 | `sanitize(fallback)` |
 
 ### Boundary effects
 
@@ -51,7 +51,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `portable_page_component` | `sanitize` | 559 |
+| unresolved_call | `portable_page_component` | `sanitize` | 608 |
 
 ## Behavior
 

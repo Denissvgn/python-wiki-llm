@@ -2,12 +2,13 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [sync_cmd](../modules/sync_cmd.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 48 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 53 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
@@ -33,7 +34,11 @@
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_maps](../modules/module_maps.md)
 - [packages](../modules/packages.md)
@@ -113,7 +118,7 @@ sequenceDiagram
     p13-->>p16: getattr (src/llm_wiki_cli/services…ion_job_request_from_args)
 ```
 
-> Call sequence diagram shows 30 of 6358 interactions; 6328 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 6539 interactions; 6509 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -188,15 +193,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 4648 | `_sync_run_options_from_args(args)` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2271 | `getattr(args, 'src_dir', '.')` |
-| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2272 | `Path(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2272 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
-| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2273 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2273 | `getattr(args, 'dry_run', False)` |
+| run | _sync_run_options_from_args | 4655 | `_sync_run_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2272 | `getattr(args, 'src_dir', '.')` |
+| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2273 | `Path(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2273 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
 | _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2274 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2274 | `getattr(args, 'no_plugins', False)` |
-| _sync_run_options_from_args | _cache_options_from_args | 2275 | `_cache_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2274 | `getattr(args, 'dry_run', False)` |
+| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2275 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2275 | `getattr(args, 'no_plugins', False)` |
+| _sync_run_options_from_args | _cache_options_from_args | 2276 | `_cache_options_from_args(args)` |
 | _cache_options_from_args | cache_options_from_args | 275 | `cache_options_from_args(args)` |
 | cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 304 | `bool(getattr(...))` |
 
@@ -204,20 +209,20 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 4658 |
-| output | `print` | `run` | 4664 |
-| output | `print` | `_sync_run_options_from_args` | 2292 |
-| output | `print` | `_sync_run_options_from_args` | 2298 |
-| output | `print` | `_sync_run_options_from_args` | 2304 |
+| output | `print` | `run` | 4665 |
+| output | `print` | `run` | 4671 |
+| output | `print` | `_sync_run_options_from_args` | 2293 |
+| output | `print` | `_sync_run_options_from_args` | 2299 |
+| output | `print` | `_sync_run_options_from_args` | 2305 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_sync_run_options_from_args` | `getattr` | 2271 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2272 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2273 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2274 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2275 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

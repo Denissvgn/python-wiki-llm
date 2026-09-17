@@ -141,24 +141,24 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| atomic_write_guarded_bytes | Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1603 | `Path(path)` |
-| atomic_write_guarded_bytes | target.is_absolute | 1604 | `target.is_absolute(data not statically known)` |
-| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1605 | `OSError(...)` |
-| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1607 | `OSError(...)` |
-| atomic_write_guarded_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1608 | `isinstance(data, bytes)` |
-| atomic_write_guarded_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1609 | `TypeError('Guarded output data must be bytes.')` |
-| atomic_write_guarded_bytes | _atomic_write_guarded_bytes_windows | 1611 | `_atomic_write_guarded_bytes_windows(target, data, expected_existing=expected_existing, require_single_link=require_single_link)` |
-| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2566 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2567 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_guarded_bytes_windows | guard_windows_directory_chain | 2571 | `guard_windows_directory_chain(Path(...), relative_components)` |
+| atomic_write_guarded_bytes | Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1615 | `Path(path)` |
+| atomic_write_guarded_bytes | target.is_absolute | 1616 | `target.is_absolute(data not statically known)` |
+| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1617 | `OSError(...)` |
+| atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1619 | `OSError(...)` |
+| atomic_write_guarded_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1620 | `isinstance(data, bytes)` |
+| atomic_write_guarded_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1621 | `TypeError('Guarded output data must be bytes.')` |
+| atomic_write_guarded_bytes | _atomic_write_guarded_bytes_windows | 1623 | `_atomic_write_guarded_bytes_windows(target, data, expected_existing=expected_existing, require_single_link=require_single_link)` |
+| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2578 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2579 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_guarded_bytes_windows | guard_windows_directory_chain | 2583 | `guard_windows_directory_chain(Path(...), relative_components)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `quarantine.unlink` | `_atomic_write_guarded_bytes_windows` | 2655 |
-| filesystem_write | `temporary.unlink` | `_atomic_write_guarded_bytes_windows` | 2660 |
+| filesystem_write | `quarantine.unlink` | `_atomic_write_guarded_bytes_windows` | 2667 |
+| filesystem_write | `temporary.unlink` | `_atomic_write_guarded_bytes_windows` | 2672 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
@@ -167,13 +167,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `atomic_write_guarded_bytes` | `target.is_absolute` | 1604 |
-| external_call | `atomic_write_guarded_bytes` | `OSError` | 1605 |
-| external_call | `atomic_write_guarded_bytes` | `OSError` | 1607 |
-| external_call | `atomic_write_guarded_bytes` | `isinstance` | 1608 |
-| external_call | `atomic_write_guarded_bytes` | `TypeError` | 1609 |
-| external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2566 |
-| external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2567 |
+| unresolved_call | `atomic_write_guarded_bytes` | `target.is_absolute` | 1616 |
+| external_call | `atomic_write_guarded_bytes` | `OSError` | 1617 |
+| external_call | `atomic_write_guarded_bytes` | `OSError` | 1619 |
+| external_call | `atomic_write_guarded_bytes` | `isinstance` | 1620 |
+| external_call | `atomic_write_guarded_bytes` | `TypeError` | 1621 |
+| external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2578 |
+| external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2579 |
 | step_limit | `atomic_write_guarded_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_guarded_bytes` | `depth limit` | 0 |
 

@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:schema:knowledge:v2",
+  "title": "Sharded knowledge root v2",
+  "description": "The compact root commits content-addressed objects. Whole-store and scoped validation are distinct. Byte limits, cross-object integrity and semantic equality are additionally enforced by the storage reader. Logical native knowledge v1 remains unchanged.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "logical_schema",
+    "bundle",
+    "basis",
+    "metadata",
+    "collections",
+    "logical_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-knowledge/v2"
+    },
+    "logical_schema": {
+      "const": "llm-wiki-knowledge/v1"
+    },
+    "bundle": {
+      "$ref": "urn:llm-wiki:schema:knowledge:v1#/$defs/bundle"
+    },
+    "basis": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^(snapshot|graph)\\.",
+        "maxLength": 256
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/hash"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "has_extensions",
+        "graph",
+        "sections"
+      ],
+      "properties": {
+        "has_extensions": {
+          "type": "boolean"
+        },
+        "graph": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "schema_version",
+                "input_hashes",
+                "coverage"
+              ],
+              "properties": {
+                "schema_version": {
+                  "const": "llm-wiki-typed-graph/v1"
+                },
+                "input_hashes": {
+                  "$ref": "urn:llm-wiki:schema:knowledge:v1#/$defs/typedGraphInputHashes"
+                },
+                "coverage": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "urn:llm-wiki:schema:knowledge:v1#/$defs/typedGraphAnalyzerCoverage"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "sections": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "schema_version"
+              ],
+              "properties": {
+                "schema_version": {
+                  "const": "llm-wiki-section-ownership/v1"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "concepts",
+        "relationships",
+        "edges",
+        "sections",
+        "extensions",
+        "values",
+        "lookup"
+      ],
+      "properties": {
+        "concepts": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "relationships": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "edges": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "sections": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "extensions": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "values": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "lookup": {
+          "$ref": "#/$defs/descriptor"
+        }
+      },
+      "additionalProperties": false
+    },
+    "logical_hash": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "descriptor": {
+      "type": "object",
+      "required": [
+        "hash",
+        "bytes",
+        "count"
+      ],
+      "properties": {
+        "hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8388608
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

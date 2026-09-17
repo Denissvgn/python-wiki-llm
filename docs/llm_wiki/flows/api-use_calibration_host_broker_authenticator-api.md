@@ -18,24 +18,23 @@ sequenceDiagram
     participant p6 as isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)
     participant p7 as len
     participant p8 as value.strip
-    participant p9 as any (src/llm_wiki_cli/services…n.py:require_bounded_text)
-    participant p10 as ord
+    participant p9 as contains_control_character
+    participant p10 as pattern.search
     participant p11 as HostBrokerAuthenticationError
     participant p12 as _HOST_BROKER_AUTHENTICATOR.set
     participant p13 as _HOST_BROKER_AUTHENTICATOR.reset
     participant p14 as manager.__enter__
     participant p15 as _raise_api_error
-    participant p16 as isinstance (src/llm_wiki_cli/api.py:_raise_api_error)
-    participant p17 as _raise_context_packet_api_error
-    participant p18 as _raise_required_knowledge_api_error
-    participant p19 as _required_knowledge_failure
-    participant p20 as set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p21 as id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p22 as seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p23 as getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p24 as type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p25 as isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    participant p26 as dict
+    participant p16 as _raise_required_knowledge_api_error
+    participant p17 as _required_knowledge_failure
+    participant p18 as set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p19 as id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p20 as seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p21 as getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p22 as type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p23 as isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    participant p24 as dict
+    participant p25 as copied.get
     p0->>p1: use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py)
     p1-->>p2: isinstance (src/llm_wiki_cli/services…host_broker_authenticator)
     p1->>p3: HostBrokerAuthenticationUnavailable
@@ -45,30 +44,30 @@ sequenceDiagram
     p5-->>p7: len
     p5-->>p7: len
     p5-->>p8: value.strip
-    p5-->>p9: any (src/llm_wiki_cli/services…n.py:require_bounded_text)
-    p5-->>p10: ord
-    p5-->>p10: ord
+    p5->>p9: contains_control_character
+    p9-->>p10: pattern.search
     p4->>p11: HostBrokerAuthenticationError
     p1-->>p12: _HOST_BROKER_AUTHENTICATOR.set
     p1-->>p13: _HOST_BROKER_AUTHENTICATOR.reset
     p0-->>p14: manager.__enter__
     p0->>p15: _raise_api_error
-    p15-->>p16: isinstance (src/llm_wiki_cli/api.py:_raise_api_error)
-    p15->>p17: _raise_context_packet_api_error
-    p17->>p18: _raise_required_knowledge_api_error
-    p18->>p19: _required_knowledge_failure
-    p19-->>p20: set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p21: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p22: seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p21: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p23: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p24: type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p23: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p25: isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
-    p19-->>p26: dict
+    p15->>p16: _raise_required_knowledge_api_error
+    p16->>p17: _required_knowledge_failure
+    p17-->>p18: set (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p19: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p20: seen.add (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p19: id (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p21: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p22: type (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p21: getattr (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p23: isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p24: dict
+    p17-->>p25: copied.get
+    p17-->>p23: isinstance (src/llm_wiki_cli/api.py:_required_knowledge_failure)
+    p17-->>p24: dict
 ```
 
-> Call sequence diagram shows 30 of 123 interactions; 93 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 126 interactions; 96 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -85,8 +84,8 @@ flowchart LR
     s8["8. len"]
     s9["9. len"]
     s10["10. value.strip"]
-    s11["11. any (src/llm_wiki_cli/services…n.py:require_bounded_text)"]
-    s12["12. ord"]
+    s11["11. contains_control_character"]
+    s12["12. pattern.search"]
     s1 -->|"use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py)(authenticator)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…host_broker_authenticator)(authenticator, HostBrokerAuthenticator)" .-> s3
     s2 -->|"HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')"| s4
@@ -96,13 +95,14 @@ flowchart LR
     s6 -. "len(value)" .-> s8
     s6 -. "len(value)" .-> s9
     s6 -. "value.strip(data not statically known)" .-> s10
-    s6 -. "any (src/llm_wiki_cli/services…n.py:require_bounded_text)(...)" .-> s11
-    s6 -. "ord(character)" .-> s12
+    s6 -->|"contains_control_character(value, reject_delete_character=reject_delete_character)"| s11
+    s11 -. "pattern.search(value)" .-> s12
     click s1 "../modules/api.md"
     click s2 "../modules/host_broker.md"
     click s4 "../modules/host_broker.md"
     click s5 "../modules/host_broker.md"
     click s6 "../modules/validation.md"
+    click s11 "../modules/validation.md"
 ```
 
 ### Step data
@@ -119,24 +119,24 @@ flowchart LR
 | `len` | - | - | - | - |
 | `len` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…n.py:require_bounded_text)` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 2998 | `implementation(authenticator)` |
+| use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py) | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | 3170 | `implementation(authenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | isinstance (src/llm_wiki_cli/services…host_broker_authenticator) | 195 | `isinstance(authenticator, HostBrokerAuthenticator)` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | HostBrokerAuthenticationUnavailable | 196 | `HostBrokerAuthenticationUnavailable('The host broker authenticator is malformed.')` |
 | use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py) | _require_bounded_text | 199 | `_require_bounded_text(authenticator.authenticator_id, 'authenticator_id')` |
 | _require_bounded_text | require_bounded_text | 321 | `require_bounded_text(value, maximum=512, error=HostBrokerAuthenticationError(...))` |
-| require_bounded_text | isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text) | 605 | `isinstance(value, str)` |
-| require_bounded_text | len | 606 | `len(value)` |
-| require_bounded_text | len | 607 | `len(value)` |
-| require_bounded_text | value.strip | 608 | `value.strip(data not statically known)` |
-| require_bounded_text | any (src/llm_wiki_cli/services…n.py:require_bounded_text) | 611 | `any(...)` |
-| require_bounded_text | ord | 612 | `ord(character)` |
+| require_bounded_text | isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text) | 650 | `isinstance(value, str)` |
+| require_bounded_text | len | 651 | `len(value)` |
+| require_bounded_text | len | 652 | `len(value)` |
+| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -147,10 +147,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `use_calibration_host_broker_authenticator` | `isinstance` | 195 |
-| external_call | `require_bounded_text` | `isinstance` | 605 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 608 |
-| external_call | `require_bounded_text` | `any` | 611 |
-| external_call | `require_bounded_text` | `ord` | 612 |
+| external_call | `require_bounded_text` | `isinstance` | 650 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
 | step_limit | `use_calibration_host_broker_authenticator` | `first 12 steps` | 0 |
 
 ## Behavior

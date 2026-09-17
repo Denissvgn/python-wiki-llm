@@ -61,12 +61,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_observational_posix_path | str(…).strip().replace | 403 | `str(value).strip().replace('\\', '/')` |
-| normalize_observational_posix_path | str(…).strip | 403 | `str(value).strip(data not statically known)` |
-| normalize_observational_posix_path | str | 403 | `str(value)` |
-| normalize_observational_posix_path | raw.startswith | 404 | `raw.startswith('./')` |
-| normalize_observational_posix_path | PurePosixPath(…).as_posix | 406 | `PurePosixPath(raw).as_posix(data not statically known)` |
-| normalize_observational_posix_path | PurePosixPath | 406 | `PurePosixPath(raw)` |
+| normalize_observational_posix_path | str(…).strip().replace | 452 | `str(value).strip().replace('\\', '/')` |
+| normalize_observational_posix_path | str(…).strip | 452 | `str(value).strip(data not statically known)` |
+| normalize_observational_posix_path | str | 452 | `str(value)` |
+| normalize_observational_posix_path | raw.startswith | 453 | `raw.startswith('./')` |
+| normalize_observational_posix_path | PurePosixPath(…).as_posix | 455 | `PurePosixPath(raw).as_posix(data not statically known)` |
+| normalize_observational_posix_path | PurePosixPath | 455 | `PurePosixPath(raw)` |
 
 ### Boundary effects
 
@@ -76,11 +76,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `normalize_observational_posix_path` | `str(value).strip().replace` | 403 |
-| unresolved_call | `normalize_observational_posix_path` | `str(value).strip` | 403 |
-| unresolved_call | `normalize_observational_posix_path` | `raw.startswith` | 404 |
-| unresolved_call | `normalize_observational_posix_path` | `PurePosixPath(raw).as_posix` | 406 |
-| external_call | `normalize_observational_posix_path` | `PurePosixPath` | 406 |
+| unresolved_call | `normalize_observational_posix_path` | `str(value).strip().replace` | 452 |
+| unresolved_call | `normalize_observational_posix_path` | `str(value).strip` | 452 |
+| unresolved_call | `normalize_observational_posix_path` | `raw.startswith` | 453 |
+| unresolved_call | `normalize_observational_posix_path` | `PurePosixPath(raw).as_posix` | 455 |
+| external_call | `normalize_observational_posix_path` | `PurePosixPath` | 455 |
 
 ## Behavior
 

@@ -1,6 +1,6 @@
 # McpWikiService
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:397`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:407`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -17,7 +17,7 @@ Pure read/check operations exposed through MCP tools and resources.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', *, source_selection: str \| None = None, allow_external_src: bool = False)` | — | — |
+| `__init__` | `(src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', *, source_selection: str \| None = None, allow_external_src: bool = False, counter: TokenCounter \| None = None, workflow_policy: WorkflowPolicy \| None = None, workflow_profile: WorkflowProfile \| None = None, enable_sessions: bool = False, max_sessions: int = 8)` | — | — |
 | `_assert_source_selection_pin_current` | `() -> SourceSelectionPolicy \| None` | — | — |
 | `_assert_source_selection_current` | `() -> SourceSnapshot` | — | — |
 | `_source_selection_options` | `() -> _SourceSelectionOptions` | — | — |
@@ -36,6 +36,15 @@ Pure read/check operations exposed through MCP tools and resources.
 | `inspect_concept` | `(locator_or_exact_route: str, *, live: bool = False, limit: int = 20, include_evidence: bool = False) -> dict` | — | Inspect one native target from a shared snapshot or explicit live read. |
 | `get_knowledge_coverage` | `(live: bool = False) -> dict` | — | Explain eligible observations without treating unmodeled content as drift. |
 | `search_wiki` | `(query: str, kinds: list[str] \| None = None, limit: int = 20, mode: str = 'ranked') -> dict` | — | — |
+| `build_budgeted_context` | `(request: Mapping[str, Any]) -> str` | — | Return precisely the canonical v3 text counted by the host counter. |
+| `get_maintenance_queue` | `(limit: int = 30) -> dict` | — | — |
+| `build_task_context` | `(request: Mapping[str, Any]) -> str` | — | — |
+| `open_context_session` | `() -> dict` | — | — |
+| `_session` | `(session_id)` | — | — |
+| `read_context_session` | `(session_id, request, *, if_result_id = None, delta = False)` | — | — |
+| `hint_context_session` | `(session_id, *, unsaved_buffers = False)` | — | — |
+| `close_context_session` | `(session_id)` | — | — |
+| `close_sessions` | `()` | — | — |
 | `get_context` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'markdown', filters: dict \| None = None, prefer_fresh: bool = False, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | — |
 | `get_context_packet` | `(budget_tokens: int = 32000, focus: list[str] \| None = None, format: str = 'json', filters: dict \| None = None, prefer_fresh: bool = False, if_packet_id: str \| None = None, knowledge_mode: KnowledgeMode \| None = None) -> dict` | — | Return a fresh qualified packet or an unchanged cache marker. |
 | `check_wiki` | `(strict: bool = False, format: str = 'json', knowledge_drift_report: bool = False) -> dict` | — | — |
@@ -55,38 +64,34 @@ Pure read/check operations exposed through MCP tools and resources.
 ```mermaid
 flowchart LR
     n0["McpWikiService (src/llm_wiki_cli/services/mcp_server.py)"]
-    n1["run (src/llm_wiki_cli/commands/search_cmd.py)"]
-    n2["_register_directory_resource (src/llm_wiki_cli/services/mcp_server.py)"]
-    n3["_register_mcp_resources (src/llm_wiki_cli/services/mcp_server.py)"]
-    n4["_register_mcp_tools (src/llm_wiki_cli/services/mcp_server.py)"]
-    n5["_register_root_resource (src/llm_wiki_cli/services/mcp_server.py)"]
-    n6["create_mcp_server (src/llm_wiki_cli/services/mcp_server.py)"]
+    n1["_register_directory_resource (src/llm_wiki_cli/services/mcp_server.py)"]
+    n2["_register_mcp_resources (src/llm_wiki_cli/services/mcp_server.py)"]
+    n3["_register_mcp_tools (src/llm_wiki_cli/services/mcp_server.py)"]
+    n4["_register_root_resource (src/llm_wiki_cli/services/mcp_server.py)"]
+    n5["create_mcp_server (src/llm_wiki_cli/services/mcp_server.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
-    n6 --> n0
     click n0 "../modules/mcp_server.md"
-    click n1 "../modules/search_cmd.md"
+    click n1 "../modules/mcp_server.md"
     click n2 "../modules/mcp_server.md"
     click n3 "../modules/mcp_server.md"
     click n4 "../modules/mcp_server.md"
     click n5 "../modules/mcp_server.md"
-    click n6 "../modules/mcp_server.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 31 | — |
+| [mcp_server](../modules/mcp_server.md) | 40 | — |
 
 ### References
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `run` | call | [search_cmd](../modules/search_cmd.md) | 1 |
 | `_register_directory_resource` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
 | `_register_mcp_resources` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
 | `_register_mcp_tools` | type_reference | [mcp_server](../modules/mcp_server.md) | — |

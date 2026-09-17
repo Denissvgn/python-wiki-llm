@@ -1481,7 +1481,7 @@ def test_invalid_v5_native_artifact_state_fails_closed_before_copy(
         _write(wiki / KNOWLEDGE_INDEX_FILENAME, "{")
     elif mutation == "future-knowledge":
         knowledge = json.loads(plan.knowledge_index.content)
-        knowledge["schema_version"] = "llm-wiki-knowledge/v2"
+        knowledge["schema_version"] = "llm-wiki-knowledge/v99"
         _write(
             wiki / KNOWLEDGE_INDEX_FILENAME,
             (json.dumps(knowledge, indent=2, sort_keys=True) + "\n").encode("utf-8"),
@@ -1529,7 +1529,7 @@ def test_invalid_v5_native_artifact_state_fails_closed_before_copy(
 @pytest.mark.parametrize(
     ("manifest_version", "surface_schema", "category"),
     [
-        (6, "llm-wiki-surface-index/v1", "manifest_schema_unsupported"),
+        (7, "llm-wiki-surface-index/v1", "manifest_schema_unsupported"),
         (3, "llm-wiki-surface-index/v1", "manifest_schema_unsupported"),
         (4, "llm-wiki-surface-index/v2", "surface_schema_unsupported"),
     ],

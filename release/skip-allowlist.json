@@ -961,6 +961,12 @@
       "reason": "requires an already prepared TypeScript helper"
     },
     {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
+    },
+    {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_capability_diagnostics.py::test_windows_text_command_preserves_literal_arguments",
       "owner_lane": "core-windows-3.13",
@@ -1963,6 +1969,12 @@
       "reason": "root-owned /var alias contract is macOS-only"
     },
     {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
+    },
+    {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_allows_parent_relative_same_owner_symlink",
       "owner_lane": "security-ubuntu-24.04",
@@ -2477,6 +2489,24 @@
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_knowledge_packs.py::test_ranges_never_follow_untrusted_links[hard]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX link setup; native Windows guard lane owns its equivalent"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_knowledge_packs.py::test_ranges_never_follow_untrusted_links[parent]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX link setup; native Windows guard lane owns its equivalent"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_knowledge_packs.py::test_ranges_never_follow_untrusted_links[symbolic]",
+      "owner_lane": "core-ubuntu-3.10",
+      "reason": "POSIX link setup; native Windows guard lane owns its equivalent"
     },
     {
       "lane": "core-windows-3.13",
@@ -3011,6 +3041,12 @@
       "node_id": "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::test_root_owned_platform_alias_preserves_install_and_export",
       "owner_lane": "core-macos-3.14",
       "reason": "root-owned /var alias contract is macOS-only"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
     }
   ],
   "schema_version": "agent-wiki-release-skip-allowlist/v1"

@@ -49,6 +49,8 @@ from .api_types import (
     WikiPage,
     WikiPageCounts,
     WikiPagesResult,
+    SearchResult,
+    MaintenanceQueueResult,
 )
 from .config import (
     DEFAULT_WIKI_DIR,
@@ -57,8 +59,13 @@ from .config import (
     validate_source_root,
 )
 from .services import context_packet as context_packet_service
-from .services.context_budget import BudgetedContext
-from .services.token_counting import TokenCounter
+from .services.context_budget import BudgetedContext as BudgetedContext
+from .services.token_counting import TokenCounter as TokenCounter
+from .services.workflow_profile import (
+    WorkflowProfile as WorkflowProfile, WorkflowPolicy as WorkflowPolicy, WorkflowRequestError,
+)
+from .services.task_contract import TaskContext as TaskContext
+from .services.context_session import ContextSession as _ContextSession, SessionReply as SessionReply
 from .services.context_knowledge_contract import (
     KNOWLEDGE_MODE_REQUEST_FIELD,
     KNOWLEDGE_MODE_VALUES,
@@ -565,8 +572,11 @@ def _calibration_error_category(exc: Exception) -> str | None:
 def _raise_api_error(exc: Exception) -> NoReturn:
     """Translate one internal exception at the supported API boundary."""
 
+    _raise_required_knowledge_api_error(exc)
     if isinstance(exc, context_packet_service.ContextPacketError):
         _raise_context_packet_api_error(exc)
+    if isinstance(exc, WorkflowRequestError):
+        raise InvalidRequestError(str(exc), code="invalid-request", details={"field": exc.field}) from exc
     for leaf in _API_ERROR_LEAVES:
         if isinstance(exc, leaf):
             raise leaf(str(exc)) from exc
@@ -695,6 +705,7 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
 def _raise_native_query_api_error(exc: Exception) -> NoReturn:
     """Retain public catch points while exposing only fixed query diagnostics."""
     from .services.knowledge_loader import KnowledgeStateLoadError
+    from .services.knowledge_storage import KnowledgeStorageError
     from .services.validation import require_portable_relative_path
 
     chain: list[BaseException] = []
@@ -761,6 +772,7 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
         load_error = next(
             (item for item in chain if isinstance(item, KnowledgeStateLoadError)), None
         )
+        storage_error = next((item for item in chain if isinstance(item, KnowledgeStorageError)), None)
         if mutation is not None:
             leaf, code = WorkspaceStateError, "context-read-mutated"
             field = "wiki_dir" if mutation.facet == "wiki" else "src_dir"
@@ -778,6 +790,14 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
             for item in chain
         ):
             leaf, code = WorkspaceStateError, "workspace-state-error"
+        elif storage_error is not None:
+            field = "wiki_dir"
+            if storage_error.code == "storage-mutation":
+                leaf, code = WorkspaceStateError, "context-read-mutated"
+            elif storage_error.code in {"storage-budget-exhausted", "storage-limit"}:
+                leaf, code, field = WorkspaceStateError, "workspace-state-error", "max_wiki_bytes"
+            else:
+                leaf, code = ArtifactIntegrityError, "artifact-integrity-error"
         elif load_error is not None:
             missing = all(
                 issue.code == "artifact-absent" for issue in load_error.issues
@@ -1255,6 +1275,145 @@ def build_budgeted_context(
         src_dir, wiki_dir, request, counter=counter,
         allow_external_src=allow_external_src, source_selection=source_selection,
     )
+
+
+@_api_boundary
+def search_wiki(
+    query: str, *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
+    kinds: list[str] | None = None, limit: int = 20,
+    mode: Literal["ranked", "substring"] = "ranked",
+    source_selection: str | Path | None = None, allow_external_src: bool = False,
+) -> SearchResult:
+    """Search canonical wiki pages with bounded, deterministic lexical ranking."""
+    from .services.search_service import search_wiki as search
+
+    return cast(SearchResult, search(query, src_dir=src_dir, wiki_dir=wiki_dir,
+                kinds=kinds, limit=limit, mode=mode, source_selection=source_selection,
+                allow_external_src=allow_external_src))
+
+
+@_api_boundary
+def validate_budgeted_context(
+    rendered: str, request: Mapping[str, Any], *, counter: TokenCounter,
+) -> dict[str, Any]:
+    """Validate a v3 canonical response and its declared accounting boundary."""
+    from .services.context_budget import validate_budgeted_context as validate
+
+    return validate(rendered, request, counter=counter)
+
+
+@_api_boundary
+def load_workflow_profile(
+    path: str | Path, *, policy: WorkflowPolicy | None = None,
+) -> WorkflowProfile:
+    """Load an explicitly selected profile within trusted host ceilings."""
+    from .services.workflow_profile import load_profile
+
+    return load_profile(path, policy=policy)
+
+
+@_api_boundary
+def build_task_context(
+    request: Mapping[str, Any], *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
+    profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+    allow_external_src: bool = False, source_selection: str | Path | None = None,
+    helper_cache_dir: str | None = None, cancelled: Callable[[], bool] | None = None,
+) -> TaskContext:
+    """Compose bounded qualified evidence; coverage does not mean task correctness."""
+    from .services.task_context import build_task_context as build
+
+    return build(request, src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy,
+                 counter=counter, allow_external_src=allow_external_src, source_selection=source_selection,
+                 helper_cache_dir=helper_cache_dir, cancelled=cancelled)
+
+
+@_api_boundary
+def validate_task_context(
+    rendered: str, request: Mapping[str, Any], *,
+    profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+) -> dict[str, Any]:
+    """Validate task/request binding, evidence coverage, packet and accounting."""
+    from .services.task_context import validate_task_context as validate
+
+    return validate(rendered, request, profile=profile, policy=policy, counter=counter)
+
+
+@_api_boundary
+def reconcile_task_context(
+    rendered: str, request: Mapping[str, Any], *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
+    profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+    allow_external_src: bool = False, source_selection: str | Path | None = None,
+    helper_cache_dir: str | None = None,
+) -> dict[str, Any]:
+    """Validate saved task context and reconcile through one fresh scoped read."""
+    from .services.task_context import reconcile_task_context as reconcile
+
+    return reconcile(rendered, request, src_dir=src_dir, wiki_dir=wiki_dir, profile=profile,
+        policy=policy, counter=counter, allow_external_src=allow_external_src,
+        source_selection=source_selection, helper_cache_dir=helper_cache_dir)
+
+
+class ContextSession(_ContextSession):
+    """Explicit disposable reuse, with the public API error contract."""
+
+    @_api_boundary
+    def read(self, request: Mapping[str, Any], *, if_result_id: str | None = None,
+             delta: bool = False, reuse: bool = True,
+             cancelled: Callable[[], bool] | None = None) -> SessionReply:
+        return super().read(request, if_result_id=if_result_id, delta=delta, reuse=reuse, cancelled=cancelled)
+
+    @_api_boundary
+    def hint(self, *, unsaved_buffers: bool = False) -> None:
+        super().hint(unsaved_buffers=unsaved_buffers)
+
+    @_api_boundary
+    def close(self) -> None:
+        super().close()
+
+
+@_api_boundary
+def open_context_session(
+    *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
+    profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+    source_selection: str | Path | None = None, helper_cache_dir: str | None = None,
+    allow_external_src: bool = False, max_entries: int = 8,
+    max_bytes: int = 16_777_216, ttl_seconds: float = 300,
+) -> ContextSession:
+    """Create an explicitly owned, bounded, in-memory context session."""
+    return ContextSession(src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy,
+        counter=counter, source_selection=source_selection, helper_cache_dir=helper_cache_dir,
+        allow_external_src=allow_external_src, max_entries=max_entries, max_bytes=max_bytes,
+        ttl_seconds=ttl_seconds)
+
+
+@_api_boundary
+def apply_task_delta(
+    base: str, delta: Mapping[str, Any], request: Mapping[str, Any], *,
+    profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+) -> TaskContext:
+    """Reconstruct and validate a delta against its exact canonical base."""
+    from .services.context_session import apply_task_delta as apply
+
+    return apply(base, delta, request, profile=profile, policy=policy, counter=counter)
+
+
+@_api_boundary
+def build_maintenance_queue(
+    src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR, *, limit: int = 30,
+    allow_external_src: bool = False, source_selection: str | Path | None = None,
+    helper_cache_dir: str | None = None,
+) -> MaintenanceQueueResult:
+    """Return advisory maintenance evidence without applying recommendations."""
+    from .services.maintenance_queue import build_maintenance_queue as build
+
+    return cast(MaintenanceQueueResult, build(src_dir, wiki_dir, limit=limit,
+                allow_external_src=allow_external_src, source_selection=source_selection,
+                helper_cache_dir=helper_cache_dir))
 
 
 @_api_boundary
@@ -2246,7 +2405,20 @@ def _validate_documentation_query_request(
             code="invalid-request",
             details={"field": unknown[0]},
         )
-    return operation, _normalize_query_limit(request.get("limit", 20))
+    limit = _normalize_query_limit(request.get("limit", 20))
+    # Operation-specific transport fields are input validation, not part of
+    # loading the query service. Reject them before any workspace access.
+    if operation == "related":
+        _normalize_query_choice(request.get("direction", "both"), field="direction", allowed=_KNOWLEDGE_QUERY_DIRECTIONS)
+        _normalize_query_values(request.get("kinds"), field="kinds", allowed=_KNOWLEDGE_QUERY_KINDS)
+    elif operation == "typed":
+        _normalize_query_choice(request.get("direction", "both"), field="direction", allowed=_TYPED_QUERY_DIRECTIONS)
+        _normalize_query_values(request.get("kinds"), field="kinds", allowed=tuple(CORE_RELATIONSHIP_KINDS), allow_qualified=True)
+        _normalize_query_values(request.get("origins"), field="origins", allowed=tuple(GRAPH_ORIGINS))
+        _normalize_query_values(request.get("resolutions"), field="resolutions", allowed=tuple(GRAPH_RESOLUTIONS))
+        if type(request.get("include_evidence", False)) is not bool:
+            raise InvalidRequestError("include_evidence must be a boolean.", code="invalid-request", details={"field": "include_evidence"})
+    return operation, limit
 
 
 def _require_full_inventory_opt_in(request: Mapping[str, Any]) -> None:

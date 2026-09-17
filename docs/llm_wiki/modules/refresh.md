@@ -13,6 +13,7 @@ Documentation-run refresh services.
 | `..knowledge_consumption` | `load_knowledge_read_view` |
 | `..knowledge_observability` | `knowledge_freshness_disclosure` |
 | `..markdown_sections` | `preserve_index_custom_sections` |
+| `..sync_manifest` | `SyncManifest` |
 | `.contracts` | `*` |
 | `.dependencies` | `*` |
 | `.integrity` | `*` |
@@ -39,9 +40,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (5) |
-| Outbound | `src` (8) |
+| Outbound | `src` (9) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

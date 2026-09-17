@@ -1,6 +1,6 @@
 # McpServerConfig
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:236`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:240`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -24,6 +24,12 @@ _Auto-generated from `McpServerConfig` in `src/llm_wiki_cli/services/mcp_server.
 | `allowed_origins` | `tuple[str, ...]` | `field(default_factory=tuple)` | — |
 | `source_selection` | `str \| None` | `None` | — |
 | `allow_external_src` | `bool` | `False` | — |
+| `counter` | `TokenCounter \| None` | `None` | — |
+| `tokenizer` | `str \| None` | `None` | — |
+| `workflow_policy` | `WorkflowPolicy \| None` | `None` | — |
+| `workflow_profile` | `WorkflowProfile \| None` | `None` | — |
+| `enable_sessions` | `bool` | `False` | — |
+| `max_sessions` | `int` | `8` | — |
 
 ## Methods
 
@@ -48,7 +54,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 0 | `allow_external_src`, `allowed_origins`, `host`, `path`, `port`, `source_selection`, `src_dir`, `transport`, `wiki_dir` |
+| [mcp_server](../modules/mcp_server.md) | 0 | `allow_external_src`, `allowed_origins`, `counter`, `enable_sessions`, `host`, `max_sessions`, `path`, `port`, `source_selection`, `src_dir`, `tokenizer`, `transport` |
 
 ### References
 

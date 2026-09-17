@@ -1,6 +1,6 @@
 # GitIgnoreMatcher
 
-**Location:** `src/llm_wiki_cli/config.py:381`
+**Location:** `src/llm_wiki_cli/config.py:383`
 **Kind:** Class
 **Bases:** —
 **Module:** [config](../modules/config.md)

@@ -171,6 +171,7 @@ class RuntimeKnowledgeInputs:
         default=None, repr=False, compare=False
     )
     reuse_input_basis: Mapping[str, object] | None = None
+    knowledge_format: str | None = None
 
 
 @dataclass(frozen=True)
@@ -222,6 +223,7 @@ def capture_committed_knowledge(
 ) -> CommittedKnowledgeState:
     from .immutable import freeze
     from .knowledge_artifacts import _decode_json_object
+    from .knowledge_storage_io import read_guarded
 
     root = Path(wiki_dir).resolve()
     captured = {}
@@ -235,7 +237,8 @@ def capture_committed_knowledge(
     if manifest is not None and manifest.artifact_hashes is not None:
         try:
             recorded_manifest = SyncManifest.from_payload(
-                _decode_json_object(captured[MANIFEST_FILENAME], "manifest")
+                _decode_json_object(captured[MANIFEST_FILENAME], "manifest"),
+                object_reader=lambda name, maximum: read_guarded(root / name, maximum).content,
             )
             if recorded_manifest.to_payload() != manifest.to_payload():
                 manifest_changed = True
@@ -246,7 +249,9 @@ def capture_committed_knowledge(
                 surface_index_bytes=captured[SURFACE_INDEX_FILENAME],
                 knowledge_index_bytes=captured[KNOWLEDGE_INDEX_FILENAME],
                 manifest=recorded_manifest,
+                wiki_dir=root,
             )
+            captured.update(candidate.storage_objects)
             marker = recorded_manifest.artifact_hashes
             if marker is not None and (
                 candidate.surface_index_hash == marker.surface_index_hash
@@ -412,6 +417,7 @@ def build_runtime_knowledge_plan(
     return _stabilize_revision_only_noop(
         inputs,
         KnowledgeGenerationInputs(
+            prior_artifacts=committed_state.artifacts,
             wiki_dir=inputs.target_wiki_dir,
             inventory=inputs.inventory,
             pages=inputs.surface.pages,
@@ -467,6 +473,7 @@ def build_runtime_knowledge_plan(
             graph_evidence_limit=inputs.graph_evidence_limit,
             governance=governance,
             reuse_input_basis=inputs.reuse_input_basis,
+            knowledge_format=inputs.knowledge_format,
         ),
     )
 

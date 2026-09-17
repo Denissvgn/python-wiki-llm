@@ -28,12 +28,12 @@ sequenceDiagram
     participant p16 as _require_selection_path
     participant p17 as require_repository_relative_path
     participant p18 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p19 as value.strip
-    participant p20 as any (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p21 as ord
-    participant p22 as value.startswith
-    participant p23 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p24 as value.split
+    participant p19 as _syntax_key
+    participant p20 as _known_syntax
+    participant p21 as value.strip
+    participant p22 as any (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p23 as ord
+    participant p24 as value.startswith
     p0->>p1: _resolve_openapi_path
     p1-->>p2: Path(…).resolve
     p1-->>p3: Path
@@ -56,17 +56,17 @@ sequenceDiagram
     p15->>p16: _require_selection_path
     p16->>p17: require_repository_relative_path
     p17-->>p18: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
-    p17-->>p19: value.strip
-    p17-->>p20: any (src/llm_wiki_cli/services…e_repository_relative_path)
-    p17-->>p21: ord
-    p17-->>p21: ord
-    p17-->>p22: value.startswith
-    p17-->>p22: value.startswith
-    p17-->>p23: _WINDOWS_DRIVE_PREFIX_RE.match
-    p17-->>p24: value.split
+    p17->>p19: _syntax_key
+    p17->>p20: _known_syntax
+    p17-->>p21: value.strip
+    p17-->>p22: any (src/llm_wiki_cli/services…e_repository_relative_path)
+    p17-->>p23: ord
+    p17-->>p23: ord
+    p17-->>p24: value.startswith
+    p17-->>p24: value.startswith
 ```
 
-> Call sequence diagram shows 30 of 95 interactions; 65 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 98 interactions; 68 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

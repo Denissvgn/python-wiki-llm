@@ -63,7 +63,7 @@ sequenceDiagram
     p8-->>p21: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
 ```
 
-> Call sequence diagram shows 30 of 127 interactions; 97 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 129 interactions; 99 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -141,7 +141,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 72 |
+| output | `print` | `run` | 74 |
 
 ### Static analysis gaps
 

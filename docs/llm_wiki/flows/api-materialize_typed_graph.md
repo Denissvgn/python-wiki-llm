@@ -30,8 +30,8 @@ sequenceDiagram
     participant p10 as require_nonempty_text
     participant p11 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p12 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p13 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p14 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p13 as contains_control_character
+    participant p14 as pattern.search
     participant p15 as validate_exact_page_coordinate
     participant p16 as isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)
     participant p17 as value.strip (src/llm_wiki_cli/services…ate_exact_page_coordinate)
@@ -56,9 +56,8 @@ sequenceDiagram
     p9->>p10: require_nonempty_text
     p10-->>p11: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p10-->>p12: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p13: any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
+    p10->>p13: contains_control_character
+    p13-->>p14: pattern.search
     p9->>p3: KnowledgeGraphError
     p8->>p15: validate_exact_page_coordinate
     p15-->>p16: isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)
@@ -68,9 +67,10 @@ sequenceDiagram
     p15-->>p19: any (src/llm_wiki_cli/services…ate_exact_page_coordinate)
     p15-->>p20: ord (src/llm_wiki_cli/services…ate_exact_page_coordinate)
     p15-->>p20: ord (src/llm_wiki_cli/services…ate_exact_page_coordinate)
+    p15->>p18: WikiSurfaceError
 ```
 
-> Call sequence diagram shows 30 of 862 interactions; 832 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 867 interactions; 837 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -145,19 +145,19 @@ flowchart LR
 | materialize_typed_graph | isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph) | 322 | `isinstance(inputs.evidence_limit, int)` |
 | materialize_typed_graph | KnowledgeGraphError | 325 | `KnowledgeGraphError('evidence_limit', ...)` |
 | materialize_typed_graph | _normalise_graph_concepts | 329 | `_normalise_graph_concepts(inputs.concepts)` |
-| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1223 | `isinstance(values, (...))` |
-| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1223 | `isinstance(values, Sequence)` |
-| _normalise_graph_concepts | KnowledgeGraphError | 1224 | `KnowledgeGraphError('concepts', 'must be a sequence')` |
-| _normalise_graph_concepts | set (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1226 | `set(data not statically known)` |
-| _normalise_graph_concepts | enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1227 | `enumerate(values)` |
+| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1236 | `isinstance(values, (...))` |
+| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1236 | `isinstance(values, Sequence)` |
+| _normalise_graph_concepts | KnowledgeGraphError | 1237 | `KnowledgeGraphError('concepts', 'must be a sequence')` |
+| _normalise_graph_concepts | set (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1239 | `set(data not statically known)` |
+| _normalise_graph_concepts | enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1240 | `enumerate(values)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `_normalise_graph_concepts` | 1234 |
-| mutation | `concepts.append` | `_normalise_graph_concepts` | 1254 |
-| mutation | `concepts.sort` | `_normalise_graph_concepts` | 1264 |
+| mutation | `seen.add` | `_normalise_graph_concepts` | 1247 |
+| mutation | `concepts.append` | `_normalise_graph_concepts` | 1267 |
+| mutation | `concepts.sort` | `_normalise_graph_concepts` | 1277 |
 
 ### Static analysis gaps
 
@@ -167,8 +167,8 @@ flowchart LR
 | external_call | `materialize_typed_graph` | `TypeError` | 319 |
 | external_call | `materialize_typed_graph` | `isinstance` | 321 |
 | external_call | `materialize_typed_graph` | `isinstance` | 322 |
-| external_call | `_normalise_graph_concepts` | `isinstance` | 1223 |
-| external_call | `_normalise_graph_concepts` | `enumerate` | 1227 |
+| external_call | `_normalise_graph_concepts` | `isinstance` | 1236 |
+| external_call | `_normalise_graph_concepts` | `enumerate` | 1240 |
 | step_limit | `materialize_typed_graph` | `first 12 steps` | 0 |
 | truncated_flow | `materialize_typed_graph` | `depth limit` | 0 |
 

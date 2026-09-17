@@ -133,10 +133,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| guarded_tree_manifest | Path (src/llm_wiki_cli/services….py:guarded_tree_manifest) | 1509 | `Path(path)` |
-| guarded_tree_manifest | target.is_absolute | 1510 | `target.is_absolute(data not statically known)` |
-| guarded_tree_manifest | OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest) | 1511 | `OSError(...)` |
-| guarded_tree_manifest | guard_windows_directory_chain | 1513 | `guard_windows_directory_chain(Path(...), ...)` |
+| guarded_tree_manifest | Path (src/llm_wiki_cli/services….py:guarded_tree_manifest) | 1521 | `Path(path)` |
+| guarded_tree_manifest | target.is_absolute | 1522 | `target.is_absolute(data not statically known)` |
+| guarded_tree_manifest | OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest) | 1523 | `OSError(...)` |
+| guarded_tree_manifest | guard_windows_directory_chain | 1525 | `guard_windows_directory_chain(Path(...), ...)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 | guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
 | guard_windows_directory_chain | os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
@@ -157,8 +157,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `guarded_tree_manifest` | `target.is_absolute` | 1510 |
-| external_call | `guarded_tree_manifest` | `OSError` | 1511 |
+| unresolved_call | `guarded_tree_manifest` | `target.is_absolute` | 1522 |
+| external_call | `guarded_tree_manifest` | `OSError` | 1523 |
 | external_call | `guard_windows_directory_chain` | `os.path.abspath` | 174 |
 | external_call | `guard_windows_directory_chain` | `os.fspath` | 174 |
 | step_limit | `guarded_tree_manifest` | `first 12 steps` | 0 |

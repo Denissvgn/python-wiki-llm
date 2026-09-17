@@ -19,12 +19,12 @@ filesystem reads are the target-state comparisons performed by
 |--------|---------|
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
-| `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `validate_surface_index_bytes` |
+| `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes` |
 | `.knowledge_envelope` | `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record` |
 | `.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
 | `.knowledge_graph` | `DEFAULT_EVIDENCE_LIMIT`, `GraphConcept`, `KnowledgeGraphError`, `KnowledgeGraphInputs`, `materialize_typed_graph` |
-| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `serialize_knowledge_index` |
+| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index` |
 | `.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
 | `.knowledge_model` | `ProducerRecord`, `concept_kind_for_page_kind` |
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `bind_reuse_commitment` |

@@ -30,9 +30,10 @@ sequenceDiagram
     participant p10 as require_nonempty_text
     participant p11 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p12 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p13 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p14 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p15 as _SHA256_RE.fullmatch
+    participant p13 as contains_control_character
+    participant p14 as _SHA256_RE.fullmatch
+    participant p15 as _require_mapping
+    participant p16 as require_mapping
     p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
     p0->>p2: KnowledgeProjectionError
     p0->>p2: KnowledgeProjectionError
@@ -58,14 +59,14 @@ sequenceDiagram
     p9->>p10: require_nonempty_text
     p10-->>p11: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p10-->>p12: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p13: any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p14: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p7-->>p15: _SHA256_RE.fullmatch
+    p10->>p13: contains_control_character
+    p7-->>p14: _SHA256_RE.fullmatch
     p6->>p2: KnowledgeProjectionError
+    p4->>p15: _require_mapping
+    p15->>p16: require_mapping
 ```
 
-> Call sequence diagram shows 30 of 688 interactions; 658 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 700 interactions; 670 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -62,12 +62,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_mapping_list | require_list | 1015 | `require_list(value, error=error)` |
-| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 764 | `isinstance(value, list)` |
-| require_mapping_list | require_mapping | 1017 | `require_mapping(item, error=..., require_string_keys=require_string_keys)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| require_mapping_list | require_list | 1053 | `require_list(value, error=error)` |
+| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 802 | `isinstance(value, list)` |
+| require_mapping_list | require_mapping | 1055 | `require_mapping(item, error=..., require_string_keys=require_string_keys)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…idation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -77,10 +77,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_list` | `isinstance` | 764 |
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| external_call | `require_list` | `isinstance` | 802 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
 
 ## Behavior
 

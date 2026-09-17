@@ -132,11 +132,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| ensure_guarded_directory | Path (src/llm_wiki_cli/services…:ensure_guarded_directory) | 1631 | `Path(path)` |
-| ensure_guarded_directory | target.is_absolute | 1632 | `target.is_absolute(data not statically known)` |
-| ensure_guarded_directory | OSError | 1633 | `OSError(...)` |
-| ensure_guarded_directory | Path (src/llm_wiki_cli/services…:ensure_guarded_directory) | 1634 | `Path(target.anchor)` |
-| ensure_guarded_directory | guard_windows_directory_chain | 1637 | `guard_windows_directory_chain(Path(...), ..., create_missing=True)` |
+| ensure_guarded_directory | Path (src/llm_wiki_cli/services…:ensure_guarded_directory) | 1643 | `Path(path)` |
+| ensure_guarded_directory | target.is_absolute | 1644 | `target.is_absolute(data not statically known)` |
+| ensure_guarded_directory | OSError | 1645 | `OSError(...)` |
+| ensure_guarded_directory | Path (src/llm_wiki_cli/services…:ensure_guarded_directory) | 1646 | `Path(target.anchor)` |
+| ensure_guarded_directory | guard_windows_directory_chain | 1649 | `guard_windows_directory_chain(Path(...), ..., create_missing=True)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 | guard_windows_directory_chain | Path (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `Path(os.path.abspath(...))` |
 | guard_windows_directory_chain | os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain) | 174 | `os.path.abspath(os.fspath(...))` |
@@ -156,8 +156,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `ensure_guarded_directory` | `target.is_absolute` | 1632 |
-| external_call | `ensure_guarded_directory` | `OSError` | 1633 |
+| unresolved_call | `ensure_guarded_directory` | `target.is_absolute` | 1644 |
+| external_call | `ensure_guarded_directory` | `OSError` | 1645 |
 | external_call | `guard_windows_directory_chain` | `os.path.abspath` | 174 |
 | external_call | `guard_windows_directory_chain` | `os.fspath` | 174 |
 | step_limit | `ensure_guarded_directory` | `first 12 steps` | 0 |

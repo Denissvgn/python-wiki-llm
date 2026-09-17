@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 45 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 48 more
 
 **Complete modules touched:**
 
@@ -34,6 +34,9 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [module_maps](../modules/module_maps.md)
 - [packages](../modules/packages.md)
@@ -116,7 +119,7 @@ sequenceDiagram
     p20-->>p22: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 4486 interactions; 4456 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4560 interactions; 4530 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -180,33 +183,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6355 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4459 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4460 | `validate_path(str(...), '--wiki-dir')` |
-| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4460 | `str(wiki_dir)` |
+| run | _bootstrap_run_options_from_args | 6359 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4460 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4461 | `validate_path(str(...), '--wiki-dir')` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
+| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4461 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6361 |
+| output | `print` | `run` | 6365 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
-| external_call | `validate_path` | `Path.cwd` | 133 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

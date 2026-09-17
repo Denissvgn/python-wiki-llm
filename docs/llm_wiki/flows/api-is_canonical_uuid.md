@@ -16,8 +16,8 @@ sequenceDiagram
     participant p4 as require_nonempty_text
     participant p5 as isinstance
     participant p6 as value.strip
-    participant p7 as any
-    participant p8 as ord
+    participant p7 as contains_control_character
+    participant p8 as pattern.search
     participant p9 as str
     participant p10 as uuid.UUID
     p0->>p1: SharedValidationError
@@ -26,9 +26,8 @@ sequenceDiagram
     p3->>p4: require_nonempty_text
     p4-->>p5: isinstance
     p4-->>p6: value.strip
-    p4-->>p7: any
-    p4-->>p8: ord
-    p4-->>p8: ord
+    p4->>p7: contains_control_character
+    p7-->>p8: pattern.search
     p2-->>p9: str
     p2-->>p10: uuid.UUID
 ```
@@ -45,27 +44,26 @@ flowchart LR
     s5["5. require_nonempty_text"]
     s6["6. isinstance"]
     s7["7. value.strip"]
-    s8["8. any"]
-    s9["9. ord"]
-    s10["10. ord"]
-    s11["11. str"]
-    s12["12. uuid.UUID"]
+    s8["8. contains_control_character"]
+    s9["9. pattern.search"]
+    s10["10. str"]
+    s11["11. uuid.UUID"]
     s1 -->|"SharedValidationError('value must be a canonical UUID')"| s2
     s1 -->|"require_uuid(value, text_error=error, uuid_error=error, canonical_error=error)"| s3
     s3 -->|"require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)"| s4
     s4 -->|"require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)"| s5
     s5 -. "isinstance(value, str)" .-> s6
     s5 -. "value.strip(data not statically known)" .-> s7
-    s5 -. "any(...)" .-> s8
-    s5 -. "ord(character)" .-> s9
-    s5 -. "ord(character)" .-> s10
-    s3 -. "str(uuid.UUID(...))" .-> s11
-    s3 -. "uuid.UUID(parsed)" .-> s12
+    s5 -->|"contains_control_character(parsed, reject_delete_character=reject_delete_character)"| s8
+    s8 -. "pattern.search(value)" .-> s9
+    s3 -. "str(uuid.UUID(...))" .-> s10
+    s3 -. "uuid.UUID(parsed)" .-> s11
     click s1 "../modules/validation.md"
     click s2 "../modules/validation.md"
     click s3 "../modules/validation.md"
     click s4 "../modules/validation.md"
     click s5 "../modules/validation.md"
+    click s8 "../modules/validation.md"
 ```
 
 ### Step data
@@ -79,9 +77,8 @@ flowchart LR
 | `require_nonempty_text` | `value: object`, `error: Exception`, `trim_error: Exception \| None`, `normalize: bool`, `require_trimmed: bool`, `reject_control_characters: bool`, `reject_delete_character: bool` | - | - | `parsed` |
 | `isinstance` | - | - | - | - |
 | `value.strip` | - | - | - | - |
-| `any` | - | - | - | - |
-| `ord` | - | - | - | - |
-| `ord` | - | - | - | - |
+| `contains_control_character` | `value: str`, `reject_delete_character: bool` | `_ASCII_CONTROL_DELETE`, `_ASCII_CONTROL` | - | `...` |
+| `pattern.search` | - | - | - | - |
 | `str` | - | - | - | - |
 | `uuid.UUID` | - | - | - | - |
 
@@ -89,17 +86,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_canonical_uuid | SharedValidationError | 1143 | `SharedValidationError('value must be a canonical UUID')` |
-| is_canonical_uuid | require_uuid | 1145 | `require_uuid(value, text_error=error, uuid_error=error, canonical_error=error)` |
-| require_uuid | require_trimmed_text | 1126 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
-| require_trimmed_text | require_nonempty_text | 658 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance | 574 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 576 | `value.strip(data not statically known)` |
-| require_nonempty_text | any | 582 | `any(...)` |
-| require_nonempty_text | ord | 583 | `ord(character)` |
-| require_nonempty_text | ord | 584 | `ord(character)` |
-| require_uuid | str | 1132 | `str(uuid.UUID(...))` |
-| require_uuid | uuid.UUID | 1132 | `uuid.UUID(parsed)` |
+| is_canonical_uuid | SharedValidationError | 1181 | `SharedValidationError('value must be a canonical UUID')` |
+| is_canonical_uuid | require_uuid | 1183 | `require_uuid(value, text_error=error, uuid_error=error, canonical_error=error)` |
+| require_uuid | require_trimmed_text | 1164 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
+| require_trimmed_text | require_nonempty_text | 696 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance | 623 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_uuid | str | 1170 | `str(uuid.UUID(...))` |
+| require_uuid | uuid.UUID | 1170 | `uuid.UUID(parsed)` |
 
 ### Boundary effects
 
@@ -109,12 +105,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 574 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 576 |
-| external_call | `require_nonempty_text` | `any` | 582 |
-| external_call | `require_nonempty_text` | `ord` | 583 |
-| external_call | `require_nonempty_text` | `ord` | 584 |
-| external_call | `require_uuid` | `uuid.UUID` | 1132 |
+| external_call | `require_nonempty_text` | `isinstance` | 623 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_uuid` | `uuid.UUID` | 1170 |
 
 ## Behavior
 

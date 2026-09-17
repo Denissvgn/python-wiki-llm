@@ -1,6 +1,6 @@
 # ReferenceSkillState
 
-**Location:** `src/llm_wiki_cli/services/skills.py:114`
+**Location:** `src/llm_wiki_cli/services/skills.py:115`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [skills](../modules/skills.md)

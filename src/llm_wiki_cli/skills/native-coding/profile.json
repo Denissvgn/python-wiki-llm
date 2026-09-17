@@ -1,0 +1,17 @@
+{
+  "schema_version": "llm-wiki-workflow-profile/v1",
+  "settings": {
+    "knowledge_mode": "auto",
+    "prefer_fresh": true,
+    "read_scope": "selected",
+    "budget_mode": "estimated",
+    "budget_tokens": 32000,
+    "max_files": 64,
+    "max_source_bytes": 8388608,
+    "max_wiki_bytes": 8388608,
+    "max_read_rounds": 4,
+    "max_graph_items": 100,
+    "max_followups": 4,
+    "max_retries": 1
+  }
+}

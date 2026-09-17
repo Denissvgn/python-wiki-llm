@@ -6,9 +6,10 @@
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
-1. `knowledge_model.serialize_knowledge_index`
-2. `knowledge_artifacts.validate_knowledge_artifacts`
-3. `knowledge_evidence.sha256_bytes`
+1. `knowledge_artifacts.require_validated_artifacts`
+2. `knowledge_model.serialize_knowledge_index`
+3. `knowledge_artifacts.validate_knowledge_artifacts`
+4. `knowledge_evidence.sha256_bytes`
 
 ## Touches
 

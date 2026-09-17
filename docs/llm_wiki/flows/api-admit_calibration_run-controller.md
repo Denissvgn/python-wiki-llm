@@ -76,7 +76,7 @@ sequenceDiagram
     p22-->>p23: tuple (src/llm_wiki_cli/services…:format_field_differences)
 ```
 
-> Call sequence diagram shows 30 of 1927 interactions; 1897 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1925 interactions; 1895 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

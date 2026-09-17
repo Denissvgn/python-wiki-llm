@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 25 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 28 more
 
 **Complete modules touched:**
 
@@ -22,6 +22,9 @@
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
@@ -101,7 +104,7 @@ sequenceDiagram
     p21-->>p27: os.fdopen
 ```
 
-> Call sequence diagram shows 30 of 2142 interactions; 2112 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2214 interactions; 2184 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -175,13 +178,13 @@ flowchart LR
 | run | _run_init | 264 | `_run_init(args)` |
 | _run_init | getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init) | 61 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | _run_init | validate_path | 62 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
 
 ### Boundary effects
 
@@ -197,11 +200,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 262 |
 | external_call | `_run_init` | `getattr` | 61 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
-| external_call | `validate_path` | `Path.cwd` | 133 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

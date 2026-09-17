@@ -117,17 +117,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| open_windows_guarded_lock_file | WindowsFileGuardError | 613 | `WindowsFileGuardError('Guarded Windows lock files are unavailable on this platform.')` |
-| open_windows_guarded_lock_file | ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file) | 618 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| open_windows_guarded_lock_file | _private_windows_security_attributes | 632 | `_private_windows_security_attributes(directory=False)` |
-| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 943 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 944 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 949 | `ctypes.POINTER(wintypes.LPVOID)` |
-| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 950 | `ctypes.POINTER(wintypes.DWORD)` |
-| _private_windows_security_attributes | _current_windows_user_sid | 964 | `_current_windows_user_sid(data not statically known)` |
-| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 992 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 993 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid) | 998 | `ctypes.POINTER(wintypes.HANDLE)` |
+| open_windows_guarded_lock_file | WindowsFileGuardError | 625 | `WindowsFileGuardError('Guarded Windows lock files are unavailable on this platform.')` |
+| open_windows_guarded_lock_file | ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file) | 630 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| open_windows_guarded_lock_file | _private_windows_security_attributes | 644 | `_private_windows_security_attributes(directory=False)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 955 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 956 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 961 | `ctypes.POINTER(wintypes.LPVOID)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 962 | `ctypes.POINTER(wintypes.DWORD)` |
+| _private_windows_security_attributes | _current_windows_user_sid | 976 | `_current_windows_user_sid(data not statically known)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 1004 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 1005 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _current_windows_user_sid | ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid) | 1010 | `ctypes.POINTER(wintypes.HANDLE)` |
 
 ### Boundary effects
 
@@ -137,14 +137,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `open_windows_guarded_lock_file` | `ctypes.WinDLL` | 618 |
-| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 943 |
-| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 944 |
-| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 949 |
-| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 950 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 992 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 993 |
-| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 998 |
+| external_call | `open_windows_guarded_lock_file` | `ctypes.WinDLL` | 630 |
+| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 955 |
+| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 956 |
+| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 961 |
+| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 962 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 1004 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 1005 |
+| external_call | `_current_windows_user_sid` | `ctypes.POINTER` | 1010 |
 | step_limit | `open_windows_guarded_lock_file` | `first 12 steps` | 0 |
 
 ## Behavior

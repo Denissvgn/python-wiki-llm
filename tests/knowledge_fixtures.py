@@ -1460,7 +1460,7 @@ def load_state_fixtures() -> tuple[ProjectionFixture, ...]:
     schema_invalid_payload["concepts"] = "not-an-array"
     schema_invalid = _canonical_json_bytes(schema_invalid_payload)
     unsupported = knowledge.replace(
-        b'"llm-wiki-knowledge/v1"', b'"llm-wiki-knowledge/v2"', 1
+        b'"llm-wiki-knowledge/v1"', b'"llm-wiki-knowledge/v99"', 1
     )
     return (
         ProjectionFixture(

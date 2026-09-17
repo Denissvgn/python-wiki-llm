@@ -1,6 +1,6 @@
 # ResultBounds
 
-**Location:** `src/llm_wiki_cli/api_types.py:38`
+**Location:** `src/llm_wiki_cli/api_types.py:115`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

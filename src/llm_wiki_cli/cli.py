@@ -21,6 +21,7 @@ from .commands import (
     plugins_cmd,
     prepare_extractors_cmd,
     queue_cmd,
+    query_cmd,
     release_cmd,
     review_cmd,
     search_cmd,
@@ -29,6 +30,7 @@ from .commands import (
     status_cmd,
     sync_cmd,
     team_cmd,
+    task_cmd,
     trigger_cmd,
     uninstall_cmd,
     upgrade_cmd,
@@ -183,6 +185,8 @@ _COMMAND_MODULES = {
     "docs": docs_cmd,
     "doctor": doctor_cmd,
     "queue": queue_cmd,
+    "query": query_cmd,
+    "task-context": task_cmd,
 }
 
 HELPER_CACHE_HELP = (
@@ -223,6 +227,30 @@ def _build_parser():
     return parser
 
 
+def _add_query_command(subparsers):
+    parser = subparsers.add_parser("query", help="Run an exact documentation query")
+    parser.add_argument("--request", required=True, help="JSON request file, or - for stdin (1 MiB maximum)")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--output", help="Write the JSON response to this file")
+    _add_source_selection_argument(parser)
+
+
+def _add_task_context_command(subparsers):
+    parser = subparsers.add_parser("task-context", help="Build bounded qualified context for an explicit task")
+    parser.add_argument("--request", required=True, help="JSON request file, or - for stdin")
+    parser.add_argument("--src-dir", default=".")
+    parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+    parser.add_argument("--profile", help="Explicit workflow profile JSON")
+    parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON")
+    parser.add_argument("--allow-external-src", action="store_true")
+    parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
+    parser.add_argument("--output", help="Write canonical context to this file")
+    _add_source_selection_argument(parser)
+    _add_helper_cache_argument(parser)
+
+
 def _register_commands(subparsers):
     _add_init_command(subparsers)
     _add_extract_command(subparsers)
@@ -245,6 +273,8 @@ def _register_commands(subparsers):
     _add_uninstall_command(subparsers)
     _add_status_command(subparsers)
     _add_queue_command(subparsers)
+    _add_query_command(subparsers)
+    _add_task_context_command(subparsers)
     _add_mcp_command(subparsers)
     _add_obsidian_command(subparsers)
     _add_site_command(subparsers)
@@ -530,6 +560,9 @@ def _add_ci_check_command(subparsers):
         "ci-check", help="Run strict wiki validation and write a CI report"
     )
     _add_progress_arguments(ci_parser)
+    ci_parser.add_argument("--storage-check", action="store_true", help="Include native storage size policy in the existing report")
+    ci_parser.add_argument("--storage-git-base", default=None, help="Explicit excluded ref for the storage Git check")
+    ci_parser.add_argument("--storage-git-head", default=None, help="Explicit included ref for the storage Git check")
     ci_parser.add_argument("--src-dir", default=".", help="Source directory to scan")
     ci_parser.add_argument(
         "--allow-external-src",
@@ -711,6 +744,42 @@ def _add_knowledge_command(subparsers):
         help="Manage durable concept identity, lifecycle, review, and verification",
     )
     actions = knowledge.add_subparsers(dest="knowledge_action", required=True)
+
+    storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
+    _add_knowledge_wiki_argument(storage_migrate)
+    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "indexed-v6"], required=True)
+    storage_migrate.add_argument("--recovery-dir", default=None,
+                                 help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
+    _add_knowledge_dry_run(storage_migrate)
+    storage_recover = actions.add_parser("recover-storage", help="Restore the verified snapshot of an interrupted storage migration")
+    _add_knowledge_wiki_argument(storage_recover)
+    storage_recover.add_argument("--recovery-dir", required=True)
+    _add_knowledge_dry_run(storage_recover)
+    storage_export = actions.add_parser("export-storage", help="Export complete bounded v1 knowledge for an older consumer")
+    _add_knowledge_wiki_argument(storage_export)
+    storage_export.add_argument("--to", choices=["v1"], required=True)
+    storage_export.add_argument("--output", required=True, help="New output file outside the managed wiki")
+    storage_prune = actions.add_parser("prune-storage", help="Preview cleanup of owned unreferenced storage objects")
+    _add_knowledge_wiki_argument(storage_prune)
+    storage_prune.add_argument("--apply", action="store_true", help="Remove the listed safe objects after full validation")
+    storage_check = actions.add_parser("storage-check", help="Inspect native artifact sizes and an explicit outgoing Git range")
+    _add_knowledge_wiki_argument(storage_check)
+    storage_check.add_argument("--full", action="store_true", help="Audit complete artifacts, routing and Markdown")
+    storage_check.add_argument("--stream", action="store_true",
+                               help="Bounded complete storage/routing audit; companion authority is outside this scope")
+    storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
+    storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
+    storage_check.add_argument("--format", choices=["json"], default="json")
+    for action in ("inspect-storage", "diff-storage"):
+        review = actions.add_parser(action, help="Review logical knowledge records independently of physical storage")
+        _add_knowledge_wiki_argument(review)
+        review.add_argument("--limit", type=int, default=100, help="Maximum returned records (default: 100)")
+        review.add_argument("--max-bytes", type=int, default=262_144, help="Maximum JSON output bytes (default: 262144)")
+        if action == "diff-storage":
+            review.add_argument("--against-wiki", required=True, help="Other complete wiki snapshot to compare")
+        else:
+            review.add_argument("--selector", action="append", default=None,
+                                help="Explicit scoped inspection (repeatable); unread records remain unverified")
 
     initialize = actions.add_parser(
         "init",
@@ -1084,6 +1153,8 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser = subparsers.add_parser(
         "bootstrap", help="Generate initial wiki for an existing codebase"
     )
+    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate"], default=None,
+                                  help="Explicit native storage format; otherwise preserve the adopted format")
     bootstrap_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
     )
@@ -1414,6 +1485,8 @@ def _add_mcp_command(subparsers):
         help="Additional HTTP Origin allowed to call the local MCP endpoint",
     )
     _add_source_selection_argument(mcp_parser)
+    mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting")
+    mcp_parser.add_argument("--enable-sessions", action="store_true", help="Enable bounded in-memory task sessions")
 
 
 def _add_obsidian_command(subparsers):
@@ -1832,6 +1905,8 @@ def _add_sync_command(subparsers):
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
     )
     _add_progress_arguments(sync_parser)
+    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate"], default=None,
+                            help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(
         "--rebuild-knowledge",
         action="store_true",

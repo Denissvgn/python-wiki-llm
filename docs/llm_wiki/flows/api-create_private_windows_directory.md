@@ -119,17 +119,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| create_private_windows_directory | WindowsDirectoryGuardError | 497 | `WindowsDirectoryGuardError('Private Windows directory creation is unavailable on this platform.')` |
-| create_private_windows_directory | ctypes.WinDLL (src/llm_wiki_cli/services…private_windows_directory) | 502 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| create_private_windows_directory | Path (src/llm_wiki_cli/services…private_windows_directory) | 510 | `Path(path)` |
-| create_private_windows_directory | uuid.uuid4 | 511 | `uuid.uuid4(data not statically known)` |
-| create_private_windows_directory | _private_windows_security_attributes | 514 | `_private_windows_security_attributes(directory=True)` |
-| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 943 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
-| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 944 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
-| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 949 | `ctypes.POINTER(wintypes.LPVOID)` |
-| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 950 | `ctypes.POINTER(wintypes.DWORD)` |
-| _private_windows_security_attributes | _current_windows_user_sid | 964 | `_current_windows_user_sid(data not statically known)` |
-| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 992 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| create_private_windows_directory | WindowsDirectoryGuardError | 509 | `WindowsDirectoryGuardError('Private Windows directory creation is unavailable on this platform.')` |
+| create_private_windows_directory | ctypes.WinDLL (src/llm_wiki_cli/services…private_windows_directory) | 514 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| create_private_windows_directory | Path (src/llm_wiki_cli/services…private_windows_directory) | 522 | `Path(path)` |
+| create_private_windows_directory | uuid.uuid4 | 523 | `uuid.uuid4(data not statically known)` |
+| create_private_windows_directory | _private_windows_security_attributes | 526 | `_private_windows_security_attributes(directory=True)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 955 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes) | 956 | `ctypes.WinDLL('kernel32', use_last_error=True)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 961 | `ctypes.POINTER(wintypes.LPVOID)` |
+| _private_windows_security_attributes | ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes) | 962 | `ctypes.POINTER(wintypes.DWORD)` |
+| _private_windows_security_attributes | _current_windows_user_sid | 976 | `_current_windows_user_sid(data not statically known)` |
+| _current_windows_user_sid | ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid) | 1004 | `ctypes.WinDLL('advapi32', use_last_error=True)` |
 
 ### Boundary effects
 
@@ -139,13 +139,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `create_private_windows_directory` | `ctypes.WinDLL` | 502 |
-| external_call | `create_private_windows_directory` | `uuid.uuid4` | 511 |
-| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 943 |
-| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 944 |
-| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 949 |
-| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 950 |
-| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 992 |
+| external_call | `create_private_windows_directory` | `ctypes.WinDLL` | 514 |
+| external_call | `create_private_windows_directory` | `uuid.uuid4` | 523 |
+| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 955 |
+| external_call | `_private_windows_security_attributes` | `ctypes.WinDLL` | 956 |
+| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 961 |
+| external_call | `_private_windows_security_attributes` | `ctypes.POINTER` | 962 |
+| external_call | `_current_windows_user_sid` | `ctypes.WinDLL` | 1004 |
 | step_limit | `create_private_windows_directory` | `first 12 steps` | 0 |
 
 ## Behavior

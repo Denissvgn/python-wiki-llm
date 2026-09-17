@@ -72,7 +72,7 @@ sequenceDiagram
     p18->>p20: ConceptIdentityError
 ```
 
-> Call sequence diagram shows 30 of 436 interactions; 406 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 434 interactions; 404 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -135,16 +135,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_governance_ledger | _object | 419 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3136 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
-| _object | GovernanceError | 3138 | `GovernanceError(path, 'must be an object')` |
-| _object | GovernanceError | 3140 | `GovernanceError(path, 'must use string keys')` |
-| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3142 | `dict(selected)` |
+| _object | require_mapping | 3140 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
+| _object | GovernanceError | 3142 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3144 | `GovernanceError(path, 'must use string keys')` |
+| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3146 | `dict(selected)` |
 | parse_governance_ledger | _exact_fields | 420 | `_exact_fields(root, 'governance', {...})` |
-| _exact_fields | require_exact_fields | 3159 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
-| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1205 | `isinstance(value, Mapping)` |
+| _exact_fields | require_exact_fields | 3163 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
+| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1243 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
@@ -154,10 +154,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
-| external_call | `require_exact_fields` | `isinstance` | 1205 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
+| external_call | `require_exact_fields` | `isinstance` | 1243 |
 | step_limit | `parse_governance_ledger` | `first 12 steps` | 0 |
 | truncated_flow | `parse_governance_ledger` | `depth limit` | 0 |
 

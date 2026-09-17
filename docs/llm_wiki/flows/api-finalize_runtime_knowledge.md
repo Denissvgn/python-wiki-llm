@@ -2,12 +2,14 @@
 
 **Entry point:** `finalize_runtime_knowledge` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 20 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 26 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
@@ -21,7 +23,11 @@
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -50,15 +56,13 @@ sequenceDiagram
     participant p11 as key.encode
     participant p12 as SyncManifestError
     participant p13 as data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p14 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p15 as _copy_sources
-    participant p16 as data.items
-    participant p17 as isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p18 as deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p19 as dict (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    participant p20 as _infer_language_from_path
-    participant p21 as Path (src/llm_wiki_cli/services…_infer_language_from_path)
-    participant p22 as LANGUAGE_EXTENSIONS.items
+    participant p14 as type (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    participant p15 as ManifestStoreReader
+    participant p16 as reader.materialize
+    participant p17 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    participant p18 as _copy_sources
+    participant p19 as data.items
+    participant p20 as isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
     p0-->>p1: isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)
     p0-->>p2: TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge)
     p0->>p3: capture_committed_knowledge
@@ -74,24 +78,24 @@ sequenceDiagram
     p8->>p12: SyncManifestError
     p8->>p12: SyncManifestError
     p7-->>p13: data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p7-->>p14: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p7-->>p14: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p7-->>p14: type (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p7->>p12: SyncManifestError
+    p7->>p15: ManifestStoreReader
+    p7->>p7: SyncManifest.from_payload
+    p7-->>p16: reader.materialize
+    p7-->>p17: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p7-->>p17: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
     p7->>p12: SyncManifestError
     p7->>p12: SyncManifestError
     p7->>p12: SyncManifestError
-    p7->>p15: _copy_sources
-    p15->>p8: _mapping_value
-    p15-->>p16: data.items
-    p15-->>p17: isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p15->>p12: SyncManifestError
-    p15-->>p18: deepcopy (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p15-->>p19: dict (src/llm_wiki_cli/services…manifest.py:_copy_sources)
-    p15->>p20: _infer_language_from_path
-    p20-->>p21: Path (src/llm_wiki_cli/services…_infer_language_from_path)
-    p20-->>p22: LANGUAGE_EXTENSIONS.items
+    p7->>p18: _copy_sources
+    p18->>p8: _mapping_value
+    p18-->>p19: data.items
+    p18-->>p20: isinstance (src/llm_wiki_cli/services…manifest.py:_copy_sources)
+    p18->>p12: SyncManifestError
 ```
 
-> Call sequence diagram shows 30 of 2242 interactions; 2212 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2327 interactions; 2297 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -118,16 +122,20 @@ flowchart LR
     s4 -. "Path(…).resolve(data not statically known)" .-> s5
     s4 -. "Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)" .-> s6
     s4 -. "(…).read_bytes(data not statically known)" .-> s7
-    s4 -->|"SyncManifest.from_payload(_decode_json_object(...))"| s8
+    s4 -->|"SyncManifest.from_payload(_decode_json_object(...), object_reader=...)"| s8
     s8 -->|"_mapping_value(value, 'manifest')"| s9
     s9 -->|"require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))"| s10
     s10 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(value, Mapping)" .-> s11
     s10 -. "isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)(key, str)" .-> s12
+    b0["mutation captured.update"]
+    s4 -. "mutation captured.update" .-> b0
     click s1 "../modules/knowledge_orchestration.md"
     click s4 "../modules/knowledge_orchestration.md"
     click s8 "../modules/sync_manifest.md"
     click s9 "../modules/sync_manifest.md"
     click s10 "../modules/validation.md"
+    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
+    class b0 boundary
 ```
 
 ### Step data
@@ -141,7 +149,7 @@ flowchart LR
 | `Path(…).resolve` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | - | - | - | - |
 | `(…).read_bytes` | - | - | - | - |
-| `SyncManifest.from_payload` | `value: object` | `MANIFEST_VERSION`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `Mapping` | `legacy_surfaces[...]`, `surfaces[...]` | `manifest`, `manifest` |
+| `SyncManifest.from_payload` | `value: object`, `object_reader` | `MANIFEST_VERSION`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `LEGACY_MANIFEST_VERSION`, `Mapping`, `Mapping` | `manifest.storage_version`, `manifest.storage_objects`, `legacy_surfaces[...]`, `surfaces[...]` | `manifest`, `manifest`, `manifest` |
 | `_mapping_value` | `value: object`, `field_name: str` | - | - | `require_mapping(...)` |
 | `require_mapping` | `value: object`, `error: Exception`, `require_string_keys: bool`, `key_error: Exception \| None`, `require_utf8_keys: bool`, `utf8_key_error: Exception \| None` | `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | - | - | - | - |
@@ -151,32 +159,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 771 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 772 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| finalize_runtime_knowledge | capture_committed_knowledge | 775 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 226 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 226 | `Path(wiki_dir)` |
-| capture_committed_knowledge | (…).read_bytes | 230 | `(root / name).read_bytes(data not statically known)` |
-| capture_committed_knowledge | SyncManifest.from_payload | 237 | `SyncManifest.from_payload(_decode_json_object(...))` |
-| SyncManifest.from_payload | _mapping_value | 956 | `_mapping_value(value, 'manifest')` |
+| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 778 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 779 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| finalize_runtime_knowledge | capture_committed_knowledge | 782 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| capture_committed_knowledge | Path(…).resolve | 228 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 228 | `Path(wiki_dir)` |
+| capture_committed_knowledge | (…).read_bytes | 232 | `(root / name).read_bytes(data not statically known)` |
+| capture_committed_knowledge | SyncManifest.from_payload | 239 | `SyncManifest.from_payload(_decode_json_object(...), object_reader=...)` |
+| SyncManifest.from_payload | _mapping_value | 992 | `_mapping_value(value, 'manifest')` |
 | _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 
 ### Boundary effects
 
-*No boundary effects detected.*
+| Kind | Target | Step | Line |
+|---|---|---|---:|
+| mutation | `captured.update` | `capture_committed_knowledge` | 254 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `finalize_runtime_knowledge` | `isinstance` | 771 |
-| external_call | `finalize_runtime_knowledge` | `TypeError` | 772 |
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 226 |
-| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 230 |
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
+| external_call | `finalize_runtime_knowledge` | `isinstance` | 778 |
+| external_call | `finalize_runtime_knowledge` | `TypeError` | 779 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 228 |
+| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 232 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
 | step_limit | `finalize_runtime_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `finalize_runtime_knowledge` | `depth limit` | 0 |
 

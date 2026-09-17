@@ -1,6 +1,6 @@
 # BundledSkill
 
-**Location:** `src/llm_wiki_cli/services/skills.py:137`
+**Location:** `src/llm_wiki_cli/services/skills.py:138`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)

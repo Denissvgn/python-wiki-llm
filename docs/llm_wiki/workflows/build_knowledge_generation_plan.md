@@ -17,8 +17,7 @@
 9. `knowledge_index.build_knowledge_index`
 10. `knowledge_index.KnowledgeIndexInputs`
 11. `knowledge_governance.apply_governance_projection`
-12. `knowledge_index.serialize_knowledge_index`
-13. `knowledge_artifacts.build_knowledge_commit_plan`
+12. `knowledge_artifacts.build_knowledge_commit_plan`
 
 ## Touches
 

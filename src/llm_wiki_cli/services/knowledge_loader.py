@@ -356,6 +356,7 @@ def _load_once(
             surface_index_bytes=surface_bytes,
             knowledge_index_bytes=knowledge_bytes,
             manifest=manifest,
+            wiki_dir=root,
         )
     except KnowledgeArtifactError as exc:
         is_invalid = exc.field.startswith("knowledge_index_bytes")

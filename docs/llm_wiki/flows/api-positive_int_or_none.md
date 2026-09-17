@@ -40,8 +40,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| positive_int_or_none | isinstance | 878 | `isinstance(value, bool)` |
-| positive_int_or_none | isinstance | 878 | `isinstance(value, int)` |
+| positive_int_or_none | isinstance | 916 | `isinstance(value, bool)` |
+| positive_int_or_none | isinstance | 916 | `isinstance(value, int)` |
 
 ### Boundary effects
 
@@ -51,7 +51,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `positive_int_or_none` | `isinstance` | 878 |
+| external_call | `positive_int_or_none` | `isinstance` | 916 |
 
 ## Behavior
 

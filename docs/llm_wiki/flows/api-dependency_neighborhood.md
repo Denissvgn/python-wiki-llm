@@ -2,7 +2,7 @@
 
 **Entry point:** `dependency_neighborhood` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 9 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 11 more
 
 **Complete modules touched:**
 
@@ -15,6 +15,8 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -38,17 +40,18 @@ sequenceDiagram
     participant p10 as _default_path_error
     participant p11 as SharedValidationError
     participant p12 as os.fspath (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p13 as raw.encode
-    participant p14 as raw.replace
-    participant p15 as PurePosixPath
-    participant p16 as path.is_absolute
-    participant p17 as _WINDOWS_ABSOLUTE_RE.match
-    participant p18 as path.as_posix
-    participant p19 as normalized.strip
-    participant p20 as canonical.casefold().endswith
-    participant p21 as canonical.casefold
-    participant p22 as required_suffix.casefold
-    participant p23 as require_portable_path_component
+    participant p13 as _syntax_key
+    participant p14 as type
+    participant p15 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p16 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p17 as _known_syntax
+    participant p18 as _PATH_SYNTAX.get
+    participant p19 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    participant p20 as _check_path_collision
+    participant p21 as portable_path_key
+    participant p22 as unicodedata.normalize(…).casefold
+    participant p23 as unicodedata.normalize (src/llm_wiki_cli/services…tion.py:portable_path_key)
+    participant p24 as collision_seen.setdefault
     p0->>p1: _normalize_query_input
     p1-->>p2: callback (src/llm_wiki_cli/api.py:_normalize_query_input)
     p1->>p3: InvalidRequestError
@@ -63,25 +66,25 @@ sequenceDiagram
     p8-->>p12: os.fspath (src/llm_wiki_cli/services…re_portable_relative_path)
     p8-->>p9: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
     p8->>p10: _default_path_error
-    p8-->>p13: raw.encode
-    p8->>p10: _default_path_error
-    p8->>p10: _default_path_error
-    p8-->>p14: raw.replace
-    p8-->>p15: PurePosixPath
-    p8-->>p16: path.is_absolute
-    p8-->>p17: _WINDOWS_ABSOLUTE_RE.match
-    p8->>p10: _default_path_error
-    p8->>p10: _default_path_error
-    p8-->>p18: path.as_posix
-    p8-->>p19: normalized.strip
-    p8-->>p20: canonical.casefold().endswith
-    p8-->>p21: canonical.casefold
-    p8-->>p22: required_suffix.casefold
-    p8->>p10: _default_path_error
-    p8->>p23: require_portable_path_component
+    p8->>p13: _syntax_key
+    p13-->>p14: type
+    p13-->>p15: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p13-->>p16: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p13-->>p14: type
+    p13-->>p14: type
+    p13-->>p15: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p8->>p17: _known_syntax
+    p17-->>p18: _PATH_SYNTAX.get
+    p17-->>p19: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    p8->>p20: _check_path_collision
+    p20->>p21: portable_path_key
+    p21-->>p22: unicodedata.normalize(…).casefold
+    p21-->>p23: unicodedata.normalize (src/llm_wiki_cli/services…tion.py:portable_path_key)
+    p20-->>p24: collision_seen.setdefault
+    p20->>p11: SharedValidationError
 ```
 
-> Call sequence diagram shows 30 of 482 interactions; 452 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 525 interactions; 495 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -136,7 +139,7 @@ flowchart LR
 | `normalize_supplied_paths` | `values: object` | - | - | `tuple(...)` |
 | `_portable_supplied_path` | `value: object` | - | - | `require_portable_relative_path(...)` |
 | `DocumentationQueryError` | - | - | - | - |
-| `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `canonical` |
+| `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `cached`, `_remember_syntax(...)` |
 | `isinstance (src/llm_wiki_cli/services…re_portable_relative_path)` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `SharedValidationError` | - | - | - | - |
@@ -145,17 +148,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| dependency_neighborhood | _normalize_query_input | 1808 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1552 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1554 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1555 | `str(exc)` |
-| dependency_neighborhood | normalize_supplied_paths | 1808 | `normalize_supplied_paths((...))` |
+| dependency_neighborhood | _normalize_query_input | 1967 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1711 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1713 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1714 | `str(exc)` |
+| dependency_neighborhood | normalize_supplied_paths | 1967 | `normalize_supplied_paths((...))` |
 | normalize_supplied_paths | _portable_supplied_path | 135 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 113 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 116 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 170 | `isinstance(value, (...))` |
-| require_portable_relative_path | _default_path_error | 171 | `_default_path_error(value)` |
-| _default_path_error | SharedValidationError | 67 | `SharedValidationError(...)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 216 | `isinstance(value, (...))` |
+| require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
+| _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
 
 ### Boundary effects
 
@@ -165,8 +168,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1552 |
-| external_call | `require_portable_relative_path` | `isinstance` | 170 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1711 |
+| external_call | `require_portable_relative_path` | `isinstance` | 216 |
 | step_limit | `dependency_neighborhood` | `first 12 steps` | 0 |
 | truncated_flow | `dependency_neighborhood` | `depth limit` | 0 |
 

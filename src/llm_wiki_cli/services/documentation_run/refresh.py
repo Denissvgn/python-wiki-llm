@@ -1012,13 +1012,17 @@ def _refresh_continuation_candidate_paths(
 def _prior_generated_descriptions(wiki_root: Path) -> dict[str, str]:
     """Map generated module/entity descriptions from the prior manifest."""
 
+    from ..sync_manifest import SyncManifest
+
     manifest_path = wiki_root / ".llm-wiki-manifest.json"
     if not manifest_path.is_file() or manifest_path.is_symlink():
         return {}
-    manifest = _read_json(manifest_path)
-    sources = manifest.get("sources", {})
-    if not isinstance(sources, Mapping):
-        return {}
+    try:
+        sources = SyncManifest.load(wiki_root).sources
+    except (OSError, ValueError) as exc:
+        raise DocumentationIntegrityError(
+            f"Cannot read generated descriptions from the prior manifest: {exc}"
+        ) from exc
     descriptions: dict[str, str] = {}
     for source_record in sources.values():
         if not isinstance(source_record, Mapping):

@@ -1,0 +1,1 @@
+Switch from workspace A to B and report B.limit default 9; do not reuse A.limit default 3.

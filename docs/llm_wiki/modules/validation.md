@@ -15,6 +15,7 @@ service boundary while ensuring the underlying acceptance rules cannot drift.
 | Source | Symbols |
 |--------|---------|
 | `__future__` | `annotations` |
+| `collections` | `OrderedDict` |
 | `collections.abc` | `Callable`, `Container`, `Iterable`, `Mapping`, `MutableMapping`, `Sequence` |
 | `datetime` | `datetime`, `timedelta` |
 | `math` | `math` |
@@ -22,6 +23,7 @@ service boundary while ensuring the underlying acceptance rules cannot drift.
 | `pathlib` | `Path`, `PurePosixPath` |
 | `posixpath` | `posixpath` |
 | `re` | `re` |
+| `threading` | `RLock` |
 | `typing` | `Any`, `TypeVar` |
 | `unicodedata` | `unicodedata` |
 | `uuid` | `uuid` |
@@ -43,20 +45,24 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (54) |
+| Inbound | `src` (56) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SharedValidationError](../entities/SharedValidationError.md) | 47 | `ValueError` | Raised when a caller uses a shared validator without a domain adapter. |
+| [SharedValidationError](../entities/SharedValidationError.md) | 93 | `ValueError` | Raised when a caller uses a shared validator without a domain adapter. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_syntax_key` | `(kind, value, *options)` | — | — |
+| `_known_syntax` | `(key)` | — | — |
+| `_remember_syntax` | `(key, value)` | — | — |
+| `_check_path_collision` | `(canonical, collision_seen, collision_error)` | — | — |
 | `format_field_differences` | `(missing: Iterable[object], unknown: Iterable[object]) -> str` | — | Render deterministic exact-field differences. |
 | `_default_path_error` | `(value: object) -> SharedValidationError` | — | — |
 | `require_portable_path_component` | `(component: str, *, context: str \| None = None, defer_non_nfc_error: bool = False, reject_delete_character: bool = True, utf8_error: Exception \| None = None, control_error: Exception \| None = None, non_nfc_error: Exception \| None = None, nonportable_error: Exception \| None = None, reserved_error: Exception \| None = None) -> str` | — | Return a portable path component or raise a caller-owned exception. |

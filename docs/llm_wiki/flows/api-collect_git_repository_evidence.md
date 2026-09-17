@@ -63,7 +63,9 @@ sequenceDiagram
     p15-->>p21: checkout.resolve
 ```
 
-> Call sequence diagram shows 30 of 165 interactions; 135 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -152,6 +154,7 @@ flowchart LR
 | unresolved_call | `_run_git_result` | `key.startswith` | 1202 |
 | unresolved_call | `_run_git_result` | `result.stdout.strip` | 1229 |
 | step_limit | `collect_git_repository_evidence` | `first 12 steps` | 0 |
+| truncated_flow | `collect_git_repository_evidence` | `depth limit` | 0 |
 
 ## Behavior
 

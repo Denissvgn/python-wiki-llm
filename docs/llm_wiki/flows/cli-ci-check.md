@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 49 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 56 more
 
 **Complete modules touched:**
 
@@ -33,12 +33,19 @@
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_generation](../modules/knowledge_generation.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
@@ -82,8 +89,9 @@ sequenceDiagram
     participant p14 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
     participant p15 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
     participant p16 as resolved.is_dir
-    participant p17 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p18 as windows_current_user_sid
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    p0->>p2: RuntimeOutputError
     p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
     p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
     p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
@@ -111,12 +119,9 @@ sequenceDiagram
     p4->>p6: PathValidationError
     p4-->>p16: resolved.is_dir
     p4->>p6: PathValidationError
-    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p17: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p4->>p18: windows_current_user_sid
 ```
 
-> Call sequence diagram shows 30 of 3200 interactions; 3170 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4084 interactions; 4054 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -128,39 +133,48 @@ flowchart LR
     s1["1. run"]
     s2["2. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
     s3["3. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
-    s4["4. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
+    s4["4. RuntimeOutputError"]
     s5["5. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
-    s6["6. RuntimeOutputError"]
+    s6["6. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
     s7["7. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
     s8["8. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
-    s9["9. bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
+    s9["9. RuntimeOutputError"]
     s10["10. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
     s11["11. getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
-    s12["12. validate_source_root"]
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'src_dir', '.')" .-> s2
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s3
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'format', 'text')" .-> s4
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'report_schema', 'v1')" .-> s5
-    s1 -->|"RuntimeOutputError('--report-schema must be v1 or v2')"| s6
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'helper_cache_dir', None)" .-> s7
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'include_tests', None)" .-> s8
-    s1 -. "bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))" .-> s9
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'allow_external_src', False)" .-> s10
-    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'source_selection', None)" .-> s11
-    s1 -->|"validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)"| s12
-    b0["output print"]
-    s1 -. "output print" .-> b0
-    b1["output print"]
-    s1 -. "output print" .-> b1
-    b2["output print"]
-    s1 -. "output print" .-> b2
+    s12["12. bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)"]
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)" .-> s2
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_head', None)" .-> s3
+    s1 -->|"RuntimeOutputError('Storage Git checks require both --storage-git-base and --storage-git-head')"| s4
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'src_dir', '.')" .-> s5
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s6
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'format', 'text')" .-> s7
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'report_schema', 'v1')" .-> s8
+    s1 -->|"RuntimeOutputError('--report-schema must be v1 or v2')"| s9
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'helper_cache_dir', None)" .-> s10
+    s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'include_tests', None)" .-> s11
+    s1 -. "bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))" .-> s12
+    b0["mutation report.issues.append"]
+    s1 -. "mutation report.issues.append" .-> b0
+    b1["mutation report.issues.append"]
+    s1 -. "mutation report.issues.append" .-> b1
+    b2["mutation report.diagnostics.append"]
+    s1 -. "mutation report.diagnostics.append" .-> b2
+    b3["output print"]
+    s1 -. "output print" .-> b3
+    b4["output print"]
+    s1 -. "output print" .-> b4
+    b5["output print"]
+    s1 -. "output print" .-> b5
     click s1 "../modules/ci_check_cmd.md"
-    click s6 "../modules/runtime_output.md"
-    click s12 "../modules/config.md"
+    click s4 "../modules/runtime_output.md"
+    click s9 "../modules/runtime_output.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
     class b2 boundary
+    class b3 boundary
+    class b4 boundary
+    class b5 boundary
 ```
 
 ### Step data
@@ -170,52 +184,55 @@ flowchart LR
 | `run` | `args` | `DEFAULT_WIKI_DIR`, `print_extraction_job_plan`, `sys`, `sys` | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
+| `RuntimeOutputError` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `RuntimeOutputError` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
 | `bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
-| `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
-| `getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)` | - | - | - | - |
-| `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 97 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 98 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 99 | `getattr(args, 'format', 'text')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 100 | `getattr(args, 'report_schema', 'v1')` |
-| run | RuntimeOutputError | 102 | `RuntimeOutputError('--report-schema must be v1 or v2')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 103 | `getattr(args, 'helper_cache_dir', None)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 104 | `getattr(args, 'include_tests', None)` |
-| run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 105 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 105 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 106 | `getattr(args, 'source_selection', None)` |
-| run | validate_source_root | 108 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 98 | `getattr(args, 'storage_git_base', None)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 99 | `getattr(args, 'storage_git_head', None)` |
+| run | RuntimeOutputError | 101 | `RuntimeOutputError('Storage Git checks require both --storage-git-base and --storage-git-head')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 102 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 103 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 104 | `getattr(args, 'format', 'text')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 105 | `getattr(args, 'report_schema', 'v1')` |
+| run | RuntimeOutputError | 107 | `RuntimeOutputError('--report-schema must be v1 or v2')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 108 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 109 | `getattr(args, 'include_tests', None)` |
+| run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 110 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 161 |
-| output | `print` | `run` | 175 |
-| output | `print` | `run` | 182 |
+| mutation | `report.issues.append` | `run` | 150 |
+| mutation | `report.issues.append` | `run` | 153 |
+| mutation | `report.diagnostics.append` | `run` | 156 |
+| output | `print` | `run` | 181 |
+| output | `print` | `run` | 195 |
+| output | `print` | `run` | 202 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 97 |
 | external_call | `run` | `getattr` | 98 |
 | external_call | `run` | `getattr` | 99 |
-| external_call | `run` | `getattr` | 100 |
+| external_call | `run` | `getattr` | 102 |
 | external_call | `run` | `getattr` | 103 |
 | external_call | `run` | `getattr` | 104 |
 | external_call | `run` | `getattr` | 105 |
-| external_call | `run` | `getattr` | 106 |
+| external_call | `run` | `getattr` | 108 |
+| external_call | `run` | `getattr` | 109 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

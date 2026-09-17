@@ -34,7 +34,11 @@ from .infrastructure_sync import (
 from .knowledge_envelope import EvaluatedEnvelope, INVENTORY_HASH_EXTENSION
 from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
 from .knowledge_graph import KnowledgeGraphError, typed_graph_from_knowledge_extensions
-from .knowledge_index import _validated_index_serialization
+from .knowledge_index import _validated_index_serialization, validate_knowledge_index, _model_to_payload
+from .knowledge_storage import (
+    STORE_SCHEMA, MAX_EXPANDED_BYTES, GIT_FAILURE_BYTES, KnowledgeStorageError, logical_digest,
+)
+from .knowledge_packs import PACKED_SCHEMA, PACKED_FORMATS, build_storage, open_knowledge_store, physical_objects
 from .immutable import freeze
 from .knowledge_model import (
     ConceptKind,
@@ -45,6 +49,7 @@ from .knowledge_model import (
 )
 from .section_ownership import SectionOwnershipError, validate_section_ownership
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
+from .storage_spool import SpooledArtifactWrite, spool_write
 from .validation import (
     is_portable_relative_path,
     require_exact_fields as require_shared_exact_fields,
@@ -92,6 +97,7 @@ class ArtifactWriteState(str, Enum):
 class CommitStage(str, Enum):
     """Fault-injection points reached after each successful atomic replacement."""
 
+    KNOWLEDGE_OBJECTS_WRITTEN = "knowledge-objects-written"
     SURFACE_INDEX_WRITTEN = "surface-index-written"
     KNOWLEDGE_INDEX_WRITTEN = "knowledge-index-written"
     MANIFEST_WRITTEN = "manifest-written"
@@ -107,6 +113,7 @@ class PlannedArtifactWrite:
     content_hash: str
     content: bytes
     needs_write: bool
+    previous_content: bytes | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True)
@@ -119,6 +126,8 @@ class ValidatedKnowledgeArtifacts:
     knowledge_index_hash: str
     evaluated_envelope_hash: str
     governance_hash: str | None = None
+    storage_objects: Mapping[str, bytes] = field(default_factory=dict, repr=False)
+    storage_statistics: Mapping[str, Any] = field(default_factory=dict, repr=False)
     # init=False prevents dataclasses.replace from carrying authority to new data.
     _validation: _ArtifactValidation | None = field(
         default=None, init=False, repr=False, compare=False
@@ -134,6 +143,8 @@ class _ArtifactValidation:
     ):
         self.knowledge = artifacts.knowledge
         self.surface = artifacts.surface_payload
+        self.storage_objects = artifacts.storage_objects
+        self.storage_statistics = artifacts.storage_statistics
         self.hashes = (
             artifacts.surface_index_hash,
             artifacts.knowledge_index_hash,
@@ -156,6 +167,8 @@ def require_validated_artifacts(value: object) -> ValidatedKnowledgeArtifacts:
         not isinstance(validation, _ArtifactValidation)
         or validation.knowledge is not value.knowledge
         or validation.surface is not value.surface_payload
+        or validation.storage_objects is not value.storage_objects
+        or validation.storage_statistics is not value.storage_statistics
         or validation.hashes
         != (
             value.surface_index_hash,
@@ -181,11 +194,13 @@ def validated_artifact_bytes(value: ValidatedKnowledgeArtifacts) -> tuple[bytes,
 class KnowledgeCommitPlan:
     """A fully validated, immutable three-artifact commit plan."""
 
-    surface_index: PlannedArtifactWrite
-    knowledge_index: PlannedArtifactWrite
-    manifest: PlannedArtifactWrite
+    surface_index: PlannedArtifactWrite | SpooledArtifactWrite
+    knowledge_index: PlannedArtifactWrite | SpooledArtifactWrite
+    manifest: PlannedArtifactWrite | SpooledArtifactWrite
     committed_manifest: SyncManifest
     evaluated_envelope_hash: str
+    storage_objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
+    storage_format: str = "v1"
 
     @property
     def changed(self) -> bool:
@@ -195,6 +210,7 @@ class KnowledgeCommitPlan:
                 self.surface_index,
                 self.knowledge_index,
                 self.manifest,
+                *self.storage_objects,
             )
         )
 
@@ -203,12 +219,14 @@ class KnowledgeCommitPlan:
 class KnowledgeCommitResult:
     """Outcome of a real or dry-run commit."""
 
-    surface_index: PlannedArtifactWrite
-    knowledge_index: PlannedArtifactWrite
-    manifest: PlannedArtifactWrite
+    surface_index: PlannedArtifactWrite | SpooledArtifactWrite
+    knowledge_index: PlannedArtifactWrite | SpooledArtifactWrite
+    manifest: PlannedArtifactWrite | SpooledArtifactWrite
     committed_manifest: SyncManifest
     evaluated_envelope_hash: str
     dry_run: bool
+    storage_objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
+    storage_format: str = "v1"
 
     @property
     def changed(self) -> bool:
@@ -218,6 +236,7 @@ class KnowledgeCommitResult:
                 self.surface_index,
                 self.knowledge_index,
                 self.manifest,
+                *self.storage_objects,
             )
         )
 
@@ -259,6 +278,8 @@ def validate_knowledge_artifacts(
     surface_index_bytes: bytes,
     knowledge_index_bytes: bytes,
     manifest: SyncManifest,
+    object_reader: Callable[[str, int], bytes] | None = None,
+    wiki_dir: str | Path | None = None,
 ) -> ValidatedKnowledgeArtifacts:
     """Validate canonical projections, cross-artifact parity, and manifest basis."""
 
@@ -269,8 +290,53 @@ def validate_knowledge_artifacts(
         "knowledge_index_bytes",
     )
     schema_version = knowledge_payload.get("schema_version")
+    storage_objects: Mapping[str, bytes] = freeze(dict(manifest.storage_objects))
+    storage_statistics: Mapping[str, Any] = freeze({})
+    store_reader = None
+    storage_session = None
+    if schema_version not in (STORE_SCHEMA, PACKED_SCHEMA) and manifest.storage_version == 6 and wiki_dir is not None:
+        from .knowledge_storage_io import StorageReadSession
+        storage_session = StorageReadSession(wiki_dir)
+        if (storage_session.read(KNOWLEDGE_INDEX_FILENAME, len(knowledge_index_bytes)) != knowledge_index_bytes
+                or storage_session.read(SURFACE_INDEX_FILENAME, len(surface_index_bytes)) != surface_index_bytes):
+            raise KnowledgeArtifactError("manifest", "projection changed before manifest capture", code="storage-mutation")
+        marker_bytes = storage_session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
+        captured_manifest = SyncManifest.from_payload(_decode_json_object(marker_bytes, "manifest"),
+                                                      object_reader=storage_session.read)
+        if captured_manifest.to_payload() != manifest.to_payload():
+            raise KnowledgeArtifactError("manifest", "changed before catalog capture", code="storage-mutation")
+        storage_objects = freeze(captured_manifest.storage_objects)
+        storage_session.recheck()
+    if schema_version in (STORE_SCHEMA, PACKED_SCHEMA):
+        if object_reader is None and wiki_dir is not None:
+            from .knowledge_storage_io import StorageReadSession
+            storage_session = StorageReadSession(wiki_dir)
+            object_reader = storage_session.read
+        if object_reader is None:
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects", "sharded storage requires its committed objects")
+        try:
+            if storage_session is not None:
+                if storage_session.read(KNOWLEDGE_INDEX_FILENAME, len(knowledge_index_bytes)) != knowledge_index_bytes:
+                    raise KnowledgeStorageError("root", "changed before object capture", code="storage-mutation")
+                if storage_session.read(SURFACE_INDEX_FILENAME, len(surface_index_bytes)) != surface_index_bytes:
+                    raise KnowledgeStorageError("surface", "changed before object capture", code="storage-mutation")
+                marker_bytes = storage_session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)
+                captured_manifest = SyncManifest.from_payload(_decode_json_object(marker_bytes, "manifest"),
+                                                              object_reader=storage_session.read)
+                if captured_manifest.to_payload() != manifest.to_payload():
+                    raise KnowledgeStorageError("manifest", "changed before object capture", code="storage-mutation")
+                storage_objects = freeze(captured_manifest.storage_objects)
+            store_reader = open_knowledge_store(knowledge_index_bytes, object_reader)
+            knowledge_payload = store_reader.materialize()
+            storage_objects = freeze({**storage_objects, **physical_objects(store_reader)})
+            storage_statistics = freeze(store_reader.statistics())
+            store_reader.release_capture()
+            if storage_session is not None:
+                storage_session.recheck()
+        except (KnowledgeStorageError, OSError) as exc:
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects", str(exc), code=getattr(exc, "code", None)) from exc
     if _is_future_schema_version(
-        schema_version,
+        knowledge_payload.get("schema_version"),
         KNOWLEDGE_SCHEMA_VERSION,
         _KNOWLEDGE_SCHEMA_VERSION_RE,
     ):
@@ -280,9 +346,13 @@ def validate_knowledge_artifacts(
             code="unsupported-schema-version",
         )
     try:
-        knowledge, expected_knowledge_bytes = _validated_index_serialization(
-            knowledge_payload
-        )
+        if store_reader is None:
+            knowledge, expected_knowledge_bytes = _validated_index_serialization(knowledge_payload)
+        else:
+            knowledge = validate_knowledge_index(knowledge_payload)
+            if logical_digest(_model_to_payload(knowledge)) != store_reader.root["logical_hash"]:
+                raise KnowledgeStorageError("knowledge", "logical records are not canonical native v1 values")
+            expected_knowledge_bytes = knowledge_index_bytes
     except (TypeError, ValueError) as exc:
         nested_field = getattr(exc, "field", None)
         nested_code = getattr(exc, "code", None)
@@ -302,6 +372,8 @@ def validate_knowledge_artifacts(
             "must use the canonical knowledge-index v1 wire encoding",
         )
     del knowledge_payload, expected_knowledge_bytes
+    if store_reader is not None:
+        knowledge = freeze(knowledge)
 
     surface_hash = sha256_bytes(surface_index_bytes)
     if knowledge.bundle.snapshot.surface_index_hash != surface_hash:
@@ -389,6 +461,8 @@ def validate_knowledge_artifacts(
             bundle=knowledge.bundle
         ).content_hash(),
         governance_hash=governance_hash,
+        storage_objects=storage_objects,
+        storage_statistics=storage_statistics,
     )
     object.__setattr__(
         validated,
@@ -402,33 +476,95 @@ def build_knowledge_commit_plan(
     wiki_dir: str | Path,
     *,
     surface_index_bytes: bytes,
-    knowledge_index_bytes: bytes,
+    knowledge_index_bytes: bytes | None = None,
     manifest: SyncManifest,
+    knowledge_format: str | None = None,
+    knowledge_index: KnowledgeIndex | None = None,
+    manifest_format: str | None = None,
+    prior: ValidatedKnowledgeArtifacts | None = None,
+    spool=None,
 ) -> KnowledgeCommitPlan:
     """Validate and plan one manifest-last knowledge artifact commit.
 
     The supplied projection bytes must already use their canonical wire
     encodings.  The evaluated-envelope hash is derived from the validated
     knowledge bundle, rather than accepted as an independent caller claim.
+
+    ``prior`` permits byte/compression reuse, without waiving next-state
+    validation or live commit checks. An optional ``ByteSpool`` is caller-owned
+    and must remain open until the plan and commit result are no longer used.
+    Storage objects are staged synchronously; full-model validation still has
+    its normal output-memory cost.
     """
 
     root = Path(wiki_dir)
+    from .manifest_storage import build_manifest_store, current_manifest_format
+    if manifest_format not in {None, "v5", "indexed-v6"}:
+        raise KnowledgeArtifactError("manifest_format", "must be v5 or indexed-v6")
+    adopted_manifest_format = current_manifest_format(root)
+    manifest_format = manifest_format or adopted_manifest_format
+    if knowledge_format not in {None, "v1", "sharded-v2", *PACKED_FORMATS}:
+        raise KnowledgeArtifactError("knowledge_format", "must be v1, sharded-v2, packed-v3 or packed-v3-deflate")
+    if knowledge_format is None:
+        knowledge_format = current_knowledge_format(root)
+    if (knowledge_index_bytes is None) == (knowledge_index is None):
+        raise KnowledgeArtifactError("knowledge_index", "supply exactly one logical model or canonical byte input")
+    prepared_store = None
+    if knowledge_index is not None:
+        if knowledge_format != "v1":
+            try:
+                prepared_store = build_storage(_model_to_payload(knowledge_index), knowledge_format, prior=prior, objects=spool)
+                knowledge_index_bytes = prepared_store.root_bytes
+            except KnowledgeStorageError as exc:
+                raise KnowledgeArtifactError("knowledge_index", str(exc), code=exc.code) from exc
+        else:
+            _, knowledge_index_bytes = _validated_index_serialization(knowledge_index)
+    assert knowledge_index_bytes is not None
     validated = validate_knowledge_artifacts(
         surface_index_bytes=surface_index_bytes,
         knowledge_index_bytes=knowledge_index_bytes,
         manifest=manifest,
+        object_reader=(None if prepared_store is None else lambda path, _: prepared_store.objects[path]),
     )
+    objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
+    knowledge_hash = validated.knowledge_index_hash
+    if knowledge_format != "v1":
+        try:
+            store = prepared_store or build_storage(_model_to_payload(validated.knowledge), knowledge_format, prior=prior, objects=spool)
+            knowledge_index_bytes = store.root_bytes
+            knowledge_hash = sha256_bytes(knowledge_index_bytes)
+            objects = tuple(_planned_write(root / path, path, store.objects[path], guarded=True, spool=spool)
+                            for path in sorted(store.objects))
+            for artifact in objects:
+                if artifact.previous_content is not None and artifact.previous_content != artifact.content:
+                    raise KnowledgeStorageError(artifact.relative_path, "existing immutable object is corrupt; refusing to repair it")
+        except KnowledgeStorageError as exc:
+            raise KnowledgeArtifactError("knowledge_index_bytes.objects", str(exc), code=exc.code) from exc
 
     if not isinstance(manifest, SyncManifest):
         raise TypeError("manifest must be a SyncManifest")
     committed_manifest = manifest.with_artifact_hashes(
         surface_index_hash=validated.surface_index_hash,
-        knowledge_index_hash=validated.knowledge_index_hash,
+        knowledge_index_hash=knowledge_hash,
         evaluated_envelope_hash=validated.evaluated_envelope_hash,
         governance_hash=validated.governance_hash,
     )
     try:
-        manifest_bytes = formatted_json_bytes(committed_manifest.to_payload())
+        if manifest_format == "indexed-v6":
+            manifest_store = build_manifest_store(committed_manifest.to_payload())
+            manifest_bytes = manifest_store.root_bytes
+            manifest_objects = tuple(_planned_write(root / path, path, content, guarded=True, spool=spool)
+                                     for path, content in sorted(manifest_store.objects.items()))
+            for artifact in manifest_objects:
+                if artifact.previous_content is not None and artifact.previous_content != artifact.content:
+                    raise KnowledgeStorageError(artifact.relative_path, "existing immutable catalog is corrupt")
+            objects += manifest_objects
+            committed_manifest.storage_version = 6
+            committed_manifest.storage_objects = dict(manifest_store.objects)
+        else:
+            manifest_bytes = formatted_json_bytes(committed_manifest.to_payload())
+            committed_manifest.storage_version = 5
+            committed_manifest.storage_objects = {}
     except (TypeError, ValueError, UnicodeEncodeError) as exc:
         raise KnowledgeArtifactError(
             "manifest",
@@ -439,11 +575,13 @@ def build_knowledge_commit_plan(
         root / SURFACE_INDEX_FILENAME,
         SURFACE_INDEX_FILENAME,
         surface_index_bytes,
+        guarded=knowledge_format != "v1" or manifest_format == "indexed-v6",
     )
     knowledge_write = _planned_write(
         root / KNOWLEDGE_INDEX_FILENAME,
         KNOWLEDGE_INDEX_FILENAME,
         knowledge_index_bytes,
+        guarded=knowledge_format != "v1" or manifest_format == "indexed-v6",
     )
     projections_change = surface.needs_write or knowledge_write.needs_write
     manifest_write = _planned_write(
@@ -451,6 +589,7 @@ def build_knowledge_commit_plan(
         MANIFEST_FILENAME,
         manifest_bytes,
         force_replace=projections_change,
+        guarded=knowledge_format != "v1" or manifest_format == "indexed-v6",
     )
     return KnowledgeCommitPlan(
         surface_index=surface,
@@ -458,6 +597,8 @@ def build_knowledge_commit_plan(
         manifest=manifest_write,
         committed_manifest=committed_manifest,
         evaluated_envelope_hash=validated.evaluated_envelope_hash,
+        storage_objects=objects,
+        storage_format=knowledge_format,
     )
 
 
@@ -481,7 +622,9 @@ def commit_knowledge_artifacts(
     if fault_injector is not None and not callable(fault_injector):
         raise TypeError("fault_injector must be callable")
 
-    if not dry_run:
+    if not dry_run and (plan.storage_format != "v1" or plan.storage_objects):
+        _commit_sharded(plan, fault_injector)
+    elif not dry_run:
         _apply_write(
             plan.surface_index,
             CommitStage.SURFACE_INDEX_WRITTEN,
@@ -510,6 +653,8 @@ def commit_knowledge_artifacts(
         committed_manifest=plan.committed_manifest,
         evaluated_envelope_hash=plan.evaluated_envelope_hash,
         dry_run=dry_run,
+        storage_objects=plan.storage_objects,
+        storage_format=plan.storage_format,
     )
 
 
@@ -519,9 +664,19 @@ def _planned_write(
     content: bytes,
     *,
     force_replace: bool = False,
-) -> PlannedArtifactWrite:
+    guarded: bool = False,
+    spool=None,
+) -> PlannedArtifactWrite | SpooledArtifactWrite:
+    if len(content) >= GIT_FAILURE_BYTES:
+        raise KnowledgeArtifactError(relative_path,
+            "artifact exceeds the 95 MiB regular-Git file policy; use sharded-v2 storage or reduce the evaluated scope",
+            code="storage-limit")
     exists = path.is_file()
-    current = path.read_bytes() if exists else None
+    if guarded:
+        from .knowledge_storage_io import read_guarded
+        current = read_guarded(path, MAX_EXPANDED_BYTES).content if path.exists() or path.is_symlink() else None
+    else:
+        current = path.read_bytes() if exists else None
     differs = current != content
     needs_write = differs or (force_replace and exists)
     if not exists:
@@ -530,18 +685,104 @@ def _planned_write(
         state = ArtifactWriteState.UPDATED
     else:
         state = ArtifactWriteState.UNCHANGED
-    return PlannedArtifactWrite(
+    write = PlannedArtifactWrite(
         path=path,
         relative_path=relative_path,
         state=state,
         content_hash=sha256_bytes(content),
         content=content,
         needs_write=needs_write,
+        previous_content=current,
     )
+    return write if spool is None else spool_write(write, spool)
+
+
+def current_knowledge_format(wiki_dir: str | Path) -> str:
+    """Preserve an adopted format; unknown versions never silently downgrade."""
+    from .knowledge_storage_io import read_guarded
+    path = Path(wiki_dir) / KNOWLEDGE_INDEX_FILENAME
+    if not path.exists() and not path.is_symlink():
+        if (path.parent / ".llm-wiki-knowledge/packs").exists():
+            raise KnowledgeArtifactError("knowledge_index_bytes", "packed root is missing; recover it or select an explicit format")
+        return "sharded-v2" if (path.parent / ".llm-wiki-knowledge").exists() else "v1"
+    try:
+        raw = read_guarded(path, MAX_EXPANDED_BYTES).content
+        try:
+            payload = _decode_json_object(raw, "knowledge_index_bytes")
+        except KnowledgeArtifactError:
+            if (path.parent / ".llm-wiki-knowledge/packs").exists():
+                raise KnowledgeArtifactError("knowledge_index_bytes", "packed root is invalid; recover it or select an explicit format")
+            # Preserve the existing explicit v1 rebuild policy. If a sharded
+            # store has ever been adopted, a broken/missing root cannot silently
+            # make the writer return to a monolithic file.
+            return "sharded-v2" if (path.parent / ".llm-wiki-knowledge").exists() else "v1"
+        version = payload.get("schema_version")
+        if version == STORE_SCHEMA:
+            return "sharded-v2"
+        if version == PACKED_SCHEMA:
+            from .knowledge_packs import parse_packed_root
+            packed = parse_packed_root(raw)
+            return "packed-v3-deflate" if packed["packing"]["compression"] == "deflate" else "packed-v3"
+        if version == KNOWLEDGE_SCHEMA_VERSION:
+            return "v1"
+        raise KnowledgeArtifactError("knowledge_index_bytes.schema_version", "cannot write an unknown storage format", code="unsupported-schema-version")
+    except KnowledgeStorageError as exc:
+        raise KnowledgeArtifactError("knowledge_index_bytes", str(exc), code=exc.code) from exc
+
+
+def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None) -> None:
+    from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
+    from .knowledge_governance import governance_lock
+    from .knowledge_storage_io import read_guarded, _absolute_path
+
+    root = _absolute_path(plan.knowledge_index.path.parent)
+    ensure_guarded_directory(root)
+
+    def verify(artifact: PlannedArtifactWrite | SpooledArtifactWrite, *, before: bool = False) -> None:
+        path = _absolute_path(artifact.path)
+        expected = artifact.previous_content if before else artifact.content
+        if expected is None:
+            if path.exists() or path.is_symlink():
+                raise KnowledgeArtifactError(artifact.relative_path, "artifact appeared after planning")
+            return
+        try:
+            current = read_guarded(path, max(len(expected), 1)).content
+        except KnowledgeStorageError as exc:
+            raise KnowledgeArtifactError(artifact.relative_path, str(exc)) from exc
+        if current != expected:
+            raise KnowledgeArtifactError(artifact.relative_path, "artifact changed after planning")
+
+    def apply(artifact: PlannedArtifactWrite | SpooledArtifactWrite, stage: CommitStage | None = None) -> None:
+        if sha256_bytes(artifact.content) != artifact.content_hash:
+            raise KnowledgeArtifactError(artifact.relative_path, "plan content commitment is invalid")
+        verify(artifact, before=True)
+        if not artifact.needs_write:
+            return
+        path = _absolute_path(artifact.path)
+        ensure_guarded_directory(path.parent)
+        atomic_write_guarded_bytes(path, artifact.content, mode=0o644,
+                                   expected_existing=artifact.previous_content)
+        if stage is not None and fault is not None:
+            fault(stage)
+
+    with governance_lock(root, _lock_filename="llm-wiki-storage.lock"):
+        for artifact in (plan.surface_index, plan.knowledge_index, plan.manifest):
+            verify(artifact, before=True)
+        for artifact in plan.storage_objects:
+            apply(artifact)
+        if fault is not None and any(a.needs_write for a in plan.storage_objects):
+            fault(CommitStage.KNOWLEDGE_OBJECTS_WRITTEN)
+        apply(plan.surface_index, CommitStage.SURFACE_INDEX_WRITTEN)
+        apply(plan.knowledge_index, CommitStage.KNOWLEDGE_INDEX_WRITTEN)
+        for artifact in (*plan.storage_objects, plan.surface_index, plan.knowledge_index):
+            verify(artifact)
+        apply(plan.manifest, CommitStage.MANIFEST_WRITTEN)
+        for artifact in (*plan.storage_objects, plan.surface_index, plan.knowledge_index, plan.manifest):
+            verify(artifact)
 
 
 def _apply_write(
-    artifact: PlannedArtifactWrite,
+    artifact: PlannedArtifactWrite | SpooledArtifactWrite,
     stage: CommitStage,
     fault_injector: FaultInjector | None,
 ) -> None:
@@ -552,7 +793,7 @@ def _apply_write(
         fault_injector(stage)
 
 
-def _verify_persisted(artifact: PlannedArtifactWrite) -> None:
+def _verify_persisted(artifact: PlannedArtifactWrite | SpooledArtifactWrite) -> None:
     try:
         persisted = artifact.path.read_bytes()
     except OSError as exc:

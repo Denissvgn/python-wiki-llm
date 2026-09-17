@@ -27,10 +27,11 @@ sequenceDiagram
     participant p15 as require_no_control_characters
     participant p16 as isinstance (src/llm_wiki_cli/services…uire_no_control_characters)
     participant p17 as contains_control_character
-    participant p18 as any (src/llm_wiki_cli/services…contains_control_character)
-    participant p19 as ord (src/llm_wiki_cli/services…contains_control_character)
-    participant p20 as _SENSITIVE_RE.search
-    participant p21 as contains_uri_authority_userinfo
+    participant p18 as pattern.search
+    participant p19 as _SENSITIVE_RE.search
+    participant p20 as contains_uri_authority_userinfo
+    participant p21 as value.strip (src/llm_wiki_cli/services…ins_uri_authority_userinfo)
+    participant p22 as text.startswith
     p0-->>p1: isinstance (src/llm_wiki_cli/services…py:current_review_evidence)
     p0-->>p2: TypeError
     p0->>p3: ReviewEvidence
@@ -54,16 +55,16 @@ sequenceDiagram
     p14->>p15: require_no_control_characters
     p15-->>p16: isinstance (src/llm_wiki_cli/services…uire_no_control_characters)
     p15->>p17: contains_control_character
-    p17-->>p18: any (src/llm_wiki_cli/services…contains_control_character)
-    p17-->>p19: ord (src/llm_wiki_cli/services…contains_control_character)
-    p17-->>p19: ord (src/llm_wiki_cli/services…contains_control_character)
+    p17-->>p18: pattern.search
     p14->>p6: GovernanceError
-    p14-->>p20: _SENSITIVE_RE.search
+    p14-->>p19: _SENSITIVE_RE.search
     p14->>p6: GovernanceError
-    p14->>p21: contains_uri_authority_userinfo
+    p14->>p20: contains_uri_authority_userinfo
+    p20-->>p21: value.strip (src/llm_wiki_cli/services…ins_uri_authority_userinfo)
+    p20-->>p22: text.startswith
 ```
 
-> Call sequence diagram shows 30 of 71 interactions; 41 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 67 interactions; 37 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -125,17 +126,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| current_review_evidence | isinstance (src/llm_wiki_cli/services…py:current_review_evidence) | 1492 | `isinstance(concept, ConceptRecord)` |
-| current_review_evidence | TypeError | 1493 | `TypeError('concept must be a ConceptRecord')` |
-| current_review_evidence | ReviewEvidence | 1497 | `ReviewEvidence(mode='no-source')` |
+| current_review_evidence | isinstance (src/llm_wiki_cli/services…py:current_review_evidence) | 1496 | `isinstance(concept, ConceptRecord)` |
+| current_review_evidence | TypeError | 1497 | `TypeError('concept must be a ConceptRecord')` |
 | current_review_evidence | ReviewEvidence | 1501 | `ReviewEvidence(mode='no-source')` |
-| current_review_evidence | _review_evidence | 1520 | `_review_evidence(ReviewEvidence(...), 'evidence')` |
-| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 2889 | `isinstance(value, ReviewEvidence)` |
-| _review_evidence | GovernanceError | 2890 | `GovernanceError(path, 'must be ReviewEvidence')` |
-| _review_evidence | GovernanceError | 2892 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
-| _review_evidence | GovernanceError | 2898 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
-| _review_evidence | ReviewEvidence | 2902 | `ReviewEvidence(mode='no-source')` |
-| _review_evidence | GovernanceError | 2904 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
+| current_review_evidence | ReviewEvidence | 1505 | `ReviewEvidence(mode='no-source')` |
+| current_review_evidence | _review_evidence | 1524 | `_review_evidence(ReviewEvidence(...), 'evidence')` |
+| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 2893 | `isinstance(value, ReviewEvidence)` |
+| _review_evidence | GovernanceError | 2894 | `GovernanceError(path, 'must be ReviewEvidence')` |
+| _review_evidence | GovernanceError | 2896 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
+| _review_evidence | GovernanceError | 2902 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
+| _review_evidence | ReviewEvidence | 2906 | `ReviewEvidence(mode='no-source')` |
+| _review_evidence | GovernanceError | 2908 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
 
 ### Boundary effects
 
@@ -145,9 +146,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `current_review_evidence` | `isinstance` | 1492 |
-| external_call | `current_review_evidence` | `TypeError` | 1493 |
-| external_call | `_review_evidence` | `isinstance` | 2889 |
+| external_call | `current_review_evidence` | `isinstance` | 1496 |
+| external_call | `current_review_evidence` | `TypeError` | 1497 |
+| external_call | `_review_evidence` | `isinstance` | 2893 |
 | step_limit | `current_review_evidence` | `first 12 steps` | 0 |
 
 ## Behavior

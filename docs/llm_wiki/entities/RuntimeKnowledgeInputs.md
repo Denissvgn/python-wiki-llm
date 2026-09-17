@@ -51,6 +51,7 @@ Evaluated command state needed to plan one three-artifact commit.
 | `governance_moves` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
 | `committed_state` | `CommittedKnowledgeState \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
+| `knowledge_format` | `str \| None` | `None` | — |
 
 ## Methods
 

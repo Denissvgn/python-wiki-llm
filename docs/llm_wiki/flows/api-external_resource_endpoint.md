@@ -33,16 +33,16 @@ sequenceDiagram
     participant p13 as require_nonempty_text
     participant p14 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     participant p15 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p16 as any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p17 as ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p18 as frozenset
-    participant p19 as choice_error
-    participant p20 as endpoint.get
-    participant p21 as _only_fields
-    participant p22 as require_exact_fields
-    participant p23 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p24 as str
-    participant p25 as set
+    participant p16 as contains_control_character
+    participant p17 as frozenset
+    participant p18 as choice_error
+    participant p19 as endpoint.get
+    participant p20 as _only_fields
+    participant p21 as require_exact_fields
+    participant p22 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p23 as str
+    participant p24 as set
+    participant p25 as tuple
     p0->>p1: _normalise_endpoint
     p1->>p2: _object
     p2->>p3: require_mapping
@@ -61,21 +61,21 @@ sequenceDiagram
     p12->>p13: require_nonempty_text
     p13-->>p14: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
     p13-->>p15: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p13-->>p16: any (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p13-->>p17: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p13-->>p17: ord (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p11-->>p18: frozenset
-    p11-->>p19: choice_error
-    p1-->>p20: endpoint.get
-    p1->>p21: _only_fields
-    p21->>p22: require_exact_fields
-    p22-->>p23: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p22-->>p24: str
-    p22-->>p25: set
-    p22-->>p25: set
+    p13->>p16: contains_control_character
+    p11-->>p17: frozenset
+    p11-->>p18: choice_error
+    p1-->>p19: endpoint.get
+    p1->>p20: _only_fields
+    p20->>p21: require_exact_fields
+    p21-->>p22: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p21-->>p23: str
+    p21-->>p24: set
+    p21-->>p24: set
+    p21-->>p24: set
+    p21-->>p25: tuple
 ```
 
-> Call sequence diagram shows 30 of 201 interactions; 171 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 216 interactions; 186 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -139,16 +139,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | external_resource_endpoint | _normalise_endpoint | 284 | `_normalise_endpoint(value, 'endpoint')` |
-| _normalise_endpoint | _object | 1391 | `_object(value, path)` |
-| _object | require_mapping | 2283 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2285 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2287 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2289 | `dict(selected)` |
-| _normalise_endpoint | _enum | 1392 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
-| _enum | KnowledgeGraphError | 2322 | `KnowledgeGraphError(path, ...)` |
+| _normalise_endpoint | _object | 1404 | `_object(value, path)` |
+| _object | require_mapping | 2302 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
+| _object | KnowledgeGraphError | 2304 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2306 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | dict | 2308 | `dict(selected)` |
+| _normalise_endpoint | _enum | 1405 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
+| _enum | KnowledgeGraphError | 2341 | `KnowledgeGraphError(path, ...)` |
 
 ### Boundary effects
 
@@ -158,9 +158,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
 | step_limit | `external_resource_endpoint` | `first 12 steps` | 0 |
 | truncated_flow | `external_resource_endpoint` | `depth limit` | 0 |
 

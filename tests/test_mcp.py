@@ -2469,6 +2469,13 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "get_context_packet",
         "check_wiki",
         "get_status",
+        "build_budgeted_context",
+        "get_maintenance_queue",
+        "build_task_context",
+        "open_context_session",
+        "read_context_session",
+        "hint_context_session",
+        "close_context_session",
     ]
 
 

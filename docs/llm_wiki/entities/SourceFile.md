@@ -1,6 +1,6 @@
 # SourceFile
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:111`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:116`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -42,7 +42,8 @@ flowchart LR
     n8["_captured_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
     n9["_captured_snapshot_candidates (src/llm_wiki_cli/services/source_snapshot.py)"]
     n10["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n11["_make_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n11["_file_integrity_from_stat (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n12["_make_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -54,6 +55,7 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/source_snapshot.md"
     click n1 "../modules/extraction_service.md"
     click n2 "../modules/extraction_service.md"
@@ -66,6 +68,7 @@ flowchart LR
     click n9 "../modules/source_snapshot.md"
     click n10 "../modules/source_snapshot.md"
     click n11 "../modules/source_snapshot.md"
+    click n12 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -88,7 +91,7 @@ flowchart LR
 | `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_captured_snapshot_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_file_integrity_from_stat` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_make_source_file` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
-| `_make_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 
-> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

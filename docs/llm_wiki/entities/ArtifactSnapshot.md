@@ -1,6 +1,6 @@
 # _ArtifactSnapshot
 
-**Location:** `src/llm_wiki_cli/commands/knowledge_cmd.py:92`
+**Location:** `src/llm_wiki_cli/commands/knowledge_cmd.py:91`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_cmd](../modules/knowledge_cmd.md)

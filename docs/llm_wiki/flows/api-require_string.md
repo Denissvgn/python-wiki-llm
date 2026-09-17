@@ -41,8 +41,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_string | isinstance | 706 | `isinstance(value, str)` |
-| require_string | value.encode | 710 | `value.encode('utf-8')` |
+| require_string | isinstance | 744 | `isinstance(value, str)` |
+| require_string | value.encode | 748 | `value.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -52,8 +52,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_string` | `isinstance` | 706 |
-| unresolved_call | `require_string` | `value.encode` | 710 |
+| external_call | `require_string` | `isinstance` | 744 |
+| unresolved_call | `require_string` | `value.encode` | 748 |
 
 ## Behavior
 

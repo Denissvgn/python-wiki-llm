@@ -34,6 +34,7 @@ flowchart LR
     n7["load_knowledge_state (src/llm_wiki_cli/services/knowledge_loader.py)"]
     n8["_snapshot_error_view (src/llm_wiki_cli/services/knowledge_observability.py)"]
     n9["src/llm_wiki_cli/services/lint_service.py"]
+    n10["src/llm_wiki_cli/services/task_context.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -43,6 +44,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/knowledge_loader.md"
     click n2 "../modules/api.md"
     click n3 "../modules/knowledge_cmd.md"
@@ -52,6 +54,7 @@ flowchart LR
     click n7 "../modules/knowledge_loader.md"
     click n8 "../modules/knowledge_observability.md"
     click n9 "../modules/lint_service.md"
+    click n10 "../modules/task_context.md"
 ```
 
 ### Summary
@@ -78,3 +81,4 @@ flowchart LR
 | `load_knowledge_state` | call | [knowledge_loader](../modules/knowledge_loader.md) | 2 |
 | `_snapshot_error_view` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `task_context` | import | [task_context](../modules/task_context.md) | — |

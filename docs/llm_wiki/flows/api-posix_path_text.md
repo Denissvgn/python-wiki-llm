@@ -41,8 +41,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| posix_path_text | str(…).replace | 473 | `str(value).replace('\\', '/')` |
-| posix_path_text | str | 473 | `str(value)` |
+| posix_path_text | str(…).replace | 522 | `str(value).replace('\\', '/')` |
+| posix_path_text | str | 522 | `str(value)` |
 
 ### Boundary effects
 
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `posix_path_text` | `str(value).replace` | 473 |
+| unresolved_call | `posix_path_text` | `str(value).replace` | 522 |
 
 ## Behavior
 

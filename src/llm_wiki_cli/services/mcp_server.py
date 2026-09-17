@@ -11,6 +11,8 @@ import ipaddress
 import json
 import re
 import sys
+import secrets
+from contextlib import asynccontextmanager
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from itertools import islice
@@ -74,6 +76,8 @@ from .validation import (
     posix_path_text as shared_posix_path_text,
     require_portable_relative_path,
 )
+from .token_counting import TokenCounter, LocalTokenizerCounter
+from .workflow_profile import WorkflowPolicy, WorkflowProfile
 
 MCP_PACKAGE_HINT = "Install it with: pip install 'agent-wiki-cli[mcp]'"
 RESOURCE_SCHEME = "llm-wiki"
@@ -243,6 +247,12 @@ class McpServerConfig:
     allowed_origins: tuple[str, ...] = field(default_factory=tuple)
     source_selection: str | None = None
     allow_external_src: bool = False
+    counter: TokenCounter | None = None
+    tokenizer: str | None = None
+    workflow_policy: WorkflowPolicy | None = None
+    workflow_profile: WorkflowProfile | None = None
+    enable_sessions: bool = False
+    max_sessions: int = 8
 
 
 @dataclass(frozen=True)
@@ -404,11 +414,24 @@ class McpWikiService:
         *,
         source_selection: str | None = None,
         allow_external_src: bool = False,
+        counter: TokenCounter | None = None,
+        workflow_policy: WorkflowPolicy | None = None,
+        workflow_profile: WorkflowProfile | None = None,
+        enable_sessions: bool = False,
+        max_sessions: int = 8,
     ):
         self.src_dir = src_dir
         self.wiki_dir = Path(wiki_dir)
         self.source_selection = source_selection
         self.allow_external_src = allow_external_src
+        self.counter = counter
+        if type(enable_sessions) is not bool or type(max_sessions) is not int or not 1 <= max_sessions <= 32:
+            raise McpWikiError("Invalid trusted session configuration")
+        self.workflow_policy = workflow_policy
+        self.workflow_profile = workflow_profile
+        self.enable_sessions = enable_sessions
+        self.max_sessions = max_sessions
+        self._sessions: dict[str, public_api.ContextSession] = {}
         try:
             initial_policy = resolve_source_selection(src_dir, source_selection)
         except SourceSelectionError as exc:
@@ -681,74 +704,132 @@ class McpWikiService:
         limit: int = 20,
         mode: str = "ranked",
     ) -> dict:
-        self._assert_source_selection_current()
-        if not isinstance(query, str) or not query.strip():
-            raise McpWikiError("query must be a non-empty string.")
-        limit = _bounded_query_limit(limit)
+        from .search_service import normalize_search, page_records, search_records
 
-        requested = set(kinds or _SEARCH_KINDS)
-        unknown = requested - _SEARCH_KINDS
-        if unknown:
-            raise McpWikiError(f"Unknown wiki search kind: {sorted(unknown)[0]}")
+        try:
+            query, requested, limit, mode = normalize_search(query, kinds, limit, mode)
+            self._assert_source_selection_current()
+            return search_records(page_records(self.wiki_dir, requested, reader=read_md),
+                                  query, limit=limit, mode=mode)
+        except ValueError as exc:
+            if isinstance(exc, McpWikiError):
+                raise
+            raise McpWikiError(str(exc)) from exc
 
-        if mode not in {"ranked", "substring"}:
-            raise McpWikiError("Search mode must be ranked or substring")
-        if mode == "ranked":
-            from .search_rank import MAX_SEARCH_BYTES, rank_pages
+    def build_budgeted_context(self, request: Mapping[str, Any]) -> str:
+        """Return precisely the canonical v3 text counted by the host counter."""
+        from .context_budget import validate_request
+        from .request_json import MAX_REQUEST_BYTES
 
-            def records():
-                for page in self._iter_pages(requested):
-                    if page.path.stat().st_size > MAX_SEARCH_BYTES:
-                        raise McpWikiError("Page exceeds search byte limit; restrict the wiki or kinds")
-                    content = read_md(page.path)
-                    yield {"kind": page.kind, "id": page.page_id, "uri": page.uri,
-                           "path": _relative_posix(page.path, self.wiki_dir),
-                           "title": _markdown_title(content, page.page_id), "content": content}
-
-            try:
-                return rank_pages(records(), query, limit=limit)
-            except ValueError as exc:
-                raise McpWikiError(str(exc)) from exc
-
-        needle = query.casefold()
-        matches: list[dict] = []
-        total = 0
-        for page in self._iter_pages(requested):
-            content = read_md(page.path)
-            haystack = content.casefold()
-            idx = haystack.find(needle)
-            if idx == -1:
-                continue
-            total += 1
-            if len(matches) == limit:
-                continue
-            matches.append(
-                {
-                    "kind": page.kind,
-                    "id": page.page_id,
-                    "uri": page.uri,
-                    "path": _relative_posix(page.path, self.wiki_dir),
-                    "title": _markdown_title(content, page.page_id),
-                    "snippet": _snippet(content, idx, len(query)),
-                }
+        try:
+            normalized = validate_request(request)
+            if request.get("protocol") != "llm-wiki-context/v3":
+                raise ValueError("protocol must be llm-wiki-context/v3")
+            if "changes" not in request:
+                raise context_cmd.ProtocolRequestError("The request-based tool requires explicit changes", "changes")
+            if len(json.dumps(normalized, ensure_ascii=False, allow_nan=False).encode("utf-8")) > MAX_REQUEST_BYTES:
+                raise ValueError("Request exceeds 1 MiB")
+            if normalized["budget_mode"] == "exact" and self.counter is None:
+                raise McpWikiError("Exact counting is not configured by the host",
+                                   code="counter-unavailable", data={"field": "counter_id"})
+            result = public_api.build_budgeted_context(
+                _posix_string(self.src_dir), _posix_string(self.wiki_dir), normalized,
+                counter=self.counter, **self._external_source_options(),
+                **self._source_selection_options(),
             )
+        except McpWikiError:
+            raise
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+        except (ValueError, TypeError) as exc:
+            raise McpWikiError("Invalid budgeted context request", code="invalid-request",
+                               data={"field": getattr(exc, "field", "request")}) from exc
+        if not result.ok:
+            raise McpWikiError("The minimum qualified context cannot fit this budget",
+                               code="cannot-fit", data={"accounting": dict(result.accounting)})
+        return result.rendered
 
-        returned = len(matches)
-        bounds = {
-            "total": total,
-            "returned": returned,
-            "truncated": total > returned,
-        }
-        return {
-            "query": query,
-            "mode": "substring",
-            "total": total,
-            "returned": returned,
-            "count": returned,
-            "truncated": bounds["truncated"],
-            "bounds": {"results": bounds},
-            "results": matches,
-        }
+    def get_maintenance_queue(self, limit: int = 30) -> dict:
+        from .maintenance_queue import validate_queue_limit
+
+        try:
+            validate_queue_limit(limit)
+            return dict(public_api.build_maintenance_queue(
+                _posix_string(self.src_dir), _posix_string(self.wiki_dir), limit=limit,
+                **self._external_source_options(), **self._source_selection_options(),
+            ))
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+        except ValueError as exc:
+            raise McpWikiError("Invalid queue limit", code="invalid-request",
+                               data={"field": "limit"}) from exc
+
+    def build_task_context(self, request: Mapping[str, Any]) -> str:
+        from .task_contract import normalize_task_request
+        from .task_context import _counter
+
+        try:
+            _, profile = normalize_task_request(request, profile=self.workflow_profile, policy=self.workflow_policy)
+            _counter(profile.settings, self.counter)
+            result = public_api.build_task_context(request, src_dir=_posix_string(self.src_dir),
+                wiki_dir=_posix_string(self.wiki_dir), profile=self.workflow_profile,
+                policy=self.workflow_policy, counter=self.counter,
+                **self._external_source_options(), **self._source_selection_options())
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+        except (ValueError, TypeError) as exc:
+            raise McpWikiError("Invalid task request", code="invalid-request",
+                               data={"field": getattr(exc, "field", "request")}) from exc
+        if not result.ok:
+            raise McpWikiError("The qualified task context cannot fit this budget",
+                               code="cannot-fit", data={"accounting": dict(result.accounting)})
+        return result.rendered
+
+    def open_context_session(self) -> dict:
+        if not self.enable_sessions:
+            raise McpWikiError("Sessions are not enabled by the host", code="session-unavailable")
+        if len(self._sessions) >= self.max_sessions:
+            raise McpWikiError("Close an existing session before opening another", code="session-limit")
+        try:
+            session = public_api.open_context_session(src_dir=_posix_string(self.src_dir),
+                wiki_dir=_posix_string(self.wiki_dir), profile=self.workflow_profile,
+                policy=self.workflow_policy, counter=self.counter,
+                **self._external_source_options(), **self._source_selection_options())
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+        handle = secrets.token_urlsafe(32)
+        self._sessions[handle] = session
+        return {"schema_version": "llm-wiki-context-session/v1", "session_id": handle,
+                "max_entries": 8, "max_bytes": 16_777_216, "ttl_seconds": 300,
+                "ownership": "this server and its configured workspace"}
+
+    def _session(self, session_id):
+        if not isinstance(session_id, str) or len(session_id) > 128 or session_id not in self._sessions:
+            raise McpWikiError("Unknown or expired session", code="invalid-session")
+        return self._sessions[session_id]
+
+    def read_context_session(self, session_id, request, *, if_result_id=None, delta=False):
+        try:
+            return self._session(session_id).read(request, if_result_id=if_result_id, delta=delta)
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    def hint_context_session(self, session_id, *, unsaved_buffers=False):
+        try:
+            self._session(session_id).hint(unsaved_buffers=unsaved_buffers)
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+        return {"state": "hint-recorded", "freshness_established": False}
+
+    def close_context_session(self, session_id):
+        self._session(session_id).close()
+        del self._sessions[session_id]
+        return {"state": "closed"}
+
+    def close_sessions(self):
+        for session in self._sessions.values():
+            session.close()
+        self._sessions.clear()
 
     def get_context(
         self,
@@ -1145,12 +1226,30 @@ def create_mcp_server(config: McpServerConfig):
     ensure_mcp_runtime()
     from mcp.server.fastmcp import FastMCP  # type: ignore[reportMissingImports]
 
+    if config.counter is not None and config.tokenizer is not None:
+        raise McpWikiError("Configure either a counter or a tokenizer")
+    counter = config.counter
+    if config.tokenizer is not None:
+        counter = LocalTokenizerCounter(config.tokenizer)
     service = McpWikiService(
         src_dir=config.src_dir,
         wiki_dir=config.wiki_dir,
         source_selection=config.source_selection,
         allow_external_src=config.allow_external_src,
+        counter=counter,
+        workflow_policy=config.workflow_policy,
+        workflow_profile=config.workflow_profile,
+        enable_sessions=config.enable_sessions,
+        max_sessions=config.max_sessions,
     )
+
+    @asynccontextmanager
+    async def lifespan(_server):
+        try:
+            yield {}
+        finally:
+            service.close_sessions()
+
     server = FastMCP(
         "llm-wiki",
         instructions=(
@@ -1161,6 +1260,7 @@ def create_mcp_server(config: McpServerConfig):
         host=config.host,
         port=config.port,
         streamable_http_path=config.path,
+        lifespan=lifespan,
     )
 
     _register_mcp_tools(server, service)
@@ -1174,7 +1274,7 @@ def _native_tool_call(callback: Callable[..., Any], *args, **kwargs) -> Any:
     try:
         return callback(*args, **kwargs)
     except McpWikiError as exc:
-        from mcp.types import CallToolResult, TextContent
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
 
         failure = {
             "state": "error",
@@ -1381,6 +1481,78 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def get_status() -> dict:
         """Return local llm-wiki status without mutating files."""
         return service.get_status()
+
+    @server.tool()
+    def build_budgeted_context(request: dict):
+        """Return one counted v3 text representation; host/MCP framing is excluded."""
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
+
+        result = _native_tool_call(service.build_budgeted_context, request)
+        if isinstance(result, str):
+            return CallToolResult(content=[TextContent(type="text", text=result)])
+        return result
+
+    def get_maintenance_queue(limit: int = 30) -> dict[str, Any]:
+        """Return bounded advisory wiki maintenance evidence."""
+        return _native_tool_call(service.get_maintenance_queue, limit=limit)
+
+    try:
+        from pydantic import StrictBool, StrictInt  # type: ignore[reportMissingImports]
+    except ImportError:  # A recording/base-only registrar performs no SDK coercion.
+        strict_bool, strict_int = bool, int
+    else:
+        strict_bool, strict_int = StrictBool, StrictInt
+    get_maintenance_queue.__annotations__["limit"] = strict_int
+    server.tool()(get_maintenance_queue)
+
+    @server.tool()
+    def build_task_context(request: dict):
+        """Return one canonical counted task result with explicit evidence gaps."""
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
+
+        result = _native_tool_call(service.build_task_context, request)
+        return CallToolResult(content=[TextContent(type="text", text=result)]) if isinstance(result, str) else result
+
+    @server.tool()
+    def open_context_session() -> dict[str, Any]:
+        """Open an optional session bound to this server's configured workspace."""
+        return _native_tool_call(service.open_context_session)
+
+    def read_context_session(session_id: str, request: dict, if_result_id: str | None = None, delta: bool = False):
+        """Validate current inputs before returning full, unchanged or delta context."""
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
+        from .workflow_profile import canonical_json
+
+        result = _native_tool_call(service.read_context_session, session_id, request,
+                                   if_result_id=if_result_id, delta=delta)
+        if isinstance(result, CallToolResult):
+            return result
+        metadata = result.metadata()
+        if result.context is not None:
+            if not result.context.ok:
+                return CallToolResult(isError=True, content=[TextContent(type="text",
+                    text=canonical_json(result.context.to_payload()).decode("utf-8"))])
+            text = result.context.rendered
+        elif result.delta is not None:
+            text = canonical_json(result.delta).decode("utf-8")
+        else:
+            text = canonical_json(metadata).decode("utf-8")
+        return CallToolResult(content=[TextContent(type="text", text=text)], structuredContent=metadata)
+
+    read_context_session.__annotations__["delta"] = strict_bool
+    server.tool()(read_context_session)
+
+    def hint_context_session(session_id: str, unsaved_buffers: bool = False) -> dict[str, Any]:
+        """Record an invalidation hint; it never establishes currentness."""
+        return _native_tool_call(service.hint_context_session, session_id, unsaved_buffers=unsaved_buffers)
+
+    hint_context_session.__annotations__["unsaved_buffers"] = strict_bool
+    server.tool()(hint_context_session)
+
+    @server.tool()
+    def close_context_session(session_id: str) -> dict[str, Any]:
+        """Release the session's disposable in-memory state."""
+        return _native_tool_call(service.close_context_session, session_id)
 
 
 def _register_mcp_resources(server, service: McpWikiService) -> None:

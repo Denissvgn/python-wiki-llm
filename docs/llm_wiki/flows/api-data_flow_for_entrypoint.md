@@ -2,7 +2,7 @@
 
 **Entry point:** `data_flow_for_entrypoint` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 9 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 11 more
 
 **Complete modules touched:**
 
@@ -15,6 +15,8 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -81,7 +83,7 @@ sequenceDiagram
     p22-->>p23: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
 ```
 
-> Call sequence diagram shows 30 of 447 interactions; 417 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 474 interactions; 444 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -141,11 +143,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| data_flow_for_entrypoint | _normalize_query_input | 1706 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1552 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1554 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1555 | `str(exc)` |
-| data_flow_for_entrypoint | normalize_documentation_query_text | 1707 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
+| data_flow_for_entrypoint | _normalize_query_input | 1865 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1711 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1713 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1714 | `str(exc)` |
+| data_flow_for_entrypoint | normalize_documentation_query_text | 1866 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip | 60 | `value.strip(data not statically known)` |
 | normalize_documentation_query_text | DocumentationQueryError | 61 | `DocumentationQueryError(...)` |
@@ -161,7 +163,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1552 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1711 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [migrate_cmd](../modules/migrate_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 32 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 35 more
 
 **Complete modules touched:**
 
@@ -28,6 +28,9 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [migrate_cmd](../modules/migrate_cmd.md)
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
@@ -100,7 +103,7 @@ sequenceDiagram
     p18->>p19: WindowsSecurityGuardError
 ```
 
-> Call sequence diagram shows 30 of 3525 interactions; 3495 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3627 interactions; 3597 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -193,7 +196,7 @@ flowchart LR
 | run | bool (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `bool(getattr(...))` |
 | run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `getattr(args, 'allow_external_src', False)` |
 | run | validate_source_root | 1679 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
-| validate_source_root | validate_path | 158 | `validate_path(path, label)` |
+| validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 
 ### Boundary effects
 

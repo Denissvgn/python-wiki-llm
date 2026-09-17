@@ -10,59 +10,58 @@
 ```mermaid
 sequenceDiagram
     participant p0 as governance_lock
-    participant p1 as Path (src/llm_wiki_cli/services…ernance.py:governance_lock)
-    participant p2 as first_unsafe_path_component
-    participant p3 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    participant p4 as os.fspath
-    participant p5 as os.path.abspath
-    participant p6 as lexical.is_absolute
-    participant p7 as Path.cwd
-    participant p8 as list
-    participant p9 as pending_parts.pop
-    participant p10 as current.lstat
-    participant p11 as getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    participant p12 as stat.S_ISLNK
-    participant p13 as bool (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    participant p14 as trusted_symlink_owner
-    participant p15 as callable
-    participant p16 as os.readlink
-    participant p17 as link_target.is_absolute
-    participant p18 as GovernanceError
+    participant p1 as GovernanceError
+    participant p2 as Path (src/llm_wiki_cli/services…ernance.py:governance_lock)
+    participant p3 as first_unsafe_path_component
+    participant p4 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p5 as os.fspath
+    participant p6 as os.path.abspath
+    participant p7 as lexical.is_absolute
+    participant p8 as Path.cwd
+    participant p9 as list
+    participant p10 as pending_parts.pop
+    participant p11 as current.lstat
+    participant p12 as getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p13 as stat.S_ISLNK
+    participant p14 as bool (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p15 as trusted_symlink_owner
+    participant p16 as callable
+    participant p17 as os.readlink
+    participant p18 as link_target.is_absolute
     participant p19 as _governance_lock_root
-    participant p20 as wiki_dir.resolve
-    p0-->>p1: Path (src/llm_wiki_cli/services…ernance.py:governance_lock)
-    p0->>p2: first_unsafe_path_component
-    p2-->>p3: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p4: os.fspath
-    p2-->>p3: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p5: os.path.abspath
-    p2-->>p6: lexical.is_absolute
-    p2-->>p7: Path.cwd
-    p2-->>p3: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p8: list
-    p2-->>p9: pending_parts.pop
-    p2-->>p10: current.lstat
-    p2-->>p11: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p11: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p12: stat.S_ISLNK
-    p2-->>p13: bool (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p13: bool (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p11: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p14: trusted_symlink_owner
-    p2-->>p15: callable
-    p2-->>p11: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p3: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p3: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p16: os.readlink
-    p2-->>p17: link_target.is_absolute
-    p2-->>p3: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p2-->>p8: list
-    p0->>p18: GovernanceError
+    p0->>p1: GovernanceError
+    p0-->>p2: Path (src/llm_wiki_cli/services…ernance.py:governance_lock)
+    p0->>p3: first_unsafe_path_component
+    p3-->>p4: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p5: os.fspath
+    p3-->>p4: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p6: os.path.abspath
+    p3-->>p7: lexical.is_absolute
+    p3-->>p8: Path.cwd
+    p3-->>p4: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p9: list
+    p3-->>p10: pending_parts.pop
+    p3-->>p11: current.lstat
+    p3-->>p12: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p12: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p13: stat.S_ISLNK
+    p3-->>p14: bool (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p14: bool (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p12: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p15: trusted_symlink_owner
+    p3-->>p16: callable
+    p3-->>p12: getattr (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p4: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p4: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p17: os.readlink
+    p3-->>p18: link_target.is_absolute
+    p3-->>p4: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p3-->>p9: list
+    p0->>p1: GovernanceError
     p0->>p19: _governance_lock_root
-    p19-->>p20: wiki_dir.resolve
 ```
 
-> Call sequence diagram shows 30 of 60 interactions; 30 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 61 interactions; 31 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -70,32 +69,33 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. governance_lock"]
-    s2["2. Path (src/llm_wiki_cli/services…ernance.py:governance_lock)"]
-    s3["3. first_unsafe_path_component"]
-    s4["4. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s5["5. os.fspath"]
-    s6["6. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s7["7. os.path.abspath"]
-    s8["8. lexical.is_absolute"]
-    s9["9. Path.cwd"]
-    s10["10. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s11["11. list"]
-    s12["12. pending_parts.pop"]
-    s1 -. "Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)" .-> s2
-    s1 -->|"first_unsafe_path_component(root)"| s3
-    s3 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))" .-> s4
-    s3 -. "os.fspath(path)" .-> s5
-    s3 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))" .-> s6
-    s3 -. "os.path.abspath(lexical)" .-> s7
-    s3 -. "lexical.is_absolute(data not statically known)" .-> s8
-    s3 -. "Path.cwd(data not statically known)" .-> s9
-    s3 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(absolute.anchor)" .-> s10
-    s3 -. "list(...)" .-> s11
-    s3 -. "pending_parts.pop(0)" .-> s12
+    s2["2. GovernanceError"]
+    s3["3. Path (src/llm_wiki_cli/services…ernance.py:governance_lock)"]
+    s4["4. first_unsafe_path_component"]
+    s5["5. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
+    s6["6. os.fspath"]
+    s7["7. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
+    s8["8. os.path.abspath"]
+    s9["9. lexical.is_absolute"]
+    s10["10. Path.cwd"]
+    s11["11. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
+    s12["12. list"]
+    s1 -->|"GovernanceError('lock', 'unknown mutation lock')"| s2
+    s1 -. "Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)" .-> s3
+    s1 -->|"first_unsafe_path_component(root)"| s4
+    s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))" .-> s5
+    s4 -. "os.fspath(path)" .-> s6
+    s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))" .-> s7
+    s4 -. "os.path.abspath(lexical)" .-> s8
+    s4 -. "lexical.is_absolute(data not statically known)" .-> s9
+    s4 -. "Path.cwd(data not statically known)" .-> s10
+    s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(absolute.anchor)" .-> s11
+    s4 -. "list(...)" .-> s12
     b0["mutation pending_parts.pop"]
-    s3 -. "mutation pending_parts.pop" .-> b0
+    s4 -. "mutation pending_parts.pop" .-> b0
     click s1 "../modules/knowledge_governance.md"
-    click s3 "../modules/io.md"
+    click s2 "../modules/knowledge_governance.md"
+    click s4 "../modules/io.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
 ```
@@ -104,7 +104,8 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `governance_lock` | `wiki_dir: str \| Path` | `GOVERNANCE_LOCK_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `os`, `os`, `os`, `GOVERNANCE_LOCK_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `sys` | - | - |
+| `governance_lock` | `wiki_dir: str \| Path`, `_lock_filename: str` | `GOVERNANCE_LOCK_FILENAME`, `os`, `os`, `os`, `sys`, `sys`, `GOVERNANCE_FILENAME`, `sys` | - | - |
+| `GovernanceError` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…ernance.py:governance_lock)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
@@ -115,14 +116,14 @@ flowchart LR
 | `Path.cwd` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
 | `list` | - | - | - | - |
-| `pending_parts.pop` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 857 | `Path(wiki_dir)` |
-| governance_lock | first_unsafe_path_component | 858 | `first_unsafe_path_component(root)` |
+| governance_lock | GovernanceError | 860 | `GovernanceError('lock', 'unknown mutation lock')` |
+| governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 861 | `Path(wiki_dir)` |
+| governance_lock | first_unsafe_path_component | 862 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
@@ -131,7 +132,6 @@ flowchart LR
 | first_unsafe_path_component | Path.cwd | 66 | `Path.cwd(data not statically known)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 67 | `Path(absolute.anchor)` |
 | first_unsafe_path_component | list | 68 | `list(...)` |
-| first_unsafe_path_component | pending_parts.pop | 71 | `pending_parts.pop(0)` |
 
 ### Boundary effects
 

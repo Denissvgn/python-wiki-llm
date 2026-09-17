@@ -24,15 +24,16 @@ sequenceDiagram
     participant p12 as _default_path_error
     participant p13 as SharedValidationError
     participant p14 as os.fspath
-    participant p15 as raw.encode
-    participant p16 as raw.replace
-    participant p17 as PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p18 as path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p19 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p20 as path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p21 as normalized.strip
-    participant p22 as canonical.casefold().endswith
-    participant p23 as canonical.casefold
+    participant p15 as _syntax_key
+    participant p16 as type
+    participant p17 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p18 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p19 as _known_syntax
+    participant p20 as _PATH_SYNTAX.get
+    participant p21 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)
+    participant p22 as _check_path_collision
+    participant p23 as portable_path_key
+    participant p24 as unicodedata.normalize(…).casefold
     p0-->>p1: isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)
     p0-->>p2: value.strip
     p0-->>p3: value.strip().replace
@@ -50,22 +51,22 @@ sequenceDiagram
     p10-->>p14: os.fspath
     p10-->>p11: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
     p10->>p12: _default_path_error
-    p10-->>p15: raw.encode
-    p10->>p12: _default_path_error
-    p10->>p12: _default_path_error
-    p10-->>p16: raw.replace
-    p10-->>p17: PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p10-->>p18: path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p10-->>p19: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p10->>p12: _default_path_error
-    p10->>p12: _default_path_error
-    p10-->>p20: path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p10-->>p21: normalized.strip
-    p10-->>p22: canonical.casefold().endswith
-    p10-->>p23: canonical.casefold
+    p10->>p15: _syntax_key
+    p15-->>p16: type
+    p15-->>p17: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p15-->>p18: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p15-->>p16: type
+    p15-->>p16: type
+    p15-->>p17: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p10->>p19: _known_syntax
+    p19-->>p20: _PATH_SYNTAX.get
+    p19-->>p21: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)
+    p10->>p22: _check_path_collision
+    p22->>p23: portable_path_key
+    p23-->>p24: unicodedata.normalize(…).casefold
 ```
 
-> Call sequence diagram shows 30 of 53 interactions; 23 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 69 interactions; 39 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -114,23 +115,23 @@ flowchart LR
 | `_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)` | - | - | - | - |
 | `_WINDOWS_DRIVE_PREFIX_RE.match` | - | - | - | - |
 | `path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)` | - | - | - | - |
-| `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `canonical` |
+| `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `cached`, `_remember_syntax(...)` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_legacy_portable_relative_path | isinstance (src/llm_wiki_cli/services…acy_portable_relative_path) | 338 | `isinstance(value, str)` |
-| normalize_legacy_portable_relative_path | value.strip | 338 | `value.strip(data not statically known)` |
-| normalize_legacy_portable_relative_path | value.strip().replace | 342 | `value.strip().replace('\\', '/')` |
-| normalize_legacy_portable_relative_path | value.strip | 342 | `value.strip(data not statically known)` |
-| normalize_legacy_portable_relative_path | PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path) | 343 | `PurePosixPath(normalized_input)` |
-| normalize_legacy_portable_relative_path | normalized_input.startswith | 347 | `normalized_input.startswith('.//')` |
-| normalize_legacy_portable_relative_path | path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path) | 349 | `path.is_absolute(data not statically known)` |
-| normalize_legacy_portable_relative_path | _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path) | 350 | `_WINDOWS_ABSOLUTE_RE.match(normalized_input)` |
-| normalize_legacy_portable_relative_path | _WINDOWS_DRIVE_PREFIX_RE.match | 351 | `_WINDOWS_DRIVE_PREFIX_RE.match(normalized_input)` |
-| normalize_legacy_portable_relative_path | path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path) | 360 | `path.as_posix(data not statically known)` |
-| normalize_legacy_portable_relative_path | require_portable_relative_path | 366 | `require_portable_relative_path(normalized)` |
+| normalize_legacy_portable_relative_path | isinstance (src/llm_wiki_cli/services…acy_portable_relative_path) | 387 | `isinstance(value, str)` |
+| normalize_legacy_portable_relative_path | value.strip | 387 | `value.strip(data not statically known)` |
+| normalize_legacy_portable_relative_path | value.strip().replace | 391 | `value.strip().replace('\\', '/')` |
+| normalize_legacy_portable_relative_path | value.strip | 391 | `value.strip(data not statically known)` |
+| normalize_legacy_portable_relative_path | PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path) | 392 | `PurePosixPath(normalized_input)` |
+| normalize_legacy_portable_relative_path | normalized_input.startswith | 396 | `normalized_input.startswith('.//')` |
+| normalize_legacy_portable_relative_path | path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path) | 398 | `path.is_absolute(data not statically known)` |
+| normalize_legacy_portable_relative_path | _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path) | 399 | `_WINDOWS_ABSOLUTE_RE.match(normalized_input)` |
+| normalize_legacy_portable_relative_path | _WINDOWS_DRIVE_PREFIX_RE.match | 400 | `_WINDOWS_DRIVE_PREFIX_RE.match(normalized_input)` |
+| normalize_legacy_portable_relative_path | path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path) | 409 | `path.as_posix(data not statically known)` |
+| normalize_legacy_portable_relative_path | require_portable_relative_path | 415 | `require_portable_relative_path(normalized)` |
 
 ### Boundary effects
 
@@ -140,16 +141,16 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_legacy_portable_relative_path` | `isinstance` | 338 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `value.strip` | 338 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `value.strip().replace` | 342 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `value.strip` | 342 |
-| external_call | `normalize_legacy_portable_relative_path` | `PurePosixPath` | 343 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `normalized_input.startswith` | 347 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `path.is_absolute` | 349 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `_WINDOWS_ABSOLUTE_RE.match` | 350 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `_WINDOWS_DRIVE_PREFIX_RE.match` | 351 |
-| unresolved_call | `normalize_legacy_portable_relative_path` | `path.as_posix` | 360 |
+| external_call | `normalize_legacy_portable_relative_path` | `isinstance` | 387 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `value.strip` | 387 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `value.strip().replace` | 391 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `value.strip` | 391 |
+| external_call | `normalize_legacy_portable_relative_path` | `PurePosixPath` | 392 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `normalized_input.startswith` | 396 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `path.is_absolute` | 398 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `_WINDOWS_ABSOLUTE_RE.match` | 399 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `_WINDOWS_DRIVE_PREFIX_RE.match` | 400 |
+| unresolved_call | `normalize_legacy_portable_relative_path` | `path.as_posix` | 409 |
 | step_limit | `normalize_legacy_portable_relative_path` | `first 12 steps` | 0 |
 
 ## Behavior

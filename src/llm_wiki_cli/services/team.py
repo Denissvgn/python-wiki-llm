@@ -749,6 +749,8 @@ def _manifest_resolution_state_from_conflict(
                     invalid_v5 = True
     if not parsed:
         return {}, {}, None, ""
+    if any(payload.get("version") == 6 for payload in parsed):
+        return None, None, None, "indexed manifest conflict requires restoring one committed root before sync"
 
     if v5_advertised:
         if invalid_v5 or len(v5_manifests) != len(variants):

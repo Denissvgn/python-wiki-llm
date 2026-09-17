@@ -23,6 +23,7 @@ from .knowledge_artifacts import (
     KnowledgeArtifactError,
     KnowledgeCommitPlan,
     build_knowledge_commit_plan,
+    ValidatedKnowledgeArtifacts,
     validate_surface_index_bytes,
 )
 from .knowledge_envelope import (
@@ -44,7 +45,6 @@ from .knowledge_index import (
     KnowledgeIndexBuildError,
     KnowledgeIndexInputs,
     build_knowledge_index,
-    serialize_knowledge_index,
 )
 from .knowledge_graph import (
     DEFAULT_EVIDENCE_LIMIT,
@@ -128,6 +128,7 @@ class KnowledgeGenerationInputs:
     plugins: Sequence[ProducerComponentInput] = ()
     previous_producer: ProducerRecord | None = None
     configured_public_identity: str | None = None
+    prior_artifacts: ValidatedKnowledgeArtifacts | None = None
     previous_manifest: SyncManifest | None = None
     next_manifest: SyncManifest | None = None
     asset_paths: AbstractSet[str] = frozenset()
@@ -153,6 +154,7 @@ class KnowledgeGenerationInputs:
     graph_evidence_limit: int = DEFAULT_EVIDENCE_LIMIT
     governance: GovernanceLedger | None = None
     reuse_input_basis: Mapping[str, object] | None = None
+    knowledge_format: str | None = None
 
 
 def build_knowledge_generation_plan(
@@ -415,12 +417,13 @@ def _build_knowledge_generation_plan(
             knowledge,
             inputs.governance,
         )
-    knowledge_bytes = serialize_knowledge_index(knowledge).encode("utf-8")
     return build_knowledge_commit_plan(
         inputs.wiki_dir,
+        prior=inputs.prior_artifacts,
         surface_index_bytes=surface_bytes,
-        knowledge_index_bytes=knowledge_bytes,
+        knowledge_index=knowledge,
         manifest=manifest,
+        knowledge_format=inputs.knowledge_format,
     )
 
 

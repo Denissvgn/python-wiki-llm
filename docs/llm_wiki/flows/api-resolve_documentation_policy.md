@@ -71,7 +71,7 @@ sequenceDiagram
     p20->>p21: windows_object_identity_from_values
 ```
 
-> Call sequence diagram shows 30 of 233 interactions; 203 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 236 interactions; 206 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

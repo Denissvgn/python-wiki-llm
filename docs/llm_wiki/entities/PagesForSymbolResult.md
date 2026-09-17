@@ -1,6 +1,6 @@
 # PagesForSymbolResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:225`
+**Location:** `src/llm_wiki_cli/api_types.py:302`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`
 **Module:** [api_types](../modules/api_types.md)

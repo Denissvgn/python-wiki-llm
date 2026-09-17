@@ -1,6 +1,6 @@
 # _SnapshotBuckets
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:436`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:451`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -27,6 +27,13 @@ _Auto-generated from `_SnapshotBuckets` in `src/llm_wiki_cli/services/source_sna
 | `source_selection_policy` | `SourceSelectionPolicy \| None` | *required* | — |
 | `selected_regular_paths` | `set[str]` | *required* | — |
 | `expected_gitignore_paths` | `frozenset[str] \| None` | *required* | — |
+| `respect_ignores` | `bool` | `False` | — |
+| `max_control_bytes` | `int \| None` | `None` | — |
+| `control_bytes` | `int` | `0` | — |
+| `max_scan_entries` | `int \| None` | `None` | — |
+| `coherent` | `bool` | `False` | — |
+| `directory_integrity` | `dict[str, tuple[int, ...]]` | `field(default_factory=dict)` | — |
+| `control_integrity` | `dict[Path, SourceFileIntegrity]` | `field(default_factory=dict)` | — |
 
 ## Methods
 
@@ -43,12 +50,12 @@ flowchart LR
     n3["_collect_source_tree (src/llm_wiki_cli/services/source_snapshot.py)"]
     n4["_new_snapshot_buckets (src/llm_wiki_cli/services/source_snapshot.py)"]
     n5["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n6["_record_generated_javascript_bundle_candidate (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n7["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n8["_record_infrastructure_candidates (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n9["_record_language_candidate (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n10["_record_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n11["_record_unsupported_language_candidate (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n6["_read_ignore_control (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n7["_record_generated_javascript_bundle_candidate (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n8["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n9["_record_infrastructure_candidates (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n10["_record_language_candidate (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n11["_record_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -78,7 +85,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [source_snapshot](../modules/source_snapshot.md) | 0 | `compose_candidates`, `dockerfile_candidates`, `expected_gitignore_paths`, `files_by_language`, `gitignore_contents`, `gitignore_rules`, `include_tests`, `package_markers`, `selected_regular_paths`, `source_selection_policy`, `unsupported_files_by_language`, `yaml_candidates` |
+| [source_snapshot](../modules/source_snapshot.md) | 0 | `coherent`, `compose_candidates`, `control_bytes`, `control_integrity`, `directory_integrity`, `dockerfile_candidates`, `expected_gitignore_paths`, `files_by_language`, `gitignore_contents`, `gitignore_rules`, `include_tests`, `max_control_bytes` |
 
 ### References
 
@@ -90,11 +97,11 @@ flowchart LR
 | `_new_snapshot_buckets` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
 | `_new_snapshot_buckets` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_prune_dirnames` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
+| `_read_ignore_control` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_record_generated_javascript_bundle_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_record_gitignore_rules` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_record_infrastructure_candidates` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_record_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_record_source_file` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
-| `_record_unsupported_language_candidate` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

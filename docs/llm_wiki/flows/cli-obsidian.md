@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [obsidian_cmd](../modules/obsidian_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 38 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 42 more
 
 **Complete modules touched:**
 
@@ -31,9 +31,13 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_projection](../modules/knowledge_projection.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [obsidian](../modules/obsidian.md)
 - [obsidian_cmd](../modules/obsidian_cmd.md)
 - [packages](../modules/packages.md)
@@ -107,7 +111,7 @@ sequenceDiagram
     p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 2748 interactions; 2718 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2901 interactions; 2871 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -177,12 +181,12 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 79 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run) | 80 | `getattr(args, 'src_dir', '.')` |
 | run | validate_path | 81 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve | 134 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
@@ -199,11 +203,11 @@ flowchart LR
 | external_call | `run` | `getattr` | 75 |
 | external_call | `run` | `getattr` | 79 |
 | external_call | `run` | `getattr` | 80 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
-| external_call | `validate_path` | `Path.cwd` | 133 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

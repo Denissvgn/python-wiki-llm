@@ -4,7 +4,7 @@
 
 ## Description
 
-Versioned input commitments for conservative, validated sync no-ops.
+Reuses validated committed knowledge only when producer, source, Markdown and generation conditions still match. Unchanged results retain exact physical storage bytes and the format declared by the committed root, including the selected packed compression profile. Reuse preserves the existing full-validation and workspace-ownership boundaries.
 
 ## Imports
 
@@ -19,6 +19,7 @@ Versioned input commitments for conservative, validated sync no-ops.
 | `.knowledge_evidence` | `hash_json`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_orchestration` | `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
+| `.knowledge_packs` | `PACKED_SCHEMA` |
 | `.validation` | `resolve_portable_workspace_path` |
 | `.wiki_media` | `build_asset_index` |
 | `.wiki_surface` | `collect_wiki_pages` |
@@ -26,6 +27,7 @@ Versioned input commitments for conservative, validated sync no-ops.
 | `collections.abc` | `Mapping`, `Sequence` |
 | `dataclasses` | `asdict`, `replace` |
 | `hashlib` | `hashlib` |
+| `json` | `json` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |
@@ -48,10 +50,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (5) |
-| Outbound | `src` (12) |
+| Inbound | `src` (6) |
+| Outbound | `src` (13) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

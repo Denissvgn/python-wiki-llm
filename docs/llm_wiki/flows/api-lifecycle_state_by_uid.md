@@ -137,12 +137,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| lifecycle_state_by_uid | validate_governance_ledger | 1444 | `validate_governance_ledger(ledger)` |
+| lifecycle_state_by_uid | validate_governance_ledger | 1448 | `validate_governance_ledger(ledger)` |
 | validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 523 | `isinstance(ledger, GovernanceLedger)` |
 | validate_governance_ledger | TypeError | 524 | `TypeError('ledger must be a GovernanceLedger')` |
 | validate_governance_ledger | GovernanceError | 526 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
 | validate_governance_ledger | _bundle_id | 531 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3357 | `validate_bundle_id(value)` |
+| _bundle_id | validate_bundle_id | 3361 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |

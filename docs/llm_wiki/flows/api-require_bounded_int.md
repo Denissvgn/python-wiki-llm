@@ -46,9 +46,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_bounded_int | require_int | 840 | `require_int(value, error=invalid_error)` |
-| require_int | isinstance | 780 | `isinstance(value, bool)` |
-| require_int | isinstance | 780 | `isinstance(value, int)` |
+| require_bounded_int | require_int | 878 | `require_int(value, error=invalid_error)` |
+| require_int | isinstance | 818 | `isinstance(value, bool)` |
+| require_int | isinstance | 818 | `isinstance(value, int)` |
 
 ### Boundary effects
 
@@ -58,7 +58,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_int` | `isinstance` | 780 |
+| external_call | `require_int` | `isinstance` | 818 |
 
 ## Behavior
 

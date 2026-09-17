@@ -396,6 +396,18 @@ def open_windows_readonly_file(
             _close_windows_handle(native_handle)
 
 
+@contextmanager
+def hold_windows_readonly_file(path: Path) -> Iterator[None]:
+    """Freeze a regular input without consuming a Python/CRT stream slot."""
+    if os.name != "nt":
+        raise WindowsFileGuardError("Windows input guards are unavailable on this platform.")
+    handle = _open_windows_readonly_file_handle(path, require_single_link=False)
+    try:
+        yield
+    finally:
+        _close_windows_handle(handle)
+
+
 def _open_windows_readonly_file_handle(
     path: Path,
     *,

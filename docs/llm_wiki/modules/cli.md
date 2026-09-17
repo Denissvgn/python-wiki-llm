@@ -15,7 +15,7 @@ startup does not require their runtime packages.
 | Source | Symbols |
 |--------|---------|
 | `.` | `__version__` |
-| `.commands` | `api_diff_cmd`, `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `queue_cmd`, `release_cmd`, `review_cmd`, `search_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
+| `.commands` | `api_diff_cmd`, `bump_cmd`, `ci_check_cmd`, `docs_cmd`, `doctor_cmd`, `generate_prompt_cmd`, `install_ci_cmd`, `init_cmd`, `install_cmd`, `knowledge_cmd`, `mcp_cmd`, `metrics_cmd`, `migrate_cmd`, `obsidian_cmd`, `plugins_cmd`, `prepare_extractors_cmd`, `queue_cmd`, `query_cmd`, `release_cmd`, `review_cmd`, `search_cmd`, `site_cmd`, `skills_cmd`, `status_cmd`, `sync_cmd`, `team_cmd`, `task_cmd`, `trigger_cmd`, `uninstall_cmd`, `upgrade_cmd` |
 | `.config` | `AGENT_CHOICES`, `DEFAULT_WIKI_DIR`, `PathValidationError` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `lint_service` |
 | `.services.contracts` | `BOOTSTRAP_SKIP_DATA_FLOW_FLAG` |
@@ -45,15 +45,15 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (40) |
+| Outbound | `src` (42) |
 
-> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ExplicitContextOption](../entities/ExplicitContextOption.md) | 57 | `argparse.Action` | Retain which semantic options were supplied beside a request file. |
+| [_ExplicitContextOption](../entities/ExplicitContextOption.md) | 59 | `argparse.Action` | Retain which semantic options were supplied beside a request file. |
 
 ## Functions
 
@@ -70,6 +70,8 @@ flowchart LR
 | `_add_jobs_argument` | `(parser)` | — | — |
 | `_add_queue_command` | `(subparsers)` | — | — |
 | `_build_parser` | `()` | — | — |
+| `_add_query_command` | `(subparsers)` | — | — |
+| `_add_task_context_command` | `(subparsers)` | — | — |
 | `_register_commands` | `(subparsers)` | — | — |
 | `_add_doctor_command` | `(subparsers)` | — | — |
 | `_add_init_command` | `(subparsers)` | — | — |

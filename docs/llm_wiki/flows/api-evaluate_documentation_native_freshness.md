@@ -101,7 +101,7 @@ sequenceDiagram
     p20->>p15: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 2976 interactions; 2946 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3023 interactions; 2993 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -179,11 +179,11 @@ flowchart LR
 | evaluate_documentation_native_freshness | TypeError (src/llm_wiki_cli/services…entation_native_freshness) | 205 | `TypeError('manifest must be a SyncManifest')` |
 | evaluate_documentation_native_freshness | _native_source_snapshot_preflight | 206 | `_native_source_snapshot_preflight(source_root=source_root, manifest=manifest, source_selection=source_selection, operation='native freshness')` |
 | _native_source_snapshot_preflight | _validated_directory | 155 | `_validated_directory(source_root, 'source_root')` |
-| _validated_directory | Path(…).expanduser | 1078 | `Path(value).expanduser(data not statically known)` |
-| _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1078 | `Path(value)` |
-| _validated_directory | candidate.lstat | 1080 | `candidate.lstat(data not statically known)` |
-| _validated_directory | DocumentationNativeError | 1082 | `DocumentationNativeError(...)` |
-| _validated_directory | stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory) | 1085 | `stat.S_ISLNK(metadata.st_mode)` |
+| _validated_directory | Path(…).expanduser | 1079 | `Path(value).expanduser(data not statically known)` |
+| _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1079 | `Path(value)` |
+| _validated_directory | candidate.lstat | 1081 | `candidate.lstat(data not statically known)` |
+| _validated_directory | DocumentationNativeError | 1083 | `DocumentationNativeError(...)` |
+| _validated_directory | stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory) | 1086 | `stat.S_ISLNK(metadata.st_mode)` |
 
 ### Boundary effects
 
@@ -202,9 +202,9 @@ flowchart LR
 | external_call | `evaluate_documentation_native_freshness` | `TypeError` | 203 |
 | external_call | `evaluate_documentation_native_freshness` | `isinstance` | 204 |
 | external_call | `evaluate_documentation_native_freshness` | `TypeError` | 205 |
-| unresolved_call | `_validated_directory` | `Path(value).expanduser` | 1078 |
-| unresolved_call | `_validated_directory` | `candidate.lstat` | 1080 |
-| external_call | `_validated_directory` | `stat.S_ISLNK` | 1085 |
+| unresolved_call | `_validated_directory` | `Path(value).expanduser` | 1079 |
+| unresolved_call | `_validated_directory` | `candidate.lstat` | 1081 |
+| external_call | `_validated_directory` | `stat.S_ISLNK` | 1086 |
 | step_limit | `evaluate_documentation_native_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_documentation_native_freshness` | `depth limit` | 0 |
 

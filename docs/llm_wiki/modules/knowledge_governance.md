@@ -67,10 +67,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (17) |
+| Inbound | `src` (20) |
 | Outbound | `src` (9) |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 28 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -104,7 +104,7 @@ flowchart LR
 | `_read_governance_bytes` | `(path: Path, *, missing_ok: bool) -> bytes \| None` | — | Read at most one bounded regular ledger without following its leaf. |
 | `load_governance` | `(wiki_dir: str \| Path, *, expected_bundle_id: str \| None = None) -> GovernanceLoadResult` | — | Load one canonical regular-file ledger and reject duplicate JSON keys. |
 | `save_governance` | `(wiki_dir: str \| Path, ledger: GovernanceLedger, *, expected_hash: str \| None \| object = _MISSING, fault_injector: FaultInjector \| None = None) -> GovernanceWriteResult` | — | Durably replace a ledger after an optional compare-and-swap check. |
-| `governance_lock` | `(wiki_dir: str \| Path) -> Iterator[None]` | `@contextmanager` | Hold the dedicated non-blocking governance mutation lock. |
+| `governance_lock` | `(wiki_dir: str \| Path, *, _lock_filename: str = GOVERNANCE_LOCK_FILENAME) -> Iterator[None]` | `@contextmanager` | Hold the dedicated non-blocking governance mutation lock. |
 | `reconcile_concepts` | `(ledger: GovernanceLedger, concepts: Sequence[ConceptGovernanceReference], *, moves: Mapping[str, str] \| None = None) -> GovernanceLedger` | — | Carry supported moves and allocate only genuinely new concepts. |
 | `move_concept` | `(ledger: GovernanceLedger, uid: str, *, locator: str, natural_key: str, concept_kind: str \| None = None) -> GovernanceLedger` | — | Explicitly move an ambiguously changed concept and retain both aliases. |
 | `add_alias` | `(ledger: GovernanceLedger, uid: str, alias_type: str, value: str) -> GovernanceLedger` | — | Add one explicit historical alias without changing the allocation. |

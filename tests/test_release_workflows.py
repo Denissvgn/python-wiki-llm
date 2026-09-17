@@ -14,6 +14,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests import release_artifact_smoke
 
 
@@ -87,15 +88,11 @@ def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None
                 conflicts.append((pattern, assignment))
     assert conflicts == []
 
-    manifest = json.loads(
-        (ROOT / "docs" / "llm_wiki" / ".llm-wiki-manifest.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    selected_sources = set(manifest["sources"])
+    manifest = SyncManifest.load(ROOT / "docs" / "llm_wiki")
+    selected_sources = set(manifest.sources)
     selection_inputs = {
         item["path"]
-        for item in manifest["generation_inputs"]["source_selection_inputs"][
+        for item in manifest.generation_inputs["source_selection_inputs"][
             "inputs"
         ]
     }
@@ -1338,10 +1335,10 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     assert "tests/test_mcp_sdk.py" in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     mcp_verifier = _named_step(
-        mcp, "Enforce the single MCP SDK registration contract"
+        mcp, "Enforce MCP SDK registration and canonical delivery"
     )["run"]
-    assert "--minimum-collected 1" in mcp_verifier
-    assert "--minimum-passed 1" in mcp_verifier
+    assert "--minimum-collected 2" in mcp_verifier
+    assert "--minimum-passed 2" in mcp_verifier
 
 
 def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> None:
@@ -1514,8 +1511,8 @@ def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
     mcp_verifier = _named_step(
         mcp, "Enforce the dedicated MCP SDK contract"
     )["run"]
-    assert "--minimum-collected 1" in mcp_verifier
-    assert "--minimum-passed 1" in mcp_verifier
+    assert "--minimum-collected 2" in mcp_verifier
+    assert "--minimum-passed 2" in mcp_verifier
 
     build = workflow["jobs"]["build"]
     assert build["strategy"]["matrix"]["include"] == [
@@ -1554,6 +1551,32 @@ def test_committed_skip_contract_nodes_resolve_to_test_definitions() -> None:
             unresolved.append(node_id)
 
     assert unresolved == []
+
+
+def test_packed_range_link_skips_match_their_parameterized_contract() -> None:
+    from tests.test_knowledge_packs import test_ranges_never_follow_untrusted_links
+
+    test = test_ranges_never_follow_untrusted_links
+    marks = {mark.name: mark for mark in test.pytestmark}
+    parameters = marks["parametrize"]
+    assert parameters.args[0] == "link"
+    selector = f"tests/test_knowledge_packs.py::{test.__name__}"
+    entries = json.loads(
+        (ROOT / "release" / "skip-allowlist.json").read_text(encoding="utf-8")
+    )["entries"]
+    actual = [entry for entry in entries if entry["node_id"].startswith(selector)]
+    assert actual == [
+        {
+            "lane": "core-windows-3.13",
+            "node_id": f"{selector}[{link}]",
+            "owner_lane": "core-ubuntu-3.10",
+            "reason": marks["skipif"].kwargs["reason"],
+        }
+        for link in sorted(parameters.args[1])
+    ]
+    for workflow, job in (("ci.yml", "test"), ("release-qualification.yml", "core")):
+        lanes = _yaml(workflow)["jobs"][job]["strategy"]["matrix"]["include"]
+        assert any(lane["lane"] == "core-ubuntu-3.10" for lane in lanes)
 
 
 def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -> None:

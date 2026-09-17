@@ -92,9 +92,9 @@ flowchart LR
 | sha256_bytes | hashlib.sha256 | 198 | `hashlib.sha256(value)` |
 | relationship_edge_key | _canonical_json(…).encode | 311 | `_canonical_json(preimage).encode('utf-8')` |
 | relationship_edge_key | _canonical_json | 311 | `_canonical_json(preimage)` |
-| _canonical_json | canonical_json_text | 2230 | `canonical_json_text(value)` |
+| _canonical_json | canonical_json_text | 2249 | `canonical_json_text(value)` |
 | canonical_json_text | json.dumps | 159 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
-| _canonical_json | KnowledgeGraphError | 2232 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
+| _canonical_json | KnowledgeGraphError | 2251 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
 
 ### Boundary effects
 

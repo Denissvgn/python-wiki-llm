@@ -2,7 +2,17 @@
 
 **Entry point:** `commit_knowledge_artifacts` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md)
+**Modules touched:** [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 3 more
+
+**Complete modules touched:**
+
+- [filesystem_guard](../modules/filesystem_guard.md)
+- [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 
 ## Call sequence
 
@@ -10,60 +20,62 @@
 ```mermaid
 sequenceDiagram
     participant p0 as commit_knowledge_artifacts
-    participant p1 as isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)
-    participant p2 as TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)
-    participant p3 as callable
-    participant p4 as _apply_write
-    participant p5 as write_bytes_atomic
-    participant p6 as isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p7 as TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p8 as Path
-    participant p9 as target.parent.mkdir
-    participant p10 as tempfile.mkstemp
-    participant p11 as os.fdopen
-    participant p12 as f.write
-    participant p13 as os.replace
-    participant p14 as os.unlink
-    participant p15 as fault_injector
-    participant p16 as _verify_persisted
-    participant p17 as artifact.path.read_bytes
-    participant p18 as KnowledgeArtifactError
-    participant p19 as sha256_bytes
-    participant p20 as hashlib.sha256(…).hexdigest
-    participant p21 as hashlib.sha256
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)
-    p0-->>p3: callable
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)
-    p0->>p4: _apply_write
-    p4->>p5: write_bytes_atomic
-    p5-->>p6: isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    p5-->>p7: TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    p5-->>p8: Path
-    p5-->>p9: target.parent.mkdir
-    p5-->>p10: tempfile.mkstemp
-    p5-->>p11: os.fdopen
-    p5-->>p12: f.write
-    p5-->>p13: os.replace
-    p5-->>p14: os.unlink
-    p4-->>p15: fault_injector
-    p0->>p4: _apply_write
-    p0->>p16: _verify_persisted
-    p16-->>p17: artifact.path.read_bytes
-    p16->>p18: KnowledgeArtifactError
-    p16->>p19: sha256_bytes
-    p19-->>p20: hashlib.sha256(…).hexdigest
-    p19-->>p21: hashlib.sha256
-    p16->>p18: KnowledgeArtifactError
-    p0->>p16: _verify_persisted
-    p0->>p4: _apply_write
-    p0->>p16: _verify_persisted
-    p0->>p16: _verify_persisted
+    participant p1 as isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    participant p2 as TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    participant p3 as callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    participant p4 as _commit_sharded
+    participant p5 as _absolute_path
+    participant p6 as Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
+    participant p7 as os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
+    participant p8 as first_unsafe_path_component
+    participant p9 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p10 as os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p11 as os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p12 as lexical.is_absolute
+    participant p13 as Path.cwd
+    participant p14 as list
+    participant p15 as pending_parts.pop
+    participant p16 as current.lstat
+    participant p17 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p18 as stat.S_ISLNK
+    participant p19 as bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p20 as trusted_symlink_owner
+    participant p21 as callable (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    p0-->>p3: callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    p0->>p4: _commit_sharded
+    p4->>p5: _absolute_path
+    p5-->>p6: Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
+    p5-->>p7: os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)
+    p5->>p8: first_unsafe_path_component
+    p8-->>p9: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p10: os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p9: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p11: os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p12: lexical.is_absolute
+    p8-->>p13: Path.cwd
+    p8-->>p9: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p14: list
+    p8-->>p15: pending_parts.pop
+    p8-->>p16: current.lstat
+    p8-->>p17: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p17: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p18: stat.S_ISLNK
+    p8-->>p19: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p19: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p17: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p20: trusted_symlink_owner
+    p8-->>p21: callable (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p8-->>p17: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
 ```
 
-> Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 305 interactions; 275 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -71,33 +83,34 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. commit_knowledge_artifacts"]
-    s2["2. isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)"]
-    s3["3. TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)"]
-    s4["4. isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)"]
-    s5["5. TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)"]
-    s6["6. callable"]
-    s7["7. TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)"]
-    s8["8. _apply_write"]
-    s9["9. write_bytes_atomic"]
-    s10["10. isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)"]
-    s11["11. TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)"]
-    s12["12. Path"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)(plan, KnowledgeCommitPlan)" .-> s2
-    s1 -. "TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)('plan must be a KnowledgeCommitPlan')" .-> s3
-    s1 -. "isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)(dry_run, bool)" .-> s4
-    s1 -. "TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)('dry_run must be a bool')" .-> s5
-    s1 -. "callable(fault_injector)" .-> s6
-    s1 -. "TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)('fault_injector must be callable')" .-> s7
-    s1 -->|"_apply_write(plan.surface_index, CommitStage.SURFACE_INDEX_WRITTEN, fault_injector)"| s8
-    s8 -->|"write_bytes_atomic(artifact.path, artifact.content)"| s9
-    s9 -. "isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)(content, bytes)" .-> s10
-    s9 -. "TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)('content must be bytes')" .-> s11
-    s9 -. "Path(path)" .-> s12
-    b0["filesystem_write os.unlink"]
-    s9 -. "filesystem_write os.unlink" .-> b0
+    s2["2. isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)"]
+    s3["3. TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)"]
+    s5["5. TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)"]
+    s6["6. callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)"]
+    s7["7. TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)"]
+    s8["8. _commit_sharded"]
+    s9["9. _absolute_path"]
+    s10["10. Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)"]
+    s11["11. os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)"]
+    s12["12. first_unsafe_path_component"]
+    s1 -. "isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(plan, KnowledgeCommitPlan)" .-> s2
+    s1 -. "TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)('plan must be a KnowledgeCommitPlan')" .-> s3
+    s1 -. "isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(dry_run, bool)" .-> s4
+    s1 -. "TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)('dry_run must be a bool')" .-> s5
+    s1 -. "callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(fault_injector)" .-> s6
+    s1 -. "TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)('fault_injector must be callable')" .-> s7
+    s1 -->|"_commit_sharded(plan, fault_injector)"| s8
+    s8 -->|"_absolute_path(plan.knowledge_index.path.parent)"| s9
+    s9 -. "Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)(os.path.abspath(...))" .-> s10
+    s9 -. "os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)(path)" .-> s11
+    s9 -->|"first_unsafe_path_component(path)"| s12
+    b0["mutation pending_parts.pop"]
+    s12 -. "mutation pending_parts.pop" .-> b0
     click s1 "../modules/knowledge_artifacts.md"
     click s8 "../modules/knowledge_artifacts.md"
-    click s9 "../modules/io.md"
+    click s9 "../modules/knowledge_storage_io.md"
+    click s12 "../modules/io.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
 ```
@@ -107,53 +120,53 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `commit_knowledge_artifacts` | `plan: KnowledgeCommitPlan`, `dry_run: bool`, `fault_injector: FaultInjector \| None` | `KnowledgeCommitPlan`, `CommitStage`, `CommitStage`, `CommitStage` | - | `KnowledgeCommitResult(...)` |
-| `isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)` | - | - | - | - |
-| `callable` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts)` | - | - | - | - |
-| `_apply_write` | `artifact: PlannedArtifactWrite`, `stage: CommitStage`, `fault_injector: FaultInjector \| None` | - | - | `none` |
-| `write_bytes_atomic` | `path: str \| Path`, `content: bytes` | - | - | `target` |
-| `isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)` | - | - | - | - |
-| `TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)` | - | - | - | - |
-| `Path` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | - | - | - | - |
+| `callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | - | - | - | - |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | - | - | - | - |
+| `_commit_sharded` | `plan: KnowledgeCommitPlan`, `fault: FaultInjector \| None` | `CommitStage`, `CommitStage`, `CommitStage`, `CommitStage` | - | - |
+| `_absolute_path` | `path: Path` | - | - | `path` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | - | - | - | - |
+| `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts) | 477 | `isinstance(plan, KnowledgeCommitPlan)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts) | 478 | `TypeError('plan must be a KnowledgeCommitPlan')` |
-| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…commit_knowledge_artifacts) | 479 | `isinstance(dry_run, bool)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts) | 480 | `TypeError('dry_run must be a bool')` |
-| commit_knowledge_artifacts | callable | 481 | `callable(fault_injector)` |
-| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…commit_knowledge_artifacts) | 482 | `TypeError('fault_injector must be callable')` |
-| commit_knowledge_artifacts | _apply_write | 485 | `_apply_write(plan.surface_index, CommitStage.SURFACE_INDEX_WRITTEN, fault_injector)` |
-| _apply_write | write_bytes_atomic | 550 | `write_bytes_atomic(artifact.path, artifact.content)` |
-| write_bytes_atomic | isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic) | 165 | `isinstance(content, bytes)` |
-| write_bytes_atomic | TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic) | 166 | `TypeError('content must be bytes')` |
-| write_bytes_atomic | Path | 167 | `Path(path)` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 618 | `isinstance(plan, KnowledgeCommitPlan)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 619 | `TypeError('plan must be a KnowledgeCommitPlan')` |
+| commit_knowledge_artifacts | isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 620 | `isinstance(dry_run, bool)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 621 | `TypeError('dry_run must be a bool')` |
+| commit_knowledge_artifacts | callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 622 | `callable(fault_injector)` |
+| commit_knowledge_artifacts | TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts) | 623 | `TypeError('fault_injector must be callable')` |
+| commit_knowledge_artifacts | _commit_sharded | 626 | `_commit_sharded(plan, fault_injector)` |
+| _commit_sharded | _absolute_path | 738 | `_absolute_path(plan.knowledge_index.path.parent)` |
+| _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 44 | `Path(os.path.abspath(...))` |
+| _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 44 | `os.path.abspath(path)` |
+| _absolute_path | first_unsafe_path_component | 45 | `first_unsafe_path_component(path)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `os.unlink` | `write_bytes_atomic` | 180 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 477 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 478 |
-| external_call | `commit_knowledge_artifacts` | `isinstance` | 479 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 480 |
-| external_call | `commit_knowledge_artifacts` | `callable` | 481 |
-| external_call | `commit_knowledge_artifacts` | `TypeError` | 482 |
-| external_call | `write_bytes_atomic` | `isinstance` | 165 |
-| external_call | `write_bytes_atomic` | `TypeError` | 166 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 618 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 619 |
+| external_call | `commit_knowledge_artifacts` | `isinstance` | 620 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 621 |
+| external_call | `commit_knowledge_artifacts` | `callable` | 622 |
+| external_call | `commit_knowledge_artifacts` | `TypeError` | 623 |
+| external_call | `_absolute_path` | `os.path.abspath` | 44 |
 | step_limit | `commit_knowledge_artifacts` | `first 12 steps` | 0 |
+| truncated_flow | `commit_knowledge_artifacts` | `depth limit` | 0 |
 
 ## Behavior
 

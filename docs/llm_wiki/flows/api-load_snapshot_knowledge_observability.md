@@ -2,12 +2,14 @@
 
 **Entry point:** `load_snapshot_knowledge_observability` (`api`)
 **Source:** [knowledge_observability](../modules/knowledge_observability.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 23 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), and 29 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
@@ -22,7 +24,11 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [paths](../modules/paths.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -53,15 +59,18 @@ sequenceDiagram
     participant p11 as _require_selection_path
     participant p12 as require_repository_relative_path
     participant p13 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p14 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p15 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p16 as ord
-    participant p17 as value.startswith
-    participant p18 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p19 as value.split
-    participant p20 as PurePosixPath
-    participant p21 as posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p22 as require_portable_relative_path
+    participant p14 as _syntax_key
+    participant p15 as _known_syntax
+    participant p16 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p17 as any (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p18 as ord
+    participant p19 as value.startswith
+    participant p20 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p21 as value.split
+    participant p22 as PurePosixPath
+    participant p23 as posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p24 as require_portable_relative_path
+    participant p25 as _remember_syntax
     p0-->>p1: time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)
     p0-->>p2: Path (src/llm_wiki_cli/services…t_knowledge_observability)
     p0->>p3: resolve_source_selection
@@ -77,24 +86,24 @@ sequenceDiagram
     p10->>p11: _require_selection_path
     p11->>p12: require_repository_relative_path
     p12-->>p13: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p12-->>p14: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p12-->>p15: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p12-->>p16: ord
-    p12-->>p16: ord
-    p12-->>p17: value.startswith
-    p12-->>p17: value.startswith
-    p12-->>p18: _WINDOWS_DRIVE_PREFIX_RE.match
-    p12-->>p19: value.split
-    p12-->>p20: PurePosixPath
-    p12-->>p15: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p12-->>p21: posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
-    p12->>p22: require_portable_relative_path
-    p11->>p6: SourceSelectionError
-    p11->>p6: SourceSelectionError
-    p11->>p6: SourceSelectionError
+    p12->>p14: _syntax_key
+    p12->>p15: _known_syntax
+    p12-->>p16: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    p12-->>p17: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p12-->>p18: ord
+    p12-->>p18: ord
+    p12-->>p19: value.startswith
+    p12-->>p19: value.startswith
+    p12-->>p20: _WINDOWS_DRIVE_PREFIX_RE.match
+    p12-->>p21: value.split
+    p12-->>p22: PurePosixPath
+    p12-->>p17: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p12-->>p23: posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
+    p12->>p24: require_portable_relative_path
+    p12->>p25: _remember_syntax
 ```
 
-> Call sequence diagram shows 30 of 1997 interactions; 1967 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2164 interactions; 2134 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

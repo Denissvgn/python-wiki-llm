@@ -1,6 +1,6 @@
 # RankingPolicy
 
-**Location:** `src/llm_wiki_cli/api_types.py:87`
+**Location:** `src/llm_wiki_cli/api_types.py:164`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

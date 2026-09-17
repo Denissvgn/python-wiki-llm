@@ -33,7 +33,8 @@ flowchart LR
     n8["create_private_windows_directory (src/llm_wiki_cli/services/filesystem_guard.py)"]
     n9["guard_windows_directory_chain (src/llm_wiki_cli/services/filesystem_guard.py)"]
     n10["remove_guarded_tree (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n11["src/llm_wiki_cli/services/protected_artifacts.py"]
+    n11["src/llm_wiki_cli/services/knowledge_storage_io.py"]
+    n12["src/llm_wiki_cli/services/protected_artifacts.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -45,6 +46,7 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/filesystem_guard.md"
     click n2 "../modules/filesystem_guard.md"
     click n3 "../modules/controller.md"
@@ -55,7 +57,8 @@ flowchart LR
     click n8 "../modules/filesystem_guard.md"
     click n9 "../modules/filesystem_guard.md"
     click n10 "../modules/filesystem_guard.md"
-    click n11 "../modules/protected_artifacts.md"
+    click n11 "../modules/knowledge_storage_io.md"
+    click n12 "../modules/protected_artifacts.md"
 ```
 
 ### Summary
@@ -83,4 +86,5 @@ flowchart LR
 | `create_private_windows_directory` | call | [filesystem_guard](../modules/filesystem_guard.md) | 3 |
 | `guard_windows_directory_chain` | call | [filesystem_guard](../modules/filesystem_guard.md) | 4 |
 | `remove_guarded_tree` | call | [filesystem_guard](../modules/filesystem_guard.md) | 5 |
+| `knowledge_storage_io` | import | [knowledge_storage_io](../modules/knowledge_storage_io.md) | — |
 | `protected_artifacts` | import | [protected_artifacts](../modules/protected_artifacts.md) | — |

@@ -17,20 +17,21 @@ sequenceDiagram
     participant p5 as _default_path_error
     participant p6 as SharedValidationError
     participant p7 as os.fspath
-    participant p8 as raw.encode
-    participant p9 as raw.replace
-    participant p10 as PurePosixPath
-    participant p11 as path.is_absolute
-    participant p12 as _WINDOWS_ABSOLUTE_RE.match
-    participant p13 as path.as_posix
-    participant p14 as normalized.strip
-    participant p15 as canonical.casefold().endswith
-    participant p16 as canonical.casefold
-    participant p17 as required_suffix.casefold
-    participant p18 as require_portable_path_component
-    participant p19 as component.encode
-    participant p20 as unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)
-    participant p21 as any
+    participant p8 as _syntax_key
+    participant p9 as type
+    participant p10 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p11 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p12 as _known_syntax
+    participant p13 as _PATH_SYNTAX.get
+    participant p14 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)
+    participant p15 as _check_path_collision
+    participant p16 as portable_path_key
+    participant p17 as unicodedata.normalize(…).casefold
+    participant p18 as unicodedata.normalize (src/llm_wiki_cli/services…ation.py:portable_path_key)
+    participant p19 as collision_seen.setdefault
+    participant p20 as collision_error
+    participant p21 as raw.encode
+    participant p22 as raw.replace
     p0->>p1: _portable_supplied_path
     p1->>p2: DocumentationQueryError
     p1->>p3: require_portable_relative_path
@@ -40,30 +41,30 @@ sequenceDiagram
     p3-->>p7: os.fspath
     p3-->>p4: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
     p3->>p5: _default_path_error
-    p3-->>p8: raw.encode
+    p3->>p8: _syntax_key
+    p8-->>p9: type
+    p8-->>p10: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p8-->>p11: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p8-->>p9: type
+    p8-->>p9: type
+    p8-->>p10: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p3->>p12: _known_syntax
+    p12-->>p13: _PATH_SYNTAX.get
+    p12-->>p14: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)
+    p3->>p15: _check_path_collision
+    p15->>p16: portable_path_key
+    p16-->>p17: unicodedata.normalize(…).casefold
+    p16-->>p18: unicodedata.normalize (src/llm_wiki_cli/services…ation.py:portable_path_key)
+    p15-->>p19: collision_seen.setdefault
+    p15->>p6: SharedValidationError
+    p15-->>p20: collision_error
+    p3-->>p21: raw.encode
     p3->>p5: _default_path_error
     p3->>p5: _default_path_error
-    p3-->>p9: raw.replace
-    p3-->>p10: PurePosixPath
-    p3-->>p11: path.is_absolute
-    p3-->>p12: _WINDOWS_ABSOLUTE_RE.match
-    p3->>p5: _default_path_error
-    p3->>p5: _default_path_error
-    p3-->>p13: path.as_posix
-    p3-->>p14: normalized.strip
-    p3-->>p15: canonical.casefold().endswith
-    p3-->>p16: canonical.casefold
-    p3-->>p17: required_suffix.casefold
-    p3->>p5: _default_path_error
-    p3->>p18: require_portable_path_component
-    p18-->>p19: component.encode
-    p18->>p6: SharedValidationError
-    p18-->>p20: unicodedata.normalize (src/llm_wiki_cli/services…re_portable_path_component)
-    p18->>p6: SharedValidationError
-    p18-->>p21: any
+    p3-->>p22: raw.replace
 ```
 
-> Call sequence diagram shows 30 of 58 interactions; 28 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 74 interactions; 44 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -80,8 +81,8 @@ flowchart LR
     s8["8. os.fspath"]
     s9["9. isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)"]
     s10["10. _default_path_error"]
-    s11["11. raw.encode"]
-    s12["12. _default_path_error"]
+    s11["11. _syntax_key"]
+    s12["12. type"]
     s1 -->|"_portable_supplied_path(value)"| s2
     s2 -->|"DocumentationQueryError('paths must contain normalized portable relative source paths.')"| s3
     s2 -->|"require_portable_relative_path(…)"| s4
@@ -91,8 +92,8 @@ flowchart LR
     s4 -. "os.fspath(value)" .-> s8
     s4 -. "isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(raw, str)" .-> s9
     s4 -->|"_default_path_error(value)"| s10
-    s4 -. "raw.encode('utf-8')" .-> s11
-    s4 -->|"_default_path_error(raw)"| s12
+    s4 -->|"_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)"| s11
+    s11 -. "type(value)" .-> s12
     click s1 "../modules/documentation_query_builder.md"
     click s2 "../modules/documentation_query_builder.md"
     click s3 "../modules/documentation_queries.md"
@@ -100,7 +101,7 @@ flowchart LR
     click s6 "../modules/validation.md"
     click s7 "../modules/validation.md"
     click s10 "../modules/validation.md"
-    click s12 "../modules/validation.md"
+    click s11 "../modules/validation.md"
 ```
 
 ### Step data
@@ -110,15 +111,15 @@ flowchart LR
 | `normalize_supplied_paths` | `values: object` | - | - | `tuple(...)` |
 | `_portable_supplied_path` | `value: object` | - | - | `require_portable_relative_path(...)` |
 | `DocumentationQueryError` | - | - | - | - |
-| `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `canonical` |
+| `require_portable_relative_path` | `value: object`, `normalize_backslashes: bool`, `normalize_posix_spelling: bool`, `required_suffix: str \| None`, `defer_non_nfc_error: bool`, `reject_delete_character: bool`, `text_error: Exception \| None`, `relative_error: Exception \| None` | `os` | - | `cached`, `_remember_syntax(...)` |
 | `isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
 | `SharedValidationError` | - | - | - | - |
 | `os.fspath` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)` | - | - | - | - |
 | `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
-| `raw.encode` | - | - | - | - |
-| `_default_path_error` | `value: object` | - | - | `SharedValidationError(...)` |
+| `_syntax_key` | `kind`, `value`, `options` | - | - | `None`, `(...)` |
+| `type` | - | - | - | - |
 
 ### Call data
 
@@ -127,14 +128,14 @@ flowchart LR
 | normalize_supplied_paths | _portable_supplied_path | 135 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 113 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 116 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 170 | `isinstance(value, (...))` |
-| require_portable_relative_path | _default_path_error | 171 | `_default_path_error(value)` |
-| _default_path_error | SharedValidationError | 67 | `SharedValidationError(...)` |
-| require_portable_relative_path | os.fspath | 172 | `os.fspath(value)` |
-| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 173 | `isinstance(raw, str)` |
-| require_portable_relative_path | _default_path_error | 174 | `_default_path_error(value)` |
-| require_portable_relative_path | raw.encode | 176 | `raw.encode('utf-8')` |
-| require_portable_relative_path | _default_path_error | 179 | `_default_path_error(raw)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 216 | `isinstance(value, (...))` |
+| require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
+| _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
+| require_portable_relative_path | os.fspath | 218 | `os.fspath(value)` |
+| require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 219 | `isinstance(raw, str)` |
+| require_portable_relative_path | _default_path_error | 220 | `_default_path_error(value)` |
+| require_portable_relative_path | _syntax_key | 221 | `_syntax_key('portable', raw, normalize_backslashes, normalize_posix_spelling, required_suffix, defer_non_nfc_error, reject_delete_character)` |
+| _syntax_key | type | 54 | `type(value)` |
 
 ### Boundary effects
 
@@ -144,10 +145,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_portable_relative_path` | `isinstance` | 170 |
-| external_call | `require_portable_relative_path` | `os.fspath` | 172 |
-| external_call | `require_portable_relative_path` | `isinstance` | 173 |
-| unresolved_call | `require_portable_relative_path` | `raw.encode` | 176 |
+| external_call | `require_portable_relative_path` | `isinstance` | 216 |
+| external_call | `require_portable_relative_path` | `os.fspath` | 218 |
+| external_call | `require_portable_relative_path` | `isinstance` | 219 |
+| external_call | `_syntax_key` | `type` | 54 |
 | step_limit | `normalize_supplied_paths` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -40,6 +40,8 @@ flowchart LR
     n5["serialize_evaluated_envelope (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n6["src/llm_wiki_cli/services/knowledge_index.py"]
     n7["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
+    n9["audit_knowledge_stream (src/llm_wiki_cli/services/knowledge_stream_audit.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -47,6 +49,8 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
+    n9 --> n0
     click n0 "../modules/knowledge_envelope.md"
     click n1 "../modules/knowledge_artifacts.md"
     click n2 "../modules/knowledge_envelope.md"
@@ -55,6 +59,8 @@ flowchart LR
     click n5 "../modules/knowledge_envelope.md"
     click n6 "../modules/knowledge_index.md"
     click n7 "../modules/knowledge_orchestration.md"
+    click n8 "../modules/knowledge_storage_access.md"
+    click n9 "../modules/knowledge_stream_audit.md"
 ```
 
 ### Summary
@@ -75,3 +81,5 @@ flowchart LR
 | `serialize_evaluated_envelope` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
 | `_stabilize_revision_only_noop` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
+| `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
+| `audit_knowledge_stream` | call | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) | 1 |

@@ -76,7 +76,7 @@ sequenceDiagram
     p16-->>p18: _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
 ```
 
-> Call sequence diagram shows 30 of 1664 interactions; 1634 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1595 interactions; 1565 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -138,10 +138,10 @@ flowchart LR
 |---|---|---:|---|
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 235 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
 | evaluate_knowledge_freshness | require_validated_artifacts | 234 | `require_validated_artifacts(knowledge)` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 152 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 153 | `TypeError('expected validator-issued knowledge artifacts')` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 156 | `isinstance(validation, _ArtifactValidation)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 167 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 163 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 164 | `TypeError('expected validator-issued knowledge artifacts')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 167 | `isinstance(validation, _ArtifactValidation)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 180 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 237 | `isinstance(knowledge, KnowledgeIndex)` |
 | evaluate_knowledge_freshness | parse_knowledge_index | 236 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
@@ -157,10 +157,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 235 |
-| external_call | `require_validated_artifacts` | `isinstance` | 152 |
-| external_call | `require_validated_artifacts` | `TypeError` | 153 |
-| external_call | `require_validated_artifacts` | `isinstance` | 156 |
-| external_call | `require_validated_artifacts` | `TypeError` | 167 |
+| external_call | `require_validated_artifacts` | `isinstance` | 163 |
+| external_call | `require_validated_artifacts` | `TypeError` | 164 |
+| external_call | `require_validated_artifacts` | `isinstance` | 167 |
+| external_call | `require_validated_artifacts` | `TypeError` | 180 |
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 237 |
 | step_limit | `evaluate_knowledge_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_knowledge_freshness` | `depth limit` | 0 |

@@ -62,7 +62,7 @@ sequenceDiagram
     p19-->>p20: isinstance (src/llm_wiki_cli/services…idation.py:require_string)
 ```
 
-> Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 129 interactions; 99 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -139,7 +139,7 @@ flowchart LR
 |---|---|---:|---|
 | module_observation_hash | _validate_inventory_complete | 255 | `_validate_inventory_complete(inventory_complete)` |
 | _validate_inventory_complete | require_bool | 852 | `require_bool(inventory_complete, error=TypeError(...))` |
-| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 772 | `isinstance(value, bool)` |
+| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
 | _validate_inventory_complete | TypeError | 854 | `TypeError('inventory_complete must be a boolean')` |
 | module_observation_hash | normalize_module_observation | 258 | `normalize_module_observation(file_data)` |
 | normalize_module_observation | _normalize_module_observation | 219 | `_normalize_module_observation(file_data)` |
@@ -162,7 +162,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bool` | `isinstance` | 772 |
+| external_call | `require_bool` | `isinstance` | 810 |
 | external_call | `_validate_inventory_complete` | `TypeError` | 854 |
 | external_call | `_inventory_language` | `isinstance` | 542 |
 | unresolved_call | `_inventory_language` | `file_data.get` | 544 |

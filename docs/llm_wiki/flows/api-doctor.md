@@ -2,7 +2,7 @@
 
 **Entry point:** `doctor` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 35 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 37 more
 
 **Complete modules touched:**
 
@@ -29,6 +29,8 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
 - [plugins](../modules/plugins.md)
@@ -102,7 +104,7 @@ sequenceDiagram
     p12-->>p14: Path (src/llm_wiki_cli/config.py:validate_source_root)
 ```
 
-> Call sequence diagram shows 30 of 1479 interactions; 1449 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1508 interactions; 1478 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -159,7 +161,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 1436 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| doctor | build_doctor_report | 1595 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 125 | `isinstance(strict, bool)` |
 | build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 126 | `TypeError('strict must be a boolean')` |
 | build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 127 | `isinstance(allow_external_src, bool)` |

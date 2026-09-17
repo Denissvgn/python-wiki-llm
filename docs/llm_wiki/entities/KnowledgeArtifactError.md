@@ -1,6 +1,6 @@
 # KnowledgeArtifactError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:74`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:79`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -30,14 +30,14 @@ flowchart LR
     n3["src/llm_wiki_cli/services/documentation_wiki_input.py"]
     n4["_decode_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n5["_nonnegative_integer (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n6["_reject_json_constant (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n7["_surface_page_index (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n8["_unique_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n9["_validate_asset_path_list (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n10["_validate_manifest_knowledge_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n11["_validate_optional_surface_flow_fields (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n12["_validate_surface_asset_counts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n13["_validate_surface_assets (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n6["_planned_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n7["_reject_json_constant (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n8["_surface_page_index (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n9["_unique_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n10["_validate_asset_path_list (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n11["_validate_manifest_knowledge_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n12["_validate_optional_surface_flow_fields (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n13["_validate_surface_asset_counts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -86,6 +86,7 @@ flowchart LR
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_decode_json_object` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 4 |
 | `_nonnegative_integer` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
+| `_planned_write` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_reject_json_constant` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_surface_page_index` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 15 |
 | `_unique_json_object` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
@@ -93,6 +94,5 @@ flowchart LR
 | `_validate_manifest_knowledge_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 16 |
 | `_validate_optional_surface_flow_fields` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_validate_surface_asset_counts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 6 |
-| `_validate_surface_assets` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 6 |
 
-> References: showing 12 of 30 logical references; 18 omitted by the 12-row generated summary limit.
+> References: showing 12 of 32 logical references; 20 omitted by the 12-row generated summary limit.

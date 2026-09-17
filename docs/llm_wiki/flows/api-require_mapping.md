@@ -45,9 +45,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_mapping | isinstance | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| require_mapping | isinstance | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -57,9 +57,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
 
 ## Behavior
 

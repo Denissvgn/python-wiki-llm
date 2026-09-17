@@ -33,15 +33,16 @@ _Auto-generated from `LintIssue` in `src/llm_wiki_cli/services/lint_service.py`.
 ```mermaid
 flowchart LR
     n0["LintIssue (src/llm_wiki_cli/services/lint_service.py)"]
-    n1["_diagnostic_freshness_states (src/llm_wiki_cli/services/doctor_service.py)"]
-    n2["_diagnostic_reasons (src/llm_wiki_cli/services/doctor_service.py)"]
-    n3["_issues (src/llm_wiki_cli/services/doctor_service.py)"]
-    n4["_reasons (src/llm_wiki_cli/services/doctor_service.py)"]
-    n5["_add (src/llm_wiki_cli/services/lint_service.py)"]
-    n6["_coerce_plugin_issue (src/llm_wiki_cli/services/lint_service.py)"]
-    n7["_diagnose (src/llm_wiki_cli/services/lint_service.py)"]
-    n8["_lint_issue_payload (src/llm_wiki_cli/services/lint_service.py)"]
-    n9["LintReport.by_category (src/llm_wiki_cli/services/lint_service.py)"]
+    n1["run (src/llm_wiki_cli/commands/ci_check_cmd.py)"]
+    n2["_diagnostic_freshness_states (src/llm_wiki_cli/services/doctor_service.py)"]
+    n3["_diagnostic_reasons (src/llm_wiki_cli/services/doctor_service.py)"]
+    n4["_issues (src/llm_wiki_cli/services/doctor_service.py)"]
+    n5["_reasons (src/llm_wiki_cli/services/doctor_service.py)"]
+    n6["_add (src/llm_wiki_cli/services/lint_service.py)"]
+    n7["_coerce_plugin_issue (src/llm_wiki_cli/services/lint_service.py)"]
+    n8["_diagnose (src/llm_wiki_cli/services/lint_service.py)"]
+    n9["_lint_issue_payload (src/llm_wiki_cli/services/lint_service.py)"]
+    n10["LintReport.by_category (src/llm_wiki_cli/services/lint_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -51,16 +52,18 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/lint_service.md"
-    click n1 "../modules/doctor_service.md"
+    click n1 "../modules/ci_check_cmd.md"
     click n2 "../modules/doctor_service.md"
     click n3 "../modules/doctor_service.md"
     click n4 "../modules/doctor_service.md"
-    click n5 "../modules/lint_service.md"
+    click n5 "../modules/doctor_service.md"
     click n6 "../modules/lint_service.md"
     click n7 "../modules/lint_service.md"
     click n8 "../modules/lint_service.md"
     click n9 "../modules/lint_service.md"
+    click n10 "../modules/lint_service.md"
 ```
 
 ### Summary
@@ -73,6 +76,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `run` | call | [ci_check_cmd](../modules/ci_check_cmd.md) | 3 |
 | `_diagnostic_freshness_states` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 | `_diagnostic_reasons` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 | `_issues` | type_reference | [doctor_service](../modules/doctor_service.md) | — |

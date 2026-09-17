@@ -1,6 +1,6 @@
 # SourceSnapshotError
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:101`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:102`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -26,18 +26,19 @@ Field-specific failure selecting captured source snapshot state.
 flowchart LR
     n0["SourceSnapshotError (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/api.py"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/documentation_native.py"]
-    n5["_git_changed_files (src/llm_wiki_cli/services/extraction_service.py)"]
-    n6["_git_name_status_paths (src/llm_wiki_cli/services/extraction_service.py)"]
-    n7["_build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n8["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n9["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n10["_record_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n11["_resolve_snapshot_selection (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n12["_validate_repository_path (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n13["build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n2["SourceSnapshotMutationError (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n3["src/llm_wiki_cli/api.py"]
+    n4["src/llm_wiki_cli/services/context_packet.py"]
+    n5["src/llm_wiki_cli/services/documentation_native.py"]
+    n6["_git_changed_files (src/llm_wiki_cli/services/extraction_service.py)"]
+    n7["_git_name_status_paths (src/llm_wiki_cli/services/extraction_service.py)"]
+    n8["_bounded_source_walk (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n9["_build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n10["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n11["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n12["_read_ignore_control (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n13["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n14["_record_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -51,19 +52,21 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     n13 --> n0
+    n14 --> n0
     click n0 "../modules/source_snapshot.md"
-    click n2 "../modules/api.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/documentation_native.md"
-    click n5 "../modules/extraction_service.md"
+    click n2 "../modules/source_snapshot.md"
+    click n3 "../modules/api.md"
+    click n4 "../modules/context_packet.md"
+    click n5 "../modules/documentation_native.md"
     click n6 "../modules/extraction_service.md"
-    click n7 "../modules/source_snapshot.md"
+    click n7 "../modules/extraction_service.md"
     click n8 "../modules/source_snapshot.md"
     click n9 "../modules/source_snapshot.md"
     click n10 "../modules/source_snapshot.md"
     click n11 "../modules/source_snapshot.md"
     click n12 "../modules/source_snapshot.md"
     click n13 "../modules/source_snapshot.md"
+    click n14 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -77,6 +80,7 @@ flowchart LR
 | Kind | Entity | Module |
 |---|---|---|
 | Base | `ValueError` | — |
+| Subclass | `SourceSnapshotMutationError` | [source_snapshot](../modules/source_snapshot.md) |
 
 ### References
 
@@ -87,12 +91,12 @@ flowchart LR
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `_git_changed_files` | call | [extraction_service](../modules/extraction_service.md) | 1 |
 | `_git_name_status_paths` | call | [extraction_service](../modules/extraction_service.md) | 3 |
+| `_bounded_source_walk` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 | `_build_source_snapshot` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
+| `_captured_snapshot_inputs` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 | `_prune_dirnames` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
+| `_read_ignore_control` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 | `_record_gitignore_rules` | call | [source_snapshot](../modules/source_snapshot.md) | 7 |
 | `_record_source_file` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
-| `_resolve_snapshot_selection` | call | [source_snapshot](../modules/source_snapshot.md) | 4 |
-| `_validate_repository_path` | call | [source_snapshot](../modules/source_snapshot.md) | 3 |
-| `build_source_snapshot` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
 
-> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

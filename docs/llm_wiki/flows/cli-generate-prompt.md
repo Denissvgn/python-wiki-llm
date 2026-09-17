@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [generate_prompt_cmd](../modules/generate_prompt_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 16 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 19 more
 
 **Complete modules touched:**
 
@@ -15,6 +15,9 @@
 - [generate_prompt_cmd](../modules/generate_prompt_cmd.md)
 - [io](../modules/io.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -86,7 +89,7 @@ sequenceDiagram
     p19-->>p21: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 1217 interactions; 1187 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1320 interactions; 1290 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -170,13 +173,13 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 637 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 638 | `getattr(args, 'src_dir', '.')` |
 | run | validate_path | 639 | `validate_path(wiki_dir, '--wiki-dir')` |
-| validate_path | PathValidationError | 132 | `PathValidationError(...)` |
-| validate_path | (…).resolve | 133 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 133 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve | 134 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 134 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 136 | `resolved.relative_to(cwd)` |
-| validate_path | PathValidationError | 138 | `PathValidationError(...)` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
+| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
+| validate_path | PathValidationError | 140 | `PathValidationError(...)` |
 | run | bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 640 | `bool(getattr(...))` |
 
 ### Boundary effects
@@ -197,11 +200,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 637 |
 | external_call | `run` | `getattr` | 638 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 133 |
-| external_call | `validate_path` | `Path.cwd` | 133 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 134 |
-| external_call | `validate_path` | `Path.cwd` | 134 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 136 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
+| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

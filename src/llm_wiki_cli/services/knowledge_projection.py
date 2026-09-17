@@ -2289,6 +2289,19 @@ def _validated_source(
             "view.manifest_basis.artifact_hashes",
             "requires exact committed artifact hashes",
         )
+    if view.validated_artifacts is not None:
+        from .knowledge_artifacts import require_validated_artifacts
+        try:
+            captured = require_validated_artifacts(view.validated_artifacts)
+        except TypeError as exc:
+            raise KnowledgeProjectionError("projection-source-invalid", "view", str(exc)) from exc
+        if (captured.knowledge is not view.knowledge or captured.surface_payload is not view.surface
+                or captured.knowledge_index_hash != marker.knowledge_index_hash
+                or captured.surface_index_hash != marker.surface_index_hash
+                or captured.evaluated_envelope_hash != marker.evaluated_envelope_hash
+                or captured.governance_hash != marker.governance_hash):
+            raise KnowledgeProjectionError("projection-source-mixed", "view", "replaced committed artifact identity")
+        return captured.knowledge, captured.knowledge_index_hash
     try:
         surface_bytes = (
             json.dumps(

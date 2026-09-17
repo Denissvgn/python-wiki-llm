@@ -28,6 +28,7 @@ from ..services.runtime_output import (
 )
 from ..services.metrics import record_validation_event
 from ..services.lint_service import (
+    LintIssue,
     build_report,
     render_markdown,
     render_text,
@@ -94,6 +95,10 @@ def _persist_report(destination: RuntimeDestination, report) -> int:
 
 
 def run(args) -> None:
+    storage_base = getattr(args, "storage_git_base", None)
+    storage_head = getattr(args, "storage_git_head", None)
+    if (storage_base is None) != (storage_head is None):
+        raise RuntimeOutputError("Storage Git checks require both --storage-git-base and --storage-git-head")
     src_dir: str = getattr(args, "src_dir", ".")
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     output_format: str = getattr(args, "format", "text")
@@ -135,6 +140,21 @@ def run(args) -> None:
         include_plugins=not bool(getattr(args, "no_plugins", False)),
         source_selection=source_selection,
     )
+    if getattr(args, "storage_check", False) or storage_base is not None:
+        from ..services.knowledge_storage_diagnostics import storage_report
+        try:
+            storage = storage_report(wiki_dir, git_base=storage_base, git_head=storage_head)
+        except ValueError as exc:
+            storage = {"ok": False, "failures": [{"reason": str(exc)}]}
+        for finding in storage.get("failures", []):
+            report.issues.append(LintIssue(category="knowledge-storage", path=finding.get("path", ".llm-wiki-knowledge.json"),
+                message="Storage check failed: " + finding.get("reason", "invalid storage")))
+        if storage.get("git", {}).get("ok") is False:
+            report.issues.append(LintIssue(category="knowledge-storage", path=".git",
+                message="Outgoing Git object size check failed or was incomplete."))
+        for finding in storage.get("warnings", []):
+            report.diagnostics.append(LintIssue(category="knowledge-storage", path=finding["path"], severity="warning",
+                message=f"Large regular-Git artifact: {finding['bytes']} bytes."))
     duration_ms = int((time.monotonic() - started) * 1000)
 
     command_exit = _persist_report(destination, report)

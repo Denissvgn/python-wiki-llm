@@ -922,6 +922,7 @@ WORKFLOW_MANAGED_REFERENCE_TOPICS: dict[str, tuple[str, ...]] = {
     "doc-review": ("knowledge-consumption", "repository-handoff"),
     "impact-analysis": ("context-query", "knowledge-consumption"),
     "infra-review": ("knowledge-consumption", "repository-handoff"),
+    "native-coding": ("context-query",),
     "onboarding-guide": (
         "knowledge-consumption",
         "repository-handoff",

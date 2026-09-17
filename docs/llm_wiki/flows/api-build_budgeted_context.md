@@ -2,7 +2,7 @@
 
 **Entry point:** `build_budgeted_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 40 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 43 more
 
 **Complete modules touched:**
 
@@ -35,7 +35,10 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
 - [python_calls](../modules/python_calls.md)
@@ -59,54 +62,54 @@ sequenceDiagram
     participant p0 as build_budgeted_context (src/llm_wiki_cli/api.py)
     participant p1 as build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
     participant p2 as validate_request
-    participant p3 as set (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p4 as ProtocolRequestError
-    participant p5 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p6 as dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p7 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p8 as legacy.pop
-    participant p9 as _validate_protocol_request
-    participant p10 as isinstance (src/llm_wiki_cli/services…validate_protocol_request)
-    participant p11 as data.get (src/llm_wiki_cli/services…validate_protocol_request)
-    participant p12 as _validate_protocol_request_impl
-    participant p13 as isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p14 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p15 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p16 as sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p17 as set (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p3 as isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p4 as any (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p5 as ProtocolRequestError
+    participant p6 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p7 as set (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p8 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p9 as dict (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p10 as legacy.pop
+    participant p11 as _validate_protocol_request
+    participant p12 as isinstance (src/llm_wiki_cli/services…validate_protocol_request)
+    participant p13 as data.get (src/llm_wiki_cli/services…validate_protocol_request)
+    participant p14 as _validate_protocol_request_impl
+    participant p15 as isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p16 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p17 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
     p0->>p1: build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
     p1->>p2: validate_request
-    p2-->>p3: set (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2->>p4: ProtocolRequestError
-    p2-->>p5: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p6: dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p7: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p7: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p7: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p8: legacy.pop
-    p2-->>p8: legacy.pop
-    p2-->>p8: legacy.pop
-    p2->>p9: _validate_protocol_request
-    p9-->>p10: isinstance (src/llm_wiki_cli/services…validate_protocol_request)
-    p9-->>p11: data.get (src/llm_wiki_cli/services…validate_protocol_request)
-    p9->>p12: _validate_protocol_request_impl
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p4: ProtocolRequestError
-    p12-->>p14: any (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p4: ProtocolRequestError
-    p12-->>p15: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p2: validate_request
-    p12->>p4: ProtocolRequestError
-    p12-->>p16: sorted (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12-->>p17: set (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12->>p4: ProtocolRequestError
-    p12->>p4: ProtocolRequestError
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p2-->>p3: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p4: any (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p3: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2->>p5: ProtocolRequestError
+    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2->>p5: ProtocolRequestError
+    p2-->>p7: set (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2->>p5: ProtocolRequestError
+    p2-->>p8: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p8: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p9: dict (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
+    p2-->>p10: legacy.pop
+    p2-->>p10: legacy.pop
+    p2-->>p10: legacy.pop
+    p2->>p11: _validate_protocol_request
+    p11-->>p12: isinstance (src/llm_wiki_cli/services…validate_protocol_request)
+    p11-->>p13: data.get (src/llm_wiki_cli/services…validate_protocol_request)
+    p11->>p14: _validate_protocol_request_impl
+    p14-->>p15: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p14->>p5: ProtocolRequestError
+    p14-->>p16: any (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p14-->>p15: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p14->>p5: ProtocolRequestError
+    p14-->>p17: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    p14->>p2: validate_request
 ```
 
-> Call sequence diagram shows 30 of 2784 interactions; 2754 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3004 interactions; 2974 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -118,26 +121,26 @@ flowchart LR
     s1["1. build_budgeted_context (src/llm_wiki_cli/api.py)"]
     s2["2. build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)"]
     s3["3. validate_request"]
-    s4["4. set (src/llm_wiki_cli/services…udget.py:validate_request)"]
-    s5["5. ProtocolRequestError"]
-    s6["6. sorted (src/llm_wiki_cli/services…udget.py:validate_request)"]
-    s7["7. dict (src/llm_wiki_cli/services…udget.py:validate_request)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…udget.py:validate_request)"]
+    s5["5. any (src/llm_wiki_cli/services…udget.py:validate_request)"]
+    s6["6. isinstance (src/llm_wiki_cli/services…udget.py:validate_request)"]
+    s7["7. ProtocolRequestError"]
     s8["8. data.get (src/llm_wiki_cli/services…udget.py:validate_request)"]
-    s9["9. data.get (src/llm_wiki_cli/services…udget.py:validate_request)"]
-    s10["10. data.get (src/llm_wiki_cli/services…udget.py:validate_request)"]
-    s11["11. legacy.pop"]
-    s12["12. legacy.pop"]
+    s9["9. ProtocolRequestError"]
+    s10["10. set (src/llm_wiki_cli/services…udget.py:validate_request)"]
+    s11["11. ProtocolRequestError"]
+    s12["12. sorted (src/llm_wiki_cli/services…udget.py:validate_request)"]
     s1 -->|"build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)(…)"| s2
     s2 -->|"validate_request(...)"| s3
-    s3 -. "set (src/llm_wiki_cli/services…udget.py:validate_request)(data)" .-> s4
-    s3 -->|"ProtocolRequestError(...)"| s5
-    s3 -. "sorted (src/llm_wiki_cli/services…udget.py:validate_request)(unknown)" .-> s6
-    s3 -. "dict (src/llm_wiki_cli/services…udget.py:validate_request)(data)" .-> s7
-    s3 -. "data.get (src/llm_wiki_cli/services…udget.py:validate_request)('knowledge_mode', 'off')" .-> s8
-    s3 -. "data.get (src/llm_wiki_cli/services…udget.py:validate_request)('format')" .-> s9
-    s3 -. "data.get (src/llm_wiki_cli/services…udget.py:validate_request)('format', 'json')" .-> s10
-    s3 -. "legacy.pop('budget_mode', None)" .-> s11
-    s3 -. "legacy.pop('counter_id', None)" .-> s12
+    s3 -. "isinstance (src/llm_wiki_cli/services…udget.py:validate_request)(data, Mapping)" .-> s4
+    s3 -. "any (src/llm_wiki_cli/services…udget.py:validate_request)(...)" .-> s5
+    s3 -. "isinstance (src/llm_wiki_cli/services…udget.py:validate_request)(key, str)" .-> s6
+    s3 -->|"ProtocolRequestError('Request must be an object with string keys', 'request')"| s7
+    s3 -. "data.get (src/llm_wiki_cli/services…udget.py:validate_request)('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)" .-> s8
+    s3 -->|"ProtocolRequestError('Unsupported context budget protocol', 'protocol')"| s9
+    s3 -. "set (src/llm_wiki_cli/services…udget.py:validate_request)(data)" .-> s10
+    s3 -->|"ProtocolRequestError(..., ...)"| s11
+    s3 -. "sorted (src/llm_wiki_cli/services…udget.py:validate_request)(unknown)" .-> s12
     b0["mutation legacy.update"]
     s2 -. "mutation legacy.update" .-> b0
     b1["mutation legacy.pop"]
@@ -149,7 +152,9 @@ flowchart LR
     click s1 "../modules/api.md"
     click s2 "../modules/context_budget.md"
     click s3 "../modules/context_budget.md"
-    click s5 "../modules/context_service.md"
+    click s7 "../modules/context_service.md"
+    click s9 "../modules/context_service.md"
+    click s11 "../modules/context_service.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -163,49 +168,50 @@ flowchart LR
 |---|---|---|---|---|
 | `build_budgeted_context (src/llm_wiki_cli/api.py)` | `src_dir: str`, `wiki_dir: str`, `request: Mapping[str, Any] \| None`, `counter: TokenCounter \| None`, `allow_external_src: bool`, `source_selection: str \| Path \| None` | - | - | `build(...)` |
 | `build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)` | `src_dir`, `wiki_dir`, `request`, `counter: TokenCounter \| None`, `allow_external_src`, `source_selection` | `context`, `context` | `changes[...]` | `result` |
-| `validate_request` | `data: Mapping[str, Any]` | `context`, `context`, `CONTEXT_BUDGET_PROTOCOL_VERSION` | `legacy[...]`, `legacy[...]`, `legacy[...]` | `{...}` |
+| `validate_request` | `data: Mapping[str, Any]` | `Mapping`, `CONTEXT_BUDGET_PROTOCOL_VERSION`, `context`, `context`, `CONTEXT_BUDGET_PROTOCOL_VERSION` | `legacy[...]`, `legacy[...]`, `legacy[...]` | `{...}` |
+| `isinstance (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
+| `ProtocolRequestError` | - | - | - | - |
+| `data.get (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
+| `ProtocolRequestError` | - | - | - | - |
 | `set (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
 | `sorted (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
-| `dict (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
-| `data.get (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
-| `data.get (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
-| `data.get (src/llm_wiki_cli/services…udget.py:validate_request)` | - | - | - | - |
-| `legacy.pop` | - | - | - | - |
-| `legacy.pop` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1254 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
-| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 186 | `validate_request(...)` |
-| validate_request | set (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `set(data)` |
-| validate_request | ProtocolRequestError | 36 | `context.ProtocolRequestError(...)` |
-| validate_request | sorted (src/llm_wiki_cli/services…udget.py:validate_request) | 37 | `sorted(unknown)` |
-| validate_request | dict (src/llm_wiki_cli/services…udget.py:validate_request) | 39 | `dict(data)` |
-| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 41 | `data.get('knowledge_mode', 'off')` |
-| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 43 | `data.get('format')` |
-| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 43 | `data.get('format', 'json')` |
-| validate_request | legacy.pop | 45 | `legacy.pop('budget_mode', None)` |
-| validate_request | legacy.pop | 46 | `legacy.pop('counter_id', None)` |
+| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1274 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 208 | `validate_request(...)` |
+| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(data, Mapping)` |
+| validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `any(...)` |
+| validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(key, str)` |
+| validate_request | ProtocolRequestError | 35 | `context.ProtocolRequestError('Request must be an object with string keys', 'request')` |
+| validate_request | data.get (src/llm_wiki_cli/services…udget.py:validate_request) | 36 | `data.get('protocol', CONTEXT_BUDGET_PROTOCOL_VERSION)` |
+| validate_request | ProtocolRequestError | 37 | `context.ProtocolRequestError('Unsupported context budget protocol', 'protocol')` |
+| validate_request | set (src/llm_wiki_cli/services…udget.py:validate_request) | 39 | `set(data)` |
+| validate_request | ProtocolRequestError | 41 | `context.ProtocolRequestError(..., ...)` |
+| validate_request | sorted (src/llm_wiki_cli/services…udget.py:validate_request) | 42 | `sorted(unknown)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `legacy.update` | `build_budgeted_context` | 227 |
-| mutation | `legacy.pop` | `validate_request` | 45 |
-| mutation | `legacy.pop` | `validate_request` | 46 |
-| mutation | `legacy.pop` | `validate_request` | 47 |
+| mutation | `legacy.update` | `build_budgeted_context` | 249 |
+| mutation | `legacy.pop` | `validate_request` | 50 |
+| mutation | `legacy.pop` | `validate_request` | 51 |
+| mutation | `legacy.pop` | `validate_request` | 52 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_request` | `sorted` | 37 |
-| unresolved_call | `validate_request` | `data.get` | 41 |
-| unresolved_call | `validate_request` | `data.get` | 43 |
+| external_call | `validate_request` | `isinstance` | 34 |
+| external_call | `validate_request` | `any` | 34 |
+| unresolved_call | `validate_request` | `data.get` | 36 |
+| external_call | `validate_request` | `sorted` | 42 |
 | step_limit | `build_budgeted_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_budgeted_context` | `depth limit` | 0 |
 

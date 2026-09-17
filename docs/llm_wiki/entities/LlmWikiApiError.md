@@ -1,6 +1,6 @@
 # LlmWikiApiError
 
-**Location:** `src/llm_wiki_cli/api.py:335`
+**Location:** `src/llm_wiki_cli/api.py:342`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [api](../modules/api.md)

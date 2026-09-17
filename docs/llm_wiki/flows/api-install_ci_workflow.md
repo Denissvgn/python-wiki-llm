@@ -2,7 +2,7 @@
 
 **Entry point:** `install_ci_workflow` (`api`)
 **Source:** [ci_installer](../modules/ci_installer.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [common](../modules/common.md), [config](../modules/config.md), [io](../modules/io.md), and 6 more
+**Modules touched:** [ci_installer](../modules/ci_installer.md), [common](../modules/common.md), [config](../modules/config.md), [io](../modules/io.md), and 9 more
 
 **Complete modules touched:**
 
@@ -11,6 +11,9 @@
 - [config](../modules/config.md)
 - [io](../modules/io.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [source_selection](../modules/source_selection.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -33,20 +36,20 @@ sequenceDiagram
     participant p8 as _validated_project_path
     participant p9 as require_repository_relative_path
     participant p10 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p11 as value.strip
-    participant p12 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p13 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p14 as value.startswith
-    participant p15 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p16 as value.split
-    participant p17 as PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p18 as posixpath.normpath
-    participant p19 as require_portable_relative_path
-    participant p20 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p21 as _default_path_error
-    participant p22 as SharedValidationError
-    participant p23 as os.fspath (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p24 as raw.encode
+    participant p11 as _syntax_key
+    participant p12 as type (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p13 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p14 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p15 as _known_syntax
+    participant p16 as _PATH_SYNTAX.get
+    participant p17 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    participant p18 as value.strip
+    participant p19 as any (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p20 as ord (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p21 as value.startswith
+    participant p22 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p23 as value.split
+    participant p24 as PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
     p0->>p1: normalize_action_ref
     p1-->>p2: isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)
     p1-->>p3: _ACTION_REF_RE.fullmatch
@@ -58,28 +61,28 @@ sequenceDiagram
     p6->>p8: _validated_project_path
     p8->>p9: require_repository_relative_path
     p9-->>p10: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p9-->>p11: value.strip
-    p9-->>p12: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p9-->>p13: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p9-->>p13: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p9-->>p14: value.startswith
-    p9-->>p14: value.startswith
-    p9-->>p15: _WINDOWS_DRIVE_PREFIX_RE.match
-    p9-->>p16: value.split
-    p9-->>p17: PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    p9-->>p12: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p9-->>p18: posixpath.normpath
-    p9->>p19: require_portable_relative_path
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p19->>p21: _default_path_error
-    p21->>p22: SharedValidationError
-    p19-->>p23: os.fspath (src/llm_wiki_cli/services…re_portable_relative_path)
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p19->>p21: _default_path_error
-    p19-->>p24: raw.encode
+    p9->>p11: _syntax_key
+    p11-->>p12: type (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p11-->>p13: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p11-->>p14: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p11-->>p12: type (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p11-->>p12: type (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p11-->>p13: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p9->>p15: _known_syntax
+    p15-->>p16: _PATH_SYNTAX.get
+    p15-->>p17: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    p9-->>p18: value.strip
+    p9-->>p19: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p9-->>p20: ord (src/llm_wiki_cli/services…_repository_relative_path)
+    p9-->>p20: ord (src/llm_wiki_cli/services…_repository_relative_path)
+    p9-->>p21: value.startswith
+    p9-->>p21: value.startswith
+    p9-->>p22: _WINDOWS_DRIVE_PREFIX_RE.match
+    p9-->>p23: value.split
+    p9-->>p24: PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
 ```
 
-> Call sequence diagram shows 30 of 590 interactions; 560 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 634 interactions; 604 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -139,7 +142,7 @@ flowchart LR
 | `_without_github_expression` | `path: str`, `label: str` | - | - | `path` |
 | `InstallCiError` | - | - | - | - |
 | `_validated_project_path` | `value: object`, `label: str` | - | - | `require_repository_relative_path(...)` |
-| `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `require_portable_relative_path(...)` |
+| `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
 | `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | - | - | - | - |
 
 ### Call data
@@ -156,7 +159,7 @@ flowchart LR
 | _without_github_expression | InstallCiError | 93 | `InstallCiError(...)` |
 | _portable_project_path | _validated_project_path | 101 | `_validated_project_path(value, label=label)` |
 | _validated_project_path | require_repository_relative_path | 69 | `require_repository_relative_path(value, text_error=InstallCiError(...), posix_error=InstallCiError(...), normalized_error=InstallCiError(...), absolute_error=InstallCiError(...), separator_error=InstallCiError(...), control_error=InstallCiError(...), reject_delete_character=True, leading_backslash_is_absolute=True, portability_error=InstallCiError(...))` |
-| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 256 | `isinstance(value, str)` |
+| require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 
 ### Boundary effects
 
@@ -171,7 +174,7 @@ flowchart LR
 | external_call | `normalize_action_ref` | `isinstance` | 63 |
 | unresolved_call | `normalize_action_ref` | `_ACTION_REF_RE.fullmatch` | 63 |
 | unresolved_call | `normalize_action_ref` | `value.lower` | 65 |
-| external_call | `require_repository_relative_path` | `isinstance` | 256 |
+| external_call | `require_repository_relative_path` | `isinstance` | 299 |
 | step_limit | `install_ci_workflow` | `first 12 steps` | 0 |
 | truncated_flow | `install_ci_workflow` | `depth limit` | 0 |
 

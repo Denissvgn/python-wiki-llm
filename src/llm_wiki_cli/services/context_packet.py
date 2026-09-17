@@ -18,9 +18,12 @@ import math
 import os
 import re
 from urllib.parse import urlsplit
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
+from contextlib import ExitStack
+from contextvars import ContextVar
+from functools import wraps
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -82,6 +85,8 @@ from .knowledge_model import (
     concept_kind_for_page_kind,
 )
 from .wiki_media import contains_uri_authority_userinfo
+from .source_snapshot import SourceSnapshotMutationError, directory_identity
+from .filesystem_guard import guard_windows_directory_chain, hold_windows_readonly_file
 from .knowledge_observability import knowledge_freshness_disclosure
 from .knowledge_verification import verification_summaries_for_concepts
 from .packet_field_policy import (
@@ -398,6 +403,7 @@ class CapturedContextRead:
     allow_external_src: bool = False
     explicit_changes: bool = False
     change_selection: Mapping[str, Any] | None = None
+    wiki_integrity: Mapping[str, tuple[int, ...]] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.source_root, Path) or not self.source_root.is_absolute():
@@ -681,6 +687,46 @@ def _validate_reconciliation_contract(
         raise ValueError("limitations must be sorted and contain no duplicates")
 
 
+_CAPTURE_GUARDS: ContextVar[ExitStack | None] = ContextVar("llm_wiki_capture_guards", default=None)
+
+
+def _guarded_capture(function):
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        with ExitStack() as stack:
+            token = _CAPTURE_GUARDS.set(stack)
+            try:
+                return function(*args, **kwargs)
+            except SourceSnapshotMutationError as exc:
+                raise ContextPacketSourceMutationError("source") from exc
+            finally:
+                _CAPTURE_GUARDS.reset(token)
+    return wrapped
+
+
+def _guard_windows_inputs(root: Path, paths: Iterable[str]) -> None:
+    if os.name != "nt":
+        return
+    stack = _CAPTURE_GUARDS.get()
+    if stack is None:
+        raise ContextPacketUnavailableError("Input guard ownership is unavailable")
+    try:
+        held = getattr(stack, "_llm_wiki_held_paths", set())
+        setattr(stack, "_llm_wiki_held_paths", held)
+        parents = sorted({(root / path).parent for path in paths}, key=str)
+        for parent in parents:
+            if parent not in held:
+                stack.enter_context(guard_windows_directory_chain(Path(parent.anchor), parent.parts[1:]))
+                held.add(parent)
+        for path in sorted(paths):
+            if root / path not in held:
+                stack.enter_context(hold_windows_readonly_file(root / path))
+                held.add(root / path)
+    except OSError as exc:
+        raise ContextPacketUnavailableError("Cannot freeze the required Windows inputs") from exc
+
+
+@_guarded_capture
 def capture_context_read(
     src_dir: str = ".",
     wiki_dir: str = DEFAULT_WIKI_DIR,
@@ -693,6 +739,11 @@ def capture_context_read(
     allow_selection_mismatch: bool = False,
     strict_wiki_symlinks: bool = False,
     helper_cache_dir: str | None = None,
+    only_files: Iterable[str] | None = None,
+    max_source_files: int | None = None,
+    max_source_bytes: int | None = None,
+    max_wiki_bytes: int | None = None,
+    respect_ignores: bool = False,
 ) -> CapturedContextRead:
     """Capture one source inventory, wiki surface, and knowledge read view.
 
@@ -738,6 +789,7 @@ def capture_context_read(
             source_root,
             source_selection=source_selection,
             selection_policy=selection_policy,
+            **({"max_bytes": max_source_bytes} if max_source_bytes is not None else {}),
         )
         validate_live_query_source_selection(
             source_root=source_root,
@@ -760,12 +812,26 @@ def capture_context_read(
             str(exc),
             "source_selection",
         ) from exc
+    capture_options: dict[str, Any] = {}
+    if only_files is not None:
+        capture_options["only_files"] = only_files
+    if max_source_files is not None:
+        capture_options["max_files"] = max_source_files
+    if max_source_bytes is not None:
+        capture_options["max_bytes"] = max_source_bytes
+    if respect_ignores:
+        capture_options["respect_ignores"] = True
+        capture_options["coherent"] = True
     source_snapshot = build_source_snapshot(
         source_root,
         source_selection=source_selection,
         selection_policy=selection_policy,
         expected_selection_inputs=selection_inputs,
+        **capture_options,
     )
+    if respect_ignores and os.name == "nt":
+        _guard_windows_inputs(source_root, source_snapshot.captured_content_hashes)
+        _assert_source_unchanged(source_snapshot, _source_anchor(source_snapshot))
 
     helper_options = {"helper_cache_dir": helper_cache_dir} if helper_cache_dir is not None else {}
     collected = context_service.get_inventory(
@@ -815,8 +881,13 @@ def capture_context_read(
                 "source_selection",
             ) from exc
         basis_incompatible = True
+    wiki_options: dict[str, Any] = {"max_bytes": max_wiki_bytes} if max_wiki_bytes is not None else {}
+    wiki_integrity: dict[str, tuple[int, ...]] | None = {} if respect_ignores else None
+    if wiki_integrity is not None:
+        wiki_options["integrity_out"] = wiki_integrity
+        wiki_options["guard_windows"] = True
     wiki_anchor_before = (
-        _wiki_anchor(wiki_root, reject_all_symlinks=True)
+        _wiki_anchor(wiki_root, reject_all_symlinks=True, **wiki_options)
         if strict_wiki_symlinks
         else _wiki_anchor(wiki_root)
     )
@@ -890,10 +961,16 @@ def capture_context_read(
             "wiki_dir",
         ) from exc
 
+    wiki_check_options: dict[str, Any] = {}
+    if max_wiki_bytes is not None:
+        wiki_check_options["max_bytes"] = max_wiki_bytes
+    if wiki_integrity is not None:
+        wiki_check_options["expected_integrity"] = wiki_integrity
     _assert_wiki_unchanged(
         wiki_root,
         wiki_anchor_before,
         reject_all_symlinks=strict_wiki_symlinks,
+        **wiki_check_options,
     )
     wiki_anchor_after = wiki_anchor_before
     _assert_source_inputs_unchanged(source_snapshot, source_anchor)
@@ -936,12 +1013,15 @@ def capture_context_read(
         basis_incompatible=basis_incompatible,
         strict_wiki_symlinks=strict_wiki_symlinks,
         allow_external_src=allow_external_src,
+        wiki_integrity=_freeze_json(wiki_integrity) if wiki_integrity is not None else None,
     )
 
 
 def build_context_from_captured_read(
     captured: CapturedContextRead,
     request: Mapping[str, Any],
+    *,
+    freshness_ranking_out: dict[str, int] | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     """Build a versioned context payload solely from one captured read."""
 
@@ -950,7 +1030,8 @@ def build_context_from_captured_read(
     normalized = _normalized_request(request)
     if normalized["protocol"] == context_service.PROTOCOL_VERSION:
         return _build_legacy_context_from_captured_read(captured, normalized)
-    return _build_knowledge_context_from_captured_read(captured, normalized)
+    return _build_knowledge_context_from_captured_read(captured, normalized,
+                                                     freshness_ranking_out=freshness_ranking_out)
 
 
 def _build_legacy_context_from_captured_read(
@@ -1052,6 +1133,8 @@ def _build_legacy_context_from_captured_read(
 def _build_knowledge_context_from_captured_read(
     captured: CapturedContextRead,
     normalized: Mapping[str, Any],
+    *,
+    freshness_ranking_out: dict[str, int] | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     """Build explicit v2 knowledge selection from the coordinated capture."""
 
@@ -1107,6 +1190,8 @@ def _build_knowledge_context_from_captured_read(
         and query_service is not None
         else {}
     )
+    if freshness_ranking_out is not None:
+        freshness_ranking_out.update(freshness_rank_by_source)
     payload, budget_pressure = _captured_source_payload(
         inventory,
         classification,
@@ -1370,10 +1455,14 @@ def packet_from_captured_response(
     body = _packet_body(captured, normalized, response, packet_contract)
 
     _assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
+    wiki_options: dict[str, Any] = {}
+    if captured.wiki_integrity is not None:
+        wiki_options["expected_integrity"] = captured.wiki_integrity
     _assert_wiki_unchanged(
         captured.wiki_root,
         captured.wiki_anchor,
         reject_all_symlinks=captured.strict_wiki_symlinks,
+        **wiki_options,
     )
     _assert_selection_unchanged(captured)
 
@@ -1686,6 +1775,13 @@ def reconcile_context_packet(
         source_selection=source_selection,
     )
     live_payload = live_packet.to_payload()
+    return _reconcile_packet_views(packet_payload, live_payload)
+
+
+def _reconcile_packet_views(packet_payload: Mapping[str, Any], live_payload: Mapping[str, Any]) -> ContextPacketReconciliation:
+    """Compare validated packet views produced by an official captured read."""
+    validation = validate_context_packet(_encode_packet_payload(packet_payload))
+    validate_context_packet(_encode_packet_payload(live_payload))
     facets = _reconciliation_facets(packet_payload, live_payload)
     required_states = {name: facets[name]["current"] for name in _RECONCILIATION_FACETS}
     if any(value is False for value in required_states.values()):
@@ -4823,11 +4919,11 @@ def _source_snapshot_anchor_payload(snapshot: SourceSnapshot) -> dict[str, Any]:
     }
 
 
-def _assert_source_unchanged(snapshot: SourceSnapshot, expected_anchor: str) -> None:
+def _assert_source_unchanged(snapshot: SourceSnapshot, expected_anchor: str, *, metrics: dict[str, int] | None = None) -> None:
     try:
         unchanged = (
             _source_anchor(snapshot) == expected_anchor
-            and source_snapshot_matches_current_files(snapshot)
+            and source_snapshot_matches_current_files(snapshot, **({"metrics": metrics} if metrics is not None else {}))
         )
     except (OSError, SourceSnapshotError, ValueError) as exc:
         raise ContextPacketSourceMutationError("source") from exc
@@ -4879,17 +4975,36 @@ def _assert_selection_unchanged(captured: CapturedContextRead) -> None:
         raise ContextPacketSourceMutationError("source-selection")
 
 
-def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False) -> str:
+def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False, max_bytes: int | None = None,
+                 metrics: dict[str, int] | None = None,
+                 integrity_out: dict[str, tuple[int, ...]] | None = None,
+                 guard_windows: bool = False) -> str:
+    if integrity_out is not None:
+        current = root
+        while True:
+            integrity_out[str(current)] = directory_identity(current)
+            if current.exists() or current.parent == current:
+                break
+            current = current.parent
     if not root.exists():
         return _domain_hash(_WIKI_ANCHOR_DOMAIN, {"state": "absent"})
     records: list[dict[str, str]] = []
+    used_bytes = 0
+    inspected_entries = 0
 
     def walk(directory: Path, relative: Path) -> None:
+        nonlocal used_bytes, inspected_entries
+        if integrity_out is not None:
+            integrity_out[str(directory)] = directory_identity(directory)
         try:
-            entries = sorted(
-                os.scandir(directory),
-                key=lambda entry: (entry.name.casefold(), entry.name),
-            )
+            entries = []
+            with os.scandir(directory) as scan:
+                for entry in scan:
+                    inspected_entries += 1
+                    if max_bytes is not None and inspected_entries > 10_000:
+                        raise ContextPacketUnavailableError("wiki discovery exceeds the entry limit", field="max_wiki_entries")
+                    entries.append(entry)
+            entries.sort(key=lambda entry: (entry.name.casefold(), entry.name))
         except OSError as exc:
             raise ContextPacketSourceMutationError("wiki") from exc
         for entry in entries:
@@ -4917,7 +5032,24 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False) -> str:
                     records.append({"path": rel_path, "kind": "directory"})
                     walk(Path(entry.path), relative / entry.name)
                 elif entry.is_file(follow_symlinks=False):
-                    content = Path(entry.path).read_bytes()
+                    if guard_windows:
+                        _guard_windows_inputs(root, [rel_path])
+                    before = directory_identity(Path(entry.path)) if integrity_out is not None else None
+                    if max_bytes is not None and entry.stat(follow_symlinks=False).st_size > max_bytes - used_bytes:
+                        raise ContextPacketUnavailableError("wiki capture exceeds the byte limit", field="max_wiki_bytes")
+                    with Path(entry.path).open("rb") as stream:
+                        content = stream.read() if max_bytes is None else stream.read(max_bytes - used_bytes + 1)
+                    if integrity_out is not None:
+                        after = directory_identity(Path(entry.path))
+                        if before != after:
+                            raise ContextPacketSourceMutationError("wiki")
+                        integrity_out[str(Path(entry.path))] = after
+                    used_bytes += len(content)
+                    if metrics is not None:
+                        metrics["files"] = metrics.get("files", 0) + 1
+                        metrics["bytes"] = metrics.get("bytes", 0) + len(content)
+                    if max_bytes is not None and used_bytes > max_bytes:
+                        raise ContextPacketUnavailableError("wiki capture exceeds the byte limit", field="max_wiki_bytes")
                     records.append(
                         {
                             "path": rel_path,
@@ -4931,7 +5063,14 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False) -> str:
                 raise ContextPacketSourceMutationError("wiki") from exc
 
     walk(root, Path())
+    if integrity_out is not None:
+        _assert_wiki_integrity(integrity_out)
     return _domain_hash(_WIKI_ANCHOR_DOMAIN, {"state": "present", "entries": records})
+
+
+def _assert_wiki_integrity(expected: Mapping[str, tuple[int, ...]]) -> None:
+    if any(directory_identity(Path(path)) != tuple(identity) for path, identity in expected.items()):
+        raise ContextPacketSourceMutationError("wiki")
 
 
 def _wiki_symlink_is_captured_input(relative_path: str) -> bool:
@@ -4954,10 +5093,20 @@ def _assert_wiki_unchanged(
     expected_anchor: str,
     *,
     reject_all_symlinks: bool = False,
+    max_bytes: int | None = None,
+    metrics: dict[str, int] | None = None,
+    expected_integrity: Mapping[str, tuple[int, ...]] | None = None,
 ) -> None:
+    if expected_integrity is not None:
+        _assert_wiki_integrity(expected_integrity)
+    options: dict[str, Any] = {}
+    if max_bytes is not None:
+        options["max_bytes"] = max_bytes
+    if metrics is not None:
+        options["metrics"] = metrics
     try:
         current_anchor = (
-            _wiki_anchor(root, reject_all_symlinks=True)
+            _wiki_anchor(root, reject_all_symlinks=True, **options)
             if reject_all_symlinks
             else _wiki_anchor(root)
         )

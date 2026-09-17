@@ -20,6 +20,7 @@ respect the same directory and ignore boundaries as other discovered inputs.
 |--------|---------|
 | `..config` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text`, `is_agent_worktree_path` |
 | `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `LANGUAGE_EXTENSIONS`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
+| `.filesystem_guard` | `fresh_no_follow_stat`, `windows_object_identity`, `_windows_path_handle_metadata` |
 | `.knowledge_envelope` | `ConsumedInput` |
 | `.progress` | `observed_phase` |
 | `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
@@ -32,7 +33,7 @@ respect the same directory and ignore boundaries as other discovered inputs.
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |
-| `typing` | `TYPE_CHECKING` |
+| `typing` | `Any`, `TYPE_CHECKING` |
 
 ## Local dependency map
 
@@ -52,26 +53,27 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (36) |
-| Outbound | `src` (6) |
+| Inbound | `src` (39) |
+| Outbound | `src` (7) |
 
-> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 101 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
-| [SourceFile](../entities/SourceFile.md) | 111 | — | A source-tree file discovered relative to a snapshot root. |
-| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 123 | — | Filesystem identity used for cheap between-stage mutation checks. |
-| [SourceSnapshot](../entities/SourceSnapshot.md) | 135 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 436 | — | — |
+| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 102 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
+| [SourceSnapshotMutationError](../entities/SourceSnapshotMutationError.md) | 111 | `SourceSnapshotError` | Input identity changed while its content commitment was captured. |
+| [SourceFile](../entities/SourceFile.md) | 116 | — | A source-tree file discovered relative to a snapshot root. |
+| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 128 | — | Filesystem identity used for cheap between-stage mutation checks. |
+| [SourceSnapshot](../entities/SourceSnapshot.md) | 140 | — | Filtered source-tree discovery results shared by lint/extract paths. |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 451 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None, *, expected_gitignore_paths: frozenset[str] \| None = None) -> _SnapshotBuckets` | — | — |
+| `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None, *, expected_gitignore_paths: frozenset[str] \| None = None, respect_ignores: bool = False, max_control_bytes: int \| None = None, max_scan_entries: int \| None = None, coherent: bool = False) -> _SnapshotBuckets` | — | — |
 | `_validate_repository_path` | `(value: object, field: str) -> str` | — | — |
 | `_normalize_only_files` | `(root: Path, only_files: Iterable[str] \| None) -> set[str] \| None` | — | — |
 | `_language_for_path` | `(path: Path, include_tests: frozenset[str]) -> str \| None` | — | — |
@@ -82,8 +84,11 @@ flowchart LR
 | `_make_source_file` | `(root: Path, path: Path, rel: Path, language: str \| None) -> SourceFile \| None` | — | — |
 | `_append_sorted` | `(target: list[SourceFile], source_file: SourceFile \| None) -> None` | — | — |
 | `_sha256_bytes` | `(content: bytes) -> str` | — | — |
-| `_sha256_file` | `(path: Path) -> str \| None` | — | — |
+| `_sha256_file` | `(path: Path, *, metrics: dict[str, int] \| None = None, max_bytes: int \| None = None, integrity_out: dict[Path, SourceFileIntegrity] \| None = None) -> str \| None` | — | — |
 | `_source_file_integrity` | `(path: Path) -> SourceFileIntegrity \| None` | — | — |
+| `_path_bound_file_integrity` | `(path: Path, opened: os.stat_result) -> SourceFileIntegrity \| None` | — | Retain path metadata after binding it to the actual Windows read handle. |
+| `_file_integrity_from_stat` | `(current: os.stat_result) -> SourceFileIntegrity \| None` | — | — |
+| `directory_identity` | `(path: Path) -> tuple[int, ...]` | — | Private object/change identity, never a portable content commitment. |
 | `_captured_file_integrity` | `(root: Path, content_hashes: Mapping[str, str]) -> dict[str, SourceFileIntegrity]` | — | — |
 | `_sha256_labeled_contents` | `(contents: Mapping[str, bytes \| None]) -> str` | — | — |
 | `_directory_ignored` | `(matcher: GitIgnoreMatcher, rel_path: str) -> bool` | — | Return whether a directory path is ignored by the current matcher. |
@@ -95,6 +100,7 @@ flowchart LR
 | `_empty_source_snapshot` | `(root: Path, source_selection_policy: SourceSelectionPolicy \| None = None, *, include_tests: frozenset[str] = frozenset(), only_files: frozenset[str] \| None = None) -> SourceSnapshot` | — | — |
 | `_relative_to_root` | `(path: Path, root: Path) -> Path \| None` | — | — |
 | `_is_excluded_walk_directory` | `(rel_dir: Path, only_set: set[str] \| None) -> bool` | — | — |
+| `_read_ignore_control` | `(path: Path, buckets: _SnapshotBuckets) -> bytes` | — | — |
 | `_record_gitignore_rules` | `(root: Path, current_dir: Path, rel_dir: Path, buckets: _SnapshotBuckets) -> None` | — | — |
 | `_only_set_contains_path_under` | `(only_set: set[str] \| None, rel_path: str) -> bool` | — | — |
 | `_prune_dirnames` | `(root: Path, dirnames: list[str], rel_dir: Path, matcher: GitIgnoreMatcher, only_set: set[str] \| None, buckets: _SnapshotBuckets) -> None` | — | — |
@@ -103,21 +109,24 @@ flowchart LR
 | `_record_unsupported_language_candidate` | `(root: Path, resolved: Path, rel: Path, only_set: set[str] \| None, buckets: _SnapshotBuckets) -> None` | — | — |
 | `_record_generated_javascript_bundle_candidate` | `(root: Path, resolved: Path, rel: Path, only_set: set[str] \| None, buckets: _SnapshotBuckets) -> bool` | — | — |
 | `_record_source_file` | `(root: Path, current_dir: Path, filename: str, matcher: GitIgnoreMatcher, only_set: set[str] \| None, buckets: _SnapshotBuckets) -> None` | — | — |
+| `_bounded_source_walk` | `(root: Path, maximum: int)` | — | — |
 | `_collect_source_tree` | `(root: Path, only_set: set[str] \| None, buckets: _SnapshotBuckets) -> None` | — | — |
 | `_collect_source_selection_controls` | `(root: Path, buckets: _SnapshotBuckets) -> None` | — | Capture only applicable profile/ignore inputs without reading source files. |
-| `capture_source_selection_inputs` | `(src_dir: str \| Path, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None) -> dict[str, object] \| None` | — | Capture exact selection-control commitments before any selected-file read. |
+| `capture_source_selection_inputs` | `(src_dir: str \| Path, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, max_bytes: int \| None = None) -> dict[str, object] \| None` | — | Capture exact selection-control commitments before any selected-file read. |
 | `_selection_inputs_from_buckets` | `(buckets: _SnapshotBuckets) -> dict[str, object] \| None` | — | — |
 | `_add_captured_input_candidates` | `(candidates: dict[str, set[str]], source_files: Iterable[SourceFile], kind: str) -> None` | — | — |
 | `_captured_snapshot_candidates` | `(*, sorted_languages: Mapping[str, tuple[SourceFile, ...]], dockerfiles: tuple[SourceFile, ...], compose_files: tuple[SourceFile, ...], yaml_files: tuple[SourceFile, ...], package_markers: tuple[SourceFile, ...], gitignore_contents: Mapping[str, bytes \| None], source_selection_policy: SourceSelectionPolicy \| None) -> tuple[dict[str, set[str]], dict[str, SourceFile]]` | — | — |
-| `_captured_snapshot_inputs` | `(*, sorted_languages: Mapping[str, tuple[SourceFile, ...]], dockerfiles: tuple[SourceFile, ...], compose_files: tuple[SourceFile, ...], yaml_files: tuple[SourceFile, ...], package_markers: tuple[SourceFile, ...], gitignore_contents: Mapping[str, bytes \| None], source_selection_policy: SourceSelectionPolicy \| None) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]` | — | — |
-| `_build_source_snapshot` | `(root: Path, buckets: _SnapshotBuckets, *, only_files: frozenset[str] \| None) -> SourceSnapshot` | — | — |
+| `_captured_snapshot_inputs` | `(*, sorted_languages: Mapping[str, tuple[SourceFile, ...]], dockerfiles: tuple[SourceFile, ...], compose_files: tuple[SourceFile, ...], yaml_files: tuple[SourceFile, ...], package_markers: tuple[SourceFile, ...], gitignore_contents: Mapping[str, bytes \| None], source_selection_policy: SourceSelectionPolicy \| None, max_files: int \| None = None, max_bytes: int \| None = None, metrics: dict[str, int] \| None = None, integrity_out: dict[Path, SourceFileIntegrity] \| None = None) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]` | — | — |
+| `_build_source_snapshot` | `(root: Path, buckets: _SnapshotBuckets, *, only_files: frozenset[str] \| None, max_files: int \| None = None, max_bytes: int \| None = None) -> SourceSnapshot` | — | — |
 | `unsupported_source_summary` | `(snapshot: SourceSnapshot, *, supported_languages: Iterable[str] = ()) -> dict[str, dict[str, object]]` | — | Return nonempty unsupported source counts and paths. |
 | `format_unsupported_source_summary` | `(summary: dict[str, dict[str, object]]) -> str` | — | Return a concise human-readable unsupported-source summary. |
 | `unsupported_source_label` | `(language: str) -> str` | — | Return the human-readable label for an unsupported source bucket. |
 | `_format_unsupported_language_count` | `(language: str, data: dict[str, object]) -> str` | — | — |
 | `_policies_match` | `(left: SourceSelectionPolicy, right: SourceSelectionPolicy) -> bool` | — | — |
 | `_resolve_snapshot_selection` | `(root: Path, *, source_selection: str \| Path \| None, selection_policy: SourceSelectionPolicy \| None) -> SourceSelectionPolicy \| None` | — | — |
-| `build_source_snapshot` | `(src_dir: str \| Path, only_files: Iterable[str] \| None = None, include_tests: Iterable[str] \| None = None, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, expected_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_EXPECTED_SELECTION_INPUTS) -> SourceSnapshot` | `@observed_phase('source_snapshot')` | Build a deterministic source-tree snapshot rooted at *src_dir*. |
+| `_validate_capture_options` | `(max_files, max_bytes, respect_ignores, coherent)` | — | — |
+| `_capture_buckets` | `(include_tests, policy, max_files, max_bytes, respect_ignores, coherent)` | — | — |
+| `build_source_snapshot` | `(src_dir: str \| Path, only_files: Iterable[str] \| None = None, include_tests: Iterable[str] \| None = None, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, expected_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_EXPECTED_SELECTION_INPUTS, max_files: int \| None = None, max_bytes: int \| None = None, respect_ignores: bool = False, coherent: bool = False) -> SourceSnapshot` | `@observed_phase('source_snapshot')` | Build a deterministic source-tree snapshot rooted at *src_dir*. |
 | `_hash_extra_inventory_path` | `(root: Path, path: str, *, policy: SourceSelectionPolicy \| None, selected_regular_paths: set[str]) -> str \| None` | — | Hash one extractor-owned path without admitting a newly selected path. |
 | `source_snapshot_inputs_match_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Cheaply verify that every already captured input retains its identity. |
-| `source_snapshot_matches_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Return whether *snapshot* still matches the selected source tree. |
+| `source_snapshot_matches_current_files` | `(snapshot: SourceSnapshot, *, metrics: dict[str, int] \| None = None) -> bool` | — | Return whether *snapshot* still matches the selected source tree. |

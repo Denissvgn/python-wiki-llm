@@ -10,57 +10,56 @@
 ```mermaid
 sequenceDiagram
     participant p0 as consumed_inputs_from_captured_hashes
-    participant p1 as isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)
+    participant p1 as isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
     participant p2 as KnowledgeEnvelopeError
-    participant p3 as any (src/llm_wiki_cli/services…nputs_from_captured_hashes)
-    participant p4 as set (src/llm_wiki_cli/services…nputs_from_captured_hashes)
+    participant p3 as any (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    participant p4 as set (src/llm_wiki_cli/services…puts_from_captured_hashes)
     participant p5 as _repository_relative_path
     participant p6 as require_repository_relative_path
-    participant p7 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p8 as value.strip
-    participant p9 as any (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p10 as ord (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p11 as value.startswith
-    participant p12 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p13 as value.split
-    participant p14 as PurePosixPath (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p15 as posixpath.normpath
-    participant p16 as require_portable_relative_path
-    participant p17 as isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p18 as _default_path_error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)
+    participant p7 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p8 as _syntax_key
+    participant p9 as type
+    participant p10 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p11 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p12 as _known_syntax
+    participant p13 as _PATH_SYNTAX.get
+    participant p14 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    participant p15 as value.strip
+    participant p16 as any (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p17 as ord (src/llm_wiki_cli/services…_repository_relative_path)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p3: any (src/llm_wiki_cli/services…nputs_from_captured_hashes)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)
+    p0-->>p3: any (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p3: any (src/llm_wiki_cli/services…nputs_from_captured_hashes)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)
+    p0-->>p3: any (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p4: set (src/llm_wiki_cli/services…nputs_from_captured_hashes)
-    p0-->>p4: set (src/llm_wiki_cli/services…nputs_from_captured_hashes)
+    p0-->>p4: set (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    p0-->>p4: set (src/llm_wiki_cli/services…puts_from_captured_hashes)
     p0->>p2: KnowledgeEnvelopeError
     p0->>p5: _repository_relative_path
     p5->>p6: require_repository_relative_path
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
-    p6-->>p8: value.strip
-    p6-->>p9: any (src/llm_wiki_cli/services…e_repository_relative_path)
-    p6-->>p10: ord (src/llm_wiki_cli/services…e_repository_relative_path)
-    p6-->>p10: ord (src/llm_wiki_cli/services…e_repository_relative_path)
-    p6-->>p11: value.startswith
-    p6-->>p11: value.startswith
-    p6-->>p12: _WINDOWS_DRIVE_PREFIX_RE.match
-    p6-->>p13: value.split
-    p6-->>p14: PurePosixPath (src/llm_wiki_cli/services…e_repository_relative_path)
-    p6-->>p9: any (src/llm_wiki_cli/services…e_repository_relative_path)
-    p6-->>p15: posixpath.normpath
-    p6->>p16: require_portable_relative_path
-    p16-->>p17: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p16->>p18: _default_path_error
+    p6-->>p7: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    p6->>p8: _syntax_key
+    p8-->>p9: type
+    p8-->>p10: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p8-->>p11: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p8-->>p9: type
+    p8-->>p9: type
+    p8-->>p10: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p6->>p12: _known_syntax
+    p12-->>p13: _PATH_SYNTAX.get
+    p12-->>p14: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
+    p6-->>p15: value.strip
+    p6-->>p16: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p6-->>p17: ord (src/llm_wiki_cli/services…_repository_relative_path)
+    p6-->>p17: ord (src/llm_wiki_cli/services…_repository_relative_path)
 ```
 
-> Call sequence diagram shows 30 of 94 interactions; 64 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 113 interactions; 83 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -68,28 +67,28 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     s1["1. consumed_inputs_from_captured_hashes"]
-    s2["2. isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)"]
+    s2["2. isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)"]
     s3["3. KnowledgeEnvelopeError"]
-    s4["4. isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)"]
+    s4["4. isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)"]
     s5["5. KnowledgeEnvelopeError"]
-    s6["6. any (src/llm_wiki_cli/services…nputs_from_captured_hashes)"]
-    s7["7. isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)"]
+    s6["6. any (src/llm_wiki_cli/services…puts_from_captured_hashes)"]
+    s7["7. isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)"]
     s8["8. KnowledgeEnvelopeError"]
-    s9["9. any (src/llm_wiki_cli/services…nputs_from_captured_hashes)"]
-    s10["10. isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)"]
+    s9["9. any (src/llm_wiki_cli/services…puts_from_captured_hashes)"]
+    s10["10. isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)"]
     s11["11. KnowledgeEnvelopeError"]
-    s12["12. set (src/llm_wiki_cli/services…nputs_from_captured_hashes)"]
-    s1 -. "isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)(content_hashes, Mapping)" .-> s2
+    s12["12. set (src/llm_wiki_cli/services…puts_from_captured_hashes)"]
+    s1 -. "isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(content_hashes, Mapping)" .-> s2
     s1 -->|"KnowledgeEnvelopeError('captured_content_hashes', 'must be an object')"| s3
-    s1 -. "isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)(candidate_kinds, Mapping)" .-> s4
+    s1 -. "isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(candidate_kinds, Mapping)" .-> s4
     s1 -->|"KnowledgeEnvelopeError('captured_input_kinds', 'must be an object')"| s5
-    s1 -. "any (src/llm_wiki_cli/services…nputs_from_captured_hashes)(...)" .-> s6
-    s1 -. "isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)(path, str)" .-> s7
+    s1 -. "any (src/llm_wiki_cli/services…puts_from_captured_hashes)(...)" .-> s6
+    s1 -. "isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(path, str)" .-> s7
     s1 -->|"KnowledgeEnvelopeError('captured_content_hashes', 'must use string repository paths')"| s8
-    s1 -. "any (src/llm_wiki_cli/services…nputs_from_captured_hashes)(...)" .-> s9
-    s1 -. "isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)(path, str)" .-> s10
+    s1 -. "any (src/llm_wiki_cli/services…puts_from_captured_hashes)(...)" .-> s9
+    s1 -. "isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(path, str)" .-> s10
     s1 -->|"KnowledgeEnvelopeError('captured_input_kinds', 'must use string repository paths')"| s11
-    s1 -. "set (src/llm_wiki_cli/services…nputs_from_captured_hashes)(content_hashes)" .-> s12
+    s1 -. "set (src/llm_wiki_cli/services…puts_from_captured_hashes)(content_hashes)" .-> s12
     click s1 "../modules/knowledge_envelope.md"
     click s3 "../modules/knowledge_envelope.md"
     click s5 "../modules/knowledge_envelope.md"
@@ -102,33 +101,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `consumed_inputs_from_captured_hashes` | `content_hashes: Mapping[str, str]`, `candidate_kinds: Mapping[str, ConsumedInputKind \| str \| Iterable[ConsumedInputKind \| str]]` | `Mapping`, `Mapping` | - | `tuple(...)` |
-| `isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…nputs_from_captured_hashes)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…puts_from_captured_hashes)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `any (src/llm_wiki_cli/services…nputs_from_captured_hashes)` | - | - | - | - |
-| `isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes)` | - | - | - | - |
+| `any (src/llm_wiki_cli/services…puts_from_captured_hashes)` | - | - | - | - |
+| `isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)` | - | - | - | - |
 | `KnowledgeEnvelopeError` | - | - | - | - |
-| `set (src/llm_wiki_cli/services…nputs_from_captured_hashes)` | - | - | - | - |
+| `set (src/llm_wiki_cli/services…puts_from_captured_hashes)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes) | 183 | `isinstance(content_hashes, Mapping)` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 183 | `isinstance(content_hashes, Mapping)` |
 | consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 184 | `KnowledgeEnvelopeError('captured_content_hashes', 'must be an object')` |
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes) | 185 | `isinstance(candidate_kinds, Mapping)` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 185 | `isinstance(candidate_kinds, Mapping)` |
 | consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 186 | `KnowledgeEnvelopeError('captured_input_kinds', 'must be an object')` |
-| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…nputs_from_captured_hashes) | 187 | `any(...)` |
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes) | 187 | `isinstance(path, str)` |
+| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…puts_from_captured_hashes) | 187 | `any(...)` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 187 | `isinstance(path, str)` |
 | consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 188 | `KnowledgeEnvelopeError('captured_content_hashes', 'must use string repository paths')` |
-| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…nputs_from_captured_hashes) | 192 | `any(...)` |
-| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…nputs_from_captured_hashes) | 192 | `isinstance(path, str)` |
+| consumed_inputs_from_captured_hashes | any (src/llm_wiki_cli/services…puts_from_captured_hashes) | 192 | `any(...)` |
+| consumed_inputs_from_captured_hashes | isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes) | 192 | `isinstance(path, str)` |
 | consumed_inputs_from_captured_hashes | KnowledgeEnvelopeError | 193 | `KnowledgeEnvelopeError('captured_input_kinds', 'must use string repository paths')` |
-| consumed_inputs_from_captured_hashes | set (src/llm_wiki_cli/services…nputs_from_captured_hashes) | 197 | `set(content_hashes)` |
+| consumed_inputs_from_captured_hashes | set (src/llm_wiki_cli/services…puts_from_captured_hashes) | 197 | `set(content_hashes)` |
 
 ### Boundary effects
 

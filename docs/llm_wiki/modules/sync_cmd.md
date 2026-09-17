@@ -101,14 +101,14 @@ flowchart LR
 | [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 633 | — | — |
 | [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 652 | — | — |
 | [_SyncRunOptions](../entities/SyncRunOptions.md) | 1591 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1616 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1623 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1629 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1635 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1651 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1694 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1718 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1724 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1617 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1624 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1630 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1636 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1652 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1695 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1719 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1725 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 

@@ -46,9 +46,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| resolve_workspace_path | workspace_root.resolve | 484 | `workspace_root.resolve(data not statically known)` |
-| resolve_workspace_path | (…).resolve | 485 | `(resolved_root / relative).resolve(data not statically known)` |
-| resolve_workspace_path | target.relative_to | 487 | `target.relative_to(resolved_root)` |
+| resolve_workspace_path | workspace_root.resolve | 533 | `workspace_root.resolve(data not statically known)` |
+| resolve_workspace_path | (…).resolve | 534 | `(resolved_root / relative).resolve(data not statically known)` |
+| resolve_workspace_path | target.relative_to | 536 | `target.relative_to(resolved_root)` |
 
 ### Boundary effects
 
@@ -58,9 +58,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `resolve_workspace_path` | `workspace_root.resolve` | 484 |
-| unresolved_call | `resolve_workspace_path` | `(resolved_root / relative).resolve` | 485 |
-| unresolved_call | `resolve_workspace_path` | `target.relative_to` | 487 |
+| unresolved_call | `resolve_workspace_path` | `workspace_root.resolve` | 533 |
+| unresolved_call | `resolve_workspace_path` | `(resolved_root / relative).resolve` | 534 |
+| unresolved_call | `resolve_workspace_path` | `target.relative_to` | 536 |
 
 ## Behavior
 

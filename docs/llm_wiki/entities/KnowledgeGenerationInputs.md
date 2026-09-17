@@ -45,6 +45,7 @@ inventory source.
 | `plugins` | `Sequence[ProducerComponentInput]` | `()` | — |
 | `previous_producer` | `ProducerRecord \| None` | `None` | — |
 | `configured_public_identity` | `str \| None` | `None` | — |
+| `prior_artifacts` | `ValidatedKnowledgeArtifacts \| None` | `None` | — |
 | `previous_manifest` | `SyncManifest \| None` | `None` | — |
 | `next_manifest` | `SyncManifest \| None` | `None` | — |
 | `asset_paths` | `AbstractSet[str]` | `frozenset()` | — |
@@ -68,6 +69,7 @@ inventory source.
 | `graph_evidence_limit` | `int` | `DEFAULT_EVIDENCE_LIMIT` | — |
 | `governance` | `GovernanceLedger \| None` | `None` | — |
 | `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
+| `knowledge_format` | `str \| None` | `None` | — |
 
 ## Methods
 

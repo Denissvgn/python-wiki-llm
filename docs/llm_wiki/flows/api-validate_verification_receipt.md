@@ -62,7 +62,9 @@ sequenceDiagram
     p0->>p20: _string
 ```
 
-> Call sequence diagram shows 30 of 169 interactions; 139 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 167 interactions; 137 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -127,9 +129,9 @@ flowchart LR
 | _receipt_to_payload | check.to_payload | 1107 | `check.to_payload(data not statically known)` |
 | validate_verification_receipt | _object | 809 | `_object(payload, 'receipt')` |
 | _object | require_mapping | 1441 | `require_mapping(value, error=VerificationReceiptError(...), require_string_keys=True, key_error=VerificationReceiptError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 727 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 731 | `isinstance(key, str)` |
-| require_mapping | key.encode | 736 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
+| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
 | _object | VerificationReceiptError | 1443 | `VerificationReceiptError(field_name, 'must be an object')` |
 
 ### Boundary effects
@@ -142,10 +144,11 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `validate_verification_receipt` | `isinstance` | 806 |
 | unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1107 |
-| external_call | `require_mapping` | `isinstance` | 727 |
-| external_call | `require_mapping` | `isinstance` | 731 |
-| unresolved_call | `require_mapping` | `key.encode` | 736 |
+| external_call | `require_mapping` | `isinstance` | 765 |
+| external_call | `require_mapping` | `isinstance` | 769 |
+| unresolved_call | `require_mapping` | `key.encode` | 774 |
 | step_limit | `validate_verification_receipt` | `first 12 steps` | 0 |
+| truncated_flow | `validate_verification_receipt` | `depth limit` | 0 |
 
 ## Behavior
 

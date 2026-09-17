@@ -65,6 +65,8 @@ def run(args) -> None:
         path=getattr(args, "path", "/mcp"),
         allowed_origins=tuple(getattr(args, "allowed_origin", None) or ()),
         source_selection=getattr(args, "source_selection", None),
+        tokenizer=getattr(args, "tokenizer", None),
+        enable_sessions=getattr(args, "enable_sessions", False),
     )
     try:
         runner(config)

@@ -54,10 +54,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (11) |
+| Inbound | `src` (13) |
 | Outbound | `src` (6) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -81,6 +81,8 @@ flowchart LR
 | `relationship_edge_key` | `(identity: Mapping[str, Any]) -> str` | — | Return the domain-separated canonical key for one edge identity. |
 | `materialize_typed_graph` | `(inputs: KnowledgeGraphInputs) -> dict[str, Any]` | `@observed_phase('typed_graph')` | Materialize a deterministic evidence-backed graph from evaluated inputs. |
 | `validate_typed_graph` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None = None) -> dict[str, Any]` | — | Validate and canonicalize one ``llm-wiki-typed-graph/v1`` payload. |
+| `validate_typed_graph_slice` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None = None) -> dict[str, Any]` | — | Validate consumed edges and bases without asserting full graph counts. |
+| `_parse_typed_graph` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None, complete: bool) -> dict[str, Any]` | — | — |
 | `serialize_typed_graph` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None = None) -> str` | — | Return deterministic JSON for a standalone typed graph. |
 | `typed_graph_from_knowledge_extensions` | `(extensions: Mapping[str, Any], *, concept_kinds: Mapping[str, str] \| None = None) -> dict[str, Any] \| None` | — | Validate the reserved graph extension, returning ``None`` when absent. |
 | `_materialization_state` | `(inputs: KnowledgeGraphInputs, concepts: tuple[GraphConcept, ...], input_hashes: dict[str, str]) -> _MaterializationState` | — | — |
@@ -104,7 +106,7 @@ flowchart LR
 | `_normalise_coverage` | `(value: object, path: str, *, include_analyzer: bool = False) -> dict[str, Any]` | — | — |
 | `_normalise_input_hashes` | `(value: object) -> dict[str, str]` | — | — |
 | `_normalise_analyzer_limitations` | `(value: Mapping[str, Sequence[str]]) -> dict[str, list[str]]` | — | — |
-| `_validate_graph_bindings` | `(input_hashes: Mapping[str, str], coverage: Sequence[Mapping[str, Any]], edges: Sequence[Mapping[str, Any]]) -> None` | — | — |
+| `_validate_graph_bindings` | `(input_hashes: Mapping[str, str], coverage: Sequence[Mapping[str, Any]], edges: Sequence[Mapping[str, Any]], *, complete: bool = True) -> None` | — | — |
 | `_validate_resolution_target` | `(target: Mapping[str, Any], resolution: str, path: str) -> None` | — | — |
 | `_validate_core_direction` | `(kind: str, source: Mapping[str, Any], target: Mapping[str, Any], origin: str, resolution: str, evidence: Mapping[str, Any], path: str, concept_kinds: Mapping[str, str] \| None) -> None` | — | — |
 | `_endpoint_concept_kind` | `(endpoint: Mapping[str, Any], concept_kinds: Mapping[str, str] \| None) -> str \| None` | — | — |

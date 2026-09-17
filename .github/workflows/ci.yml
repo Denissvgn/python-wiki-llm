@@ -164,7 +164,8 @@ jobs:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: "utf-8"
         run: >-
-          python -m pytest tests/test_mcp_sdk.py -q
+          python -m pytest tests/test_mcp_sdk.py
+          tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation -q
           -p no:cacheprovider
           --strict-config
           --strict-markers
@@ -172,14 +173,14 @@ jobs:
           -o xfail_strict=true
           --junitxml="junit-${{ matrix.lane }}.xml"
 
-      - name: Enforce the single MCP SDK registration contract
+      - name: Enforce MCP SDK registration and canonical delivery
         run: >-
           python -I release/qualification.py verify-junit
           --junit "junit-${{ matrix.lane }}.xml"
           --lane "${{ matrix.lane }}"
           --allowlist release/skip-allowlist.json
-          --minimum-collected 1
-          --minimum-passed 1
+          --minimum-collected 2
+          --minimum-passed 2
           --output "result-${{ matrix.lane }}.json"
 
       - name: Upload failed MCP diagnostics

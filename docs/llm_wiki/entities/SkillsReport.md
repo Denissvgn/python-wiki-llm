@@ -1,6 +1,6 @@
 # SkillsReport
 
-**Location:** `src/llm_wiki_cli/services/skills.py:161`
+**Location:** `src/llm_wiki_cli/services/skills.py:162`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)

@@ -79,28 +79,28 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| format_field_differences | tuple | 57 | `tuple(...)` |
-| format_field_differences | str | 57 | `str(value)` |
-| format_field_differences | tuple | 58 | `tuple(...)` |
-| format_field_differences | str | 58 | `str(value)` |
-| format_field_differences | detail.append | 60 | `detail.append(...)` |
-| format_field_differences | ', '.join | 60 | `', '.join(missing_values)` |
-| format_field_differences | detail.append | 62 | `detail.append(...)` |
-| format_field_differences | ', '.join | 62 | `', '.join(unknown_values)` |
-| format_field_differences | ' '.join | 63 | `'; '.join(detail)` |
+| format_field_differences | tuple | 103 | `tuple(...)` |
+| format_field_differences | str | 103 | `str(value)` |
+| format_field_differences | tuple | 104 | `tuple(...)` |
+| format_field_differences | str | 104 | `str(value)` |
+| format_field_differences | detail.append | 106 | `detail.append(...)` |
+| format_field_differences | ', '.join | 106 | `', '.join(missing_values)` |
+| format_field_differences | detail.append | 108 | `detail.append(...)` |
+| format_field_differences | ', '.join | 108 | `', '.join(unknown_values)` |
+| format_field_differences | ' '.join | 109 | `'; '.join(detail)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `detail.append` | `format_field_differences` | 60 |
-| mutation | `detail.append` | `format_field_differences` | 62 |
+| mutation | `detail.append` | `format_field_differences` | 106 |
+| mutation | `detail.append` | `format_field_differences` | 108 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `format_field_differences` | `'; '.join` | 63 |
+| unresolved_call | `format_field_differences` | `'; '.join` | 109 |
 
 ## Behavior
 

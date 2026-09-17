@@ -26,7 +26,7 @@ sequenceDiagram
     participant p7 as by_stem.setdefault(…).append
     participant p8 as by_stem.setdefault
     participant p9 as by_stem.items
-    participant p10 as len
+    participant p10 as len (src/llm_wiki_cli/services…d_infrastructure_page_map)
     participant p11 as hash_json(…).removeprefix
     participant p12 as hash_json
     participant p13 as sha256_bytes
@@ -40,10 +40,10 @@ sequenceDiagram
     participant p21 as _validate_source_path
     participant p22 as require_repository_relative_path
     participant p23 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p24 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p25 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p26 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p27 as value.startswith
+    participant p24 as _syntax_key
+    participant p25 as type
+    participant p26 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p27 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
     p0->>p1: build_infrastructure_page_map
     p1-->>p2: sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)
     p1->>p3: infrastructure_page_name
@@ -54,7 +54,7 @@ sequenceDiagram
     p1-->>p8: by_stem.setdefault
     p1-->>p2: sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)
     p1-->>p9: by_stem.items
-    p1-->>p10: len
+    p1-->>p10: len (src/llm_wiki_cli/services…d_infrastructure_page_map)
     p1-->>p11: hash_json(…).removeprefix
     p1->>p12: hash_json
     p12->>p13: sha256_bytes
@@ -68,15 +68,17 @@ sequenceDiagram
     p20->>p21: _validate_source_path
     p21->>p22: require_repository_relative_path
     p22-->>p23: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p22-->>p24: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p22-->>p25: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p22-->>p26: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p22-->>p26: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p22-->>p27: value.startswith
-    p22-->>p27: value.startswith
+    p22->>p24: _syntax_key
+    p24-->>p25: type
+    p24-->>p26: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p24-->>p27: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p24-->>p25: type
+    p24-->>p25: type
 ```
 
-> Call sequence diagram shows 30 of 115 interactions; 85 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -94,7 +96,7 @@ flowchart LR
     s9["9. by_stem.setdefault"]
     s10["10. sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)"]
     s11["11. by_stem.items"]
-    s12["12. len"]
+    s12["12. len (src/llm_wiki_cli/services…d_infrastructure_page_map)"]
     s1 -->|"build_infrastructure_page_map(inventory)"| s2
     s2 -. "sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)(source_paths)" .-> s3
     s2 -->|"infrastructure_page_name(source_path)"| s4
@@ -105,7 +107,7 @@ flowchart LR
     s2 -. "by_stem.setdefault(stem, [...])" .-> s9
     s2 -. "sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)(by_stem.items(...))" .-> s10
     s2 -. "by_stem.items(data not statically known)" .-> s11
-    s2 -. "len(grouped_paths)" .-> s12
+    s2 -. "len (src/llm_wiki_cli/services…d_infrastructure_page_map)(grouped_paths)" .-> s12
     click s1 "../modules/infrastructure_sync.md"
     click s2 "../modules/infrastructure_sync.md"
     click s4 "../modules/infrastructure_inventory.md"
@@ -126,7 +128,7 @@ flowchart LR
 | `by_stem.setdefault` | - | - | - | - |
 | `sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)` | - | - | - | - |
 | `by_stem.items` | - | - | - | - |
-| `len` | - | - | - | - |
+| `len (src/llm_wiki_cli/services…d_infrastructure_page_map)` | - | - | - | - |
 
 ### Call data
 
@@ -142,7 +144,7 @@ flowchart LR
 | build_infrastructure_page_map | by_stem.setdefault | 46 | `by_stem.setdefault(stem, [...])` |
 | build_infrastructure_page_map | sorted (src/llm_wiki_cli/services…d_infrastructure_page_map) | 48 | `sorted(by_stem.items(...))` |
 | build_infrastructure_page_map | by_stem.items | 48 | `by_stem.items(data not statically known)` |
-| build_infrastructure_page_map | len | 49 | `len(grouped_paths)` |
+| build_infrastructure_page_map | len (src/llm_wiki_cli/services…d_infrastructure_page_map) | 49 | `len(grouped_paths)` |
 
 ### Boundary effects
 
@@ -161,6 +163,7 @@ flowchart LR
 | external_call | `build_infrastructure_page_map` | `sorted` | 48 |
 | unresolved_call | `build_infrastructure_page_map` | `by_stem.items` | 48 |
 | step_limit | `current_infrastructure_bases` | `first 12 steps` | 0 |
+| truncated_flow | `current_infrastructure_bases` | `depth limit` | 0 |
 
 ## Behavior
 

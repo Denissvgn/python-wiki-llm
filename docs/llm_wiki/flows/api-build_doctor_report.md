@@ -2,7 +2,7 @@
 
 **Entry point:** `build_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 46 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 49 more
 
 **Complete modules touched:**
 
@@ -35,8 +35,11 @@
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
@@ -113,7 +116,7 @@ sequenceDiagram
     p11-->>p18: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
 ```
 
-> Call sequence diagram shows 30 of 2712 interactions; 2682 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2778 interactions; 2748 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

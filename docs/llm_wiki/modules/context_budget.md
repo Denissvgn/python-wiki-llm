@@ -24,10 +24,12 @@ weaker accounting explicitly.
 | `.change_selection` | `affected_page_map`, `changes_from_args`, `select_changes`, `validate_changes` |
 | `.contracts` | `CONTEXT_BUDGET_PROTOCOL_VERSION` |
 | `.io` | `write_text_output`, `write_utf8_stdout` |
+| `.request_json` | `_pairs`, `_constant` |
 | `.token_counting` | `EstimatedCounter`, `LocalTokenizerCounter`, `TokenCounter` |
 | `__future__` | `annotations` |
 | `copy` | `copy` |
 | `dataclasses` | `dataclass`, `replace` |
+| `hashlib` | `hashlib` |
 | `json` | `json` |
 | `sys` | `sys` |
 | `typing` | `Any`, `Mapping` |
@@ -45,13 +47,17 @@ flowchart LR
     n5["src/llm_wiki_cli/services/context_service.py"]
     n6["src/llm_wiki_cli/services/contracts.py"]
     n7["src/llm_wiki_cli/services/io.py"]
-    n8["src/llm_wiki_cli/services/token_counting.py"]
+    n8["src/llm_wiki_cli/services/request_json.py"]
+    n9["src/llm_wiki_cli/services/task_context.py"]
+    n10["src/llm_wiki_cli/services/task_context_v2.py"]
+    n11["src/llm_wiki_cli/services/token_counting.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n4
     n0 --> n5
     n0 --> n6
-    n0 --> n8
+    n0 --> n9
+    n0 --> n11
     n1 --> n7
     n3 --> n1
     n3 --> n2
@@ -60,6 +66,7 @@ flowchart LR
     n3 --> n6
     n3 --> n7
     n3 --> n8
+    n3 --> n11
     n4 --> n1
     n4 --> n2
     n4 --> n5
@@ -70,6 +77,21 @@ flowchart LR
     n5 --> n4
     n5 --> n6
     n5 --> n7
+    n9 --> n1
+    n9 --> n2
+    n9 --> n3
+    n9 --> n4
+    n9 --> n5
+    n9 --> n7
+    n9 --> n8
+    n9 --> n10
+    n9 --> n11
+    n10 --> n1
+    n10 --> n2
+    n10 --> n3
+    n10 --> n4
+    n10 --> n5
+    n10 --> n9
     click n0 "../modules/api.md"
     click n1 "../modules/config.md"
     click n2 "../modules/change_selection.md"
@@ -78,7 +100,10 @@ flowchart LR
     click n5 "../modules/context_service.md"
     click n6 "../modules/services_contracts.md"
     click n7 "../modules/io.md"
-    click n8 "../modules/token_counting.md"
+    click n8 "../modules/request_json.md"
+    click n9 "../modules/task_context.md"
+    click n10 "../modules/task_context_v2.md"
+    click n11 "../modules/token_counting.md"
 ```
 
 ### Internal neighbors
@@ -87,19 +112,22 @@ flowchart LR
 |---|---|
 | Inbound | [api](../modules/api.md) |
 | Inbound | [context_service](../modules/context_service.md) |
+| Inbound | [task_context](../modules/task_context.md) |
+| Inbound | [task_context_v2](../modules/task_context_v2.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [change_selection](../modules/change_selection.md) |
 | Outbound | [context_packet](../modules/context_packet.md) |
 | Outbound | [context_service](../modules/context_service.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [io](../modules/io.md) |
+| Outbound | [request_json](../modules/request_json.md) |
 | Outbound | [token_counting](../modules/token_counting.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [BudgetedContext](../entities/BudgetedContext.md) | 25 | — | — |
+| [BudgetedContext](../entities/BudgetedContext.md) | 26 | — | — |
 
 ## Functions
 
@@ -107,6 +135,8 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `validate_request` | `(data: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_accounted_render` | `(render, accounting, counter)` | — | — |
-| `fit_payload` | `(payload, request, warnings, counter, *, packet_renderer = None, changes = None)` | — | Select whole source entries; keep all enrichment and omission evidence. |
+| `fit_payload` | `(payload, request, warnings, counter, *, packet_renderer = None, changes = None, envelope_renderer = None, freshness_rank_by_source = None)` | — | Select whole source entries; keep all enrichment and omission evidence. |
 | `build_budgeted_context` | `(src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, request = None, *, counter: TokenCounter \| None = None, allow_external_src = False, source_selection = None) -> BudgetedContext` | — | — |
+| `request_identity` | `(request: Mapping[str, Any]) -> str` | — | — |
+| `validate_budgeted_context` | `(rendered: str, request: Mapping[str, Any], *, counter: TokenCounter) -> dict[str, Any]` | — | Independently validate the outer v3 binding, packet and emitted count. |
 | `run` | `(args, request = None)` | — | — |
