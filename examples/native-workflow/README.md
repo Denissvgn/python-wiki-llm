@@ -2,7 +2,7 @@
 
 The consumer has an off-by-one error: `cap` keeps two values when three are
 permitted. Its caller lives in another module. Copy `project/` into a fresh
-directory and install `agent-wiki-cli` into that directory's `.venv`. On Windows,
+directory and install `agent-wiki-cli` 2.3.0 or newer into that directory's `.venv`. On Windows,
 use `.venv\Scripts\python.exe` for the Python commands below.
 
 ## Prepare and inspect
