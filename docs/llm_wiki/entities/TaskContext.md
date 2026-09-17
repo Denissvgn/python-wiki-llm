@@ -1,6 +1,6 @@
 # TaskContext
 
-**Location:** `src/llm_wiki_cli/services/task_contract.py:109`
+**Location:** `src/llm_wiki_cli/services/task_contract.py:119`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_contract](../modules/task_contract.md)

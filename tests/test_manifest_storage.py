@@ -141,14 +141,32 @@ def test_recovery_refuses_new_manifest_with_the_same_knowledge_root(tmp_path):
     assert (root / MANIFEST_FILENAME).read_bytes() == before
 
 
-def test_documentation_import_reconstructs_v6_catalogs(tmp_path):
+@pytest.mark.parametrize('fmt', ['packed-v3-deflate', 'packed-v4', 'packed-v4-deflate'])
+def test_documentation_import_reconstructs_v6_catalogs(tmp_path, fmt):
     from llm_wiki_cli.services.documentation_wiki_input import adopt_documentation_wiki_snapshot
     root = tmp_path / "wiki"
     root.mkdir()
     _committed_state(root)
-    migrate_knowledge_storage(root, to="packed-v3-deflate", recovery_dir=tmp_path / "packed")
+    migrate_knowledge_storage(root, to=fmt, recovery_dir=tmp_path / "packed")
     migrate_knowledge_storage(root, to="indexed-v6", recovery_dir=tmp_path / "manifest")
     result = adopt_documentation_wiki_snapshot(root, tmp_path / "workspace", freshness_policy="allow-unverified")
     assert result.manifest_schema_version == 6
     assert result.artifact_form == "manifest_v6_native"
     assert not any(p.startswith(".llm-wiki-manifest/") for p in result.unknown_entries)
+    assert not any(p.startswith(".llm-wiki-knowledge/") for p in result.unknown_entries)
+    if fmt.startswith('packed-v4'):
+        containers = [p for p in result.copied_paths if p.startswith('.llm-wiki-knowledge/index-pages/')]
+        assert containers
+        assert all((root / p).read_bytes() == (tmp_path / 'workspace' / p).read_bytes() for p in containers)
+
+
+@pytest.mark.parametrize('suffix', [
+    'aa/' + 'b' * 64 + '.bin',
+    'aa/' + 'a' * 63 + '.bin',
+    'aa/' + 'a' * 64 + '.json',
+    'aa/nested/' + 'a' * 64 + '.bin',
+    '../aa/' + 'a' * 64 + '.bin',
+])
+def test_documentation_import_keeps_malformed_index_page_paths_unknown(suffix):
+    from llm_wiki_cli.services.documentation_wiki_input import _is_known_wiki_path
+    assert not _is_known_wiki_path('.llm-wiki-knowledge/index-pages/' + suffix)

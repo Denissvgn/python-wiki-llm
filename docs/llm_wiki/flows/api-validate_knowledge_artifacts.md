@@ -131,7 +131,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest`, `object_reader: Callable[[str, int], bytes] \| None`, `wiki_dir: str \| Path \| None` | `STORE_SCHEMA`, `PACKED_SCHEMA`, `KNOWLEDGE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MAX_EXPANDED_BYTES`, `STORE_SCHEMA`, `PACKED_SCHEMA` | - | `validated` |
+| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest`, `object_reader: Callable[[str, int], bytes] \| None`, `wiki_dir: str \| Path \| None` | `STORE_SCHEMA`, `PACKED_SCHEMAS`, `KNOWLEDGE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MAX_EXPANDED_BYTES`, `STORE_SCHEMA`, `PACKED_SCHEMAS` | - | `validated` |
 | `validate_surface_index_bytes` | `surface_index_bytes: bytes` | - | - | `surface_payload` |
 | `_decode_json_object` | `content: bytes`, `field: str` | `KnowledgeArtifactError`, `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | - | - | - | - |

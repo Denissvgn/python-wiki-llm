@@ -1,6 +1,6 @@
 # TaskContextRequest
 
-**Location:** `src/llm_wiki_cli/api_types.py:43`
+**Location:** `src/llm_wiki_cli/api_types.py:51`
 **Kind:** Class
 **Bases:** `_TaskOptions`
 **Module:** [api_types](../modules/api_types.md)

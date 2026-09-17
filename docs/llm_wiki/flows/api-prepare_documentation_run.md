@@ -99,7 +99,7 @@ sequenceDiagram
     p3-->>p13: run_path.is_file
 ```
 
-> Call sequence diagram shows 30 of 1406 interactions; 1376 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1407 interactions; 1377 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

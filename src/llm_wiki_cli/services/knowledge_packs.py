@@ -25,7 +25,16 @@ from .knowledge_storage import (
 )
 
 PACKED_SCHEMA = "llm-wiki-knowledge/v3"
+LOCAL_PACKED_SCHEMA = "llm-wiki-knowledge/v4"
+PACKED_SCHEMAS = (PACKED_SCHEMA, LOCAL_PACKED_SCHEMA)
+LOCAL_PACK_PROFILE = "local-v1"
+LOCAL_PACK_TARGET_BYTES = 1_048_576
+LOCAL_INDEX_ROWS = 24
 PACK_INDEX_SCHEMA = "llm-wiki-knowledge-pack-index/v1"
+PAGE_INDEX_SCHEMA = "llm-wiki-knowledge-pack-index/v2"
+INDEX_PAGE_DIRECTORY = ".llm-wiki-knowledge/index-pages"
+INDEX_PAGE_BYTES = 1_048_576
+INDEX_PAGE_NAME = re.compile(r"\.llm-wiki-knowledge/index-pages/([0-9a-f]{2})/(\1[0-9a-f]{62})\.bin\Z")
 PACK_DIRECTORY = ".llm-wiki-knowledge/packs"
 PACK_INDEX_DIRECTORY = ".llm-wiki-knowledge/pack-index"
 PACK_TARGET_BYTES = 4_194_304
@@ -33,7 +42,7 @@ MAX_PACK_BYTES = 8_388_608
 MAX_INDEX_BYTES = 65_536
 MAX_PACK_MEMBERS = 512
 MAX_DIRECTORY_BYTES = 262_144
-PACKED_FORMATS = frozenset({"packed-v3", "packed-v3-deflate"})
+PACKED_FORMATS = frozenset({"packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"})
 INDEX_NAME = re.compile(r"\.llm-wiki-knowledge/pack-index/([0-9a-f]{2})/\1[0-9a-f]{62}\.json\Z")
 PACK_NAME = re.compile(r"\.llm-wiki-knowledge/packs/([0-9a-f]{2})/(\1[0-9a-f]{62})-knowledge-pack-(root|[01]{1,64})\.zip\Z")
 _BITS = re.compile(r"[01]{0,64}\Z")
@@ -76,11 +85,23 @@ def index_path(commitment: str) -> str:
     return f"{PACK_INDEX_DIRECTORY}/{value[:2]}/{value}.json"
 
 
-def _index_descriptor(value: Any) -> dict[str, Any]:
-    item = _fields(value, {"hash", "bytes", "count"}, "index")
+def index_page_path(commitment):
+    value = _hash(commitment, "index-page.hash")[7:]
+    return f"{INDEX_PAGE_DIRECTORY}/{value[:2]}/{value}.bin"
+
+
+def _index_descriptor(value: Any, *, paged: bool = False) -> dict[str, Any]:
+    item = _fields(value, {"hash", "bytes", "count"} | ({"extent"} if paged else set()), "index")
     _hash(item["hash"], "index.hash")
     _integer(item["bytes"], "index.bytes", MAX_INDEX_BYTES, 1)
     _integer(item["count"], "index.count", MAX_READ_OBJECTS, 1)
+    if paged:
+        extent = _fields(item["extent"], {"container", "offset", "file_bytes"}, "index.extent")
+        _hash(extent["container"], "index.extent.container")
+        _integer(extent["offset"], "index.extent.offset", INDEX_PAGE_BYTES)
+        _integer(extent["file_bytes"], "index.extent.file_bytes", INDEX_PAGE_BYTES, 1)
+        if extent["offset"] + item["bytes"] > extent["file_bytes"]:
+            _fail("index.extent", "page range exceeds its container")
     return item
 
 
@@ -98,20 +119,30 @@ def _pack_descriptor(value: Any) -> dict[str, Any]:
 def parse_packed_root(raw: bytes) -> dict[str, Any]:
     root = decode_bytes(raw, limit=MAX_ROOT_BYTES, field="root")
     _fields(root, {"schema_version", "store", "packing"}, "root")
-    if root["schema_version"] != PACKED_SCHEMA:
+    if root["schema_version"] not in PACKED_SCHEMAS:
         _fail("schema_version", "unsupported packed storage version", "unsupported-schema-version")
     parse_store_root(canonical_bytes(root["store"]))
-    packing = _fields(root["packing"], {"compression", "catalog", "pack_catalog", "objects", "packs"}, "packing")
+    local = root["schema_version"] == LOCAL_PACKED_SCHEMA
+    packing = _fields(root["packing"], {"compression", "catalog", "pack_catalog", "objects", "packs"}
+                      | ({"profile"} if local else set()), "packing")
+    if local and packing["profile"] != LOCAL_PACK_PROFILE:
+        _fail("packing.profile", "unsupported locality profile", "unsupported-schema-version")
     if not isinstance(packing["compression"], str) or packing["compression"] not in {"stored", "deflate"}:
         _fail("packing.compression", "unsupported compression method")
-    _index_descriptor(packing["catalog"])
-    _index_descriptor(packing["pack_catalog"])
+    _index_descriptor(packing["catalog"], paged=local)
+    _index_descriptor(packing["pack_catalog"], paged=local)
     for key in ("objects", "packs"):
         _integer(packing[key], "packing." + key, MAX_READ_OBJECTS, 1)
     if (packing["objects"] != packing["catalog"]["count"] or packing["packs"] > packing["objects"]
             or packing["packs"] != packing["pack_catalog"]["count"]):
         _fail("packing", "invalid declared membership counts")
     return root
+
+
+def packed_format(root: Mapping[str, Any]) -> str:
+    """Return the explicitly adopted physical format of a validated packed root."""
+    version = "packed-v4" if root["schema_version"] == LOCAL_PACKED_SCHEMA else "packed-v3"
+    return version + ("-deflate" if root["packing"]["compression"] == "deflate" else "")
 
 
 def _zip_bytes(members: Mapping[str, bytes], compression: str) -> tuple[bytes, dict[str, list[Any]]]:
@@ -161,17 +192,22 @@ def _zip_reusing(members: Mapping[str, bytes], compression: str,
     return output.getvalue(), coordinates
 
 
-def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored", prior=None, objects=None) -> KnowledgeStorePlan:
+def build_packed_store(payload: Mapping[str, Any], *, compression: str = "stored", prior=None, objects=None,
+                       profile: str = "standard") -> KnowledgeStorePlan:
     if not isinstance(compression, str) or compression not in {"stored", "deflate"}:
         _fail("compression", "must be stored or deflate")
+    if not isinstance(profile, str) or profile not in {"standard", LOCAL_PACK_PROFILE}:
+        _fail("profile", "unsupported packing profile")
     from contextlib import nullcontext
     from .storage_spool import ByteSpool
     with ByteSpool() if objects is not None else nullcontext(None) as staging:
         logical = build_knowledge_store(payload, objects=staging)
-        return _pack_logical(logical, compression, prior, objects)
+        return _pack_logical(logical, compression, prior, objects, profile)
 
 
-def _pack_logical(logical, compression, prior, objects):
+def _pack_logical(logical, compression, prior, objects, profile="standard"):
+    local = profile == LOCAL_PACK_PROFILE
+    target_bytes = LOCAL_PACK_TARGET_BYTES if local else PACK_TARGET_BYTES
     members = {name: path for path, name in logical.member_names.items()}
     sizes = {name: len(logical.objects[path]) for name, path in members.items()}
     if len(members) != len(logical.objects):
@@ -185,9 +221,10 @@ def _pack_logical(logical, compression, prior, objects):
         from .knowledge_artifacts import require_validated_artifacts, validated_artifact_bytes
         require_validated_artifacts(prior)
         _, previous_root = validated_artifact_bytes(prior)
-        if json.loads(previous_root).get("schema_version") == PACKED_SCHEMA:
+        if json.loads(previous_root).get("schema_version") in PACKED_SCHEMAS:
             previous = parse_packed_root(previous_root)
-            if previous["packing"]["compression"] == compression:
+            if (previous["packing"]["compression"] == compression
+                    and previous["packing"].get("profile", "standard") == profile):
                 prior_reader = PackedKnowledgeStoreReader(previous_root, lambda path, _: prior.storage_objects[path])
 
     def previous_member(name, content):
@@ -208,7 +245,7 @@ def _pack_logical(logical, compression, prior, objects):
         nonlocal reused_packs, reused_members
         # Size on uncompressed data bounds both stored and expanded packs.
         upper_size = 22 + sum(sizes[name] + 76 + 2 * len(name) for name in group)
-        if (upper_size > PACK_TARGET_BYTES or len(group) > MAX_PACK_MEMBERS) and len(group) > 1:
+        if (upper_size > target_bytes or len(group) > MAX_PACK_MEMBERS) and len(group) > 1:
             if len(prefix) >= 64:
                 _fail("pack", "colliding logical members exceed pack limits", "storage-limit")
             groups: dict[str, dict[str, str]] = defaultdict(dict)
@@ -255,7 +292,7 @@ def _pack_logical(logical, compression, prior, objects):
     def index(group: dict[str, Any], prefix: str, kind: str):
         node = {"schema_version": PACK_INDEX_SCHEMA, "kind": kind, "prefix": prefix, kind: group}
         raw = canonical_bytes(node)
-        if len(raw) > MAX_INDEX_BYTES:
+        if len(raw) > MAX_INDEX_BYTES or (local and len(group) > LOCAL_INDEX_ROWS):
             if len(prefix) >= 64 or len(group) <= 1:
                 _fail("index", "unsplittable routing node", "storage-limit")
             groups: dict[str, dict[str, Any]] = defaultdict(dict)
@@ -268,12 +305,17 @@ def _pack_logical(logical, compression, prior, objects):
         files[index_path(digest(raw))] = raw
         return {"hash": digest(raw), "bytes": len(raw), "count": len(group)}
 
-    catalog = index({key: [descriptor["bucket"], *position] for key, (descriptor, position) in locations.items()}, "", "members")
-    pack_catalog = index(pack_directory, "", "packs")
+    member_directory = {key: [descriptor["bucket"], *position] for key, (descriptor, position) in locations.items()}
+    if local:
+        catalog, pack_catalog = _paged_indexes(member_directory, pack_directory, files)
+    else:
+        catalog = index(member_directory, "", "members")
+        pack_catalog = index(pack_directory, "", "packs")
     pack_count = len(pack_directory)
-    root = canonical_bytes({"schema_version": PACKED_SCHEMA, "store": json.loads(logical.root_bytes),
+    root = canonical_bytes({"schema_version": LOCAL_PACKED_SCHEMA if local else PACKED_SCHEMA, "store": json.loads(logical.root_bytes),
                             "packing": {"compression": compression, "catalog": catalog, "pack_catalog": pack_catalog,
-                                        "objects": len(locations), "packs": pack_count}})
+                                        "objects": len(locations), "packs": pack_count,
+                                        **({"profile": profile} if local else {})}})
     parse_packed_root(root)
     if len(files) > MAX_READ_OBJECTS or sum(map(len, files.values())) > MAX_EXPANDED_BYTES:
         _fail("packing", "physical store exceeds its object/byte bound", "storage-limit")
@@ -282,6 +324,61 @@ def _pack_logical(logical, compression, prior, objects):
         "logical_object_bytes": sum(sizes.values()),
         "reused_packs": reused_packs, "reused_members": reused_members,
         "encoded_members": len(locations) - reused_members})
+
+
+def _paged_indexes(members, packs, files):
+    """Pack locator pages bottom-up, so every extent has an acyclic commitment."""
+    levels = defaultdict(list)
+
+    def tree(group, prefix, kind):
+        node = {"schema_version": PAGE_INDEX_SCHEMA, "kind": kind, "prefix": prefix, kind: group}
+        children = {}
+        height = 0
+        if len(group) > LOCAL_INDEX_ROWS or len(canonical_bytes(node)) > MAX_INDEX_BYTES:
+            if len(prefix) >= 64 or len(group) <= 1:
+                _fail("index", "unsplittable routing page", "storage-limit")
+            groups = defaultdict(dict)
+            for key, value in group.items():
+                route = key if kind == "members" else hashlib.sha256(key.encode("ascii")).hexdigest()
+                groups[_bits(route)[len(prefix)]][key] = value
+            children = {bit: tree(child, prefix + bit, kind) for bit, child in sorted(groups.items())}
+            height = 1 + max(child["height"] for child in children.values())
+        item = {"node": node, "children": children, "height": height, "count": len(group), "descriptor": None}
+        levels[height].append(item)
+        return item
+
+    roots = tree(members, "", "members"), tree(packs, "", "packs")
+    for height in sorted(levels):
+        encoded = []
+        for item in sorted(levels[height], key=lambda i: (i["node"]["kind"], i["node"]["prefix"])):
+            node = item["node"]
+            if item["children"]:
+                node = {"schema_version": PAGE_INDEX_SCHEMA, "kind": "catalog", "prefix": node["prefix"],
+                        "children": {bit: child["descriptor"] for bit, child in item["children"].items()}}
+            raw = canonical_bytes(node)
+            if len(raw) > MAX_INDEX_BYTES:
+                _fail("index", "routing page exceeds the byte bound", "storage-limit")
+            encoded.append((item, raw))
+        group, size = [], 0
+
+        def emit(batch):
+            raw = b"".join(content for _, content in batch)
+            commitment = digest(raw)
+            files[index_page_path(commitment)] = raw
+            offset = 0
+            for item, content in batch:
+                item["descriptor"] = {"hash": digest(content), "bytes": len(content), "count": item["count"],
+                    "extent": {"container": commitment, "offset": offset, "file_bytes": len(raw)}}
+                offset += len(content)
+        for item, raw in encoded:
+            if group and size + len(raw) > INDEX_PAGE_BYTES:
+                emit(group)
+                group, size = [], 0
+            group.append((item, raw))
+            size += len(raw)
+        if group:
+            emit(group)
+    return tuple(root["descriptor"] for root in roots)
 
 
 def _coordinates(value: Any) -> tuple[str, list[Any]]:
@@ -299,6 +396,49 @@ def _coordinates(value: Any) -> tuple[str, list[Any]]:
     if offset + 30 + len(name) + compressed > MAX_PACK_BYTES - 22:
         _fail("member", "member range lies outside its pack")
     return bucket, value[1:]
+
+
+def inspect_index_pages(raw: bytes, relative: str) -> dict[str, Any]:
+    """Validate intrinsic page-container syntax without claiming reachability."""
+    match = INDEX_PAGE_NAME.fullmatch(relative)
+    if match is None or not 0 < len(raw) <= INDEX_PAGE_BYTES or digest(raw)[7:] != match[2]:
+        _fail("index-pages", "invalid content-addressed page container")
+    count = 0
+    for line in raw.splitlines(keepends=True):
+        node = decode_bytes(line, limit=MAX_INDEX_BYTES, field=relative)
+        kind, prefix = node.get("kind"), node.get("prefix")
+        if kind not in {"catalog", "members", "packs"} or not isinstance(prefix, str) or not _BITS.fullmatch(prefix):
+            _fail(relative, "invalid routing page")
+        field = "children" if kind == "catalog" else kind
+        _fields(node, {"schema_version", "kind", "prefix", field}, relative)
+        if node["schema_version"] != PAGE_INDEX_SCHEMA or canonical_bytes(node) != line:
+            _fail(relative, "routing pages must be canonical v2 objects")
+        entries = node[field]
+        if not isinstance(entries, dict) or not entries:
+            _fail(relative, "routing page requires entries")
+        if kind == "catalog":
+            if not set(entries) <= {"0", "1"} or len(prefix) >= 64:
+                _fail(relative, "invalid page branches")
+            for descriptor in entries.values():
+                _index_descriptor(descriptor, paged=True)
+        else:
+            if len(entries) > LOCAL_INDEX_ROWS:
+                _fail(relative, "routing page exceeds its row bound")
+            for key, value in entries.items():
+                if kind == "members":
+                    if not _HEX.fullmatch(key):
+                        _fail(relative, "invalid logical object key")
+                    _coordinates(value)
+                    route = key
+                else:
+                    _pack_descriptor(value)
+                    if key != value["bucket"]:
+                        _fail(relative, "pack bucket differs")
+                    route = hashlib.sha256(key.encode("ascii")).hexdigest()
+                if not _bits(route).startswith(prefix):
+                    _fail(relative, "routing key exceeds its prefix")
+        count += 1
+    return {"pages": count, "bytes": len(raw)}
 
 
 def _position(value: Any, descriptor: dict[str, Any]) -> tuple[dict[str, Any], list[Any]]:
@@ -429,11 +569,14 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
     def __init__(self, root_bytes: bytes, read_file: Callable[[str, int], bytes], *,
                  read_range: RangeReader | None = None, **limits):
         packed = parse_packed_root(root_bytes)
+        self.storage_format = packed_format(packed).removesuffix("-deflate")
         self.packing = packed["packing"]
         self.read_file = read_file
         self.read_range = read_range
         self.physical_objects: MutableMapping[str, bytes] = {}
         self._indexes: MutableMapping[str, dict[str, Any]] = {}
+        self._index_extents: dict[str, dict[str, Any]] = {}
+        self._verified_index_containers: set[str] = set()
         self._pack_descriptors: dict[str, dict[str, Any]] = {}
         self._selected_locations: dict[str, tuple[dict[str, Any], list[Any]]] = {}
         self._verified_pack_hashes: set[str] = set()
@@ -459,28 +602,56 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
         return self.physical_objects[path]
 
     def _index(self, descriptor: dict[str, Any], prefix: str, leaf_kind: str = "members") -> dict[str, Any]:
-        _index_descriptor(descriptor)
+        paged = self.packing.get("profile") == LOCAL_PACK_PROFILE
+        _index_descriptor(descriptor, paged=paged)
         path = index_path(descriptor["hash"])
-        raw = self._physical(path, descriptor["bytes"])
+        if paged:
+            previous = self._index_extents.setdefault(path, descriptor)
+            if previous != descriptor:
+                _fail(path, "inconsistent page extent")
+            extent = descriptor["extent"]
+            container = index_page_path(extent["container"])
+            if path in self._indexes:
+                raw = None
+            elif self.read_range is None:
+                content = self._physical(container, extent["file_bytes"])
+                if extent["container"] not in self._verified_index_containers:
+                    if digest(content) != extent["container"]:
+                        _fail(container, "index container checksum differs")
+                    self._verified_index_containers.add(extent["container"])
+                raw = content[extent["offset"]:extent["offset"] + descriptor["bytes"]]
+            else:
+                if self._physical_bytes + descriptor["bytes"] > self.max_bytes:
+                    _fail("read", "index page budget exhausted", "storage-budget-exhausted")
+                raw = self.read_range(container, extent["offset"], descriptor["bytes"], extent["file_bytes"])
+                self._physical_bytes += len(raw)
+        else:
+            raw = self._physical(path, descriptor["bytes"])
         node = self._indexes.get(path)
         if node is None:
+            if raw is None or len(raw) != descriptor["bytes"]:
+                _fail(path, "index page size differs")
             if digest(raw) != descriptor["hash"]:
                 _fail(path, "routing index checksum differs")
             node = decode_bytes(raw, limit=MAX_INDEX_BYTES, field=path)
+            if paged and canonical_bytes(node) != raw:
+                _fail(path, "index pages must use canonical JSON")
             _fields(node, {"schema_version", "prefix", "kind"} |
                     ({"children"} if node.get("kind") == "catalog" else {leaf_kind}), path)
-            if node["schema_version"] != PACK_INDEX_SCHEMA or node["prefix"] != prefix or not _BITS.fullmatch(prefix):
+            if node["schema_version"] != (PAGE_INDEX_SCHEMA if paged else PACK_INDEX_SCHEMA) or node["prefix"] != prefix or not _BITS.fullmatch(prefix):
                 _fail(path, "routing schema or prefix differs")
             if node["kind"] == "catalog":
                 children = node["children"]
                 if not isinstance(children, dict) or not children or not set(children) <= {"0", "1"} or len(prefix) >= 64:
                     _fail(path, "invalid routing children")
                 for child in children.values():
-                    _index_descriptor(child)
+                    _index_descriptor(child, paged=paged)
             elif node["kind"] == leaf_kind:
                 members = node[leaf_kind]
                 if not isinstance(members, dict) or not members:
                     _fail(path, "invalid member table")
+                if self.packing.get("profile") == LOCAL_PACK_PROFILE and len(members) > LOCAL_INDEX_ROWS:
+                    _fail(path, "locality index exceeds its row bound", "storage-limit")
                 for key, value in members.items():
                     if leaf_kind == "members":
                         if not _HEX.fullmatch(key):
@@ -611,22 +782,40 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
             _fail("packing", "pack bucket boundaries overlap")
         if actual != locations:
             _fail("index", "locator coordinates differ from complete archive membership")
+        containers = defaultdict(list)
+        for descriptor in self._index_extents.values():
+            extent = descriptor["extent"]
+            containers[extent["container"]].append((extent["offset"], descriptor["bytes"], extent["file_bytes"]))
+        for commitment, extents in containers.items():
+            position = 0
+            content = self._physical(index_page_path(commitment), extents[0][2])
+            if digest(content) != commitment:
+                _fail("index", "index container checksum differs")
+            for offset, size, file_bytes in sorted(extents):
+                if offset != position or file_bytes != len(content):
+                    _fail("index", "index container has gaps, overlaps or inconsistent extents")
+                position += size
+            if position != len(content):
+                _fail("index", "index container has uncommitted trailing data")
 
-    def select(self, selectors, *, max_records: int = 1000) -> KnowledgeSlice:
-        payload = super().select(selectors, max_records=max_records).to_payload()
-        payload.update(schema_version="llm-wiki-knowledge-slice/v2", storage_format="packed-v3",
+    def select(self, selectors, *, max_records: int = 1000, collections=None) -> KnowledgeSlice:
+        payload = super().select(selectors, max_records=max_records, collections=collections).to_payload()
+        payload.update(schema_version="llm-wiki-knowledge-slice/v2" if collections is None else "llm-wiki-knowledge-slice/v3",
+                       storage_format=self.storage_format,
                        archive_validation_scope="selected-members")
         payload["work"]["physical_bytes"] = self._physical_bytes
         return KnowledgeSlice(canonical_bytes(payload))
 
     def statistics(self) -> dict[str, Any]:
         return {**super().statistics(), "physical_packs": self.packing["packs"],
-                "physical_indexes": sum(bool(INDEX_NAME.fullmatch(p)) for p in self.physical_objects)}
+                "physical_indexes": sum(bool(INDEX_NAME.fullmatch(p) or INDEX_PAGE_NAME.fullmatch(p)) for p in self.physical_objects)}
 
     def release_capture(self) -> None:
         super().release_capture()
         self.physical_objects.clear()
         self._indexes.clear()
+        self._index_extents.clear()
+        self._verified_index_containers.clear()
         self._pack_descriptors.clear()
         self._selected_locations.clear()
         self._verified_pack_hashes.clear()
@@ -635,7 +824,7 @@ class PackedKnowledgeStoreReader(KnowledgeStoreReader):
 def open_knowledge_store(root_bytes: bytes, read_file: Callable[[str, int], bytes], *,
                          read_range: RangeReader | None = None, **limits) -> KnowledgeStoreReader:
     version = json.loads(root_bytes).get("schema_version")
-    if version == PACKED_SCHEMA:
+    if version in PACKED_SCHEMAS:
         return PackedKnowledgeStoreReader(root_bytes, read_file, read_range=read_range, **limits)
     return KnowledgeStoreReader(root_bytes, read_file, **limits)
 
@@ -646,7 +835,8 @@ def physical_objects(reader: KnowledgeStoreReader) -> Mapping[str, bytes]:
 
 def build_storage(payload: Mapping[str, Any], storage_format: str, *, prior=None, objects=None) -> KnowledgeStorePlan:
     if storage_format in PACKED_FORMATS:
-        return build_packed_store(payload, compression="deflate" if storage_format.endswith("-deflate") else "stored", prior=prior, objects=objects)
+        return build_packed_store(payload, compression="deflate" if storage_format.endswith("-deflate") else "stored", prior=prior, objects=objects,
+                                  profile=LOCAL_PACK_PROFILE if storage_format.startswith("packed-v4") else "standard")
     if storage_format == "sharded-v2":
         return build_knowledge_store(payload, objects=objects)
     _fail("format", "unsupported object storage format")

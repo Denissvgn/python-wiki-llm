@@ -78,7 +78,7 @@ sequenceDiagram
     p18->>p13: _wire_enum
 ```
 
-> Call sequence diagram shows 30 of 1461 interactions; 1431 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1463 interactions; 1433 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

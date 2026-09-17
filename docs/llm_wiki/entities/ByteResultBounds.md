@@ -1,6 +1,6 @@
 # ByteResultBounds
 
-**Location:** `src/llm_wiki_cli/api_types.py:123`
+**Location:** `src/llm_wiki_cli/api_types.py:131`
 **Kind:** Class
 **Bases:** `ResultBounds`
 **Module:** [api_types](../modules/api_types.md)

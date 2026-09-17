@@ -73,7 +73,7 @@ sequenceDiagram
     p16->>p20: KnowledgeGraphError
 ```
 
-> Call sequence diagram shows 30 of 1389 interactions; 1359 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1386 interactions; 1356 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -151,38 +151,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| apply_governance_projection | _event_limit | 1684 | `_event_limit(event_limit)` |
-| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2549 | `isinstance(value, bool)` |
-| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2550 | `isinstance(value, int)` |
-| _event_limit | GovernanceError | 2553 | `GovernanceError('event_limit', ...)` |
-| apply_governance_projection | strip_governance_projection | 1685 | `strip_governance_projection(knowledge)` |
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1617 | `isinstance(knowledge, KnowledgeIndex)` |
-| strip_governance_projection | TypeError (src/llm_wiki_cli/services…rip_governance_projection) | 1618 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1621 | `dict(concept.extensions)` |
-| strip_governance_projection | extensions.pop | 1622 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
-| strip_governance_projection | concepts.append (src/llm_wiki_cli/services…rip_governance_projection) | 1623 | `concepts.append(replace(...))` |
-| strip_governance_projection | replace (src/llm_wiki_cli/services…rip_governance_projection) | 1624 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
+| apply_governance_projection | _event_limit | 1691 | `_event_limit(event_limit)` |
+| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2556 | `isinstance(value, bool)` |
+| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2557 | `isinstance(value, int)` |
+| _event_limit | GovernanceError | 2560 | `GovernanceError('event_limit', ...)` |
+| apply_governance_projection | strip_governance_projection | 1692 | `strip_governance_projection(knowledge)` |
+| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1624 | `isinstance(knowledge, KnowledgeIndex)` |
+| strip_governance_projection | TypeError (src/llm_wiki_cli/services…rip_governance_projection) | 1625 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1628 | `dict(concept.extensions)` |
+| strip_governance_projection | extensions.pop | 1629 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
+| strip_governance_projection | concepts.append (src/llm_wiki_cli/services…rip_governance_projection) | 1630 | `concepts.append(replace(...))` |
+| strip_governance_projection | replace (src/llm_wiki_cli/services…rip_governance_projection) | 1631 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `review_items.append` | `apply_governance_projection` | 1739 |
-| mutation | `projected_concepts.append` | `apply_governance_projection` | 1764 |
-| mutation | `extensions.pop` | `strip_governance_projection` | 1622 |
-| mutation | `concepts.append` | `strip_governance_projection` | 1623 |
-| mutation | `extensions.pop` | `strip_governance_projection` | 1631 |
-| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1660 |
+| mutation | `review_items.append` | `apply_governance_projection` | 1746 |
+| mutation | `projected_concepts.append` | `apply_governance_projection` | 1771 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1629 |
+| mutation | `concepts.append` | `strip_governance_projection` | 1630 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1638 |
+| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1667 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_event_limit` | `isinstance` | 2549 |
-| external_call | `_event_limit` | `isinstance` | 2550 |
-| external_call | `strip_governance_projection` | `isinstance` | 1617 |
-| external_call | `strip_governance_projection` | `TypeError` | 1618 |
-| external_call | `strip_governance_projection` | `replace` | 1624 |
+| external_call | `_event_limit` | `isinstance` | 2556 |
+| external_call | `_event_limit` | `isinstance` | 2557 |
+| external_call | `strip_governance_projection` | `isinstance` | 1624 |
+| external_call | `strip_governance_projection` | `TypeError` | 1625 |
+| external_call | `strip_governance_projection` | `replace` | 1631 |
 | step_limit | `apply_governance_projection` | `first 12 steps` | 0 |
 | truncated_flow | `apply_governance_projection` | `depth limit` | 0 |
 

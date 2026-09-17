@@ -37,21 +37,27 @@ flowchart LR
     n1["MutableMapping[str, bytes]"]
     n2["src/llm_wiki_cli/services/knowledge_audit.py"]
     n3["build_packed_store (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n4["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n5["JsonSpool.__init__ (src/llm_wiki_cli/services/storage_spool.py)"]
-    n6["spool_write (src/llm_wiki_cli/services/storage_spool.py)"]
+    n4["prune_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n5["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n6["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n7["JsonSpool.__init__ (src/llm_wiki_cli/services/storage_spool.py)"]
+    n8["spool_write (src/llm_wiki_cli/services/storage_spool.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
+    n8 --> n0
     click n0 "../modules/storage_spool.md"
     click n2 "../modules/knowledge_audit.md"
     click n3 "../modules/knowledge_packs.md"
-    click n4 "../modules/knowledge_stream_audit.md"
-    click n5 "../modules/storage_spool.md"
-    click n6 "../modules/storage_spool.md"
+    click n4 "../modules/knowledge_storage_lifecycle.md"
+    click n5 "../modules/knowledge_storage_lifecycle.md"
+    click n6 "../modules/knowledge_stream_audit.md"
+    click n7 "../modules/storage_spool.md"
+    click n8 "../modules/storage_spool.md"
 ```
 
 ### Summary
@@ -72,6 +78,8 @@ flowchart LR
 |---|---|---|---:|
 | `knowledge_audit` | import | [knowledge_audit](../modules/knowledge_audit.md) | — |
 | `build_packed_store` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
+| `prune_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `knowledge_stream_audit` | import | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) | — |
 | `JsonSpool.__init__` | type_reference | [storage_spool](../modules/storage_spool.md) | — |
 | `spool_write` | type_reference | [storage_spool](../modules/storage_spool.md) | — |

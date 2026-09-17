@@ -1,6 +1,6 @@
 # ConceptSectionsResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:314`
+**Location:** `src/llm_wiki_cli/api_types.py:322`
 **Kind:** Class
 **Bases:** `ConceptResult`
 **Module:** [api_types](../modules/api_types.md)

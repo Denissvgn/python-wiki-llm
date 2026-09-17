@@ -2729,11 +2729,11 @@ def _unknown_entries(files: tuple[_InputFile, ...]) -> tuple[str, ...]:
 
 
 def _is_known_wiki_path(relative_path: str) -> bool:
-    from .knowledge_packs import PACK_NAME, INDEX_NAME
+    from .knowledge_packs import PACK_NAME, INDEX_NAME, INDEX_PAGE_NAME
     from .manifest_storage import OBJECT_NAME
     if OBJECT_NAME.fullmatch(relative_path):
         return True
-    if PACK_NAME.fullmatch(relative_path) or INDEX_NAME.fullmatch(relative_path):
+    if PACK_NAME.fullmatch(relative_path) or INDEX_NAME.fullmatch(relative_path) or INDEX_PAGE_NAME.fullmatch(relative_path):
         return True
     if re.fullmatch(r"\.llm-wiki-knowledge/objects/([0-9a-f]{2})/\1[0-9a-f]{62}\.json", relative_path):
         return True

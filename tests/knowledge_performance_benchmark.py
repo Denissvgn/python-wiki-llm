@@ -65,8 +65,9 @@ def slice_details(capture):
     for name, observation in capture.session.observations.items():
         kind = "indexes" if "/pack-index/" in name else "markdown" if name.endswith(".md") else name
         whole[kind] += len(observation.content)
-    member_bytes = sum(key[2] for key in capture.session.range_observations)
-    packs = {key[0]: key[3] for key in capture.session.range_observations}
+    member_bytes = sum(key[2] for key in capture.session.range_observations if "/packs/" in key[0])
+    index_bytes = sum(key[2] for key in capture.session.range_observations if "/index-pages/" in key[0])
+    packs = {key[0]: key[3] for key in capture.session.range_observations if "/packs/" in key[0]}
     logical = Counter()
     for name, raw in capture.reader.objects.items():
         logical[capture.reader._nodes[name]["collection"]] += len(raw)
@@ -76,6 +77,7 @@ def slice_details(capture):
             "physical_bytes_including_rechecks": capture.session.bytes_read,
             "operations_including_rechecks": capture.session.reads,
             "one_pass_file_bytes": dict(whole), "one_pass_member_range_bytes": member_bytes,
+            "one_pass_index_page_range_bytes": index_bytes,
             "distinct_pack_files": len(packs), "whole_bytes_of_touched_packs": sum(packs.values()),
             "ranges": len(capture.session.range_observations), "logical_objects": len(capture.reader.objects),
             "decoded_logical_object_bytes_by_kind": dict(logical),

@@ -1,5 +1,5 @@
 from llm_wiki_cli import api
-from llm_wiki_cli.api_types import KnowledgeMode
+from llm_wiki_cli.api_types import KnowledgeMode, TaskStorageOptions
 
 api.inspect_concept("llm-wiki://entities/Item", limit="twenty")  # expected: reportArgumentType
 api.get_knowledge_coverage(live="now")  # expected: reportArgumentType
@@ -7,6 +7,8 @@ api.build_context(knowledge_mode="invented")  # expected: reportArgumentType
 api.validate_context_packet("not bytes")  # expected: reportArgumentType
 api.inspect_concept("llm-wiki://entities/Item", unexpected=True)  # expected: reportCallIssue
 mode: KnowledgeMode = "invented"  # expected: reportAssignmentType
+selection: TaskStorageOptions = {"selection": "invented"}  # expected: reportAssignmentType
+receipt: TaskStorageOptions = {"receipt": "zip"}  # expected: reportAssignmentType
 result = api.inspect_concept("llm-wiki://entities/Item")
 count: str = result["cost"]["supplied_paths"]  # expected: reportAssignmentType
 api.search_wiki("query", limit="many")  # expected: reportArgumentType

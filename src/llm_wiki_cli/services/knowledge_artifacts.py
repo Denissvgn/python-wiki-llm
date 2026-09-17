@@ -38,7 +38,7 @@ from .knowledge_index import _validated_index_serialization, validate_knowledge_
 from .knowledge_storage import (
     STORE_SCHEMA, MAX_EXPANDED_BYTES, GIT_FAILURE_BYTES, KnowledgeStorageError, logical_digest,
 )
-from .knowledge_packs import PACKED_SCHEMA, PACKED_FORMATS, build_storage, open_knowledge_store, physical_objects
+from .knowledge_packs import PACKED_SCHEMAS, PACKED_FORMATS, build_storage, open_knowledge_store, physical_objects, packed_format
 from .immutable import freeze
 from .knowledge_model import (
     ConceptKind,
@@ -294,7 +294,7 @@ def validate_knowledge_artifacts(
     storage_statistics: Mapping[str, Any] = freeze({})
     store_reader = None
     storage_session = None
-    if schema_version not in (STORE_SCHEMA, PACKED_SCHEMA) and manifest.storage_version == 6 and wiki_dir is not None:
+    if schema_version not in (STORE_SCHEMA, *PACKED_SCHEMAS) and manifest.storage_version == 6 and wiki_dir is not None:
         from .knowledge_storage_io import StorageReadSession
         storage_session = StorageReadSession(wiki_dir)
         if (storage_session.read(KNOWLEDGE_INDEX_FILENAME, len(knowledge_index_bytes)) != knowledge_index_bytes
@@ -307,7 +307,7 @@ def validate_knowledge_artifacts(
             raise KnowledgeArtifactError("manifest", "changed before catalog capture", code="storage-mutation")
         storage_objects = freeze(captured_manifest.storage_objects)
         storage_session.recheck()
-    if schema_version in (STORE_SCHEMA, PACKED_SCHEMA):
+    if schema_version in (STORE_SCHEMA, *PACKED_SCHEMAS):
         if object_reader is None and wiki_dir is not None:
             from .knowledge_storage_io import StorageReadSession
             storage_session = StorageReadSession(wiki_dir)
@@ -504,7 +504,7 @@ def build_knowledge_commit_plan(
     adopted_manifest_format = current_manifest_format(root)
     manifest_format = manifest_format or adopted_manifest_format
     if knowledge_format not in {None, "v1", "sharded-v2", *PACKED_FORMATS}:
-        raise KnowledgeArtifactError("knowledge_format", "must be v1, sharded-v2, packed-v3 or packed-v3-deflate")
+        raise KnowledgeArtifactError("knowledge_format", "must be v1, sharded-v2, packed-v3, packed-v3-deflate, packed-v4 or packed-v4-deflate")
     if knowledge_format is None:
         knowledge_format = current_knowledge_format(root)
     if (knowledge_index_bytes is None) == (knowledge_index is None):
@@ -719,10 +719,10 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
         version = payload.get("schema_version")
         if version == STORE_SCHEMA:
             return "sharded-v2"
-        if version == PACKED_SCHEMA:
+        if version in PACKED_SCHEMAS:
             from .knowledge_packs import parse_packed_root
             packed = parse_packed_root(raw)
-            return "packed-v3-deflate" if packed["packing"]["compression"] == "deflate" else "packed-v3"
+            return packed_format(packed)
         if version == KNOWLEDGE_SCHEMA_VERSION:
             return "v1"
         raise KnowledgeArtifactError("knowledge_index_bytes.schema_version", "cannot write an unknown storage format", code="unsupported-schema-version")

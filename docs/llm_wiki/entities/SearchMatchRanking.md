@@ -1,6 +1,6 @@
 # _SearchMatchRanking
 
-**Location:** `src/llm_wiki_cli/api_types.py:47`
+**Location:** `src/llm_wiki_cli/api_types.py:55`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

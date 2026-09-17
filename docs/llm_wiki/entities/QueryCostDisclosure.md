@@ -1,6 +1,6 @@
 # QueryCostDisclosure
 
-**Location:** `src/llm_wiki_cli/api_types.py:343`
+**Location:** `src/llm_wiki_cli/api_types.py:351`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

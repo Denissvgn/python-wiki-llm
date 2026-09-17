@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:schema:knowledge:v4",
+  "title": "Indexed packed knowledge root v4",
+  "description": "Explicit local-v1 physical profile: bounded locator leaves and 1 MiB target packs, preserving complete logical v1 evidence.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-knowledge/v4"
+    },
+    "store": {
+      "$ref": "urn:llm-wiki:schema:knowledge:v2"
+    },
+    "packing": {
+      "type": "object",
+      "properties": {
+        "compression": {
+          "enum": [
+            "stored",
+            "deflate"
+          ]
+        },
+        "catalog": {
+          "$ref": "urn:llm-wiki:schema:knowledge-pack-index:v2#/$defs/descriptor"
+        },
+        "objects": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "packs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "pack_catalog": {
+          "$ref": "urn:llm-wiki:schema:knowledge-pack-index:v2#/$defs/descriptor"
+        },
+        "profile": {
+          "const": "local-v1"
+        }
+      },
+      "required": [
+        "compression",
+        "catalog",
+        "objects",
+        "packs",
+        "pack_catalog",
+        "profile"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "store",
+    "packing"
+  ],
+  "additionalProperties": false
+}

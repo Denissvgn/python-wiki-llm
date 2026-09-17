@@ -4,7 +4,7 @@
 
 ## Description
 
-Provides bounded context reuse with private workspace ownership and authoritative on-disk validation. Scoped native entries retain complete-file and pack-range observations; cold work and subsequent validation both count those bytes. Mutations invalidate reuse, and supported deltas reconstruct the exact task result schema. Unsaved buffers remain outside the on-disk contract.
+Provides bounded context reuse with private workspace ownership and authoritative on-disk validation. Scoped entries may share identical immutable byte buffers while retaining separate dependency observations; retained-memory accounting counts shared objects once. Read-only Git discovery is batched, and mutable producer sources remain fully checked. Supported deltas reconstruct the exact request/result schema; events are hints and unsaved buffers remain outside the on-disk contract.
 
 ## Imports
 
@@ -21,7 +21,7 @@ Provides bounded context reuse with private workspace ownership and authoritativ
 | `__future__` | `annotations` |
 | `collections` | `OrderedDict` |
 | `collections.abc` | `Callable`, `Mapping` |
-| `dataclasses` | `dataclass`, `fields`, `is_dataclass` |
+| `dataclasses` | `dataclass`, `fields`, `is_dataclass`, `replace` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `math` | `math` |

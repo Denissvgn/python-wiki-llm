@@ -25,8 +25,9 @@ from .knowledge_storage import (
 )
 from .knowledge_storage_io import StorageReadSession, read_guarded, _absolute_path
 from .knowledge_packs import (
-    PACKED_SCHEMA, PACKED_FORMATS, PACK_NAME, INDEX_NAME, PACK_DIRECTORY, PACK_INDEX_DIRECTORY,
-    PackedKnowledgeStoreReader, inspect_pack,
+    PACKED_SCHEMA, LOCAL_PACKED_SCHEMA, PACKED_SCHEMAS, PACKED_FORMATS, packed_format,
+    PACK_NAME, INDEX_NAME, PACK_DIRECTORY, PACK_INDEX_DIRECTORY,
+    INDEX_PAGE_NAME, INDEX_PAGE_DIRECTORY, PackedKnowledgeStoreReader, inspect_pack, inspect_index_pages,
 )
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest
 from .manifest_storage import OBJECT_NAME as MANIFEST_OBJECT_NAME, DIRECTORY as MANIFEST_DIRECTORY, validate_catalog
@@ -137,7 +138,8 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
               "object_bytes": sum(len(a.content) for a in plan.storage_objects),
               "recovery_dir": None if recovery is None else str(recovery),
               "requires_recovery_dir": plan.changed and recovery is None,
-              "minimum_reader": "manifest/v6" if to == "indexed-v6" else PACKED_SCHEMA if to in PACKED_FORMATS else "llm-wiki-knowledge/v2",
+              "minimum_reader": ("manifest/v6" if to == "indexed-v6" else LOCAL_PACKED_SCHEMA if to.startswith("packed-v4")
+                                 else PACKED_SCHEMA if to in PACKED_FORMATS else "llm-wiki-knowledge/v2"),
               "authority_preserved": ["Markdown", "governance ledger", "review history"],
               "git_history_changed": False}
     if dry_run:
@@ -240,8 +242,8 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
             content_hash=digest(content), content=content, needs_write=old != content, previous_content=old)
     original_format = "sharded-v2" if json.loads(files[ROOT_FILENAME]).get("schema_version") == "llm-wiki-knowledge/v2" else "v1"
     original_root = json.loads(files[ROOT_FILENAME])
-    if original_root.get("schema_version") == PACKED_SCHEMA:
-        original_format = "packed-v3-deflate" if original_root["packing"]["compression"] == "deflate" else "packed-v3"
+    if original_root.get("schema_version") in PACKED_SCHEMAS:
+        original_format = packed_format(original_root)
     plan = KnowledgeCommitPlan(surface_index=writes[SURFACE_INDEX_FILENAME], knowledge_index=writes[ROOT_FILENAME],
         manifest=writes[MANIFEST_FILENAME], committed_manifest=manifest,
         evaluated_envelope_hash=validated.evaluated_envelope_hash,
@@ -276,7 +278,7 @@ def export_knowledge_v1(wiki_dir: str | Path, output: str | Path) -> dict[str, A
 
 
 def is_storage_path(relative: str) -> bool:
-    return bool(_OBJECT_NAME.fullmatch(relative) or INDEX_NAME.fullmatch(relative) or PACK_NAME.fullmatch(relative)
+    return bool(_OBJECT_NAME.fullmatch(relative) or INDEX_NAME.fullmatch(relative) or PACK_NAME.fullmatch(relative) or INDEX_PAGE_NAME.fullmatch(relative)
                 or MANIFEST_OBJECT_NAME.fullmatch(relative))
 
 
@@ -297,7 +299,7 @@ def stored_object_paths(wiki_dir: str | Path) -> tuple[list[str], list[str]]:
                 paths.append(Path(entry.path))
         return sorted(paths)
 
-    for namespace in (OBJECT_DIRECTORY, PACK_INDEX_DIRECTORY, PACK_DIRECTORY, MANIFEST_DIRECTORY):
+    for namespace in (OBJECT_DIRECTORY, PACK_INDEX_DIRECTORY, PACK_DIRECTORY, INDEX_PAGE_DIRECTORY, MANIFEST_DIRECTORY):
         objects = root / namespace
         if not objects.exists() and not objects.is_symlink():
             continue
@@ -315,30 +317,114 @@ def stored_object_paths(wiki_dir: str | Path) -> tuple[list[str], list[str]]:
     return owned, unknown
 
 
-def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> dict[str, Any]:
+def _prune_plan(root, root_bytes, manifest_bytes, candidates):
+    stamp = root.stat()
+    body = {"schema_version": "llm-wiki-prune-plan/v1",
+            "root_binding": digest(os.fsencode(str(root))), "root_identity": [stamp.st_dev, stamp.st_ino],
+            "knowledge_hash": digest(root_bytes), "manifest_hash": digest(manifest_bytes),
+            "candidates": []}
+    for name in sorted(candidates):
+        raw = candidates[name]
+        body["candidates"].append({"path": name, "hash": digest(raw), "bytes": len(raw)})
+    if len(body["candidates"]) > 100_000 or len(canonical_bytes(body)) > MAX_OBJECT_BYTES:
+        raise KnowledgeStorageError("plan", "prune plan exceeds its bound", code="storage-limit")
+    body["plan_id"] = digest(canonical_bytes(body))
+    return body
+
+
+def _prune_backup(root, directory, plan, candidates, cancelled):
+    if directory is None:
+        default = _default_recovery_directory(root, plan["knowledge_hash"])
+        base = default.parent / "prune" if default is not None else root.parent / ".llm-wiki-storage-recovery"
+        directory = base / plan["root_binding"][7:]
+    directory = _outside_tree(Path(directory), root)
+    ensure_guarded_directory(directory, mode=0o700)
+    for row in plan["candidates"]:
+        if cancelled is not None and cancelled():
+            raise KnowledgeStorageError("prune", "cleanup cancelled", code="storage-cancelled")
+        raw = candidates[row["path"]]
+        target = directory / "objects" / row["hash"][7:9] / (row["hash"][7:] + ".bin")
+        ensure_guarded_directory(target.parent, mode=0o700)
+        if not target.exists():
+            atomic_write_guarded_bytes(target, raw, mode=0o600, expected_existing=None)
+        if read_guarded(target, len(raw)).content != raw:
+            raise KnowledgeStorageError("recovery", "prune recovery preimage differs")
+    target = directory / (plan["plan_id"][7:] + ".json")
+    raw = canonical_bytes(plan)
+    if not target.exists():
+        atomic_write_guarded_bytes(target, raw, mode=0o600, expected_existing=None)
+    if read_guarded(target, MAX_OBJECT_BYTES).content != raw:
+        raise KnowledgeStorageError("recovery", "prune recovery plan differs")
+    return str(target)
+
+
+def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True, plan=None,
+                            recovery_dir: str | Path | None = None, max_bytes: int = MAX_EXPANDED_BYTES,
+                            cancelled=None) -> dict[str, Any]:
+    """Preview or apply an exact generation-bound cleanup with verified recovery."""
+    from .storage_spool import ByteSpool
+    if type(max_bytes) is not int or not 0 < max_bytes <= MAX_EXPANDED_BYTES:
+        raise KnowledgeStorageError("max_bytes", "invalid cleanup byte budget")
+    if cancelled is not None and not callable(cancelled):
+        raise KnowledgeStorageError("cancelled", "requires a trusted callback")
+    with ByteSpool(max_bytes=max_bytes) as candidates:
+        return _prune_storage(wiki_dir, dry_run=dry_run, plan=plan, recovery_dir=recovery_dir,
+                              safe=candidates, cancelled=cancelled)
+
+
+def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
     """Remove only valid content-addressed objects unreachable from a full audit."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
     root = _absolute_path(Path(wiki_dir))
-    state, session, _ = _committed_inputs(root)
+    state, session, expected_inputs = _committed_inputs(root)
     assert state.validated_artifacts is not None and state.manifest_basis is not None
     if current_knowledge_format(root) not in {"sharded-v2", *PACKED_FORMATS} and state.manifest_basis.storage_version != 6:
         raise KnowledgeStorageError("format", "cleanup requires a committed indexed root")
-    owned, unknown = stored_object_paths(root)
+    if plan is None:
+        owned, unknown = stored_object_paths(root)
+    else:
+        if (not isinstance(plan, dict) or plan.get("schema_version") != "llm-wiki-prune-plan/v1"
+                or not isinstance(plan.get("candidates"), list) or len(plan["candidates"]) > 100_000
+                or len(canonical_bytes(plan)) > MAX_OBJECT_BYTES
+                or plan.get("plan_id") != digest(canonical_bytes({k: v for k, v in plan.items() if k != "plan_id"}))):
+            raise KnowledgeStorageError("plan", "invalid bounded cleanup plan")
+        owned = []
+        for row in plan["candidates"]:
+            if (not isinstance(row, dict) or set(row) != {"path", "hash", "bytes"}
+                    or not isinstance(row["path"], str) or not is_storage_path(row["path"])):
+                raise KnowledgeStorageError("plan", "invalid cleanup candidate")
+            owned.append(row["path"])
+        if len(owned) != len(set(owned)):
+            raise KnowledgeStorageError("plan", "duplicate cleanup candidates")
+        unknown = []
     unused = sorted(set(owned) - set(state.validated_artifacts.storage_objects))
-    safe = {}
     retained = list(unknown)
     _, root_bytes = validated_artifact_bytes(state.validated_artifacts)
     def object_reader(relative: str, maximum: int) -> bytes:
         return read_guarded(root / relative, maximum).content
     parsed = json.loads(root_bytes)
-    logical_root = parsed["store"] if parsed.get("schema_version") == PACKED_SCHEMA else parsed
+    logical_root = parsed["store"] if parsed.get("schema_version") in PACKED_SCHEMAS else parsed
     inspector = KnowledgeStoreReader(canonical_bytes(logical_root), object_reader) if current_knowledge_format(root) != "v1" else None
-    for name in unused:
+    inspected_bytes = 0
+    budget_exhausted = False
+    for index, name in enumerate(unused):
+        if cancelled is not None and cancelled():
+            raise KnowledgeStorageError("prune", "cleanup cancelled", code="storage-cancelled")
         try:
-            raw = read_guarded(root / name, MAX_OBJECT_BYTES).content
+            remaining = safe.maximum - inspected_bytes
+            if remaining <= 0 or _absolute_path(root / name).stat().st_size > remaining:
+                retained.extend(unused[index:])
+                budget_exhausted = True
+                break
+            raw = read_guarded(root / name, min(MAX_OBJECT_BYTES, remaining)).content
+            inspected_bytes += len(raw)
             if PACK_NAME.fullmatch(name):
                 inspect_pack(raw, name)
+                safe[name] = raw
+                continue
+            if INDEX_PAGE_NAME.fullmatch(name):
+                inspect_index_pages(raw, name)
                 safe[name] = raw
                 continue
             if digest(raw)[7:] != Path(name).stem:
@@ -365,20 +451,108 @@ def prune_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = True) -> di
                 continue
             inspector._node({"hash": digest(raw), "bytes": len(raw), "count": count},
                             payload["collection"], payload["prefix"])
-        except (KnowledgeStorageError, KeyError, TypeError):
+        except (KnowledgeStorageError, OSError, KeyError, TypeError):
             retained.append(name)
             continue
         safe[name] = raw
     session.recheck()
+    prepared = _prune_plan(root, root_bytes, expected_inputs[MANIFEST_FILENAME], safe)
+    if plan is not None and canonical_bytes(plan) != canonical_bytes(prepared):
+        raise KnowledgeStorageError("plan", "generation, root or candidate preimages changed", code="storage-mutation")
     removed = []
+    recovery = None
     if not dry_run:
         with governance_lock(root, _lock_filename="llm-wiki-storage.lock"):
             session.recheck()
+            if safe:
+                recovery = _prune_backup(root, recovery_dir, prepared, safe, cancelled)
             for name, content in safe.items():
+                if cancelled is not None and cancelled():
+                    retained.extend(name for name in safe if name not in removed)
+                    break
+                # Recheck current authority before each deletion, without
+                # rematerializing the model or trusting the preview as a lease.
+                session.read(ROOT_FILENAME, len(root_bytes))
+                session.read(MANIFEST_FILENAME, len(expected_inputs[MANIFEST_FILENAME]))
                 try:
                     unlink_guarded_bytes(root / name, expected=content)
                     removed.append(name)
                 except OSError:
                     retained.append(name)
     return {"dry_run": dry_run, "unreferenced_objects": sorted(safe), "removed": removed,
-            "retained": sorted(retained), "bytes": sum(map(len, safe.values())), "git_history_changed": False}
+            "retained": sorted(set(retained)), "bytes": sum(map(len, safe.values())), "git_history_changed": False,
+            "plan": prepared, "recovery_manifest": recovery, "inspection_bytes": inspected_bytes,
+            "budget_exhausted": budget_exhausted,
+            "scan_scope": "owned-namespace" if plan is None else "saved-plan-candidates"}
+
+
+def restore_pruned_storage(wiki_dir: str | Path, recovery_manifest: str | Path, *, dry_run: bool = True,
+                           cancelled=None) -> dict[str, Any]:
+    """Restore cleanup preimages into their recorded generation without overwrites."""
+    from .storage_spool import ByteSpool
+    root = _absolute_path(Path(wiki_dir))
+    record_path = _absolute_path(Path(recovery_manifest))
+    stamp = root.stat()
+    plan = decode_bytes(read_guarded(record_path, MAX_OBJECT_BYTES).content, limit=MAX_OBJECT_BYTES, field="prune plan")
+    if (set(plan) != {"schema_version", "root_binding", "root_identity", "knowledge_hash", "manifest_hash", "candidates", "plan_id"}
+            or plan["schema_version"] != "llm-wiki-prune-plan/v1"
+            or plan["plan_id"] != digest(canonical_bytes({k: v for k, v in plan.items() if k != "plan_id"}))
+            or plan["root_binding"] != digest(os.fsencode(str(root)))
+            or plan["root_identity"] != [stamp.st_dev, stamp.st_ino]
+            or not isinstance(plan["candidates"], list) or len(plan["candidates"]) > 100_000
+            or type(dry_run) is not bool or (cancelled is not None and not callable(cancelled))):
+        raise KnowledgeStorageError("recovery", "invalid cleanup recovery binding")
+    _hash(plan["knowledge_hash"], "recovery.knowledge_hash")
+    _hash(plan["manifest_hash"], "recovery.manifest_hash")
+    generation = StorageReadSession(root, cancelled=cancelled)
+
+    def check_generation():
+        current = _absolute_path(root).stat()
+        if [current.st_dev, current.st_ino] != plan["root_identity"]:
+            raise KnowledgeStorageError("recovery", "wiki root changed after cleanup", code="storage-mutation")
+        # Recovery may be needed because objects are missing. Bind to the two
+        # commit headers without requiring the current store to pass a full audit.
+        with generation.phase():
+            for name, commitment in ((ROOT_FILENAME, plan["knowledge_hash"]),
+                                     (MANIFEST_FILENAME, plan["manifest_hash"])):
+                if digest(generation.read(name, MAX_EXPANDED_BYTES)) != commitment:
+                    raise KnowledgeStorageError("recovery", "current generation differs from cleanup recovery",
+                                                code="storage-mutation")
+
+    check_generation()
+    restored, retained = [], []
+    with ByteSpool(max_bytes=MAX_EXPANDED_BYTES) as preimages:
+        for row in plan["candidates"]:
+            if (not isinstance(row, dict) or set(row) != {"path", "hash", "bytes"}
+                    or not isinstance(row["path"], str) or not is_storage_path(row["path"])
+                    or row["path"] in preimages or type(row["bytes"]) is not int or not 0 <= row["bytes"] <= MAX_OBJECT_BYTES):
+                raise KnowledgeStorageError("recovery", "invalid cleanup preimage")
+            _hash(row["hash"], "preimage.hash")
+            pack = PACK_NAME.fullmatch(row["path"])
+            if (pack[2] if pack is not None else Path(row["path"]).stem) != row["hash"][7:]:
+                raise KnowledgeStorageError("recovery", "preimage hash differs from its content-addressed path")
+            if cancelled is not None and cancelled():
+                raise KnowledgeStorageError("recovery", "restore cancelled", code="storage-cancelled")
+            raw = read_guarded(record_path.parent / "objects" / row["hash"][7:9] / (row["hash"][7:] + ".bin"), row["bytes"]).content
+            if len(raw) != row["bytes"] or digest(raw) != row["hash"]:
+                raise KnowledgeStorageError("recovery", "cleanup preimage changed")
+            preimages[row["path"]] = raw
+        check_generation()
+        if not dry_run:
+            with governance_lock(root, _lock_filename="llm-wiki-storage.lock"):
+                check_generation()
+                for name, raw in preimages.items():
+                    if cancelled is not None and cancelled():
+                        retained.extend(key for key in preimages if key not in restored)
+                        break
+                    target = _absolute_path(root / name)
+                    if target.exists():
+                        if read_guarded(target, MAX_OBJECT_BYTES).content != raw:
+                            retained.append(name)
+                        continue
+                    ensure_guarded_directory(target.parent, mode=0o755)
+                    check_generation()
+                    atomic_write_guarded_bytes(target, raw, mode=0o644, expected_existing=None)
+                    restored.append(name)
+        return {"dry_run": dry_run, "plan_id": plan["plan_id"], "restored": restored,
+                "retained": sorted(set(retained)), "preimages": len(preimages), "authority_changed": False}

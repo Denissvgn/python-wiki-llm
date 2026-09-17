@@ -1,6 +1,6 @@
 # RequiredKnowledgeErrorDetails
 
-**Location:** `src/llm_wiki_cli/api_types.py:175`
+**Location:** `src/llm_wiki_cli/api_types.py:183`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

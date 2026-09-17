@@ -5,7 +5,9 @@ include src/llm_wiki_cli/py.typed
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v1.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v2.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v3.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-knowledge-v4.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-pack-index-v1.schema.json
+include src/llm_wiki_cli/schemas/llm-wiki-knowledge-pack-index-v2.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-knowledge-object-v1.schema.json
 include src/llm_wiki_cli/extractors/ts_scripts/package-lock.json
 include docs/standalone-documentation.md

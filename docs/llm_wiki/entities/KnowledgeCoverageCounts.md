@@ -1,6 +1,6 @@
 # KnowledgeCoverageCounts
 
-**Location:** `src/llm_wiki_cli/api_types.py:94`
+**Location:** `src/llm_wiki_cli/api_types.py:102`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

@@ -16,10 +16,10 @@ from .contracts import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import _parse_bundle
 from .knowledge_storage import (
     MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA,
-    KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, digest,
+    KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, canonical_bytes, digest,
 )
 from .knowledge_storage_io import StorageReadSession
-from .knowledge_packs import PACKED_SCHEMA, open_knowledge_store
+from .knowledge_packs import PACKED_SCHEMAS, open_knowledge_store
 from .sync_manifest import MANIFEST_FILENAME
 from .manifest_storage import ValidatedManifestHeader, read_manifest_header
 
@@ -42,7 +42,8 @@ class ScopedKnowledgeRead:
 def capture_knowledge_slice(
     wiki_dir: str | Path, selectors: Iterable[str], *, max_bytes: int = 8_388_608,
     max_records: int = 1000, max_expanded_bytes: int = 16_777_216,
-    include_graph: bool = False,
+    include_graph: bool = False, collections: Iterable[str] | None = None,
+    coalesce_rechecks: bool = False, cancelled=None,
 ) -> ScopedKnowledgeRead:
     """Capture selected stored observations without enumerating the wiki tree.
 
@@ -55,14 +56,19 @@ def capture_knowledge_slice(
     keys = list(selectors)
     if len(keys) > 100 or any(not isinstance(key, str) or not key or len(key) > 16_384 for key in keys):
         raise KnowledgeStorageError("selectors", "requires at most 100 bounded strings")
-    session = StorageReadSession(wiki_dir, max_bytes=max_bytes)
+    session = StorageReadSession(wiki_dir, max_bytes=max_bytes, coalesce_rechecks=coalesce_rechecks, cancelled=cancelled)
+    with session.phase():
+        return _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, include_graph, collections)
+
+
+def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, include_graph, collections):
     raw = session.read(ROOT_FILENAME, MAX_ROOT_BYTES)
     try:
         schema = json.loads(raw).get("schema_version")
     except (ValueError, AttributeError, UnicodeError) as exc:
         raise KnowledgeStorageError("root", "invalid knowledge root") from exc
-    if schema not in (STORE_SCHEMA, PACKED_SCHEMA):
-        raise KnowledgeStorageError("schema_version", "selected native reads require explicit sharded-v2 or packed-v3 adoption",
+    if schema not in (STORE_SCHEMA, *PACKED_SCHEMAS):
+        raise KnowledgeStorageError("schema_version", "selected native reads require explicit sharded or packed storage adoption",
                                     code="unsupported-schema-version")
     reader = open_knowledge_store(raw, session.read, read_range=session.read_range, max_bytes=max_bytes,
                                   max_expanded_bytes=max_expanded_bytes)
@@ -78,15 +84,29 @@ def capture_knowledge_slice(
             or marker.surface_index_hash != bundle.snapshot.surface_index_hash
             or marker.evaluated_envelope_hash != EvaluatedEnvelope(bundle=bundle).content_hash()):
         raise KnowledgeStorageError("manifest", "does not commit the selected generation", code="storage-mixed-generation")
-    selected = reader.select(keys, max_records=max_records)
+    if collections is not None:
+        if isinstance(collections, (str, bytes)):
+            raise KnowledgeStorageError("collections", "requires a collection of record collection names")
+        collections = tuple(collections)
+    # Graph anchors are validation dependencies even when concepts are omitted
+    # from the caller's output projection. Keep their reads in this capture.
+    seed_collections = collections
+    if include_graph and collections is not None and "concepts" not in collections:
+        seed_collections = (*collections, "concepts")
+    selected = reader.select(keys, max_records=max_records, collections=seed_collections)
     if include_graph:
-        locators = [row["value"]["locator"] for row in selected.to_payload()["records"]["concepts"]]
+        seeds = selected.to_payload()
+        locators = [row["value"]["locator"] for row in seeds["records"]["concepts"]]
         expanded = set(keys)
         for locator in locators:
             expanded.update({"concept:" + locator, "out:concept:" + locator, "in:concept:" + locator})
         if len(expanded) > 100:
             raise KnowledgeStorageError("selectors", "graph expansion exceeds the selector limit", code="storage-budget-exhausted")
-        selected = reader.select(expanded, max_records=max_records)
+        selected = reader.select(expanded, max_records=max_records, collections=collections)
+        if not seeds["lookup_complete"]:
+            result = selected.to_payload()
+            result["lookup_complete"] = False
+            selected = KnowledgeSlice(canonical_bytes(result))
     markdown: dict[str, str] = {}
     for concept in reader.consumed_concepts.values():
         relative = concept["document"]["canonical_path"]

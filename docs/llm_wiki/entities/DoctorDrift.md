@@ -1,6 +1,6 @@
 # DoctorDrift
 
-**Location:** `src/llm_wiki_cli/api_types.py:455`
+**Location:** `src/llm_wiki_cli/api_types.py:463`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

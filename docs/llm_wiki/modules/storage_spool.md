@@ -30,27 +30,33 @@ flowchart LR
     n1["src/llm_wiki_cli/services/knowledge_audit.py"]
     n2["src/llm_wiki_cli/services/knowledge_packs.py"]
     n3["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n4["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n5["src/llm_wiki_cli/services/storage_spool.py"]
+    n4["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
+    n5["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n6["src/llm_wiki_cli/services/storage_spool.py"]
     n0 --> n2
     n0 --> n3
-    n0 --> n5
+    n0 --> n6
     n1 --> n3
-    n1 --> n5
+    n1 --> n6
     n2 --> n0
     n2 --> n3
-    n2 --> n5
-    n4 --> n1
+    n2 --> n6
+    n4 --> n0
     n4 --> n2
     n4 --> n3
-    n4 --> n5
+    n4 --> n6
+    n5 --> n1
+    n5 --> n2
     n5 --> n3
+    n5 --> n6
+    n6 --> n3
     click n0 "../modules/knowledge_artifacts.md"
     click n1 "../modules/knowledge_audit.md"
     click n2 "../modules/knowledge_packs.md"
     click n3 "../modules/knowledge_storage.md"
-    click n4 "../modules/knowledge_stream_audit.md"
-    click n5 "../modules/storage_spool.md"
+    click n4 "../modules/knowledge_storage_lifecycle.md"
+    click n5 "../modules/knowledge_stream_audit.md"
+    click n6 "../modules/storage_spool.md"
 ```
 
 ### Internal neighbors
@@ -60,6 +66,7 @@ flowchart LR
 | Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Inbound | [knowledge_audit](../modules/knowledge_audit.md) |
 | Inbound | [knowledge_packs](../modules/knowledge_packs.md) |
+| Inbound | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) |
 | Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 

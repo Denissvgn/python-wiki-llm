@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 57 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 56 more
 
 **Complete modules touched:**
 
@@ -41,7 +41,6 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
-- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
 - [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md)
@@ -126,7 +125,7 @@ sequenceDiagram
     p2->>p20: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 4007 interactions; 3977 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4121 interactions; 4091 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -196,7 +195,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run (src/llm_wiki_cli/commands/knowledge_cmd.py) | run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | 965 | `run_storage(args)` |
-| run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | _wiki_root | 16 | `_wiki_root(args.wiki_dir)` |
+| run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py) | _wiki_root | 17 | `_wiki_root(args.wiki_dir)` |
 | _wiki_root | Path (src/llm_wiki_cli/commands…owledge_cmd.py:_wiki_root) | 106 | `Path(value)` |
 | _wiki_root | first_unsafe_path_component | 107 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
@@ -211,8 +210,8 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 42 |
-| output | `print` | `run` | 44 |
+| output | `print` | `run` | 56 |
+| output | `print` | `run` | 58 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps

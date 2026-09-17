@@ -1,7 +1,7 @@
 # Knowledge storage
 
 Native knowledge supports the original JSON file (`v1`), indexed JSON objects
-(`sharded-v2`), or indexed ZIP packs (`packed-v3`). Existing wikis keep their
+(`sharded-v2`), or indexed ZIP packs (`packed-v3` and `packed-v4`). Existing wikis keep their
 format. New wikis use v1 unless you select another format.
 
 Sharded storage keeps a small `.llm-wiki-knowledge.json` root and JSON objects in
@@ -19,16 +19,28 @@ stable identity and review history. Storage migration preserves them.
 | `sharded-v2` | You want bounded JSON files that ordinary text tools can inspect. |
 | `packed-v3` | You want fewer checked-out files while Git handles repository compression. |
 | `packed-v3-deflate` | You also want compressed files in the working directory. |
+| `packed-v4` | You want finer routing and smaller writes, with more data packs than v3. |
+| `packed-v4-deflate` | You want that finer layout with individually compressed members. |
 
-Both packed profiles contain the same logical knowledge. `packed-v3` uses
+All packed formats contain the same logical knowledge. `packed-v3` uses
 uncompressed ZIP members (`ZIP_STORED`); `packed-v3-deflate` compresses members
-individually. Packs grow toward 4 MiB and have an 8 MiB hard ceiling, including
+individually. V3 packs grow toward 4 MiB and have an 8 MiB hard ceiling, including
 archive headers. Large collections split into additional packs. An individual
 record that cannot fit is reported before publication.
 
-The root stays at `.llm-wiki-knowledge.json`. Packed data lives in
-`.llm-wiki-knowledge/packs/`, with bounded routing files in
-`.llm-wiki-knowledge/pack-index/`. Commit all referenced files and companion
+The opt-in v4 `local-v1` profile targets 1 MiB data packs, with the same 8 MiB
+hard ceiling. Its locator leaves contain at most 24 rows. Small index pages
+share content-addressed containers of at most 1 MiB under
+`.llm-wiki-knowledge/index-pages/`; readers fetch committed page ranges directly.
+This avoids a separate file for every small locator page. Full audits verify
+every container and its exact page membership. Selected reads verify only the
+pages and members they consume. A record may exceed the pack target while
+remaining within the hard ceiling.
+
+The root stays at `.llm-wiki-knowledge.json`. Both versions store packed data in
+`.llm-wiki-knowledge/packs/`. V3 routing files live in
+`.llm-wiki-knowledge/pack-index/`; v4 routing containers live in
+`.llm-wiki-knowledge/index-pages/`. Commit all referenced files and companion
 artifacts together. Readers access selected members directly; no extraction,
 external database, network service or Git LFS is required.
 
@@ -38,7 +50,8 @@ savings and update costs depend on the data and the breadth of each change.
 
 ## Adopt packed storage
 
-Upgrade every reader and writer to support `llm-wiki-knowledge/v3` before adoption.
+Upgrade every reader and writer to support the selected schema before adoption:
+`llm-wiki-knowledge/v3` for v3 packs or `llm-wiki-knowledge/v4` for v4 packs.
 Migration accepts either an existing v1 wiki or an adopted v2 wiki:
 
 ```sh
@@ -62,6 +75,17 @@ llm-wiki sync --src-dir . --wiki-dir docs/llm_wiki --knowledge-format packed-v3-
 
 Subsequent owning writes preserve the chosen profile. A missing or invalid packed
 root requires recovery or an explicitly selected rebuild format.
+
+For finer routing, upgrade all readers and writers to support
+`llm-wiki-knowledge/v4`, then adopt it explicitly:
+
+```sh
+llm-wiki knowledge migrate --wiki-dir docs/llm_wiki --to packed-v4-deflate --dry-run
+llm-wiki knowledge migrate --wiki-dir docs/llm_wiki --to packed-v4-deflate
+```
+
+The same values are accepted by `bootstrap --knowledge-format` and
+`sync --knowledge-format`. V3 remains available with its original layout.
 
 ## Keep manifest reads small
 
@@ -246,6 +270,36 @@ Cleanup requires a valid current generation. It preserves referenced objects,
 unrecognized files and busy files. Review and commit the resulting changes using
 your normal Git workflow.
 
+To apply exactly the reviewed candidates, save a bounded plan outside the wiki:
+
+```sh
+llm-wiki knowledge prune-storage --wiki-dir wiki --save-plan cleanup.json
+llm-wiki knowledge prune-storage --wiki-dir wiki --plan cleanup.json --apply
+```
+
+Plans bind the current generation, wiki location and candidate bytes. Apply
+rechecks reachability and preimages; changed candidates or a moved wiki require a
+new plan. `--max-bytes` bounds orphan bytes inspected and reports retained work
+when the budget is exhausted. Applying a saved plan inspects its named candidates.
+
+Cleanup verifies recovery copies before deleting anything. `--recovery-dir`
+selects their location outside the wiki. Otherwise recovery uses Git metadata,
+or a sibling `.llm-wiki-storage-recovery` directory for a non-Git wiki. Identical
+preimages share recovery objects; recovery records and unknown files are retained.
+The result identifies the recovery manifest. Preview or restore its absent files:
+
+```sh
+llm-wiki knowledge restore-pruned --wiki-dir wiki --recovery-manifest PATH
+llm-wiki knowledge restore-pruned --wiki-dir wiki --recovery-manifest PATH --apply
+```
+
+This restores owned preimages without changing the active root, authored content
+or differing existing files. Preview and apply require the root and manifest to
+match the generation recorded at cleanup. A changed generation is rejected and
+the recovery backup is preserved. These checks do not require every current
+storage object to be present. Recovery bytes, obsolete generation bytes and Git
+history are separate storage costs; cleanup does not compact Git history.
+
 ## Request scoped task context
 
 Use `llm-wiki-task-request/v2` to opt into selected native storage reads. The
@@ -262,7 +316,7 @@ Existing task v1 requests retain their full-validation behavior.
 }
 ```
 
-For selected native concepts or semantic sections, use an adopted v2 or v3 wiki and
+For selected native concepts or semantic sections, use an adopted v2, v3 or v4 wiki and
 `knowledge_mode: "auto"` or `"required"`. `read_scope: "snapshot"` skips live
 source extraction. Required mode requires the selected native inputs; it does
 not establish source freshness or semantic correctness.
@@ -275,10 +329,56 @@ read limit cannot turn into a complete graph or a satisfied requirement.
 Sessions revalidate consumed objects and source inputs before reuse. Delta v2
 binds the exact v2 base and result; v1 and v2 deltas cannot be interchanged.
 
-Packed reads use the versioned `llm-wiki-task-storage/v2` receipt. It records
-consumed file ranges and reports `archive_validation_scope: selected-members`.
+Packed-v3 reads use the `llm-wiki-task-storage/v2` receipt by default. Packed-v4
+reads and requests with explicit `storage_options` use `llm-wiki-task-storage/v3`.
+Both packed receipt versions record consumed file ranges and report
+`archive_validation_scope: selected-members`.
 Unconsumed members and archive metadata remain unverified until a full audit.
 Sessions recheck the consumed ranges and pack identities before reuse. Actual
 routing, range and final recheck bytes count against the caller's read budget;
 compressed members also have bounded expansion. Broad requests can still exceed
 that budget, including when surface, manifest or governance companions grow.
+
+### Select only needed collections and compact the proof
+
+Task v2 can explicitly request the version-3 storage receipt:
+
+```json
+{
+  "schema_version": "llm-wiki-task-request/v2",
+  "options": {"read_scope": "snapshot", "knowledge_mode": "required"},
+  "storage_options": {
+    "selection": "required-facets-v1",
+    "receipt": "compact-v1"
+  },
+  "requirements": [
+    {"id": "concept", "facet": "concept", "selector": "modules/app.md"}
+  ]
+}
+```
+
+`required-facets-v1` selects concepts and adds edges or sections when the requested
+facets need them. Its scope is `selected-committed-collections`; other collections
+remain explicitly unverified. `all-collections-v1` retains the broader selection.
+`compact-v1` uses a file table and compact range rows while retaining every hash,
+coordinate, size and work count. `expanded-v1` keeps named fields. V4 storage uses
+the version-3 receipt even without these options so metadata-page ranges are
+distinguished from archive members.
+
+Compact digests use canonical base64url encodings of the same SHA-256 bytes.
+Repeated whole-file commitments can refer to their file-table entry; expansion
+restores their full `sha256:` form.
+
+`api.validate_task_context` validates either representation against its request.
+`api.expand_task_storage_receipt(result["storage"])` reconstructs a compact proof
+for inspection; expansion alone does not establish authenticity or freshness.
+The Python, CLI and MCP task/session interfaces use the same canonical result.
+Receipt layout and selection affect request/result and delta bindings. Output
+accounting measures emitted UTF-8 text; disk compression is a separate measure.
+
+Guarded reads reuse at most 128 handles per phase and reopen names for final
+validation. Explicit storage options enable exact-adjacency range batching for
+rechecks, with no speculative extra bytes. Every consumed byte remains charged.
+Sessions may share immutable input bytes within one workspace, while each entry
+retains and revalidates its own dependencies. Mutable provider installations
+continue to require complete producer validation.

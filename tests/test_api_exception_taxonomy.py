@@ -37,6 +37,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "dispatch_p0_calibration_agent",
     "doctor",
     "explain_evidence",
+    "expand_task_storage_receipt",
     "export_documentation_run",
     "extract_source",
     "fingerprint_documentation_wiki_input",
@@ -83,6 +84,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "dependency_neighborhood",
         "doctor",
         "explain_evidence",
+        "expand_task_storage_receipt",
         "extract_source",
         "flow_for_entrypoint",
         "get_concept",
@@ -300,6 +302,7 @@ def _failure_cases(tmp_path: Path):
             "llm-wiki://entities/Thing",
             service=query_service,
         ),
+        "expand_task_storage_receipt": lambda: api.expand_task_storage_receipt({}),
         "explain_evidence": lambda: api.explain_evidence(
             "llm-wiki://entities/Thing",
             service=query_service,

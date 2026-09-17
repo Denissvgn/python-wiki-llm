@@ -141,36 +141,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1617 | `isinstance(knowledge, KnowledgeIndex)` |
-| strip_governance_projection | TypeError | 1618 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1621 | `dict(concept.extensions)` |
-| strip_governance_projection | extensions.pop | 1622 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
-| strip_governance_projection | concepts.append | 1623 | `concepts.append(replace(...))` |
-| strip_governance_projection | replace | 1624 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1630 | `dict(knowledge.extensions)` |
-| strip_governance_projection | extensions.pop | 1631 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
-| strip_governance_projection | extensions.get | 1632 | `extensions.get('llm-wiki/typed-graph-v1')` |
-| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1633 | `isinstance(graph, Mapping)` |
-| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1636 | `dict(graph)` |
+| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1624 | `isinstance(knowledge, KnowledgeIndex)` |
+| strip_governance_projection | TypeError | 1625 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1628 | `dict(concept.extensions)` |
+| strip_governance_projection | extensions.pop | 1629 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
+| strip_governance_projection | concepts.append | 1630 | `concepts.append(replace(...))` |
+| strip_governance_projection | replace | 1631 | `replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1637 | `dict(knowledge.extensions)` |
+| strip_governance_projection | extensions.pop | 1638 | `extensions.pop(GOVERNANCE_EXTENSION_KEY, None)` |
+| strip_governance_projection | extensions.get | 1639 | `extensions.get('llm-wiki/typed-graph-v1')` |
+| strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1640 | `isinstance(graph, Mapping)` |
+| strip_governance_projection | dict (src/llm_wiki_cli/services…rip_governance_projection) | 1643 | `dict(graph)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `extensions.pop` | `strip_governance_projection` | 1622 |
-| mutation | `concepts.append` | `strip_governance_projection` | 1623 |
-| mutation | `extensions.pop` | `strip_governance_projection` | 1631 |
-| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1660 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1629 |
+| mutation | `concepts.append` | `strip_governance_projection` | 1630 |
+| mutation | `extensions.pop` | `strip_governance_projection` | 1638 |
+| mutation | `snapshot_extensions.pop` | `strip_governance_projection` | 1667 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `strip_governance_projection` | `isinstance` | 1617 |
-| external_call | `strip_governance_projection` | `TypeError` | 1618 |
-| external_call | `strip_governance_projection` | `replace` | 1624 |
-| unresolved_call | `strip_governance_projection` | `extensions.get` | 1632 |
-| external_call | `strip_governance_projection` | `isinstance` | 1633 |
+| external_call | `strip_governance_projection` | `isinstance` | 1624 |
+| external_call | `strip_governance_projection` | `TypeError` | 1625 |
+| external_call | `strip_governance_projection` | `replace` | 1631 |
+| unresolved_call | `strip_governance_projection` | `extensions.get` | 1639 |
+| external_call | `strip_governance_projection` | `isinstance` | 1640 |
 | step_limit | `strip_governance_projection` | `first 12 steps` | 0 |
 | truncated_flow | `strip_governance_projection` | `depth limit` | 0 |
 

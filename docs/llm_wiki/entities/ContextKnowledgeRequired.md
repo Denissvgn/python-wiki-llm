@@ -1,6 +1,6 @@
 # _ContextKnowledgeRequired
 
-**Location:** `src/llm_wiki_cli/api_types.py:147`
+**Location:** `src/llm_wiki_cli/api_types.py:155`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

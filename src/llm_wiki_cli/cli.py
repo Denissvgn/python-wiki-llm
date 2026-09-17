@@ -747,7 +747,7 @@ def _add_knowledge_command(subparsers):
 
     storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
     _add_knowledge_wiki_argument(storage_migrate)
-    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "indexed-v6"], required=True)
+    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "indexed-v6"], required=True)
     storage_migrate.add_argument("--recovery-dir", default=None,
                                  help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
     _add_knowledge_dry_run(storage_migrate)
@@ -762,6 +762,14 @@ def _add_knowledge_command(subparsers):
     storage_prune = actions.add_parser("prune-storage", help="Preview cleanup of owned unreferenced storage objects")
     _add_knowledge_wiki_argument(storage_prune)
     storage_prune.add_argument("--apply", action="store_true", help="Remove the listed safe objects after full validation")
+    storage_prune.add_argument("--plan", help="Require this exact generation-bound cleanup plan")
+    storage_prune.add_argument("--save-plan", help="Write a new bounded cleanup plan file")
+    storage_prune.add_argument("--recovery-dir", help="Directory for verified cleanup preimages")
+    storage_prune.add_argument("--max-bytes", type=int, default=1_073_741_824, help="Maximum orphan bytes inspected")
+    storage_restore = actions.add_parser("restore-pruned", help="Restore verified cleanup preimages without changing authority")
+    _add_knowledge_wiki_argument(storage_restore)
+    storage_restore.add_argument("--recovery-manifest", required=True)
+    storage_restore.add_argument("--apply", action="store_true", help="Restore absent owned files")
     storage_check = actions.add_parser("storage-check", help="Inspect native artifact sizes and an explicit outgoing Git range")
     _add_knowledge_wiki_argument(storage_check)
     storage_check.add_argument("--full", action="store_true", help="Audit complete artifacts, routing and Markdown")
@@ -1153,7 +1161,7 @@ def _add_bootstrap_command(subparsers):
     bootstrap_parser = subparsers.add_parser(
         "bootstrap", help="Generate initial wiki for an existing codebase"
     )
-    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate"], default=None,
+    bootstrap_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
                                   help="Explicit native storage format; otherwise preserve the adopted format")
     bootstrap_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
@@ -1905,7 +1913,7 @@ def _add_sync_command(subparsers):
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
     )
     _add_progress_arguments(sync_parser)
-    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate"], default=None,
+    sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
                             help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(
         "--rebuild-knowledge",

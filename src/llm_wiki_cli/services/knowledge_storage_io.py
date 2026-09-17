@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
-from contextlib import ExitStack
+from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 import os
 from pathlib import Path
 import stat
-from typing import Any
+from typing import Any, NoReturn
 
 from .filesystem_guard import (
     WindowsDirectoryGuardError, WindowsFileGuardError,
     fresh_no_follow_stat, guard_windows_directory_chain, open_windows_readonly_file,
     windows_object_identity, _windows_path_handle_metadata,
+    _open_windows_directory_guard, _close_windows_handle,
 )
 from .io import first_unsafe_path_component
 from .knowledge_storage import KnowledgeStorageError, MAX_EXPANDED_BYTES
@@ -22,6 +23,10 @@ from .validation import is_portable_relative_path
 def _identity(value: os.stat_result) -> tuple[int, ...]:
     return (value.st_dev, value.st_ino, value.st_mode, value.st_size,
             value.st_mtime_ns, value.st_ctime_ns)
+
+
+def _directory_identity(value):
+    return (value.st_dev, value.st_ino, value.st_mode, getattr(value, "st_uid", 0), getattr(value, "st_gid", 0))
 
 
 def _assert_windows_file_binding(path: Path, named: os.stat_result, opened: os.stat_result) -> None:
@@ -57,12 +62,160 @@ def _absolute_path(path: Path) -> Path:
 class ReadObservation:
     content: bytes
     identity: tuple[int, ...]
-    directories: tuple[tuple[str, tuple[int, int]], ...]
+    directories: tuple[tuple[str, tuple[int, ...]], ...]
 
 
-def read_guarded(path: Path, maximum: int, *, offset: int = 0,
-                 length: int | None = None, file_bytes: int | None = None) -> ReadObservation:
-    """Read a regular file through pinned/no-follow ancestors and bound its bytes."""
+class _ReadPhase:
+    """Bounded handles owned by one read phase, never by a reusable result."""
+
+    def __init__(self, maximum_handles=128, cancelled=None):
+        self.maximum_handles = maximum_handles
+        self.cancelled = cancelled
+        self.stack = ExitStack()
+        self.directories = {}
+        self.files = {}
+
+    def close(self):
+        self.stack.close()
+        self.stack = ExitStack()
+        self.directories.clear()
+        self.files.clear()
+
+    def validate(self):
+        """Check every pinned namespace binding before a phase can succeed."""
+        self.check_cancelled()
+        try:
+            self._check_parents(list(self.directories))
+            for path, (stream, opened) in self.files.items():
+                current = os.fstat(stream.fileno())
+                named = fresh_no_follow_stat(path)
+                if current.st_nlink != 1 or _identity(opened) != _identity(current):
+                    raise KnowledgeStorageError(path.name, "file changed within the read phase", code="storage-mutation")
+                if os.name == "nt":
+                    _assert_windows_file_binding(path, named, current)
+                elif named.st_nlink != 1 or _identity(current) != _identity(named):
+                    raise KnowledgeStorageError(path.name, "file name changed within the read phase", code="storage-mutation")
+        except OSError as exc:
+            raise KnowledgeStorageError("read", "phase inputs changed or access was lost", code="storage-mutation") from exc
+
+    def check_cancelled(self):
+        if self.cancelled is not None and self.cancelled():
+            raise KnowledgeStorageError("read", "storage read cancelled", code="storage-cancelled")
+
+    def _parents(self, target):
+        paths = list(reversed(target.parents))
+        needed = sum(path not in self.directories for path in paths) + int(target not in self.files)
+        if len(self.directories) + len(self.files) + needed > self.maximum_handles:
+            self.validate()
+            self.close()
+        if len(paths) + 1 > self.maximum_handles:
+            raise KnowledgeStorageError("read", "ancestor chain exceeds the handle budget", code="storage-limit")
+        for path in paths:
+            if path not in self.directories:
+                if os.name == "nt":
+                    handle = _open_windows_directory_guard(path)
+                    self.stack.callback(_close_windows_handle, handle)
+                    observed = fresh_no_follow_stat(path)
+                else:
+                    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+                    parent = self.directories.get(path.parent) if path.parent != path else None
+                    handle = os.open(path.name if parent else str(path), flags,
+                                     **({"dir_fd": parent[0]} if parent else {}))
+                    self.stack.callback(os.close, handle)
+                    observed = os.fstat(handle)
+                self.directories[path] = (handle, _directory_identity(observed))
+        return paths
+
+    def _check_parents(self, paths):
+        for path in paths:
+            _, identity = self.directories[path]
+            if os.name == "nt":
+                current = fresh_no_follow_stat(path)
+            else:
+                parent = self.directories.get(path.parent) if path.parent != path else None
+                current = os.stat(path.name if parent else str(path), follow_symlinks=False,
+                                  **({"dir_fd": parent[0]} if parent else {}))
+            if (_directory_identity(current) != identity
+                    or not stat.S_ISDIR(current.st_mode) or getattr(current, "st_file_attributes", 0) & 0x400):
+                raise KnowledgeStorageError(str(path), "parent changed during read", code="storage-mutation")
+
+    def read(self, path, maximum, *, offset=0, length=None, file_bytes=None):
+        _validate_range(maximum, offset, length, file_bytes)
+        target = Path(path)
+        # Cached files already have a normalized spelling and pinned ancestry.
+        # Leaf bindings are checked per read; the pinned ancestor bindings are
+        # checked before eviction and before the phase can return successfully.
+        if target not in self.files:
+            target = _absolute_path(target)
+        try:
+            self.check_cancelled()
+            parents = self._parents(target)
+            if target not in self.files:
+                if os.name == "nt":
+                    stream, opened = self.stack.enter_context(open_windows_readonly_file(target))
+                else:
+                    descriptor = os.open(target.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+                        | getattr(os, "O_CLOEXEC", 0), dir_fd=self.directories[target.parent][0])
+                    try:
+                        stream = os.fdopen(descriptor, "rb", buffering=0)
+                    except BaseException:
+                        os.close(descriptor)
+                        raise
+                    self.stack.callback(stream.close)
+                    opened = os.fstat(stream.fileno())
+                self.files[target] = stream, opened
+            stream, opened = self.files[target]
+            before = os.fstat(stream.fileno())
+            named = fresh_no_follow_stat(target)
+            if _identity(opened) != _identity(before):
+                raise KnowledgeStorageError(target.name, "file changed within the read phase", code="storage-mutation")
+            if os.name == "nt":
+                _assert_windows_file_binding(target, named, before)
+            elif _identity(before) != _identity(named):
+                raise KnowledgeStorageError(target.name, "file name changed during read", code="storage-mutation")
+            if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                    or getattr(named, "st_file_attributes", 0) & 0x400):
+                raise KnowledgeStorageError(target.name, "must be one regular file without links")
+            if length is None:
+                if before.st_size > maximum:
+                    raise KnowledgeStorageError(target.name, "file exceeds byte limit", code="storage-limit")
+                count = before.st_size
+            else:
+                count = length
+                if before.st_size != file_bytes or offset + length > file_bytes:
+                    raise KnowledgeStorageError(target.name, "pack size or range differs from its commitment")
+            chunks, used = [], 0
+            while used < count:
+                self.check_cancelled()
+                if hasattr(os, "pread"):
+                    chunk = os.pread(stream.fileno(), count - used, offset + used)
+                else:
+                    stream.seek(offset + used)
+                    chunk = stream.read(count - used)
+                if not chunk:
+                    raise KnowledgeStorageError(target.name, "short file read", code="storage-mutation")
+                chunks.append(chunk)
+                used += len(chunk)
+            self.check_cancelled()
+            after = os.fstat(stream.fileno())
+            current = fresh_no_follow_stat(target)
+            if any(not stat.S_ISREG(value.st_mode) or value.st_nlink != 1 for value in (after, current)):
+                raise KnowledgeStorageError(target.name, "file acquired links or changed kind", code="storage-mutation")
+            if _identity(before) != _identity(after) or _identity(named) != _identity(current):
+                raise KnowledgeStorageError(target.name, "file changed during read", code="storage-mutation")
+            if os.name == "nt":
+                _assert_windows_file_binding(target, current, after)
+                directories = tuple((str(p), self.directories[p][1]) for p in target.parents)
+            else:
+                directories = tuple((str(p), self.directories[p][1]) for p in parents[1:])
+            return ReadObservation(b"".join(chunks), _identity(current), directories)
+        except KnowledgeStorageError:
+            raise
+        except OSError as exc:
+            _raise_io_error(target, exc)
+
+
+def _validate_range(maximum, offset, length, file_bytes):
     if type(maximum) is not int or not 0 <= maximum <= MAX_EXPANDED_BYTES:
         raise KnowledgeStorageError("maximum", "invalid read limit")
     if (type(offset) is not int or offset < 0 or
@@ -70,6 +223,21 @@ def read_guarded(path: Path, maximum: int, *, offset: int = 0,
             (file_bytes is not None and (type(file_bytes) is not int or not 0 <= file_bytes <= MAX_EXPANDED_BYTES)) or
             (length is None and (offset or file_bytes is not None))):
         raise KnowledgeStorageError("range", "invalid bounded file range")
+
+
+def _raise_io_error(target, exc) -> NoReturn:
+    missing = isinstance(exc, FileNotFoundError) or (
+        isinstance(exc, (WindowsDirectoryGuardError, WindowsFileGuardError))
+        and isinstance(exc.__cause__, FileNotFoundError)
+    )
+    raise KnowledgeStorageError(target.name, "required file is missing or cannot be read safely",
+                                code="storage-missing" if missing else "storage-invalid") from exc
+
+
+def read_guarded(path: Path, maximum: int, *, offset: int = 0,
+                 length: int | None = None, file_bytes: int | None = None) -> ReadObservation:
+    """Read a regular file through pinned/no-follow ancestors and bound its bytes."""
+    _validate_range(maximum, offset, length, file_bytes)
 
     def consume(stream, before):
         if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
@@ -100,7 +268,7 @@ def read_guarded(path: Path, maximum: int, *, offset: int = 0,
                     if _identity(opened) != _identity(handle_after):
                         raise KnowledgeStorageError(target.name, "file changed during read", code="storage-mutation")
                     _assert_windows_file_binding(target, after, handle_after)
-                    directories = tuple((str(p), (p.stat().st_dev, p.stat().st_ino)) for p in target.parents)
+                    directories = tuple((str(p), _directory_identity(p.stat())) for p in target.parents)
         else:
             flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
             with ExitStack() as stack:
@@ -116,7 +284,7 @@ def read_guarded(path: Path, maximum: int, *, offset: int = 0,
                     identity = (child_stat.st_dev, child_stat.st_ino)
                     pinned.append((parent_fd, part, identity))
                     parent_path /= part
-                    directories_list.append((str(parent_path), identity))
+                    directories_list.append((str(parent_path), _directory_identity(child_stat)))
                     parent_fd = child
                 fd = os.open(target.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
                              | getattr(os, "O_CLOEXEC", 0), dir_fd=parent_fd)
@@ -132,24 +300,21 @@ def read_guarded(path: Path, maximum: int, *, offset: int = 0,
                 directories = tuple(directories_list)
         if len(content) > maximum:
             raise KnowledgeStorageError(target.name, "file exceeds byte limit", code="storage-limit")
-        if _identity(before) != _identity(after) or _identity(after) != _identity(current):
+        if (after.st_nlink != 1 or current.st_nlink != 1
+                or _identity(before) != _identity(after) or _identity(after) != _identity(current)):
             raise KnowledgeStorageError(target.name, "file changed during read", code="storage-mutation")
         return ReadObservation(content, _identity(after), directories)
     except KnowledgeStorageError:
         raise
     except OSError as exc:
-        missing = isinstance(exc, FileNotFoundError) or (
-            isinstance(exc, (WindowsDirectoryGuardError, WindowsFileGuardError))
-            and isinstance(exc.__cause__, FileNotFoundError)
-        )
-        raise KnowledgeStorageError(target.name, "required file is missing or cannot be read safely",
-                                    code="storage-missing" if missing else "storage-invalid") from exc
+        _raise_io_error(target, exc)
 
 
 class StorageReadSession:
     """Request-owned file observations, with charged authoritative rechecks."""
 
-    def __init__(self, wiki_dir: str | Path, *, max_bytes: int = MAX_EXPANDED_BYTES):
+    def __init__(self, wiki_dir: str | Path, *, max_bytes: int = MAX_EXPANDED_BYTES,
+                 max_handles: int = 128, cancelled=None, coalesce_rechecks: bool = False):
         if type(max_bytes) is not int or not 0 < max_bytes <= MAX_EXPANDED_BYTES:
             raise KnowledgeStorageError("max_bytes", "invalid read budget")
         self.root = _absolute_path(Path(wiki_dir))
@@ -159,6 +324,31 @@ class StorageReadSession:
         self.observations: dict[str, ReadObservation] = {}
         self.range_observations: dict[tuple[str, int, int, int], ReadObservation] = {}
         self._range_files: dict[str, ReadObservation] = {}
+        if type(max_handles) is not int or not 16 <= max_handles <= 256:
+            raise KnowledgeStorageError("max_handles", "requires 16 to 256 handles")
+        if cancelled is not None and not callable(cancelled):
+            raise KnowledgeStorageError("cancelled", "requires a trusted callback")
+        if type(coalesce_rechecks) is not bool:
+            raise KnowledgeStorageError("coalesce_rechecks", "requires a boolean")
+        self.max_handles, self.cancelled, self.coalesce_rechecks = max_handles, cancelled, coalesce_rechecks
+        self._phase = None
+
+    @contextmanager
+    def phase(self):
+        """Keep observations provisional until successful phase validation and release."""
+        if self._phase is not None:
+            raise KnowledgeStorageError("phase", "read phases cannot be nested")
+        phase = _ReadPhase(self.max_handles, self.cancelled)
+        self._phase = phase
+        try:
+            yield self
+            phase.validate()
+        finally:
+            self._phase = None
+            phase.close()
+
+    def _read_guarded(self, *args, **kwargs):
+        return (self._phase.read if self._phase is not None else read_guarded)(*args, **kwargs)
 
     def read(self, relative: str, maximum: int) -> bytes:
         _require_relative_name(relative)
@@ -166,7 +356,7 @@ class StorageReadSession:
         if remaining < 0:
             raise KnowledgeStorageError("read", "inspection budget exhausted", code="storage-budget-exhausted")
         try:
-            observed = read_guarded(self.root / relative, min(maximum, remaining))
+            observed = self._read_guarded(self.root / relative, min(maximum, remaining))
         except KnowledgeStorageError as exc:
             if exc.code == "storage-limit" and remaining < maximum:
                 raise KnowledgeStorageError("read", "inspection budget exhausted", code="storage-budget-exhausted") from exc
@@ -180,20 +370,29 @@ class StorageReadSession:
         return observed.content
 
     def recheck(self) -> None:
-        for relative, observation in tuple(self.observations.items()):
-            self.read(relative, len(observation.content))
-        for relative, offset, length, size in tuple(self.range_observations):
-            self.read_range(relative, offset, length, size)
+        with self.phase():
+            for relative, observation in tuple(self.observations.items()):
+                self.read(relative, len(observation.content))
+            if self.coalesce_rechecks:
+                self.read_ranges(list(self.range_observations))
+            else:
+                for relative, offset, length, size in tuple(self.range_observations):
+                    self.read_range(relative, offset, length, size)
 
     def read_range(self, relative: str, offset: int, length: int, file_bytes: int) -> bytes:
         """Read and retain an authenticated member range, without reading its whole pack."""
         _require_relative_name(relative)
         if type(length) is not int or length < 0 or length > self.maximum - self.bytes_read:
             raise KnowledgeStorageError("read", "inspection budget exhausted", code="storage-budget-exhausted")
-        observed = read_guarded(self.root / relative, length, offset=offset, length=length, file_bytes=file_bytes)
+        observed = self._read_guarded(self.root / relative, length, offset=offset, length=length, file_bytes=file_bytes)
         self.bytes_read += len(observed.content)
         self.reads += 1
         key = (relative, offset, length, file_bytes)
+        self._remember_range(key, observed)
+        return observed.content
+
+    def _remember_range(self, key, observed):
+        relative = key[0]
         prior = self.range_observations.get(key)
         if prior is not None and prior != observed:
             raise KnowledgeStorageError(relative, "pack range changed during the request", code="storage-mutation")
@@ -203,8 +402,63 @@ class StorageReadSession:
             raise KnowledgeStorageError(relative, "pack generation changed between members", code="storage-mutation")
         self.range_observations[key] = observed
         self._range_files[relative] = observed
-        return observed.content
+
+    def read_ranges(self, ranges):
+        """Coalesce exact neighbours only: zero speculative or uncharged bytes."""
+        groups = range_batches(ranges)
+        if self._phase is None:
+            with self.phase():
+                return self.read_ranges(ranges)
+        result = {}
+        for group in groups:
+            relative, start, _, size = group[0]
+            end = group[-1][1] + group[-1][2]
+            length = end - start
+            if length > self.maximum - self.bytes_read:
+                raise KnowledgeStorageError("read", "inspection budget exhausted", code="storage-budget-exhausted")
+            observed = self._read_guarded(self.root / relative, length, offset=start, length=length, file_bytes=size)
+            self.bytes_read += len(observed.content)
+            self.reads += 1
+            for key in group:
+                content = observed.content[key[1] - start:key[1] - start + key[2]]
+                self._remember_range(key, ReadObservation(content, observed.identity, observed.directories))
+                result[key] = content
+        return [result[tuple(key)] for key in ranges]
+
+    def recheck_work(self):
+        keys = list(self.range_observations)
+        count = len(range_batches(keys)) if self.coalesce_rechecks else len(keys)
+        return {"bytes": sum(len(v.content) for v in self.observations.values()) + sum(key[2] for key in keys),
+                "operations": len(self.observations) + count}
 
     def receipt(self) -> dict[str, Any]:
         return {"bytes_read": self.bytes_read, "read_operations": self.reads,
                 "files": sorted(set(self.observations) | {k[0] for k in self.range_observations})}
+
+
+def range_batches(ranges):
+    """Plan bounded disjoint ranges, without reading their contents or metadata."""
+    if not isinstance(ranges, (list, tuple)) or len(ranges) > 100_000:
+        raise KnowledgeStorageError("ranges", "requires at most 100000 ranges")
+    keys = []
+    for key in ranges:
+        if not isinstance(key, (list, tuple)) or len(key) != 4:
+            raise KnowledgeStorageError("ranges", "invalid range tuple")
+        _require_relative_name(key[0])
+        _validate_range(MAX_EXPANDED_BYTES, key[1], key[2], key[3])
+        if key[3] is None or key[1] + key[2] > key[3]:
+            raise KnowledgeStorageError("ranges", "range exceeds file size")
+        keys.append(tuple(key))
+    groups = []
+    previous = None
+    for key in sorted(keys):
+        if previous is not None and previous[0] == key[0]:
+            if previous[3] != key[3] or previous[1] + previous[2] > key[1]:
+                raise KnowledgeStorageError("ranges", "overlapping ranges or inconsistent file sizes")
+            if previous[1] + previous[2] == key[1]:
+                groups[-1].append(key)
+                previous = key
+                continue
+        groups.append([key])
+        previous = key
+    return groups

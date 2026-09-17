@@ -22,6 +22,7 @@ The bounded session implementation owns capture and rendering reuse, input reval
 | `_environment` | `()` | — | — |
 | `_clear` | `()` | — | — |
 | `_drop` | `(key)` | — | — |
+| `_share_inputs` | `(read)` | — | Intern immutable bytes within this workspace; receipts stay per entry. |
 | `_owns` | `(entry)` | — | — |
 | `_validate` | `(entry, environment, request, profile, counter, *, cold = False)` | — | — |
 | `_build` | `(request, *, cancelled, shared = None)` | — | — |
@@ -51,7 +52,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_session](../modules/context_session.md) | 14 | — |
+| [context_session](../modules/context_session.md) | 15 | — |
 
 ### Structure
 

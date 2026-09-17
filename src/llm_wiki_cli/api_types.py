@@ -30,6 +30,13 @@ class EvidenceRequirement(_RequirementOptions):
     selector: str
 
 
+class TaskStorageOptions(TypedDict, total=False):
+    """Optional selection and proof layout for task request v2."""
+
+    selection: Literal["all-collections-v1", "required-facets-v1"]
+    receipt: Literal["expanded-v1", "compact-v1"]
+
+
 class _TaskOptions(TypedDict, total=False):
     text: str
     kind: Literal["orientation", "bug-diagnosis", "contract-change", "refactor"]
@@ -38,6 +45,7 @@ class _TaskOptions(TypedDict, total=False):
     requirements: list[EvidenceRequirement]
     changes: dict[str, Any]
     options: dict[str, Any]
+    storage_options: TaskStorageOptions
 
 
 class TaskContextRequest(_TaskOptions):
