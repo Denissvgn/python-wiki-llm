@@ -124,7 +124,11 @@ class _ReadPhase:
 
     def read(self, path, maximum, *, offset=0, length=None, file_bytes=None):
         _validate_range(maximum, offset, length, file_bytes)
-        target = _absolute_path(path)
+        target = Path(path)
+        # Cached files already have a normalized spelling and pinned ancestry.
+        # The live ancestor and leaf bindings below are still checked per read.
+        if target not in self.files:
+            target = _absolute_path(target)
         try:
             self.check_cancelled()
             parents = self._parents(target)
