@@ -10,11 +10,13 @@ import pytest
 from llm_wiki_cli import api
 from llm_wiki_cli.services import knowledge_storage_io as storage
 from llm_wiki_cli.services import knowledge_governance as governance
+from llm_wiki_cli.services import knowledge_storage_lifecycle as lifecycle
 from llm_wiki_cli.services.context_session import _memory_size
-from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError, build_knowledge_store, digest
+from llm_wiki_cli.services.knowledge_storage import ROOT_FILENAME, KnowledgeStorageError, build_knowledge_store, digest
 from llm_wiki_cli.services.knowledge_storage_lifecycle import (
     migrate_knowledge_storage, prune_knowledge_storage, restore_pruned_storage,
 )
+from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_loader import _committed_state
 from tests.test_knowledge_governance import _two_concept_ledger, HUMAN, FIXED_TIME
@@ -210,6 +212,114 @@ def test_stale_prune_plan_and_corrupt_recovery_never_authorize_deletion(tmp_path
     with pytest.raises(KnowledgeStorageError, match='preimage differs'):
         prune_knowledge_storage(root, dry_run=False, recovery_dir=recovery)
     assert (root / name).read_bytes() == raw
+
+
+@pytest.mark.parametrize('header', [ROOT_FILENAME, MANIFEST_FILENAME])
+@pytest.mark.parametrize('dry_run', [True, False])
+def test_restore_refuses_each_changed_generation_header_and_keeps_backup(tmp_path, header, dry_run):
+    root, name, raw = orphan_fixture(tmp_path)
+    recovery = tmp_path / 'recovery'
+    applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=recovery)
+    backup = {p.relative_to(recovery): p.read_bytes() for p in recovery.rglob('*') if p.is_file()}
+    changed = (root / header).read_bytes() + b'\n'
+    (root / header).write_bytes(changed)
+    with pytest.raises(KnowledgeStorageError, match='generation') as error:
+        restore_pruned_storage(root, applied['recovery_manifest'], dry_run=dry_run)
+    assert error.value.code == 'storage-mutation'
+    assert not (root / name).exists()
+    assert (root / header).read_bytes() == changed
+    assert backup == {p.relative_to(recovery): p.read_bytes() for p in recovery.rglob('*') if p.is_file()}
+    assert raw in backup.values()
+
+
+def test_restore_rechecks_generation_after_acquiring_the_storage_lock(tmp_path, monkeypatch):
+    root, name, _ = orphan_fixture(tmp_path)
+    applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=tmp_path / 'recovery')
+    original_lock = lifecycle.governance_lock
+
+    @contextmanager
+    def changed_generation(*args, **kwargs):
+        with original_lock(*args, **kwargs):
+            header = root / MANIFEST_FILENAME
+            header.write_bytes(header.read_bytes() + b'\n')
+            yield
+
+    monkeypatch.setattr(lifecycle, 'governance_lock', changed_generation)
+    with pytest.raises(KnowledgeStorageError, match='changed'):
+        restore_pruned_storage(root, applied['recovery_manifest'], dry_run=False)
+    assert not (root / name).exists()
+
+
+@pytest.mark.parametrize('dry_run', [True, False])
+def test_restore_rechecks_generation_after_reading_backup_bytes(tmp_path, monkeypatch, dry_run):
+    root, name, raw = orphan_fixture(tmp_path)
+    applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=tmp_path / 'recovery')
+    read = lifecycle.read_guarded
+
+    def change_during_backup_read(path, *args, **kwargs):
+        observed = read(path, *args, **kwargs)
+        if observed.content == raw:
+            header = root / MANIFEST_FILENAME
+            header.write_bytes(header.read_bytes() + b'\n')
+        return observed
+
+    monkeypatch.setattr(lifecycle, 'read_guarded', change_during_backup_read)
+    with pytest.raises(KnowledgeStorageError, match='changed'):
+        restore_pruned_storage(root, applied['recovery_manifest'], dry_run=dry_run)
+    assert not (root / name).exists()
+
+
+def test_restore_refuses_a_valid_newer_generation(tmp_path):
+    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    root, name, _ = orphan_fixture(tmp_path)
+    applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=tmp_path / 'recovery')
+    migrate_knowledge_storage(root, to='packed-v4-deflate', recovery_dir=tmp_path / 'new-generation')
+    assert load_knowledge_state(root).knowledge is not None
+    headers = {name: (root / name).read_bytes() for name in (ROOT_FILENAME, MANIFEST_FILENAME)}
+    with pytest.raises(KnowledgeStorageError, match='generation'):
+        restore_pruned_storage(root, applied['recovery_manifest'], dry_run=False)
+    assert not (root / name).exists()
+    assert headers == {name: (root / name).read_bytes() for name in headers}
+
+
+def test_restore_rechecks_generation_between_writes(tmp_path, monkeypatch):
+    root, _, _ = orphan_fixture(tmp_path)
+    logical = json.loads(one_module_two_entities_fixture().knowledge_bytes)
+    logical.setdefault('extensions', {})['consumer/another'] = 'second orphan'
+    name, raw = next((n, data) for n, data in build_knowledge_store(logical).objects.items() if not (root / n).exists())
+    (root / name).parent.mkdir(exist_ok=True)
+    (root / name).write_bytes(raw)
+    applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=tmp_path / 'recovery')
+    assert len(applied['removed']) == 2
+    written = []
+    write = lifecycle.atomic_write_guarded_bytes
+
+    def change_after_write(path, content, **kwargs):
+        write(path, content, **kwargs)
+        written.append(path)
+        header = root / ROOT_FILENAME
+        header.write_bytes(header.read_bytes() + b'\n')
+
+    monkeypatch.setattr(lifecycle, 'atomic_write_guarded_bytes', change_after_write)
+    with pytest.raises(KnowledgeStorageError, match='changed'):
+        restore_pruned_storage(root, applied['recovery_manifest'], dry_run=False)
+    assert len(written) == 1
+    assert sum((root / name).exists() for name in applied['removed']) == 1
+
+
+def test_restore_needs_matching_headers_without_a_complete_store_audit(tmp_path):
+    root, name, raw = orphan_fixture(tmp_path)
+    applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=tmp_path / 'recovery')
+    missing = next((root / '.llm-wiki-knowledge' / 'objects').glob('*/*.json'))
+    missing.unlink()
+    result = restore_pruned_storage(root, applied['recovery_manifest'], dry_run=False)
+    assert result['restored'] == [name]
+    assert (root / name).read_bytes() == raw
+    assert not missing.exists()
+    (root / name).write_bytes(b'differing existing bytes')
+    result = restore_pruned_storage(root, applied['recovery_manifest'], dry_run=False)
+    assert result['retained'] == [name] and not result['restored']
+    assert (root / name).read_bytes() == b'differing existing bytes'
 
 
 def test_prune_inspection_budget_retains_unread_objects(tmp_path):

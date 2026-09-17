@@ -16,7 +16,7 @@ from .contracts import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import _parse_bundle
 from .knowledge_storage import (
     MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA,
-    KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, digest,
+    KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, canonical_bytes, digest,
 )
 from .knowledge_storage_io import StorageReadSession
 from .knowledge_packs import PACKED_SCHEMAS, open_knowledge_store
@@ -88,15 +88,25 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
         if isinstance(collections, (str, bytes)):
             raise KnowledgeStorageError("collections", "requires a collection of record collection names")
         collections = tuple(collections)
-    selected = reader.select(keys, max_records=max_records, collections=collections)
+    # Graph anchors are validation dependencies even when concepts are omitted
+    # from the caller's output projection. Keep their reads in this capture.
+    seed_collections = collections
+    if include_graph and collections is not None and "concepts" not in collections:
+        seed_collections = (*collections, "concepts")
+    selected = reader.select(keys, max_records=max_records, collections=seed_collections)
     if include_graph:
-        locators = [row["value"]["locator"] for row in selected.to_payload()["records"]["concepts"]]
+        seeds = selected.to_payload()
+        locators = [row["value"]["locator"] for row in seeds["records"]["concepts"]]
         expanded = set(keys)
         for locator in locators:
             expanded.update({"concept:" + locator, "out:concept:" + locator, "in:concept:" + locator})
         if len(expanded) > 100:
             raise KnowledgeStorageError("selectors", "graph expansion exceeds the selector limit", code="storage-budget-exhausted")
         selected = reader.select(expanded, max_records=max_records, collections=collections)
+        if not seeds["lookup_complete"]:
+            result = selected.to_payload()
+            result["lookup_complete"] = False
+            selected = KnowledgeSlice(canonical_bytes(result))
     markdown: dict[str, str] = {}
     for concept in reader.consumed_concepts.values():
         relative = concept["document"]["canonical_path"]

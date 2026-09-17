@@ -488,7 +488,7 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
 
 def restore_pruned_storage(wiki_dir: str | Path, recovery_manifest: str | Path, *, dry_run: bool = True,
                            cancelled=None) -> dict[str, Any]:
-    """Restore verified cleanup preimages without overwriting differing files."""
+    """Restore cleanup preimages into their recorded generation without overwrites."""
     from .storage_spool import ByteSpool
     root = _absolute_path(Path(wiki_dir))
     record_path = _absolute_path(Path(recovery_manifest))
@@ -504,6 +504,22 @@ def restore_pruned_storage(wiki_dir: str | Path, recovery_manifest: str | Path, 
         raise KnowledgeStorageError("recovery", "invalid cleanup recovery binding")
     _hash(plan["knowledge_hash"], "recovery.knowledge_hash")
     _hash(plan["manifest_hash"], "recovery.manifest_hash")
+    generation = StorageReadSession(root, cancelled=cancelled)
+
+    def check_generation():
+        current = _absolute_path(root).stat()
+        if [current.st_dev, current.st_ino] != plan["root_identity"]:
+            raise KnowledgeStorageError("recovery", "wiki root changed after cleanup", code="storage-mutation")
+        # Recovery may be needed because objects are missing. Bind to the two
+        # commit headers without requiring the current store to pass a full audit.
+        with generation.phase():
+            for name, commitment in ((ROOT_FILENAME, plan["knowledge_hash"]),
+                                     (MANIFEST_FILENAME, plan["manifest_hash"])):
+                if digest(generation.read(name, MAX_EXPANDED_BYTES)) != commitment:
+                    raise KnowledgeStorageError("recovery", "current generation differs from cleanup recovery",
+                                                code="storage-mutation")
+
+    check_generation()
     restored, retained = [], []
     with ByteSpool(max_bytes=MAX_EXPANDED_BYTES) as preimages:
         for row in plan["candidates"]:
@@ -521,8 +537,10 @@ def restore_pruned_storage(wiki_dir: str | Path, recovery_manifest: str | Path, 
             if len(raw) != row["bytes"] or digest(raw) != row["hash"]:
                 raise KnowledgeStorageError("recovery", "cleanup preimage changed")
             preimages[row["path"]] = raw
+        check_generation()
         if not dry_run:
             with governance_lock(root, _lock_filename="llm-wiki-storage.lock"):
+                check_generation()
                 for name, raw in preimages.items():
                     if cancelled is not None and cancelled():
                         retained.extend(key for key in preimages if key not in restored)
@@ -533,6 +551,7 @@ def restore_pruned_storage(wiki_dir: str | Path, recovery_manifest: str | Path, 
                             retained.append(name)
                         continue
                     ensure_guarded_directory(target.parent, mode=0o755)
+                    check_generation()
                     atomic_write_guarded_bytes(target, raw, mode=0o644, expected_existing=None)
                     restored.append(name)
         return {"dry_run": dry_run, "plan_id": plan["plan_id"], "restored": restored,

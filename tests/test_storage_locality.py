@@ -12,12 +12,15 @@ from llm_wiki_cli.services.knowledge_artifacts import (
     build_knowledge_commit_plan, commit_knowledge_artifacts, current_knowledge_format, validated_artifact_bytes,
 )
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
-from llm_wiki_cli.services.knowledge_storage import COLLECTIONS, KnowledgeStorageError, canonical_bytes
-from llm_wiki_cli.services.knowledge_storage_lifecycle import migrate_knowledge_storage, recover_knowledge_storage
+from llm_wiki_cli.services.knowledge_storage import COLLECTIONS, KnowledgeStorageError, canonical_bytes, digest
+from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_cli.services.knowledge_storage_lifecycle import (
+    migrate_knowledge_storage, recover_knowledge_storage, prune_knowledge_storage, restore_pruned_storage,
+)
 from llm_wiki_cli.services.storage_receipts import compact_storage_receipt, expand_storage_receipt
 from llm_wiki_cli.services.workflow_profile import content_id
 from tests.knowledge_fixtures import one_module_two_entities_fixture
-from tests.test_knowledge_loader import _committed_state
+from tests.test_knowledge_loader import _committed_state, _committed_knowledge_state
 
 
 @pytest.mark.parametrize("compression", ["stored", "deflate"])
@@ -79,6 +82,104 @@ def test_collection_projection_matches_complete_reference_without_expanding_omit
     assert selected['work']['expanded_bytes'] < full['work']['expanded_bytes']
 
 
+def _graph_wiki(tmp_path, fmt):
+    wiki = tmp_path / 'wiki'
+    wiki.mkdir()
+    _committed_knowledge_state(wiki)
+    migrate_knowledge_storage(wiki, to=fmt, recovery_dir=tmp_path / 'backup')
+    return wiki
+
+
+@pytest.mark.parametrize('fmt', ['sharded-v2', 'packed-v3', 'packed-v3-deflate', 'packed-v4', 'packed-v4-deflate'])
+@pytest.mark.parametrize('collection', ['edges', 'relationships', 'sections'])
+@pytest.mark.parametrize('selector', ['page:modules/accounts.md', 'concept:llm-wiki://modules/accounts'])
+def test_graph_projection_resolves_anchors_without_returning_dependency_concepts(tmp_path, fmt, collection, selector):
+    wiki = _graph_wiki(tmp_path, fmt)
+    full = capture_knowledge_slice(wiki, [selector], include_graph=True)
+    full.finish()
+    expected = full.slice.to_payload()['records'][collection]
+    assert expected
+    capture = capture_knowledge_slice(wiki, [selector], include_graph=True, collections=[collection])
+    selected = capture.slice.to_payload()
+    assert selected['records'][collection] == expected
+    assert all(not rows for name, rows in selected['records'].items() if name != collection)
+    assert selected['selected_collections'] == [collection]
+    assert selected['lookup_complete']
+    assert 'llm-wiki://modules/accounts' in capture.reader.consumed_concepts
+    assert 'modules/accounts.md' in capture.markdown
+    before, recheck = capture.session.bytes_read, capture.session.recheck_work()
+    receipt = capture.finish()
+    assert receipt['bytes_read'] == before + recheck['bytes']
+    assert 'modules/accounts.md' in receipt['files']
+    assert selected['unverified_records']['concepts'] == (
+        capture.reader.root['collections']['concepts']['count'] - len(capture.reader.consumed_concepts))
+
+
+def test_graph_anchor_dependencies_are_bounded_and_rechecked(tmp_path):
+    wiki = _graph_wiki(tmp_path, 'packed-v4-deflate')
+    selectors = ['page:modules/accounts.md']
+    capture = capture_knowledge_slice(wiki, selectors, include_graph=True, collections=['edges'])
+    with pytest.raises(KnowledgeStorageError, match='budget'):
+        capture_knowledge_slice(wiki, selectors, include_graph=True, collections=['edges'],
+                                max_bytes=capture.session.bytes_read - 1)
+    with pytest.raises(KnowledgeStorageError, match='cancelled'):
+        capture_knowledge_slice(wiki, selectors, include_graph=True, collections=['edges'], cancelled=lambda: True)
+    page = wiki / 'modules/accounts.md'
+    page.write_bytes(b'!' + page.read_bytes()[1:])
+    with pytest.raises(KnowledgeStorageError, match='changed'):
+        capture.finish()
+    with pytest.raises(KnowledgeStorageError, match='Markdown differs'):
+        capture_knowledge_slice(wiki, selectors, include_graph=True, collections=['edges'])
+
+
+def test_incomplete_graph_anchors_do_not_claim_complete_empty_projections(tmp_path):
+    wiki = _graph_wiki(tmp_path, 'sharded-v2')
+    capture = capture_knowledge_slice(wiki, ['source:src/accounts.py'], include_graph=True,
+                                    collections=['extensions'], max_records=1)
+    selected = capture.slice.to_payload()
+    assert not selected['lookup_complete']
+    assert all(not rows for rows in selected['records'].values())
+    capture.finish()
+
+
+def test_pruning_and_restoration_preserve_every_page_in_multi_page_containers(tmp_path):
+    wiki = tmp_path / 'wiki'
+    wiki.mkdir()
+    _committed_state(wiki)
+    migrate_knowledge_storage(wiki, recovery_dir=tmp_path / 'migration')
+    payload = json.loads(one_module_two_entities_fixture().knowledge_bytes)
+    logical = packs.build_knowledge_store(payload, target_bytes=512)
+    plan = packs._pack_logical(logical, 'deflate', None, None, packs.LOCAL_PACK_PROFILE)
+    containers = {name: raw for name, raw in plan.objects.items()
+                  if packs.INDEX_PAGE_NAME.fullmatch(name) and len(raw.splitlines()) > 1}
+    assert containers
+    for name, raw in containers.items():
+        inspected = packs.inspect_index_pages(raw, name)
+        assert inspected['pages'] == len(raw.splitlines())
+        target = wiki / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(raw)
+    raw = next(iter(containers.values()))
+    malformed = [raw[:-1], raw.replace(b'}\n{', b'}{', 1)]
+    retained = {}
+    for raw in malformed:
+        name = packs.index_page_path(digest(raw))
+        retained[name] = raw
+        target = wiki / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(raw)
+    preview = prune_knowledge_storage(wiki)
+    assert set(preview['unreferenced_objects']) == set(containers)
+    assert set(preview['retained']) == set(retained)
+    applied = prune_knowledge_storage(wiki, dry_run=False, plan=preview['plan'], recovery_dir=tmp_path / 'recovery')
+    assert set(applied['removed']) == set(containers)
+    assert all(not (wiki / name).exists() for name in containers)
+    restored = restore_pruned_storage(wiki, applied['recovery_manifest'], dry_run=False)
+    assert set(restored['restored']) == set(containers)
+    assert {name: (wiki / name).read_bytes() for name in containers} == containers
+    assert {name: (wiki / name).read_bytes() for name in retained} == retained
+
+
 @pytest.mark.parametrize('fmt', ['sharded-v2', 'packed-v3-deflate', 'packed-v4-deflate'])
 def test_compact_task_receipts_roundtrip_and_preserve_fact_scope(tmp_path, monkeypatch, fmt):
     monkeypatch.chdir(tmp_path)
@@ -116,6 +217,13 @@ def test_storage_options_are_rejected_before_reading(tmp_path, monkeypatch, stor
     monkeypatch.chdir(tmp_path)
     with pytest.raises(api.InvalidRequestError):
         api.build_task_context({'schema_version': 'llm-wiki-task-request/v2', 'storage_options': storage})
+
+
+def test_storage_options_remain_exclusive_to_task_request_v2():
+    from llm_wiki_cli.services.task_contract import normalize_task_request
+    from llm_wiki_cli.services.workflow_profile import WorkflowRequestError
+    with pytest.raises(WorkflowRequestError, match='requires task request v2'):
+        normalize_task_request({'schema_version': 'llm-wiki-task-request/v1', 'storage_options': {'receipt': 'compact-v1'}})
 
 
 @pytest.mark.parametrize('mutation', ['bad-digest', 'extra-pack', 'false-whole-range', 'invalid-range-id', 'bad-file-tag'])

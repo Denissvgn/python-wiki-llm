@@ -76,5 +76,6 @@ def workflow(source: str, wiki: str) -> tuple[SearchResult, MaintenanceQueueResu
 
 def scoped_workflow(source: str, wiki: str) -> api.TaskContext:
     request: TaskContextRequest = {"schema_version": "llm-wiki-task-request/v2",
+        "storage_options": {"selection": "required-facets-v1", "receipt": "compact-v1"},
         "requirements": [{"id": "contract", "facet": "source-contract", "selector": "app.py:run"}]}
     return api.build_task_context(request, src_dir=source, wiki_dir=wiki)

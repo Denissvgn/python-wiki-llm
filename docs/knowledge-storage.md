@@ -22,9 +22,9 @@ stable identity and review history. Storage migration preserves them.
 | `packed-v4` | You want finer routing and smaller writes, with more data packs than v3. |
 | `packed-v4-deflate` | You want that finer layout with individually compressed members. |
 
-Both packed profiles contain the same logical knowledge. `packed-v3` uses
+All packed formats contain the same logical knowledge. `packed-v3` uses
 uncompressed ZIP members (`ZIP_STORED`); `packed-v3-deflate` compresses members
-individually. Packs grow toward 4 MiB and have an 8 MiB hard ceiling, including
+individually. V3 packs grow toward 4 MiB and have an 8 MiB hard ceiling, including
 archive headers. Large collections split into additional packs. An individual
 record that cannot fit is reported before publication.
 
@@ -37,9 +37,10 @@ every container and its exact page membership. Selected reads verify only the
 pages and members they consume. A record may exceed the pack target while
 remaining within the hard ceiling.
 
-The root stays at `.llm-wiki-knowledge.json`. Packed data lives in
-`.llm-wiki-knowledge/packs/`, with bounded routing files in
-`.llm-wiki-knowledge/pack-index/`. Commit all referenced files and companion
+The root stays at `.llm-wiki-knowledge.json`. Both versions store packed data in
+`.llm-wiki-knowledge/packs/`. V3 routing files live in
+`.llm-wiki-knowledge/pack-index/`; v4 routing containers live in
+`.llm-wiki-knowledge/index-pages/`. Commit all referenced files and companion
 artifacts together. Readers access selected members directly; no extraction,
 external database, network service or Git LFS is required.
 
@@ -49,7 +50,8 @@ savings and update costs depend on the data and the breadth of each change.
 
 ## Adopt packed storage
 
-Upgrade every reader and writer to support `llm-wiki-knowledge/v3` before adoption.
+Upgrade every reader and writer to support the selected schema before adoption:
+`llm-wiki-knowledge/v3` for v3 packs or `llm-wiki-knowledge/v4` for v4 packs.
 Migration accepts either an existing v1 wiki or an adopted v2 wiki:
 
 ```sh
@@ -292,7 +294,10 @@ llm-wiki knowledge restore-pruned --wiki-dir wiki --recovery-manifest PATH --app
 ```
 
 This restores owned preimages without changing the active root, authored content
-or differing existing files. Recovery bytes, obsolete generation bytes and Git
+or differing existing files. Preview and apply require the root and manifest to
+match the generation recorded at cleanup. A changed generation is rejected and
+the recovery backup is preserved. These checks do not require every current
+storage object to be present. Recovery bytes, obsolete generation bytes and Git
 history are separate storage costs; cleanup does not compact Git history.
 
 ## Request scoped task context
@@ -324,8 +329,10 @@ read limit cannot turn into a complete graph or a satisfied requirement.
 Sessions revalidate consumed objects and source inputs before reuse. Delta v2
 binds the exact v2 base and result; v1 and v2 deltas cannot be interchanged.
 
-Packed reads use the versioned `llm-wiki-task-storage/v2` receipt. It records
-consumed file ranges and reports `archive_validation_scope: selected-members`.
+Packed-v3 reads use the `llm-wiki-task-storage/v2` receipt by default. Packed-v4
+reads and requests with explicit `storage_options` use `llm-wiki-task-storage/v3`.
+Both packed receipt versions record consumed file ranges and report
+`archive_validation_scope: selected-members`.
 Unconsumed members and archive metadata remain unverified until a full audit.
 Sessions recheck the consumed ranges and pack identities before reuse. Actual
 routing, range and final recheck bytes count against the caller's read budget;
