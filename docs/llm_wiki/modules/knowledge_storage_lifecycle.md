@@ -8,7 +8,7 @@ Owns explicit storage and manifest migration, verified recovery, legacy export a
 
 Validate the committed indexed generation and enumerate owned knowledge and manifest object namespaces. Retain unknown or malformed entries. Applying the preview rechecks current authority and each deletion preimage before removing recognized unreachable files.
 
-Cleanup plans bind the generation, root and exact candidate bytes. Apply verifies shared recovery preimages before deletion and retains unknown, busy or over-budget work. Recovery can restore absent owned files without changing current authority.
+Cleanup plans bind the generation, root and exact candidate bytes. Apply verifies shared recovery preimages before deletion and retains unknown, busy or over-budget work. Restoration requires the recorded knowledge root and manifest hashes, rechecks them under the storage lock before writing, and preserves the backup when the generation differs. It can restore absent owned files without a full-store audit or changes to current authority.
 
 ## Imports
 
@@ -75,4 +75,4 @@ flowchart LR
 | `_prune_backup` | `(root, directory, plan, candidates, cancelled)` | — | — |
 | `prune_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool = True, plan = None, recovery_dir: str \| Path \| None = None, max_bytes: int = MAX_EXPANDED_BYTES, cancelled = None) -> dict[str, Any]` | — | Preview or apply an exact generation-bound cleanup with verified recovery. |
 | `_prune_storage` | `(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled)` | — | Remove only valid content-addressed objects unreachable from a full audit. |
-| `restore_pruned_storage` | `(wiki_dir: str \| Path, recovery_manifest: str \| Path, *, dry_run: bool = True, cancelled = None) -> dict[str, Any]` | — | Restore verified cleanup preimages without overwriting differing files. |
+| `restore_pruned_storage` | `(wiki_dir: str \| Path, recovery_manifest: str \| Path, *, dry_run: bool = True, cancelled = None) -> dict[str, Any]` | — | Restore cleanup preimages into their recorded generation without overwrites. |

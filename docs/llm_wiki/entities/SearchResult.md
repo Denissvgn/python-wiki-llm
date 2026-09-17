@@ -1,6 +1,6 @@
 # SearchResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:69`
+**Location:** `src/llm_wiki_cli/api_types.py:77`
 **Kind:** Class
 **Bases:** `_SearchMetadata`
 **Module:** [api_types](../modules/api_types.md)

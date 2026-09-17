@@ -1,6 +1,6 @@
 # EvidenceExplanationResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:339`
+**Location:** `src/llm_wiki_cli/api_types.py:347`
 **Kind:** Class
 **Bases:** `ConceptResult`
 **Module:** [api_types](../modules/api_types.md)

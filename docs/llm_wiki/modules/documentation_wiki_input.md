@@ -21,7 +21,7 @@ documentation-run service to persist ``wiki-input.json`` later.
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `hash_markdown_snapshot` |
 | `.knowledge_model` | `ComputedFreshness` |
 | `.knowledge_observability` | `knowledge_freshness_hint` |
-| `.knowledge_packs` | `PACK_NAME`, `INDEX_NAME` |
+| `.knowledge_packs` | `PACK_NAME`, `INDEX_NAME`, `INDEX_PAGE_NAME` |
 | `.manifest_storage` | `OBJECT_NAME` |
 | `.source_selection` | `SOURCE_SELECTION_GENERATION_INPUT_KEY`, `SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY`, `SourceSelectionError`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |

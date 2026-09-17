@@ -1,6 +1,6 @@
 # _SearchMetadata
 
-**Location:** `src/llm_wiki_cli/api_types.py:62`
+**Location:** `src/llm_wiki_cli/api_types.py:70`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

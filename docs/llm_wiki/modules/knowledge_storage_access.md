@@ -8,6 +8,8 @@ Captures selected knowledge records, their Markdown and required governance obse
 
 Read the knowledge root and committed manifest policy, verify generation commitments, then resolve the requested records and required authority. Manifest v6 leaves unrelated source and page catalogs unread. The caller must run the final guarded recheck before using the selected result.
 
+Graph expansion resolves anchor concepts as internal dependencies even when the caller requests only edges, relationships or sections. Their reads, Markdown bindings and final rechecks remain charged and verified, while the output keeps only the requested collections. Truncated anchor selection remains disclosed as incomplete after expansion.
+
 ## Imports
 
 | Source | Symbols |
@@ -18,7 +20,7 @@ Read the knowledge root and committed manifest policy, verify generation commitm
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `lifecycle_state_by_uid`, `natural_key_for` |
 | `.knowledge_model` | `_parse_bundle` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `open_knowledge_store` |
-| `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `digest` |
+| `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `StorageReadSession` |
 | `.manifest_storage` | `ValidatedManifestHeader`, `read_manifest_header` |
 | `.sync_manifest` | `MANIFEST_FILENAME` |

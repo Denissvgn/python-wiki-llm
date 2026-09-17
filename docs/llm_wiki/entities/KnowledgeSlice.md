@@ -31,7 +31,7 @@ flowchart LR
     n0["KnowledgeSlice (src/llm_wiki_cli/services/knowledge_storage.py)"]
     n1["PackedKnowledgeStoreReader.select (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n2["KnowledgeStoreReader.select (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n3["src/llm_wiki_cli/services/knowledge_storage_access.py"]
+    n3["_capture_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -55,4 +55,4 @@ flowchart LR
 | `PackedKnowledgeStoreReader.select` | type_reference | [knowledge_packs](../modules/knowledge_packs.md) | — |
 | `KnowledgeStoreReader.select` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 | `KnowledgeStoreReader.select` | type_reference | [knowledge_storage](../modules/knowledge_storage.md) | — |
-| `knowledge_storage_access` | import | [knowledge_storage_access](../modules/knowledge_storage_access.md) | — |
+| `_capture_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |

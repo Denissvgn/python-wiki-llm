@@ -1119,3 +1119,19 @@ Added explicit task requirements, qualified context composition, public query/se
 - Pages deprecated: 0
 - Semantic fields preserved: 3
 - Moved entities: none
+
+## 2026-09-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.2.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:c897c3d0df36e32c2871a41893bd2486c8f90d95f07e0ea7fe5e5941ca5f2723`
+- Pages created: 1
+- Pages updated: 76
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1344
+- Pages deprecated: 0
+- Semantic fields preserved: 13
+- Moved entities: none

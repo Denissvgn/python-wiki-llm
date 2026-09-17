@@ -18,7 +18,7 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 596,
+      "entities": 597,
       "flows": 453,
       "guides": 6,
       "index": 1,
@@ -29,7 +29,7 @@
       "workflows": 155
     },
     "dependency_architecture": 2,
-    "total": 1417
+    "total": 1418
   },
   "dependency_pages": {
     "count": 2,
@@ -18383,7 +18383,7 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 1407,
+          "step_count": 1408,
           "truncated": true
         }
       },
@@ -23536,7 +23536,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4114,
+          "step_count": 4122,
           "truncated": true
         }
       },
@@ -31750,7 +31750,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4114,
+          "step_count": 4122,
           "truncated": true
         }
       },
@@ -36750,6 +36750,7 @@
         "entities/TaskContextRequest.md",
         "entities/TaskOptions.md",
         "entities/TaskRead.md",
+        "entities/TaskStorageOptions.md",
         "entities/TeamConfigError.md",
         "entities/TeamConventionRequest.md",
         "entities/TeamPolicyContext.md",
@@ -44683,6 +44684,18 @@
       "title": "TaskRead"
     },
     {
+      "canonical_path": "entities/TaskStorageOptions.md",
+      "id": "TaskStorageOptions",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/TaskStorageOptions",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "TaskStorageOptions"
+    },
+    {
       "canonical_path": "entities/TeamConfigError.md",
       "id": "TeamConfigError",
       "kind": "entities",
@@ -45572,6 +45585,7 @@
         "entities/TaskAnchor.md",
         "entities/TaskContextRequest.md",
         "entities/TaskOptions.md",
+        "entities/TaskStorageOptions.md",
         "entities/TypedGraphTraversalResult.md",
         "entities/WikiPageCounts.md",
         "entities/WikiPagesResult.md",
@@ -60445,5 +60459,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:6e6a90dedff032df5cc7a2a3ebbb439e1979a30cf68121123e03ec18be07adb1"
+  "source_hash": "sha256:9cfa539e75a5c5097383aecdab475ba92fb0baab389dd18a36a6e5229093dd27"
 }

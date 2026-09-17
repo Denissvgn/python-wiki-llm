@@ -6,7 +6,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 596 | [Open section](#entities) |
+| Entities | 597 | [Open section](#entities) |
 | Modules | 203 | [Open section](#modules) |
 | Workflows | 155 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
@@ -552,6 +552,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [TaskContextRequest](entities/TaskContextRequest.md)
 - [TaskOptions](entities/TaskOptions.md)
 - [TaskRead](entities/TaskRead.md)
+- [TaskStorageOptions](entities/TaskStorageOptions.md)
 - [TeamConfigError](entities/TeamConfigError.md)
 - [TeamConventionRequest](entities/TeamConventionRequest.md)
 - [TeamPolicyContext](entities/TeamPolicyContext.md)

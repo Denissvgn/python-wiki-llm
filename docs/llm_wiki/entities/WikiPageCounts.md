@@ -1,6 +1,6 @@
 # WikiPageCounts
 
-**Location:** `src/llm_wiki_cli/api_types.py:247`
+**Location:** `src/llm_wiki_cli/api_types.py:255`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

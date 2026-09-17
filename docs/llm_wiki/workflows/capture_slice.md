@@ -17,21 +17,23 @@
 9. `knowledge_storage.KnowledgeStorageError`
 10. `knowledge_storage.KnowledgeStorageError`
 11. `knowledge_storage.KnowledgeStorageError`
-12. `knowledge_storage.digest`
-13. `knowledge_storage.KnowledgeStorageError`
-14. `knowledge_storage.KnowledgeStorageError`
-15. `knowledge_storage.digest`
+12. `knowledge_storage.KnowledgeSlice`
+13. `knowledge_storage.canonical_bytes`
+14. `knowledge_storage.digest`
+15. `knowledge_storage.KnowledgeStorageError`
 16. `knowledge_storage.KnowledgeStorageError`
-17. `knowledge_governance.parse_governance_ledger`
-18. `knowledge_artifacts._decode_json_object`
-19. `knowledge_governance.lifecycle_state_by_uid`
-20. `knowledge_storage.KnowledgeStorageError`
-21. `knowledge_storage.KnowledgeStorageError`
-22. `knowledge_governance.natural_key_for`
+17. `knowledge_storage.digest`
+18. `knowledge_storage.KnowledgeStorageError`
+19. `knowledge_governance.parse_governance_ledger`
+20. `knowledge_artifacts._decode_json_object`
+21. `knowledge_governance.lifecycle_state_by_uid`
+22. `knowledge_storage.KnowledgeStorageError`
 23. `knowledge_storage.KnowledgeStorageError`
-24. `knowledge_storage.KnowledgeStorageError`
+24. `knowledge_governance.natural_key_for`
 25. `knowledge_storage.KnowledgeStorageError`
 26. `knowledge_storage.KnowledgeStorageError`
+27. `knowledge_storage.KnowledgeStorageError`
+28. `knowledge_storage.KnowledgeStorageError`
 
 ## Touches
 

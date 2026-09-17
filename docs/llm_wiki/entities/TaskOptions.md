@@ -1,6 +1,6 @@
 # _TaskOptions
 
-**Location:** `src/llm_wiki_cli/api_types.py:33`
+**Location:** `src/llm_wiki_cli/api_types.py:40`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)
@@ -20,6 +20,7 @@ Optional task intent, host attribution, exact selectors, requirements, change se
 | `requirements` | `list[EvidenceRequirement]` | *optional* | — |
 | `changes` | `dict[str, Any]` | *optional* | — |
 | `options` | `dict[str, Any]` | *optional* | — |
+| `storage_options` | `TaskStorageOptions` | *optional* | — |
 
 ## Methods
 
@@ -43,7 +44,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [api_types](../modules/api_types.md) | 0 | `anchors`, `changes`, `kind`, `options`, `requirements`, `task_ref`, `text` |
+| [api_types](../modules/api_types.md) | 0 | `anchors`, `changes`, `kind`, `options`, `requirements`, `storage_options`, `task_ref`, `text` |
 
 ### Structure
 
