@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.3.0] - 2026-09-17
+## [2.3.0] - 2026-09-21
+
+This release adds native task context, reusable context sessions, and indexed
+knowledge storage for large repositories.
 
 ### Added
 
@@ -55,9 +58,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   missing-file errors and mutation detection.
 - Documentation continuation and refresh preserve descriptions stored in
   manifest v6 catalogs.
+- Restoring pruned objects verifies the wiki root and storage generation before
+  applying recovery, rejecting stale recovery records while preserving backups.
+- Graph queries retain the concept anchors needed to resolve selected edges,
+  even when concepts are omitted from the output. Incomplete lookups remain
+  explicitly incomplete.
+- Documentation input inspection recognizes packed-v4 index pages as managed
+  storage files.
 
 ### Compatibility
 
+- Python 3.10+ remains supported, with unchanged required runtime dependencies.
+  MCP and exact token counting remain optional extras.
 - Existing storage and task request formats remain supported. New wikis still
   default to v1; adopting indexed or packed storage and manifest v6 is explicit
   and requires compatible readers and writers. Storage migration preserves
