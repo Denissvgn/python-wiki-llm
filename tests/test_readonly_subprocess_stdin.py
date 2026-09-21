@@ -160,6 +160,8 @@ _EOF_TIMEOUT = 5
 _EXIT_TIMEOUT = 5
 _GIT_TIMEOUT = 15
 _CLEANUP_TIMEOUT = 10
+# Cover the initial observation and verification after releasing an inherited
+# channel, plus host startup, the real Git call and cleanup.
 _HOST_TIMEOUT = _STARTUP_TIMEOUT + 2 * (
     _STARTUP_TIMEOUT + _EOF_TIMEOUT + _EXIT_TIMEOUT + _GIT_TIMEOUT + _CLEANUP_TIMEOUT
 ) + _CLEANUP_TIMEOUT
@@ -190,6 +192,7 @@ observations = []
 # examination or racing communicate() against a second stdout reader.
 probe_script = r'''
 import json
+import os
 from pathlib import Path
 import sys
 import time
@@ -200,13 +203,17 @@ if options["probe_mode"] == "never-ready":
     time.sleep(60)
     raise SystemExit(0)
 def acknowledge(name, value):
+    value["pid"] = os.getpid() + (1 if options["probe_mode"] == "wrong-pid" else 0)
     temporary = root / (name + ".tmp")
     temporary.write_text(json.dumps(value), encoding="utf-8")
     temporary.replace(root / name)
+if options["probe_mode"] == "read-before-ready":
+    data = sys.stdin.buffer.read()
 acknowledge("ready", {"phase": "ready"})
 if options["probe_mode"] == "exit-before-eof":
     raise SystemExit(0)
-data = sys.stdin.buffer.read()
+if options["probe_mode"] != "read-before-ready":
+    data = sys.stdin.buffer.read()
 acknowledge("eof", {"bytes_read": len(data)})
 if options["probe_mode"] == "hold-after-eof":
     time.sleep(60)
@@ -230,7 +237,8 @@ def check_stdin(kwargs, record):
     )
     record["probe_pid"] = probe.pid
     record["spawn_seconds"] = time.monotonic() - started
-    def wait_for(name, timeout):
+    def wait_for(name, timeout, phase=None):
+        phase = phase or name
         began = time.monotonic()
         try:
             while not (markers / name).is_file():
@@ -239,26 +247,49 @@ def check_stdin(kwargs, record):
                     # path check and observing process exit.
                     if (markers / name).is_file():
                         break
-                    record["probe_status"] = name + "-exit"
+                    record["probe_status"] = phase + "-exit"
                     raise OSError("probe exited before " + name)
                 if time.monotonic() - began >= timeout:
                     if (markers / name).is_file():
                         break
-                    record["probe_status"] = name + "-timeout"
+                    record["probe_status"] = phase + "-timeout"
                     raise subprocess.TimeoutExpired(probe.args, timeout)
                 time.sleep(0.01)
-            return json.loads((markers / name).read_text(encoding="utf-8"))
+            value = json.loads((markers / name).read_text(encoding="utf-8"))
+            if value["pid"] != probe.pid:
+                record["probe_status"] = phase + "-identity-error"
+                raise OSError("acknowledgement belongs to another process")
+            record["acknowledged_pid"] = value["pid"]
+            return value
         finally:
-            record[name + "_seconds"] = time.monotonic() - began
+            record[phase + "_seconds"] = time.monotonic() - began
+    blocked = None
     try:
         # This is how communicate(input="") supplies EOF: close only the
         # child's newly created pipe. An inherited host pipe stays open.
         if probe.stdin is not None:
             probe.stdin.close()
             probe.stdin = None
-        assert wait_for("ready", options["startup_timeout"]) == {"phase": "ready"}
-        record["probe_ready"] = True
-        record["bytes_read"] = wait_for("eof", options["eof_timeout"])["bytes_read"]
+        try:
+            assert wait_for("ready", options["startup_timeout"]) == {"phase": "ready", "pid": probe.pid}
+            record["probe_ready"] = True
+            record["bytes_read"] = wait_for("eof", options["eof_timeout"])["bytes_read"]
+        except subprocess.TimeoutExpired as error:
+            if not corrupt or options["probe_mode"] not in {"normal", "read-before-ready"}:
+                raise
+            # Windows can block interpreter initialization on an inherited
+            # synchronous stdin handle before any Python acknowledgement. A
+            # timeout is insufficient: releasing only the host input must let
+            # this SAME child acknowledge readiness, observe EOF and exit.
+            blocked = error
+            record["blocked_phase"] = record["probe_status"]
+            record["before_release_eof"] = (markers / "eof").exists()
+            assert not record["before_release_eof"], "inherited input reached EOF before release"
+            record["input_release_requested"] = True
+            print(json.dumps({"event": "release-input"}), flush=True)
+            assert wait_for("ready", options["startup_timeout"], "released-ready") == {"phase": "ready", "pid": probe.pid}
+            record["probe_ready"] = True
+            record["bytes_read"] = wait_for("eof", options["eof_timeout"], "released-eof")["bytes_read"]
         record["eof_observed"] = True
         began = time.monotonic()
         try:
@@ -271,7 +302,7 @@ def check_stdin(kwargs, record):
         if probe.returncode != 0 or record["bytes_read"] != 0:
             record["probe_status"] = "invalid-eof"
             raise OSError("probe did not finish with empty input")
-        record["probe_status"] = "completed"
+        record["probe_status"] = "released-after-host-eof" if blocked is not None else "completed"
     finally:
         if probe.poll() is None:
             probe.kill()
@@ -280,11 +311,15 @@ def check_stdin(kwargs, record):
         record["probe_stdout"] = stdout.decode("utf-8", errors="replace")
         record["probe_stderr"] = stderr.decode("utf-8", errors="replace")
         record["probe_reaped"] = probe.returncode is not None
+    if blocked is not None:
+        # Do not run Git with the deliberately broken arguments after releasing
+        # the host channel; propagate the original failed observation instead.
+        raise blocked
 
 def traced_git(command, **kwargs):
     assert command[0] == "git"
     record = {"command": command, "probe_ready": False, "eof_observed": False,
-              "probe_reaped": False, "git_status": "not-run"}
+              "probe_reaped": False, "git_status": "not-run", "input_release_requested": False}
     observations.append(record)
     if corrupt:
         kwargs.pop("stdin", None)
@@ -309,8 +344,10 @@ def traced_git(command, **kwargs):
         record["git_seconds"] = time.monotonic() - began
 subprocess.run = traced_git
 try:
-    knowledge_envelope.collect_git_repository_evidence(source)
-    extraction_service._git_changed_files(str(source))
+    if options["operation"] == "repository-evidence":
+        knowledge_envelope.collect_git_repository_evidence(source)
+    else:
+        extraction_service._git_changed_files(str(source))
 finally:
     print(json.dumps(observations), flush=True)
     reader.join(timeout=options["cleanup_timeout"])
@@ -318,7 +355,8 @@ finally:
 
 
 def _run_stdio_host(
-    tmp_path, *, inherit, startup_delay=0, probe_mode="normal", expected_host_exit=0, **budgets
+    tmp_path, *, inherit, startup_delay=0, probe_mode="normal", expected_host_exit=0,
+    operation="changed-files", **budgets
 ):
     source = tmp_path / "source"
     source.mkdir()
@@ -326,6 +364,7 @@ def _run_stdio_host(
     (source / ".git").write_text("gitdir: absent\n", encoding="utf-8")
     options = {
         "inherit": inherit, "startup_delay": startup_delay, "probe_mode": probe_mode,
+        "operation": operation,
         "startup_timeout": _STARTUP_TIMEOUT, "eof_timeout": _EOF_TIMEOUT,
         "exit_timeout": _EXIT_TIMEOUT, "git_timeout": _GIT_TIMEOUT,
         "cleanup_timeout": _CLEANUP_TIMEOUT, **budgets,
@@ -340,18 +379,40 @@ def _run_stdio_host(
         assert process.stdout is not None
         stdout = process.stdout
         # One reader owns stdout throughout, including failure cleanup.
-        reader = threading.Thread(target=lambda: lines.put(stdout.readline()), daemon=True)
+        def read_lines():
+            for line in iter(stdout.readline, b""):
+                lines.put(line)
+            lines.put(b"")
+        reader = threading.Thread(target=read_lines, daemon=True)
         reader.start()
         raw = b""
         host_timeout = shutdown_timeout = False
+        input_released = protocol_error = False
+        output = []
         try:
-            raw = lines.get(timeout=_HOST_TIMEOUT)
+            while True:
+                raw = lines.get(timeout=max(0, _HOST_TIMEOUT - (time.monotonic() - started)))
+                output.append(raw)
+                try:
+                    message = json.loads(raw)
+                except ValueError:
+                    protocol_error = True
+                    break
+                if isinstance(message, list):
+                    break
+                if message != {"event": "release-input"} or not inherit or input_released:
+                    protocol_error = True
+                    break
+                assert process.stdin is not None
+                process.stdin.close()
+                process.stdin = None
+                input_released = True
         except queue.Empty:
             host_timeout = True
         finally:
-            assert process.stdin is not None
-            process.stdin.close()
-            process.stdin = None
+            if process.stdin is not None:
+                process.stdin.close()
+                process.stdin = None
             try:
                 process.wait(timeout=_CLEANUP_TIMEOUT)
             except subprocess.TimeoutExpired:
@@ -360,8 +421,8 @@ def _run_stdio_host(
                 process.wait(timeout=_CLEANUP_TIMEOUT)
             finally:
                 reader.join(timeout=_CLEANUP_TIMEOUT)
-            if host_timeout and not lines.empty():
-                raw = lines.get_nowait()
+            while not lines.empty():
+                output.append(lines.get_nowait())
             if not reader.is_alive():
                 stdout.close()
         stderr_file.seek(0)
@@ -370,45 +431,62 @@ def _run_stdio_host(
         "options": options, "elapsed_seconds": time.monotonic() - started,
         "host_returncode": process.returncode, "host_timeout": host_timeout,
         "shutdown_timeout": shutdown_timeout,
-        "stdout": raw.decode("utf-8", errors="replace"),
+        "input_released": input_released, "protocol_error": protocol_error,
+        "stdout": b"".join(output).decode("utf-8", errors="replace"),
         "stderr": stderr.decode("utf-8", errors="replace"),
     }, indent=2)
-    assert (not host_timeout and not shutdown_timeout
+    assert (not host_timeout and not shutdown_timeout and not protocol_error
             and process.returncode == expected_host_exit and not reader.is_alive()), diagnostics
     try:
         observations = json.loads(raw)
     except ValueError:
         pytest.fail(diagnostics)
-    assert len(observations) == 2, diagnostics
+    assert len(observations) == 1, diagnostics
     assert all(row["probe_reaped"] for row in observations), diagnostics
+    assert any(row["input_release_requested"] for row in observations) is input_released, diagnostics
     return observations, diagnostics
 
 
 def _assert_stdin_observations(observations, diagnostics, *, inherit):
     assert all(row["probe_ready"] for row in observations), diagnostics
-    assert all(row["probe_status"] == ("eof-timeout" if inherit else "completed")
+    assert all(row["probe_pid"] == row["acknowledged_pid"] for row in observations), diagnostics
+    assert all(row["probe_status"] == ("released-after-host-eof" if inherit else "completed")
                for row in observations), diagnostics
-    assert all(row["eof_observed"] is not inherit for row in observations), diagnostics
+    assert all(row["eof_observed"] for row in observations), diagnostics
     assert all(row["git_status"] == ("not-run" if inherit else "completed")
                for row in observations), diagnostics
-    if not inherit:
-        assert all(row["bytes_read"] == 0 and row["probe_returncode"] == 0
+    assert all(row["bytes_read"] == 0 and row["probe_returncode"] == 0
+               for row in observations), diagnostics
+    if inherit:
+        assert all(row["stdin_mode"] == "inherited" and row["input_release_requested"]
+                   and not row["before_release_eof"]
+                   and row["blocked_phase"] in {"ready-timeout", "eof-timeout"}
                    for row in observations), diagnostics
 
 
 @pytest.mark.parametrize("inherit", [False, True])
 @pytest.mark.parametrize("startup_delay", [0, 0.75], ids=["normal-start", "delayed-start"])
-def test_git_reads_complete_while_stdio_host_keeps_reading_input(tmp_path, inherit, startup_delay):
-    # The delayed case exceeds the former 500 ms completion deadline. Startup
-    # must succeed independently before an EOF timeout can be a negative control.
-    observations, diagnostics = _run_stdio_host(tmp_path, inherit=inherit, startup_delay=startup_delay)
+@pytest.mark.parametrize("operation", ["repository-evidence", "changed-files"])
+def test_git_reads_complete_while_stdio_host_keeps_reading_input(tmp_path, inherit, startup_delay, operation):
+    # The delayed case exceeds the former 500 ms deadline. A broken inherited
+    # channel must recover in the same child when the host writer is closed.
+    observations, diagnostics = _run_stdio_host(
+        tmp_path, inherit=inherit, startup_delay=startup_delay, operation=operation
+    )
     _assert_stdin_observations(observations, diagnostics, inherit=inherit)
+
+
+def test_inherited_startup_block_requires_the_same_child_to_finish_after_release(tmp_path):
+    observations, diagnostics = _run_stdio_host(tmp_path, inherit=True, probe_mode="read-before-ready")
+    assert observations[0]["blocked_phase"] == "ready-timeout", diagnostics
+    _assert_stdin_observations(observations, diagnostics, inherit=True)
 
 
 @pytest.mark.parametrize("mode,budgets,status,ready,eof,host_exit", [
     ("never-ready", {"startup_timeout": 0.2}, "ready-timeout", False, False, 0),
     ("exit-before-eof", {}, "eof-exit", True, False, 1),
     ("hold-after-eof", {"exit_timeout": 0.2}, "exit-timeout", True, True, 0),
+    ("wrong-pid", {}, "ready-identity-error", False, False, 1),
 ])
 def test_probe_startup_and_exit_failures_cannot_pass_as_inherited_stdin(
     tmp_path, mode, budgets, status, ready, eof, host_exit
