@@ -5,6 +5,8 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import subprocess
+import sys
 
 import pytest
 
@@ -189,3 +191,43 @@ def test_treatment_and_mixed_identities_are_refused_before_reading_traces(tmp_pa
     monkeypatch.setattr(baseline, 'inspect_campaign', forbidden)
     with pytest.raises(ValueError):
         baseline.baseline_sampling(tmp_path, planned)
+
+
+@pytest.mark.parametrize('action', ['freeze', 'sample'])
+@pytest.mark.parametrize('position', ['before', 'after'])
+def test_cli_accepts_output_before_or_after_each_subcommand(retained, tmp_path, action, position):
+    if action == 'freeze':
+        arguments = [value for name, path in retained.items() for value in ('--' + name.replace('_', '-'), str(path))]
+    else:
+        directory = tmp_path / 'empty-campaign'
+        directory.mkdir()
+        schedule_path = tmp_path / 'schedule.json'
+        schedule_path.write_bytes(canonical_json(schedule()))
+        arguments = ['--directory', str(directory), '--schedule', str(schedule_path)]
+    output = tmp_path / 'result.json'
+    selection = ['--output', str(output)]
+    command = ([*selection, action, *arguments] if position == 'before'
+               else [action, *arguments, *selection])
+    result = subprocess.run([sys.executable, '-m', 'tests.native_workflow.baseline', *command],
+                            cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True, timeout=15)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(output.read_bytes())
+    if action == 'freeze':
+        assert len(payload['attempts']) == 72 and payload['execution_allowed'] is False
+    else:
+        assert payload['denominator'] == 6 and payload['outcomes'] == {'missing-evidence': 6}
+
+
+@pytest.mark.parametrize('outputs', [[], ['--output', 'one', '--output', 'two']])
+def test_cli_rejects_missing_or_ambiguous_output_before_reading_inputs(monkeypatch, outputs):
+    monkeypatch.setattr(baseline, 'baseline_sampling', lambda *a, **kw: pytest.fail('invalid CLI reached inputs'))
+    with pytest.raises(SystemExit) as error:
+        baseline.main(['sample', '--directory', 'absent', '--schedule', 'absent', *outputs])
+    assert error.value.code == 2
+
+
+def test_cli_rejects_output_on_both_sides_of_the_subcommand(monkeypatch):
+    monkeypatch.setattr(baseline, 'baseline_sampling', lambda *a, **kw: pytest.fail('ambiguous CLI reached inputs'))
+    with pytest.raises(SystemExit) as error:
+        baseline.main(['--output', 'one', 'sample', '--directory', 'absent', '--schedule', 'absent', '--output', 'two'])
+    assert error.value.code == 2

@@ -2,6 +2,7 @@
 
 import json
 import os
+from contextlib import contextmanager
 from pathlib import Path
 import sys
 
@@ -82,6 +83,7 @@ def test_live_host_calls_are_refused_in_ci_before_any_preparation(tmp_path, monk
     def forbidden(*args, **kwargs):
         pytest.fail('Live agent boundary was crossed in CI')
     monkeypatch.setattr(host, 'binary_hash', forbidden)
+    monkeypatch.setattr(host, 'prepare_executable', forbidden)
     selected = host.CodexHost(Path('/never-execute'), 'unused', 'synthetic', 'synthetic', 'max')
     with pytest.raises(host.HostError, match='cannot run in CI'):
         selected.call('synthetic', {}, workspace=tmp_path / 'must-not-exist', timeout=1)
@@ -125,11 +127,54 @@ def synthetic_host(monkeypatch):
         monkeypatch.delenv(marker, raising=False)
     # Fake the live boundary on every platform; never resolve a real CLI.
     monkeypatch.setattr(host, 'binary_hash', lambda path: 'synthetic-pin')
+    @contextmanager
+    def synthetic_binding(*args, **kwargs):
+        yield host.ExecutableBinding('/never-execute', (), 'synthetic-control', 'synthetic-pin', 1, 1)
+    monkeypatch.setattr(host, 'prepare_executable', synthetic_binding)
     monkeypatch.setattr(host, '_NATIVE_WINDOWS', False)
     return host.CodexHost(Path('/never-execute'), 'synthetic-pin', 'synthetic', 'synthetic', 'max')
 
 
-@pytest.mark.parametrize('fault', ['schema', 'extra-file', 'binary'])
+def test_host_uses_the_binding_through_the_entire_launch(tmp_path, monkeypatch):
+    selected = synthetic_host(monkeypatch)
+    bound = host.ExecutableBinding('/sealed-synthetic-client', (), 'synthetic-control', 'synthetic-pin', 1, 1)
+    active = []
+
+    @contextmanager
+    def prepared(*args, **kwargs):
+        active.append(True)
+        try:
+            yield bound
+        finally:
+            active.clear()
+
+    def launched(argv, **kwargs):
+        assert active and kwargs['executable'] is bound
+        assert argv[0] == str(selected.executable)
+        return observation(events(), executable_binding=bound.receipt())
+
+    monkeypatch.setattr(host, 'prepare_executable', prepared)
+    monkeypatch.setattr(host, 'run_bounded', launched)
+    received = selected.call('synthetic', {}, workspace=tmp_path / 'control', timeout=1)
+    assert received.executable_binding == bound.receipt() and not active
+
+
+def test_unavailable_binding_refuses_launch_before_workspace_creation(tmp_path, monkeypatch):
+    selected = synthetic_host(monkeypatch)
+
+    @contextmanager
+    def refused(*args, **kwargs):
+        raise host.ExecutableError('sealing unavailable')
+        yield  # Make this a context-manager generator; never reached.
+
+    monkeypatch.setattr(host, 'prepare_executable', refused)
+    monkeypatch.setattr(host, 'run_bounded', lambda *a, **kw: pytest.fail('unbound host launch'))
+    with pytest.raises(host.HostError, match='sealing unavailable'):
+        selected.call('synthetic', {}, workspace=tmp_path / 'control', timeout=1)
+    assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize('fault', ['schema', 'extra-file'])
 def test_mutated_host_inputs_fail_with_the_raw_observation(tmp_path, monkeypatch, fault):
     selected = synthetic_host(monkeypatch)
     received = observation(events())
@@ -137,10 +182,8 @@ def test_mutated_host_inputs_fail_with_the_raw_observation(tmp_path, monkeypatch
     def fake_call(argv, *, cwd, **kwargs):
         if fault == 'schema':
             (cwd / 'output-schema.json').write_bytes(b'{}')
-        elif fault == 'extra-file':
-            (cwd / 'unreported-edit').write_bytes(b'unreported')
         else:
-            monkeypatch.setattr(host, 'binary_hash', lambda path: 'changed')
+            (cwd / 'unreported-edit').write_bytes(b'unreported')
         return received
 
     monkeypatch.setattr(host, 'run_bounded', fake_call)
@@ -254,7 +297,7 @@ def manifest(selected):
 
 def test_trace_bridge_retains_actual_request_receipt_usage_and_unknown_framing(tmp_path, monkeypatch):
     selected = synthetic_host(monkeypatch)
-    received = observation(events())
+    received = observation(events(), executable_binding={'kind': 'synthetic-control', 'sha256': 'synthetic-pin'})
     monkeypatch.setattr(host.CodexHost, 'call', lambda *a, **kw: received)
     directory = tmp_path / 'trace'
     with AttemptTrace(directory, manifest(selected)) as trace:
@@ -272,6 +315,7 @@ def test_trace_bridge_retains_actual_request_receipt_usage_and_unknown_framing(t
     records = [json.loads(line) for line in (directory / 'events.jsonl').read_bytes().splitlines()]
     end = next(item['data'] for item in records if item['kind'] == 'model-end')
     receipt = json.loads((directory / 'blobs' / end['receipt'][7:]).read_bytes())
+    assert receipt['host_process']['executable_binding'] == received.executable_binding
     assert (directory / 'blobs' / receipt['host_process']['stdout'][7:]).read_bytes() == received.stdout
     request = next(item['data']['request'] for item in records if item['kind'] == 'model-start')
     actual = json.loads((directory / 'blobs' / request[7:]).read_bytes())

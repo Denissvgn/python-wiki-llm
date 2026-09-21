@@ -263,7 +263,7 @@ def baseline_sampling(directory: Path, schedule: dict[str, dict]) -> dict[str, A
             'amendment_authorized': False, 'scope': 'structurally-validated-baseline-observations-only'}
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='action', required=True)
     prepare = sub.add_parser('freeze')
@@ -272,9 +272,14 @@ def main():
     sample = sub.add_parser('sample')
     sample.add_argument('--directory', type=Path, required=True)
     sample.add_argument('--schedule', type=Path, required=True)
-    parser.add_argument('--output', type=Path, required=True)
-    args = vars(parser.parse_args())
-    output = args.pop('output')
+    parser.add_argument('--output', type=Path, action='append', dest='output_before', metavar='PATH')
+    for command in (prepare, sample):
+        command.add_argument('--output', type=Path, action='append', dest='output_after', metavar='PATH')
+    args = vars(parser.parse_args(argv))
+    outputs = (args.pop('output_before') or []) + (args.pop('output_after') or [])
+    if len(outputs) != 1:
+        parser.error('provide --output exactly once, before or after the subcommand')
+    output = outputs[0]
     action = args.pop('action')
     result = freeze_baseline(**args) if action == 'freeze' else baseline_sampling(args['directory'], _json(args['schedule'])[0])
     output.parent.mkdir(parents=True, exist_ok=True)

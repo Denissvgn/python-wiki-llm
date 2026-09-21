@@ -22,6 +22,9 @@ import time
 
 from tests.provider_conformance.model import canonical_json
 from tests.native_workflow.run_trace import AttemptTrace, identity
+from tests.native_workflow.executable import (
+    ExecutableBinding, ExecutableCancelled, ExecutableError, prepare_executable,
+)
 
 MAX_OUTPUT_BYTES = 2_097_152
 _NATIVE_WINDOWS = os.name == 'nt'
@@ -42,7 +45,7 @@ class HostError(ValueError):
 
 
 class HostCancelled(HostError):
-    """A requested cancellation prevented the host process from launching."""
+    """Cancellation was requested before launch or during host execution."""
 
 
 @dataclass(frozen=True)
@@ -52,6 +55,7 @@ class ProcessObservation:
     stderr: bytes
     elapsed_ns: int
     disposition: str
+    executable_binding: dict | None = None
 
 
 def binary_hash(path: Path) -> str:
@@ -63,7 +67,8 @@ def binary_hash(path: Path) -> str:
 
 
 def run_bounded(argv: list[str], *, cwd: Path, input_bytes: bytes, timeout: float,
-                cancelled=None, max_output: int = MAX_OUTPUT_BYTES) -> ProcessObservation:
+                cancelled=None, max_output: int = MAX_OUTPUT_BYTES,
+                executable: ExecutableBinding | None = None) -> ProcessObservation:
     """Bound retained output and terminate the owned process group on failure."""
     if (type(timeout) not in (int, float) or not math.isfinite(timeout) or not 0 < timeout <= 600
             or type(max_output) is not int or not 0 < max_output <= MAX_OUTPUT_BYTES
@@ -81,7 +86,9 @@ def run_bounded(argv: list[str], *, cwd: Path, input_bytes: bytes, timeout: floa
         input_file.seek(0)
         process = subprocess.Popen(argv, cwd=cwd, env=environment, stdin=input_file,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                   start_new_session=os.name != 'nt')
+                                   start_new_session=os.name != 'nt',
+                                   executable=executable.target if executable is not None else None,
+                                   pass_fds=executable.pass_fds if executable is not None else ())
 
         def collect(stream, buffer):
             try:
@@ -153,7 +160,8 @@ def run_bounded(argv: list[str], *, cwd: Path, input_bytes: bytes, timeout: floa
             for reader in readers:
                 reader.join(timeout=5)
             partial = ProcessObservation(process.returncode, bytes(buffers[0]), bytes(buffers[1]),
-                                         time.monotonic_ns() - started, 'cleanup-failed')
+                                         time.monotonic_ns() - started, 'cleanup-failed',
+                                         executable.receipt() if executable is not None else None)
             if any(reader.is_alive() for reader in readers):
                 raise HostError('Process output did not close during cleanup', observation=partial)
             if cleanup_error is not None:
@@ -162,7 +170,8 @@ def run_bounded(argv: list[str], *, cwd: Path, input_bytes: bytes, timeout: floa
         if overflow.is_set():
             disposition = 'output-limit'
     observation = ProcessObservation(process.returncode, bytes(buffers[0]), bytes(buffers[1]),
-                                     time.monotonic_ns() - started, disposition)
+                                     time.monotonic_ns() - started, disposition,
+                                     executable.receipt() if executable is not None else None)
     if interrupted:
         raise HostCancelled('Host process interrupted', observation=observation)
     return observation
@@ -255,11 +264,12 @@ class CodexHost:
     service_tier: str = 'default'
 
     def configuration(self) -> dict:
-        return {'adapter': 'native-workflow-codex-host/v1', 'executable': str(self.executable),
+        return {'adapter': 'native-workflow-codex-host/v2', 'executable': str(self.executable),
                 'executable_sha256': self.executable_sha256, 'version': self.version,
                 'model': self.model, 'reasoning_effort': self.reasoning_effort, 'service_tier': self.service_tier,
                 'disabled_features': list(DISABLED_FEATURES), 'mode': 'ephemeral-tool-free',
                 'filesystem': 'minimal-runtime-and-read-only-control-directory', 'network': 'disabled-for-tools',
+                'executable_binding': 'verified-sealed-snapshot/v1',
                 'scope': 'host-invocation; provider-internal-retries-and-framing-unobserved'}
 
     def command(self, workspace: Path, schema_path: Path) -> list[str]:
@@ -288,18 +298,22 @@ class CodexHost:
                 or not isinstance(schema, dict) or type(timeout) not in (int, float)
                 or not math.isfinite(timeout) or not 0 < timeout <= 600):
             raise HostError('Invalid host input or time budget')
-        if binary_hash(self.executable) != self.executable_sha256:
-            raise HostError('Selected host binary changed since admission')
-        # This directory contains only the output schema. Source, oracle and
-        # evidence roots are neither mounted here nor exposed to native tools.
-        workspace.mkdir(mode=0o700, parents=True, exist_ok=False)
-        schema_path = workspace / 'output-schema.json'
-        schema_path.write_bytes(schema_raw)
-        observation = run_bounded(self.command(workspace, schema_path), cwd=workspace,
-                                  input_bytes=prompt_raw, timeout=timeout, cancelled=cancelled)
+        observation = None
         try:
-            if binary_hash(self.executable) != self.executable_sha256:
-                raise HostError('Selected host binary changed during the call')
+            with prepare_executable(self.executable, self.executable_sha256, cancelled=cancelled) as executable:
+                # The model directory contains only the schema; the sealed host
+                # snapshot is held separately and never exposed to task tools.
+                workspace.mkdir(mode=0o700, parents=True, exist_ok=False)
+                schema_path = workspace / 'output-schema.json'
+                schema_path.write_bytes(schema_raw)
+                observation = run_bounded(self.command(workspace, schema_path), cwd=workspace,
+                                          input_bytes=prompt_raw, timeout=timeout, cancelled=cancelled,
+                                          executable=executable)
+        except ExecutableCancelled as error:
+            raise HostCancelled(str(error), observation=observation) from error
+        except ExecutableError as error:
+            raise HostError(str(error), observation=observation) from error
+        try:
             if (workspace.is_symlink() or set(workspace.iterdir()) != {schema_path}
                     or schema_path.is_symlink() or schema_path.read_bytes() != schema_raw):
                 raise HostError('Read-only model control directory changed during the call')
@@ -325,7 +339,8 @@ def trace_call(trace: AttemptTrace, host: CodexHost, prompt: str, schema: dict, 
                             'counter_id': 'utf8-bytes-upper-bound/v1', 'counter_mode': 'estimated',
                             'canonical_tokens': len(prompt_raw), 'host_framing_tokens': None})
     request = canonical_json({'prompt': prompt, 'schema': schema,
-                              'argv': host.command(workspace, workspace / 'output-schema.json'), 'timeout': timeout})
+                              'argv': host.command(workspace, workspace / 'output-schema.json'), 'timeout': timeout,
+                              'executable_resolution': 'sealed snapshot; actual binding retained in host receipt'})
     trace.record('model-start', {'call_id': call_id, 'request': trace.blob(request), 'context_ids': [call_id]})
     observation = None
     error_record = None
@@ -349,6 +364,7 @@ def trace_call(trace: AttemptTrace, host: CodexHost, prompt: str, schema: dict, 
         receipt = {'scope': host.configuration()['scope'], 'error': error_record,
                    'host_process': None if observation is None else {
                        'returncode': observation.returncode, 'elapsed_ns': observation.elapsed_ns,
+                       'executable_binding': observation.executable_binding,
                        'disposition': observation.disposition, 'stdout': trace.blob(observation.stdout),
                        'stderr': trace.blob(observation.stderr)}}
         trace.record('model-end', {'call_id': call_id,
