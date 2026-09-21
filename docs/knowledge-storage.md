@@ -1,5 +1,8 @@
 # Knowledge storage
 
+Indexed and packed storage require `agent-wiki-cli` 2.3.0 or newer. Use compatible
+readers and writers in every environment that accesses an adopted format.
+
 Native knowledge supports the original JSON file (`v1`), indexed JSON objects
 (`sharded-v2`), or indexed ZIP packs (`packed-v3` and `packed-v4`). Existing wikis keep their
 format. New wikis use v1 unless you select another format.

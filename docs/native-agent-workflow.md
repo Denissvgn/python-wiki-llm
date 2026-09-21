@@ -1,5 +1,8 @@
 # Native coding workflow
 
+Install `agent-wiki-cli` 2.3.0 or newer to use task context, workflow profiles
+and context sessions.
+
 For large native snapshots, [knowledge storage](knowledge-storage.md) describes
 explicit sharded or packed storage adoption and task request v2 with selected validation.
 Task request v1 retains its existing full-validation behavior.

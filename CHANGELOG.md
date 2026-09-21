@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-09-21
+
+This release adds native task context, reusable context sessions, and indexed
+knowledge storage for large repositories.
+
 ### Added
 
 - Native task context through Python, CLI and MCP, with explicit evidence
@@ -53,9 +58,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   missing-file errors and mutation detection.
 - Documentation continuation and refresh preserve descriptions stored in
   manifest v6 catalogs.
+- Restoring pruned objects verifies the wiki root and storage generation before
+  applying recovery, rejecting stale recovery records while preserving backups.
+- Graph queries retain the concept anchors needed to resolve selected edges,
+  even when concepts are omitted from the output. Incomplete lookups remain
+  explicitly incomplete.
+- Documentation input inspection recognizes packed-v4 index pages as managed
+  storage files.
 
 ### Compatibility
 
+- Python 3.10+ remains supported, with unchanged required runtime dependencies.
+  MCP and exact token counting remain optional extras.
 - Existing storage and task request formats remain supported. New wikis still
   default to v1; adopting indexed or packed storage and manifest v6 is explicit
   and requires compatible readers and writers. Storage migration preserves
@@ -1132,7 +1146,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.1...v2.0.2
