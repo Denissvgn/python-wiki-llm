@@ -292,7 +292,15 @@ def zip_inventory(raw: bytes) -> dict[str, str]:
             "artifact expansion bound exceeded",
         )
         for member in members:
-            name = member.filename.rstrip("/") if member.is_dir() else member.filename
+            # ZipInfo normalizes Windows separators and truncates at NUL.
+            # Reject any rewritten header name before interpreting its path.
+            require(
+                member.orig_filename == member.filename,
+                "noncanonical artifact member name",
+            )
+            name = (
+                member.filename.removesuffix("/") if member.is_dir() else member.filename
+            )
             path = PurePosixPath(name)
             require(
                 bool(name)

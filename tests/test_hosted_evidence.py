@@ -1,6 +1,7 @@
 """No JUnit bytes qualify without authenticated hosted producer provenance."""
 
 from copy import deepcopy
+import os
 from pathlib import Path
 import zipfile
 import io
@@ -178,12 +179,44 @@ def test_shadow_job_cannot_be_relabelled_as_a_qualifying_producer(hosted):
 
 @pytest.mark.parametrize(
     "member",
-    ["../escape.xml", "/absolute.xml", "C:/drive.xml", "sub\\test.xml", "a//b.xml"],
+    [
+        "../escape.xml",
+        "/absolute.xml",
+        "C:/drive.xml",
+        "sub\\test.xml",
+        "a//b.xml",
+        "a/./b.xml",
+        "slow.xml\x00hidden",
+        "sub\\",
+        "sub//",
+    ],
 )
-def test_hosted_zip_members_are_bounded_and_canonical(member):
-    raw = HostedEvidence.zip({member: b"owned"})
-    with pytest.raises(h.EvidenceError):
-        h.zip_inventory(raw)
+@pytest.mark.parametrize("separator", ["/", "\\"], ids=["posix", "windows"])
+def test_hosted_zip_members_are_bounded_and_canonical(member, separator, monkeypatch):
+    # Exercise CPython's actual host-dependent ZIP normalization on every CI
+    # platform. The fixture must retain the malformed name in the ZIP headers.
+    with monkeypatch.context() as platform:
+        platform.setattr(os, "sep", separator)
+        platform.setattr(os, "altsep", "/" if separator == "\\" else None)
+        raw = HostedEvidence.zip({member: b"owned"})
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            assert archive.infolist()[0].orig_filename == member
+        with pytest.raises(h.EvidenceError, match="artifact member"):
+            h.zip_inventory(raw)
+
+
+@pytest.mark.parametrize("separator", ["/", "\\"], ids=["posix", "windows"])
+def test_canonical_zip_names_and_directories_work_on_every_host(separator, monkeypatch):
+    with monkeypatch.context() as platform:
+        platform.setattr(os, "sep", separator)
+        platform.setattr(os, "altsep", "/" if separator == "\\" else None)
+        raw = HostedEvidence.zip(
+            {"sub/": b"", "sub/test.xml": b"owned", "slow.xml": b"other"}
+        )
+        assert h.zip_inventory(raw) == {
+            "slow.xml": h.sha256(b"other"),
+            "sub/test.xml": h.sha256(b"owned"),
+        }
 
 
 def test_symlink_zip_members_are_rejected():

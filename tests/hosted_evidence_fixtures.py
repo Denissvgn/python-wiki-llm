@@ -91,7 +91,11 @@ class HostedEvidence:
         stream = io.BytesIO()
         with zipfile.ZipFile(stream, "w", zipfile.ZIP_DEFLATED) as archive:
             for name, data in sorted(files.items()):
-                archive.writestr(name, data)
+                member = zipfile.ZipInfo(name)
+                # Preserve adversarial header names on every host. ZipInfo's
+                # constructor otherwise rewrites Windows separators and NULs.
+                member.filename = name
+                archive.writestr(member, data, compress_type=zipfile.ZIP_DEFLATED)
         return stream.getvalue()
 
     def specs(self, root):
