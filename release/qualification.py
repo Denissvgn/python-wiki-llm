@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -697,12 +698,13 @@ def discover_allowlist(args: argparse.Namespace) -> int:
 
 
 def _canonical_junit_selector(value: str) -> str:
-    if not value or "\\" in value or not JUNIT_SELECTOR_RE.fullmatch(value):
+    file, separator, node = value.partition("::")
+    if not file or "\\" in file or not JUNIT_SELECTOR_RE.fullmatch(file):
         raise QualificationError(f"unsafe JUnit selector: {value!r}")
-    path = PurePosixPath(value)
+    path = PurePosixPath(file)
     if (
         path.is_absolute()
-        or value != path.as_posix()
+        or file != path.as_posix()
         or any(part in {"", ".", ".."} for part in path.parts)
     ):
         raise QualificationError(f"unsafe JUnit selector: {value!r}")
@@ -714,7 +716,30 @@ def _canonical_junit_selector(value: str) -> str:
         raise QualificationError(
             f"JUnit selector must select a tests/test_*.py file: {value!r}"
         )
-    return path.as_posix()
+    if separator:
+        # Only the file portion has glob semantics. Parameter IDs are opaque,
+        # including brackets, slashes, spaces, colons and wildcard characters.
+        base, bracket, parameter = node.partition("[")
+        if (
+            any(char in file for char in "*?")
+            or not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*(?:::[A-Za-z_][A-Za-z_0-9]*)?", base)
+            or not base.split("::")[-1].startswith("test_")
+            or (bracket and not parameter.endswith("]"))
+            or any(ord(char) < 32 or ord(char) == 127 for char in node)
+        ):
+            raise QualificationError(f"unsafe JUnit node selector: {value!r}")
+    return value
+
+
+def _selector_matches(selector: str, node_id: str) -> bool:
+    file, separator, node = selector.partition("::")
+    if not separator:
+        return PurePosixPath(node_id.partition("::")[0]).match(file)
+    if "[" in node:
+        return node_id == selector
+    return node_id == selector or (
+        node_id.startswith(selector + "[") and node_id.endswith("]")
+    )
 
 
 def _projected_testcase(testcase: ET.Element) -> ET.Element:
@@ -769,7 +794,7 @@ def project_junit(args: argparse.Namespace) -> int:
         matches = {
             node_id
             for node_id in by_node
-            if PurePosixPath(node_id.partition("::")[0]).match(selector)
+            if _selector_matches(selector, node_id)
         }
         if not matches:
             raise QualificationError(
@@ -911,6 +936,17 @@ def verify_owner_lanes(args: argparse.Namespace) -> int:
             raise QualificationError(f"duplicate owner JUnit specification: {lane}")
         junit_paths[lane] = Path(path_text).resolve()
 
+    union_path = getattr(args, "ubuntu_union", None)
+    if union_path is not None:
+        if _result_status(getattr(args, "ubuntu_union_result", "")) != "PASS":
+            raise QualificationError("Ubuntu union producer did not pass")
+        _validate_ubuntu_union(union_path, identity, args.harness_sha256)
+        for lane in ("slow", "determinism", "security-ubuntu-24.04", "product-ubuntu-24.04"):
+            if junit_paths.get(lane) != (union_path / f"{lane}.xml").resolve():
+                raise QualificationError(f"Ubuntu owner projection was substituted: {lane}")
+            if statuses.get(lane) != "PASS":
+                raise QualificationError(f"Ubuntu owner producer did not pass: {lane}")
+
     required = sorted({entry["owner_lane"] for entry in entries})
     missing = [lane for lane in required if lane not in statuses]
     if missing:
@@ -983,6 +1019,24 @@ def verify_owner_lanes(args: argparse.Namespace) -> int:
     return 0
 
 
+def _validate_ubuntu_union(root: Path, identity: Mapping[str, Any], harness: str) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "_ubuntu_suite_verifier", Path(__file__).with_name("ubuntu_suites.py")
+    )
+    if spec is None or spec.loader is None:
+        raise QualificationError("Ubuntu suite verifier is missing")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        execution = module.validate_execution(
+            root, identity, harness, Path(__file__).with_name("ubuntu-suites.json")
+        )
+        if execution["mode"] != "union":
+            raise QualificationError("Ubuntu consumer requires union evidence")
+    except (RuntimeError, OSError, ValueError, KeyError, TypeError) as exc:
+        raise QualificationError(f"Ubuntu projection lineage invalid: {exc}") from exc
+
+
 def aggregate(args: argparse.Namespace) -> int:
     statuses: dict[str, str] = {}
     for spec in args.gate:
@@ -992,6 +1046,12 @@ def aggregate(args: argparse.Namespace) -> int:
         if gate in statuses:
             raise QualificationError(f"duplicate gate specification: {gate}")
         statuses[gate] = _result_status(result)
+    for spec in getattr(args, "gate_dependency", []):
+        gate, separator, result = spec.partition("=")
+        if not separator or gate not in statuses:
+            raise QualificationError(f"invalid gate dependency: {spec}")
+        combined = {statuses[gate], _result_status(result)}
+        statuses[gate] = "FAIL" if "FAIL" in combined else "BLOCKED" if "BLOCKED" in combined else "PASS"
     for gate in REQUIRED_GATES:
         statuses.setdefault(gate, "BLOCKED")
     failed = sorted(gate for gate, status in statuses.items() if status == "FAIL")
@@ -1443,7 +1503,29 @@ def _copy_gate_evidence(
     }
 
 
+def _reject_shadow_evidence(root: Path) -> None:
+    paths = root.rglob("*.json") if root.is_dir() else [root]
+    for path in paths:
+        if path.suffix != ".json":
+            continue
+        value = load_json(path)
+        if isinstance(value, dict) and (
+            value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
+            or (value.get("schema_version") == "agent-wiki-ubuntu-execution/v1"
+                and value.get("mode") == "union")
+            or (value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
+                and value.get("source_lane") == "ubuntu-union")
+        ):
+            raise QualificationError("Ubuntu shadow evidence cannot assemble or qualify a release")
+
+
 def build_bundle(args: argparse.Namespace) -> int:
+    # Consolidated execution is shadow-only until its hosted parity checkpoint.
+    # Reject it at the consumer as well as in the workflow job condition.
+    for spec in args.evidence:
+        _, separator, path = spec.partition("=")
+        if separator:
+            _reject_shadow_evidence(Path(path))
     identity = _validate_identity(load_json(args.identity.resolve()))
     _validate_qualification_decision(
         load_json(args.gate_decision.resolve()),
@@ -2019,6 +2101,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
                 raise QualificationError(
                     f"{gate} evidence digest mismatch: {entry['path']}"
                 )
+    _reject_shadow_evidence(root)
     rd00_entries = manifest["gates"]["RD-00"]["evidence"]
     identity_entries = [
         entry for entry in rd00_entries if entry["path"].endswith("/identity.json")
@@ -2570,12 +2653,16 @@ def _parser() -> argparse.ArgumentParser:
     owners.add_argument("--owner-result", action="append", required=True)
     owners.add_argument("--owner-junit", action="append", required=True)
     owners.add_argument("--output", type=Path, required=True)
+    owners.add_argument("--ubuntu-union", type=Path)
+    owners.add_argument("--ubuntu-union-result")
+    owners.add_argument("--harness-sha256")
     owners.set_defaults(function=verify_owner_lanes)
 
     decision = subparsers.add_parser("aggregate")
     decision.add_argument("--candidate-sha", required=True)
     decision.add_argument("--candidate-version", required=True)
     decision.add_argument("--gate", action="append", required=True)
+    decision.add_argument("--gate-dependency", action="append", default=[])
     decision.add_argument("--output", type=Path, required=True)
     decision.add_argument(
         "--allow-non-go-exit-zero",

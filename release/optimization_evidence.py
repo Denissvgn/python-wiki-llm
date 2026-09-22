@@ -182,17 +182,37 @@ def workflow_contract(workflow: dict, input_hashes: dict, skip_entries: list[dic
                 "resolved_packages": None,
                 "dependency_resolution": "declared inputs only; runner package versions are not inferred",
                 "pytest": executions,
+                "suite_runners": [{"argv": argv, "condition": step.get("if")}
+                                  for step in steps for argv in commands(step.get("run", ""))
+                                  if any(token.endswith("/ubuntu_suites.py") for token in argv)],
                 "environment": {**workflow.get("env", {}), **lane.get("env", {})},
             })
     decision_script = "\n".join(s.get("run", "") for s in jobs["decision"]["steps"])
     gates = assignments(options(decision_script, "--gate"))
     if set(gates) != {f"RD-{n:02}" for n in range(14)}:
         raise ValueError("incomplete RD-00 through RD-13 decision obligations")
-    owner_script = "\n".join(s.get("run", "") for s in jobs["owner-lanes"]["steps"])
+    owner_steps = jobs["owner-lanes"]["steps"]
+    shadow_steps = [s for s in owner_steps if s.get("if") == "${{ inputs.ubuntu-suite-shadow }}"]
+    owner_script = "\n".join(s.get("run", "") for s in owner_steps if s not in shadow_steps)
     owners = assignments(options(owner_script, "--owner-result"))
     owner_junit = assignments(options(owner_script, "--owner-junit"))
     if set(owners) != set(owner_junit) or not {e["owner_lane"] for e in skip_entries} <= owners.keys():
         raise ValueError("skip owner obligations have no producer or JUnit mapping")
+    shadow_owners = {}
+    if shadow_steps:
+        shadow_script = "\n".join(s.get("run", "") for s in shadow_steps)
+        shadow_results = assignments(options(shadow_script, "--owner-result"))
+        shadow_junit = assignments(options(shadow_script, "--owner-junit"))
+        if set(shadow_results) != set(owners) or set(shadow_junit) != set(owners):
+            raise ValueError("shadow owner obligations differ from qualification")
+        shadow_owners = {name: {"producer": value, "junit": shadow_junit[name]}
+                         for name, value in shadow_results.items()}
+    dependencies: dict[str, list[str]] = {}
+    for dependency in options(decision_script, "--gate-dependency"):
+        gate, producer = dependency.split("=", 1)
+        if gate not in gates:
+            raise ValueError("gate dependency has no obligation")
+        dependencies.setdefault(gate, []).append(producer)
     graph = {}
     for name, job in jobs.items():
         needs = job.get("needs", [])
@@ -208,7 +228,8 @@ def workflow_contract(workflow: dict, input_hashes: dict, skip_entries: list[dic
             visit(parent, ancestors | {name})
     for name in graph:
         visit(name, set())
-    return {"profiles": profiles, "gates": gates,
+    return {"profiles": profiles, "gates": gates, "gate_dependencies": dependencies,
+            "shadow_owners": shadow_owners,
             "owners": {name: {"producer": value, "junit": owner_junit[name],
                               "skip_obligations": [e for e in skip_entries if e["owner_lane"] == name]}
                        for name, value in owners.items()},
@@ -247,7 +268,7 @@ def freeze(root: Path, source: str, output: Path, repository: str, *,
     inputs = sorted(p for p in tracked if PurePosixPath(p).name in {
         "pyproject.toml", "package-lock.json", "Cargo.lock", "go.mod", "go.sum",
         "requirements.txt", "requirements.in", "requirements-ci.txt", "toolchain-lock.json",
-        "skip-allowlist.json", "pyrightconfig.json",
+        "skip-allowlist.json", "pyrightconfig.json", "ubuntu-suites.json", "ubuntu_suites.py",
     } or p in {WORKFLOW, PROMOTION_WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py"})
     hashes = {p: digest(source_bytes(root, source, p)) for p in inputs}
     skips = json.loads(source_bytes(root, source, "release/skip-allowlist.json"))["entries"]

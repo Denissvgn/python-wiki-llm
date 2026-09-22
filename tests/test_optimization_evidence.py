@@ -119,6 +119,9 @@ def test_actual_workflow_obligations_remain_complete():
     skips = json.loads((root / "release/skip-allowlist.json").read_text())["entries"]
     contract = evidence.workflow_contract(value, {}, skips)
     assert contract["gates"]["RD-13"] == "BLOCKED"
+    assert contract["gate_dependencies"]["RD-04"] == ["${{ needs.core.result }}"]
+    assert set(contract["shadow_owners"]) == set(contract["owners"])
+    assert contract["shadow_owners"]["slow"]["producer"] == "${{ needs.ubuntu-union.result }}"
     assert {"slow", "determinism", "security-windows-2025", "product-windows-2025"} <= contract["owners"].keys()
     profiles = [p for p in contract["profiles"] if p["job_id"] in {"slow", "product", "security-behavior"}
                 and p["runner"] == "ubuntu-24.04"]

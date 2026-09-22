@@ -748,7 +748,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         )
         assert "incoming/tools/release/qualification.py" not in earlier_runs
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
-    assert harness_consumers == 17
+    assert harness_consumers == 19
 
     for job_name in ("core", "slow", "security-behavior", "product", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
@@ -1391,7 +1391,7 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}"
+            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}"
         ),
         "cancel-in-progress": True,
     }
@@ -1412,10 +1412,12 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         "bundle",
     ):
         expected = "${{ !inputs.discovery-mode }}" if job_name == "static" else "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}"
+        if job_name == "bundle":
+            expected = "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}"
         assert jobs[job_name]["if"] == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
     assert jobs["decision"]["if"] == (
-        "${{ always() && !inputs.discovery-mode }}"
+        "${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}"
     )
 
     discovery = jobs["discovery-allowlist"]
