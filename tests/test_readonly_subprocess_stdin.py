@@ -1,6 +1,7 @@
 """Read-only child tools must not inherit a host's protocol input stream."""
 
 import json
+import os
 import queue
 import subprocess
 import sys
@@ -166,14 +167,32 @@ _HOST_TIMEOUT = _STARTUP_TIMEOUT + 2 * (
     _STARTUP_TIMEOUT + _EOF_TIMEOUT + _EXIT_TIMEOUT + _GIT_TIMEOUT + _CLEANUP_TIMEOUT
 ) + _CLEANUP_TIMEOUT
 
+# CPython multiprocessing uses this launcher bypass on Windows so Popen owns
+# the interpreter PID, while __PYVENV_LAUNCHER__ preserves the venv identity.
+# This definition is shared by the isolated host and portable launch controls.
+_DIRECT_PYTHON = r"""
+def direct_python_command():
+    executable = sys.executable
+    environment = None
+    base = getattr(sys, "_base_executable", executable)
+    if sys.platform == "win32" and os.path.normcase(base) != os.path.normcase(executable):
+        environment = os.environ.copy()
+        environment["__PYVENV_LAUNCHER__"] = executable
+        executable = base
+    return executable, environment
+"""
+
+
 _STDIO_HOST = r"""
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 import threading
 import time
 from llm_wiki_cli.services import extraction_service, knowledge_envelope
+""" + _DIRECT_PYTHON + r"""
 
 source = Path(sys.argv[1])
 options = json.loads(sys.argv[2])
@@ -209,7 +228,7 @@ def acknowledge(name, value):
     temporary.replace(root / name)
 if options["probe_mode"] == "read-before-ready":
     data = sys.stdin.buffer.read()
-acknowledge("ready", {"phase": "ready"})
+acknowledge("ready", {"phase": "ready", "prefix": sys.prefix, "executable": sys.executable})
 if options["probe_mode"] == "exit-before-eof":
     raise SystemExit(0)
 if options["probe_mode"] != "read-before-ready":
@@ -231,9 +250,14 @@ def check_stdin(kwargs, record):
                             "inherited" if child_input is None else "explicit")
     record["probe_status"] = "starting"
     started = time.monotonic()
+    executable, environment = direct_python_command()
+    record["probe_executable"] = executable
+    record["host_executable"] = sys.executable
+    record["host_prefix"] = sys.prefix
     probe = subprocess.Popen(
-        [sys.executable, "-I", "-c", probe_script, str(markers), json.dumps(options)],
+        [executable, "-I", "-c", probe_script, str(markers), json.dumps(options)],
         stdin=child_input, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        env=environment,
     )
     record["probe_pid"] = probe.pid
     record["spawn_seconds"] = time.monotonic() - started
@@ -256,13 +280,20 @@ def check_stdin(kwargs, record):
                     raise subprocess.TimeoutExpired(probe.args, timeout)
                 time.sleep(0.01)
             value = json.loads((markers / name).read_text(encoding="utf-8"))
+            record["observed_pid"] = value["pid"]
             if value["pid"] != probe.pid:
                 record["probe_status"] = phase + "-identity-error"
-                raise OSError("acknowledgement belongs to another process")
+                raise OSError(f"acknowledgement belongs to another process: expected PID {probe.pid}, observed {value['pid']}; executable={executable}; venv={sys.prefix}")
             record["acknowledged_pid"] = value["pid"]
             return value
         finally:
             record[phase + "_seconds"] = time.monotonic() - began
+    def require_ready(timeout, phase="ready"):
+        value = wait_for("ready", timeout, phase)
+        record["probe_prefix"] = value["prefix"]
+        record["reported_executable"] = value["executable"]
+        assert value == {"phase": "ready", "pid": probe.pid,
+                         "prefix": sys.prefix, "executable": sys.executable}, "probe lost its virtual environment context"
     blocked = None
     try:
         # This is how communicate(input="") supplies EOF: close only the
@@ -271,7 +302,7 @@ def check_stdin(kwargs, record):
             probe.stdin.close()
             probe.stdin = None
         try:
-            assert wait_for("ready", options["startup_timeout"]) == {"phase": "ready", "pid": probe.pid}
+            require_ready(options["startup_timeout"])
             record["probe_ready"] = True
             record["bytes_read"] = wait_for("eof", options["eof_timeout"])["bytes_read"]
         except subprocess.TimeoutExpired as error:
@@ -287,7 +318,7 @@ def check_stdin(kwargs, record):
             assert not record["before_release_eof"], "inherited input reached EOF before release"
             record["input_release_requested"] = True
             print(json.dumps({"event": "release-input"}), flush=True)
-            assert wait_for("ready", options["startup_timeout"], "released-ready") == {"phase": "ready", "pid": probe.pid}
+            require_ready(options["startup_timeout"], "released-ready")
             record["probe_ready"] = True
             record["bytes_read"] = wait_for("eof", options["eof_timeout"], "released-eof")["bytes_read"]
         record["eof_observed"] = True
@@ -450,6 +481,7 @@ def _run_stdio_host(
 def _assert_stdin_observations(observations, diagnostics, *, inherit):
     assert all(row["probe_ready"] for row in observations), diagnostics
     assert all(row["probe_pid"] == row["acknowledged_pid"] for row in observations), diagnostics
+    assert all(row["probe_prefix"] == row["host_prefix"] and row["reported_executable"] == row["host_executable"] for row in observations), diagnostics
     assert all(row["probe_status"] == ("released-after-host-eof" if inherit else "completed")
                for row in observations), diagnostics
     assert all(row["eof_observed"] for row in observations), diagnostics
@@ -501,3 +533,40 @@ def test_probe_startup_and_exit_failures_cannot_pass_as_inherited_stdin(
                for row in observations), diagnostics
     with pytest.raises(AssertionError):
         _assert_stdin_observations(observations, diagnostics, inherit=True)
+
+
+@pytest.mark.parametrize("windows,venv", [(False, False), (False, True), (True, False), (True, True)])
+def test_direct_probe_launch_preserves_venv_without_a_redirector(windows, venv):
+    import ntpath
+    executable = r"C:\owned\env\Scripts\python.exe" if venv else r"C:\owned\python.exe"
+    base = r"C:\owned\python.exe"
+    original = {"OWNED_CONTROL": "preserved"}
+    namespace: dict[str, Any] = {"sys": SimpleNamespace(executable=executable, _base_executable=base,
+                                        platform="win32" if windows else "darwin"),
+                 "os": SimpleNamespace(path=ntpath, environ=original)}
+    exec(_DIRECT_PYTHON, namespace)
+    command, environment = namespace["direct_python_command"]()
+    if windows and venv:
+        assert command == base
+        assert environment == {**original, "__PYVENV_LAUNCHER__": executable}
+        assert environment is not original
+    else:
+        assert command == executable and environment is None
+    assert original == {"OWNED_CONTROL": "preserved"}
+
+
+def test_real_direct_probe_acknowledges_the_owned_pid_and_venv():
+    namespace: dict[str, Any] = {"sys": sys, "os": os}
+    exec(_DIRECT_PYTHON, namespace)
+    executable, environment = namespace["direct_python_command"]()
+    process = subprocess.Popen([executable, "-I", "-c",
+        "import json,os,sys; print(json.dumps([os.getpid(),sys.prefix,sys.executable]))"],
+        env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        stdout, stderr = process.communicate(timeout=_STARTUP_TIMEOUT)
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.communicate(timeout=_CLEANUP_TIMEOUT)
+    assert process.returncode == 0, stderr
+    assert json.loads(stdout) == [process.pid, sys.prefix, sys.executable]

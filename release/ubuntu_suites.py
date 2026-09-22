@@ -224,7 +224,7 @@ def validate_environment(value: Any) -> None:
     )
 
 
-def context(args: argparse.Namespace) -> dict[str, Any]:
+def frozen_inputs(args: argparse.Namespace) -> dict[str, Any]:
     identity = q._validate_identity(q.load_json(args.identity))
     require(
         q.sha256_file(args.harness) == args.harness_sha256, "harness digest mismatch"
@@ -234,7 +234,12 @@ def context(args: argparse.Namespace) -> dict[str, Any]:
             archive.pax_headers.get("comment") == identity["source"]["sha"],
             "harness/source candidate mismatch",
         )
-        for name in ("qualification.py", "ubuntu_suites.py", "ubuntu-suites.json"):
+        for name in (
+            "qualification.py",
+            "ubuntu_suites.py",
+            "ubuntu_shadow.py",
+            "ubuntu-suites.json",
+        ):
             member = archive.extractfile("release/" + name)
             require(member is not None, f"harness input missing: {name}")
             assert member is not None
@@ -252,8 +257,11 @@ def context(args: argparse.Namespace) -> dict[str, Any]:
         "identity_sha256": q.sha256_file(args.identity),
         "harness_sha256": args.harness_sha256,
         "registry_sha256": q.sha256_file(args.registry),
-        "environment": environment(args.root),
     }
+
+
+def context(args: argparse.Namespace) -> dict[str, Any]:
+    return {**frozen_inputs(args), "environment": environment(args.root)}
 
 
 def outcomes(path: Path) -> dict[str, dict[str, str]]:
@@ -449,6 +457,7 @@ def execute(args: argparse.Namespace) -> int:
     if not execution["complete"]:
         return 1
     if args.mode == "union":
+        validation_started = time.monotonic()
         validate_execution(
             output,
             execution["identity"],
@@ -456,16 +465,28 @@ def execute(args: argparse.Namespace) -> int:
             args.registry,
             projections=False,
         )
+        validation_seconds = time.monotonic() - validation_started
         projection_start = time.monotonic()
         inventory = q.load_json(output / "inventory.json")
         for lane in LANES:
             projection(output, lane, output / "identity.json", inventory, execution)
-        q.write_json(
-            output / "projection-timing.json",
-            {"seconds": time.monotonic() - projection_start},
-        )
+        projection_seconds = time.monotonic() - projection_start
+        q.write_json(output / "projection-timing.json", {"seconds": projection_seconds})
+        validation_started = time.monotonic()
         validate_execution(
             output, execution["identity"], args.harness_sha256, args.registry
+        )
+        q.write_json(
+            output / "postprocessing.json",
+            {
+                "qualifying": False,
+                "execution_sha256": q.sha256_file(output / "execution.json"),
+                "projection_seconds": projection_seconds,
+                "validation_seconds": validation_seconds
+                + time.monotonic()
+                - validation_started,
+                "total_seconds": time.monotonic() - start,
+            },
         )
     return 0
 
@@ -621,30 +642,45 @@ def validate_execution(
     return execution
 
 
-def compare(args: argparse.Namespace) -> int:
+def _compare(args: argparse.Namespace, diagnostic: dict[str, Any]) -> int:
+    diagnostic["stage"] = "identity"
     identity = q._validate_identity(q.load_json(args.identity))
+    diagnostic["identity"] = identity
+    diagnostic["stage"] = "union-validation"
     union = validate_execution(args.union, identity, args.harness_sha256, args.registry)
     require(union["mode"] == "union", "comparison requires union execution")
     legacy: dict[str, dict[str, dict[str, str]]] = {}
     timings = {}
+    diagnostic["stage"] = "legacy-validation"
     for directory in args.legacy:
         item = validate_execution(
             directory, identity, args.harness_sha256, args.registry
         )
-        require(
-            item["mode"] == "legacy" and item["environment"] == union["environment"],
-            "legacy/union execution environments differ",
-        )
+        require(item["mode"] == "legacy", "comparison requires legacy execution")
+        differences = {
+            key: {"union": union["environment"].get(key), "legacy": value}
+            for key, value in item["environment"].items()
+            if value != union["environment"].get(key)
+        }
+        if differences:
+            diagnostic["environment_differences"][directory.name] = differences
         for lane in item["runs"]:
             require(lane not in legacy, f"duplicate legacy lane: {lane}")
             legacy[lane] = outcomes(directory / f"{lane}.xml")
             timings[lane] = item["runs"][lane]["seconds"]
     require(set(legacy) == set(LANES), "missing legacy suite")
+    diagnostic["stage"] = "environment-comparison"
+    require(
+        not diagnostic["environment_differences"],
+        "legacy/union execution environments differ",
+    )
+    diagnostic["stage"] = "outcome-comparison"
     for lane in LANES:
         require(
             legacy[lane] == outcomes(args.union / f"{lane}.xml"),
             f"legacy/union nodes, outcomes or skip reasons differ: {lane}",
         )
+    diagnostic["stage"] = "skip-ownership"
     inventory = q.load_json(args.union / "inventory.json")
     allowlist = q._load_skip_allowlist(args.allowlist)
     obligations = [item for item in allowlist if item["owner_lane"] in LANES]
@@ -657,8 +693,10 @@ def compare(args: argparse.Namespace) -> int:
     q.write_json(
         args.output,
         {
-            "schema_version": "agent-wiki-ubuntu-shadow/v1",
-            "qualifying": False,
+            **diagnostic,
+            "passed": True,
+            "complete": True,
+            "stage": "complete",
             "identity": identity,
             "harness_sha256": args.harness_sha256,
             "registry_sha256": q.sha256_file(args.registry),
@@ -686,6 +724,70 @@ def compare(args: argparse.Namespace) -> int:
     return 0
 
 
+SHADOW_PRODUCERS = ("legacy-slow", "legacy-security", "legacy-product", "union")
+
+
+def comparison_diagnostic(stage: str) -> dict[str, Any]:
+    return {
+        "schema_version": "agent-wiki-ubuntu-shadow/v1",
+        "qualifying": False,
+        "passed": False,
+        "complete": False,
+        "stage": stage,
+        "producer_results": {},
+        "environment_differences": {},
+        "errors": [],
+    }
+
+
+def compare(args: argparse.Namespace) -> int:
+    # Never replace an input receipt while initializing an output diagnostic.
+    output = args.output.resolve()
+    protected = [
+        args.identity.resolve(),
+        args.registry.resolve(),
+        args.allowlist.resolve(),
+    ]
+    roots = [args.union.resolve(), *(path.resolve() for path in args.legacy)]
+    require(
+        output not in protected
+        and not any(output == root or root in output.parents for root in roots),
+        "comparison output must be separate from input evidence",
+    )
+    diagnostic = comparison_diagnostic("producer-status")
+    q.write_json(output, diagnostic)
+    started = time.monotonic()
+    try:
+        for spec in getattr(args, "producer_result", []):
+            name, separator, status = spec.partition("=")
+            require(
+                bool(separator)
+                and name in SHADOW_PRODUCERS
+                and name not in diagnostic["producer_results"],
+                f"invalid or duplicate producer result: {spec}",
+            )
+            diagnostic["producer_results"][name] = status
+        if getattr(args, "producer_result", []):
+            require(
+                set(diagnostic["producer_results"]) == set(SHADOW_PRODUCERS)
+                and all(
+                    value == "success"
+                    for value in diagnostic["producer_results"].values()
+                ),
+                "shadow producers did not all succeed",
+            )
+        result = _compare(args, diagnostic)
+    except (q.QualificationError, OSError, ValueError, KeyError, TypeError) as exc:
+        diagnostic["errors"].append({"type": type(exc).__name__, "message": str(exc)})
+        diagnostic["validation_seconds"] = time.monotonic() - started
+        q.write_json(output, diagnostic)
+        raise
+    payload = q.load_json(output)
+    payload["validation_seconds"] = time.monotonic() - started
+    q.write_json(output, payload)
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -702,11 +804,18 @@ def main() -> int:
     comparison.add_argument("--legacy", type=Path, action="append", required=True)
     comparison.add_argument("--allowlist", type=Path, required=True)
     comparison.add_argument("--output", type=Path, required=True)
+    comparison.add_argument("--producer-result", action="append", default=[])
     comparison.set_defaults(func=compare)
     for command in (run, comparison):
         command.add_argument("--identity", type=Path, required=True)
         command.add_argument("--harness-sha256", required=True)
         command.add_argument("--registry", type=Path, required=True)
+    description = commands.add_parser("environment")
+    description.add_argument("--root", type=Path, required=True)
+    description.add_argument("--output", type=Path, required=True)
+    description.set_defaults(
+        func=lambda a: q.write_json(a.output, environment(a.root)) or 0
+    )
     work = commands.add_parser("worker")
     work.add_argument("--registry", type=Path, required=True)
     work.add_argument("--collect", action="store_true")

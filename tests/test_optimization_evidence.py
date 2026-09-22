@@ -121,7 +121,7 @@ def test_actual_workflow_obligations_remain_complete():
     assert contract["gates"]["RD-13"] == "BLOCKED"
     assert contract["gate_dependencies"]["RD-04"] == ["${{ needs.core.result }}"]
     assert set(contract["shadow_owners"]) == set(contract["owners"])
-    assert contract["shadow_owners"]["slow"]["producer"] == "${{ needs.ubuntu-union.result }}"
+    assert contract["shadow_owners"]["slow"]["producer"] == "${{ needs.ubuntu-shadow.result }}"
     assert {"slow", "determinism", "security-windows-2025", "product-windows-2025"} <= contract["owners"].keys()
     profiles = [p for p in contract["profiles"] if p["job_id"] in {"slow", "product", "security-behavior"}
                 and p["runner"] == "ubuntu-24.04"]

@@ -440,7 +440,9 @@ def test_shadow_rejects_inequivalence_and_missing_ownership(evidence, mutation):
         write(directory / "execution.json", receipt)
     with pytest.raises(suites.q.QualificationError):
         suites.compare(args)
-    assert not args.output.exists()
+    diagnostic = q.load_json(args.output)
+    assert diagnostic["passed"] is False and diagnostic["qualifying"] is False
+    assert diagnostic["errors"]
 
 
 def test_real_pytest_collection_and_execution_preserve_parameter_families(tmp_path):
@@ -569,7 +571,7 @@ def test_existing_execution_directory_is_never_reused(evidence):
         suites.execute(argparse.Namespace(root=root.parent, output=root))
 
 
-def test_shadow_workflow_is_opt_in_and_uses_fresh_jobs_and_guarded_consumers():
+def test_shadow_workflow_uses_one_runner_and_preserves_platform_consumers():
     workflow = yaml.safe_load(
         (ROOT / ".github/workflows/release-qualification.yml").read_text()
     )
@@ -579,44 +581,58 @@ def test_shadow_workflow_is_opt_in_and_uses_fresh_jobs_and_guarded_consumers():
         is False
     )
     jobs = workflow["jobs"]
-    union = jobs["ubuntu-union"]
-    assert union["runs-on"] == "ubuntu-24.04" and union["needs"] == "freeze"
-    text = "\n".join(str(s) for s in union["steps"])
-    assert "--mode union" in text and '"./candidate[dev]"' in text
-    assert "[dev,tokens]" not in text and "[dev,mcp]" not in text
-    assert '--path "${RUNNER_TEMP}/qualification-venv"' in text
+    shadow = jobs["ubuntu-shadow"]
+    assert shadow["runs-on"] == "ubuntu-24.04" and shadow["needs"] == "freeze"
+    text = "\n".join(str(step) for step in shadow["steps"])
+    assert "ubuntu_shadow.py" in text and "--harness-sha256" in text
     assert "python-version" in text and "3.13" in text
-    compare = jobs["ubuntu-comparison"]
-    assert set(compare["needs"]) == {
-        "freeze",
-        "slow",
-        "security-behavior",
-        "product",
-        "ubuntu-union",
+    assert "[dev,tokens]" not in text and "[dev,mcp]" not in text
+    for name in ["slow", "product", "security-behavior"]:
+        assert "!inputs.ubuntu-suite-shadow" in jobs[name]["if"]
+    assert jobs["shadow-security-macos"]["runs-on"] == "macos-15"
+    assert "inputs.ubuntu-suite-shadow" in jobs["shadow-security-macos"]["if"]
+    assert "ubuntu-union" not in jobs and "ubuntu-comparison" not in jobs
+    artifacts = {
+        step["with"]["name"]: step
+        for step in shadow["steps"]
+        if str(step.get("uses", "")).startswith("actions/upload-artifact@")
     }
-    comparison = next(
-        s["run"]
-        for s in compare["steps"]
-        if s.get("name") == "Require complete equivalent executions"
+    assert set(artifacts) == {
+        "evidence-rd-03",
+        "evidence-rd-04-ubuntu-24.04",
+        "evidence-rd-05-ubuntu-24.04",
+        "evidence-ubuntu-union",
+        "ubuntu-shadow-comparison",
+    }
+    assert all("always()" in step["if"] for step in artifacts.values())
+    assert artifacts["ubuntu-shadow-comparison"]["with"]["path"].endswith(
+        "/diagnostics"
     )
-    for producer in ["slow", "security-behavior", "product", "ubuntu-union"]:
-        assert 'test "${{ needs.' + producer + '.result }}" = "success"' in comparison
+    assert artifacts["ubuntu-shadow-comparison"]["with"]["if-no-files-found"] == "error"
+    owners = jobs["owner-lanes"]
+    assert {"ubuntu-shadow", "shadow-security-macos"} <= set(owners["needs"])
     shadow_owner = next(
-        s["run"]
-        for s in jobs["owner-lanes"]["steps"]
-        if s.get("name") == "Verify shadow union owners against hosted lane results"
+        step["run"]
+        for step in owners["steps"]
+        if step.get("name") == "Verify shadow union owners against hosted lane results"
     )
     for lane in suites.LANES:
         assert (
             f'--owner-junit "{lane}=incoming/owner-evidence/evidence-ubuntu-union/{lane}.xml"'
             in shadow_owner
         )
-    for retained in [
-        "security-windows-2025",
-        "security-macos-15",
-        "product-windows-2025",
-    ]:
-        assert f'--owner-junit "{retained}=' in shadow_owner
+        assert (
+            f'--owner-result "{lane}=${{{{ needs.ubuntu-shadow.result }}}}"'
+            in shadow_owner
+        )
+    assert (
+        '--owner-result "security-macos-15=${{ needs.shadow-security-macos.result }}"'
+        in shadow_owner
+    )
+    assert (
+        '--owner-result "security-windows-2025=${{ needs.core.result }}"'
+        in shadow_owner
+    )
     assert (
         "--ubuntu-union-result" in shadow_owner and "--harness-sha256" in shadow_owner
     )
@@ -812,3 +828,63 @@ def test_rehashed_malformed_execution_shapes_are_rejected(evidence, mutation):
     reseal(root)
     with pytest.raises(suites.q.QualificationError):
         suites.validate_execution(root, identity, HARNESS, reg)
+
+
+def test_runner_image_drift_leaves_a_failed_diagnostic_with_exact_differences(evidence):
+    root, reg, identity = evidence
+    args = legacy_for(root, reg, identity)
+    path = args.legacy[0] / "execution.json"
+    receipt = q.load_json(path)
+    receipt["environment"]["runner_image"] = "different-image"
+    write(path, receipt)
+    with pytest.raises(suites.q.QualificationError, match="environments differ"):
+        suites.compare(args)
+    diagnostic = q.load_json(args.output)
+    assert diagnostic["passed"] is False and diagnostic["complete"] is False
+    assert diagnostic["stage"] == "environment-comparison"
+    assert diagnostic["environment_differences"] == {
+        args.legacy[0].name: {
+            "runner_image": {"union": "owned-fixture", "legacy": "different-image"}
+        }
+    }
+    with pytest.raises(q.QualificationError, match="shadow evidence"):
+        q._reject_shadow_evidence(args.output)
+
+
+@pytest.mark.parametrize("status", ["failure", "cancelled", "skipped", "unknown"])
+def test_failed_producer_cannot_be_hidden_by_passing_receipts(evidence, status):
+    root, reg, identity = evidence
+    args = legacy_for(root, reg, identity)
+    args.producer_result = [
+        f"{name}={status if name == 'union' else 'success'}"
+        for name in suites.SHADOW_PRODUCERS
+    ]
+    with pytest.raises(suites.q.QualificationError, match="producers"):
+        suites.compare(args)
+    receipt = q.load_json(args.output)
+    assert (
+        receipt["stage"] == "producer-status"
+        and receipt["producer_results"]["union"] == status
+    )
+    assert receipt["passed"] is False
+
+
+def test_missing_or_corrupt_evidence_still_produces_comparison_diagnostics(evidence):
+    root, reg, identity = evidence
+    args = legacy_for(root, reg, identity)
+    (root / "union.xml").unlink()
+    with pytest.raises(OSError):
+        suites.compare(args)
+    receipt = q.load_json(args.output)
+    assert receipt["stage"] == "union-validation" and receipt["errors"]
+    assert receipt["passed"] is False
+
+
+def test_comparison_diagnostic_cannot_overwrite_its_inputs(evidence):
+    root, reg, identity = evidence
+    args = legacy_for(root, reg, identity)
+    args.output = root / "execution.json"
+    before = args.output.read_bytes()
+    with pytest.raises(suites.q.QualificationError, match="separate"):
+        suites.compare(args)
+    assert args.output.read_bytes() == before

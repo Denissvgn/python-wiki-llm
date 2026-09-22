@@ -184,7 +184,7 @@ def workflow_contract(workflow: dict, input_hashes: dict, skip_entries: list[dic
                 "pytest": executions,
                 "suite_runners": [{"argv": argv, "condition": step.get("if")}
                                   for step in steps for argv in commands(step.get("run", ""))
-                                  if any(token.endswith("/ubuntu_suites.py") for token in argv)],
+                                  if any(token.endswith(("/ubuntu_suites.py", "/ubuntu_shadow.py")) for token in argv)],
                 "environment": {**workflow.get("env", {}), **lane.get("env", {})},
             })
     decision_script = "\n".join(s.get("run", "") for s in jobs["decision"]["steps"])
@@ -268,7 +268,7 @@ def freeze(root: Path, source: str, output: Path, repository: str, *,
     inputs = sorted(p for p in tracked if PurePosixPath(p).name in {
         "pyproject.toml", "package-lock.json", "Cargo.lock", "go.mod", "go.sum",
         "requirements.txt", "requirements.in", "requirements-ci.txt", "toolchain-lock.json",
-        "skip-allowlist.json", "pyrightconfig.json", "ubuntu-suites.json", "ubuntu_suites.py",
+        "skip-allowlist.json", "pyrightconfig.json", "ubuntu-suites.json", "ubuntu_suites.py", "ubuntu_shadow.py",
     } or p in {WORKFLOW, PROMOTION_WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py"})
     hashes = {p: digest(source_bytes(root, source, p)) for p in inputs}
     skips = json.loads(source_bytes(root, source, "release/skip-allowlist.json"))["entries"]

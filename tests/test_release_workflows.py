@@ -1412,7 +1412,7 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         "bundle",
     ):
         expected = "${{ !inputs.discovery-mode }}" if job_name == "static" else "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}"
-        if job_name == "bundle":
+        if job_name in {"bundle", "slow", "product", "security-behavior"}:
             expected = "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}"
         assert jobs[job_name]["if"] == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
@@ -1821,3 +1821,19 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
             "Windows does not expose a POSIX hook execute-bit contract",
         ),
     }
+
+
+def test_windows_pr_ci_covers_the_noneditable_venv_probe_topology() -> None:
+    job = _yaml("ci.yml")["jobs"]["test"]
+    probe = _named_step(job, "Verify stdin harness inside a native Windows venv")
+    assert probe["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert "python -m venv" in probe["run"]
+    assert 'stdio-venv/Scripts/python.exe" -m pip install ".[dev]"' in probe["run"]
+    assert "tests/test_readonly_subprocess_stdin.py" in probe["run"]
+    assert "--strict-config" in probe["run"] and "--strict-markers" in probe["run"]
+    assert "-W error -o xfail_strict=true" in probe["run"]
+    assert "GITHUB_PATH" not in probe["run"]
+    assert "continue-on-error" not in probe
+    upload = _named_step(job, "Upload native Windows venv probe evidence")
+    assert "always()" in upload["if"]
+    assert "stdio-venv.log" in upload["with"]["path"] and "stdio-venv.xml" in upload["with"]["path"]

@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from importlib.metadata import version
 import itertools
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -129,6 +130,21 @@ def probe(output: Path, *, pipeline: bool = False) -> dict:
     return result
 
 
+
+def timing_context() -> dict:
+    hosted = os.environ.get("GITHUB_ACTIONS") == "true"
+    return {
+        "execution_context": {
+            "kind": "github-actions" if hosted else "local",
+            "repository": os.environ.get("GITHUB_REPOSITORY") if hosted else None,
+            "run_id": os.environ.get("GITHUB_RUN_ID") if hosted else None,
+            "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT") if hosted else None,
+            "runner_environment": os.environ.get("RUNNER_ENVIRONMENT", "unreported") if hosted else None,
+        },
+        "timing_scope": ("GitHub Actions" if hosted else "local") +
+            " sequential warm/uncontrolled sample; not workflow wall-clock savings",
+    }
+
 def compare_project(root: Path, evidence: Path, output: Path) -> dict:
     """One local timing sample; the legacy scan is verification-only."""
     checks = json.loads((evidence / "checks.json").read_text())
@@ -155,7 +171,7 @@ def compare_project(root: Path, evidence: Path, output: Path) -> dict:
         "full_scan_ns": execution["elapsed_ns"], "derived_check_ns": derived["elapsed_ns"],
         "legacy_blocking_scan_ns": legacy_ns, "removed_work_estimate_ns": legacy_ns - derived["elapsed_ns"],
         "evidence_bytes": {p.name: p.stat().st_size for p in evidence.glob("bandit-*") if p.is_file()},
-        "sample_count": 1, "timing_scope": "local sequential warm/uncontrolled sample; not hosted or workflow wall-clock savings"}
+        "sample_count": 1, **timing_context()}
     (output / "project-parity.json").write_text(json.dumps(summary, indent=2) + "\n")
     return summary
 
