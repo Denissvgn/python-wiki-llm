@@ -50,7 +50,8 @@ FLAGS = [
     "-o",
     "xfail_strict=true",
 ]
-SCHEMA = "agent-wiki-ubuntu-execution/v1"
+SCHEMA = "agent-wiki-ubuntu-execution/v2"
+LEGACY_SCHEMA = "agent-wiki-ubuntu-execution/v1"
 INVENTORY_SCHEMA = "agent-wiki-ubuntu-inventory/v1"
 TIMEOUT = 1800
 
@@ -243,6 +244,7 @@ def frozen_inputs(args: argparse.Namespace) -> dict[str, Any]:
             "qualification.py",
             "ubuntu_suites.py",
             "ubuntu_shadow.py",
+            "hosted_evidence.py",
             "ubuntu-suites.json",
         ):
             member = archive.extractfile("release/" + name)
@@ -351,7 +353,9 @@ def projection(
         argparse.Namespace(
             identity=identity,
             source_junit=root / "union.xml",
-            source_lane="ubuntu-union",
+            source_lane="ubuntu-qualified-union"
+            if execution.get("purpose") == "qualification"
+            else "ubuntu-union",
             target_lane=lane,
             selector=inventory["gates"][lane],
             projected_junit=root / f"{lane}.xml",
@@ -380,10 +384,16 @@ def execute(args: argparse.Namespace) -> int:
     execution: dict[str, Any] = {
         "schema_version": SCHEMA,
         "mode": args.mode,
+        "purpose": getattr(args, "purpose", "shadow"),
         "complete": False,
         "runs": {},
     }
     q.write_json(output / "execution.json", execution)
+    require(
+        execution["purpose"] in {"shadow", "qualification"}
+        and (execution["purpose"] == "shadow" or args.mode == "union"),
+        "only the union can produce qualifying Ubuntu evidence",
+    )
     execution.update(context(args))
     contract = registry(args.registry)
     q.write_json(output / "registry.json", contract)
@@ -503,29 +513,43 @@ def validate_execution(
     registry_path: Path,
     *,
     projections: bool = True,
+    purpose: str | None = None,
 ) -> dict[str, Any]:
     execution = q.load_json(root / "execution.json")
+    require(isinstance(execution, dict), "invalid Ubuntu execution object")
+    schema = execution.get("schema_version")
+    require(schema in (SCHEMA, LEGACY_SCHEMA), "unsupported Ubuntu execution schema")
+    keys = {
+        "schema_version",
+        "mode",
+        "complete",
+        "runs",
+        "identity",
+        "identity_sha256",
+        "harness_sha256",
+        "registry_sha256",
+        "environment",
+        "setup_seconds",
+        "execution_seconds",
+        "files",
+    }
+    if schema == SCHEMA:
+        keys.add("purpose")
     require(
-        isinstance(execution, dict)
-        and set(execution)
-        == {
-            "schema_version",
-            "mode",
-            "complete",
-            "runs",
-            "identity",
-            "identity_sha256",
-            "harness_sha256",
-            "registry_sha256",
-            "environment",
-            "setup_seconds",
-            "execution_seconds",
-            "files",
-        }
-        and execution.get("schema_version") == SCHEMA
+        set(execution) == keys
         and execution.get("mode") in {"union", "legacy"}
         and execution.get("complete") is True,
         "incomplete Ubuntu execution",
+    )
+    actual_purpose = execution.get("purpose", "shadow")
+    require(
+        isinstance(actual_purpose, str)
+        and actual_purpose in {"shadow", "qualification"}
+        and (actual_purpose == "shadow" or execution["mode"] == "union"),
+        "invalid Ubuntu execution purpose",
+    )
+    require(
+        purpose is None or actual_purpose == purpose, "Ubuntu execution purpose differs"
     )
     require(
         execution.get("identity") == identity
@@ -652,14 +676,16 @@ def _compare(args: argparse.Namespace, diagnostic: dict[str, Any]) -> int:
     identity = q._validate_identity(q.load_json(args.identity))
     diagnostic["identity"] = identity
     diagnostic["stage"] = "union-validation"
-    union = validate_execution(args.union, identity, args.harness_sha256, args.registry)
+    union = validate_execution(
+        args.union, identity, args.harness_sha256, args.registry, purpose="shadow"
+    )
     require(union["mode"] == "union", "comparison requires union execution")
     legacy: dict[str, dict[str, dict[str, str]]] = {}
     timings = {}
     diagnostic["stage"] = "legacy-validation"
     for directory in args.legacy:
         item = validate_execution(
-            directory, identity, args.harness_sha256, args.registry
+            directory, identity, args.harness_sha256, args.registry, purpose="shadow"
         )
         require(item["mode"] == "legacy", "comparison requires legacy execution")
         differences = {
@@ -798,6 +824,7 @@ def main() -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     run = commands.add_parser("run")
     run.add_argument("--mode", choices=("union", "legacy"), required=True)
+    run.add_argument("--purpose", choices=("shadow", "qualification"), default="shadow")
     run.add_argument("--lane", action="append", default=[])
     run.add_argument("--root", type=Path, required=True)
     run.add_argument("--output", type=Path, required=True)

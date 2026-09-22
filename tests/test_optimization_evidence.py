@@ -119,13 +119,16 @@ def test_actual_workflow_obligations_remain_complete():
     skips = json.loads((root / "release/skip-allowlist.json").read_text())["entries"]
     contract = evidence.workflow_contract(value, {}, skips)
     assert contract["gates"]["RD-13"] == "BLOCKED"
-    assert contract["gate_dependencies"]["RD-04"] == ["${{ needs.core.result }}"]
+    assert contract["gate_dependencies"]["RD-04"] == [
+        "${{ needs.core.result }}", "${{ needs.ubuntu-suites.result }}"
+    ]
+    assert contract["owners"]["slow"]["producer"] == "${{ needs.ubuntu-suites.result }}"
     assert set(contract["shadow_owners"]) == set(contract["owners"])
     assert contract["shadow_owners"]["slow"]["producer"] == "${{ needs.ubuntu-shadow.result }}"
     assert {"slow", "determinism", "security-windows-2025", "product-windows-2025"} <= contract["owners"].keys()
-    profiles = [p for p in contract["profiles"] if p["job_id"] in {"slow", "product", "security-behavior"}
+    profiles = [p for p in contract["profiles"] if p["job_id"] in {"ubuntu-suites", "security-behavior"}
                 and p["runner"] == "ubuntu-24.04"]
-    assert len(profiles) == 3
+    assert len(profiles) == 1
     assert all(p["python"] == ["3.13"] and p["declared_extras"] == ["dev"] for p in profiles)
 
 

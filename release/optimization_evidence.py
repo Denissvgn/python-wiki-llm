@@ -269,7 +269,7 @@ def freeze(root: Path, source: str, output: Path, repository: str, *,
         "pyproject.toml", "package-lock.json", "Cargo.lock", "go.mod", "go.sum",
         "requirements.txt", "requirements.in", "requirements-ci.txt", "toolchain-lock.json",
         "skip-allowlist.json", "pyrightconfig.json", "ubuntu-suites.json", "ubuntu_suites.py", "ubuntu_shadow.py",
-    } or p in {WORKFLOW, PROMOTION_WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py"})
+    } or p in {WORKFLOW, PROMOTION_WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py", "release/hosted_evidence.py"})
     hashes = {p: digest(source_bytes(root, source, p)) for p in inputs}
     skips = json.loads(source_bytes(root, source, "release/skip-allowlist.json"))["entries"]
     contract = workflow_contract(workflow, hashes, skips)

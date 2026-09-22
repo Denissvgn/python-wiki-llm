@@ -748,9 +748,9 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         )
         assert "incoming/tools/release/qualification.py" not in earlier_runs
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
-    assert harness_consumers == 19
+    assert harness_consumers == 17
 
-    for job_name in ("core", "slow", "security-behavior", "product", "mcp"):
+    for job_name in ("core", "ubuntu-suites", "security-behavior", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
         assert "candidate-source" in text
         assert "extract-source" in text
@@ -1233,9 +1233,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
 
     source_test_jobs = (
         "core",
-        "slow",
         "security-behavior",
-        "product",
         "mcp",
         "toolchains",
         "oci",
@@ -1397,9 +1395,8 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
     }
     jobs = workflow["jobs"]
     for job_name in (
-        "slow",
+        "ubuntu-suites",
         "security-behavior",
-        "product",
         "mcp",
         "toolchains",
         "oci",
@@ -1412,7 +1409,7 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         "bundle",
     ):
         expected = "${{ !inputs.discovery-mode }}" if job_name == "static" else "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}"
-        if job_name in {"bundle", "slow", "product", "security-behavior"}:
+        if job_name in {"bundle", "ubuntu-suites"}:
             expected = "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}"
         assert jobs[job_name]["if"] == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
@@ -1445,13 +1442,8 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
 def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
     workflow = _yaml("release-qualification.yml")
     jobs = workflow["jobs"]
-    assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == [
-        "ubuntu-24.04",
-        "macos-15",
-    ]
-    assert jobs["product"]["strategy"]["matrix"]["os"] == [
-        "ubuntu-24.04"
-    ]
+    assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == ["macos-15"]
+    assert "product" not in jobs
 
     core = jobs["core"]
     security_projection = _named_step(
@@ -1854,3 +1846,89 @@ def test_qualification_binds_hosted_artifacts_at_build_and_promotion() -> None:
     promotion = _yaml("publish.yml")["jobs"]["verify"]
     verifier = next(step for step in promotion["steps"] if step.get("id") == "verify")
     assert verifier["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
+def test_normal_union_producer_artifacts_and_consumers_are_integrated() -> None:
+    from release import hosted_evidence, optimization_evidence, ubuntu_suites
+
+    workflow = _yaml("release-qualification.yml")
+    jobs = workflow["jobs"]
+    expanded = [
+        optimization_evidence.resolve(job, row)
+        for job in jobs.values()
+        for row in optimization_evidence.matrix_rows(job)
+    ]
+    # Names here are an external REST contract, including matrix expansion.
+    for artifact, producer, _required in hosted_evidence.artifact_contract(
+        "union"
+    ).values():
+        matches = [job for job in expanded if job["name"] == producer]
+        assert len(matches) == 1, producer
+        uploads = [
+            step
+            for step in matches[0]["steps"]
+            if step.get("uses", "").startswith("actions/upload-artifact@")
+            and step["with"]["name"] == artifact
+        ]
+        assert len(uploads) == 1, artifact
+        assert uploads[0]["with"]["if-no-files-found"] == "error"
+    assert hosted_evidence.REQUIRED_JOBS <= {job["name"] for job in expanded}
+
+    union = jobs["ubuntu-suites"]
+    run = _named_step(union, "Run the qualifying Ubuntu union once")["run"]
+    assert "--mode union --purpose qualification" in run
+    assert "--root candidate" in run
+    assert "--harness-sha256" in run
+    assert (
+        len(
+            [
+                step
+                for step in union["steps"]
+                if "ubuntu_suites.py run" in step.get("run", "")
+            ]
+        )
+        == 1
+    )
+    assert (
+        "always()"
+        in _named_step(union, "Upload complete Ubuntu execution and lineage")["if"]
+    )
+    for artifact in [
+        "evidence-rd-03",
+        "evidence-rd-04-ubuntu-24.04",
+        "evidence-rd-05-ubuntu-24.04",
+    ]:
+        upload = _named_step(union, f"Upload {artifact} logical gate view")
+        assert "steps.suites.outcome == 'success'" in upload["if"]
+        assert "projection.json" in upload["with"]["path"]
+
+    owners = _named_step(
+        jobs["owner-lanes"], "Verify reviewed owners against hosted lane results"
+    )["run"]
+    assert "--ubuntu-purpose qualification" in owners
+    for lane in ubuntu_suites.LANES:
+        assert (
+            f'--owner-junit "{lane}=incoming/owner-evidence/evidence-ubuntu-suites/{lane}.xml"'
+            in owners
+        )
+        assert (
+            f'--owner-result "{lane}=${{{{ needs.ubuntu-suites.result }}}}"' in owners
+        )
+    builder = _named_step(jobs["bundle"], "Build versioned release bundle")["run"]
+    assert '--evidence "RD-03:union=incoming/gates/evidence-ubuntu-suites"' in builder
+    assert "--suite-layout union" in builder
+
+    for name in ["owner-lanes", "bundle", "decision"]:
+        assert {"ubuntu-suites", "core", "security-behavior"} <= set(
+            jobs[name]["needs"]
+        )
+    for name in ["bundle", "decision"]:
+        commands = "\n".join(step.get("run", "") for step in jobs[name]["steps"])
+        assert '--gate "RD-04=${{ needs.security-behavior.result }}"' in commands
+        assert '--gate-dependency "RD-04=${{ needs.core.result }}"' in commands
+        assert '--gate-dependency "RD-04=${{ needs.ubuntu-suites.result }}"' in commands
+    serialized = json.dumps(workflow)
+    for removed in ["slow", "product", "shadow-security-macos"]:
+        assert removed not in jobs
+        assert f"needs.{removed}." not in serialized
+        assert not any(removed in job.get("needs", []) for job in jobs.values())

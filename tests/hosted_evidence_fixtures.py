@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import io
+from pathlib import Path
 import zipfile
 
 from release import hosted_evidence as hosted
@@ -105,6 +106,14 @@ class HostedEvidence:
             specs.append(f"{binding}={directory}")
         return specs
 
+    def replace_files(self, binding, files):
+        self.files[binding] = files
+        name = hosted.artifact_contract(self.layout)[binding][0]
+        artifact = next(row for row in self.artifacts if row["name"] == name)
+        raw = self.zip(files)
+        self.archives[artifact["id"]] = raw
+        artifact["digest"] = "sha256:" + hosted.sha256(raw)
+
     def client(self, repository):
         assert repository == self.identity["repository"]
         return self
@@ -122,3 +131,65 @@ class HostedEvidence:
 
     def archive(self, artifact_id):
         return self.archives[artifact_id]
+
+
+def qualifying_union(directory, identity, harness):
+    import xml.etree.ElementTree as ET
+    from release import ubuntu_suites as suites, qualification as q
+
+    directory.mkdir(parents=True)
+    registry_path = Path(suites.__file__).with_name("ubuntu-suites.json")
+    registry = suites.registry(registry_path)
+    nodes = set()
+    for selectors in registry["gates"].values():
+        for selector in selectors:
+            node = selector.replace("*", "owned").replace("?", "x")
+            nodes.add(node if "::" in node else node + "::test_owned")
+    inventory = suites.resolve(sorted(nodes), registry)
+    q.write_json(directory / "identity.json", identity)
+    q.write_json(directory / "registry.json", registry)
+    for name in ["inventory.json", "observed.json"]:
+        q.write_json(directory / name, inventory)
+    q.write_json(directory / "started.json", inventory["union"])
+    xml = ET.Element("testsuite")
+    for node in inventory["union"]:
+        file, *names = node.split("::")
+        classname = file[:-3].replace("/", ".")
+        if len(names) > 1:
+            classname += "." + ".".join(names[:-1])
+        ET.SubElement(xml, "testcase", classname=classname, name=names[-1])
+    ET.ElementTree(xml).write(directory / "union.xml", encoding="utf-8")
+    execution = {
+        "schema_version": suites.SCHEMA,
+        "mode": "union",
+        "purpose": "qualification",
+        "complete": True,
+        "identity": identity,
+        "identity_sha256": q.sha256_file(directory / "identity.json"),
+        "harness_sha256": harness,
+        "registry_sha256": q.sha256_file(registry_path),
+        "environment": {
+            "profile": suites.PROFILE,
+            "python": "3.13.15",
+            "machine": "x86_64",
+            "runner_image": "owned-runner",
+            "packages": {
+                "agent-wiki-cli": identity["version"],
+                "pytest": "9.1.1",
+                "pytest-cov": "7.1.0",
+            },
+        },
+        "runs": {
+            "collection": {"exit_code": 0, "seconds": 1.0},
+            "union": {"exit_code": 0, "seconds": 2.0},
+        },
+        "setup_seconds": 1.0,
+        "execution_seconds": 3.0,
+        "files": {p.name: q.sha256_file(p) for p in directory.iterdir()},
+    }
+    q.write_json(directory / "execution.json", execution)
+    for lane in suites.LANES:
+        suites.projection(
+            directory, lane, directory / "identity.json", inventory, execution
+        )
+    return directory

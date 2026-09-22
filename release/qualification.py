@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.error
 import urllib.request
 import uuid
@@ -948,7 +949,10 @@ def verify_owner_lanes(args: argparse.Namespace) -> int:
     if union_path is not None:
         if _result_status(getattr(args, "ubuntu_union_result", "")) != "PASS":
             raise QualificationError("Ubuntu union producer did not pass")
-        _validate_ubuntu_union(union_path, identity, args.harness_sha256)
+        _validate_ubuntu_union(
+            union_path, identity, args.harness_sha256,
+            purpose=getattr(args, "ubuntu_purpose", "shadow"),
+        )
         for lane in ("slow", "determinism", "security-ubuntu-24.04", "product-ubuntu-24.04"):
             if junit_paths.get(lane) != (union_path / f"{lane}.xml").resolve():
                 raise QualificationError(f"Ubuntu owner projection was substituted: {lane}")
@@ -1032,7 +1036,9 @@ def verify_owner_lanes(args: argparse.Namespace) -> int:
     return 0
 
 
-def _validate_ubuntu_union(root: Path, identity: Mapping[str, Any], harness: str) -> None:
+def _validate_ubuntu_union(
+    root: Path, identity: Mapping[str, Any], harness: str, *, purpose: str = "shadow"
+) -> None:
     spec = importlib.util.spec_from_file_location(
         "_ubuntu_suite_verifier", Path(__file__).with_name("ubuntu_suites.py")
     )
@@ -1042,7 +1048,8 @@ def _validate_ubuntu_union(root: Path, identity: Mapping[str, Any], harness: str
     spec.loader.exec_module(module)
     try:
         execution = module.validate_execution(
-            root, identity, harness, Path(__file__).with_name("ubuntu-suites.json")
+            root, identity, harness, Path(__file__).with_name("ubuntu-suites.json"),
+            purpose=purpose,
         )
         if execution["mode"] != "union":
             raise QualificationError("Ubuntu consumer requires union evidence")
@@ -1528,6 +1535,8 @@ def _reject_shadow_evidence(root: Path) -> None:
                 "agent-wiki-ubuntu-execution/v1",
                 "agent-wiki-ubuntu-shadow-orchestration/v1",
             }
+            or (value.get("schema_version") == "agent-wiki-ubuntu-execution/v2"
+                and value.get("purpose") != "qualification")
             or (value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
                 and value.get("source_lane") == "ubuntu-union")
         ):
@@ -1556,9 +1565,90 @@ def _hosted_provenance(root: Path, identity: Mapping[str, Any], context: dict, r
         # fail qualification, never fall back to hashing unbound local XML.
         raise QualificationError(f"hosted producer evidence invalid: {exc}") from exc
 
+
+def _validate_qualifying_union_bundle(
+    root: Path, identity: Mapping[str, Any], context: Mapping[str, Any]
+) -> None:
+    if context["suite_layout"] != "union":
+        return
+    union = root / "evidence/RD-03/union"
+    _validate_ubuntu_union(
+        union, identity, context["harness_sha256"], purpose="qualification"
+    )
+    paths = {}
+    views = {
+        "slow": "RD-03/slow",
+        "determinism": "RD-03/slow",
+        "security-ubuntu-24.04": "RD-04/ubuntu",
+        "product-ubuntu-24.04": "RD-05/ubuntu",
+    }
+    try:
+        for lane, directory in views.items():
+            for filename in (f"{lane}.xml", f"{lane}-projection.json"):
+                if (root / "evidence" / directory / filename).read_bytes() != (
+                    union / filename
+                ).read_bytes():
+                    raise QualificationError(
+                        f"logical Ubuntu gate view differs from union: {filename}"
+                    )
+            paths[lane] = union / f"{lane}.xml"
+        for lane, directory in {
+            "core-ubuntu-3.10": "RD-01/ubuntu",
+            "core-windows-3.13": "RD-01/windows",
+            "core-macos-3.14": "RD-01/macos",
+            "security-windows-2025": "RD-04/windows",
+            "security-macos-15": "RD-04/macos",
+            "product-windows-2025": "RD-05/windows",
+            "mcp-3.10": "RD-06/python310",
+            "mcp-3.13": "RD-06/python313",
+            "toolchains": "RD-07/toolchains",
+            "oci": "RD-08/oci",
+        }.items():
+            paths[lane] = root / "evidence" / directory / f"{lane}.xml"
+        # The allowlist is read from the authenticated frozen source, not from
+        # a caller-selected sidecar. Replay owner verification at consumption.
+        with tarfile.open(
+            root / "evidence/RD-00/source/candidate-source.tar", "r:"
+        ) as archive:
+            if archive.pax_headers.get("comment") != identity["source"]["sha"]:
+                raise QualificationError("source archive commit differs from identity")
+            member = archive.getmember("release/skip-allowlist.json")
+            if not member.isfile() or member.size > 4 * 1024 * 1024:
+                raise QualificationError("invalid source skip allowlist member")
+            stream = archive.extractfile(member)
+            assert stream is not None
+            allowlist_bytes = stream.read()
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            (temporary / "allowlist.json").write_bytes(allowlist_bytes)
+            verify_owner_lanes(
+                argparse.Namespace(
+                    identity=root / "evidence/RD-00/source/identity.json",
+                    allowlist=temporary / "allowlist.json",
+                    owner_result=[f"{lane}=success" for lane in paths],
+                    owner_junit=[f"{lane}={path}" for lane, path in paths.items()],
+                    ubuntu_union=union,
+                    ubuntu_union_result="success",
+                    ubuntu_purpose="qualification",
+                    harness_sha256=context["harness_sha256"],
+                    output=temporary / "owners.json",
+                )
+            )
+            if load_json(temporary / "owners.json") != load_json(
+                root / "evidence/RD-02/owners/owner-lane-verification.json"
+            ):
+                raise QualificationError(
+                    "bundled owner verification differs from source obligations"
+                )
+    except (OSError, KeyError, tarfile.TarError) as exc:
+        raise QualificationError(
+            f"qualifying Ubuntu bundle lineage is incomplete: {exc}"
+        ) from exc
+
+
 def build_bundle(args: argparse.Namespace) -> int:
-    # Consolidated execution is shadow-only until its hosted parity checkpoint.
-    # Reject it at the consumer as well as in the workflow job condition.
+    # Shadow evidence remains inadmissible. Qualifying evidence also requires
+    # positive binding to authenticated hosted artifacts below.
     for spec in args.evidence:
         _, separator, path = spec.partition("=")
         if separator:
@@ -1601,6 +1691,7 @@ def build_bundle(args: argparse.Namespace) -> int:
     context = {"run_attempt": args.workflow_run_attempt,
                "harness_sha256": args.harness_sha256, "suite_layout": args.suite_layout}
     producer_provenance = _hosted_provenance(destination, identity, context, args.workflow_run_id)
+    _validate_qualifying_union_bundle(destination, identity, context)
     write_json(destination / "hosted-evidence.json", producer_provenance)
 
     write_json(destination / "smoke-wheel.json", wheel_smoke)
@@ -2187,6 +2278,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
         dict(manifest["qualification_context"]), args.workflow_run_id)
     if producer_provenance != load_json(root / "hosted-evidence.json"):
         raise QualificationError("hosted producer provenance ledger differs")
+    _validate_qualifying_union_bundle(root, frozen_identity, manifest["qualification_context"])
 
     wheel_smoke = _validate_smoke(load_json(root / "smoke-wheel.json"), "wheel")
     sdist_smoke = _validate_smoke(load_json(root / "smoke-sdist.json"), "sdist")
@@ -2713,6 +2805,7 @@ def _parser() -> argparse.ArgumentParser:
     owners.add_argument("--output", type=Path, required=True)
     owners.add_argument("--ubuntu-union", type=Path)
     owners.add_argument("--ubuntu-union-result")
+    owners.add_argument("--ubuntu-purpose", choices=("shadow", "qualification"), default="shadow")
     owners.add_argument("--harness-sha256")
     owners.set_defaults(function=verify_owner_lanes)
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import io
+import tarfile
 import subprocess
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
@@ -11,7 +13,7 @@ from pathlib import Path, PureWindowsPath
 import pytest
 
 from release import qualification, hosted_evidence
-from tests.hosted_evidence_fixtures import HostedEvidence
+from tests.hosted_evidence_fixtures import HostedEvidence, qualifying_union
 
 
 SHA = "1" * 40
@@ -69,6 +71,15 @@ def _smoke(path: Path, artifact: Path, kind: str) -> dict:
 
 @pytest.fixture
 def qualified_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
+    return _qualified_bundle(tmp_path, monkeypatch, "legacy")
+
+
+@pytest.fixture
+def qualified_union_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
+    return _qualified_bundle(tmp_path, monkeypatch, "union")
+
+
+def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, dict]:
     dist = tmp_path / "dist"
     dist.mkdir()
     wheel = dist / f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
@@ -78,7 +89,30 @@ def qualified_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
     frozen = tmp_path / "frozen"
     frozen.mkdir()
     source_archive = frozen / "candidate-source.tar"
-    source_archive.write_bytes(b"frozen source archive")
+    entries = []
+    if layout == "union":
+        entries.append(
+            {
+                "lane": "core-ubuntu-3.10",
+                "owner_lane": "slow",
+                "node_id": "tests/test_knowledge_hardening.py::test_representative_knowledge_generation_stays_deterministic_and_within_budget",
+                "reason": "owned slow-lane obligation",
+            }
+        )
+    allowlist_raw = (
+        json.dumps(
+            {"schema_version": qualification.ALLOWLIST_SCHEMA, "entries": entries},
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n"
+    ).encode()
+    with tarfile.open(
+        source_archive, "w", format=tarfile.PAX_FORMAT, pax_headers={"comment": SHA}
+    ) as archive:
+        member = tarfile.TarInfo("release/skip-allowlist.json")
+        member.size = len(allowlist_raw)
+        archive.addfile(member, io.BytesIO(allowlist_raw))
     identity = {
         "schema_version": qualification.IDENTITY_SCHEMA,
         "repository": REPOSITORY,
@@ -117,10 +151,7 @@ def qualified_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
         "candidate_sha": SHA,
         "candidate_version": VERSION,
         "gates": {
-            **{
-                gate: "PASS"
-                for gate in qualification.QUALIFIED_GATES
-            },
+            **{gate: "PASS" for gate in qualification.QUALIFIED_GATES},
             "RD-13": "BLOCKED",
         },
         "failed": [],
@@ -129,7 +160,62 @@ def qualified_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
     }
     gate_decision_path = tmp_path / "gate-decision.json"
     _write_json(gate_decision_path, gate_decision)
-    hosted = HostedEvidence(identity, RUN_ID, frozen)
+    hosted = HostedEvidence(identity, RUN_ID, frozen, layout=layout)
+    if layout == "union":
+        union = qualifying_union(
+            tmp_path / "union", identity, hosted.context["harness_sha256"]
+        )
+        hosted.replace_files(
+            "RD-03:union", {p.name: p.read_bytes() for p in union.iterdir()}
+        )
+        for binding, lanes in {
+            "RD-03:slow": ["slow", "determinism"],
+            "RD-04:ubuntu": ["security-ubuntu-24.04"],
+            "RD-05:ubuntu": ["product-ubuntu-24.04"],
+        }.items():
+            hosted.replace_files(
+                binding,
+                {
+                    name: (union / name).read_bytes()
+                    for lane in lanes
+                    for name in (lane + ".xml", lane + "-projection.json")
+                },
+            )
+        allowlist = tmp_path / "allowlist.json"
+        allowlist.write_bytes(allowlist_raw)
+        qualification.verify_owner_lanes(
+            argparse.Namespace(
+                identity=identity_path,
+                allowlist=allowlist,
+                owner_result=[
+                    f"{lane}=success"
+                    for lane in [
+                        "slow",
+                        "determinism",
+                        "security-ubuntu-24.04",
+                        "product-ubuntu-24.04",
+                    ]
+                ],
+                owner_junit=[
+                    f"{lane}={union / (lane + '.xml')}"
+                    for lane in [
+                        "slow",
+                        "determinism",
+                        "security-ubuntu-24.04",
+                        "product-ubuntu-24.04",
+                    ]
+                ],
+                ubuntu_union=union,
+                ubuntu_union_result="success",
+                ubuntu_purpose="qualification",
+                harness_sha256=hosted.context["harness_sha256"],
+                output=tmp_path / "owners.json",
+            )
+        )
+        hosted.replace_files(
+            "RD-02:owners",
+            {"owner-lane-verification.json": (tmp_path / "owners.json").read_bytes()},
+        )
     monkeypatch.setattr(hosted_evidence, "GitHub", hosted.client)
     evidence_specs = hosted.specs(tmp_path / "hosted-input")
     present = {spec.partition(":")[0] for spec in evidence_specs}
@@ -152,7 +238,7 @@ def qualified_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
         workflow_run_id=RUN_ID,
         workflow_run_attempt=1,
         harness_sha256=hosted.context["harness_sha256"],
-        suite_layout="legacy",
+        suite_layout=layout,
         output=bundle,
     )
     assert qualification.build_bundle(args) == 0
@@ -1716,3 +1802,45 @@ def test_builder_rejects_a_bare_lane_xml_without_its_hosted_artifact(qualified_b
             smoke_comparison=bundle/"smoke-comparison.json",gate_decision=decision,evidence=evidence,
             workflow_run_id=RUN_ID,workflow_run_attempt=1,suite_layout="legacy",
             harness_sha256=manifest["qualification_context"]["harness_sha256"],output=tmp_path/"bare-bundle"))
+
+
+def test_qualifying_union_bundle_replays_lineage_views_and_owners(qualified_union_bundle):
+    bundle, manifest = qualified_union_bundle
+    assert manifest["qualification_context"]["suite_layout"] == "union"
+    assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+    ledger = qualification.load_json(bundle / "hosted-evidence.json")
+    assert ledger["bindings"]["RD-03:union"]["artifact"] == "evidence-ubuntu-suites"
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["shadow-purpose", "logical-view", "owner-obligation", "projection-lineage"],
+)
+def test_bundler_semantics_reject_bad_union_even_if_uploaded_by_a_successful_producer(
+    qualified_union_bundle, mutation
+):
+    bundle, manifest = qualified_union_bundle
+    identity = qualification.load_json(bundle / "evidence/RD-00/source/identity.json")
+    if mutation == "shadow-purpose":
+        path = bundle / "evidence/RD-03/union/execution.json"
+        value = qualification.load_json(path)
+        value["purpose"] = "shadow"
+        _write_json(path, value)
+    elif mutation == "logical-view":
+        (bundle / "evidence/RD-04/ubuntu/security-ubuntu-24.04.xml").write_text(
+            "changed"
+        )
+    elif mutation == "owner-obligation":
+        path = bundle / "evidence/RD-02/owners/owner-lane-verification.json"
+        value = qualification.load_json(path)
+        value["entries_verified"] += 1
+        _write_json(path, value)
+    else:
+        path = bundle / "evidence/RD-03/union/slow-projection.json"
+        value = qualification.load_json(path)
+        value["lineage"]["environment_sha256"] = "f" * 64
+        _write_json(path, value)
+    with pytest.raises(qualification.QualificationError):
+        qualification._validate_qualifying_union_bundle(
+            bundle, identity, manifest["qualification_context"]
+        )

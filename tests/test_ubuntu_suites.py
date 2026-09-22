@@ -93,6 +93,7 @@ def evidence(tmp_path):
     xml(root / "union.xml", inventory["union"], skipped=nodes[-1])
     execution = {
         "schema_version": suites.SCHEMA,
+        "purpose": "shadow",
         "complete": True,
         "mode": "union",
         "identity": identity,
@@ -144,23 +145,44 @@ def test_registry_preserves_the_legacy_selectors_and_freezes_all_helpers():
     workflow = yaml.safe_load(
         (ROOT / ".github/workflows/release-qualification.yml").read_text()
     )
-    for job, lanes in [
-        ("slow", ["slow", "determinism"]),
-        ("security-behavior", ["security-ubuntu-24.04"]),
-        ("product", ["product-ubuntu-24.04"]),
-    ]:
-        run = next(
+    # The remaining platform consumers still select the original complete
+    # security/product suites. Ubuntu uses the same registry for both modes.
+    jobs = workflow["jobs"]
+    security = next(
+        step["run"]
+        for step in jobs["security-behavior"]["steps"]
+        if "python -m pytest" in step.get("run", "")
+    )
+    assert [
+        token
+        for token in shlex.split(security.replace("\\\n", " "))
+        if token.startswith("tests/")
+    ] == value["gates"]["security-ubuntu-24.04"]
+    for gate in ["security", "product"]:
+        command = next(
             step["run"]
-            for step in workflow["jobs"][job]["steps"]
-            if "python -m pytest" in step.get("run", "")
+            for step in jobs["core"]["steps"]
+            if f"--target-lane {gate}-windows-2025" in step.get("run", "")
         )
-        for lane, command in zip(lanes, run.split("python -m pytest")[1:], strict=True):
-            selected = [
+        tokens = shlex.split(command.replace("\\\n", " "))
+        selected = [
+            tokens[i + 1] for i, token in enumerate(tokens) if token == "--selector"
+        ]
+        assert selected == value["gates"][f"{gate}-ubuntu-24.04"]
+    assert value["gates"]["slow"] == [
+        "tests/test_knowledge_hardening.py::test_representative_knowledge_generation_stays_deterministic_and_within_budget"
+    ]
+    assert len(value["gates"]["determinism"]) == 10
+    assert (
+        len(
+            [
                 s
-                for s in shlex.split(command.replace("\\\n", " "))
-                if s.startswith("tests/")
+                for s in value["gates"]["determinism"]
+                if s.startswith("tests/test_context.py::")
             ]
-            assert selected == value["gates"][lane]
+        )
+        == 2
+    )
     freeze = next(
         s["run"]
         for s in workflow["jobs"]["freeze"]["steps"]
@@ -168,7 +190,13 @@ def test_registry_preserves_the_legacy_selectors_and_freezes_all_helpers():
     )
     assert all(
         "release/" + name in freeze
-        for name in ["ubuntu_suites.py", "ubuntu-suites.json", "qualification.py"]
+        for name in [
+            "ubuntu_suites.py",
+            "ubuntu_shadow.py",
+            "hosted_evidence.py",
+            "ubuntu-suites.json",
+            "qualification.py",
+        ]
     )
 
 
@@ -383,6 +411,40 @@ def test_shadow_comparison_is_complete_but_never_qualifying(evidence):
     assert len(result["legacy_execution_sha256"]) == 3
 
 
+def test_historical_execution_remains_auditable_but_cannot_qualify(evidence):
+    root, reg, identity = evidence
+    receipt = q.load_json(root / "execution.json")
+    receipt["schema_version"] = suites.LEGACY_SCHEMA
+    receipt.pop("purpose")
+    write(root / "execution.json", receipt)
+    reseal(root)
+    suites.validate_execution(root, identity, HARNESS, reg, purpose="shadow")
+    with pytest.raises(suites.q.QualificationError, match="purpose differs"):
+        suites.validate_execution(root, identity, HARNESS, reg, purpose="qualification")
+
+
+def test_qualifying_execution_cannot_be_used_in_a_shadow_comparison(evidence):
+    root, reg, identity = evidence
+    args = legacy_for(root, reg, identity)
+    receipt = q.load_json(root / "execution.json")
+    receipt["purpose"] = "qualification"
+    write(root / "execution.json", receipt)
+    reseal(root)
+    suites.validate_execution(root, identity, HARNESS, reg, purpose="qualification")
+    with pytest.raises(suites.q.QualificationError, match="purpose differs"):
+        suites.compare(args)
+
+
+@pytest.mark.parametrize("purpose", [None, [], {}, False, "", "qualifying"])
+def test_malformed_execution_purpose_cannot_qualify(evidence, purpose):
+    root, reg, identity = evidence
+    receipt = q.load_json(root / "execution.json")
+    receipt["purpose"] = purpose
+    write(root / "execution.json", receipt)
+    with pytest.raises(suites.q.QualificationError, match="purpose"):
+        suites.validate_execution(root, identity, HARNESS, reg, purpose="qualification")
+
+
 @pytest.mark.parametrize(
     "mutation",
     [
@@ -587,10 +649,10 @@ def test_shadow_workflow_uses_one_runner_and_preserves_platform_consumers():
     assert "ubuntu_shadow.py" in text and "--harness-sha256" in text
     assert "python-version" in text and "3.13" in text
     assert "[dev,tokens]" not in text and "[dev,mcp]" not in text
-    for name in ["slow", "product", "security-behavior"]:
-        assert "!inputs.ubuntu-suite-shadow" in jobs[name]["if"]
-    assert jobs["shadow-security-macos"]["runs-on"] == "macos-15"
-    assert "inputs.ubuntu-suite-shadow" in jobs["shadow-security-macos"]["if"]
+    assert "!inputs.ubuntu-suite-shadow" in jobs["ubuntu-suites"]["if"]
+    assert not {"slow", "product", "shadow-security-macos"} & jobs.keys()
+    assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == ["macos-15"]
+    assert "inputs.ubuntu-suite-shadow" not in jobs["security-behavior"]["if"]
     assert "ubuntu-union" not in jobs and "ubuntu-comparison" not in jobs
     artifacts = {
         step["with"]["name"]: step
@@ -610,7 +672,7 @@ def test_shadow_workflow_uses_one_runner_and_preserves_platform_consumers():
     )
     assert artifacts["ubuntu-shadow-comparison"]["with"]["if-no-files-found"] == "error"
     owners = jobs["owner-lanes"]
-    assert {"ubuntu-shadow", "shadow-security-macos"} <= set(owners["needs"])
+    assert {"ubuntu-shadow", "security-behavior"} <= set(owners["needs"])
     shadow_owner = next(
         step["run"]
         for step in owners["steps"]
@@ -626,7 +688,7 @@ def test_shadow_workflow_uses_one_runner_and_preserves_platform_consumers():
             in shadow_owner
         )
     assert (
-        '--owner-result "security-macos-15=${{ needs.shadow-security-macos.result }}"'
+        '--owner-result "security-macos-15=${{ needs.security-behavior.result }}"'
         in shadow_owner
     )
     assert (

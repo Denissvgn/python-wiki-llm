@@ -263,6 +263,8 @@ def _run(args: argparse.Namespace) -> int:
                     "-I",
                     str(Path(__file__).with_name("ubuntu_suites.py")),
                     "run",
+                    "--purpose",
+                    "shadow",
                     "--mode",
                     "union" if name == "union" else "legacy",
                     "--root",

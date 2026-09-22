@@ -186,7 +186,7 @@ def test_hosted_zip_members_are_bounded_and_canonical(member):
         h.zip_inventory(raw)
 
 
-def test_duplicate_and_symlink_zip_members_are_rejected():
+def test_symlink_zip_members_are_rejected():
     stream = io.BytesIO()
     with zipfile.ZipFile(stream, "w") as archive:
         entry = zipfile.ZipInfo("link.xml")
@@ -194,6 +194,39 @@ def test_duplicate_and_symlink_zip_members_are_rejected():
         archive.writestr(entry, b"target")
     with pytest.raises(h.EvidenceError, match="symlink"):
         h.zip_inventory(stream.getvalue())
+
+
+def test_duplicate_zip_members_are_rejected():
+    stream = io.BytesIO()
+    with zipfile.ZipFile(stream, "w") as archive:
+        archive.writestr("slow.xml", b"original")
+        with pytest.warns(UserWarning, match="Duplicate name"):
+            archive.writestr("slow.xml", b"substituted")
+    with pytest.raises(h.EvidenceError, match="duplicate"):
+        h.zip_inventory(stream.getvalue())
+
+
+@pytest.mark.parametrize("count", [-1, True, "1", None])
+def test_invalid_pagination_cannot_drop_required_metadata(monkeypatch, count):
+    monkeypatch.setenv("GITHUB_TOKEN", "owned-secret")
+    client = h.GitHub("owned/repo")
+    monkeypatch.setattr(client, "get", lambda path: {"total_count": count, "jobs": []})
+    with pytest.raises(h.EvidenceError, match="paginated"):
+        client.list("/owned", "jobs")
+
+
+def test_artifact_archives_have_a_redirect_bound(monkeypatch):
+    monkeypatch.setenv("GITHUB_TOKEN", "owned-secret")
+    calls = []
+
+    def request(url, token, limit):
+        calls.append(token)
+        return 302, {"Location": "https://owned.invalid/loop"}, b""
+
+    monkeypatch.setattr(h, "_http", request)
+    with pytest.raises(h.EvidenceError, match="redirect bound"):
+        h.GitHub("owned/repo").archive(1)
+    assert calls == ["owned-secret", None, None, None, None]
 
 
 def test_artifact_redirect_never_receives_the_api_bearer_token(monkeypatch):
