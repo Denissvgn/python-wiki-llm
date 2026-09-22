@@ -1524,7 +1524,10 @@ def _reject_shadow_evidence(root: Path) -> None:
         value = load_json(path)
         if isinstance(value, dict) and (
             value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
-            or value.get("schema_version") == "agent-wiki-ubuntu-execution/v1"
+            or value.get("schema_version") in {
+                "agent-wiki-ubuntu-execution/v1",
+                "agent-wiki-ubuntu-shadow-orchestration/v1",
+            }
             or (value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
                 and value.get("source_lane") == "ubuntu-union")
         ):

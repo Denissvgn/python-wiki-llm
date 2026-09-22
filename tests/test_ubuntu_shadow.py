@@ -110,6 +110,8 @@ def test_one_host_orchestration_uses_independent_inputs_and_common_dependency_pi
     control = q.load_json(args.output / "diagnostics/orchestration.json")
     report = q.load_json(args.output / "diagnostics/ubuntu-shadow-comparison.json")
     assert control["passed"] and control["complete"] and control["qualifying"] is False
+    with pytest.raises(q.QualificationError, match="shadow evidence"):
+        q._reject_shadow_evidence(args.output / "diagnostics/orchestration.json")
     assert report["passed"] and report["complete"] and report["qualifying"] is False
     assert state["prepared"] == ["resolver", *shadow.GROUPS]
     assert state["ran"] == list(shadow.GROUPS)
@@ -208,7 +210,7 @@ def test_lanes_have_isolated_temp_cache_and_import_state(tmp_path, monkeypatch):
     assert dict(os.environ) == before
 
 
-def test_launch_failure_and_timeout_preserve_diagnostics(tmp_path):
+def test_launch_failure_and_timeout_preserve_diagnostics(tmp_path, monkeypatch):
     missing = shadow.invoke(
         [str(tmp_path / "missing-program")],
         tmp_path,
@@ -216,13 +218,41 @@ def test_launch_failure_and_timeout_preserve_diagnostics(tmp_path):
         tmp_path / "missing.log",
     )
     assert missing["exit_code"] == 127 and missing["error"]
+    # Exercise timeout cleanup without turning interpreter startup speed into
+    # a one-second assertion on a loaded Windows runner.
+    calls = []
+
+    class OwnedProcess:
+        pid = 4242
+
+        def __init__(self, command, **kwargs):
+            self.command = command
+            self.waits = 0
+            kwargs["stdout"].write(b"ready\n")
+            assert kwargs["start_new_session"] is (os.name == "posix")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def wait(self, timeout):
+            self.waits += 1
+            if self.waits == 1:
+                raise subprocess.TimeoutExpired(self.command, timeout)
+            calls.append("reaped")
+            return 1
+
+        def kill(self):
+            calls.append("killed")
+
+    monkeypatch.setattr(shadow.subprocess, "Popen", OwnedProcess)
+    monkeypatch.setattr(
+        shadow.os, "killpg", lambda pid, sig: calls.append((pid, sig)), raising=False
+    )
     timeout = shadow.invoke(
-        [
-            sys.executable,
-            "-u",
-            "-c",
-            "import time; print('ready', flush=True); time.sleep(30)",
-        ],
+        [sys.executable, "-c", "owned fixture"],
         tmp_path,
         dict(os.environ),
         tmp_path / "timeout.log",
@@ -230,6 +260,10 @@ def test_launch_failure_and_timeout_preserve_diagnostics(tmp_path):
     )
     assert timeout["exit_code"] == 124 and timeout["error"]
     assert (tmp_path / "timeout.log").read_text().strip() == "ready"
+    assert calls[-1] == "reaped"
+    assert calls[0] == (
+        (4242, shadow.signal.SIGKILL) if os.name == "posix" else "killed"
+    )
 
 
 @pytest.mark.parametrize("name", ["archive", "harness"])
@@ -261,3 +295,17 @@ def test_venv_bootstrap_error_is_reported_and_later_lanes_still_run(coordinated)
     report = q.load_json(args.output / "diagnostics/ubuntu-shadow-comparison.json")
     assert report["producer_results"]["legacy-security"] == "failure"
     assert report["errors"] and not report["passed"]
+
+
+def test_real_child_capture_uses_a_startup_budget_separate_from_timeout_controls(
+    tmp_path,
+):
+    result = shadow.invoke(
+        [sys.executable, "-I", "-c", "print('owned child')"],
+        tmp_path,
+        dict(os.environ),
+        tmp_path / "real-child.log",
+        timeout=15,
+    )
+    assert result["exit_code"] == 0 and result["error"] is None
+    assert (tmp_path / "real-child.log").read_text().strip() == "owned child"
