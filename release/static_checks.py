@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import importlib
 from importlib.metadata import version
@@ -13,6 +13,8 @@ from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
+import time
+import uuid
 
 PINNED_BANDIT = "1.9.4"
 BANDIT_RANKS = ("UNDEFINED", "LOW", "MEDIUM", "HIGH")
@@ -163,7 +165,7 @@ def evaluate_bandit(raw: bytes, log: bytes, observation: dict, *, run_id: str,
             raise ValueError("invalid scan observation timestamp")
     # Plugin exceptions can produce exit 0 and an empty report.errors array.
     # The unmodified pinned CLI logs these failures rather than propagating them.
-    if re.search(rb"(?m)^\[[^\]]+\]\s+(?:ERROR|CRITICAL)\s|Bandit internal error running:", log):
+    if re.search(rb"(?m)^(?:\[[^\]]+\]\s+(?:ERROR|CRITICAL)\s|Bandit internal error running:)", log):
         raise ValueError("Bandit scanner log records an analysis failure")
     data = validate_bandit_report(raw)
     if {_report_path(name) for name in data["metrics"] if name != "_totals"} != set(source["files"]):
@@ -193,6 +195,8 @@ class Check:
     accepted_codes: tuple[int, ...] = (0,)
     report: Path | None = None
     report_kind: str | None = None
+    source_paths: tuple[str, ...] = ()
+    derived_from: str | None = None
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -209,16 +213,11 @@ def _report_error(check: Check) -> str | None:
     except (OSError, ValueError) as exc:
         return f"Required report is unreadable: {exc}"
     if check.report_kind == "bandit":
-        metrics = data.get("metrics") if isinstance(data, dict) else None
-        totals = metrics.get("_totals") if isinstance(metrics, dict) else None
-        lines = totals.get("loc") if isinstance(totals, dict) else None
-        valid = (
-            isinstance(data, dict)
-            and isinstance(data.get("results"), list)
-            and data.get("errors") == []
-            and type(lines) is int
-            and lines > 0
-        )
+        try:
+            validate_bandit_report(_bounded_read(check.report))
+        except (OSError, ValueError) as exc:
+            return str(exc)
+        valid = True
     elif check.report_kind == "pip-audit":
         valid = (
             isinstance(data, dict)
@@ -252,8 +251,7 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
         ),
         Check(
             "bandit-full",
-            module(
-                "bandit",
+            (sys.executable, "-I", "-m", "bandit",
                 "-r",
                 "src/llm_wiki_cli",
                 "-f",
@@ -264,10 +262,14 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
             accepted_codes=(0, 1),
             report=bandit_report,
             report_kind="bandit",
+            source_paths=("src/llm_wiki_cli",),
         ),
         Check(
             "bandit-blocking",
-            module("bandit", "-r", "src/llm_wiki_cli", "-lll", "-iii"),
+            (),
+            report=evidence / "bandit-blocking.json",
+            report_kind="bandit-decision",
+            derived_from="bandit-full",
         ),
         Check(
             "pip-audit",
@@ -296,28 +298,109 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
 
 
 def run_checks(checks: list[Check], root: Path, evidence: Path) -> dict:
+    root, evidence = root.resolve(), evidence.absolute()
     evidence.mkdir(parents=True, exist_ok=True)
+    if len({check.name for check in checks}) != len(checks) or any(
+        not re.fullmatch(r"[a-z0-9][a-z0-9-]*", check.name) for check in checks
+    ):
+        raise ValueError("check names must be safe and unique")
+    run_id = uuid.uuid4().hex
     results = []
+    observations = {}
+    definitions = {check.name: check for check in checks}
+    _write_json(evidence / "checks.json", {"passed": False, "complete": False, "run_id": run_id, "checks": []})
     for check in checks:
+        began = time.perf_counter_ns()
         error = None
         returncode = None
         log = evidence / f"{check.name}.log"
+        observation: dict | None = None
+        scan_started = None
         try:
+            log.write_bytes(b"")
             if check.report is not None:
                 check.report.unlink(missing_ok=True)
-            with log.open("wb") as stream:
-                result = subprocess.run(
-                    check.command,
-                    cwd=root,
-                    stdout=stream,
-                    stderr=subprocess.STDOUT,
-                    check=False,
-                    timeout=600,
+            if check.derived_from is not None:
+                if check.command or check.report_kind != "bandit-decision" or check.report is None:
+                    raise ValueError("invalid derived Bandit check")
+                producer = definitions.get(check.derived_from)
+                if (producer is None or producer.report_kind != "bandit" or producer.report is None
+                        or producer.name not in observations or not any(
+                            r["name"] == producer.name and r["passed"] for r in results)):
+                    raise ValueError("current full Bandit producer did not complete successfully")
+                retained = _strict_json(_bounded_read(evidence / f"{producer.name}-execution.json"))
+                if retained != observations[producer.name]:
+                    raise ValueError("retained Bandit execution record changed")
+                decision = evaluate_bandit(
+                    _bounded_read(producer.report), _bounded_read(evidence / f"{producer.name}.log"),
+                    observations[producer.name], run_id=run_id, command=producer.command,
+                    source=source_manifest(root, producer.source_paths),
                 )
-            returncode = result.returncode
-        except (OSError, subprocess.TimeoutExpired) as exc:
+                _write_json(check.report, decision)
+                log.write_text(json.dumps(decision["decision"], sort_keys=True) + "\n", encoding="utf-8")
+                returncode = 0 if decision["decision"]["passed"] else 1
+            else:
+                if check.report_kind == "bandit":
+                    (evidence / f"{check.name}-execution.json").unlink(missing_ok=True)
+                    observation = {"schema_version": "agent-wiki-bandit-execution/v1", "run_id": run_id,
+                        "command": list(check.command), "tool": {"name": "bandit", "version": None, "python": sys.executable},
+                        "error": None, "returncode": None, "source": None, "report_sha256": None,
+                        "report_bytes": None, "log_sha256": None, "started_at": None, "finished_at": None, "elapsed_ns": 0}
+                    observation["tool"]["version"] = version("bandit")
+                    if observation["tool"]["version"] != PINNED_BANDIT:
+                        raise ValueError("Bandit version differs from the validated report contract")
+                    observation["source"] = source_manifest(root, check.source_paths)
+                    observation["started_at"] = datetime.now(timezone.utc).isoformat()
+                    scan_started = time.perf_counter_ns()
+                with log.open("wb") as stream:
+                    result = subprocess.run(
+                        check.command, cwd=root, stdin=subprocess.DEVNULL,
+                        stdout=stream, stderr=subprocess.STDOUT, check=False, timeout=600,
+                    )
+                returncode = result.returncode
+                if observation is not None:
+                    assert scan_started is not None
+                    observation["finished_at"] = datetime.now(timezone.utc).isoformat()
+                    observation["elapsed_ns"] = time.perf_counter_ns() - scan_started
+                    observation["returncode"] = returncode
+                    if check.report is None:
+                        raise ValueError("Bandit report path is missing")
+                    raw, log_raw = _bounded_read(check.report), _bounded_read(log)
+                    observation.update(report_sha256=_sha256(raw), report_bytes=len(raw), log_sha256=_sha256(log_raw))
+                    evaluate_bandit(raw, log_raw, observation, run_id=run_id, command=check.command,
+                                    source=source_manifest(root, check.source_paths))
+                else:
+                    error = _report_error(check)
+        except (OSError, ValueError, ImportError, subprocess.TimeoutExpired) as exc:
             error = str(exc)
-        error = error or _report_error(check)
+            try:
+                if log.exists():
+                    with log.open("ab") as stream:
+                        stream.write(("\nCheck failed: " + error + "\n").encode("utf-8"))
+            except OSError as log_error:
+                error += f"; diagnostic log unavailable: {log_error}"
+            if check.derived_from is not None and check.report is not None:
+                try:
+                    _write_json(check.report, {"schema_version": "agent-wiki-bandit-decision/v1", "run_id": run_id,
+                                              "decision": {"passed": False, "reason": "invalid-scan-evidence"}, "error": error})
+                except OSError as report_error:
+                    error += f"; decision report unavailable: {report_error}"
+        if observation is not None:
+            observation["error"] = error
+            observation["returncode"] = returncode
+            if observation["finished_at"] is None:
+                observation["finished_at"] = datetime.now(timezone.utc).isoformat()
+                observation["elapsed_ns"] = time.perf_counter_ns() - scan_started if scan_started is not None else 0
+            try:
+                observation["log_sha256"] = _sha256(_bounded_read(log))
+            except (OSError, ValueError):
+                observation["log_sha256"] = None
+            observations[check.name] = observation
+            try:
+                _write_json(evidence / f"{check.name}-execution.json", observation)
+            except OSError as record_error:
+                error = f"{error + '; ' if error else ''}execution record unavailable: {record_error}"
+                observation["error"] = error
         passed = returncode in check.accepted_codes and error is None
         results.append(
             {
@@ -327,21 +410,26 @@ def run_checks(checks: list[Check], root: Path, evidence: Path) -> dict:
                 "error": error,
                 "passed": passed,
                 "log": log.name,
+                "execution_kind": "derived" if check.derived_from is not None else "command",
+                "derived_from": check.derived_from,
+                "elapsed_ns": time.perf_counter_ns() - began,
             }
         )
+        _write_json(evidence / "checks.json", {"passed": False, "complete": False, "run_id": run_id, "checks": results})
         print(
             f"{check.name}: {'PASS' if passed else 'FAIL'} (exit {returncode})",
             flush=True,
         )
         if not passed:
-            print(
-                log.read_text(encoding="utf-8", errors="replace")
-                if log.exists()
-                else error,
-                flush=True,
-            )
+            try:
+                diagnostic = log.read_text(encoding="utf-8", errors="replace") if log.exists() else error
+            except OSError:
+                diagnostic = error
+            print(diagnostic or error, flush=True)
     payload = {
         "passed": bool(results) and all(item["passed"] for item in results),
+        "complete": True,
+        "run_id": run_id,
         "checks": results,
     }
     _write_json(evidence / "checks.json", payload)

@@ -108,6 +108,11 @@ def test_logged_plugin_failure_cannot_pass_with_exit_zero_and_no_json_errors(log
         evaluate(report([]), log=log)
 
 
+def test_informational_path_text_does_not_become_a_scanner_error():
+    result = evaluate(report([]), log=b"[json]\tINFO\tJSON output written to /owned/Bandit internal error running:/report.json\n")
+    assert result["decision"]["passed"]
+
+
 def test_valid_but_reduced_scan_scope_is_rejected():
     payload = raw(report([]))
     scope = deepcopy(source())

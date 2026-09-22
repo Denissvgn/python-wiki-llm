@@ -6,6 +6,14 @@ import sys
 import pytest
 
 from release import static_checks
+from tests.bandit_fixtures import report as bandit_report
+
+
+@pytest.fixture
+def bandit_scope(tmp_path, monkeypatch):
+    (tmp_path / "source.py").write_text("value = 1\n")
+    monkeypatch.setattr(static_checks, "version", lambda name: static_checks.PINNED_BANDIT)
+    return ("source.py",)
 
 
 def _check(name, code, **kwargs):
@@ -26,17 +34,16 @@ def test_failure_keeps_later_checks_and_all_evidence(tmp_path):
 
 
 @pytest.mark.parametrize("exit_code", [0, 1])
-def test_bandit_findings_require_complete_json(tmp_path, exit_code):
+def test_bandit_findings_require_complete_json(tmp_path, exit_code, bandit_scope):
     report = tmp_path / "bandit.json"
-    payload = json.dumps(
-        {"results": [{}], "errors": [], "metrics": {"_totals": {"loc": 1}}}
-    )
+    payload = json.dumps(bandit_report() if exit_code else bandit_report([]))
     check = _check(
         "bandit-full",
         f"from pathlib import Path; Path({str(report)!r}).write_text({payload!r}); raise SystemExit({exit_code})",
         accepted_codes=(0, 1),
         report=report,
         report_kind="bandit",
+        source_paths=bandit_scope,
     )
     assert static_checks.run_checks([check], tmp_path, tmp_path / "out")["passed"]
 
@@ -51,7 +58,7 @@ def test_bandit_findings_require_complete_json(tmp_path, exit_code):
         '{"results": [], "errors": [], "metrics": {"_totals": {"loc": 0}}}',
     ],
 )
-def test_bandit_success_cannot_hide_absent_or_failed_report(tmp_path, payload):
+def test_bandit_success_cannot_hide_absent_or_failed_report(tmp_path, payload, bandit_scope):
     report = tmp_path / "bandit.json"
     code = (
         "pass"
@@ -59,10 +66,8 @@ def test_bandit_success_cannot_hide_absent_or_failed_report(tmp_path, payload):
         else f"from pathlib import Path; Path({str(report)!r}).write_text({payload!r})"
     )
     # A valid old result must never satisfy the current check.
-    report.write_text(
-        json.dumps({"results": [], "errors": [], "metrics": {"_totals": {"loc": 1}}})
-    )
-    check = _check("bandit-full", code, report=report, report_kind="bandit")
+    report.write_text(json.dumps(bandit_report([])))
+    check = _check("bandit-full", code, report=report, report_kind="bandit", source_paths=bandit_scope)
     assert not static_checks.run_checks([check], tmp_path, tmp_path / "out")["passed"]
 
 
@@ -103,10 +108,12 @@ def test_default_checks_use_current_interpreter_and_preserve_blocking_scanners(
     assert all(
         check.command[0] == sys.executable
         for check in checks
-        if check.name != "actionlint"
+        if check.name != "actionlint" and check.derived_from is None
     )
     assert by_name["bandit-full"].accepted_codes == (0, 1)
     assert by_name["bandit-blocking"].accepted_codes == (0,)
-    assert "-lll" in by_name["bandit-blocking"].command
-    assert "-iii" in by_name["bandit-blocking"].command
+    assert by_name["bandit-blocking"].command == ()
+    assert by_name["bandit-blocking"].derived_from == "bandit-full"
+    assert by_name["bandit-blocking"].report_kind == "bandit-decision"
+    assert by_name["bandit-full"].command[:4] == (sys.executable, "-I", "-m", "bandit")
     assert by_name["pip-audit"].report_kind == "pip-audit"
