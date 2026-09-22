@@ -10,7 +10,8 @@ from pathlib import Path, PureWindowsPath
 
 import pytest
 
-from release import qualification
+from release import qualification, hosted_evidence
+from tests.hosted_evidence_fixtures import HostedEvidence
 
 
 SHA = "1" * 40
@@ -67,7 +68,7 @@ def _smoke(path: Path, artifact: Path, kind: str) -> dict:
 
 
 @pytest.fixture
-def qualified_bundle(tmp_path: Path) -> tuple[Path, dict]:
+def qualified_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
     dist = tmp_path / "dist"
     dist.mkdir()
     wheel = dist / f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
@@ -128,10 +129,12 @@ def qualified_bundle(tmp_path: Path) -> tuple[Path, dict]:
     }
     gate_decision_path = tmp_path / "gate-decision.json"
     _write_json(gate_decision_path, gate_decision)
-    evidence_specs = []
+    hosted = HostedEvidence(identity, RUN_ID, frozen)
+    monkeypatch.setattr(hosted_evidence, "GitHub", hosted.client)
+    evidence_specs = hosted.specs(tmp_path / "hosted-input")
+    present = {spec.partition(":")[0] for spec in evidence_specs}
     for gate in qualification.QUALIFIED_GATES:
-        if gate == "RD-00":
-            evidence_specs.append(f"{gate}:source={frozen}")
+        if gate in present:
             continue
         evidence = tmp_path / "gate-input" / gate / "result.json"
         evidence.parent.mkdir(parents=True)
@@ -147,6 +150,9 @@ def qualified_bundle(tmp_path: Path) -> tuple[Path, dict]:
         gate_decision=gate_decision_path,
         evidence=evidence_specs,
         workflow_run_id=RUN_ID,
+        workflow_run_attempt=1,
+        harness_sha256=hosted.context["harness_sha256"],
+        suite_layout="legacy",
         output=bundle,
     )
     assert qualification.build_bundle(args) == 0
@@ -1661,3 +1667,52 @@ def test_owner_lane_verifier_rejects_missing_or_duplicate_owned_node(
     )
     with pytest.raises(qualification.QualificationError, match="duplicate node ID"):
         qualification.verify_owner_lanes(args)
+
+
+@pytest.mark.parametrize("mutation", ["xml", "strip-sidecars", "unbound-xml"])
+def test_rehashed_local_evidence_cannot_replace_hosted_originals(qualified_bundle, mutation):
+    bundle, manifest = qualified_bundle
+    changed = deepcopy(manifest)
+    ledger = qualification.load_json(bundle / "hosted-evidence.json")
+    if mutation == "xml":
+        path = "evidence/RD-03/slow/slow.xml"
+        (bundle / path).write_text('<testsuite><testcase classname="tests.test_owned" name="test_forged" /></testsuite>')
+        for entry in changed["gates"]["RD-03"]["evidence"]:
+            if entry["path"] == path:
+                entry["sha256"] = qualification.sha256_file(bundle / path)
+        ledger["bindings"]["RD-03:slow"]["files"]["slow.xml"] = qualification.sha256_file(bundle / path)
+    elif mutation == "strip-sidecars":
+        path = "evidence/RD-03/slow/producer-diagnostic.json"
+        (bundle / path).unlink()
+        changed["gates"]["RD-03"]["evidence"] = [e for e in changed["gates"]["RD-03"]["evidence"] if e["path"] != path]
+        ledger["bindings"]["RD-03:slow"]["files"].pop("producer-diagnostic.json")
+    else:
+        path = "evidence/RD-09/result/unbound.xml"
+        (bundle / path).write_bytes((bundle / "evidence/RD-03/slow/slow.xml").read_bytes())
+        changed["gates"]["RD-09"]["evidence"].append({"path":path,"sha256":qualification.sha256_file(bundle/path)})
+        changed["gates"]["RD-09"]["evidence"].sort(key=lambda e:e["path"])
+    _write_json(bundle / "hosted-evidence.json", ledger)
+    changed["supporting_files"]["hosted-evidence.json"] = qualification.sha256_file(bundle / "hosted-evidence.json")
+    _write_json(bundle / "qualification-manifest.json", changed)
+    with pytest.raises(qualification.QualificationError, match="hosted artifact|unbound XML"):
+        qualification.verify_bundle(_verify_args(bundle, changed))
+
+
+def test_builder_rejects_a_bare_lane_xml_without_its_hosted_artifact(qualified_bundle, tmp_path):
+    bundle, manifest = qualified_bundle
+    identity = bundle / "evidence/RD-00/source/identity.json"
+    decision = tmp_path / "new-decision.json"
+    _write_json(decision, {"schema_version":qualification.DECISION_SCHEMA,"candidate_sha":SHA,
+        "candidate_version":VERSION,"gates":{gate: row["status"] for gate,row in manifest["gates"].items()},
+        "failed":[],"blocked":["RD-13"],"decision":"BLOCKED"})
+    evidence = []
+    for gate in qualification.QUALIFIED_GATES:
+        for directory in (bundle / "evidence" / gate).iterdir():
+            path = directory / "slow.xml" if gate == "RD-03" and directory.name == "slow" else directory
+            evidence.append(f"{gate}:{directory.name}={path}")
+    with pytest.raises(qualification.QualificationError, match="hosted artifact"):
+        qualification.build_bundle(argparse.Namespace(identity=identity, dist=bundle/"dist",
+            wheel_smoke=bundle/"smoke-wheel.json",sdist_smoke=bundle/"smoke-sdist.json",
+            smoke_comparison=bundle/"smoke-comparison.json",gate_decision=decision,evidence=evidence,
+            workflow_run_id=RUN_ID,workflow_run_attempt=1,suite_layout="legacy",
+            harness_sha256=manifest["qualification_context"]["harness_sha256"],output=tmp_path/"bare-bundle"))

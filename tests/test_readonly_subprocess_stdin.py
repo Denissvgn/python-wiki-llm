@@ -3,6 +3,7 @@
 import json
 import os
 import queue
+import signal
 import subprocess
 import sys
 import tempfile
@@ -385,6 +386,25 @@ finally:
 """
 
 
+
+def _stop_stdio_host_tree(process, *, platform_name=None):
+    # The venv launcher can own another interpreter, which can own the probe.
+    # Terminate the whole owned tree on an outer timeout, then reap the root.
+    if (platform_name or sys.platform) == "win32":
+        result = subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+            stdin=subprocess.DEVNULL, capture_output=True, timeout=_CLEANUP_TIMEOUT, check=False)
+        if result.returncode:
+            if process.poll() is None:
+                process.kill()
+            process.wait(timeout=_CLEANUP_TIMEOUT)
+            raise AssertionError("Windows stdio host tree termination failed")
+    else:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    process.wait(timeout=_CLEANUP_TIMEOUT)
+
 def _run_stdio_host(
     tmp_path, *, inherit, startup_delay=0, probe_mode="normal", expected_host_exit=0,
     operation="changed-files", **budgets
@@ -405,6 +425,7 @@ def _run_stdio_host(
         process = subprocess.Popen(
             [sys.executable, "-I", "-c", _STDIO_HOST, str(source), json.dumps(options)],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=stderr_file,
+            start_new_session=os.name == "posix",
         )
         lines = queue.Queue()
         assert process.stdout is not None
@@ -448,8 +469,7 @@ def _run_stdio_host(
                 process.wait(timeout=_CLEANUP_TIMEOUT)
             except subprocess.TimeoutExpired:
                 shutdown_timeout = True
-                process.kill()
-                process.wait(timeout=_CLEANUP_TIMEOUT)
+                _stop_stdio_host_tree(process)
             finally:
                 reader.join(timeout=_CLEANUP_TIMEOUT)
             while not lines.empty():
@@ -570,3 +590,23 @@ def test_real_direct_probe_acknowledges_the_owned_pid_and_venv():
             process.communicate(timeout=_CLEANUP_TIMEOUT)
     assert process.returncode == 0, stderr
     assert json.loads(stdout) == [process.pid, sys.prefix, sys.executable]
+
+
+@pytest.mark.parametrize("returncode", [0, 1])
+def test_windows_stdio_host_timeout_reaps_the_tree_and_refuses_failed_cleanup(monkeypatch, returncode):
+    calls = []
+    process = SimpleNamespace(pid=4242, poll=lambda: None,
+        kill=lambda: calls.append("root-kill"), wait=lambda **kwargs: calls.append("reaped"))
+    def terminate(command, **kwargs):
+        assert command == ["taskkill", "/PID", "4242", "/T", "/F"]
+        assert kwargs["stdin"] == subprocess.DEVNULL and kwargs["timeout"] == _CLEANUP_TIMEOUT
+        calls.append("tree-kill")
+        return subprocess.CompletedProcess(command, returncode, b"", b"")
+    monkeypatch.setattr(subprocess, "run", terminate)
+    if returncode:
+        with pytest.raises(AssertionError, match="tree termination"):
+            _stop_stdio_host_tree(process, platform_name="win32")
+        assert calls == ["tree-kill", "root-kill", "reaped"]
+    else:
+        _stop_stdio_host_tree(process, platform_name="win32")
+        assert calls == ["tree-kill", "reaped"]

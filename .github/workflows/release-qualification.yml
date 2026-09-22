@@ -153,6 +153,7 @@ jobs:
             --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
+            release/hosted_evidence.py \
             release/ubuntu_suites.py \
             release/ubuntu_shadow.py \
             release/ubuntu-suites.json \
@@ -2115,6 +2116,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+      actions: read
       id-token: write
       attestations: write
     outputs:
@@ -2186,6 +2188,8 @@ jobs:
           --allow-non-go-exit-zero
           --output gate-decision.json
       - name: Build versioned release bundle
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         id: bundle
         run: >-
           python -I incoming/tools/release/qualification.py build-bundle
@@ -2218,8 +2222,13 @@ jobs:
           --evidence "RD-12:sdist=incoming/sdist/smoke-sdist.json"
           --evidence "RD-12:comparison=incoming/comparison/smoke-comparison.json"
           --workflow-run-id "${{ github.run_id }}"
+          --workflow-run-attempt "${{ github.run_attempt }}"
+          --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}"
+          --suite-layout legacy
           --output qualified-release
       - name: Self-verify the completed bundle
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: >-
           python -I incoming/tools/release/qualification.py verify-bundle
           --bundle qualified-release

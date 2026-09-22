@@ -888,3 +888,19 @@ def test_comparison_diagnostic_cannot_overwrite_its_inputs(evidence):
     with pytest.raises(suites.q.QualificationError, match="separate"):
         suites.compare(args)
     assert args.output.read_bytes() == before
+
+
+@pytest.mark.parametrize("field", ["machine", "runner_image"])
+@pytest.mark.parametrize("value", [None, False, 0, [], {}, "", " \t\n"])
+def test_malformed_environment_metadata_is_rejected_even_when_all_producers_agree(
+    evidence, field, value
+):
+    root, reg, identity = evidence
+    execution = q.load_json(root / "execution.json")
+    execution["environment"][field] = value
+    write(root / "execution.json", execution)
+    reseal(root)
+    args = legacy_for(root, reg, identity)
+    with pytest.raises(suites.q.QualificationError, match=f"environment {field}"):
+        suites.compare(args)
+    assert q.load_json(args.output)["passed"] is False

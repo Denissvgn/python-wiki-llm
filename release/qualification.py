@@ -39,7 +39,7 @@ SKIP_DISCOVERY_SCHEMA = "agent-wiki-release-skip-discovery/v1"
 JUNIT_PROJECTION_SCHEMA = "agent-wiki-release-junit-projection/v1"
 OWNER_LANE_SCHEMA = "agent-wiki-release-owner-lanes/v2"
 DECISION_SCHEMA = "agent-wiki-release-decision/v1"
-QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v2"
+QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v3"
 VERIFICATION_SCHEMA = "agent-wiki-release-verification/v1"
 WORKFLOW_VERIFICATION_SCHEMA = "agent-wiki-release-workflow-verification/v1"
 PROMOTION_SCHEMA = "agent-wiki-release-promotion/v1"
@@ -1534,6 +1534,28 @@ def _reject_shadow_evidence(root: Path) -> None:
             raise QualificationError("Ubuntu shadow evidence cannot assemble or qualify a release")
 
 
+
+def _hosted_verifier():
+    if __package__:
+        from . import hosted_evidence
+        return hosted_evidence
+    spec = importlib.util.spec_from_file_location(
+        "_release_hosted_evidence", Path(__file__).with_name("hosted_evidence.py"))
+    if spec is None or spec.loader is None:
+        raise QualificationError("hosted evidence verifier is missing")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _hosted_provenance(root: Path, identity: Mapping[str, Any], context: dict, run_id: int) -> dict:
+    try:
+        return _hosted_verifier().verify(root, dict(identity), context, run_id)
+    except Exception as exc:
+        # This is a trust-boundary adapter: malformed service/archive data must
+        # fail qualification, never fall back to hashing unbound local XML.
+        raise QualificationError(f"hosted producer evidence invalid: {exc}") from exc
+
 def build_bundle(args: argparse.Namespace) -> int:
     # Consolidated execution is shadow-only until its hosted parity checkpoint.
     # Reject it at the consumer as well as in the workflow job condition.
@@ -1576,6 +1598,10 @@ def build_bundle(args: argparse.Namespace) -> int:
         version=version,
     )
     gates = _copy_gate_evidence(args.evidence, destination=destination)
+    context = {"run_attempt": args.workflow_run_attempt,
+               "harness_sha256": args.harness_sha256, "suite_layout": args.suite_layout}
+    producer_provenance = _hosted_provenance(destination, identity, context, args.workflow_run_id)
+    write_json(destination / "hosted-evidence.json", producer_provenance)
 
     write_json(destination / "smoke-wheel.json", wheel_smoke)
     write_json(destination / "smoke-sdist.json", sdist_smoke)
@@ -1604,6 +1630,7 @@ def build_bundle(args: argparse.Namespace) -> int:
     )
     (destination / "SHA256SUMS").write_text(sums, encoding="ascii")
     support = {
+        "hosted-evidence.json": sha256_file(destination / "hosted-evidence.json"),
         "sbom.spdx.json": sha256_file(destination / "sbom.spdx.json"),
         "provenance.intoto.json": sha256_file(
             destination / "provenance.intoto.json"
@@ -1618,6 +1645,7 @@ def build_bundle(args: argparse.Namespace) -> int:
         "schema_version": QUALIFICATION_SCHEMA,
         "repository": identity["repository"],
         "workflow_run_id": args.workflow_run_id,
+        "qualification_context": context,
         "source": dict(source),
         "version": version,
         "tag": identity["tag"],
@@ -1646,6 +1674,7 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
             "schema_version",
             "repository",
             "workflow_run_id",
+            "qualification_context",
             "source",
             "version",
             "tag",
@@ -1663,6 +1692,13 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
         or manifest["workflow_run_id"] <= 0
     ):
         raise QualificationError("manifest.workflow_run_id must be positive")
+    context = _require_object(manifest["qualification_context"], name="qualification context",
+        keys=("run_attempt", "harness_sha256", "suite_layout"))
+    if type(context["run_attempt"]) is not int or context["run_attempt"] <= 0:
+        raise QualificationError("qualification context run_attempt must be positive")
+    _require_sha256(context["harness_sha256"], "qualification context harness")
+    if context["suite_layout"] not in {"legacy", "union"}:
+        raise QualificationError("qualification context suite layout is invalid")
     source = _require_object(
         manifest["source"],
         name="manifest.source",
@@ -1722,6 +1758,7 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
         manifest["supporting_files"],
         name="manifest.supporting_files",
         keys=(
+            "hosted-evidence.json",
             "sbom.spdx.json",
             "provenance.intoto.json",
             "smoke-wheel.json",
@@ -2038,6 +2075,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
     expected_files = {
         "qualification-manifest.json",
         "SHA256SUMS",
+        "hosted-evidence.json",
         "sbom.spdx.json",
         "provenance.intoto.json",
         "smoke-wheel.json",
@@ -2144,6 +2182,11 @@ def verify_bundle(args: argparse.Namespace) -> int:
         root / source_sum_entries[0]["path"]
     ).read_text(encoding="ascii") != expected_source_sum:
         raise QualificationError("RD-00 source SHA256SUMS is inconsistent")
+
+    producer_provenance = _hosted_provenance(root, frozen_identity,
+        dict(manifest["qualification_context"]), args.workflow_run_id)
+    if producer_provenance != load_json(root / "hosted-evidence.json"):
+        raise QualificationError("hosted producer provenance ledger differs")
 
     wheel_smoke = _validate_smoke(load_json(root / "smoke-wheel.json"), "wheel")
     sdist_smoke = _validate_smoke(load_json(root / "smoke-sdist.json"), "sdist")
@@ -2715,6 +2758,9 @@ def _parser() -> argparse.ArgumentParser:
         help="Bind gate evidence as RD-NN:label=FILE_OR_DIRECTORY",
     )
     bundle.add_argument("--workflow-run-id", type=int, required=True)
+    bundle.add_argument("--workflow-run-attempt", type=int, required=True)
+    bundle.add_argument("--harness-sha256", required=True)
+    bundle.add_argument("--suite-layout", choices=("legacy", "union"), required=True)
     bundle.add_argument("--output", type=Path, required=True)
     bundle.set_defaults(function=build_bundle)
 

@@ -1837,3 +1837,20 @@ def test_windows_pr_ci_covers_the_noneditable_venv_probe_topology() -> None:
     upload = _named_step(job, "Upload native Windows venv probe evidence")
     assert "always()" in upload["if"]
     assert "stdio-venv.log" in upload["with"]["path"] and "stdio-venv.xml" in upload["with"]["path"]
+
+
+def test_qualification_binds_hosted_artifacts_at_build_and_promotion() -> None:
+    workflow = _yaml("release-qualification.yml")
+    freeze = _named_step(workflow["jobs"]["freeze"], "Freeze and digest tracked qualification harnesses")["run"]
+    assert "release/hosted_evidence.py" in freeze
+    bundle = workflow["jobs"]["bundle"]
+    assert bundle["permissions"]["actions"] == "read"
+    for name in ["Build versioned release bundle", "Self-verify the completed bundle"]:
+        step = _named_step(bundle, name)
+        assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+    command = _named_step(bundle, "Build versioned release bundle")["run"]
+    assert "--workflow-run-attempt" in command and "--harness-sha256" in command
+    assert "--suite-layout" in command
+    promotion = _yaml("publish.yml")["jobs"]["verify"]
+    verifier = next(step for step in promotion["steps"] if step.get("id") == "verify")
+    assert verifier["env"]["GITHUB_TOKEN"] == "${{ github.token }}"

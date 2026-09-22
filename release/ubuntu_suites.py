@@ -203,6 +203,11 @@ def validate_environment(value: Any) -> None:
         and set(value) == {"profile", "python", "machine", "runner_image", "packages"},
         "invalid environment receipt",
     )
+    for field in ("machine", "runner_image"):
+        require(
+            isinstance(value[field], str) and bool(value[field].strip()),
+            f"environment {field} must be a non-empty string",
+        )
     require(
         value["profile"] == PROFILE
         and isinstance(value["python"], str)
