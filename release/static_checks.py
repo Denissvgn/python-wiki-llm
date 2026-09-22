@@ -54,7 +54,10 @@ def _strict_json(raw: bytes):
         return result
     def invalid(value):
         raise ValueError(f"non-finite report value: {value}")
-    return json.loads(raw.decode("utf-8"), object_pairs_hook=unique, parse_constant=invalid)
+    try:
+        return json.loads(raw.decode("utf-8"), object_pairs_hook=unique, parse_constant=invalid)
+    except RecursionError as exc:
+        raise ValueError("scanner report exceeds its nesting bound") from exc
 
 
 def _report_path(value: str) -> str:

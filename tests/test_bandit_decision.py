@@ -96,7 +96,7 @@ def test_incomplete_or_inconsistent_full_reports_cannot_pass(mutation):
         evaluate(value)
 
 
-@pytest.mark.parametrize("payload", [b'{}', b'{"results":[],"results":[]}', b'{"metrics":NaN}', b'not json'])
+@pytest.mark.parametrize("payload", [b'{}', b'{"results":[],"results":[]}', b'{"metrics":NaN}', b'not json', b'[' * 2000 + b']' * 2000])
 def test_noncanonical_or_malformed_json_is_rejected(payload):
     with pytest.raises(ValueError):
         checks.validate_bandit_report(payload)

@@ -1360,12 +1360,38 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     assert "--minimum-passed 2" in mcp_verifier
 
 
+def test_bandit_parity_is_opt_in_and_uses_current_static_evidence() -> None:
+    workflow = _yaml("release-qualification.yml")
+    triggers = workflow.get("on", workflow.get(True))
+    assert isinstance(triggers, dict)
+    option = triggers["workflow_dispatch"]["inputs"]["bandit-parity-verification"]
+    assert option["type"] == "boolean" and option["default"] is False
+    job = workflow["jobs"]["static"]
+    names = [step.get("name") for step in job["steps"]]
+    name = "Verify Bandit decision parity on owned controls and candidate source"
+    assert names.index("Run static checks") < names.index(name) < names.index("Upload gate evidence")
+    check = _named_step(job, name)
+    assert check["if"] == "${{ inputs.bandit-parity-verification }}"
+    assert check["working-directory"] == "candidate"
+    assert "--project-evidence ../evidence/security" in check["run"]
+    assert "--output ../evidence/bandit-parity" in check["run"] and "--pipeline" in check["run"]
+    assert "continue-on-error" not in check
+    assert _named_step(job, "Upload gate evidence")["if"] == "always()"
+    for job_name, candidate_job in workflow["jobs"].items():
+        if job_name not in {"freeze", "static", "decision"}:
+            assert "!inputs.bandit-parity-verification" in candidate_job["if"], job_name
+    assert workflow["jobs"]["static"]["if"] == "${{ !inputs.discovery-mode }}"
+    assert "always()" in workflow["jobs"]["decision"]["if"]
+    binding = _named_step(workflow["jobs"]["freeze"], "Bind the workflow definition to the candidate")
+    assert "mutually exclusive" in binding["run"]
+
+
 def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> None:
     workflow = _yaml("release-qualification.yml")
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}"
+            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}"
         ),
         "cancel-in-progress": True,
     }
@@ -1385,7 +1411,8 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         "smoke-parity",
         "bundle",
     ):
-        assert jobs[job_name]["if"] == "${{ !inputs.discovery-mode }}"
+        expected = "${{ !inputs.discovery-mode }}" if job_name == "static" else "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}"
+        assert jobs[job_name]["if"] == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
     assert jobs["decision"]["if"] == (
         "${{ always() && !inputs.discovery-mode }}"

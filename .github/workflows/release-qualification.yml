@@ -12,13 +12,18 @@ on:
         required: true
         default: false
         type: boolean
+      bandit-parity-verification:
+        description: Run only Bandit parity verification; never create a qualified release bundle
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
   group: >-
-    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}
+    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}
   cancel-in-progress: true
 
 env:
@@ -68,12 +73,17 @@ jobs:
           WORKFLOW_REF: ${{ github.workflow_ref }}
           WORKFLOW_SHA: ${{ github.workflow_sha }}
           WORKFLOW_PREFIX: ${{ github.repository }}/.github/workflows/release-qualification.yml@
+          DISCOVERY_MODE: ${{ inputs.discovery-mode }}
+          BANDIT_PARITY_VERIFICATION: ${{ inputs.bandit-parity-verification }}
         run: |
           set -euo pipefail
           refuse() {
             echo "release qualification refused to start: $1" >&2
             exit 1
           }
+          if [ "${DISCOVERY_MODE}" == "true" ] && [ "${BANDIT_PARITY_VERIFICATION}" == "true" ]; then
+            refuse "discovery and Bandit parity verification are mutually exclusive"
+          fi
           if [ "${WORKFLOW_EVENT}" != "workflow_dispatch" ]; then
             refuse "event is ${WORKFLOW_EVENT}; qualification runs only from workflow_dispatch"
           fi
@@ -173,6 +183,7 @@ jobs:
 
   core:
     name: RD-01/RD-02 core (${{ matrix.lane }})
+    if: ${{ !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
@@ -373,7 +384,7 @@ jobs:
   discovery-allowlist:
     name: Reconcile core skip diagnostics
     if: >-
-      ${{ always() && needs.freeze.result == 'success' &&
+      ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' &&
           (inputs.discovery-mode || needs.core.result == 'failure') }}
     needs: [freeze, core]
     runs-on: ubuntu-24.04
@@ -438,7 +449,7 @@ jobs:
 
   slow:
     name: RD-03 slow, scale, bounds, and determinism
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     steps:
@@ -508,7 +519,7 @@ jobs:
 
   security-behavior:
     name: RD-04 security behavior (${{ matrix.os }})
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
@@ -583,7 +594,7 @@ jobs:
 
   product:
     name: RD-05 product vectors (${{ matrix.os }})
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
@@ -654,7 +665,7 @@ jobs:
 
   mcp:
     name: RD-06 MCP SDK (Python ${{ matrix.python }})
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
@@ -725,7 +736,7 @@ jobs:
 
   toolchains:
     name: RD-07 prepared extractor toolchains
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -978,7 +989,7 @@ jobs:
 
   oci:
     name: RD-08 real OCI isolation
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -1176,6 +1187,14 @@ jobs:
         working-directory: candidate
         run: |
           python -I release/static_checks.py --evidence ../evidence/security
+      - name: Verify Bandit decision parity on owned controls and candidate source
+        if: ${{ inputs.bandit-parity-verification }}
+        working-directory: candidate
+        run: >-
+          python -m tests.bandit_contract_probe
+          --pipeline
+          --project-evidence ../evidence/security
+          --output ../evidence/bandit-parity
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -1187,7 +1206,7 @@ jobs:
 
   action:
     name: RD-10 hosted composite Action
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -1528,7 +1547,7 @@ jobs:
 
   build:
     name: RD-11 independent build ${{ matrix.copy }}
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
@@ -1597,7 +1616,7 @@ jobs:
 
   reproducible:
     name: RD-11 compare independent build bytes
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: [freeze, build]
     runs-on: ubuntu-24.04
     steps:
@@ -1641,7 +1660,7 @@ jobs:
 
   artifact-smoke:
     name: RD-12 artifact-only ${{ matrix.kind }} smoke
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: [freeze, reproducible]
     runs-on: ubuntu-24.04
     strategy:
@@ -1723,7 +1742,7 @@ jobs:
 
   smoke-parity:
     name: RD-12 wheel/sdist parity
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: [freeze, artifact-smoke]
     runs-on: ubuntu-24.04
     steps:
@@ -1765,7 +1784,7 @@ jobs:
 
   owner-lanes:
     name: Require every allowlisted skip owner to pass
-    if: ${{ always() && !inputs.discovery-mode && needs.freeze.result == 'success' }}
+    if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
     needs:
       - freeze
       - core
@@ -1857,7 +1876,7 @@ jobs:
 
   bundle:
     name: Assemble immutable qualified release
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs:
       - freeze
       - core
