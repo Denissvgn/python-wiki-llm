@@ -11,6 +11,7 @@ import signal
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 import venv
 from typing import Any
@@ -31,17 +32,20 @@ GROUPS = {
 }
 
 
-def lane_environment(directory: Path) -> dict[str, str]:
+def lane_environment(directory: Path, temporary: Path) -> dict[str, str]:
     environment = os.environ.copy()
-    for name, child in {
-        "TMPDIR": "tmp",
-        "TEMP": "tmp",
-        "TMP": "tmp",
-        "XDG_CACHE_HOME": "cache",
-        "PIP_CACHE_DIR": "cache/pip",
-        "LLM_WIKI_CACHE_DIR": "cache/llm-wiki",
+    # Preserve the original OS temporary-root semantics. Relocating pytest's
+    # temp files under an arbitrary checkout/work root changes path-sensitive
+    # contracts (including host-path redaction). Each lane still gets its own
+    # private directory, independently of source/cache placement.
+    for name, target in {
+        "TMPDIR": temporary,
+        "TEMP": temporary,
+        "TMP": temporary,
+        "XDG_CACHE_HOME": directory / "cache",
+        "PIP_CACHE_DIR": directory / "cache/pip",
+        "LLM_WIKI_CACHE_DIR": directory / "cache/llm-wiki",
     }.items():
-        target = directory / child
         target.mkdir(parents=True, exist_ok=True)
         environment[name] = str(target)
     # Keep the runner's interpreter/install state out of each fresh process.
@@ -110,7 +114,8 @@ def prepare(
     started = time.time()
     directory = args.work / name
     directory.mkdir()
-    environment = lane_environment(directory)
+    temporary = args.temporary_root / name
+    environment = lane_environment(directory, temporary)
     candidate = directory / "candidate"
     q.extract_source(
         argparse.Namespace(
@@ -140,6 +145,7 @@ def prepare(
     control["preparations"][name] = {
         "source": str(candidate),
         "venv": str(venv_path),
+        "temporary": str(temporary),
         "install": install,
     }
     q.write_json(args.output / "diagnostics/orchestration.json", control)
@@ -163,7 +169,7 @@ def constraints_text(environment: dict[str, Any]) -> str:
     )
 
 
-def run(args: argparse.Namespace) -> int:
+def _run(args: argparse.Namespace) -> int:
     args.work, args.output = args.work.resolve(), args.output.resolve()
     suites.require(
         not args.work.exists() and not args.output.exists(),
@@ -348,6 +354,14 @@ def run(args: argparse.Namespace) -> int:
     finally:
         control["elapsed_seconds"] = time.monotonic() - started
         q.write_json(control_path, control)
+
+
+def run(args: argparse.Namespace) -> int:
+    # This root follows the caller's normal OS temp policy, not --work. Cleanup
+    # occurs only after all subprocesses have exited and reports were retained.
+    with tempfile.TemporaryDirectory(prefix="agent-wiki-shadow-") as temporary:
+        args.temporary_root = Path(temporary).resolve()
+        return _run(args)
 
 
 def main() -> int:

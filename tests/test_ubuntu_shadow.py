@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 
 import pytest
 
@@ -69,8 +70,13 @@ def coordinated(evidence, monkeypatch):
         )
         venv = directory / ".venv"
         venv.mkdir()
-        environment = shadow.lane_environment(directory)
-        control["preparations"][name] = {"source": str(candidate), "venv": str(venv)}
+        temporary = arguments.temporary_root / name
+        environment = shadow.lane_environment(directory, temporary)
+        control["preparations"][name] = {
+            "source": str(candidate),
+            "venv": str(venv),
+            "temporary": str(temporary),
+        }
         if constraints is not None:
             state["constraints"].append(constraints.read_text())
         if name == state["prepare_fail"]:
@@ -88,7 +94,7 @@ def coordinated(evidence, monkeypatch):
         else:
             name = directory.name
             state["ran"].append(name)
-            assert environment["TMPDIR"].startswith(str(directory))
+            assert environment["TMPDIR"] == str(args.temporary_root / name)
             assert environment["XDG_CACHE_HOME"].startswith(str(directory))
             destination = Path(command[command.index("--output") + 1])
             # Even a failing producer may leave apparently passing XML/receipts.
@@ -186,8 +192,8 @@ def test_lanes_have_isolated_temp_cache_and_import_state(tmp_path, monkeypatch):
     ]:
         monkeypatch.setenv(name, "caller-state")
     before = dict(os.environ)
-    first = shadow.lane_environment(tmp_path / "first")
-    second = shadow.lane_environment(tmp_path / "second")
+    first = shadow.lane_environment(tmp_path / "first", tmp_path / "runtime/first")
+    second = shadow.lane_environment(tmp_path / "second", tmp_path / "runtime/second")
     for name in [
         "TMPDIR",
         "TMP",
@@ -309,3 +315,18 @@ def test_real_child_capture_uses_a_startup_budget_separate_from_timeout_controls
     )
     assert result["exit_code"] == 0 and result["error"] is None
     assert (tmp_path / "real-child.log").read_text().strip() == "owned child"
+
+
+def test_runtime_temp_is_independent_of_work_paths_and_is_cleaned_after_reporting(
+    coordinated,
+):
+    args, state = coordinated
+    assert shadow.run(args) == 0
+    receipt = q.load_json(args.output / "diagnostics/orchestration.json")
+    paths = [Path(row["temporary"]) for row in receipt["preparations"].values()]
+    assert len(set(paths)) == 5
+    for path in paths:
+        assert Path(tempfile.gettempdir()).resolve() in path.parents
+        assert args.work not in path.parents
+        assert not path.exists()
+    assert (args.output / "diagnostics/ubuntu-shadow-comparison.json").is_file()
