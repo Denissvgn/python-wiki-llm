@@ -95,6 +95,13 @@ def _isolated_utf8_python_command(
     return [str(executable), "-X", "utf8", "-I", *arguments]
 
 
+def _fixture_cli_command(executable: str | Path, *arguments: str) -> list[str]:
+    helper = Path(__file__).with_name("artifact_fixture_clock.py")
+    if not helper.is_file():
+        raise SmokeError("fixture clock is missing from the frozen harness")
+    return _isolated_utf8_python_command(executable, str(helper), "-m", "llm_wiki_cli.cli", *arguments)
+
+
 def _run(
     command: Sequence[str],
     *,
@@ -625,9 +632,11 @@ def _validate_native_consumer(python: Path, mcp_python: Path, work: Path, eviden
     for executable, mode in ((python, "base"), (mcp_python, "mcp")):
         result = dict(_json_output(_run(
             _isolated_utf8_python_command(
-                executable, "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode,
+                executable, str(Path(__file__).with_name("artifact_fixture_clock.py")),
+                "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode,
                 str(Path(__file__).with_name("mcp_probe.py")),
                 str(evidence / f"native-{mode}.json"),
+                str(Path(__file__).with_name("artifact_fixture_clock.py")),
             ),
             cwd=work,
         ), f"installed native consumer ({mode})"))
@@ -704,6 +713,8 @@ def _validate_workflow_consumer(python: Path, mcp_python: Path, work: Path, evid
 def run_smoke(args: argparse.Namespace) -> int:
     if not Path(__file__).with_name("mcp_probe.py").is_file():
         raise SmokeError("MCP probe support is missing from the frozen harness")
+    if not Path(__file__).with_name("artifact_fixture_clock.py").is_file():
+        raise SmokeError("fixture clock is missing from the frozen harness")
     artifact = args.artifact.resolve()
     artifact_reference_file_count = _validate_artifact_members(artifact)
     # Preserve virtual-environment interpreter paths.  Path.resolve() follows
@@ -761,7 +772,7 @@ def run_smoke(args: argparse.Namespace) -> int:
         raise SmokeError("default installation unexpectedly includes the MCP SDK")
 
     source, wiki = _write_fixture(work)
-    cli = _isolated_utf8_python_command(python, "-m", "llm_wiki_cli.cli")
+    cli = _fixture_cli_command(python)
     _run(
         [
             *cli,

@@ -1020,6 +1020,28 @@ def aggregate(args: argparse.Namespace) -> int:
     return 1
 
 
+def _require_equal_smoke_results(wheel: Mapping, sdist: Mapping) -> None:
+    def changed_paths(left: object, right: object, path: str) -> list[str]:
+        if left == right:
+            return []
+        if isinstance(left, dict) and isinstance(right, dict):
+            differences = []
+            for key in sorted(left.keys() | right.keys()):
+                child = f"{path}.{key}"
+                if key not in left or key not in right:
+                    differences.append(child)
+                else:
+                    differences.extend(changed_paths(left[key], right[key], child))
+            return differences
+        return [path]
+
+    differences = changed_paths(wheel["result"], sdist["result"], "result")
+    if differences:
+        raise QualificationError(
+            "wheel and sdist installed behavior differs: " + ", ".join(differences)
+        )
+
+
 def compare_smoke(args: argparse.Namespace) -> int:
     wheel = _validate_smoke(load_json(args.wheel.resolve()), "wheel smoke")
     sdist = _validate_smoke(load_json(args.sdist.resolve()), "sdist smoke")
@@ -1029,8 +1051,7 @@ def compare_smoke(args: argparse.Namespace) -> int:
         raise QualificationError("sdist smoke artifact kind is not sdist")
     if wheel["version"] != sdist["version"]:
         raise QualificationError("wheel and sdist smoke versions differ")
-    if wheel["result"] != sdist["result"]:
-        raise QualificationError("wheel and sdist installed behavior differs")
+    _require_equal_smoke_results(wheel, sdist)
     payload = {
         "schema_version": SMOKE_COMPARISON_SCHEMA,
         "version": wheel["version"],
@@ -1167,8 +1188,7 @@ def _verify_smoke_consistency(
         raise QualificationError("wheel smoke version does not match qualification")
     if sdist_smoke["version"] != version:
         raise QualificationError("sdist smoke version does not match qualification")
-    if wheel_smoke["result"] != sdist_smoke["result"]:
-        raise QualificationError("wheel and sdist installed behavior differs")
+    _require_equal_smoke_results(wheel_smoke, sdist_smoke)
     if comparison["version"] != version:
         raise QualificationError(
             "smoke comparison version does not match qualification"

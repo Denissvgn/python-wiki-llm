@@ -16,6 +16,8 @@ from llm_wiki_cli import api
 
 tutorial = Path(sys.argv[1])
 with_sdk = sys.argv[2] == "mcp"
+fixture_clock = Path(sys.argv[5])
+assert fixture_clock.is_file(), "fixture clock is missing from the frozen harness"
 assert Path(api.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())
 consumer = Path.cwd() / ("native-mcp" if with_sdk else "native-base")
 shutil.copytree(
@@ -40,7 +42,7 @@ environment["PYTHONIOENCODING"] = "utf-8"
 
 def run(command, expected_exit=0):
     result = subprocess.run(
-        [sys.executable, "-X", "utf8", "-I", *command],
+        [sys.executable, "-X", "utf8", "-I", str(fixture_clock), *command],
         env=environment,
         capture_output=True,
         text=True,
