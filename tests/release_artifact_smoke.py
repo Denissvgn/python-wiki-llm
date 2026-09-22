@@ -632,7 +632,8 @@ def _validate_native_consumer(python: Path, mcp_python: Path, work: Path, eviden
     for executable, mode in ((python, "base"), (mcp_python, "mcp")):
         result = dict(_json_output(_run(
             _isolated_utf8_python_command(
-                executable, "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode,
+                executable, str(Path(__file__).with_name("artifact_fixture_clock.py")),
+                "-c", probe.read_text(encoding="utf-8"), str(tutorial), mode,
                 str(Path(__file__).with_name("mcp_probe.py")),
                 str(evidence / f"native-{mode}.json"),
                 str(Path(__file__).with_name("artifact_fixture_clock.py")),

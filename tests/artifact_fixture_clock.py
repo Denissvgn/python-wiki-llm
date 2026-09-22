@@ -9,6 +9,7 @@ output byte and digest under comparison. Runtime clocks and deadlines stay real.
 from datetime import date
 import runpy
 import sys
+from types import ModuleType
 from unittest.mock import patch
 
 
@@ -16,6 +17,19 @@ class FixtureDate(date):
     @classmethod
     def today(cls):
         return cls(2000, 1, 1)
+
+
+def _run_inline(code, arguments):
+    # Match Python -c's argv and separate __main__ namespace. In particular,
+    # imports of __main__ must see the executed code, not this clock helper.
+    module = ModuleType("__main__")
+    original = sys.modules["__main__"]
+    try:
+        sys.modules["__main__"] = module
+        with patch.object(sys, "argv", ["-c", *arguments]):
+            exec(compile(code, "<string>", "exec"), vars(module))
+    finally:
+        sys.modules["__main__"] = original
 
 
 def main():
@@ -32,6 +46,11 @@ def main():
 
             with patch.object(sys, "argv", sys.argv[2:]):
                 cli.main()
+        elif sys.argv[1:2] == ["-c"]:
+            if len(sys.argv) < 3:
+                print("fixture clock: -c requires code", file=sys.stderr)
+                raise SystemExit(2)
+            _run_inline(sys.argv[2], sys.argv[3:])
         else:
             with patch.object(sys, "argv", sys.argv[1:]):
                 runpy.run_path(sys.argv[0], run_name="__main__")

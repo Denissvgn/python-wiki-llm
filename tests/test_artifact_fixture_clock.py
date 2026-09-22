@@ -75,7 +75,7 @@ def test_artifact_bytes_across_calendar_boundaries(tmp_path, monkeypatch, contro
         assert before["packet"] != after["packet"] != midnight["packet"]
 
 
-@pytest.mark.parametrize("writer", ["cli", "api"])
+@pytest.mark.parametrize("writer", ["cli", "api-script", "api-inline"])
 def test_fixture_clock_controls_isolated_cli_and_api_writers(tmp_path, writer):
     source, wiki = smoke._write_fixture(tmp_path)
     if writer == "cli":
@@ -85,19 +85,59 @@ def test_fixture_clock_controls_isolated_cli_and_api_writers(tmp_path, writer):
         )
     else:
         client = tmp_path / "client.py"
-        client.write_text(
-            "import sys\nfrom llm_wiki_cli import api\n"
+        code = (
+            "import sys, __main__\nfrom llm_wiki_cli import api\n"
             "assert sys.flags.isolated and sys.flags.utf8_mode\n"
-            "assert sys.argv[1:] == ['prepare']\n"
+            "assert sys.argv[1:] == ['prepare', 'space and unicode: café', '--option']\n"
             "assert __name__ == '__main__'\n"
-            "api.bootstrap_wiki('fixture', 'wiki')\n",
-            encoding="utf-8",
+            "assert globals() is vars(__main__)\n"
+            "assert 'FixtureDate' not in globals()\n"
+            "if sys.argv[0] == '-c':\n    assert '__file__' not in globals()\n"
+            "api.bootstrap_wiki('fixture', 'wiki')\n"
         )
+        client.write_text(code, encoding="utf-8")
+        invocation = ["-c", code] if writer == "api-inline" else [str(client)]
         command = smoke._isolated_utf8_python_command(
-            sys.executable, str(Path(artifact_fixture_clock.__file__)), str(client), "prepare",
+            sys.executable, str(Path(artifact_fixture_clock.__file__)), *invocation,
+            "prepare", "space and unicode: café", "--option",
         )
     smoke._run(command, cwd=tmp_path)
     assert "## 2000-01-01" in (wiki / "log.md").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("code,exit_code,message", [
+    ("import sys; print('before exit'); sys.exit(7)", 7, "before exit"),
+    ("raise RuntimeError('inline failure')", 1, "RuntimeError: inline failure"),
+])
+def test_fixture_inline_preserves_process_failures(tmp_path, code, exit_code, message):
+    command = smoke._isolated_utf8_python_command(
+        sys.executable, str(Path(artifact_fixture_clock.__file__)), "-c", code,
+    )
+    result = smoke._run(command, cwd=tmp_path, expected=exit_code)
+    assert message in result.stdout + result.stderr
+    if exit_code == 1:
+        assert 'File "<string>"' in result.stderr
+
+
+def test_fixture_inline_restores_caller_state_on_exit(monkeypatch):
+    original_main = sys.modules["__main__"]
+    original_dates = bootstrap_runtime.date, sync_cmd.date
+    arguments = ["fixture-clock", "-c", "raise SystemExit(7)", "remaining"]
+    monkeypatch.setattr(sys, "argv", arguments)
+    with pytest.raises(SystemExit) as error:
+        artifact_fixture_clock.main()
+    assert error.value.code == 7
+    assert sys.argv is arguments
+    assert sys.modules["__main__"] is original_main
+    assert (bootstrap_runtime.date, sync_cmd.date) == original_dates
+
+
+def test_fixture_inline_requires_code(tmp_path):
+    command = smoke._isolated_utf8_python_command(
+        sys.executable, str(Path(artifact_fixture_clock.__file__)), "-c",
+    )
+    result = smoke._run(command, cwd=tmp_path, expected=2)
+    assert result.stderr.strip() == "fixture clock: -c requires code"
 
 
 def test_missing_frozen_fixture_clock_is_rejected(tmp_path, monkeypatch):
