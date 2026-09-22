@@ -264,6 +264,32 @@ def test_compare_smoke_recomputes_canonical_result_digest(tmp_path: Path) -> Non
     )
 
 
+@pytest.mark.parametrize("field", [
+    "sync_sha256", "context_packet_sha256", "site_sha256", "obsidian_sha256",
+    "packet_adapters.cases.v2-json", "native_consumer.packet_sha256",
+])
+def test_smoke_comparison_rejects_and_identifies_changed_output(tmp_path, field):
+    wheel = tmp_path / f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
+    sdist = tmp_path / f"agent_wiki_cli-{VERSION}.tar.gz"
+    wheel.write_bytes(b"wheel")
+    sdist.write_bytes(b"sdist")
+    wheel_path, sdist_path = tmp_path / "wheel.json", tmp_path / "sdist.json"
+    records = [_smoke(wheel_path, wheel, "wheel"), _smoke(sdist_path, sdist, "sdist")]
+    for record, value in zip(records, ("a" * 64, "b" * 64)):
+        target = record["result"]
+        *parents, key = field.split(".")
+        for parent in parents:
+            target = target.setdefault(parent, {})
+        target[key] = value
+    _write_json(wheel_path, records[0])
+    _write_json(sdist_path, records[1])
+    output = tmp_path / "comparison.json"
+    with pytest.raises(qualification.QualificationError) as error:
+        qualification.compare_smoke(argparse.Namespace(wheel=wheel_path, sdist=sdist_path, output=output))
+    assert str(error.value) == f"wheel and sdist installed behavior differs: result.{field}"
+    assert not output.exists()
+
+
 @pytest.mark.parametrize(
     "mutation",
     (

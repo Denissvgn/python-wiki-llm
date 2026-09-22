@@ -135,6 +135,7 @@ jobs:
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
             tests/release_artifact_smoke.py \
+            tests/artifact_fixture_clock.py \
             tests/mcp_probe.py \
             tests/fixtures/packet-artifact-parity.py \
             tests/fixtures/native-artifact-consumer.py \
