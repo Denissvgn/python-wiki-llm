@@ -21,6 +21,7 @@ from typing import Any
 import yaml
 
 WORKFLOW = ".github/workflows/release-qualification.yml"
+PROMOTION_WORKFLOW = ".github/workflows/publish.yml"
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 SCHEMA = "agent-wiki-optimization-baseline/v1"
 
@@ -72,6 +73,10 @@ def verify_baseline(directory: Path) -> tuple[dict, dict]:
                 if archive.pax_headers.get("comment") != source:
                     raise ValueError("archive commit does not match baseline")
     contract = load_json(directory / "contract.json")
+    if contract.get("promotion", {}).get("definition_sha256") != baseline["inputs"].get(PROMOTION_WORKFLOW):
+        raise ValueError("promotion reference commitment differs")
+    if PROMOTION_WORKFLOW not in baseline["inputs"]:
+        raise ValueError("promotion reference is missing")
     return baseline, contract
 
 
@@ -243,10 +248,19 @@ def freeze(root: Path, source: str, output: Path, repository: str, *,
         "pyproject.toml", "package-lock.json", "Cargo.lock", "go.mod", "go.sum",
         "requirements.txt", "requirements.in", "requirements-ci.txt", "toolchain-lock.json",
         "skip-allowlist.json", "pyrightconfig.json",
-    } or p in {WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py"})
+    } or p in {WORKFLOW, PROMOTION_WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py"})
     hashes = {p: digest(source_bytes(root, source, p)) for p in inputs}
     skips = json.loads(source_bytes(root, source, "release/skip-allowlist.json"))["entries"]
     contract = workflow_contract(workflow, hashes, skips)
+    promotion = yaml.safe_load(source_bytes(root, source, PROMOTION_WORKFLOW))
+    if True in promotion:
+        promotion["on"] = promotion.pop(True)
+    contract["promotion"] = {
+        "gate": "RD-13", "reference_source_sha": source,
+        "definition_sha256": hashes[PROMOTION_WORKFLOW], "workflow_definition": promotion,
+        "effective_verifier_revision": None,
+        "trust_boundary": "protected default branch at promotion time; candidate definition is a reference, not authorization",
+    }
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".baseline-", dir=output.parent) as temporary:
         staging = Path(temporary) / "result"

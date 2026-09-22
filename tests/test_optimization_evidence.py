@@ -14,7 +14,7 @@ from release import optimization_evidence as evidence
 
 def workflow():
     common = {"name": "unit", "runs-on": "ubuntu-24.04", "steps": []}
-    result = {"env": {"CI": "1"}, "jobs": {name: deepcopy(common)
+    result = {"env": {"CI": "1"}, "jobs": {name: {**deepcopy(common), "name": name}
               for name in ("freeze", "core", "owner-lanes", "decision")}}
     jobs = result["jobs"]
     jobs["freeze"]["steps"] = [{"id": "harness", "run":
@@ -39,6 +39,7 @@ def repository(tmp_path):
     evidence.git(root, "init")
     for name, content in {
         evidence.WORKFLOW: yaml.safe_dump(workflow()),
+        evidence.PROMOTION_WORKFLOW: yaml.safe_dump({"jobs": {"verify": {"runs-on": "ubuntu-24.04", "steps": []}}}),
         "release/qualification.py": "# owned verifier\n",
         "tests/probe.py": "# owned probe\n",
         "pyproject.toml": '[project]\nname="owned"\nversion="1.0.0"\n',
@@ -74,6 +75,8 @@ def test_freeze_reads_commit_not_dirty_worktree_and_binds_every_archive(reposito
     assert all(p["declared_extras"] == ["dev"] and p["resolved_packages"] is None for p in profiles)
     assert profiles[0]["pytest"][0]["selectors"] == ["tests/test_a.py", "tests/test_b.py::TestCase::test_x"]
     assert len(contract["gates"]) == 14 and contract["owners"]["core"]["skip_obligations"]
+    assert contract["promotion"]["effective_verifier_revision"] is None
+    assert contract["promotion"]["definition_sha256"] == first["inputs"][evidence.PROMOTION_WORKFLOW]
     with pytest.raises(ValueError, match="must be new"):
         evidence.freeze(root, sha, tmp_path / "one", "owner/repo", required_ancestor=sha)
 
