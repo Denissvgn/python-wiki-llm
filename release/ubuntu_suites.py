@@ -100,7 +100,10 @@ def registry(path: Path) -> dict[str, Any]:
 
 def resolve(nodes: list[str], contract: dict[str, Any]) -> dict[str, Any]:
     require(
-        bool(nodes) and len(nodes) == len(set(nodes)),
+        isinstance(nodes, list)
+        and bool(nodes)
+        and all(isinstance(node, str) for node in nodes)
+        and len(nodes) == len(set(nodes)),
         "empty or duplicate canonical collected node IDs",
     )
     for node in nodes:
@@ -477,7 +480,23 @@ def validate_execution(
 ) -> dict[str, Any]:
     execution = q.load_json(root / "execution.json")
     require(
-        execution.get("schema_version") == SCHEMA
+        isinstance(execution, dict)
+        and set(execution)
+        == {
+            "schema_version",
+            "mode",
+            "complete",
+            "runs",
+            "identity",
+            "identity_sha256",
+            "harness_sha256",
+            "registry_sha256",
+            "environment",
+            "setup_seconds",
+            "execution_seconds",
+            "files",
+        }
+        and execution.get("schema_version") == SCHEMA
         and execution.get("mode") in {"union", "legacy"}
         and execution.get("complete") is True,
         "incomplete Ubuntu execution",
@@ -513,12 +532,14 @@ def validate_execution(
         and bool(runs)
         and all(
             isinstance(row, dict)
+            and set(row) == {"exit_code", "seconds"}
             and type(row.get("exit_code")) is int
             and row["exit_code"] == 0
             for row in runs.values()
         ),
         "Ubuntu source process did not succeed",
     )
+    assert isinstance(runs, dict)  # Narrow the shape already checked above.
     timings = [
         execution.get("setup_seconds"),
         execution.get("execution_seconds"),
@@ -568,8 +589,11 @@ def validate_execution(
     require(
         q.load_json(root / "observed.json") == inventory, "observed inventory differs"
     )
+    started = q.load_json(root / "started.json")
     require(
-        Counter(q.load_json(root / "started.json")) == Counter(inventory["union"]),
+        isinstance(started, list)
+        and all(isinstance(node, str) for node in started)
+        and Counter(started) == Counter(inventory["union"]),
         "each union node must execute exactly once",
     )
     raw = outcomes(root / "union.xml")

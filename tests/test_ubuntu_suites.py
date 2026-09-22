@@ -417,7 +417,6 @@ def test_shadow_rejects_inequivalence_and_missing_ownership(evidence, mutation):
                         "node_id": "tests/test_security.py::test_unique",
                         "reason": "platform",
                         "owner_lane": "security-ubuntu-24.04",
-                        "justification": "owned check",
                     }
                 ],
             },
@@ -657,3 +656,159 @@ def test_gate_dependency_must_reference_an_explicit_gate(tmp_path):
                 gate=["RD-03=success"], gate_dependency=["RD-04=success"]
             )
         )
+
+
+@pytest.fixture
+def production_evidence(evidence):
+    root, reg, identity = evidence
+    frozen_registry = ROOT / "release/ubuntu-suites.json"
+    value = suites.registry(frozen_registry)
+    nodes = set()
+    for selectors in value["gates"].values():
+        for selector in selectors:
+            node = selector.replace("*", "example").replace("?", "x")
+            nodes.add(node if "::" in node else node + "::test_example")
+    inventory = suites.resolve(sorted(nodes), value)
+    write(root / "registry.json", value)
+    for name in ["inventory.json", "observed.json"]:
+        write(root / name, inventory)
+    write(root / "started.json", inventory["union"])
+    xml(root / "union.xml", inventory["union"])
+    execution = q.load_json(root / "execution.json")
+    execution["registry_sha256"] = q.sha256_file(frozen_registry)
+    write(root / "execution.json", execution)
+    reseal(root)
+    return root, identity
+
+
+def test_owner_consumer_validates_real_frozen_registry_and_all_projection_paths(
+    production_evidence,
+):
+    root, identity = production_evidence
+    allowlist = root.parent / "allowlist.json"
+    inventory = q.load_json(root / "inventory.json")
+    owned_node = inventory["gates"]["slow"][0]
+    write(
+        allowlist,
+        {
+            "schema_version": q.ALLOWLIST_SCHEMA,
+            "entries": [
+                {
+                    "lane": "core-windows-3.13",
+                    "node_id": owned_node,
+                    "reason": "platform",
+                    "owner_lane": "slow",
+                }
+            ],
+        },
+    )
+    args = argparse.Namespace(
+        identity=root / "identity.json",
+        allowlist=allowlist,
+        owner_result=[f"{lane}=success" for lane in suites.LANES],
+        owner_junit=[f"{lane}={root / (lane + '.xml')}" for lane in suites.LANES],
+        ubuntu_union=root,
+        ubuntu_union_result="success",
+        harness_sha256=HARNESS,
+        output=root.parent / "owner.json",
+    )
+    assert q.verify_owner_lanes(args) == 0
+    receipt = q.load_json(args.output)
+    assert receipt["owner_results"]["slow"]["verified_node_ids"] == [owned_node]
+    assert receipt["ubuntu_union"]["execution_sha256"] == q.sha256_file(
+        root / "execution.json"
+    )
+    # Matching XML bytes at a different path are not the validated projection.
+    replacement = root.parent / "replacement.xml"
+    replacement.write_bytes((root / "slow.xml").read_bytes())
+    args.owner_junit[0] = f"slow={replacement}"
+    with pytest.raises(q.QualificationError, match="substituted"):
+        q.verify_owner_lanes(args)
+    args.owner_junit[0] = f"slow={root / 'slow.xml'}"
+    (root / "slow-projection.json").write_text("{}")
+    with pytest.raises(q.QualificationError, match="lineage"):
+        q.verify_owner_lanes(args)
+
+
+def test_union_process_failure_preserves_diagnostics_and_emits_no_projections(
+    tmp_path, monkeypatch
+):
+    reg = tmp_path / "registry.json"
+    write(reg, contract())
+    args = argparse.Namespace(
+        root=tmp_path,
+        output=tmp_path / "failed",
+        mode="union",
+        registry=reg,
+        setup_started=0,
+    )
+    monkeypatch.setattr(suites, "context", lambda _: {"identity": {"owned": True}})
+
+    def failure(command, root, log):
+        log.write_text("owned collection failure")
+        return {"exit_code": 2, "seconds": 0.01}
+
+    monkeypatch.setattr(suites, "invoke", failure)
+    assert suites.execute(args) == 1
+    assert (args.output / "collection.log").read_text() == "owned collection failure"
+    receipt = q.load_json(args.output / "execution.json")
+    assert receipt["complete"] is False
+    assert receipt["runs"]["collection"]["exit_code"] == 2
+    assert not list(args.output.glob("*-projection.json"))
+
+
+def test_timeout_retains_partial_log_and_nonpassing_exit(tmp_path, monkeypatch):
+    def timeout(command, **kwargs):
+        assert (
+            kwargs["stdin"] == subprocess.DEVNULL
+            and kwargs["timeout"] == suites.TIMEOUT
+        )
+        kwargs["stdout"].write(b"partial diagnostic")
+        raise subprocess.TimeoutExpired(command, suites.TIMEOUT)
+
+    monkeypatch.setattr(suites.subprocess, "run", timeout)
+    log = tmp_path / "timeout.log"
+    result = suites.invoke([sys.executable, "-c", "pass"], tmp_path, log)
+    assert result["exit_code"] == 124
+    assert log.read_text() == "partial diagnostic"
+
+
+def test_legacy_shadow_receipts_cannot_be_used_as_qualifying_evidence(evidence):
+    root, reg, identity = evidence
+    args = legacy_for(root, reg, identity)
+    for legacy in args.legacy:
+        with pytest.raises(q.QualificationError, match="shadow evidence"):
+            q.build_bundle(argparse.Namespace(evidence=[f"RD-03:legacy={legacy}"]))
+
+
+def test_source_union_projection_is_rejected_even_if_execution_receipt_is_removed(
+    evidence,
+):
+    root, _, _ = evidence
+    (root / "execution.json").unlink()
+    with pytest.raises(q.QualificationError, match="shadow evidence"):
+        q._reject_shadow_evidence(root)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["counter-map", "unexpected-run-field", "unexpected-field", "boolean-exit"],
+)
+def test_rehashed_malformed_execution_shapes_are_rejected(evidence, mutation):
+    root, reg, identity = evidence
+    execution = q.load_json(root / "execution.json")
+    if mutation == "counter-map":
+        write(
+            root / "started.json",
+            {node: 1 for node in q.load_json(root / "started.json")},
+        )
+    elif mutation == "unexpected-run-field":
+        execution["runs"]["union"]["cancelled"] = True
+    elif mutation == "unexpected-field":
+        execution["qualifying"] = True
+    else:
+        execution["runs"]["union"]["exit_code"] = False
+    write(root / "execution.json", execution)
+    reseal(root)
+    with pytest.raises(suites.q.QualificationError):
+        suites.validate_execution(root, identity, HARNESS, reg)

@@ -789,13 +789,21 @@ def project_junit(args: argparse.Namespace) -> int:
             )
         by_node[node_id] = testcase
 
+    families: dict[str, set[str]] = {}
+    for node_id in by_node:
+        family = node_id.partition("[")[0] if node_id.endswith("]") else node_id
+        families.setdefault(family, set()).add(node_id)
     selected_nodes: set[str] = set()
     for selector in selectors:
-        matches = {
-            node_id
-            for node_id in by_node
-            if _selector_matches(selector, node_id)
-        }
+        if "::" in selector:
+            # Collected projections can contain thousands of exact nodes.
+            # Resolve those by lookup rather than rescanning the entire union
+            # for every selected node. Parameter IDs retain literal semantics.
+            matches = ({selector} if selector in by_node else set()) if "[" in selector else families.get(selector, set())
+        else:
+            matches = {
+                node_id for node_id in by_node if _selector_matches(selector, node_id)
+            }
         if not matches:
             raise QualificationError(
                 f"JUnit projection selector matched no tests: {selector}"
@@ -1014,6 +1022,11 @@ def verify_owner_lanes(args: argparse.Namespace) -> int:
             "entries_verified": len(entries),
             "required_owner_lanes": required,
             "owner_results": lane_receipts,
+            **({"ubuntu_union": {
+                "execution_sha256": sha256_file(union_path / "execution.json"),
+                "harness_sha256": args.harness_sha256,
+                "source_junit_sha256": sha256_file(union_path / "union.xml"),
+            }} if union_path is not None else {}),
         },
     )
     return 0
@@ -1511,8 +1524,7 @@ def _reject_shadow_evidence(root: Path) -> None:
         value = load_json(path)
         if isinstance(value, dict) and (
             value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
-            or (value.get("schema_version") == "agent-wiki-ubuntu-execution/v1"
-                and value.get("mode") == "union")
+            or value.get("schema_version") == "agent-wiki-ubuntu-execution/v1"
             or (value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
                 and value.get("source_lane") == "ubuntu-union")
         ):
