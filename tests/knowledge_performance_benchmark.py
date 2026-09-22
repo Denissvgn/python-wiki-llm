@@ -28,13 +28,27 @@ except ImportError:
 import subprocess
 import sys
 import time
+from typing import Any, Callable, Protocol, TypeVar, cast
 
 from llm_wiki_cli import api
-from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.context_session import SessionReply
+from llm_wiki_cli.services.knowledge_artifacts import KnowledgeCommitPlan, build_knowledge_commit_plan
+from llm_wiki_cli.services.knowledge_loader import KnowledgeLoadResult, load_knowledge_state
 from llm_wiki_cli.services.knowledge_storage import canonical_bytes
-from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
+from llm_wiki_cli.services.knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
 from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report, review_storage
+from llm_wiki_cli.services.task_contract import TaskContext
+
+T = TypeVar("T")
+FunctionKey = tuple[str, int, str]
+CallerStats = tuple[int, int, float, float]
+
+
+class ProfileStats(Protocol):
+    # pstats exposes these cProfile aggregates at runtime, but its stub omits
+    # them. Describe the concrete data used here without erasing result types.
+    stats: dict[FunctionKey, tuple[int, int, float, float, dict[FunctionKey, CallerStats]]]
+    total_calls: int
 
 ROOT = Path.cwd()
 WIKI = ROOT / "docs/llm_wiki"
@@ -50,7 +64,7 @@ def rss():
     return value if sys.platform == "darwin" else value * 1024
 
 
-def measure(fn):
+def measure(fn: Callable[[], T]) -> tuple[T, dict[str, int | None]]:
     gc.collect()
     before = rss()
     wall, cpu = time.perf_counter_ns(), time.process_time_ns()
@@ -90,7 +104,7 @@ def slice_details(capture):
 
 def profile_summary(profiler, label):
     profiler.dump_stats(str(OUT / (label + ".prof")))
-    stats = pstats.Stats(profiler)
+    stats = cast(ProfileStats, pstats.Stats(profiler))
     rows = []
     for (filename, line, name), (primitive, calls, own, cumulative, _) in stats.stats.items():
         if filename.startswith(str(ROOT)):
@@ -139,6 +153,7 @@ def worker(workload, profiled):
         if workload == "task_cold":
             return api.build_task_context(request, src_dir=str(ROOT), wiki_dir=str(WIKI))
         if workload == "session_warm":
+            assert session is not None and previous is not None
             return session.read(request, if_result_id=previous.result_id)
         if workload == "full_load":
             return load_knowledge_state(WIKI)
@@ -147,16 +162,16 @@ def worker(workload, profiled):
         if workload == "inspect_one":
             return review_storage(WIKI, limit=1)
         if workload in {"plan_unchanged", "plan_reuse", "incremental", "incremental_write"}:
-            options = {}
-            if workload != "plan_unchanged":
-                options["prior"] = preloaded.validated_artifacts
+            assert preloaded is not None
+            assert preloaded.knowledge is not None and preloaded.manifest_basis is not None
             if workload in {"incremental", "incremental_write"}:
                 from dataclasses import replace
                 model = replace(preloaded.knowledge, extensions={**preloaded.knowledge.extensions, "benchmark/edit": "one edit"})
             else:
                 model = preloaded.knowledge
             plan = build_knowledge_commit_plan(WIKI, surface_index_bytes=(WIKI / ".llm-wiki-surface.json").read_bytes(),
-                knowledge_index=model, manifest=preloaded.manifest_basis.without_artifact_hashes(), **options)
+                knowledge_index=model, manifest=preloaded.manifest_basis.without_artifact_hashes(),
+                prior=preloaded.validated_artifacts if workload != "plan_unchanged" else None)
             if workload == "incremental_write":
                 if not ALLOW_WRITES:
                     raise ValueError("--allow-writes is required")
@@ -199,26 +214,32 @@ def worker(workload, profiled):
     value, measurement = measure(operation)
     if profiler:
         profiler.disable()
-    details = {}
+    details: dict[str, Any] = {}
     if workload.startswith("slice_"):
+        assert isinstance(value, ScopedKnowledgeRead)
         details = slice_details(value)
     elif workload == "task_cold":
+        assert isinstance(value, TaskContext)
         payload = value.to_payload()
         assert value.ok
         details = {"rendered_bytes": len(value.rendered.encode()), "storage_receipt_bytes": len(canonical_bytes(payload["storage"])),
                    "fact_bytes": len(canonical_bytes(payload["facts"])), "state": payload["state"],
                    "storage_read_bytes": payload["storage"]["read_bytes"], "storage_operations": payload["storage"]["read_operations"]}
     elif workload == "session_warm":
+        assert isinstance(value, SessionReply)
         details = value.metadata()
         assert value.state == "unchanged" and details["reuse"]["rendering"]
     elif workload == "full_load":
+        assert isinstance(value, KnowledgeLoadResult)
         assert value.knowledge is not None and value.validated_artifacts is not None
         details = {"concepts": len(value.knowledge.concepts), "relationships": len(value.knowledge.relationships),
                    "physical_files": len(value.validated_artifacts.storage_objects)}
     elif workload in {"storage_full", "inspect_one", "inspect_scoped", "audit_stream"}:
+        assert isinstance(value, dict)
         assert value["ok"]
         details = dict(value)
     elif workload in {"plan_unchanged", "plan_reuse", "incremental", "incremental_write"}:
+        assert isinstance(value, KnowledgeCommitPlan)
         assert value.changed == (workload in {"incremental", "incremental_write"})
         details = {"changed": value.changed, "planned_files": len(value.storage_objects),
                    "planned_content_bytes": sum(len(row.content) for row in value.storage_objects),
@@ -349,7 +370,7 @@ def main():
         result["summary"][workload] = {}
         for label in ("baseline", "candidate"):
             rows = [r for r in result["runs"] if r["workload"] == workload and r["label"] == label]
-            summary = {"samples": len(rows), "failed": sum(not r["ok"] for r in rows)}
+            summary: dict[str, Any] = {"samples": len(rows), "failed": sum(not r["ok"] for r in rows)}
             for metric in ("wall_ns", "cpu_ns", "process_peak_rss_bytes"):
                 values = sorted(r["measurement"][metric] for r in rows if r["ok"] and r["measurement"][metric] is not None)
                 if values:

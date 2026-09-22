@@ -90,6 +90,7 @@ def generate(work: Path, tier: str, *, governed=False, manifest_heavy=False):
     from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
     validation_started = time.perf_counter_ns()
     state = load_knowledge_state(wiki)
+    assert state.knowledge is not None and state.manifest_basis is not None
     titles = {c.title for c in state.knowledge.concepts}
     assert set(oracle["service_names"]) <= titles
     assert set(state.manifest_basis.sources) == set(files)

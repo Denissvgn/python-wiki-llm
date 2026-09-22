@@ -68,6 +68,24 @@ def test_all_workflow_actions_are_pinned_to_full_commits() -> None:
         )
 
 
+def test_routine_ci_checks_the_full_release_typing_surface() -> None:
+    job = _yaml("ci.yml")["jobs"]["typecheck"]
+    assert job["runs-on"] == "ubuntu-24.04"
+    assert not job.get("continue-on-error")
+    install = next(step for step in job["steps"] if step.get("name") == "Install release typing dependencies")
+    assert '".[dev,mcp,tokens]"' in install["run"]
+    assert "--require-hashes -r release/requirements.txt" in install["run"]
+    assert "examples/fastapi-contracts/requirements-ci.txt" in install["run"]
+    check = next(step for step in job["steps"] if step.get("name") == "Check the complete project type surface")
+    assert check["shell"] == "bash"  # GitHub's bash invocation enables pipefail.
+    assert check["run"].split() == [
+        '"${{', 'steps.python.outputs.python-path', '}}"', '-m', 'pyright',
+        '--pythonpath', '"${{', 'steps.python.outputs.python-path', '}}"',
+        '|', 'tee', 'pyright.log',
+    ]
+    assert not check.get("continue-on-error")
+
+
 def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None:
     attribute_lines = [
         line.split()
@@ -90,12 +108,12 @@ def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None
 
     manifest = SyncManifest.load(ROOT / "docs" / "llm_wiki")
     selected_sources = set(manifest.sources)
-    selection_inputs = {
-        item["path"]
-        for item in manifest.generation_inputs["source_selection_inputs"][
-            "inputs"
-        ]
-    }
+    selection = manifest.generation_inputs["source_selection_inputs"]
+    assert isinstance(selection, dict) and isinstance(selection["inputs"], list)
+    selection_inputs = set()
+    for item in selection["inputs"]:
+        assert isinstance(item, dict) and isinstance(item["path"], str)
+        selection_inputs.add(item["path"])
     wiki_files = {
         path.relative_to(ROOT).as_posix()
         for path in (ROOT / "docs" / "llm_wiki").rglob("*")
