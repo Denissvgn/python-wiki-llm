@@ -287,3 +287,36 @@ def test_comparison_runs_before_merge_only_for_affected_checks():
     )
     assert all("continue-on-error" not in step for step in job["steps"])
     assert job["steps"][-1]["if"] == "always()"
+
+
+def test_failed_windows_tree_cleanup_is_reported_and_root_is_reaped(
+    monkeypatch, tmp_path
+):
+    class Process:
+        pid = 424242
+        waits = 0
+        killed = False
+
+        def wait(self, timeout):
+            self.waits += 1
+            if self.waits == 1:
+                raise subprocess.TimeoutExpired(["owned"], timeout)
+            return -1
+
+        def kill(self):
+            self.killed = True
+
+    process = Process()
+    monkeypatch.setattr(
+        performance.subprocess, "Popen", lambda *args, **kwargs: process
+    )
+
+    def cleanup_failure(command, **options):
+        raise subprocess.CalledProcessError(1, command)
+
+    monkeypatch.setattr(performance.subprocess, "run", cleanup_failure)
+    with pytest.raises(RuntimeError, match="tree cleanup failed"):
+        performance.run_observation(
+            ["owned"], cwd=tmp_path, env={}, log=io.BytesIO(), platform_name="nt"
+        )
+    assert process.killed and process.waits == 2

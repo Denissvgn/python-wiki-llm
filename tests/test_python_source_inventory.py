@@ -250,3 +250,41 @@ def test_real_guard_refuses_a_mid_analysis_source_change(tmp_path, monkeypatch):
         guards._duplicated_unshared_validation_helpers(
             services_root=tmp_path, validation_path=validation
         )
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "test_shared_validation_guard_rejects_same_name_unshared_split_duplicate",
+        "test_shared_validation_guard_rejects_unshared_required_method",
+        "test_shared_validation_guard_tracks_split_modules_and_aliases",
+        "test_shared_validation_guard_tracks_assigned_nested_and_method_adapters",
+        "test_shared_validation_guard_ignores_specialized_domain_invariants",
+    ],
+)
+def test_existing_adapter_assertions_also_exercise_inventory_reuse(
+    tmp_path, monkeypatch, case
+):
+    original_adapters = guards._shared_validation_adapters
+    original_required = guards._unshared_required_adapter_definitions
+
+    def cached_adapters(path, **options):
+        validation = options.get("validation_path", guards.VALIDATION_PATH)
+        with PythonSourceInventory([validation.parent]) as inventory:
+            return original_adapters(
+                path,
+                **options,
+                analysis=guards._ValidationAnalysis(inventory, validation),
+                parsed=inventory.module(path),
+            )
+
+    def indexed_required(path, **options):
+        with PythonSourceInventory([path.parent]) as inventory:
+            return original_required(path, **options, parsed=inventory.module(path))
+
+    monkeypatch.setattr(guards, "_shared_validation_adapters", cached_adapters)
+    monkeypatch.setattr(
+        guards, "_unshared_required_adapter_definitions", indexed_required
+    )
+    # Reuse the original fixture and assertions, including their diagnostics.
+    getattr(guards, case)(tmp_path)
