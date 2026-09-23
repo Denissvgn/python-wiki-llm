@@ -12,13 +12,23 @@ on:
         required: true
         default: false
         type: boolean
+      bandit-parity-verification:
+        description: Run only Bandit parity verification; never create a qualified release bundle
+        required: true
+        default: false
+        type: boolean
+      ubuntu-suite-shadow:
+        description: Compare legacy and union suites; exercise consumers without assembling or qualifying a release
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
   group: >-
-    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}
+    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}
   cancel-in-progress: true
 
 env:
@@ -68,12 +78,21 @@ jobs:
           WORKFLOW_REF: ${{ github.workflow_ref }}
           WORKFLOW_SHA: ${{ github.workflow_sha }}
           WORKFLOW_PREFIX: ${{ github.repository }}/.github/workflows/release-qualification.yml@
+          DISCOVERY_MODE: ${{ inputs.discovery-mode }}
+          BANDIT_PARITY_VERIFICATION: ${{ inputs.bandit-parity-verification }}
+          UBUNTU_SUITE_SHADOW: ${{ inputs.ubuntu-suite-shadow }}
         run: |
           set -euo pipefail
           refuse() {
             echo "release qualification refused to start: $1" >&2
             exit 1
           }
+          if [ "${DISCOVERY_MODE}" == "true" ] && [ "${BANDIT_PARITY_VERIFICATION}" == "true" ]; then
+            refuse "discovery and Bandit parity verification are mutually exclusive"
+          fi
+          if [ "${UBUNTU_SUITE_SHADOW}" == "true" ] && { [ "${DISCOVERY_MODE}" == "true" ] || [ "${BANDIT_PARITY_VERIFICATION}" == "true" ]; }; then
+            refuse "Ubuntu shadow, discovery and Bandit parity modes are mutually exclusive"
+          fi
           if [ "${WORKFLOW_EVENT}" != "workflow_dispatch" ]; then
             refuse "event is ${WORKFLOW_EVENT}; qualification runs only from workflow_dispatch"
           fi
@@ -134,6 +153,10 @@ jobs:
             --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
+            release/hosted_evidence.py \
+            release/ubuntu_suites.py \
+            release/ubuntu_shadow.py \
+            release/ubuntu-suites.json \
             tests/release_artifact_smoke.py \
             tests/artifact_fixture_clock.py \
             tests/mcp_probe.py \
@@ -173,6 +196,7 @@ jobs:
 
   core:
     name: RD-01/RD-02 core (${{ matrix.lane }})
+    if: ${{ !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
@@ -373,7 +397,7 @@ jobs:
   discovery-allowlist:
     name: Reconcile core skip diagnostics
     if: >-
-      ${{ always() && needs.freeze.result == 'success' &&
+      ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' &&
           (inputs.discovery-mode || needs.core.result == 'failure') }}
     needs: [freeze, core]
     runs-on: ubuntu-24.04
@@ -436,12 +460,16 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  slow:
-    name: RD-03 slow, scale, bounds, and determinism
-    if: ${{ !inputs.discovery-mode }}
+  ubuntu-suites:
+    name: RD-03/RD-04/RD-05 Ubuntu suites
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
+      - name: Start setup clock
+        id: clock
+        run: echo "started=$(date +%s)" >> "${GITHUB_OUTPUT}"
       - name: Download frozen source
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -477,47 +505,156 @@ jobs:
             --path "${RUNNER_TEMP}/qualification-venv"
       - name: Install the frozen source non-editably
         run: python -m pip install --no-cache-dir "./candidate[dev]"
-      - name: Run slow and canonical deterministic tests
-        working-directory: candidate
-        run: |
-          python -m pytest -q \
-            tests/test_knowledge_hardening.py::test_representative_knowledge_generation_stays_deterministic_and_within_budget \
-            -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true --junitxml=../evidence/slow.xml
-          python -m pytest -q \
-            tests/test_knowledge_performance.py::test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view \
-            tests/test_knowledge_performance.py::test_one_freshness_evaluation_and_zero_query_method_io \
-            tests/test_knowledge_performance.py::test_default_and_mcp_bounds_disclose_stress_truncation \
-            tests/test_knowledge_performance.py::test_exact_lookup_is_indexed_and_neighbor_work_is_local \
-            tests/test_knowledge_performance.py::test_thousands_scale_output_is_deterministic_across_shuffled_inputs \
-            tests/test_knowledge_scale.py::test_high_fanout_graph_keeps_evidence_and_query_output_bounded \
-            tests/test_knowledge_scale.py::test_recorded_scale_gate_is_reproducible_current_and_sanitized \
-            tests/test_context_packet.py::test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden \
-            tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_off_matches_protocol_baseline_golden \
-            tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_on_matches_deterministic_protocol_golden \
-            -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true --junitxml=../evidence/determinism.xml
-      - name: Upload gate evidence
+      - name: Run the qualifying Ubuntu union once
+        id: suites
+        run: >-
+          python -I incoming/tools/release/ubuntu_suites.py run
+          --mode union --purpose qualification
+          --root candidate --output evidence/ubuntu
+          --identity incoming/source/identity.json
+          --registry incoming/tools/release/ubuntu-suites.json
+          --harness incoming/tools/qualification-harnesses.tar
+          --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}"
+          --setup-started "${{ steps.clock.outputs.started }}"
+      - name: Upload complete Ubuntu execution and lineage
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
+          name: evidence-ubuntu-suites
+          path: evidence/ubuntu/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload evidence-rd-03 logical gate view
+        if: ${{ always() && steps.suites.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
           name: evidence-rd-03
-          path: evidence/
+          path: |
+            evidence/ubuntu/slow.xml
+            evidence/ubuntu/slow-projection.json
+            evidence/ubuntu/determinism.xml
+            evidence/ubuntu/determinism-projection.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload evidence-rd-04-ubuntu-24.04 logical gate view
+        if: ${{ always() && steps.suites.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-04-ubuntu-24.04
+          path: |
+            evidence/ubuntu/security-ubuntu-24.04.xml
+            evidence/ubuntu/security-ubuntu-24.04-projection.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload evidence-rd-05-ubuntu-24.04 logical gate view
+        if: ${{ always() && steps.suites.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-05-ubuntu-24.04
+          path: |
+            evidence/ubuntu/product-ubuntu-24.04.xml
+            evidence/ubuntu/product-ubuntu-24.04-projection.json
+          if-no-files-found: error
+          retention-days: 14
+
+  ubuntu-shadow:
+    name: Ubuntu suites shadow comparison
+    if: ${{ inputs.ubuntu-suite-shadow && !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    needs: freeze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Download frozen source
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-source
+          path: incoming/source
+      - name: Download qualification harness
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Set up Python 3.13
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Verify and extract qualification harnesses
+        id: harness
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
+            incoming/tools/qualification-harnesses.tar \
+            "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract \
+            incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+      - name: Execute independent legacy and union environments on one runner
+        id: comparison
+        run: >-
+          python -I incoming/tools/release/ubuntu_shadow.py
+          --archive incoming/source/candidate-source.tar
+          --identity incoming/source/identity.json
+          --harness incoming/tools/qualification-harnesses.tar
+          --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}"
+          --registry incoming/tools/release/ubuntu-suites.json
+          --work "${RUNNER_TEMP}/ubuntu-shadow-work"
+          --output evidence/ubuntu-shadow
+      - name: Upload evidence-rd-03
+        if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-03
+          path: evidence/ubuntu-shadow/legacy-slow
+          if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
+          retention-days: 14
+      - name: Upload evidence-rd-04-ubuntu-24.04
+        if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-04-ubuntu-24.04
+          path: evidence/ubuntu-shadow/legacy-security
+          if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
+          retention-days: 14
+      - name: Upload evidence-rd-05-ubuntu-24.04
+        if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-rd-05-ubuntu-24.04
+          path: evidence/ubuntu-shadow/legacy-product
+          if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
+          retention-days: 14
+      - name: Upload evidence-ubuntu-union
+        if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evidence-ubuntu-union
+          path: evidence/ubuntu-shadow/union
+          if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
+          retention-days: 14
+      - name: Upload ubuntu-shadow-comparison
+        if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ubuntu-shadow-comparison
+          path: evidence/ubuntu-shadow/diagnostics
           if-no-files-found: error
           retention-days: 14
 
   security-behavior:
     name: RD-04 security behavior (${{ matrix.os }})
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15]
+        os: [macos-15]
     defaults:
       run:
         shell: bash
+    timeout-minutes: 45
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -581,80 +718,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  product:
-    name: RD-05 product vectors (${{ matrix.os }})
-    if: ${{ !inputs.discovery-mode }}
-    needs: freeze
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04]
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: candidate-source
-          path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: qualification-harnesses
-          path: incoming/tools
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: "3.13"
-      - name: Verify and extract qualification harnesses
-        env:
-          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
-        run: |
-          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' \
-            incoming/tools/qualification-harnesses.tar \
-            "${EXPECTED_HARNESS_SHA256}"
-          python -I -m tarfile --extract \
-            incoming/tools/qualification-harnesses.tar incoming/tools
-          test -f incoming/tools/release/qualification.py
-          test -f incoming/tools/tests/release_artifact_smoke.py
-      - name: Extract and install the source
-        run: |
-          python -I incoming/tools/release/qualification.py extract-source \
-            --archive incoming/source/candidate-source.tar \
-            --sha256 "${{ needs.freeze.outputs.source-sha256 }}" \
-            --destination candidate
-          python -I incoming/tools/release/qualification.py create-venv \
-            --path "${RUNNER_TEMP}/qualification-venv"
-      - name: Install the frozen source non-editably
-        run: python -m pip install --no-cache-dir "./candidate[dev]"
-      - name: Run knowledge, documentation, and export vectors
-        shell: bash
-        working-directory: candidate
-        run: >-
-          python -m pytest -q
-          tests/test_knowledge_*.py
-          tests/test_documentation_*.py
-          tests/test_doctor.py
-          tests/test_context_packet.py
-          tests/test_eval_lite.py
-          tests/test_github_action.py
-          tests/test_site_*.py
-          tests/test_obsidian.py
-          -p no:cacheprovider --strict-config --strict-markers
-          -W error
-          -o xfail_strict=true
-          --junitxml="../evidence/product-${{ matrix.os }}.xml"
-      - name: Upload gate evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: evidence-rd-05-${{ matrix.os }}
-          path: evidence/
-          if-no-files-found: error
-          retention-days: 14
-
   mcp:
     name: RD-06 MCP SDK (Python ${{ matrix.python }})
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
@@ -725,7 +791,7 @@ jobs:
 
   toolchains:
     name: RD-07 prepared extractor toolchains
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -978,7 +1044,7 @@ jobs:
 
   oci:
     name: RD-08 real OCI isolation
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -1176,6 +1242,14 @@ jobs:
         working-directory: candidate
         run: |
           python -I release/static_checks.py --evidence ../evidence/security
+      - name: Verify Bandit decision parity on owned controls and candidate source
+        if: ${{ inputs.bandit-parity-verification }}
+        working-directory: candidate
+        run: >-
+          python -m tests.bandit_contract_probe
+          --pipeline
+          --project-evidence ../evidence/security
+          --output ../evidence/bandit-parity
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -1187,7 +1261,7 @@ jobs:
 
   action:
     name: RD-10 hosted composite Action
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -1528,7 +1602,7 @@ jobs:
 
   build:
     name: RD-11 independent build ${{ matrix.copy }}
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
@@ -1597,7 +1671,7 @@ jobs:
 
   reproducible:
     name: RD-11 compare independent build bytes
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: [freeze, build]
     runs-on: ubuntu-24.04
     steps:
@@ -1641,7 +1715,7 @@ jobs:
 
   artifact-smoke:
     name: RD-12 artifact-only ${{ matrix.kind }} smoke
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: [freeze, reproducible]
     runs-on: ubuntu-24.04
     strategy:
@@ -1723,7 +1797,7 @@ jobs:
 
   smoke-parity:
     name: RD-12 wheel/sdist parity
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
     needs: [freeze, artifact-smoke]
     runs-on: ubuntu-24.04
     steps:
@@ -1765,13 +1839,13 @@ jobs:
 
   owner-lanes:
     name: Require every allowlisted skip owner to pass
-    if: ${{ always() && !inputs.discovery-mode && needs.freeze.result == 'success' }}
+    if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
     needs:
       - freeze
+      - ubuntu-shadow
       - core
-      - slow
+      - ubuntu-suites
       - security-behavior
-      - product
       - mcp
       - toolchains
       - oci
@@ -1813,10 +1887,15 @@ jobs:
           --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
           --destination candidate
       - name: Verify reviewed owners against hosted lane results
+        if: ${{ !inputs.ubuntu-suite-shadow }}
         run: |
           test "${{ needs.core.result }}" = "success"
           python -I incoming/tools/release/qualification.py verify-owner-lanes \
             --identity incoming/source/identity.json \
+            --ubuntu-union incoming/owner-evidence/evidence-ubuntu-suites \
+            --ubuntu-union-result "${{ needs.ubuntu-suites.result }}" \
+            --ubuntu-purpose qualification \
+            --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}" \
             --allowlist candidate/release/skip-allowlist.json \
             --owner-result "core-ubuntu-3.10=${{ needs.core.result }}" \
             --owner-junit "core-ubuntu-3.10=incoming/owner-evidence/evidence-core-ubuntu-3.10/core-ubuntu-3.10.xml" \
@@ -1824,18 +1903,64 @@ jobs:
             --owner-junit "core-windows-3.13=incoming/owner-evidence/evidence-core-windows-3.13/core-windows-3.13.xml" \
             --owner-result "core-macos-3.14=${{ needs.core.result }}" \
             --owner-junit "core-macos-3.14=incoming/owner-evidence/evidence-core-macos-3.14/core-macos-3.14.xml" \
-            --owner-result "slow=${{ needs.slow.result }}" \
-            --owner-junit "slow=incoming/owner-evidence/evidence-rd-03/slow.xml" \
-            --owner-result "determinism=${{ needs.slow.result }}" \
-            --owner-junit "determinism=incoming/owner-evidence/evidence-rd-03/determinism.xml" \
-            --owner-result "security-ubuntu-24.04=${{ needs.security-behavior.result }}" \
-            --owner-junit "security-ubuntu-24.04=incoming/owner-evidence/evidence-rd-04-ubuntu-24.04/security-ubuntu-24.04.xml" \
+            --owner-result "slow=${{ needs.ubuntu-suites.result }}" \
+            --owner-junit "slow=incoming/owner-evidence/evidence-ubuntu-suites/slow.xml" \
+            --owner-result "determinism=${{ needs.ubuntu-suites.result }}" \
+            --owner-junit "determinism=incoming/owner-evidence/evidence-ubuntu-suites/determinism.xml" \
+            --owner-result "security-ubuntu-24.04=${{ needs.ubuntu-suites.result }}" \
+            --owner-junit "security-ubuntu-24.04=incoming/owner-evidence/evidence-ubuntu-suites/security-ubuntu-24.04.xml" \
             --owner-result "security-windows-2025=${{ needs.core.result }}" \
             --owner-junit "security-windows-2025=incoming/owner-evidence/evidence-rd-04-windows-2025/security-windows-2025.xml" \
             --owner-result "security-macos-15=${{ needs.security-behavior.result }}" \
             --owner-junit "security-macos-15=incoming/owner-evidence/evidence-rd-04-macos-15/security-macos-15.xml" \
-            --owner-result "product-ubuntu-24.04=${{ needs.product.result }}" \
-            --owner-junit "product-ubuntu-24.04=incoming/owner-evidence/evidence-rd-05-ubuntu-24.04/product-ubuntu-24.04.xml" \
+            --owner-result "product-ubuntu-24.04=${{ needs.ubuntu-suites.result }}" \
+            --owner-junit "product-ubuntu-24.04=incoming/owner-evidence/evidence-ubuntu-suites/product-ubuntu-24.04.xml" \
+            --owner-result "product-windows-2025=${{ needs.core.result }}" \
+            --owner-junit "product-windows-2025=incoming/owner-evidence/evidence-rd-05-windows-2025/product-windows-2025.xml" \
+            --owner-result "mcp-3.10=${{ needs.mcp.result }}" \
+            --owner-junit "mcp-3.10=incoming/owner-evidence/evidence-rd-06-3.10/mcp-3.10.xml" \
+            --owner-result "mcp-3.13=${{ needs.mcp.result }}" \
+            --owner-junit "mcp-3.13=incoming/owner-evidence/evidence-rd-06-3.13/mcp-3.13.xml" \
+            --owner-result "toolchains=${{ needs.toolchains.result }}" \
+            --owner-junit "toolchains=incoming/owner-evidence/evidence-rd-07/toolchains.xml" \
+            --owner-result "oci=${{ needs.oci.result }}" \
+            --owner-junit "oci=incoming/owner-evidence/evidence-rd-08/oci.xml" \
+            --output owner-lane-verification.json
+      - name: Verify shadow union owners against hosted lane results
+        if: ${{ inputs.ubuntu-suite-shadow }}
+        run: |
+          if [ "${{ needs.core.result }}" != "success" ]; then
+            echo "Owner verification blocked: core producers ended with ${{ needs.core.result }}" >&2
+            exit 1
+          fi
+          if [ "${{ needs.ubuntu-shadow.result }}" != "success" ]; then
+            echo "Owner verification blocked: Ubuntu shadow ended with ${{ needs.ubuntu-shadow.result }}; inspect ubuntu-shadow-comparison diagnostics" >&2
+            exit 1
+          fi
+          python -I incoming/tools/release/qualification.py verify-owner-lanes \
+            --identity incoming/source/identity.json \
+            --ubuntu-union incoming/owner-evidence/evidence-ubuntu-union \
+            --ubuntu-union-result "${{ needs.ubuntu-shadow.result }}" \
+            --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}" \
+            --allowlist candidate/release/skip-allowlist.json \
+            --owner-result "core-ubuntu-3.10=${{ needs.core.result }}" \
+            --owner-junit "core-ubuntu-3.10=incoming/owner-evidence/evidence-core-ubuntu-3.10/core-ubuntu-3.10.xml" \
+            --owner-result "core-windows-3.13=${{ needs.core.result }}" \
+            --owner-junit "core-windows-3.13=incoming/owner-evidence/evidence-core-windows-3.13/core-windows-3.13.xml" \
+            --owner-result "core-macos-3.14=${{ needs.core.result }}" \
+            --owner-junit "core-macos-3.14=incoming/owner-evidence/evidence-core-macos-3.14/core-macos-3.14.xml" \
+            --owner-result "slow=${{ needs.ubuntu-shadow.result }}" \
+            --owner-junit "slow=incoming/owner-evidence/evidence-ubuntu-union/slow.xml" \
+            --owner-result "determinism=${{ needs.ubuntu-shadow.result }}" \
+            --owner-junit "determinism=incoming/owner-evidence/evidence-ubuntu-union/determinism.xml" \
+            --owner-result "security-ubuntu-24.04=${{ needs.ubuntu-shadow.result }}" \
+            --owner-junit "security-ubuntu-24.04=incoming/owner-evidence/evidence-ubuntu-union/security-ubuntu-24.04.xml" \
+            --owner-result "security-windows-2025=${{ needs.core.result }}" \
+            --owner-junit "security-windows-2025=incoming/owner-evidence/evidence-rd-04-windows-2025/security-windows-2025.xml" \
+            --owner-result "security-macos-15=${{ needs.security-behavior.result }}" \
+            --owner-junit "security-macos-15=incoming/owner-evidence/evidence-rd-04-macos-15/security-macos-15.xml" \
+            --owner-result "product-ubuntu-24.04=${{ needs.ubuntu-shadow.result }}" \
+            --owner-junit "product-ubuntu-24.04=incoming/owner-evidence/evidence-ubuntu-union/product-ubuntu-24.04.xml" \
             --owner-result "product-windows-2025=${{ needs.core.result }}" \
             --owner-junit "product-windows-2025=incoming/owner-evidence/evidence-rd-05-windows-2025/product-windows-2025.xml" \
             --owner-result "mcp-3.10=${{ needs.mcp.result }}" \
@@ -1857,13 +1982,21 @@ jobs:
 
   bundle:
     name: Assemble immutable qualified release
-    if: ${{ !inputs.discovery-mode }}
+    # The optional shadow ancestor is skipped in normal runs. Override implicit
+    # success(), then require every direct qualifying producer explicitly.
+    if: >-
+      ${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow
+          && needs.freeze.result == 'success' && needs.core.result == 'success'
+          && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success'
+          && needs.mcp.result == 'success' && needs.toolchains.result == 'success'
+          && needs.oci.result == 'success' && needs.static.result == 'success'
+          && needs.action.result == 'success' && needs.reproducible.result == 'success'
+          && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success' }}
     needs:
       - freeze
       - core
-      - slow
+      - ubuntu-suites
       - security-behavior
-      - product
       - mcp
       - toolchains
       - oci
@@ -1875,6 +2008,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+      actions: read
       id-token: write
       attestations: write
     outputs:
@@ -1930,9 +2064,12 @@ jobs:
           --gate "RD-00=${{ needs.freeze.result }}"
           --gate "RD-01=${{ needs.core.result }}"
           --gate "RD-02=${{ needs.owner-lanes.result }}"
-          --gate "RD-03=${{ needs.slow.result }}"
+          --gate "RD-03=${{ needs.ubuntu-suites.result }}"
           --gate "RD-04=${{ needs.security-behavior.result }}"
-          --gate "RD-05=${{ needs.product.result }}"
+          --gate-dependency "RD-04=${{ needs.core.result }}"
+          --gate-dependency "RD-04=${{ needs.ubuntu-suites.result }}"
+          --gate "RD-05=${{ needs.ubuntu-suites.result }}"
+          --gate-dependency "RD-05=${{ needs.core.result }}"
           --gate "RD-06=${{ needs.mcp.result }}"
           --gate "RD-07=${{ needs.toolchains.result }}"
           --gate "RD-08=${{ needs.oci.result }}"
@@ -1944,6 +2081,8 @@ jobs:
           --allow-non-go-exit-zero
           --output gate-decision.json
       - name: Build versioned release bundle
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         id: bundle
         run: >-
           python -I incoming/tools/release/qualification.py build-bundle
@@ -1960,6 +2099,7 @@ jobs:
           --evidence "RD-01:macos=incoming/gates/evidence-core-macos-3.14"
           --evidence "RD-02:owners=incoming/gates/evidence-owner-lanes"
           --evidence "RD-03:slow=incoming/gates/evidence-rd-03"
+          --evidence "RD-03:union=incoming/gates/evidence-ubuntu-suites"
           --evidence "RD-04:ubuntu=incoming/gates/evidence-rd-04-ubuntu-24.04"
           --evidence "RD-04:windows=incoming/gates/evidence-rd-04-windows-2025"
           --evidence "RD-04:macos=incoming/gates/evidence-rd-04-macos-15"
@@ -1976,8 +2116,13 @@ jobs:
           --evidence "RD-12:sdist=incoming/sdist/smoke-sdist.json"
           --evidence "RD-12:comparison=incoming/comparison/smoke-comparison.json"
           --workflow-run-id "${{ github.run_id }}"
+          --workflow-run-attempt "${{ github.run_attempt }}"
+          --harness-sha256 "${{ needs.freeze.outputs.harness-sha256 }}"
+          --suite-layout union
           --output qualified-release
       - name: Self-verify the completed bundle
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: >-
           python -I incoming/tools/release/qualification.py verify-bundle
           --bundle qualified-release
@@ -2007,13 +2152,12 @@ jobs:
 
   decision:
     name: Aggregate RD-00 through RD-13
-    if: ${{ always() && !inputs.discovery-mode }}
+    if: ${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}
     needs:
       - freeze
       - core
-      - slow
+      - ubuntu-suites
       - security-behavior
-      - product
       - mcp
       - toolchains
       - oci
@@ -2051,9 +2195,12 @@ jobs:
           --gate "RD-00=${{ needs.freeze.result }}"
           --gate "RD-01=${{ needs.core.result }}"
           --gate "RD-02=${{ needs.owner-lanes.result }}"
-          --gate "RD-03=${{ needs.slow.result }}"
+          --gate "RD-03=${{ needs.ubuntu-suites.result }}"
           --gate "RD-04=${{ needs.security-behavior.result }}"
-          --gate "RD-05=${{ needs.product.result }}"
+          --gate-dependency "RD-04=${{ needs.core.result }}"
+          --gate-dependency "RD-04=${{ needs.ubuntu-suites.result }}"
+          --gate "RD-05=${{ needs.ubuntu-suites.result }}"
+          --gate-dependency "RD-05=${{ needs.core.result }}"
           --gate "RD-06=${{ needs.mcp.result }}"
           --gate "RD-07=${{ needs.toolchains.result }}"
           --gate "RD-08=${{ needs.oci.result }}"
@@ -2064,6 +2211,14 @@ jobs:
           --gate "RD-13=BLOCKED"
           --allow-non-go-exit-zero
           --output decision.json
+      - name: Require complete pre-promotion qualification
+        if: ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
+        run: >-
+          python -I incoming/tools/release/qualification.py verify-qualification-completion
+          --decision decision.json
+          --candidate-sha "${{ needs.freeze.outputs.sha }}"
+          --candidate-version "${{ needs.freeze.outputs.version }}"
+          --bundle-result "${{ needs.bundle.result }}"
       - name: Upload pre-promotion decision
         if: ${{ always() && needs.freeze.result == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

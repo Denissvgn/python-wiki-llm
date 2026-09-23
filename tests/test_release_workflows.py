@@ -68,6 +68,24 @@ def test_all_workflow_actions_are_pinned_to_full_commits() -> None:
         )
 
 
+def test_routine_ci_checks_the_full_release_typing_surface() -> None:
+    job = _yaml("ci.yml")["jobs"]["typecheck"]
+    assert job["runs-on"] == "ubuntu-24.04"
+    assert not job.get("continue-on-error")
+    install = next(step for step in job["steps"] if step.get("name") == "Install release typing dependencies")
+    assert '".[dev,mcp,tokens]"' in install["run"]
+    assert "--require-hashes -r release/requirements.txt" in install["run"]
+    assert "examples/fastapi-contracts/requirements-ci.txt" in install["run"]
+    check = next(step for step in job["steps"] if step.get("name") == "Check the complete project type surface")
+    assert check["shell"] == "bash"  # GitHub's bash invocation enables pipefail.
+    assert check["run"].split() == [
+        '"${{', 'steps.python.outputs.python-path', '}}"', '-m', 'pyright',
+        '--pythonpath', '"${{', 'steps.python.outputs.python-path', '}}"',
+        '|', 'tee', 'pyright.log',
+    ]
+    assert not check.get("continue-on-error")
+
+
 def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None:
     attribute_lines = [
         line.split()
@@ -90,12 +108,12 @@ def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None
 
     manifest = SyncManifest.load(ROOT / "docs" / "llm_wiki")
     selected_sources = set(manifest.sources)
-    selection_inputs = {
-        item["path"]
-        for item in manifest.generation_inputs["source_selection_inputs"][
-            "inputs"
-        ]
-    }
+    selection = manifest.generation_inputs["source_selection_inputs"]
+    assert isinstance(selection, dict) and isinstance(selection["inputs"], list)
+    selection_inputs = set()
+    for item in selection["inputs"]:
+        assert isinstance(item, dict) and isinstance(item["path"], str)
+        selection_inputs.add(item["path"])
     wiki_files = {
         path.relative_to(ROOT).as_posix()
         for path in (ROOT / "docs" / "llm_wiki").rglob("*")
@@ -732,7 +750,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
     assert harness_consumers == 17
 
-    for job_name in ("core", "slow", "security-behavior", "product", "mcp"):
+    for job_name in ("core", "ubuntu-suites", "security-behavior", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
         assert "candidate-source" in text
         assert "extract-source" in text
@@ -1215,9 +1233,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
 
     source_test_jobs = (
         "core",
-        "slow",
         "security-behavior",
-        "product",
         "mcp",
         "toolchains",
         "oci",
@@ -1342,20 +1358,45 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     assert "--minimum-passed 2" in mcp_verifier
 
 
+def test_bandit_parity_is_opt_in_and_uses_current_static_evidence() -> None:
+    workflow = _yaml("release-qualification.yml")
+    triggers = workflow.get("on", workflow.get(True))
+    assert isinstance(triggers, dict)
+    option = triggers["workflow_dispatch"]["inputs"]["bandit-parity-verification"]
+    assert option["type"] == "boolean" and option["default"] is False
+    job = workflow["jobs"]["static"]
+    names = [step.get("name") for step in job["steps"]]
+    name = "Verify Bandit decision parity on owned controls and candidate source"
+    assert names.index("Run static checks") < names.index(name) < names.index("Upload gate evidence")
+    check = _named_step(job, name)
+    assert check["if"] == "${{ inputs.bandit-parity-verification }}"
+    assert check["working-directory"] == "candidate"
+    assert "--project-evidence ../evidence/security" in check["run"]
+    assert "--output ../evidence/bandit-parity" in check["run"] and "--pipeline" in check["run"]
+    assert "continue-on-error" not in check
+    assert _named_step(job, "Upload gate evidence")["if"] == "always()"
+    for job_name, candidate_job in workflow["jobs"].items():
+        if job_name not in {"freeze", "static", "decision"}:
+            assert "!inputs.bandit-parity-verification" in candidate_job["if"], job_name
+    assert workflow["jobs"]["static"]["if"] == "${{ !inputs.discovery-mode }}"
+    assert "always()" in workflow["jobs"]["decision"]["if"]
+    binding = _named_step(workflow["jobs"]["freeze"], "Bind the workflow definition to the candidate")
+    assert "mutually exclusive" in binding["run"]
+
+
 def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> None:
     workflow = _yaml("release-qualification.yml")
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}"
+            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}"
         ),
         "cancel-in-progress": True,
     }
     jobs = workflow["jobs"]
     for job_name in (
-        "slow",
+        "ubuntu-suites",
         "security-behavior",
-        "product",
         "mcp",
         "toolchains",
         "oci",
@@ -1365,13 +1406,17 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         "reproducible",
         "artifact-smoke",
         "smoke-parity",
-        "bundle",
     ):
-        assert jobs[job_name]["if"] == "${{ !inputs.discovery-mode }}"
+        expected = "${{ !inputs.discovery-mode }}" if job_name == "static" else "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}"
+        if job_name == "ubuntu-suites":
+            expected = "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}"
+        assert jobs[job_name]["if"] == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
     assert jobs["decision"]["if"] == (
-        "${{ always() && !inputs.discovery-mode }}"
+        "${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}"
     )
+    for mode in ["discovery-mode", "bandit-parity-verification", "ubuntu-suite-shadow"]:
+        assert f"!inputs.{mode}" in jobs["bundle"]["if"]
 
     discovery = jobs["discovery-allowlist"]
     assert "inputs.discovery-mode" in discovery["if"]
@@ -1398,13 +1443,8 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
 def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
     workflow = _yaml("release-qualification.yml")
     jobs = workflow["jobs"]
-    assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == [
-        "ubuntu-24.04",
-        "macos-15",
-    ]
-    assert jobs["product"]["strategy"]["matrix"]["os"] == [
-        "ubuntu-24.04"
-    ]
+    assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == ["macos-15"]
+    assert "product" not in jobs
 
     core = jobs["core"]
     security_projection = _named_step(
@@ -1774,3 +1814,164 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
             "Windows does not expose a POSIX hook execute-bit contract",
         ),
     }
+
+
+def test_windows_pr_ci_covers_the_noneditable_venv_probe_topology() -> None:
+    job = _yaml("ci.yml")["jobs"]["test"]
+    probe = _named_step(job, "Verify stdin harness inside a native Windows venv")
+    assert probe["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert "python -m venv" in probe["run"]
+    assert 'stdio-venv/Scripts/python.exe" -m pip install ".[dev]"' in probe["run"]
+    assert "tests/test_readonly_subprocess_stdin.py" in probe["run"]
+    assert "--strict-config" in probe["run"] and "--strict-markers" in probe["run"]
+    assert "-W error -o xfail_strict=true" in probe["run"]
+    assert "GITHUB_PATH" not in probe["run"]
+    assert "continue-on-error" not in probe
+    upload = _named_step(job, "Upload native Windows venv probe evidence")
+    assert "always()" in upload["if"]
+    assert "stdio-venv.log" in upload["with"]["path"] and "stdio-venv.xml" in upload["with"]["path"]
+
+
+def test_qualification_binds_hosted_artifacts_at_build_and_promotion() -> None:
+    workflow = _yaml("release-qualification.yml")
+    freeze = _named_step(workflow["jobs"]["freeze"], "Freeze and digest tracked qualification harnesses")["run"]
+    assert "release/hosted_evidence.py" in freeze
+    bundle = workflow["jobs"]["bundle"]
+    assert bundle["permissions"]["actions"] == "read"
+    for name in ["Build versioned release bundle", "Self-verify the completed bundle"]:
+        step = _named_step(bundle, name)
+        assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+    command = _named_step(bundle, "Build versioned release bundle")["run"]
+    assert "--workflow-run-attempt" in command and "--harness-sha256" in command
+    assert "--suite-layout" in command
+    promotion = _yaml("publish.yml")["jobs"]["verify"]
+    verifier = next(step for step in promotion["steps"] if step.get("id") == "verify")
+    assert verifier["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
+def test_normal_union_producer_artifacts_and_consumers_are_integrated() -> None:
+    from release import hosted_evidence, optimization_evidence, ubuntu_suites
+
+    workflow = _yaml("release-qualification.yml")
+    jobs = workflow["jobs"]
+    expanded = [
+        optimization_evidence.resolve(job, row)
+        for job in jobs.values()
+        for row in optimization_evidence.matrix_rows(job)
+    ]
+    # Names here are an external REST contract, including matrix expansion.
+    for artifact, producer, _required in hosted_evidence.artifact_contract(
+        "union"
+    ).values():
+        matches = [job for job in expanded if job["name"] == producer]
+        assert len(matches) == 1, producer
+        uploads = [
+            step
+            for step in matches[0]["steps"]
+            if step.get("uses", "").startswith("actions/upload-artifact@")
+            and step["with"]["name"] == artifact
+        ]
+        assert len(uploads) == 1, artifact
+        assert uploads[0]["with"]["if-no-files-found"] == "error"
+    assert hosted_evidence.REQUIRED_JOBS <= {job["name"] for job in expanded}
+
+    union = jobs["ubuntu-suites"]
+    run = _named_step(union, "Run the qualifying Ubuntu union once")["run"]
+    assert "--mode union --purpose qualification" in run
+    assert "--root candidate" in run
+    assert "--harness-sha256" in run
+    assert (
+        len(
+            [
+                step
+                for step in union["steps"]
+                if "ubuntu_suites.py run" in step.get("run", "")
+            ]
+        )
+        == 1
+    )
+    assert (
+        "always()"
+        in _named_step(union, "Upload complete Ubuntu execution and lineage")["if"]
+    )
+    for artifact in [
+        "evidence-rd-03",
+        "evidence-rd-04-ubuntu-24.04",
+        "evidence-rd-05-ubuntu-24.04",
+    ]:
+        upload = _named_step(union, f"Upload {artifact} logical gate view")
+        assert "steps.suites.outcome == 'success'" in upload["if"]
+        assert "projection.json" in upload["with"]["path"]
+
+    owners = _named_step(
+        jobs["owner-lanes"], "Verify reviewed owners against hosted lane results"
+    )["run"]
+    assert "--ubuntu-purpose qualification" in owners
+    for lane in ubuntu_suites.LANES:
+        assert (
+            f'--owner-junit "{lane}=incoming/owner-evidence/evidence-ubuntu-suites/{lane}.xml"'
+            in owners
+        )
+        assert (
+            f'--owner-result "{lane}=${{{{ needs.ubuntu-suites.result }}}}"' in owners
+        )
+    builder = _named_step(jobs["bundle"], "Build versioned release bundle")["run"]
+    assert '--evidence "RD-03:union=incoming/gates/evidence-ubuntu-suites"' in builder
+    assert "--suite-layout union" in builder
+
+    for name in ["owner-lanes", "bundle", "decision"]:
+        assert {"ubuntu-suites", "core", "security-behavior"} <= set(
+            jobs[name]["needs"]
+        )
+    for name in ["bundle", "decision"]:
+        commands = "\n".join(step.get("run", "") for step in jobs[name]["steps"])
+        assert '--gate "RD-04=${{ needs.security-behavior.result }}"' in commands
+        assert '--gate-dependency "RD-04=${{ needs.core.result }}"' in commands
+        assert '--gate-dependency "RD-04=${{ needs.ubuntu-suites.result }}"' in commands
+    serialized = json.dumps(workflow)
+    for removed in ["slow", "product", "shadow-security-macos"]:
+        assert removed not in jobs
+        assert f"needs.{removed}." not in serialized
+        assert not any(removed in job.get("needs", []) for job in jobs.values())
+
+
+def test_bundle_overrides_skipped_ancestors_but_requires_every_producer() -> None:
+    jobs = _yaml("release-qualification.yml")["jobs"]
+    bundle = jobs["bundle"]
+    assert "ubuntu-shadow" in jobs["owner-lanes"]["needs"]
+    assert "ubuntu-shadow" not in bundle["needs"]
+    # A status function is essential: GitHub otherwise injects success() and
+    # propagates the intentionally skipped shadow ancestor to this normal job.
+    condition = bundle["if"].removeprefix("${{").removesuffix("}}")
+    clauses = [term.strip() for term in condition.split("&&")]
+    expected = {
+        "!cancelled()",
+        "!inputs.discovery-mode",
+        "!inputs.bandit-parity-verification",
+        "!inputs.ubuntu-suite-shadow",
+        *(f"needs.{name}.result == 'success'" for name in bundle["needs"]),
+    }
+    assert set(clauses) == expected and len(clauses) == len(expected)
+    assert "continue-on-error" not in bundle
+
+
+def test_final_decision_requires_bundle_success_without_qualifying_diagnostics() -> (
+    None
+):
+    jobs = _yaml("release-qualification.yml")["jobs"]
+    job = jobs["decision"]
+    assert "bundle" in job["needs"]
+    step = _named_step(job, "Require complete pre-promotion qualification")
+    assert step["if"] == (
+        "${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}"
+    )
+    assert "verify-qualification-completion" in step["run"]
+    assert '--bundle-result "${{ needs.bundle.result }}"' in step["run"]
+    assert '--candidate-sha "${{ needs.freeze.outputs.sha }}"' in step["run"]
+    assert '--candidate-version "${{ needs.freeze.outputs.version }}"' in step["run"]
+    assert "--decision decision.json" in step["run"]
+    assert "continue-on-error" not in step
+    names = [s.get("name") for s in job["steps"]]
+    assert names.index("Emit deterministic aggregate") < names.index(step["name"])
+    assert names.index(step["name"]) < names.index("Upload pre-promotion decision")
+    assert "always()" in _named_step(job, "Upload pre-promotion decision")["if"]

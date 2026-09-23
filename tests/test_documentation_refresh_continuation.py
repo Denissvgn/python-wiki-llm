@@ -18,6 +18,7 @@ from llm_wiki_cli.services.documentation_run import (
     prepare_documentation_run,
     record_documentation_agent_result,
 )
+from llm_wiki_cli.services.documentation_run.refresh import _prior_generated_descriptions
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME, SyncManifest
 
@@ -52,7 +53,7 @@ def _write_description_manifest(wiki: Path, version: int) -> None:
 @pytest.mark.parametrize("version", [4, 5, 6])
 def test_prior_generated_descriptions_follow_manifest_storage(tmp_path, version):
     _write_description_manifest(tmp_path, version)
-    assert documentation_run_service._prior_generated_descriptions(tmp_path) == {
+    assert _prior_generated_descriptions(tmp_path) == {
         "modules/app.md": "Generated module description.",
         "entities/Worker.md": "Generated entity description.",
     }
@@ -64,7 +65,7 @@ def test_prior_generated_descriptions_reject_missing_catalog(tmp_path):
     root = json.loads((tmp_path / MANIFEST_FILENAME).read_bytes())
     (tmp_path / object_path(root["catalogs"]["sources"]["hash"])).unlink()
     with pytest.raises(DocumentationIntegrityError, match="prior manifest"):
-        documentation_run_service._prior_generated_descriptions(tmp_path)
+        _prior_generated_descriptions(tmp_path)
 
 
 def _install_fake_bootstrap(monkeypatch: pytest.MonkeyPatch) -> None:

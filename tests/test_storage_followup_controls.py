@@ -29,6 +29,7 @@ def test_batched_ranges_charge_exact_bytes_and_release_their_handles(tmp_path):
     keys = [('pack', 0, 3, 10), ('pack', 3, 2, 10), ('pack', 8, 2, 10)]
     with session.phase():
         phase = session._phase
+        assert phase is not None
         assert session.read_ranges(keys) == [b'012', b'34', b'89']
         assert session.reads == 2 and session.bytes_read == 7
         streams = [item[0] for item in phase.files.values()]
@@ -75,6 +76,7 @@ def test_handle_budget_is_bounded_and_cancellation_closes_everything(tmp_path):
     with pytest.raises(KnowledgeStorageError, match='cancelled'):
         with session.phase():
             phase = session._phase
+            assert phase is not None
             for path in paths:
                 session.read(path.name, 7)
                 assert len(phase.files) + len(phase.directories) <= 32
@@ -82,6 +84,7 @@ def test_handle_budget_is_bounded_and_cancellation_closes_everything(tmp_path):
             cancelled = True
             session.read(paths[0].name, 7)
     assert all(stream.closed for stream in streams)
+    assert phase is not None
     assert not phase.files and not phase.directories
 
 

@@ -32,8 +32,10 @@ def test_local_profile_is_explicit_lossless_and_preserved_by_writers(tmp_path, c
     assert current_knowledge_format(tmp_path) == target
     state = load_knowledge_state(tmp_path)
     assert state.knowledge is not None
-    reader = packs.open_knowledge_store(validated_artifact_bytes(state.validated_artifacts)[1],
-        lambda path, _: state.validated_artifacts.storage_objects[path])
+    artifacts = state.validated_artifacts
+    assert artifacts is not None and state.manifest_basis is not None
+    reader = packs.open_knowledge_store(validated_artifact_bytes(artifacts)[1],
+        lambda path, _: artifacts.storage_objects[path])
     assert reader.materialize() == json.loads(previous.knowledge_index.content)
     unchanged = build_knowledge_commit_plan(tmp_path, surface_index_bytes=previous.surface_index.content,
         knowledge_index_bytes=previous.knowledge_index.content, manifest=state.manifest_basis,
@@ -53,11 +55,12 @@ def test_local_profile_schema_and_catalog_bounds():
     plan = packs._pack_logical(logical, 'deflate', None, None, packs.LOCAL_PACK_PROFILE)
     reader = packs.open_knowledge_store(plan.root_bytes, lambda path, _: plan.objects[path])
     assert reader.materialize() == payload
-    schemas = [json.loads(files('llm_wiki_cli').joinpath('schemas', name).read_text()) for name in (
+    schemas = [json.loads(files('llm_wiki_cli').joinpath('schemas').joinpath(name).read_text()) for name in (
         'llm-wiki-knowledge-v1.schema.json', 'llm-wiki-knowledge-v2.schema.json', 'llm-wiki-knowledge-v4.schema.json',
         'llm-wiki-knowledge-pack-index-v2.schema.json')]
     registry = Registry().with_resources((s['$id'], Resource.from_contents(s)) for s in schemas)
     Draft202012Validator(schemas[2], registry=registry).validate(json.loads(plan.root_bytes))
+    assert isinstance(reader, packs.PackedKnowledgeStoreReader)
     assert all(len(node.get('members', node.get('packs', {}))) <= 24 for node in reader._indexes.values())
     changed = json.loads(plan.root_bytes)
     changed['packing']['profile'] = 'future'

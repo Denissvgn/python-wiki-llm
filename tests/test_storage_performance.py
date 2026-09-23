@@ -97,6 +97,7 @@ def test_validated_pack_reuse_avoids_compression_and_invalidates_changed_members
         knowledge_format=fmt)
     commit_knowledge_artifacts(plan)
     state = load_knowledge_state(tmp_path)
+    assert state.knowledge is not None and state.manifest_basis is not None
     payload = _model_to_payload(state.knowledge)
     with monkeypatch.context() as patch:
         def unexpected(*args, **kwargs):

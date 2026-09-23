@@ -1,0 +1,64 @@
+{
+  "schema_version": "agent-wiki-ubuntu-suites/v1",
+  "profile": {
+    "os": "ubuntu-24.04",
+    "python": "3.13",
+    "extras": [
+      "dev"
+    ],
+    "install": "noneditable"
+  },
+  "pytest_flags": [
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--strict-config",
+    "--strict-markers",
+    "-W",
+    "error",
+    "-o",
+    "xfail_strict=true"
+  ],
+  "gates": {
+    "slow": [
+      "tests/test_knowledge_hardening.py::test_representative_knowledge_generation_stays_deterministic_and_within_budget"
+    ],
+    "determinism": [
+      "tests/test_knowledge_performance.py::test_query_operation_uses_one_snapshot_one_deep_extraction_and_one_view",
+      "tests/test_knowledge_performance.py::test_one_freshness_evaluation_and_zero_query_method_io",
+      "tests/test_knowledge_performance.py::test_default_and_mcp_bounds_disclose_stress_truncation",
+      "tests/test_knowledge_performance.py::test_exact_lookup_is_indexed_and_neighbor_work_is_local",
+      "tests/test_knowledge_performance.py::test_thousands_scale_output_is_deterministic_across_shuffled_inputs",
+      "tests/test_knowledge_scale.py::test_high_fanout_graph_keeps_evidence_and_query_output_bounded",
+      "tests/test_knowledge_scale.py::test_recorded_scale_gate_is_reproducible_current_and_sanitized",
+      "tests/test_context_packet.py::test_packet_is_byte_stable_immutable_and_matches_cross_platform_golden",
+      "tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_off_matches_protocol_baseline_golden",
+      "tests/test_context.py::TestBuildContextPayload::test_prefer_fresh_flag_on_matches_deterministic_protocol_golden"
+    ],
+    "security-ubuntu-24.04": [
+      "tests/test_lockfile.py",
+      "tests/test_circuit_breaker.py",
+      "tests/test_redaction.py",
+      "tests/test_metrics.py",
+      "tests/test_config.py",
+      "tests/test_io.py",
+      "tests/test_protected_artifacts.py",
+      "tests/test_documentation_adversarial.py",
+      "tests/test_documentation_control_integrity.py",
+      "tests/test_documentation_input_recheck.py",
+      "tests/test_documentation_native_lifecycle.py",
+      "tests/test_resource_diagnostics.py",
+      "tests/test_api_exception_taxonomy.py"
+    ],
+    "product-ubuntu-24.04": [
+      "tests/test_knowledge_*.py",
+      "tests/test_documentation_*.py",
+      "tests/test_doctor.py",
+      "tests/test_context_packet.py",
+      "tests/test_eval_lite.py",
+      "tests/test_github_action.py",
+      "tests/test_site_*.py",
+      "tests/test_obsidian.py"
+    ]
+  }
+}

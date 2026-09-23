@@ -84,7 +84,7 @@ def test_windows_read_compares_ctime_within_its_observation_channel(tmp_path, mo
     options = {"offset": 1, "length": 3, "file_bytes": 6} if ranged else {}
     result = storage.read_guarded(tmp_path / "pack.zip", 6, **options)
     assert result.content == (b"bcd" if ranged else b"abcdef")
-    assert result.identity == storage._identity(metadata())
+    assert result.identity == (7, 11, stat.S_IFREG | 0o644, 6, 23, 100)
 
 
 @pytest.mark.parametrize("channel", ["path", "handle"])

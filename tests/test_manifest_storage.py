@@ -91,6 +91,7 @@ def test_owning_plan_preserves_v6_and_full_semantics(tmp_path, knowledge_format)
     assert stages[-1] is CommitStage.MANIFEST_WRITTEN
     current = load_knowledge_state(tmp_path)
     assert current.knowledge == state.knowledge
+    assert current.manifest_basis is not None and state.manifest_basis is not None
     assert current.manifest_basis.storage_version == 6
     assert current.manifest_basis.sources == state.manifest_basis.sources
     assert current.manifest_basis.evidence_baselines == state.manifest_basis.evidence_baselines
