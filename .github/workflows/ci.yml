@@ -11,6 +11,147 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  core-check-inputs:
+    name: Freeze core-check comparison inputs
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      enabled: ${{ steps.changes.outputs.enabled }}
+      inputs-sha256: ${{ steps.freeze.outputs.inputs-sha256 }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Detect core-check implementation changes
+        id: changes
+        env:
+          BASELINE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "${BASELINE_SHA}" HEAD -- \
+            .github/workflows/ci.yml release/core_check_performance.py \
+            tests/test_architecture_layers.py tests/python_source_inventory.py \
+            tests/test_python_source_inventory.py tests/test_public_docs_vocabulary.py \
+            tests/test_public_docs_performance.py tests/test_core_check_performance.py \
+            > core-check-changes.txt
+          if [[ -s core-check-changes.txt ]]; then
+            echo "enabled=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "enabled=false" >> "${GITHUB_OUTPUT}"
+          fi
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        if: ${{ steps.changes.outputs.enabled == 'true' }}
+        with:
+          python-version: "3.13"
+      - name: Freeze baseline policies and candidate inputs
+        id: freeze
+        if: ${{ steps.changes.outputs.enabled == 'true' }}
+        env:
+          BASELINE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: >-
+          python -I release/core_check_performance.py freeze
+          --baseline "${BASELINE_SHA}" --candidate "${GITHUB_SHA}"
+          --output core-check-inputs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ steps.changes.outputs.enabled == 'true' }}
+        with:
+          name: core-check-inputs
+          path: core-check-inputs/
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+
+  core-check-comparison:
+    name: Core-check comparison (${{ matrix.lane }})
+    needs: core-check-inputs
+    if: ${{ needs.core-check-inputs.outputs.enabled == 'true' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - lane: ubuntu-3.10
+            os: ubuntu-24.04
+            python: "3.10"
+            coverage: true
+          - lane: windows-3.13
+            os: windows-2025
+            python: "3.13"
+            coverage: false
+          - lane: macos-3.14
+            os: macos-15
+            python: "3.14"
+            coverage: false
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: core-check-inputs
+          path: incoming
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify the frozen helper before execution
+        env:
+          INPUTS_SHA256: ${{ needs.core-check-inputs.outputs.inputs-sha256 }}
+        run: |
+          python -I -c 'import hashlib, json, pathlib, sys; root = pathlib.Path(sys.argv[1]); raw = (root / "inputs.json").read_bytes(); assert hashlib.sha256(raw).hexdigest() == sys.argv[2], "input manifest digest mismatch"; manifest = json.loads(raw); assert hashlib.sha256((root / "core_check_performance.py").read_bytes()).hexdigest() == manifest["files"]["core_check_performance.py"], "helper digest mismatch"' incoming "${INPUTS_SHA256}"
+          python -I incoming/core_check_performance.py prepare \
+            --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" --work work
+          python -m venv .venv
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then
+            echo "CORE_PYTHON=${PWD}/.venv/Scripts/python.exe" >> "${GITHUB_ENV}"
+          else
+            echo "CORE_PYTHON=${PWD}/.venv/bin/python" >> "${GITHUB_ENV}"
+          fi
+      - name: Install the candidate profile noneditably
+        run: '"${CORE_PYTHON}" -m pip install --no-cache-dir "./work/candidate[dev,tokens]"'
+      - name: Run affected assertions and mutation controls
+        working-directory: work/candidate
+        env:
+          LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/candidate-source.tar
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: >-
+          "${CORE_PYTHON}" -m pytest
+          tests/test_architecture_layers.py tests/test_static_quality_architecture.py
+          tests/test_python_source_inventory.py tests/test_public_docs_vocabulary.py
+          tests/test_public_docs_performance.py tests/test_core_check_performance.py
+          -q -p no:cacheprovider --strict-config --strict-markers -W error
+          -o xfail_strict=true --junitxml=../../core-check-controls.xml
+      - name: Compare policies on identical candidate inputs
+        env:
+          INPUTS_SHA256: ${{ needs.core-check-inputs.outputs.inputs-sha256 }}
+          COVERAGE: ${{ matrix.coverage }}
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: |
+          coverage=()
+          if [[ "${COVERAGE}" == "true" ]]; then coverage=(--coverage); fi
+          "${CORE_PYTHON}" -I incoming/core_check_performance.py compare \
+            --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" \
+            --work work --output comparison --samples 2 "${coverage[@]}"
+      - name: Retain comparison and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: core-check-comparison-${{ matrix.lane }}
+          path: |
+            comparison/
+            core-check-controls.xml
+          if-no-files-found: warn
+          retention-days: 14
+
   typecheck:
     name: Python type checks
     runs-on: ubuntu-24.04
