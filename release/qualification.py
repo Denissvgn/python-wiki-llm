@@ -1453,6 +1453,23 @@ def _validate_qualification_decision(
     return gates
 
 
+def verify_qualification_completion(args: argparse.Namespace) -> int:
+    """Require the complete normal run while retaining the promotion boundary."""
+    _validate_qualification_decision(
+        load_json(args.decision),
+        identity={
+            "source": {"sha": args.candidate_sha},
+            "version": args.candidate_version,
+        },
+    )
+    if args.bundle_result != "success":
+        raise QualificationError(
+            f"qualified release bundle did not succeed: {args.bundle_result!r}"
+        )
+    print("Qualification complete; RD-13 remains BLOCKED pending promotion")
+    return 0
+
+
 def _copy_gate_evidence(
     specs: Sequence[str],
     *,
@@ -1528,19 +1545,55 @@ def _reject_shadow_evidence(root: Path) -> None:
     for path in paths:
         if path.suffix != ".json":
             continue
-        value = load_json(path)
-        if isinstance(value, dict) and (
-            value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
-            or value.get("schema_version") in {
-                "agent-wiki-ubuntu-execution/v1",
-                "agent-wiki-ubuntu-shadow-orchestration/v1",
-            }
-            or (value.get("schema_version") == "agent-wiki-ubuntu-execution/v2"
-                and value.get("purpose") != "qualification")
-            or (value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
-                and value.get("source_lane") == "ubuntu-union")
-        ):
-            raise QualificationError("Ubuntu shadow evidence cannot assemble or qualify a release")
+        # Diagnostic tools such as govulncheck emit a stream of JSON values.
+        # Inspect every value without treating that valid format as corrupt or
+        # overlooking a shadow marker after the first value. Gate receipts are
+        # still parsed separately with the single-document load_json contract.
+        try:
+            raw = path.read_text(encoding="utf-8")
+            decoder = json.JSONDecoder(
+                object_pairs_hook=_strict_object, parse_constant=_reject_constant
+            )
+            offset = 0
+            found = False
+            whitespace_pattern = re.compile(r"[ \t\r\n]*")
+            while offset < len(raw):
+                whitespace = whitespace_pattern.match(raw, offset)
+                assert whitespace is not None
+                offset = whitespace.end()
+                if offset == len(raw):
+                    break
+                value, offset = decoder.raw_decode(raw, offset)
+                found = True
+                _reject_shadow_value(value)
+            if not found:
+                raise QualificationError(f"{path} contains no JSON evidence")
+        except (OSError, ValueError) as exc:
+            raise QualificationError(
+                f"{path} is not readable strict JSON evidence: {exc}"
+            ) from exc
+
+
+def _reject_shadow_value(value: object) -> None:
+    if isinstance(value, dict) and (
+        value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
+        or value.get("schema_version")
+        in {
+            "agent-wiki-ubuntu-execution/v1",
+            "agent-wiki-ubuntu-shadow-orchestration/v1",
+        }
+        or (
+            value.get("schema_version") == "agent-wiki-ubuntu-execution/v2"
+            and value.get("purpose") != "qualification"
+        )
+        or (
+            value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
+            and value.get("source_lane") == "ubuntu-union"
+        )
+    ):
+        raise QualificationError(
+            "Ubuntu shadow evidence cannot assemble or qualify a release"
+        )
 
 
 
@@ -2824,6 +2877,13 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     decision.set_defaults(function=aggregate)
+
+    completion = subparsers.add_parser("verify-qualification-completion")
+    completion.add_argument("--decision", type=Path, required=True)
+    completion.add_argument("--candidate-sha", required=True)
+    completion.add_argument("--candidate-version", required=True)
+    completion.add_argument("--bundle-result", required=True)
+    completion.set_defaults(function=verify_qualification_completion)
 
     smoke = subparsers.add_parser("compare-smoke")
     smoke.add_argument("--wheel", type=Path, required=True)

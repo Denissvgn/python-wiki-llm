@@ -726,6 +726,114 @@ def test_final_promotion_aggregate_requires_all_gates_pass(tmp_path: Path) -> No
         assert qualification.aggregate(args) == expected
 
 
+@pytest.fixture
+def completion_arguments(tmp_path):
+    path = tmp_path / "decision.json"
+    qualification.aggregate(
+        argparse.Namespace(
+            candidate_sha=SHA,
+            candidate_version=VERSION,
+            gate=[f"{gate}=PASS" for gate in qualification.QUALIFIED_GATES]
+            + ["RD-13=BLOCKED"],
+            output=path,
+            allow_non_go_exit_zero=True,
+        )
+    )
+    return [
+        "verify-qualification-completion",
+        "--decision",
+        str(path),
+        "--candidate-sha",
+        SHA,
+        "--candidate-version",
+        VERSION,
+        "--bundle-result",
+        "success",
+    ]
+
+
+def test_complete_qualification_keeps_rd13_blocked(completion_arguments):
+    assert qualification.main(completion_arguments) == 0
+    decision = qualification.load_json(Path(completion_arguments[2]))
+    assert decision["blocked"] == ["RD-13"] and decision["decision"] == "BLOCKED"
+
+
+@pytest.mark.parametrize("result", ["skipped", "failure", "cancelled", "", "PASS"])
+def test_green_gate_summary_cannot_hide_incomplete_bundle(
+    completion_arguments, result, capsys
+):
+    completion_arguments[-1] = result
+    assert qualification.main(completion_arguments) == 2
+    assert "bundle did not succeed" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("gate", qualification.QUALIFIED_GATES)
+@pytest.mark.parametrize("status", ["FAIL", "BLOCKED"])
+def test_successful_bundle_cannot_hide_an_incomplete_gate(
+    completion_arguments, gate, status
+):
+    path = Path(completion_arguments[2])
+    payload = qualification.load_json(path)
+    payload["gates"][gate] = status
+    _write_json(path, payload)
+    assert qualification.main(completion_arguments) == 2
+
+
+@pytest.mark.parametrize("mutation", ["sha", "version", "missing", "rd13", "lists"])
+def test_completion_requires_the_exact_candidate_and_decision(
+    completion_arguments, mutation
+):
+    path = Path(completion_arguments[2])
+    payload = qualification.load_json(path)
+    if mutation == "sha":
+        payload["candidate_sha"] = "f" * 40
+    elif mutation == "version":
+        payload["candidate_version"] = "0.0.0"
+    elif mutation == "rd13":
+        payload["gates"]["RD-13"] = "PASS"
+    elif mutation == "lists":
+        payload["blocked"] = []
+    else:
+        path.unlink()
+    if mutation != "missing":
+        _write_json(path, payload)
+    assert qualification.main(completion_arguments) == 2
+
+
+def test_diagnostic_json_stream_does_not_relax_receipt_parsing(tmp_path):
+    path = tmp_path / "govulncheck.json"
+    path.write_text('{"config":{}}\n{\n"progress":{"message":"owned"}\n}\n')
+    qualification._reject_shadow_evidence(path)
+    with pytest.raises(qualification.QualificationError, match="strict JSON"):
+        qualification.load_json(path)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        '{"schema_version":"agent-wiki-ubuntu-shadow/v1"}',
+        '{"schema_version":"agent-wiki-ubuntu-execution/v2","purpose":"shadow"}',
+        '{"schema_version":"agent-wiki-release-junit-projection/v1","source_lane":"ubuntu-union"}',
+        '{"schema_version":"agent-wiki-ubuntu-shadow-orchestration/v1"}',
+    ],
+)
+def test_shadow_marker_in_later_json_record_is_rejected(tmp_path, value):
+    path = tmp_path / "diagnostic.json"
+    path.write_text('{"config":{}}\n' + value + "\n")
+    with pytest.raises(qualification.QualificationError, match="shadow evidence"):
+        qualification._reject_shadow_evidence(path)
+
+
+@pytest.mark.parametrize(
+    "raw", ["", " \n", "{}\ninvalid", '{}\n{"a":1,"a":2}', "{}\nNaN"]
+)
+def test_json_stream_scan_remains_strict(tmp_path, raw):
+    path = tmp_path / "diagnostic.json"
+    path.write_text(raw)
+    with pytest.raises(qualification.QualificationError):
+        qualification._reject_shadow_evidence(path)
+
+
 def _attestation_receipt(manifest: dict, predicate_type: str) -> list[dict]:
     workflow_uri = (
         f"https://github.com/{REPOSITORY}/"

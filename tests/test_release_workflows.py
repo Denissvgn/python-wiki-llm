@@ -1406,16 +1406,17 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         "reproducible",
         "artifact-smoke",
         "smoke-parity",
-        "bundle",
     ):
         expected = "${{ !inputs.discovery-mode }}" if job_name == "static" else "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}"
-        if job_name in {"bundle", "ubuntu-suites"}:
+        if job_name == "ubuntu-suites":
             expected = "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}"
         assert jobs[job_name]["if"] == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
     assert jobs["decision"]["if"] == (
         "${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}"
     )
+    for mode in ["discovery-mode", "bandit-parity-verification", "ubuntu-suite-shadow"]:
+        assert f"!inputs.{mode}" in jobs["bundle"]["if"]
 
     discovery = jobs["discovery-allowlist"]
     assert "inputs.discovery-mode" in discovery["if"]
@@ -1932,3 +1933,45 @@ def test_normal_union_producer_artifacts_and_consumers_are_integrated() -> None:
         assert removed not in jobs
         assert f"needs.{removed}." not in serialized
         assert not any(removed in job.get("needs", []) for job in jobs.values())
+
+
+def test_bundle_overrides_skipped_ancestors_but_requires_every_producer() -> None:
+    jobs = _yaml("release-qualification.yml")["jobs"]
+    bundle = jobs["bundle"]
+    assert "ubuntu-shadow" in jobs["owner-lanes"]["needs"]
+    assert "ubuntu-shadow" not in bundle["needs"]
+    # A status function is essential: GitHub otherwise injects success() and
+    # propagates the intentionally skipped shadow ancestor to this normal job.
+    condition = bundle["if"].removeprefix("${{").removesuffix("}}")
+    clauses = [term.strip() for term in condition.split("&&")]
+    expected = {
+        "!cancelled()",
+        "!inputs.discovery-mode",
+        "!inputs.bandit-parity-verification",
+        "!inputs.ubuntu-suite-shadow",
+        *(f"needs.{name}.result == 'success'" for name in bundle["needs"]),
+    }
+    assert set(clauses) == expected and len(clauses) == len(expected)
+    assert "continue-on-error" not in bundle
+
+
+def test_final_decision_requires_bundle_success_without_qualifying_diagnostics() -> (
+    None
+):
+    jobs = _yaml("release-qualification.yml")["jobs"]
+    job = jobs["decision"]
+    assert "bundle" in job["needs"]
+    step = _named_step(job, "Require complete pre-promotion qualification")
+    assert step["if"] == (
+        "${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}"
+    )
+    assert "verify-qualification-completion" in step["run"]
+    assert '--bundle-result "${{ needs.bundle.result }}"' in step["run"]
+    assert '--candidate-sha "${{ needs.freeze.outputs.sha }}"' in step["run"]
+    assert '--candidate-version "${{ needs.freeze.outputs.version }}"' in step["run"]
+    assert "--decision decision.json" in step["run"]
+    assert "continue-on-error" not in step
+    names = [s.get("name") for s in job["steps"]]
+    assert names.index("Emit deterministic aggregate") < names.index(step["name"])
+    assert names.index(step["name"]) < names.index("Upload pre-promotion decision")
+    assert "always()" in _named_step(job, "Upload pre-promotion decision")["if"]

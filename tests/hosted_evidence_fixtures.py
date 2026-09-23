@@ -49,6 +49,12 @@ class HostedEvidence:
         ):
             files = {filename: self.file_bytes(filename) for filename in required}
             files["producer-diagnostic.json"] = b'{"owned":true}\n'
+            if name == "evidence-rd-07":
+                # govulncheck -json writes multiple top-level JSON records.
+                files["govulncheck.json"] = (
+                    b'{"config":{"protocol_version":"v1.0.0"}}\n'
+                    b'{"progress":{"message":"owned diagnostic"}}\n'
+                )
             if name == "candidate-source":
                 files = {p.name: p.read_bytes() for p in source.iterdir()}
             if name == "qualification-harnesses":

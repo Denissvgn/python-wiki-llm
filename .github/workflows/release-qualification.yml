@@ -1982,7 +1982,16 @@ jobs:
 
   bundle:
     name: Assemble immutable qualified release
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+    # The optional shadow ancestor is skipped in normal runs. Override implicit
+    # success(), then require every direct qualifying producer explicitly.
+    if: >-
+      ${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow
+          && needs.freeze.result == 'success' && needs.core.result == 'success'
+          && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success'
+          && needs.mcp.result == 'success' && needs.toolchains.result == 'success'
+          && needs.oci.result == 'success' && needs.static.result == 'success'
+          && needs.action.result == 'success' && needs.reproducible.result == 'success'
+          && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success' }}
     needs:
       - freeze
       - core
@@ -2202,6 +2211,14 @@ jobs:
           --gate "RD-13=BLOCKED"
           --allow-non-go-exit-zero
           --output decision.json
+      - name: Require complete pre-promotion qualification
+        if: ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
+        run: >-
+          python -I incoming/tools/release/qualification.py verify-qualification-completion
+          --decision decision.json
+          --candidate-sha "${{ needs.freeze.outputs.sha }}"
+          --candidate-version "${{ needs.freeze.outputs.version }}"
+          --bundle-result "${{ needs.bundle.result }}"
       - name: Upload pre-promotion decision
         if: ${{ always() && needs.freeze.result == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
