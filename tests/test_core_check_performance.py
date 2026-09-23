@@ -8,6 +8,8 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tarfile
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -75,6 +77,23 @@ def frozen(frozen_base, tmp_path):
     return args, sha
 
 
+def _replace_archive(args, role, member, *, revision=None):
+    """Rebind an owned fixture so extraction, not digest validation, is exercised."""
+    archive = args.output / f"{role}-source.tar"
+    with tarfile.open(
+        archive,
+        "w:",
+        format=tarfile.PAX_FORMAT,
+        pax_headers={"comment": revision or getattr(args, role)},
+    ) as stream:
+        stream.addfile(member)
+    manifest = args.output / "inputs.json"
+    value = json.loads(manifest.read_text(encoding="utf-8"))
+    value["files"][archive.name] = performance.digest(archive)
+    performance.write(manifest, value)
+    return performance.digest(manifest)
+
+
 def test_freeze_prepare_and_worker_use_candidate_inputs_for_old_policy(
     frozen, tmp_path
 ):
@@ -121,6 +140,53 @@ def test_freeze_prepare_and_worker_use_candidate_inputs_for_old_policy(
             work / "baseline/tests/test_architecture_layers.py"
         ),
     )
+
+
+def test_prepare_requires_safe_extraction_before_creating_workspace(
+    frozen, tmp_path, monkeypatch
+):
+    args, sha = frozen
+    work = tmp_path / "work"
+    # Model an unpatched interpreter without weakening the real tarfile module.
+    monkeypatch.setattr(performance, "tarfile", SimpleNamespace())
+    with pytest.raises(RuntimeError, match="requires tarfile.data_filter"):
+        performance.prepare(
+            argparse.Namespace(inputs=args.output, inputs_sha256=sha, work=work)
+        )
+    assert not work.exists()
+
+
+@pytest.mark.parametrize("role", ["baseline", "candidate"])
+def test_prepare_identifies_the_archive_with_wrong_revision(frozen, tmp_path, role):
+    args, _ = frozen
+    sha = _replace_archive(args, role, tarfile.TarInfo("value.txt"), revision="0" * 40)
+    with pytest.raises(ValueError, match=f"{role} archive identity differs"):
+        performance.prepare(
+            argparse.Namespace(
+                inputs=args.output, inputs_sha256=sha, work=tmp_path / "work"
+            )
+        )
+
+
+@pytest.mark.parametrize("role", ["baseline", "candidate"])
+@pytest.mark.parametrize("kind", ["traversal", "symlink", "hardlink", "fifo"])
+def test_prepare_rejects_unsafe_archive_members(frozen, tmp_path, role, kind):
+    args, _ = frozen
+    member = tarfile.TarInfo("../escaped.txt" if kind == "traversal" else "unsafe")
+    if kind in {"symlink", "hardlink"}:
+        member.type = tarfile.SYMTYPE if kind == "symlink" else tarfile.LNKTYPE
+        member.linkname = "../escaped.txt"
+    elif kind == "fifo":
+        member.type = tarfile.FIFOTYPE
+    sha = _replace_archive(args, role, member)
+    work = tmp_path / "work"
+    with pytest.raises(tarfile.FilterError):
+        performance.prepare(
+            argparse.Namespace(inputs=args.output, inputs_sha256=sha, work=work)
+        )
+    assert not (work / "escaped.txt").exists()
+    assert not (work / role / "unsafe").is_symlink()
+    assert not (work / role / "unsafe").exists()
 
 
 @pytest.mark.parametrize(
@@ -220,6 +286,7 @@ def test_observation_results_are_bound_and_finite(field, value):
 @pytest.mark.parametrize("system", ["nt", "posix"])
 def test_timeout_cleans_the_owned_process_tree(monkeypatch, tmp_path, system):
     calls = []
+    kill_signal = object()
 
     class Process:
         pid = 424242
@@ -234,24 +301,36 @@ def test_timeout_cleans_the_owned_process_tree(monkeypatch, tmp_path, system):
     process = Process()
 
     def popen(command, **options):
+        assert command == ["owned"]
         assert options["stdin"] == subprocess.DEVNULL
         assert options["start_new_session"] is (system != "nt")
         return process
 
+    def taskkill(command, **options):
+        assert system == "nt"
+        assert options["stdin"] == subprocess.DEVNULL
+        assert options["timeout"] == 10 and options["check"] is True
+        calls.append(command)
+
     monkeypatch.setattr(performance.subprocess, "Popen", popen)
-    monkeypatch.setattr(
-        performance.subprocess, "run", lambda command, **options: calls.append(command)
-    )
-    monkeypatch.setattr(
-        performance.os, "killpg", lambda pid, sig: calls.append(pid), raising=False
-    )
-    with pytest.raises(subprocess.TimeoutExpired):
-        performance.run_observation(
-            ["owned"], cwd=tmp_path, env={}, log=io.BytesIO(), platform_name=system
-        )
+    monkeypatch.setattr(performance.subprocess, "run", taskkill)
+    # Model the entire platform boundary: Windows has neither killpg nor
+    # SIGKILL. Local namespaces also leave the host's stdlib modules untouched.
+    system_api = SimpleNamespace(name=system)
+    signals = SimpleNamespace()
+    if system == "posix":
+        system_api.killpg = lambda pid, sig: calls.append((pid, sig))
+        signals.SIGKILL = kill_signal
+    monkeypatch.setattr(performance, "os", system_api)
+    monkeypatch.setattr(performance, "signal", signals)
+    with pytest.raises(subprocess.TimeoutExpired) as raised:
+        performance.run_observation(["owned"], cwd=tmp_path, env={}, log=io.BytesIO())
+    assert raised.value.cmd == ["owned"] and raised.value.timeout == performance.TIMEOUT
     assert process.waits == 2
     assert calls == (
-        [["taskkill", "/PID", "424242", "/T", "/F"]] if system == "nt" else [424242]
+        [["taskkill", "/PID", "424242", "/T", "/F"]]
+        if system == "nt"
+        else [(424242, kill_signal)]
     )
 
 

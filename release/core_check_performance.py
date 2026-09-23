@@ -153,13 +153,20 @@ def inputs(directory: Path, expected: str) -> dict:
 
 def prepare(args) -> int:
     value = inputs(args.inputs, args.inputs_sha256)
+    # Extraction filters were security-backported to Python 3.10.12. Check the
+    # capability rather than the minor version, and never extract unfiltered.
+    if not hasattr(tarfile, "data_filter"):
+        raise RuntimeError(
+            "safe source extraction requires tarfile.data_filter; "
+            "use a security-patched Python runtime (backported in 3.10.12)"
+        )
     if args.work.exists():
         raise ValueError("comparison workspace must be new")
     args.work.mkdir(parents=True)
     for role in ("baseline", "candidate"):
         with tarfile.open(args.inputs / f"{role}-source.tar", "r:") as archive:
             if archive.pax_headers.get("comment") != value[role + "_sha"]:
-                raise ValueError("archive candidate identity differs")
+                raise ValueError(f"{role} archive identity differs")
             archive.extractall(args.work / role, filter="data")
     return 0
 
