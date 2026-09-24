@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tarfile
 from types import SimpleNamespace
+import xml.etree.ElementTree as ET
 
 from coverage import CoverageData
 import pytest
@@ -85,6 +86,7 @@ def test_worker_temporary_and_cache_roots_are_private_and_addopts_are_removed(
 ):
     monkeypatch.setenv("PYTEST_ADDOPTS", "--deselect everything")
     monkeypatch.setenv("PYTEST_PLUGINS", "unexpected_plugin")
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "caller-cache"))
     one = r.child_environment(
         tmp_path / "one", tmp_path / "temp-one", tmp_path / "source.tar"
     )
@@ -97,14 +99,43 @@ def test_worker_temporary_and_cache_roots_are_private_and_addopts_are_removed(
         "TEMP",
         "XDG_CACHE_HOME",
         "PIP_CACHE_DIR",
-        "LLM_WIKI_CACHE_DIR",
     ):
         assert (
             one[name] != two[name]
             and Path(one[name]).is_dir()
             and Path(two[name]).is_dir()
         )
-    assert not {"PYTEST_ADDOPTS", "PYTEST_PLUGINS"}.intersection(one)
+    assert not {"PYTEST_ADDOPTS", "PYTEST_PLUGINS", "LLM_WIKI_CACHE_DIR"}.intersection(
+        one
+    )
+    assert "LLM_WIKI_CACHE_DIR" not in two
+
+
+def test_worker_environment_preserves_existing_repository_cache_assertions(
+    tmp_path, monkeypatch
+):
+    # Replay the four original contracts under the actual worker environment.
+    # A product cache override made all four fail on every hosted platform.
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "caller-cache"))
+    environment = r.child_environment(
+        tmp_path / "state", tmp_path / "temporary", tmp_path / "source.tar"
+    )
+    nodes = [
+        "tests/test_extractor_helpers.py::test_helper_cache_root_resolves_git_env_explicit_and_worktree",
+        "tests/test_inventory_cache.py::test_resolves_normal_git_dir",
+        "tests/test_inventory_cache.py::test_resolves_git_worktree_file",
+        "tests/test_sync.py::TestSyncInventoryRuntime::test_default_sync_creates_git_cache",
+    ]
+    completed = subprocess.run(
+        [sys.executable, "-m", "pytest", *nodes, *r.s.FLAGS],
+        cwd=Path(__file__).parents[1],
+        env=environment,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
 
 
 def test_real_worker_recollects_all_nodes_and_runs_only_its_planned_files(tmp_path):
@@ -212,6 +243,64 @@ def test_real_coverage_merges_disjoint_lines_and_enforces_full_lane_threshold(
     partial.mkdir()
     with pytest.raises(r.q.QualificationError, match="below 87%"):
         r.combine_coverage(value, [first], package.parents[1], partial)
+
+
+def test_empty_module_entry_event_preserves_coverage_without_counting_a_statement(
+    tmp_path, monkeypatch
+):
+    package, directory = coverage_fixture(tmp_path, [1, 2])
+    (package / "__init__.py").write_bytes(b"")
+    data = CoverageData(basename=str(directory / "coverage.data"))
+    data.read()
+    # Native Python 3.10 reported this exact event for services/__init__.py.
+    data.add_lines({"/owned/package/__init__.py": {1}})
+    data.write()
+    sources = r.source_manifest(package)
+    rows = r.coverage_rows(directory / "coverage.data", ["/owned/package"], sources)
+    assert rows["__init__.py"] == [1] and sources["__init__.py"]["line_count"] == 0
+    r.q.write_json(
+        directory / "coverage.json",
+        {
+            "schema_version": r.COVERAGE_SCHEMA,
+            "source_roots": ["/owned/package"],
+            "sources": sources,
+            "lines": rows,
+        },
+    )
+    monkeypatch.setattr(r, "package_root", lambda root: package)
+    output = tmp_path / "combined"
+    output.mkdir()
+    report = r.combine_coverage(
+        r.s.plan(NODES, context(), 2), [directory], package.parents[1], output
+    )
+    assert report["percent"] == 100
+    xml = ET.parse(output / "coverage-core-ubuntu-3.10.xml").getroot()
+    assert xml.get("lines-valid") == "2" and xml.get("lines-covered") == "2"
+    empty = next(
+        row
+        for row in xml.iter("class")
+        if row.get("filename", "").endswith("/__init__.py")
+    )
+    assert empty.find("lines") is not None and len(list(empty.iter("line"))) == 0
+
+
+@pytest.mark.parametrize("empty,line", [(True, 0), (True, 2), (False, 3)])
+def test_empty_module_compatibility_does_not_accept_invalid_coverage_lines(
+    tmp_path, empty, line
+):
+    package, directory = coverage_fixture(tmp_path, [1])
+    if empty:
+        (package / "owned.py").write_bytes(b"")
+    data = CoverageData(basename=str(directory / "coverage.data"))
+    data.erase()
+    data.add_lines({"/owned/package/owned.py": {line}})
+    data.write()
+    with pytest.raises(
+        r.q.QualificationError, match="invalid executed coverage line in owned.py"
+    ):
+        r.coverage_rows(
+            directory / "coverage.data", ["/owned/package"], r.source_manifest(package)
+        )
 
 
 @pytest.mark.parametrize("mutation", ["source", "lines", "outside", "missing"])
@@ -421,7 +510,7 @@ def test_executor_rejects_wrong_installation_before_running_tests(
 
 @pytest.mark.parametrize("failing", [False, True])
 def test_real_execution_protocol_retains_success_and_failure_evidence(
-    tmp_path, monkeypatch, failing
+    tmp_path, monkeypatch, capsys, failing
 ):
     root = tmp_path / "candidate"
     (root / "tests").mkdir(parents=True)
@@ -474,7 +563,9 @@ def test_real_execution_protocol_retains_success_and_failure_evidence(
         shards=2,
     )
     if failing:
-        with pytest.raises(r.q.QualificationError):
+        with pytest.raises(
+            r.q.QualificationError, match="core reference worker exited with code 1"
+        ):
             r.execute(args)
         receipt = r.s.read(args.output / "execution.json")
         assert (
@@ -485,6 +576,8 @@ def test_real_execution_protocol_retains_success_and_failure_evidence(
         assert (args.output / "worker.log").is_file() and (
             args.output / "junit.xml"
         ).is_file()
+        assert "see retained worker.log" in receipt["error"]
+        assert "FAILED tests/test_two.py::test_owned" in capsys.readouterr().err
         return
     assert r.execute(args) == 0
     plan = r.s.read(args.plan)

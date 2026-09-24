@@ -345,4 +345,24 @@ jobs:
       env:
         NEEDS_JSON: ${{ toJSON(needs) }}
       run: |
-        python -I -c 'import json, os; jobs=json.loads(os.environ["NEEDS_JSON"]); assert set(jobs)=={"freeze", "reference", "shards", "compare"}; assert all(j["result"]=="success" for j in jobs.values()), "core shard shadow is incomplete or failed"'
+        python -I - <<'PY'
+        import json
+        import os
+        import sys
+
+        jobs = json.loads(os.environ["NEEDS_JSON"])
+        expected = ("freeze", "reference", "shards", "compare")
+        if not isinstance(jobs, dict) or set(jobs) != set(expected):
+            sys.exit("core shard shadow has missing or unexpected job results")
+        states = {name: jobs[name].get("result", "missing") for name in expected}
+        for name, result in states.items():
+            print(f"{name}: {result}", flush=True)
+        if any(result != "success" for result in states.values()):
+            if states["reference"] != "success":
+                print(
+                    "Reference jobs did not succeed. Downstream shard matrices are skipped "
+                    "before expansion; unexpanded matrix labels are not missing variables.",
+                    file=sys.stderr,
+                )
+            sys.exit("core shard shadow is incomplete or failed; inspect the producer logs and artifacts")
+        PY

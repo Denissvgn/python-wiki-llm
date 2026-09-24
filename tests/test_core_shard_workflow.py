@@ -1,8 +1,13 @@
 """Shadow scheduling and the boundary separating it from qualification."""
 
 from pathlib import Path
+import json
+import os
 import shlex
+import subprocess
+import sys
 
+import pytest
 import yaml
 
 from release import core_shards as s
@@ -120,3 +125,46 @@ def test_shadow_never_publishes_qualified_release_and_default_remains_unsharded(
     assert any("--cov-fail-under=87" in command for command in commands)
     assert "core_shard" not in str(core)
     assert "needs.core.result" in str(qualification["jobs"]["bundle"])
+
+
+@pytest.mark.parametrize(
+    "reference,shards,compare",
+    [
+        ("success", "success", "success"),
+        ("failure", "skipped", "skipped"),
+        ("success", "failure", "failure"),
+        ("cancelled", "skipped", "skipped"),
+        ("success", "success", "skipped"),
+    ],
+)
+def test_completion_gate_reports_upstream_failures_and_keeps_skips_blocking(
+    reference, shards, compare
+):
+    script = workflow()["jobs"]["complete"]["steps"][-1]["run"].splitlines()
+    assert script[0] == "python -I - <<'PY'" and script[-1] == "PY"
+    states = {
+        "freeze": "success",
+        "reference": reference,
+        "shards": shards,
+        "compare": compare,
+    }
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", "\n".join(script[1:-1])],
+        env={
+            **os.environ,
+            "NEEDS_JSON": json.dumps(
+                {name: {"result": state} for name, state in states.items()}
+            ),
+        },
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert (completed.returncode == 0) is all(
+        state == "success" for state in states.values()
+    )
+    assert all(f"{name}: {state}" in completed.stdout for name, state in states.items())
+    if reference != "success":
+        assert "before expansion" in completed.stderr
+        assert "not missing variables" in completed.stderr

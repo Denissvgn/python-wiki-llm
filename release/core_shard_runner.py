@@ -267,6 +267,9 @@ def child_environment(
         "PYTEST_ADDOPTS",
         "PYTEST_PLUGINS",
         "COVERAGE_PROCESS_START",
+        # This product option overrides repository/worktree cache precedence.
+        # Isolation belongs to the job and temporary roots, not application flags.
+        "LLM_WIKI_CACHE_DIR",
     ):
         result.pop(name, None)
     # The OS temporary root is retained so path-redaction assertions retain
@@ -277,7 +280,6 @@ def child_environment(
         "TMP": temporary,
         "XDG_CACHE_HOME": directory / "cache",
         "PIP_CACHE_DIR": directory / "cache/pip",
-        "LLM_WIKI_CACHE_DIR": directory / "cache/llm-wiki",
     }.items():
         path.mkdir(parents=True, exist_ok=True)
         result[name] = str(path)
@@ -396,12 +398,13 @@ def coverage_rows(data_path: Path, source_roots: list[str], sources: dict) -> di
         name = path.relative_to(matches[0]).as_posix()
         s.require(name in sources, "coverage source is not in the frozen provider")
         lines = sorted(data.lines(filename) or [])
+        # The native Python 3.10 tracer can record module entry at line 1 for
+        # an empty file. Preserve that raw event: coverage's source analysis
+        # still counts zero statements, and all other line bounds stay strict.
+        last_line = max(1, sources[name]["line_count"])
         s.require(
-            all(
-                type(line) is int and 0 < line <= sources[name]["line_count"]
-                for line in lines
-            ),
-            "invalid executed coverage line",
+            all(type(line) is int and 0 < line <= last_line for line in lines),
+            f"invalid executed coverage line in {name} (maximum {last_line})",
         )
         result.setdefault(name, set()).update(lines)
     return {name: sorted(lines) for name, lines in result.items()}
@@ -604,6 +607,25 @@ def execute(args) -> int:
         ) == len(names)
         receipt["seconds"] = time.monotonic() - started
         q.write_json(args.output / "execution.json", receipt)
+        if observed["exit_code"] != 0:
+            # Surface the same bounded failure detail retained in the artifact.
+            # A generic completeness rejection hides the original pytest/export
+            # failure and makes a failed reference look like a matrix problem.
+            log_path = args.output / "worker.log"
+            with log_path.open("rb") as log:
+                log.seek(0, os.SEEK_END)
+                log.seek(max(0, log.tell() - 64 * 1024))
+                tail = log.read().decode("utf-8", errors="replace").splitlines()[-60:]
+            print("\n".join(tail), file=sys.stderr)
+            role = "reference" if args.index is None else f"shard {args.index}"
+            detail = (
+                observed["error"] or f"worker exited with code {observed['exit_code']}"
+            )
+            raise q.QualificationError(f"core {role} {detail}; see retained worker.log")
+        missing = sorted(set(names) - receipt["files"].keys())
+        s.require(
+            not missing, f"core worker did not produce required evidence: {missing}"
+        )
         s.validate_execution(args.output, value, args.index)
     except BaseException as error:
         receipt.update(
