@@ -1581,6 +1581,10 @@ def _reject_shadow_value(value: object) -> None:
         in {
             "agent-wiki-ubuntu-execution/v1",
             "agent-wiki-ubuntu-shadow-orchestration/v1",
+            "agent-wiki-core-shard-plan/v1",
+            "agent-wiki-core-shard-freeze/v1",
+            "agent-wiki-core-shard-execution/v1",
+            "agent-wiki-core-shard-comparison/v1",
         }
         or (
             value.get("schema_version") == "agent-wiki-ubuntu-execution/v2"
@@ -1588,11 +1592,11 @@ def _reject_shadow_value(value: object) -> None:
         )
         or (
             value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
-            and value.get("source_lane") == "ubuntu-union"
+            and value.get("source_lane") in {"ubuntu-union", "core-shard-shadow-windows"}
         )
     ):
         raise QualificationError(
-            "Ubuntu shadow evidence cannot assemble or qualify a release"
+            "Nonqualifying shadow evidence cannot assemble or qualify a release"
         )
 
 
