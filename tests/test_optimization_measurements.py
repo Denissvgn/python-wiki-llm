@@ -344,3 +344,10 @@ def test_complete_pagination_and_unknown_queue_times(capture, tmp_path):
     assert summary["completed_workflow_seconds"] == 15
     observed = json.loads((output / "jobs.json").read_text())
     assert observed[1]["queue_seconds"] is None
+
+
+@pytest.mark.parametrize("operation,expected", [("prepare", "collection"), ("execute", "test"), ("aggregate", "evidence"), ("verify-plan", "setup")])
+def test_qualifying_shard_collection_execution_and_evidence_costs_remain_visible(operation, expected):
+    name = "Owned shard operation"
+    declared = {"steps": [{"name": name, "run": f"python -I incoming/tools/release/core_shard_runner.py {operation} --root candidate"}]}
+    assert measurements.phase({"name": name}, declared) == expected

@@ -40,7 +40,8 @@ SKIP_DISCOVERY_SCHEMA = "agent-wiki-release-skip-discovery/v1"
 JUNIT_PROJECTION_SCHEMA = "agent-wiki-release-junit-projection/v1"
 OWNER_LANE_SCHEMA = "agent-wiki-release-owner-lanes/v2"
 DECISION_SCHEMA = "agent-wiki-release-decision/v1"
-QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v3"
+QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v4"
+PREVIOUS_QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v3"
 VERIFICATION_SCHEMA = "agent-wiki-release-verification/v1"
 WORKFLOW_VERIFICATION_SCHEMA = "agent-wiki-release-workflow-verification/v1"
 PROMOTION_SCHEMA = "agent-wiki-release-promotion/v1"
@@ -1594,6 +1595,15 @@ def _reject_shadow_value(value: object) -> None:
             and value.get("purpose") != "qualification"
         )
         or (
+            value.get("schema_version") in {
+                "agent-wiki-core-shard-plan/v3",
+                "agent-wiki-core-shard-execution/v3",
+                "agent-wiki-core-shard-preparation/v1",
+                "agent-wiki-core-shard-aggregation/v1",
+            }
+            and (value.get("purpose") != "qualification" or value.get("qualifying") is not True)
+        )
+        or (
             value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
             and value.get("source_lane") in {"ubuntu-union", "core-shard-shadow-windows"}
         )
@@ -1706,6 +1716,99 @@ def _validate_qualifying_union_bundle(
         ) from exc
 
 
+def _validate_qualifying_core_bundle(
+    root: Path, identity: Mapping[str, Any], context: Mapping[str, Any], run_id: int
+) -> None:
+    core = root / "evidence/RD-01"
+    sharded = context.get("core_layout", "unsharded") == "windows-sharded"
+    shard_names = {"windows-plan", "windows-shard-0", "windows-shard-1"}
+    present = {p.name for p in core.iterdir() if p.name.startswith("windows-")}
+    if not sharded:
+        if present or (core / "windows/aggregation.json").exists():
+            raise QualificationError("unsharded qualification contains shard evidence")
+        return
+    if present != shard_names:
+        raise QualificationError("qualifying Windows shard evidence is incomplete")
+    try:
+        if __package__:
+            from . import core_shards
+        else:
+            spec = importlib.util.spec_from_file_location(
+                "_release_qualifying_core", Path(__file__).with_name("core_shards.py")
+            )
+            if spec is None or spec.loader is None:
+                raise QualificationError("qualifying core verifier is missing")
+            core_shards = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(core_shards)
+        with tarfile.open(
+            root / "evidence/RD-00/source/candidate-source.tar", "r:"
+        ) as archive:
+            if archive.pax_headers.get("comment") != identity["source"]["sha"]:
+                raise QualificationError("source archive commit differs from identity")
+            member = archive.getmember("release/skip-allowlist.json")
+            if not member.isfile() or member.size > 4 * 1024 * 1024:
+                raise QualificationError("invalid source skip allowlist member")
+            stream = archive.extractfile(member)
+            assert stream is not None
+            allowlist_bytes = stream.read()
+            registry_member = archive.getmember("release/ubuntu-suites.json")
+            if not registry_member.isfile() or registry_member.size > 1024 * 1024:
+                raise QualificationError("invalid source suite registry member")
+            registry_stream = archive.extractfile(registry_member)
+            assert registry_stream is not None
+            registry_bytes = registry_stream.read()
+        with tempfile.TemporaryDirectory(prefix="qualifying-core-") as directory:
+            temporary = Path(directory)
+            allowlist = temporary / "allowlist.json"
+            allowlist.write_bytes(allowlist_bytes)
+            core_shards.validate_aggregation(
+                core / "windows",
+                core / "windows-plan",
+                [core / f"windows-shard-{index}" for index in range(2)],
+                dict(identity),
+                context["harness_sha256"],
+                run_id,
+                context["run_attempt"],
+                allowlist,
+            )
+            registry_path = temporary / "registry.json"
+            registry_path.write_bytes(registry_bytes)
+            registry = load_json(registry_path)
+            # Windows retains the same security/product selectors as Ubuntu.
+            # Recreate both views from the verified complete logical core lane.
+            for kind, gate in (("security", "RD-04"), ("product", "RD-05")):
+                lane = kind + "-windows-2025"
+                project_junit(
+                    argparse.Namespace(
+                        identity=root / "evidence/RD-00/source/identity.json",
+                        source_junit=core / "windows/core-windows-3.13.xml",
+                        source_lane="core-windows-3.13",
+                        target_lane=lane,
+                        selector=registry["gates"][kind + "-ubuntu-24.04"],
+                        projected_junit=temporary / (lane + ".xml"),
+                        receipt=temporary / (lane + "-projection.json"),
+                    )
+                )
+                for filename in (lane + ".xml", lane + "-projection.json"):
+                    expected = temporary / filename
+                    actual = root / "evidence" / gate / "windows" / filename
+                    # The hosted ledger authenticates original bytes. JSON
+                    # replay compares values across Windows/Ubuntu newlines.
+                    equal = (
+                        load_json(expected) == load_json(actual)
+                        if filename.endswith(".json")
+                        else expected.read_bytes() == actual.read_bytes()
+                    )
+                    if not equal:
+                        raise QualificationError(
+                            f"Windows gate projection differs: {filename}"
+                        )
+    except Exception as exc:
+        raise QualificationError(
+            f"qualifying core bundle lineage is invalid: {exc}"
+        ) from exc
+
+
 def build_bundle(args: argparse.Namespace) -> int:
     # Shadow evidence remains inadmissible. Qualifying evidence also requires
     # positive binding to authenticated hosted artifacts below.
@@ -1749,8 +1852,10 @@ def build_bundle(args: argparse.Namespace) -> int:
     )
     gates = _copy_gate_evidence(args.evidence, destination=destination)
     context = {"run_attempt": args.workflow_run_attempt,
-               "harness_sha256": args.harness_sha256, "suite_layout": args.suite_layout}
+               "harness_sha256": args.harness_sha256, "suite_layout": args.suite_layout,
+               "core_layout": getattr(args, "core_layout", "unsharded")}
     producer_provenance = _hosted_provenance(destination, identity, context, args.workflow_run_id)
+    _validate_qualifying_core_bundle(destination, identity, context, args.workflow_run_id)
     _validate_qualifying_union_bundle(destination, identity, context)
     write_json(destination / "hosted-evidence.json", producer_provenance)
 
@@ -1834,7 +1939,7 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
             "gates",
         ),
     )
-    if manifest["schema_version"] != QUALIFICATION_SCHEMA:
+    if manifest["schema_version"] not in {QUALIFICATION_SCHEMA, PREVIOUS_QUALIFICATION_SCHEMA}:
         raise QualificationError("qualification schema_version is unsupported")
     _require_string(manifest["repository"], "manifest.repository")
     if (
@@ -1843,13 +1948,18 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
         or manifest["workflow_run_id"] <= 0
     ):
         raise QualificationError("manifest.workflow_run_id must be positive")
+    context_keys = ("run_attempt", "harness_sha256", "suite_layout")
+    if manifest["schema_version"] == QUALIFICATION_SCHEMA:
+        context_keys += ("core_layout",)
     context = _require_object(manifest["qualification_context"], name="qualification context",
-        keys=("run_attempt", "harness_sha256", "suite_layout"))
+        keys=context_keys)
     if type(context["run_attempt"]) is not int or context["run_attempt"] <= 0:
         raise QualificationError("qualification context run_attempt must be positive")
     _require_sha256(context["harness_sha256"], "qualification context harness")
     if context["suite_layout"] not in {"legacy", "union"}:
         raise QualificationError("qualification context suite layout is invalid")
+    if context.get("core_layout", "unsharded") not in {"unsharded", "windows-sharded"}:
+        raise QualificationError("qualification context core layout is invalid")
     source = _require_object(
         manifest["source"],
         name="manifest.source",
@@ -2338,6 +2448,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
         dict(manifest["qualification_context"]), args.workflow_run_id)
     if producer_provenance != load_json(root / "hosted-evidence.json"):
         raise QualificationError("hosted producer provenance ledger differs")
+    _validate_qualifying_core_bundle(root, frozen_identity, manifest["qualification_context"], args.workflow_run_id)
     _validate_qualifying_union_bundle(root, frozen_identity, manifest["qualification_context"])
 
     wheel_smoke = _validate_smoke(load_json(root / "smoke-wheel.json"), "wheel")
@@ -2921,6 +3032,7 @@ def _parser() -> argparse.ArgumentParser:
     bundle.add_argument("--workflow-run-attempt", type=int, required=True)
     bundle.add_argument("--harness-sha256", required=True)
     bundle.add_argument("--suite-layout", choices=("legacy", "union"), required=True)
+    bundle.add_argument("--core-layout", choices=("unsharded", "windows-sharded"), default="unsharded")
     bundle.add_argument("--output", type=Path, required=True)
     bundle.set_defaults(function=build_bundle)
 

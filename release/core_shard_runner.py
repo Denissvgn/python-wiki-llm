@@ -1,4 +1,4 @@
-"""Run and compare isolated core shards; all emitted evidence is nonqualifying."""
+"""Run isolated core shards with separate shadow and qualification contracts."""
 
 from __future__ import annotations
 
@@ -112,7 +112,9 @@ def freeze(args) -> int:
 
 
 def verify_plan_input(args) -> int:
-    value = s.validate_plan(s.read(args.plan))
+    value = s.validate_plan(
+        s.read(args.plan), purpose=getattr(args, "purpose", "shadow")
+    )
     current = value["context"]
     s.require(
         current["identity"] == q._validate_identity(s.read(args.identity))
@@ -245,16 +247,7 @@ def context(args) -> dict:
 
 
 def constraints(value: dict) -> str:
-    result = []
-    for name, version in value["packages"].items():
-        s.require(
-            re.fullmatch(r"[a-z0-9][a-z0-9.-]*", name) is not None
-            and re.fullmatch(r"[A-Za-z0-9.!+_-]+", version) is not None,
-            "unsafe package pin",
-        )
-        if name != "agent-wiki-cli":
-            result.append(f"{name}=={version}\n")
-    return "".join(sorted(result))
+    return s.constraints(value)
 
 
 def child_environment(
@@ -430,7 +423,10 @@ def worker(args) -> int:
     import pytest
 
     output = args.output.resolve()
-    value = None if args.collect else s.validate_plan(s.read(args.plan))
+    purpose = getattr(args, "purpose", "shadow")
+    value = (
+        None if args.collect else s.validate_plan(s.read(args.plan), purpose=purpose)
+    )
     if args.index is not None:
         s.require(
             value is not None
@@ -507,7 +503,110 @@ def worker(args) -> int:
     return code
 
 
+def worker_command(output: Path, purpose: str) -> list[str]:
+    return [
+        sys.executable,
+        "-I",
+        "-X",
+        "utf8",
+        str(Path(__file__).resolve()),
+        "worker",
+        "--output",
+        str(output),
+        "--purpose",
+        purpose,
+    ]
+
+
+def collect_plan(args, current: dict, env: dict, purpose: str) -> dict:
+    collected = invoke(
+        worker_command(args.output, purpose) + ["--collect"],
+        args.root,
+        env,
+        args.output / "collection.log",
+    )
+    s.require(
+        collected["exit_code"] == 0, "full core collection failed; see collection.log"
+    )
+    value = s.plan(
+        s.read(args.output / "collected.json"),
+        current,
+        args.shards,
+        s.read(Path(__file__).with_name("core-shard-timings.json")),
+        purpose=purpose,
+    )
+    q.write_json(args.output / "plan.json", value)
+    (args.output / "constraints.txt").write_text(
+        constraints(current["environment"]), encoding="utf-8"
+    )
+    return value
+
+
+def prepare(args) -> int:
+    args.root, args.output = args.root.resolve(), args.output.resolve()
+    s.require(
+        not args.output.exists() and args.root not in args.output.parents,
+        "preparation output must be new and outside source",
+    )
+    args.output.mkdir(parents=True)
+    record: dict[str, Any] = {
+        "schema_version": s.PREPARATION_SCHEMA,
+        "purpose": "qualification",
+        "qualifying": True,
+        "complete": False,
+        "context": None,
+        "plan_sha256": None,
+        "exit_code": None,
+        "seconds": None,
+        "files": {},
+        "error": None,
+    }
+    q.write_json(args.output / "preparation.json", record)
+    started = time.monotonic()
+    try:
+        current = context(args)
+        s.validate_purpose("qualification", current, args.shards)
+        record["context"] = current
+        with tempfile.TemporaryDirectory(prefix="core-plan-") as temporary:
+            env = child_environment(
+                Path(temporary) / "state", Path(temporary) / "tmp", args.archive
+            )
+            value = collect_plan(args, current, env, "qualification")
+        verify_source(args.root, args.archive, current["identity"])
+        s.require(
+            environment(args.root, args.lane) == current["environment"],
+            "preparation environment changed",
+        )
+        record.update(
+            plan_sha256=s.digest(value),
+            exit_code=0,
+            complete=True,
+            seconds=time.monotonic() - started,
+            files={
+                name: q.sha256_file(args.output / name)
+                for name in (
+                    "plan.json",
+                    "collected.json",
+                    "constraints.txt",
+                    "collection.log",
+                    "started.jsonl",
+                )
+            },
+        )
+        q.write_json(args.output / "preparation.json", record)
+        s.validate_preparation(args.output, value)
+    except BaseException as error:
+        record.update(
+            complete=False, error=str(error), seconds=time.monotonic() - started
+        )
+        raise
+    finally:
+        q.write_json(args.output / "preparation.json", record)
+    return 0
+
+
 def execute(args) -> int:
+    purpose = getattr(args, "purpose", "shadow")
     args.root, args.output = args.root.resolve(), args.output.resolve()
     s.require(
         not args.output.exists() and args.root not in args.output.parents,
@@ -515,9 +614,9 @@ def execute(args) -> int:
     )
     args.output.mkdir(parents=True)
     receipt: dict[str, Any] = {
-        "schema_version": s.EXECUTION_SCHEMA,
-        "purpose": "shadow",
-        "qualifying": False,
+        "schema_version": s.execution_schema(purpose),
+        "purpose": purpose,
+        "qualifying": purpose == "qualification",
         "complete": False,
         "plan_sha256": None,
         "context": None,
@@ -531,46 +630,24 @@ def execute(args) -> int:
     started = time.monotonic()
     try:
         current = context(args)
+        s.validate_purpose(purpose, current, args.shards)
+        if purpose == "qualification":
+            s.require(
+                args.plan is not None,
+                "qualifying workers require independently collected plans",
+            )
         receipt["context"] = current
         with tempfile.TemporaryDirectory(prefix="core-shard-") as temporary:
             env = child_environment(
                 Path(temporary) / "state", Path(temporary) / "tmp", args.archive
             )
-            command = [
-                sys.executable,
-                "-I",
-                "-X",
-                "utf8",
-                str(Path(__file__).resolve()),
-                "worker",
-                "--output",
-                str(args.output),
-            ]
+            command = worker_command(args.output, purpose)
             if args.plan is None:
                 s.require(args.index is None, "reference must not select a shard")
-                collected = invoke(
-                    command + ["--collect"],
-                    args.root,
-                    env,
-                    args.output / "collection.log",
-                )
-                s.require(
-                    collected["exit_code"] == 0,
-                    "full core collection failed; see collection.log",
-                )
-                value = s.plan(
-                    s.read(args.output / "collected.json"),
-                    current,
-                    args.shards,
-                    s.read(Path(__file__).with_name("core-shard-timings.json")),
-                )
+                value = collect_plan(args, current, env, purpose)
                 args.plan = args.output / "plan.json"
-                q.write_json(args.plan, value)
-                (args.output / "constraints.txt").write_text(
-                    constraints(current["environment"]), encoding="utf-8"
-                )
             else:
-                value = s.validate_plan(s.read(args.plan), current)
+                value = s.validate_plan(s.read(args.plan), current, purpose=purpose)
                 s.require(
                     type(args.index) is int and 0 <= args.index < value["shard_count"],
                     "invalid shard index",
@@ -626,7 +703,7 @@ def execute(args) -> int:
         s.require(
             not missing, f"core worker did not produce required evidence: {missing}"
         )
-        s.validate_execution(args.output, value, args.index)
+        s.validate_execution(args.output, value, args.index, purpose=purpose)
     except BaseException as error:
         receipt.update(
             complete=False, error=str(error), seconds=time.monotonic() - started
@@ -634,6 +711,80 @@ def execute(args) -> int:
         raise
     finally:
         q.write_json(args.output / "execution.json", receipt)
+    return 0
+
+
+def aggregate_qualification(args) -> int:
+    args.root, args.output = args.root.resolve(), args.output.resolve()
+    s.require(
+        not args.output.exists() and args.root not in args.output.parents,
+        "qualifying aggregation output must be new and outside source",
+    )
+    args.output.mkdir(parents=True)
+    record: dict[str, Any] = {
+        "schema_version": s.AGGREGATION_SCHEMA,
+        "purpose": "qualification",
+        "qualifying": True,
+        "complete": False,
+        "context": None,
+        "plan_sha256": None,
+        "preparation_sha256": None,
+        "shards": {},
+        "files": {},
+    }
+    q.write_json(args.output / "aggregation.json", record)
+    try:
+        current = context(args)
+        value = s.validate_plan(
+            s.read(args.preparation / "plan.json"), current, purpose="qualification"
+        )
+        s.validate_preparation(args.preparation, value)
+        directories = sorted(args.shards_root.iterdir())
+        s.require(
+            all(path.is_dir() and not path.is_symlink() for path in directories),
+            "unexpected qualifying shard artifact",
+        )
+        xml = args.output / (s.WINDOWS_LANE + ".xml")
+        merged = s.merge_junit(value, directories, xml, purpose="qualification")
+        result = args.output / ("result-" + s.WINDOWS_LANE + ".json")
+        q.verify_junit(
+            argparse.Namespace(
+                junit=xml,
+                lane=s.WINDOWS_LANE,
+                allowlist=args.root / "release/skip-allowlist.json",
+                minimum_collected=5322,
+                minimum_passed=5070,
+                discovery=False,
+                output=result,
+            )
+        )
+        record.update(
+            complete=True,
+            context=current,
+            plan_sha256=s.digest(value),
+            preparation_sha256=q.sha256_file(args.preparation / "preparation.json"),
+            shards={
+                str(row["index"]): q.sha256_file(directory / "execution.json")
+                for directory, row in zip(directories, merged["receipts"])
+            },
+            files={path.name: q.sha256_file(path) for path in (xml, result)},
+        )
+        q.write_json(args.output / "aggregation.json", record)
+        s.validate_aggregation(
+            args.output,
+            args.preparation,
+            directories,
+            current["identity"],
+            current["harness_sha256"],
+            current["run_id"],
+            current["run_attempt"],
+            args.root / "release/skip-allowlist.json",
+        )
+    except BaseException:
+        record["complete"] = False
+        raise
+    finally:
+        q.write_json(args.output / "aggregation.json", record)
     return 0
 
 
@@ -839,14 +990,23 @@ def main() -> int:
     verify.add_argument("--run-id", type=int, required=True)
     verify.add_argument("--run-attempt", type=int, required=True)
     verify.add_argument("--lane", choices=sorted(s.PROFILES), required=True)
+    verify.add_argument(
+        "--purpose", choices=("shadow", "qualification"), default="shadow"
+    )
     verify.set_defaults(function=verify_plan_input)
     raw = commands.add_parser("worker")
     raw.add_argument("--output", type=Path, required=True)
     raw.add_argument("--plan", type=Path)
     raw.add_argument("--index", type=int)
     raw.add_argument("--collect", action="store_true")
+    raw.add_argument("--purpose", choices=("shadow", "qualification"), default="shadow")
     raw.set_defaults(function=worker)
-    for command, function in (("execute", execute), ("compare", compare)):
+    for command, function in (
+        ("execute", execute),
+        ("compare", compare),
+        ("prepare", prepare),
+        ("aggregate", aggregate_qualification),
+    ):
         child = commands.add_parser(command)
         for name in ("root", "identity", "archive", "harness", "output"):
             child.add_argument("--" + name, type=Path, required=True)
@@ -854,12 +1014,22 @@ def main() -> int:
         child.add_argument("--run-id", type=int, required=True)
         child.add_argument("--run-attempt", type=int, required=True)
         child.add_argument("--lane", choices=sorted(s.PROFILES), required=True)
-        child.add_argument("--plan", type=Path, required=command == "compare")
+        if command in {"execute", "compare"}:
+            child.add_argument("--plan", type=Path, required=command == "compare")
+        if command in {"execute", "prepare"}:
+            child.add_argument("--shards", type=int, default=2)
         if command == "execute":
             child.add_argument("--index", type=int)
-            child.add_argument("--shards", type=int, default=2)
-        else:
+            child.add_argument(
+                "--purpose",
+                choices=("shadow", "qualification"),
+                default="shadow",
+            )
+        elif command == "compare":
             child.add_argument("--reference", type=Path, required=True)
+            child.add_argument("--shards-root", type=Path, required=True)
+        elif command == "aggregate":
+            child.add_argument("--preparation", type=Path, required=True)
             child.add_argument("--shards-root", type=Path, required=True)
         child.set_defaults(function=function)
     args = parser.parse_args()

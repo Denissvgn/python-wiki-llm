@@ -14,6 +14,15 @@ from tests.hosted_evidence_fixtures import HostedEvidence
 
 @pytest.fixture
 def hosted(tmp_path, monkeypatch):
+    return _hosted(tmp_path, monkeypatch, "unsharded")
+
+
+@pytest.fixture
+def sharded_hosted(tmp_path, monkeypatch):
+    return _hosted(tmp_path, monkeypatch, "windows-sharded")
+
+
+def _hosted(tmp_path, monkeypatch, core_layout):
     source = tmp_path / "source"
     source.mkdir()
     archive = source / "candidate-source.tar"
@@ -35,7 +44,7 @@ def hosted(tmp_path, monkeypatch):
     (source / "SHA256SUMS").write_text(
         q.sha256_file(archive) + "  candidate-source.tar\n"
     )
-    server = HostedEvidence(identity, 123, source)
+    server = HostedEvidence(identity, 123, source, core_layout=core_layout)
     root = tmp_path / "bundle"
     for spec in server.specs(tmp_path / "inputs"):
         binding, _, directory = spec.partition("=")
@@ -280,3 +289,63 @@ def test_artifact_redirect_never_receives_the_api_bearer_token(monkeypatch):
 def test_auth_cannot_be_sent_to_another_origin():
     with pytest.raises(h.EvidenceError, match="credentials"):
         h._http("https://owned.invalid/", "secret", 100)
+
+
+def test_sharded_provenance_requires_planner_both_workers_and_logical_gate(
+    sharded_hosted,
+):
+    root, server = sharded_hosted
+    ledger = h.verify(root, server.identity, server.context, server.run_id)
+    assert set(ledger["bindings"]) == set(
+        h.artifact_contract("legacy", "windows-sharded")
+    )
+    for label in ("windows", "windows-plan", "windows-shard-0", "windows-shard-1"):
+        assert ledger["bindings"]["RD-01:" + label]["producer_job_id"] > 0
+
+
+@pytest.mark.parametrize(
+    "binding", ["windows-plan", "windows-shard-0", "windows-shard-1", "windows"]
+)
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing-job",
+        "failed-job",
+        "cancelled-job",
+        "wrong-attempt",
+        "missing-artifact",
+        "stripped-sidecars",
+    ],
+)
+def test_successful_logical_job_cannot_hide_an_invalid_shard_producer(
+    sharded_hosted, binding, mutation
+):
+    root, server = sharded_hosted
+    name, producer, _ = h.artifact_contract("legacy", "windows-sharded")[
+        "RD-01:" + binding
+    ]
+    job = next(j for j in server.jobs if j["name"] == producer)
+    artifact = next(a for a in server.artifacts if a["name"] == name)
+    if mutation == "missing-job":
+        server.jobs.remove(job)
+    elif mutation in {"failed-job", "cancelled-job"}:
+        job["conclusion"] = "failure" if mutation == "failed-job" else "cancelled"
+    elif mutation == "wrong-attempt":
+        job["run_attempt"] += 1
+    elif mutation == "missing-artifact":
+        server.artifacts.remove(artifact)
+    else:
+        directory = root / "evidence/RD-01" / binding
+        for path in directory.glob("*.json"):
+            path.unlink()
+    with pytest.raises(h.EvidenceError):
+        h.verify(root, server.identity, server.context, server.run_id)
+
+
+def test_unsharded_provenance_cannot_adopt_shard_xml_by_changing_the_layout(
+    sharded_hosted,
+):
+    root, server = sharded_hosted
+    server.context["core_layout"] = "unsharded"
+    with pytest.raises(h.EvidenceError, match="unbound"):
+        h.verify(root, server.identity, server.context, server.run_id)

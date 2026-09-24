@@ -138,14 +138,17 @@ def test_worker_environment_preserves_existing_repository_cache_assertions(
     assert completed.returncode == 0, completed.stdout + completed.stderr
 
 
-def test_real_worker_recollects_all_nodes_and_runs_only_its_planned_files(tmp_path):
+@pytest.mark.parametrize("purpose", ["shadow", "qualification"])
+def test_real_worker_recollects_all_nodes_and_runs_only_its_planned_files(
+    tmp_path, purpose
+):
     root = tmp_path / "candidate"
     tests = root / "tests"
     tests.mkdir(parents=True)
     for name in ("one", "two"):
         (tests / f"test_{name}.py").write_text("def test_owned():\n    assert True\n")
     nodes = [f"tests/test_{name}.py::test_owned" for name in ("one", "two")]
-    value = r.s.plan(nodes, context("core-windows-3.13"), 2)
+    value = r.s.plan(nodes, context("core-windows-3.13"), 2, purpose=purpose)
     plan = tmp_path / "plan.json"
     r.q.write_json(plan, value)
     for index in (0, 1):
@@ -157,6 +160,8 @@ def test_real_worker_recollects_all_nodes_and_runs_only_its_planned_files(tmp_pa
                 "-I",
                 str(Path(r.__file__).resolve()),
                 "worker",
+                "--purpose",
+                purpose,
                 "--plan",
                 str(plan),
                 "--index",
@@ -184,6 +189,8 @@ def test_real_worker_recollects_all_nodes_and_runs_only_its_planned_files(tmp_pa
             "-I",
             str(Path(r.__file__).resolve()),
             "worker",
+            "--purpose",
+            purpose,
             "--plan",
             str(plan),
             "--index",
@@ -509,8 +516,9 @@ def test_executor_rejects_wrong_installation_before_running_tests(
 
 
 @pytest.mark.parametrize("failing", [False, True])
+@pytest.mark.parametrize("purpose", ["shadow", "qualification"])
 def test_real_execution_protocol_retains_success_and_failure_evidence(
-    tmp_path, monkeypatch, capsys, failing
+    tmp_path, monkeypatch, capsys, failing, purpose
 ):
     root = tmp_path / "candidate"
     (root / "tests").mkdir(parents=True)
@@ -561,7 +569,37 @@ def test_real_execution_protocol_retains_success_and_failure_evidence(
         plan=None,
         index=None,
         shards=2,
+        purpose=purpose,
     )
+    if purpose == "qualification":
+        args.output = tmp_path / "plan"
+        assert r.prepare(args) == 0
+        args.plan = args.output / "plan.json"
+        plan = r.s.read(args.plan)
+        r.s.validate_preparation(args.output, plan)
+        assert (args.output / "started.jsonl").read_bytes() == b""
+        shards = tmp_path / "shards"
+        shards.mkdir()
+        for index in (0, 1):
+            args.index, args.output = index, shards / str(index)
+            selected = plan["shards"][index]["nodes"]
+            if failing and "tests/test_two.py::test_owned" in selected:
+                with pytest.raises(
+                    r.q.QualificationError, match="worker exited with code 1"
+                ):
+                    r.execute(args)
+                assert r.s.read(args.output / "execution.json")["complete"] is False
+            else:
+                assert r.execute(args) == 0
+                r.s.validate_execution(args.output, plan, index, purpose=purpose)
+        # The real aggregation must retain a partial receipt and block both a
+        # failed worker and a complete but undersized logical lane.
+        args.output = tmp_path / "aggregate"
+        args.preparation, args.shards_root = tmp_path / "plan", shards
+        with pytest.raises(r.q.QualificationError):
+            r.aggregate_qualification(args)
+        assert r.s.read(args.output / "aggregation.json")["complete"] is False
+        return
     if failing:
         with pytest.raises(
             r.q.QualificationError, match="core reference worker exited with code 1"

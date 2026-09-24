@@ -227,9 +227,9 @@ def execution(directory, value, index, skip=None):
     (directory / "worker.log").write_text("owned worker\n")
     write_junit(directory / "junit.xml", nodes, skip=skip)
     receipt = {
-        "schema_version": s.EXECUTION_SCHEMA,
-        "purpose": "shadow",
-        "qualifying": False,
+        "schema_version": s.execution_schema(value["purpose"]),
+        "purpose": value["purpose"],
+        "qualifying": value["qualifying"],
         "complete": True,
         "plan_sha256": s.digest(value),
         "context": value["context"],
@@ -508,3 +508,28 @@ def test_new_image_policy_keeps_shadow_evidence_ineligible_for_qualification(sch
         qualification._reject_shadow_value(
             {"schema_version": schema, "qualifying": True, "purpose": "qualification"}
         )
+
+
+@pytest.mark.parametrize(
+    "lane,count",
+    [
+        ("core-ubuntu-3.10", 2),
+        ("core-macos-3.14", 2),
+        ("core-windows-3.13", 3),
+        ("core-windows-3.13", True),
+    ],
+)
+def test_qualifying_rollout_is_restricted_to_two_windows_shards(lane, count):
+    with pytest.raises(s.q.QualificationError):
+        s.plan(NODES, context(lane), count, purpose="qualification")
+
+
+def test_qualifying_plans_and_shadow_plans_are_not_interchangeable():
+    shadow = s.plan(NODES, context(s.WINDOWS_LANE), 2)
+    qualifying = s.plan(NODES, context(s.WINDOWS_LANE), 2, purpose="qualification")
+    assert s.validate_plan(qualifying, purpose="qualification") == qualifying
+    for value, purpose in ((shadow, "qualification"), (qualifying, "shadow")):
+        with pytest.raises(s.q.QualificationError):
+            s.validate_plan(value, purpose=purpose)
+    with pytest.raises(s.q.QualificationError):
+        s.plan(NODES, context(s.WINDOWS_LANE), 2, purpose="unknown")

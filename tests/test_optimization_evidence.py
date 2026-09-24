@@ -120,8 +120,13 @@ def test_actual_workflow_obligations_remain_complete():
     contract = evidence.workflow_contract(value, {}, skips)
     assert contract["gates"]["RD-13"] == "BLOCKED"
     assert contract["gate_dependencies"]["RD-04"] == [
-        "${{ needs.core.result }}", "${{ needs.ubuntu-suites.result }}"
+        "${{ needs.core.result }}", "${{ needs.core-windows.result }}", "${{ needs.ubuntu-suites.result }}"
     ]
+    assert contract["gate_dependencies"]["RD-01"] == ["${{ needs.core-windows.result }}"]
+    assert contract["owners"]["security-windows-2025"]["producer"] == "${{ needs.core-windows.result }}"
+    sharded = [p for p in contract["profiles"] if p["job_id"] == "core-windows-shards"]
+    assert len(sharded) == 2 and all(p["suite_runners"] for p in sharded)
+    assert {p["matrix"]["shard"] for p in sharded} == {0, 1}
     assert contract["owners"]["slow"]["producer"] == "${{ needs.ubuntu-suites.result }}"
     assert set(contract["shadow_owners"]) == set(contract["owners"])
     assert contract["shadow_owners"]["slow"]["producer"] == "${{ needs.ubuntu-shadow.result }}"

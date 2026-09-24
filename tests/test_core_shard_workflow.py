@@ -106,7 +106,7 @@ def test_pins_are_verified_before_installing_and_all_commands_keep_source_bindin
             assert args.count(option) == 1
 
 
-def test_shadow_never_publishes_qualified_release_and_default_remains_unsharded():
+def test_shadow_never_qualifies_and_ubuntu_macos_keep_the_full_core_contract():
     shadow = workflow()
     text = str(shadow)
     assert "build-bundle" not in text and "finalize-promotion" not in text
@@ -115,7 +115,11 @@ def test_shadow_never_publishes_qualified_release_and_default_remains_unsharded(
         (ROOT / ".github/workflows/release-qualification.yml").read_text()
     )
     core = qualification["jobs"]["core"]
-    assert len(core["strategy"]["matrix"]["include"]) == 3
+    assert {row["lane"] for row in core["strategy"]["matrix"]["include"]} == {
+        "core-ubuntu-3.10",
+        "core-macos-3.14",
+    }
+    assert core["needs"] == "freeze"
     commands = [
         step["run"]
         for step in core["steps"]
@@ -168,3 +172,122 @@ def test_completion_gate_reports_upstream_failures_and_keeps_skips_blocking(
     if reference != "success":
         assert "before expansion" in completed.stderr
         assert "not missing variables" in completed.stderr
+
+
+def qualifying_workflow():
+    return yaml.safe_load(
+        (ROOT / ".github/workflows/release-qualification.yml").read_text()
+    )
+
+
+def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_rollback():
+    value = qualifying_workflow()
+    inputs = value.get("on", value.get(True))["workflow_dispatch"]["inputs"]
+    assert inputs["windows-core-shards"]["type"] == "boolean"
+    assert inputs["windows-core-shards"]["default"] is True
+    assert "inputs.windows-core-shards" in value["concurrency"]["group"]
+    jobs = value["jobs"]
+    layout = jobs["freeze"]["outputs"]["core-layout"]
+    assert (
+        layout
+        == "${{ inputs.windows-core-shards && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow && 'windows-sharded' || 'unsharded' }}"
+    )
+    assert jobs["core"]["needs"] == "freeze"
+    assert jobs["core-windows-plan"]["needs"] == "freeze"
+    assert jobs["core-windows-shards"]["strategy"] == {
+        "fail-fast": False,
+        "max-parallel": 2,
+        "matrix": {"shard": [0, 1]},
+    }
+    logical = jobs["core-windows"]
+    assert logical["name"] == "RD-01/RD-02 core (core-windows-3.13)"
+    assert set(logical["needs"]) == {
+        "freeze",
+        "core-windows-plan",
+        "core-windows-shards",
+    }
+    assert " ".join(logical["if"].split()) == (
+        "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' "
+        "&& (needs.freeze.outputs.core-layout == 'unsharded' "
+        "|| (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) }}"
+    )
+    for name in ("core-windows-plan", "core-windows-shards", "core-windows"):
+        job = jobs[name]
+        assert job["runs-on"] == "windows-2025"
+        assert job["timeout-minutes"] <= 360
+        assert job["defaults"]["run"]["shell"] == "bash"
+        steps = job["steps"]
+        assert any(
+            step.get("with", {}).get("python-version") == "3.13" for step in steps
+        )
+        assert any("create-venv" in step.get("run", "") for step in steps)
+        assert not any(step.get("continue-on-error", False) for step in steps)
+    rollback = next(
+        step
+        for step in logical["steps"]
+        if "python -m pytest tests" in step.get("run", "")
+    )
+    assert rollback["if"] == "${{ needs.freeze.outputs.core-layout == 'unsharded' }}"
+    assert all(
+        flag in rollback["run"]
+        for flag in (
+            "--strict-config",
+            "--strict-markers",
+            "-W error",
+            "xfail_strict=true",
+        )
+    )
+    for name in ("owner-lanes", "bundle", "decision", "discovery-allowlist"):
+        assert "core-windows" in jobs[name]["needs"]
+    for name in ("core-windows-shards", "core-windows"):
+        steps = jobs[name]["steps"]
+        verify = next(
+            i
+            for i, step in enumerate(steps)
+            if "core_shard_runner.py verify-plan" in step.get("run", "")
+        )
+        install = next(
+            i
+            for i, step in enumerate(steps)
+            if "--constraint incoming/plan/constraints.txt" in step.get("run", "")
+            and "pip install" in step["run"]
+        )
+        assert verify < install and "--purpose qualification" in steps[verify]["run"]
+        assert "--requirement incoming/plan/constraints.txt" in steps[install]["run"]
+    for name in ("core_shards.py", "core_shard_runner.py", "core-shard-timings.json"):
+        assert "release/" + name in str(jobs["freeze"]["steps"])
+
+
+@pytest.mark.parametrize("windows", ["success", "failure", "cancelled", "skipped"])
+def test_real_decision_mapping_requires_windows_for_core_security_and_product(
+    tmp_path, windows
+):
+    import re
+    from release import qualification as q
+
+    step = next(
+        step
+        for step in qualifying_workflow()["jobs"]["decision"]["steps"]
+        if step.get("name") == "Emit deterministic aggregate"
+    )
+    script = step["run"]
+    script = script.replace("${{ needs.freeze.outputs.sha }}", "a" * 40).replace(
+        "${{ needs.freeze.outputs.version }}", "1.0.0"
+    )
+    script = script.replace("${{ needs.core-windows.result }}", windows)
+    script = re.sub(r"\$\{\{ needs\.[a-z-]+\.result \}\}", "success", script)
+    argv = shlex.split(script)[3:]
+    assert argv[0] == "aggregate"
+    argv[argv.index("--output") + 1] = str(tmp_path / "decision.json")
+    completed = subprocess.run(
+        [sys.executable, "-I", str(Path(q.__file__).resolve()), *argv],
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert completed.returncode == 0, completed.stderr
+    result = q.load_json(tmp_path / "decision.json")
+    for gate in ("RD-01", "RD-04", "RD-05"):
+        assert (result["gates"][gate] == "PASS") is (windows == "success")
+    assert result["gates"]["RD-13"] == "BLOCKED"

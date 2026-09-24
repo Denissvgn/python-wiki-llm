@@ -748,7 +748,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         )
         assert "incoming/tools/release/qualification.py" not in earlier_runs
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
-    assert harness_consumers == 17
+    assert harness_consumers == 20
 
     for job_name in ("core", "ubuntu-suites", "security-behavior", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
@@ -1149,7 +1149,7 @@ def test_javascript_migration_skips_have_executable_toolchain_ownership() -> Non
     lanes = {
         lane["lane"]
         for lane in workflow["jobs"]["core"]["strategy"]["matrix"]["include"]
-    }
+    } | {"core-windows-3.13"}
     assert actual == {
         (
             lane,
@@ -1215,12 +1215,6 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
             "coverage": True,
         },
         {
-            "lane": "core-windows-3.13",
-            "os": "windows-2025",
-            "python": "3.13",
-            "coverage": False,
-        },
-        {
             "lane": "core-macos-3.14",
             "os": "macos-15",
             "python": "3.14",
@@ -1240,6 +1234,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
 
     source_test_jobs = (
         "core",
+        "core-windows",
         "security-behavior",
         "mcp",
         "toolchains",
@@ -1396,7 +1391,7 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}"
+            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}"
         ),
         "cancel-in-progress": True,
     }
@@ -1453,7 +1448,7 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
     assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == ["macos-15"]
     assert "product" not in jobs
 
-    core = jobs["core"]
+    core = jobs["core-windows"]
     security_projection = _named_step(
         core, "Project Windows core evidence for RD-04"
     )
@@ -1492,10 +1487,7 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
         ("product-windows-2025", product_projection),
     ):
         command = step["run"]
-        assert step["if"] == (
-            "${{ !inputs.discovery-mode && "
-            "matrix.lane == 'core-windows-3.13' }}"
-        )
+        assert step["if"] == "${{ !inputs.discovery-mode }}"
         assert "project-junit" in command
         assert "--identity incoming/source/identity.json" in command
         assert "--source-junit evidence/core-windows-3.13.xml" in command
@@ -1521,8 +1513,8 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
         assert "-projection.json" in upload["with"]["path"]
 
     core_upload = _named_step(core, "Upload lane evidence")
-    assert "evidence/${{ matrix.lane }}.xml" in core_upload["with"]["path"]
-    assert "evidence/result-${{ matrix.lane }}.json" in core_upload["with"]["path"]
+    assert "evidence/core-windows-3.13.xml" in core_upload["with"]["path"]
+    assert "evidence/result-core-windows-3.13.json" in core_upload["with"]["path"]
     assert "-projection.json" not in core_upload["with"]["path"]
 
     owner_command = _named_step(
@@ -1530,11 +1522,11 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
         "Verify reviewed owners against hosted lane results",
     )["run"]
     assert (
-        '--owner-result "security-windows-2025=${{ needs.core.result }}"'
+        '--owner-result "security-windows-2025=${{ needs.core-windows.result }}"'
         in owner_command
     )
     assert (
-        '--owner-result "product-windows-2025=${{ needs.core.result }}"'
+        '--owner-result "product-windows-2025=${{ needs.core-windows.result }}"'
         in owner_command
     )
     bundle_command = _named_step(

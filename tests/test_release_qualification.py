@@ -79,7 +79,12 @@ def qualified_union_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
     return _qualified_bundle(tmp_path, monkeypatch, "union")
 
 
-def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, dict]:
+@pytest.fixture
+def qualified_sharded_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
+    return _qualified_bundle(tmp_path, monkeypatch, "union", "windows-sharded")
+
+
+def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str, core_layout="unsharded") -> tuple[Path, dict]:
     dist = tmp_path / "dist"
     dist.mkdir()
     wheel = dist / f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
@@ -113,6 +118,10 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
         member = tarfile.TarInfo("release/skip-allowlist.json")
         member.size = len(allowlist_raw)
         archive.addfile(member, io.BytesIO(allowlist_raw))
+        registry_bytes = Path("release/ubuntu-suites.json").read_bytes()
+        member = tarfile.TarInfo("release/ubuntu-suites.json")
+        member.size = len(registry_bytes)
+        archive.addfile(member, io.BytesIO(registry_bytes))
     identity = {
         "schema_version": qualification.IDENTITY_SCHEMA,
         "repository": REPOSITORY,
@@ -160,7 +169,7 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
     }
     gate_decision_path = tmp_path / "gate-decision.json"
     _write_json(gate_decision_path, gate_decision)
-    hosted = HostedEvidence(identity, RUN_ID, frozen, layout=layout)
+    hosted = HostedEvidence(identity, RUN_ID, frozen, layout=layout, core_layout=core_layout)
     if layout == "union":
         union = qualifying_union(
             tmp_path / "union", identity, hosted.context["harness_sha256"]
@@ -216,6 +225,16 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
             "RD-02:owners",
             {"owner-lane-verification.json": (tmp_path / "owners.json").read_bytes()},
         )
+    if core_layout == "windows-sharded":
+        from tests.core_shard_fixtures import qualifying_core
+        allowlist = tmp_path / "allowlist.json"
+        allowlist.write_bytes(allowlist_raw)
+        _, paths = qualifying_core(
+            tmp_path / "windows", identity, hosted.context["harness_sha256"], RUN_ID,
+            allowlist, json.loads(registry_bytes),
+        )
+        for binding, directory in paths.items():
+            hosted.replace_files(binding, {p.name: p.read_bytes() for p in directory.iterdir()})
     monkeypatch.setattr(hosted_evidence, "GitHub", hosted.client)
     evidence_specs = hosted.specs(tmp_path / "hosted-input")
     present = {spec.partition(":")[0] for spec in evidence_specs}
@@ -239,6 +258,7 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
         workflow_run_attempt=1,
         harness_sha256=hosted.context["harness_sha256"],
         suite_layout=layout,
+        core_layout=core_layout,
         output=bundle,
     )
     assert qualification.build_bundle(args) == 0
@@ -1952,3 +1972,254 @@ def test_bundler_semantics_reject_bad_union_even_if_uploaded_by_a_successful_pro
         qualification._validate_qualifying_union_bundle(
             bundle, identity, manifest["qualification_context"]
         )
+
+
+def test_qualifying_shards_round_trip_keeps_logical_gates_and_producer_bindings(
+    qualified_sharded_bundle,
+):
+    bundle, manifest = qualified_sharded_bundle
+    assert manifest["schema_version"] == qualification.QUALIFICATION_SCHEMA
+    assert manifest["qualification_context"]["core_layout"] == "windows-sharded"
+    assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+    ledger = qualification.load_json(bundle / "hosted-evidence.json")
+    for index in range(2):
+        binding = ledger["bindings"][f"RD-01:windows-shard-{index}"]
+        assert binding["producer"] == f"Execute Windows core shard ({index})"
+    assert (
+        ledger["bindings"]["RD-01:windows-plan"]["producer"]
+        == "Plan Windows core shards"
+    )
+    assert (
+        ledger["bindings"]["RD-01:windows"]["producer"]
+        == "RD-01/RD-02 core (core-windows-3.13)"
+    )
+    assert set(manifest["gates"]) == set(qualification.REQUIRED_GATES)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing",
+        "extra",
+        "shadow-plan",
+        "old-plan",
+        "attempt",
+        "harness",
+        "partial-plan",
+        "cancelled",
+        "partial-worker",
+        "duplicate-index",
+        "missing-node",
+        "duplicate-start",
+        "altered-junit",
+        "altered-result",
+        "partial-aggregate",
+        "altered-projection",
+        "altered-receipt",
+        "unsharded-claim",
+    ],
+)
+def test_qualifying_core_replays_raw_evidence_even_if_producers_claim_success(
+    qualified_sharded_bundle, mutation
+):
+    import shutil
+    from release import core_shards as s
+
+    bundle, manifest = qualified_sharded_bundle
+    identity = qualification.load_json(bundle / "evidence/RD-00/source/identity.json")
+    core = bundle / "evidence/RD-01"
+
+    def change(path, transform):
+        value = qualification.load_json(path)
+        transform(value)
+        _write_json(path, value)
+
+    if mutation == "missing":
+        shutil.rmtree(core / "windows-shard-1")
+    elif mutation == "extra":
+        shutil.copytree(core / "windows-shard-1", core / "windows-shard-2")
+    elif mutation in {"shadow-plan", "old-plan", "attempt", "harness"}:
+
+        def edit_plan(value):
+            if mutation == "shadow-plan":
+                value["purpose"], value["qualifying"] = "shadow", False
+            elif mutation == "old-plan":
+                value["schema_version"] = s.PLAN_SCHEMA
+            elif mutation == "attempt":
+                value["context"]["run_attempt"] += 1
+            else:
+                value["context"]["harness_sha256"] = "0" * 64
+
+        change(core / "windows-plan/plan.json", edit_plan)
+    elif mutation == "partial-plan":
+        change(
+            core / "windows-plan/preparation.json", lambda v: v.update(complete=False)
+        )
+    elif mutation in {"cancelled", "partial-worker", "duplicate-index"}:
+        changes = {
+            "cancelled": {"exit_code": 124},
+            "partial-worker": {"complete": False},
+            "duplicate-index": {"index": 0},
+        }
+        change(
+            core / "windows-shard-1/execution.json",
+            lambda v: v.update(changes[mutation]),
+        )
+    elif mutation == "missing-node":
+        change(core / "windows-shard-0/selected.json", lambda v: v.pop())
+        from tests.test_core_shards import reseal
+
+        reseal(core / "windows-shard-0")
+    elif mutation == "duplicate-start":
+        journal = core / "windows-shard-0/started.jsonl"
+        raw = journal.read_bytes()
+        journal.write_bytes(raw + raw.splitlines(keepends=True)[0])
+        from tests.test_core_shards import reseal
+
+        reseal(core / "windows-shard-0")
+    elif mutation == "altered-junit":
+        xml = core / "windows/core-windows-3.13.xml"
+        xml.write_bytes(
+            xml.read_bytes().replace(b"test_owned_0", b"test_tampered_0", 1)
+        )
+        change(
+            core / "windows/aggregation.json",
+            lambda v: v["files"].update({xml.name: qualification.sha256_file(xml)}),
+        )
+    elif mutation == "altered-result":
+        result = core / "windows/result-core-windows-3.13.json"
+        change(result, lambda v: v.update(owned_forgery=True))
+        change(
+            core / "windows/aggregation.json",
+            lambda v: v["files"].update(
+                {result.name: qualification.sha256_file(result)}
+            ),
+        )
+    elif mutation == "partial-aggregate":
+        change(core / "windows/aggregation.json", lambda v: v.update(complete=False))
+    elif mutation == "altered-projection":
+        (bundle / "evidence/RD-04/windows/security-windows-2025.xml").write_text(
+            "<testsuite />"
+        )
+    elif mutation == "altered-receipt":
+        change(
+            bundle / "evidence/RD-05/windows/product-windows-2025-projection.json",
+            lambda v: v.update(selectors=[]),
+        )
+    else:
+        manifest["qualification_context"]["core_layout"] = "unsharded"
+    with pytest.raises(qualification.QualificationError):
+        qualification._validate_qualifying_core_bundle(
+            bundle, identity, manifest["qualification_context"], RUN_ID
+        )
+
+
+def test_previous_v3_unsharded_bundle_verifies_without_rewriting_its_schema(
+    qualified_bundle,
+):
+    bundle, manifest = qualified_bundle
+    manifest["schema_version"] = qualification.PREVIOUS_QUALIFICATION_SCHEMA
+    del manifest["qualification_context"]["core_layout"]
+    ledger = qualification.load_json(bundle / "hosted-evidence.json")
+    del ledger["context"]["core_layout"]
+    _write_json(bundle / "hosted-evidence.json", ledger)
+    manifest["supporting_files"]["hosted-evidence.json"] = qualification.sha256_file(
+        bundle / "hosted-evidence.json"
+    )
+    _write_json(bundle / "qualification-manifest.json", manifest)
+    before = (bundle / "qualification-manifest.json").read_bytes()
+    assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+    assert (bundle / "qualification-manifest.json").read_bytes() == before
+
+
+@pytest.mark.parametrize(
+    "schema,context_change",
+    [
+        (qualification.PREVIOUS_QUALIFICATION_SCHEMA, "add-layout"),
+        (qualification.QUALIFICATION_SCHEMA, "missing-layout"),
+        (qualification.QUALIFICATION_SCHEMA, "unknown-layout"),
+    ],
+)
+def test_manifest_version_cannot_silently_change_core_evidence_contract(
+    qualified_bundle, schema, context_change
+):
+    _, manifest = qualified_bundle
+    manifest["schema_version"] = schema
+    if context_change == "missing-layout":
+        del manifest["qualification_context"]["core_layout"]
+    elif context_change == "unknown-layout":
+        manifest["qualification_context"]["core_layout"] = "sharded-everywhere"
+    with pytest.raises(qualification.QualificationError):
+        qualification._validate_manifest(manifest)
+
+
+@pytest.mark.parametrize(
+    "mutation", [None, "pins", "collection", "started", "plan-context"]
+)
+def test_qualifying_preparation_is_bound_to_collection_and_pins(
+    qualified_sharded_bundle, mutation
+):
+    from release import core_shards as s
+
+    bundle, _ = qualified_sharded_bundle
+    directory = bundle / "evidence/RD-01/windows-plan"
+    value = s.read(directory / "plan.json")
+    if mutation is None:
+        assert s.validate_preparation(directory, value)["complete"] is True
+        return
+    if mutation == "pins":
+        (directory / "constraints.txt").write_text("pytest==1.0\n")
+    elif mutation == "collection":
+        _write_json(directory / "collected.json", value["inventory"][:-1])
+    elif mutation == "started":
+        (directory / "started.jsonl").write_text(
+            json.dumps(value["inventory"][0]) + "\n"
+        )
+    else:
+        record = s.read(directory / "preparation.json")
+        record["context"]["environment"]["runner_image"] = "different-planning-job"
+        _write_json(directory / "preparation.json", record)
+    record = s.read(directory / "preparation.json")
+    record["files"] = {
+        name: qualification.sha256_file(directory / name) for name in record["files"]
+    }
+    _write_json(directory / "preparation.json", record)
+    with pytest.raises(s.q.QualificationError):
+        s.validate_preparation(directory, value)
+
+
+def test_qualifying_aggregation_command_rebuilds_the_complete_lane(
+    qualified_sharded_bundle, tmp_path, monkeypatch
+):
+    import shutil
+    from release import core_shard_runner as r
+
+    bundle, _ = qualified_sharded_bundle
+    core = bundle / "evidence/RD-01"
+    value = r.s.read(core / "windows-plan/plan.json")
+    root = tmp_path / "candidate"
+    (root / "release").mkdir(parents=True)
+    with tarfile.open(bundle / "evidence/RD-00/source/candidate-source.tar") as archive:
+        stream = archive.extractfile("release/skip-allowlist.json")
+        assert stream is not None
+        (root / "release/skip-allowlist.json").write_bytes(
+            stream.read()
+        )
+    shards = tmp_path / "shards"
+    for index in range(2):
+        shutil.copytree(core / f"windows-shard-{index}", shards / str(index))
+    monkeypatch.setattr(r, "context", lambda args: value["context"])
+    output = tmp_path / "rebuilt"
+    assert (
+        r.aggregate_qualification(
+            argparse.Namespace(
+                root=root,
+                output=output,
+                preparation=core / "windows-plan",
+                shards_root=shards,
+            )
+        )
+        == 0
+    )
+    for path in (core / "windows").iterdir():
+        assert (output / path.name).read_bytes() == path.read_bytes()

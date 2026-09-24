@@ -66,6 +66,9 @@ def phase(step: dict, declared: dict) -> str:
     )
     script = definition.get("run", "")
     uses = definition.get("uses", "")
+    shard_operation = re.search(r"\bcore_shard_runner\.py\s+(prepare|execute|aggregate|verify-plan)\b", script)
+    if shard_operation:
+        return {"prepare": "collection", "execute": "test", "aggregate": "evidence", "verify-plan": "setup"}[shard_operation[1]]
     if step["name"] == "Verify and extract qualification harnesses":
         return "setup"
     if "release/static_checks.py" in script or step["name"].lower().startswith(

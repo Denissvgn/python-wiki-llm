@@ -53,8 +53,14 @@ def _json(raw: bytes) -> Any:
     return json.loads(raw, object_pairs_hook=unique, parse_constant=invalid)
 
 
-def artifact_contract(layout: str) -> dict[str, tuple[str, str, tuple[str, ...]]]:
+def artifact_contract(
+    layout: str, core_layout: str = "unsharded"
+) -> dict[str, tuple[str, str, tuple[str, ...]]]:
     require(layout in {"legacy", "union"}, "unknown qualifying suite layout")
+    require(
+        core_layout in {"unsharded", "windows-sharded"},
+        "unknown qualifying core layout",
+    )
 
     def core(lane: str) -> str:
         return f"RD-01/RD-02 core ({lane})"
@@ -162,6 +168,41 @@ def artifact_contract(layout: str) -> dict[str, tuple[str, str, tuple[str, ...]]
                 "union.xml",
             ),
         )
+    if core_layout == "windows-sharded":
+        contract["RD-01:windows"] = (
+            "evidence-core-windows-3.13",
+            core("core-windows-3.13"),
+            (
+                "core-windows-3.13.xml",
+                "result-core-windows-3.13.json",
+                "aggregation.json",
+            ),
+        )
+        contract["RD-01:windows-plan"] = (
+            "evidence-core-windows-plan",
+            "Plan Windows core shards",
+            (
+                "preparation.json",
+                "plan.json",
+                "collected.json",
+                "constraints.txt",
+                "collection.log",
+                "started.jsonl",
+            ),
+        )
+        for index in range(2):
+            contract[f"RD-01:windows-shard-{index}"] = (
+                f"evidence-core-windows-shard-{index}",
+                f"Execute Windows core shard ({index})",
+                (
+                    "execution.json",
+                    "collected.json",
+                    "selected.json",
+                    "started.jsonl",
+                    "worker.log",
+                    "junit.xml",
+                ),
+            )
     return contract
 
 
@@ -299,7 +340,9 @@ def zip_inventory(raw: bytes) -> dict[str, str]:
                 "noncanonical artifact member name",
             )
             name = (
-                member.filename.removesuffix("/") if member.is_dir() else member.filename
+                member.filename.removesuffix("/")
+                if member.is_dir()
+                else member.filename
             )
             path = PurePosixPath(name)
             require(
@@ -330,7 +373,11 @@ def verify(root: Path, identity: dict, context: dict, run_id: int) -> dict:
     require(type(run_id) is int and run_id > 0, "invalid workflow run ID")
     require(
         isinstance(context, dict)
-        and set(context) == {"run_attempt", "harness_sha256", "suite_layout"},
+        and set(context)
+        in (
+            {"run_attempt", "harness_sha256", "suite_layout"},
+            {"run_attempt", "harness_sha256", "suite_layout", "core_layout"},
+        ),
         "invalid qualification context",
     )
     attempt = context["run_attempt"]
@@ -340,7 +387,9 @@ def verify(root: Path, identity: dict, context: dict, run_id: int) -> dict:
         and re.fullmatch(r"[0-9a-f]{64}", context["harness_sha256"]) is not None,
         "invalid harness commitment",
     )
-    contract = artifact_contract(context["suite_layout"])
+    contract = artifact_contract(
+        context["suite_layout"], context.get("core_layout", "unsharded")
+    )
     repository, candidate = identity["repository"], identity["source"]["sha"]
     client = GitHub(repository)
     run = client.get(f"/actions/runs/{run_id}")

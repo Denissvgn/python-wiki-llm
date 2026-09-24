@@ -1,19 +1,22 @@
 """Content-bound file sharding and complete logical core-lane evidence.
 
-These helpers do not authorize a qualifying producer or a rollout. The shadow
-workflow uses them to establish equivalence before changing release execution.
+These helpers validate shadow and qualifying evidence separately. Qualifying
+producer authorization is independently verified against hosted jobs/artifacts.
 """
 
 from __future__ import annotations
 
+import argparse
 from collections import Counter
 from copy import deepcopy
 import hashlib
 import importlib.util
 import json
 import math
+import re
 from pathlib import Path
 import statistics
+import tempfile
 from typing import Any
 import xml.etree.ElementTree as ET
 
@@ -26,6 +29,12 @@ _spec.loader.exec_module(q)
 
 PLAN_SCHEMA = "agent-wiki-core-shard-plan/v2"
 EXECUTION_SCHEMA = "agent-wiki-core-shard-execution/v2"
+QUALIFYING_PLAN_SCHEMA = "agent-wiki-core-shard-plan/v3"
+QUALIFYING_EXECUTION_SCHEMA = "agent-wiki-core-shard-execution/v3"
+PREPARATION_SCHEMA = "agent-wiki-core-shard-preparation/v1"
+AGGREGATION_SCHEMA = "agent-wiki-core-shard-aggregation/v1"
+WINDOWS_LANE = "core-windows-3.13"
+WINDOWS_SHARDS = 2
 HISTORY_SCHEMA = "agent-wiki-core-shard-timings/v1"
 PLANNER = "file-lpt-ms-v1"
 ENVIRONMENT_POLICY = "exact-profile-with-recorded-runner-image/v1"
@@ -93,6 +102,21 @@ def profile(lane: str) -> dict:
         "install": "noneditable",
         "pytest_flags": FLAGS,
     }
+
+
+def constraints(value: dict) -> str:
+    result = []
+    for name, version in value["packages"].items():
+        require(
+            isinstance(name, str)
+            and isinstance(version, str)
+            and re.fullmatch(r"[a-z0-9][a-z0-9.-]*", name) is not None
+            and re.fullmatch(r"[A-Za-z0-9.!+_-]+", version) is not None,
+            "unsafe package pin",
+        )
+        if name != "agent-wiki-cli":
+            result.append(f"{name}=={version}\n")
+    return "".join(sorted(result))
 
 
 def validate_environment(value: Any, lane: str) -> None:
@@ -225,9 +249,15 @@ def partition(nodes: list[str], weights: dict[str, int], count: int) -> list[dic
 
 
 def plan(
-    nodes: list[str], context: dict, count: int, history: dict | None = None
+    nodes: list[str],
+    context: dict,
+    count: int,
+    history: dict | None = None,
+    *,
+    purpose: str = "shadow",
 ) -> dict:
     validate_context(context)
+    validate_purpose(purpose, context, count)
     nodes = inventory(nodes)
     files = sorted({file_name(node) for node in nodes})
     timings = {}
@@ -267,11 +297,11 @@ def plan(
     fallback = max(1, int(statistics.median(timings.values()))) if timings else 1000
     weights = {name: timings.get(name, fallback) for name in files}
     return {
-        "schema_version": PLAN_SCHEMA,
+        "schema_version": plan_schema(purpose),
         "planner": PLANNER,
         "environment_policy": ENVIRONMENT_POLICY,
-        "purpose": "shadow",
-        "qualifying": False,
+        "purpose": purpose,
+        "qualifying": purpose == "qualification",
         "context": deepcopy(context),
         "inventory": nodes,
         "inventory_sha256": digest(nodes),
@@ -284,7 +314,32 @@ def plan(
     }
 
 
-def validate_plan(value: Any, context: dict | None = None) -> dict:
+def plan_schema(purpose: str) -> str:
+    require(purpose in {"shadow", "qualification"}, "invalid core execution purpose")
+    return QUALIFYING_PLAN_SCHEMA if purpose == "qualification" else PLAN_SCHEMA
+
+
+def execution_schema(purpose: str) -> str:
+    plan_schema(purpose)
+    return (
+        QUALIFYING_EXECUTION_SCHEMA if purpose == "qualification" else EXECUTION_SCHEMA
+    )
+
+
+def validate_purpose(purpose: str, context: dict, count: int) -> None:
+    plan_schema(purpose)
+    if purpose == "qualification":
+        require(
+            context["environment"]["profile"]["lane"] == WINDOWS_LANE
+            and type(count) is int
+            and count == WINDOWS_SHARDS,
+            "qualifying sharding is restricted to two Windows shards",
+        )
+
+
+def validate_plan(
+    value: Any, context: dict | None = None, *, purpose: str = "shadow"
+) -> dict:
     fields(
         value,
         {
@@ -306,14 +361,15 @@ def validate_plan(value: Any, context: dict | None = None) -> dict:
         "shard plan",
     )
     require(
-        value["schema_version"] == PLAN_SCHEMA
+        value["schema_version"] == plan_schema(purpose)
         and value["planner"] == PLANNER
         and value["environment_policy"] == ENVIRONMENT_POLICY
-        and value["purpose"] == "shadow"
-        and value["qualifying"] is False,
-        "unsupported or qualifying shard plan",
+        and value["purpose"] == purpose
+        and value["qualifying"] is (purpose == "qualification"),
+        "unsupported shard plan or execution purpose",
     )
     validate_context(value["context"])
+    validate_purpose(purpose, value["context"], value["shard_count"])
     if context is not None:
         compatible_context(value["context"], context)
     nodes = inventory(value["inventory"])
@@ -411,8 +467,15 @@ def outcomes(cases: dict[str, ET.Element]) -> dict:
     return result
 
 
-def validate_execution(directory: Path, value: dict, index: int | None) -> dict:
-    validate_plan(value)
+def validate_execution(
+    directory: Path, value: dict, index: int | None, *, purpose: str = "shadow"
+) -> dict:
+    validate_plan(value, purpose=purpose)
+    if purpose == "qualification":
+        require(
+            type(index) is int and 0 <= index < WINDOWS_SHARDS,
+            "qualification requires a planned shard index",
+        )
     receipt = read(directory / "execution.json")
     fields(
         receipt,
@@ -432,11 +495,11 @@ def validate_execution(directory: Path, value: dict, index: int | None) -> dict:
         "shard execution",
     )
     require(
-        receipt["schema_version"] == EXECUTION_SCHEMA
-        and receipt["purpose"] == "shadow"
-        and receipt["qualifying"] is False
+        receipt["schema_version"] == execution_schema(purpose)
+        and receipt["purpose"] == purpose
+        and receipt["qualifying"] is (purpose == "qualification")
         and receipt["complete"] is True,
-        "incomplete or qualifying shard",
+        "invalid or incomplete shard execution",
     )
     require(
         type(receipt["index"]) is type(index) and receipt["index"] == index,
@@ -501,8 +564,10 @@ def validate_execution(directory: Path, value: dict, index: int | None) -> dict:
     return receipt
 
 
-def merge_junit(value: dict, directories: list[Path], output: Path) -> dict:
-    validate_plan(value)
+def merge_junit(
+    value: dict, directories: list[Path], output: Path, *, purpose: str = "shadow"
+) -> dict:
+    validate_plan(value, purpose=purpose)
     require(
         len(directories) == value["shard_count"]
         and len(set(map(str, directories))) == len(directories),
@@ -520,7 +585,7 @@ def merge_junit(value: dict, directories: list[Path], output: Path) -> dict:
             "missing, extra or duplicate shard index",
         )
         indices.add(index)
-        receipts.append(validate_execution(directory, value, index))
+        receipts.append(validate_execution(directory, value, index, purpose=purpose))
         current = junit(directory / "junit.xml")
         require(not set(cases).intersection(current), "overlapping shard JUnit")
         cases.update(current)
@@ -539,3 +604,184 @@ def merge_junit(value: dict, directories: list[Path], output: Path) -> dict:
     require(not output.exists(), "aggregate JUnit must be new")
     ET.ElementTree(suite).write(output, encoding="utf-8", xml_declaration=True)
     return {"receipts": receipts, "outcomes": outcomes(cases)}
+
+
+def bound_qualification_plan(
+    value: dict, identity: dict, harness_sha256: str, run_id: int, run_attempt: int
+) -> dict:
+    validate_plan(value, purpose="qualification")
+    expected = {
+        "identity": identity,
+        "harness_sha256": harness_sha256,
+        "run_id": run_id,
+        "run_attempt": run_attempt,
+    }
+    require(
+        {key: value["context"][key] for key in expected} == expected,
+        "qualifying shard source, harness or run binding differs",
+    )
+    return value
+
+
+def validate_preparation(directory: Path, value: dict) -> dict:
+    validate_plan(value, purpose="qualification")
+    record = read(directory / "preparation.json")
+    fields(
+        record,
+        {
+            "schema_version",
+            "purpose",
+            "qualifying",
+            "complete",
+            "context",
+            "plan_sha256",
+            "exit_code",
+            "seconds",
+            "files",
+            "error",
+        },
+        "core preparation",
+    )
+    require(
+        record["schema_version"] == PREPARATION_SCHEMA
+        and record["purpose"] == "qualification"
+        and record["qualifying"] is True
+        and record["complete"] is True
+        and type(record["exit_code"]) is int
+        and record["exit_code"] == 0
+        and record["error"] is None,
+        "core preparation did not complete successfully",
+    )
+    require(
+        record["plan_sha256"] == digest(value)
+        and digest(record["context"]) == digest(value["context"]),
+        "core preparation plan or context differs",
+    )
+    duration(record["seconds"])
+    names = {
+        "plan.json",
+        "collected.json",
+        "constraints.txt",
+        "collection.log",
+        "started.jsonl",
+    }
+    require(
+        isinstance(record["files"], dict) and set(record["files"]) == names,
+        "core preparation membership differs",
+    )
+    for name, sha in record["files"].items():
+        q._require_sha256(sha, "preparation file digest")
+        require(
+            not (directory / name).is_symlink()
+            and q.sha256_file(directory / name) == sha,
+            "core preparation input differs: " + name,
+        )
+    require(
+        read(directory / "plan.json") == value
+        and read(directory / "collected.json") == value["inventory"],
+        "core preparation collection differs",
+    )
+    require(
+        (directory / "started.jsonl").read_bytes() == b"",
+        "preparation unexpectedly executed tests",
+    )
+    require(
+        (directory / "constraints.txt").read_text(encoding="utf-8")
+        == constraints(value["context"]["environment"]),
+        "preparation dependency pins differ from the collected environment",
+    )
+    return record
+
+
+def validate_aggregation(
+    directory: Path,
+    preparation: Path,
+    shards: list[Path],
+    identity: dict,
+    harness_sha256: str,
+    run_id: int,
+    run_attempt: int,
+    allowlist: Path,
+) -> dict:
+    value = bound_qualification_plan(
+        read(preparation / "plan.json"), identity, harness_sha256, run_id, run_attempt
+    )
+    validate_preparation(preparation, value)
+    record = read(directory / "aggregation.json")
+    fields(
+        record,
+        {
+            "schema_version",
+            "purpose",
+            "qualifying",
+            "complete",
+            "context",
+            "plan_sha256",
+            "preparation_sha256",
+            "shards",
+            "files",
+        },
+        "core aggregation",
+    )
+    require(
+        record["schema_version"] == AGGREGATION_SCHEMA
+        and record["purpose"] == "qualification"
+        and record["qualifying"] is True
+        and record["complete"] is True,
+        "core aggregation is incomplete or nonqualifying",
+    )
+    compatible_context(value["context"], record["context"])
+    require(
+        record["plan_sha256"] == digest(value)
+        and record["preparation_sha256"]
+        == q.sha256_file(preparation / "preparation.json"),
+        "core aggregation preparation binding differs",
+    )
+    names = {WINDOWS_LANE + ".xml", "result-" + WINDOWS_LANE + ".json"}
+    require(
+        isinstance(record["files"], dict) and set(record["files"]) == names,
+        "core aggregation membership differs",
+    )
+    for name, sha in record["files"].items():
+        q._require_sha256(sha, "aggregation file digest")
+        require(
+            not (directory / name).is_symlink()
+            and q.sha256_file(directory / name) == sha,
+            "aggregated file differs: " + name,
+        )
+    # Rebuild from every verified shard, then enforce the whole logical lane.
+    with tempfile.TemporaryDirectory(prefix="core-replay-") as temporary:
+        output = Path(temporary)
+        merged = merge_junit(
+            value, shards, output / (WINDOWS_LANE + ".xml"), purpose="qualification"
+        )
+        require(
+            (output / (WINDOWS_LANE + ".xml")).read_bytes()
+            == (directory / (WINDOWS_LANE + ".xml")).read_bytes(),
+            "aggregated core JUnit differs from complete shard evidence",
+        )
+        expected_shards = {
+            str(item["index"]): q.sha256_file(path / "execution.json")
+            for path, item in zip(shards, merged["receipts"])
+        }
+        require(
+            record["shards"] == expected_shards,
+            "core aggregation shard bindings differ",
+        )
+        q.verify_junit(
+            argparse.Namespace(
+                junit=output / (WINDOWS_LANE + ".xml"),
+                lane=WINDOWS_LANE,
+                allowlist=allowlist,
+                minimum_collected=5322,
+                minimum_passed=5070,
+                discovery=False,
+                output=output / "result.json",
+            )
+        )
+        require(
+            read(output / "result.json")
+            == read(directory / ("result-" + WINDOWS_LANE + ".json")),
+            "core aggregation gate result differs",
+        )
+    return record
