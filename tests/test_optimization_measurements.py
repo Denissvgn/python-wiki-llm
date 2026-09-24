@@ -314,6 +314,11 @@ def test_installing_audit_tools_is_not_scanner_execution():
     assert measurements.phase({"name": name}, declared) == "setup"
 
 
+def test_direct_attestation_is_still_evidence_time():
+    name = "Attest exact qualified distributions"
+    assert measurements.phase({"name": name}, {"steps": [{"name": name, "uses": "actions/attest@" + "a" * 40}]}) == "evidence"
+
+
 def test_complete_pagination_and_unknown_queue_times(capture, tmp_path):
     baseline, inputs, run, jobs, index = capture
     second = {

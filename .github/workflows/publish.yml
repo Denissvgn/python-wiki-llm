@@ -94,8 +94,9 @@ jobs:
           --output workflow-run-verification.json
 
       - name: Download the immutable qualification bundle
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualified-release
           path: qualified-release
           github-token: ${{ github.token }}
@@ -184,8 +185,9 @@ jobs:
             --output promotion-decision.json
 
       - name: Preserve final promotion evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: promotion-decision
           path: |
             promotion-decision.json
@@ -225,15 +227,16 @@ jobs:
       id-token: write
     steps:
       - name: Download the exact verified bundle
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualified-release
           path: qualified-release
           github-token: ${{ github.token }}
           run-id: ${{ inputs.qualification-run-id }}
 
       - name: Publish to PyPI using Trusted Publishing
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: qualified-release/dist/
           attestations: true

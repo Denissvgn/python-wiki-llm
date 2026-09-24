@@ -60,8 +60,9 @@ jobs:
           --candidate-sha "${CANDIDATE_SHA}" --repository "${GITHUB_REPOSITORY}" \
           --output "${RUNNER_TEMP}/core-shard-inputs"
     - name: Upload immutable shadow inputs
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
+        archive: true
         name: core-shard-inputs-${{ github.run_attempt }}
         path: ${{ runner.temp }}/core-shard-inputs/
         compression-level: 0
@@ -91,8 +92,9 @@ jobs:
         shell: bash
     steps:
     - name: Download frozen shadow inputs
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
+        digest-mismatch: error
         name: core-shard-inputs-${{ github.run_attempt }}
         path: incoming
     - name: Set up native Python
@@ -127,8 +129,9 @@ jobs:
           --shards 2 --output evidence/reference
     - name: Retain complete or partial shadow evidence
       if: ${{ always() }}
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
+        archive: true
         name: core-shard-reference-${{ matrix.lane }}-${{ github.run_attempt }}
         path: evidence/reference/
         if-no-files-found: warn
@@ -175,8 +178,9 @@ jobs:
         shell: bash
     steps:
     - name: Download frozen shadow inputs
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
+        digest-mismatch: error
         name: core-shard-inputs-${{ github.run_attempt }}
         path: incoming
     - name: Set up native Python
@@ -198,8 +202,9 @@ jobs:
     - name: Create a fresh job environment
       run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/core-shard-venv"
     - name: Download this attempt reference plan
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
+        digest-mismatch: error
         name: core-shard-reference-${{ matrix.lane }}-${{ github.run_attempt }}
         path: incoming/reference
     - name: Verify reference plan and resolved dependency pins
@@ -226,8 +231,9 @@ jobs:
           --plan incoming/reference/plan.json --index "${SHARD}" --output evidence/shard
     - name: Retain complete or partial shadow evidence
       if: ${{ always() }}
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
+        archive: true
         name: core-shard-${{ matrix.lane }}-${{ matrix.shard }}-${{ github.run_attempt }}
         path: evidence/shard/
         if-no-files-found: warn
@@ -261,8 +267,9 @@ jobs:
         shell: bash
     steps:
     - name: Download frozen shadow inputs
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
+        digest-mismatch: error
         name: core-shard-inputs-${{ github.run_attempt }}
         path: incoming
     - name: Set up native Python
@@ -284,13 +291,15 @@ jobs:
     - name: Create a fresh job environment
       run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/core-shard-venv"
     - name: Download this attempt reference
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
+        digest-mismatch: error
         name: core-shard-reference-${{ matrix.lane }}-${{ github.run_attempt }}
         path: incoming/reference
     - name: Download every shard with its separate identity
-      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
+        digest-mismatch: error
         pattern: core-shard-${{ matrix.lane }}-*-${{ github.run_attempt }}
         path: incoming/shards
         merge-multiple: false
@@ -319,8 +328,9 @@ jobs:
           --shards-root incoming/shards --output evidence/comparison
     - name: Retain complete or partial shadow evidence
       if: ${{ always() }}
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
+        archive: true
         name: core-shard-comparison-${{ matrix.lane }}-${{ github.run_attempt }}
         path: evidence/comparison/
         if-no-files-found: warn

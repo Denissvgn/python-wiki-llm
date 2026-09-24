@@ -81,6 +81,7 @@ def phase(step: dict, declared: dict) -> str:
     if (
         "upload-artifact@" in uses
         or "attest-" in uses
+        or uses.startswith("actions/attest@")
         or any(
             word in script
             for word in (

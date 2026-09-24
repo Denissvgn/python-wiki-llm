@@ -27,7 +27,7 @@ WORKFLOW_PATH = ROOT / ".github" / "workflows" / "action-selftest.yml"
 DASHBOARD_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "llm-wiki-doctor.yml"
 SETUP_PYTHON_SHA = "ece7cb06caefa5fff74198d8649806c4678c61a1"
 CHECKOUT_SHA = "d23441a48e516b6c34aea4fa41551a30e30af803"
-UPLOAD_ARTIFACT_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"
+UPLOAD_ARTIFACT_SHA = "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
 FRESHNESS_COUNTS = {
     "unknown": 0,
     "current": 2,

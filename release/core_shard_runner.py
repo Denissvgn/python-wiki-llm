@@ -702,7 +702,8 @@ def compare(args) -> int:
     s.require(not args.output.exists(), "comparison output must be new")
     args.output.mkdir(parents=True)
     report: dict[str, Any] = {
-        "schema_version": "agent-wiki-core-shard-comparison/v1",
+        "schema_version": "agent-wiki-core-shard-comparison/v2",
+        "environment_policy": s.ENVIRONMENT_POLICY,
         "qualifying": False,
         "purpose": "shadow",
         "complete": False,
@@ -742,6 +743,14 @@ def compare(args) -> int:
             context=current,
             collected=len(value["inventory"]),
             shard_count=value["shard_count"],
+            runner_images={
+                "reference": reference["context"]["environment"]["runner_image"],
+                "shards": {
+                    str(row["index"]): row["context"]["environment"]["runner_image"]
+                    for row in merged["receipts"]
+                },
+                "aggregation": current["environment"]["runner_image"],
+            },
         )
         if current["environment"]["profile"]["coverage"]:
             report["coverage"] = combine_coverage(
@@ -795,6 +804,14 @@ def compare(args) -> int:
             "shard_execution_seconds": [row["seconds"] for row in merged["receipts"]],
             "summed_shard_seconds": sum(row["seconds"] for row in merged["receipts"]),
             "longest_shard_seconds": max(row["seconds"] for row in merged["receipts"]),
+            "worker_images_identical": len(
+                {
+                    report["runner_images"]["reference"],
+                    *report["runner_images"]["shards"].values(),
+                }
+            )
+            == 1,
+            "comparison_limit": "Hosted image revisions are recorded per job. Different builds can affect timing; functional parity does not establish image equality or a speedup.",
             "scope": "Collection and execution only. Runner setup, queueing and artifact transfer must be measured from job metadata before rollout.",
         }
         report.update(complete=True, passed=True)

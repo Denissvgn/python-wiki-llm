@@ -24,10 +24,11 @@ assert _spec is not None and _spec.loader is not None
 q = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(q)
 
-PLAN_SCHEMA = "agent-wiki-core-shard-plan/v1"
-EXECUTION_SCHEMA = "agent-wiki-core-shard-execution/v1"
+PLAN_SCHEMA = "agent-wiki-core-shard-plan/v2"
+EXECUTION_SCHEMA = "agent-wiki-core-shard-execution/v2"
 HISTORY_SCHEMA = "agent-wiki-core-shard-timings/v1"
 PLANNER = "file-lpt-ms-v1"
+ENVIRONMENT_POLICY = "exact-profile-with-recorded-runner-image/v1"
 FLAGS = [
     "-q",
     "-p",
@@ -154,6 +155,30 @@ def validate_context(value: Any) -> None:
     )
 
 
+def compatible_context(expected: dict, observed: dict) -> None:
+    """Match execution inputs while retaining hosted image builds as provenance.
+
+    A hosted OS label can schedule different image revisions in the same run.
+    Every actual revision remains in its original receipt. Source, run, flags,
+    OS profile, architecture, interpreter and resolved packages must still match.
+    """
+    validate_context(expected)
+    validate_context(observed)
+    changed = [
+        name
+        for name in expected
+        if name != "environment" and digest(expected[name]) != digest(observed[name])
+    ]
+    changed.extend(
+        "environment." + name
+        for name in expected["environment"]
+        if name != "runner_image"
+        and digest(expected["environment"][name])
+        != digest(observed["environment"][name])
+    )
+    require(not changed, "shard context differs: " + ", ".join(sorted(changed)))
+
+
 def inventory(nodes: Any) -> list[str]:
     require(
         isinstance(nodes, list)
@@ -244,6 +269,7 @@ def plan(
     return {
         "schema_version": PLAN_SCHEMA,
         "planner": PLANNER,
+        "environment_policy": ENVIRONMENT_POLICY,
         "purpose": "shadow",
         "qualifying": False,
         "context": deepcopy(context),
@@ -264,6 +290,7 @@ def validate_plan(value: Any, context: dict | None = None) -> dict:
         {
             "schema_version",
             "planner",
+            "environment_policy",
             "purpose",
             "qualifying",
             "context",
@@ -281,16 +308,14 @@ def validate_plan(value: Any, context: dict | None = None) -> dict:
     require(
         value["schema_version"] == PLAN_SCHEMA
         and value["planner"] == PLANNER
+        and value["environment_policy"] == ENVIRONMENT_POLICY
         and value["purpose"] == "shadow"
         and value["qualifying"] is False,
         "unsupported or qualifying shard plan",
     )
     validate_context(value["context"])
     if context is not None:
-        require(
-            value["context"] == context,
-            "shard candidate, environment or run attempt differs",
-        )
+        compatible_context(value["context"], context)
     nodes = inventory(value["inventory"])
     require(
         nodes == value["inventory"] and digest(nodes) == value["inventory_sha256"],
@@ -424,10 +449,10 @@ def validate_execution(directory: Path, value: dict, index: int | None) -> dict:
         "shard failed or was cancelled",
     )
     require(
-        receipt["plan_sha256"] == digest(value)
-        and receipt["context"] == value["context"],
-        "shard plan, source, environment or attempt differs",
+        receipt["plan_sha256"] == digest(value),
+        "shard plan digest differs",
     )
+    compatible_context(value["context"], receipt["context"])
     duration(receipt["seconds"])
     required = {
         "collected.json",

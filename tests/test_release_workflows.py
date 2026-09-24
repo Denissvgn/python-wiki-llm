@@ -826,8 +826,14 @@ def test_qualification_has_every_gate_and_fail_closed_discovery() -> None:
     assert "qualified-release" in text
     assert "compare-builds" in text
     assert "compare-smoke" in text
-    assert "actions/attest-build-provenance@" in text
-    assert "actions/attest-sbom@" in text
+    attestations = [step for step in workflow["jobs"]["bundle"]["steps"]
+                    if step.get("uses", "").startswith("actions/attest@")]
+    assert len(attestations) == 2
+    assert all(step["with"]["subject-path"] == "qualified-release/dist/*" for step in attestations)
+    assert "sbom-path" not in attestations[0]["with"]
+    assert attestations[1]["with"]["sbom-path"] == "qualified-release/sbom.spdx.json"
+    assert attestations[1]["env"]["NODE_OPTIONS"] == "--max-http-header-size=32768"
+    assert all(not any(key.startswith("predicate") for key in step["with"]) for step in attestations)
     assert "--gate-decision gate-decision.json" in text
     for gate in range(13):
         assert f'--evidence "RD-{gate:02d}:' in text
@@ -973,6 +979,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     upload = _named_step(job, "Upload gate evidence")
     assert upload["if"] == "always()"
     assert upload["with"] == {
+        "archive": True,
         "name": "evidence-rd-10",
         "path": "${{ runner.temp }}/rd-10-evidence/",
         "if-no-files-found": "error",

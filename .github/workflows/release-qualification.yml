@@ -174,8 +174,9 @@ jobs:
           echo "harness-sha256=${harness_sha256}" >> "${GITHUB_OUTPUT}"
 
       - name: Upload frozen source and identity
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: candidate-source
           path: |
             ${{ runner.temp }}/frozen/candidate-source.tar
@@ -186,8 +187,9 @@ jobs:
           retention-days: 14
 
       - name: Upload independently digested qualification harnesses
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: qualification-harnesses
           path: ${{ runner.temp }}/frozen/qualification-harnesses.tar
           if-no-files-found: error
@@ -220,14 +222,16 @@ jobs:
         shell: bash
     steps:
       - name: Download frozen source
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
 
       - name: Download qualification harness
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
 
@@ -356,8 +360,9 @@ jobs:
 
       - name: Upload projected Windows RD-04 evidence
         if: ${{ !inputs.discovery-mode && matrix.lane == 'core-windows-3.13' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-04-windows-2025
           path: |
             evidence/security-windows-2025.xml
@@ -367,8 +372,9 @@ jobs:
 
       - name: Upload projected Windows RD-05 evidence
         if: ${{ !inputs.discovery-mode && matrix.lane == 'core-windows-3.13' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-05-windows-2025
           path: |
             evidence/product-windows-2025.xml
@@ -378,8 +384,9 @@ jobs:
 
       - name: Upload lane evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-${{ matrix.lane }}
           path: |
             evidence/${{ matrix.lane }}.xml
@@ -402,12 +409,14 @@ jobs:
     needs: [freeze, core]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Verify and extract qualification harnesses
@@ -421,9 +430,10 @@ jobs:
             incoming/tools/qualification-harnesses.tar incoming/tools
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
+          digest-mismatch: error
           pattern: evidence-core-*
           path: incoming/evidence
       - name: Extract the committed skip baseline
@@ -451,8 +461,9 @@ jobs:
             --output discovered-skip-allowlist.json \
             --diagnostic skip-discovery-diagnostic.json
       - name: Upload non-qualifying skip diagnostics for owner review
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: discovered-skip-allowlist
           path: |
             skip-discovery-diagnostic.json
@@ -471,13 +482,15 @@ jobs:
         id: clock
         run: echo "started=$(date +%s)" >> "${GITHUB_OUTPUT}"
       - name: Download frozen source
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
       - name: Download qualification harness
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Set up Python 3.13
@@ -518,16 +531,18 @@ jobs:
           --setup-started "${{ steps.clock.outputs.started }}"
       - name: Upload complete Ubuntu execution and lineage
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-ubuntu-suites
           path: evidence/ubuntu/
           if-no-files-found: error
           retention-days: 14
       - name: Upload evidence-rd-03 logical gate view
         if: ${{ always() && steps.suites.outcome == 'success' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-03
           path: |
             evidence/ubuntu/slow.xml
@@ -538,8 +553,9 @@ jobs:
           retention-days: 14
       - name: Upload evidence-rd-04-ubuntu-24.04 logical gate view
         if: ${{ always() && steps.suites.outcome == 'success' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-04-ubuntu-24.04
           path: |
             evidence/ubuntu/security-ubuntu-24.04.xml
@@ -548,8 +564,9 @@ jobs:
           retention-days: 14
       - name: Upload evidence-rd-05-ubuntu-24.04 logical gate view
         if: ${{ always() && steps.suites.outcome == 'success' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-05-ubuntu-24.04
           path: |
             evidence/ubuntu/product-ubuntu-24.04.xml
@@ -565,13 +582,15 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Download frozen source
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
       - name: Download qualification harness
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Set up Python 3.13
@@ -603,40 +622,45 @@ jobs:
           --output evidence/ubuntu-shadow
       - name: Upload evidence-rd-03
         if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-03
           path: evidence/ubuntu-shadow/legacy-slow
           if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
           retention-days: 14
       - name: Upload evidence-rd-04-ubuntu-24.04
         if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-04-ubuntu-24.04
           path: evidence/ubuntu-shadow/legacy-security
           if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
           retention-days: 14
       - name: Upload evidence-rd-05-ubuntu-24.04
         if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-05-ubuntu-24.04
           path: evidence/ubuntu-shadow/legacy-product
           if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
           retention-days: 14
       - name: Upload evidence-ubuntu-union
         if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-ubuntu-union
           path: evidence/ubuntu-shadow/union
           if-no-files-found: ${{ steps.comparison.outcome == 'success' && 'error' || 'warn' }}
           retention-days: 14
       - name: Upload ubuntu-shadow-comparison
         if: ${{ always() && (steps.comparison.outcome == 'success' || steps.comparison.outcome == 'failure') }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: ubuntu-shadow-comparison
           path: evidence/ubuntu-shadow/diagnostics
           if-no-files-found: error
@@ -656,12 +680,14 @@ jobs:
         shell: bash
     timeout-minutes: 45
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -711,8 +737,9 @@ jobs:
           --junitxml="../evidence/security-${{ matrix.os }}.xml"
       - name: Upload gate evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-04-${{ matrix.os }}
           path: evidence/
           if-no-files-found: error
@@ -728,12 +755,14 @@ jobs:
       matrix:
         python: ["3.10", "3.13"]
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -782,8 +811,9 @@ jobs:
           --output "evidence/result-mcp-${{ matrix.python }}.json"
       - name: Upload gate evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-06-${{ matrix.python }}
           path: evidence/
           if-no-files-found: error
@@ -796,12 +826,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -1035,8 +1067,9 @@ jobs:
           )
       - name: Upload gate evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-07
           path: evidence/
           if-no-files-found: error
@@ -1049,12 +1082,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -1157,8 +1192,9 @@ jobs:
           tests/test_documentation_calibration_oci_integration.py
       - name: Upload gate evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-08
           path: evidence/
           if-no-files-found: error
@@ -1170,12 +1206,14 @@ jobs:
     needs: freeze
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -1192,7 +1230,7 @@ jobs:
             incoming/tools/qualification-harnesses.tar incoming/tools
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ needs.freeze.outputs.go-version }}
           cache: false
@@ -1252,8 +1290,9 @@ jobs:
           --output ../evidence/bandit-parity
       - name: Upload gate evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-09
           path: evidence/
           if-no-files-found: error
@@ -1266,12 +1305,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -1593,8 +1634,9 @@ jobs:
           PY
       - name: Upload gate evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-rd-10
           path: ${{ runner.temp }}/rd-10-evidence/
           if-no-files-found: error
@@ -1616,12 +1658,14 @@ jobs:
     env:
       SOURCE_DATE_EPOCH: ${{ needs.freeze.outputs.commit-epoch }}
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -1661,8 +1705,9 @@ jobs:
           twine check dist/*
           python candidate/tests/verify_installed_knowledge_schema.py dist
       - name: Upload independent build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: build-${{ matrix.copy }}
           path: dist/
           if-no-files-found: error
@@ -1675,8 +1720,9 @@ jobs:
     needs: [freeze, build]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Verify and extract qualification harnesses
@@ -1690,12 +1736,14 @@ jobs:
             incoming/tools/qualification-harnesses.tar incoming/tools
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: build-a
           path: incoming/a
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: build-b
           path: incoming/b
       - name: Require byte-identical wheel and sdist
@@ -1705,8 +1753,9 @@ jobs:
           --second incoming/b
           --output reproducible
       - name: Upload selected reproducible artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: reproducible-build
           path: reproducible/
           if-no-files-found: error
@@ -1724,13 +1773,15 @@ jobs:
         kind: [wheel, sdist]
     steps:
       - name: Download only the selected distributions
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: reproducible-build
           path: incoming/release
       - name: Download independently transferred smoke harness
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Set up clean Python
@@ -1780,16 +1831,18 @@ jobs:
           ${{ always() &&
               (steps.artifact-smoke.outcome == 'success' ||
                steps.artifact-smoke.outcome == 'failure') }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: smoke-${{ matrix.kind }}-mcp-diagnostics
           path: smoke-${{ matrix.kind }}-mcp-probes/
           # Earlier package/typing failures may occur before any MCP request.
           if-no-files-found: warn
           retention-days: 14
       - name: Upload canonical smoke result
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: smoke-${{ matrix.kind }}
           path: smoke-${{ matrix.kind }}.json
           if-no-files-found: error
@@ -1801,8 +1854,9 @@ jobs:
     needs: [freeze, artifact-smoke]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Verify and extract qualification harnesses
@@ -1816,12 +1870,14 @@ jobs:
             incoming/tools/qualification-harnesses.tar incoming/tools
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: smoke-wheel
           path: incoming/wheel
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: smoke-sdist
           path: incoming/sdist
       - name: Require identical installed behavior
@@ -1830,8 +1886,9 @@ jobs:
           --wheel incoming/wheel/smoke-wheel.json
           --sdist incoming/sdist/smoke-sdist.json
           --output smoke-comparison.json
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: smoke-comparison
           path: smoke-comparison.json
           if-no-files-found: error
@@ -1856,12 +1913,14 @@ jobs:
       - smoke-parity
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Verify and extract qualification harnesses
@@ -1876,8 +1935,9 @@ jobs:
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
       - name: Download owner-lane JUnit evidence
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           pattern: evidence-*
           path: incoming/owner-evidence
       - name: Extract the committed skip contract
@@ -1973,8 +2033,9 @@ jobs:
             --owner-junit "oci=incoming/owner-evidence/evidence-rd-08/oci.xml" \
             --output owner-lane-verification.json
       - name: Upload owner-lane verification
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: evidence-owner-lanes
           path: owner-lane-verification.json
           if-no-files-found: error
@@ -2016,12 +2077,14 @@ jobs:
       wheel-sha256: ${{ steps.bundle.outputs.wheel-sha256 }}
       sdist-sha256: ${{ steps.bundle.outputs.sdist-sha256 }}
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: candidate-source
           path: incoming/source
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Verify and extract qualification harnesses
@@ -2036,24 +2099,29 @@ jobs:
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
       - name: Download all hosted gate evidence
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           pattern: evidence-*
           path: incoming/gates
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: reproducible-build
           path: incoming/release
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: smoke-wheel
           path: incoming/wheel
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: smoke-sdist
           path: incoming/sdist
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: smoke-comparison
           path: incoming/comparison
       - name: Bind actual hosted job conclusions to the candidate
@@ -2132,20 +2200,23 @@ jobs:
           --wheel-sha256 "${{ steps.bundle.outputs.wheel-sha256 }}"
           --sdist-sha256 "${{ steps.bundle.outputs.sdist-sha256 }}"
       - name: Upload immutable qualification bundle
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: qualified-release
           path: qualified-release/
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
       - name: Attest exact qualified distributions
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v3.0.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: qualified-release/dist/*
 
       - name: Attest the SPDX SBOM for exact qualified distributions
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        env:
+          NODE_OPTIONS: --max-http-header-size=32768
         with:
           subject-path: qualified-release/dist/*
           sbom-path: qualified-release/sbom.spdx.json
@@ -2169,9 +2240,10 @@ jobs:
       - bundle
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ needs.freeze.result == 'success' }}
         with:
+          digest-mismatch: error
           name: qualification-harnesses
           path: incoming/tools
       - name: Verify and extract qualification harnesses
@@ -2221,8 +2293,9 @@ jobs:
           --bundle-result "${{ needs.bundle.result }}"
       - name: Upload pre-promotion decision
         if: ${{ always() && needs.freeze.result == 'success' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          archive: true
           name: qualification-decision
           path: decision.json
           if-no-files-found: error

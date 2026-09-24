@@ -91,7 +91,7 @@ def test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only() -
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
         "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
         "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
-        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     ]
 
     source = ACTION_PATH.read_text(encoding="utf-8")
@@ -99,7 +99,7 @@ def test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only() -
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0",
         "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
         "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
-        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2",
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1",
     ):
         assert source.count(reviewed_line) == 1
     assert "actions/checkout@" not in source

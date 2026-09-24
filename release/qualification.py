@@ -1582,9 +1582,12 @@ def _reject_shadow_value(value: object) -> None:
             "agent-wiki-ubuntu-execution/v1",
             "agent-wiki-ubuntu-shadow-orchestration/v1",
             "agent-wiki-core-shard-plan/v1",
+            "agent-wiki-core-shard-plan/v2",
             "agent-wiki-core-shard-freeze/v1",
             "agent-wiki-core-shard-execution/v1",
+            "agent-wiki-core-shard-execution/v2",
             "agent-wiki-core-shard-comparison/v1",
+            "agent-wiki-core-shard-comparison/v2",
         }
         or (
             value.get("schema_version") == "agent-wiki-ubuntu-execution/v2"

@@ -411,3 +411,100 @@ def test_shard_records_reject_numeric_type_coercion(field):
     )
     with pytest.raises(s.q.QualificationError):
         s.validate_plan(value)
+
+
+def test_hosted_image_revision_can_change_without_rewriting_the_plan_or_receipts(
+    shards, tmp_path
+):
+    value, directories = shards
+    original = deepcopy(value)
+    observed = deepcopy(value["context"])
+    observed["environment"]["runner_image"] = "20260922.246.2"
+    assert s.validate_plan(value, observed) == original
+    record = s.read(directories[0] / "execution.json")
+    record["context"] = observed
+    s.q.write_json(directories[0] / "execution.json", record)
+    merged = s.merge_junit(value, directories, tmp_path / "aggregate.xml")
+    assert (
+        merged["receipts"][0]["context"]["environment"]["runner_image"]
+        == "20260922.246.2"
+    )
+    assert s.read(directories[0] / "execution.json") == record
+    assert value == original
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "source",
+        "harness",
+        "run",
+        "attempt",
+        "python",
+        "machine",
+        "packages",
+        "flags",
+        "os",
+        "empty-image",
+    ],
+)
+def test_image_compatibility_does_not_relax_actual_execution_inputs(field):
+    expected = context()
+    observed = deepcopy(expected)
+    observed["environment"]["runner_image"] = "new-image"
+    if field == "source":
+        observed["identity"]["source"]["sha"] = "f" * 40
+    elif field == "harness":
+        observed["harness_sha256"] = "0" * 64
+    elif field == "run":
+        observed["run_id"] += 1
+    elif field == "attempt":
+        observed["run_attempt"] += 1
+    elif field == "python":
+        observed["environment"]["python"] = "3.10.22"
+    elif field == "machine":
+        observed["environment"]["machine"] = "different-architecture"
+    elif field == "packages":
+        observed["environment"]["packages"]["pytest"] = "9.9.0"
+    elif field == "flags":
+        observed["environment"]["profile"]["pytest_flags"] = ["-q"]
+    elif field == "os":
+        observed["environment"]["profile"]["os"] = "ubuntu-22.04"
+    else:
+        observed["environment"]["runner_image"] = ""
+    with pytest.raises(s.q.QualificationError):
+        s.compatible_context(expected, observed)
+
+
+@pytest.mark.parametrize("change", ["legacy-plan", "legacy-execution", "policy"])
+def test_environment_policy_is_versioned_and_old_evidence_is_not_relabelled(
+    shards, change
+):
+    value, directories = shards
+    if change == "legacy-plan":
+        value["schema_version"] = "agent-wiki-core-shard-plan/v1"
+    elif change == "policy":
+        value["environment_policy"] = "ignore-dependency-versions"
+    else:
+        receipt = s.read(directories[0] / "execution.json")
+        receipt["schema_version"] = "agent-wiki-core-shard-execution/v1"
+        s.q.write_json(directories[0] / "execution.json", receipt)
+    with pytest.raises(s.q.QualificationError):
+        s.validate_execution(directories[0], value, 0)
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [
+        "agent-wiki-core-shard-plan/v2",
+        "agent-wiki-core-shard-execution/v2",
+        "agent-wiki-core-shard-comparison/v2",
+    ],
+)
+def test_new_image_policy_keeps_shadow_evidence_ineligible_for_qualification(schema):
+    from release import qualification
+
+    with pytest.raises(qualification.QualificationError, match="shadow evidence"):
+        qualification._reject_shadow_value(
+            {"schema_version": schema, "qualifying": True, "purpose": "qualification"}
+        )
