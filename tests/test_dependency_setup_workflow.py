@@ -128,3 +128,53 @@ def test_probe_proves_all_cases_and_reserves_cache_service_writes_for_manual_run
     )
     assert "--cache-restore-seconds" in run
     assert "build-bundle" not in str(value) and "finalize-promotion" not in str(value)
+
+
+def test_existing_dispatch_can_run_native_proof_before_the_new_workflow_is_merged():
+    release = workflow("release-qualification.yml")
+    standalone = workflow("dependency-setup-check.yml")
+    events = release.get("on", release.get(True))
+    assert (
+        events["workflow_dispatch"]["inputs"]["dependency-setup-verification"][
+            "default"
+        ]
+        is False
+    )
+    assert "inputs.dependency-setup-verification" in release["concurrency"]["group"]
+    jobs = release["jobs"]
+    assert jobs["dependency-controls"]["needs"] == "freeze"
+    assert set(jobs["dependency-warm"]["needs"]) == {"freeze", "dependency-controls"}
+    for embedded, original in [
+        ("dependency-controls", "controls"),
+        ("dependency-warm", "warm"),
+    ]:
+        expected = str(standalone["jobs"][original]["steps"])
+        expected = expected.replace(
+            "needs.freeze.outputs.inputs-sha256",
+            "needs.freeze.outputs.dependency-inputs-sha256",
+        )
+        expected = expected.replace(
+            "needs.freeze.outputs.python-version",
+            "needs.freeze.outputs.dependency-python-version",
+        )
+        expected = expected.replace(
+            "needs.controls.outputs.", "needs.dependency-controls.outputs."
+        )
+        assert str(jobs[embedded]["steps"]) == expected
+        assert "inputs.dependency-setup-verification" in jobs[embedded]["if"]
+    assert "dependency-warm" in jobs["bundle"]["needs"]
+    assert (
+        "(!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')"
+        in jobs["bundle"]["if"]
+    )
+    assert "!cancelled()" in jobs["bundle"]["if"]
+    guard = named(jobs["freeze"], "Bind the workflow definition to the candidate")
+    assert "dependency setup verification requires normal qualification" in guard["run"]
+    assert (
+        guard["env"]["DEPENDENCY_SETUP_VERIFICATION"]
+        == "${{ inputs.dependency-setup-verification }}"
+    )
+    assert (
+        jobs["freeze"]["outputs"]["dependency-inputs-sha256"]
+        == "${{ steps.freeze-dependencies.outputs.inputs-sha256 }}"
+    )

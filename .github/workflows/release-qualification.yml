@@ -7,6 +7,11 @@ on:
         description: Full pushed Git SHA to qualify
         required: true
         type: string
+      dependency-setup-verification:
+        description: Include cold, warm and invalid-cache builder comparisons using the native cache service
+        required: true
+        default: false
+        type: boolean
       third-party-download-cache:
         description: Reuse verified third-party build-tool wheels; keep false until setup measurements justify caching
         required: true
@@ -38,7 +43,7 @@ permissions:
 
 concurrency:
   group: >-
-    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}
+    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}
   cancel-in-progress: true
 
 env:
@@ -59,6 +64,8 @@ jobs:
       version: ${{ steps.freeze.outputs.version }}
       tag: ${{ steps.freeze.outputs.tag }}
       source-sha256: ${{ steps.freeze.outputs.source-sha256 }}
+      dependency-inputs-sha256: ${{ steps.freeze-dependencies.outputs.inputs-sha256 }}
+      dependency-python-version: ${{ steps.python.outputs.python-version }}
       harness-sha256: ${{ steps.harness.outputs.harness-sha256 }}
       commit-epoch: ${{ steps.freeze.outputs.commit-epoch }}
       node-version: ${{ steps.tool-lock.outputs.node-version }}
@@ -78,6 +85,7 @@ jobs:
           fetch-tags: true
 
       - name: Set up qualification Python
+        id: python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
@@ -92,6 +100,7 @@ jobs:
           DISCOVERY_MODE: ${{ inputs.discovery-mode }}
           BANDIT_PARITY_VERIFICATION: ${{ inputs.bandit-parity-verification }}
           UBUNTU_SUITE_SHADOW: ${{ inputs.ubuntu-suite-shadow }}
+          DEPENDENCY_SETUP_VERIFICATION: ${{ inputs.dependency-setup-verification }}
         run: |
           set -euo pipefail
           refuse() {
@@ -103,6 +112,9 @@ jobs:
           fi
           if [ "${UBUNTU_SUITE_SHADOW}" == "true" ] && { [ "${DISCOVERY_MODE}" == "true" ] || [ "${BANDIT_PARITY_VERIFICATION}" == "true" ]; }; then
             refuse "Ubuntu shadow, discovery and Bandit parity modes are mutually exclusive"
+          fi
+          if [ "${DEPENDENCY_SETUP_VERIFICATION}" == "true" ] && { [ "${DISCOVERY_MODE}" == "true" ] || [ "${BANDIT_PARITY_VERIFICATION}" == "true" ] || [ "${UBUNTU_SUITE_SHADOW}" == "true" ]; }; then
+            refuse "dependency setup verification requires normal qualification"
           fi
           if [ "${WORKFLOW_EVENT}" != "workflow_dispatch" ]; then
             refuse "event is ${WORKFLOW_EVENT}; qualification runs only from workflow_dispatch"
@@ -209,6 +221,189 @@ jobs:
           path: ${{ runner.temp }}/frozen/qualification-harnesses.tar
           if-no-files-found: error
           compression-level: 0
+          retention-days: 14
+
+      - name: Freeze optional dependency comparison inputs
+        id: freeze-dependencies
+        if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate-sha }}
+        run: >-
+          python -I release/dependency_setup_probe.py freeze
+          --candidate "${CANDIDATE_SHA}" --output "${RUNNER_TEMP}/dependency-inputs"
+      - name: Upload optional dependency comparison inputs
+        if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: dependency-inputs-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dependency-inputs/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  dependency-controls:
+    name: Dependency setup verification controls
+    if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+    needs: freeze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      build-cache-key: ${{ steps.controls.outputs.build-cache-key }}
+      validation-cache-key: ${{ steps.controls.outputs.validation-cache-key }}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: dependency-inputs-${{ github.run_attempt }}
+          path: incoming
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ needs.freeze.outputs.dependency-python-version }}
+      - name: Verify the helper before executing it
+        env:
+          INPUTS_SHA256: ${{ needs.freeze.outputs.dependency-inputs-sha256 }}
+        run: >-
+          python -I -c 'import hashlib,json,pathlib,sys; root=pathlib.Path("incoming"); raw=(root/"inputs.json").read_bytes(); assert hashlib.sha256(raw).hexdigest()==sys.argv[1]; manifest=json.loads(raw); assert all(hashlib.sha256((root/name).read_bytes()).hexdigest()==digest for name,digest in manifest["files"].items())'
+          "${INPUTS_SHA256}"
+      - name: Exercise full-lock baseline and every isolated cache path
+        id: controls
+        env:
+          INPUTS_SHA256: ${{ needs.freeze.outputs.dependency-inputs-sha256 }}
+        run: |
+          for mode in baseline cold warm stale corrupt unavailable; do
+            python -I incoming/dependency_setup_probe.py run \
+              --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" \
+              --case "${mode}" --work "work/${mode}" --output "evidence/${mode}" \
+              --cache "${RUNNER_TEMP}/third-party-downloads" \
+              --namespace release
+          done
+          python -I incoming/dependency_setup_probe.py compare \
+            --result evidence/baseline/comparison.json --result evidence/cold/comparison.json \
+            --result evidence/warm/comparison.json --result evidence/stale/comparison.json \
+            --result evidence/corrupt/comparison.json --result evidence/unavailable/comparison.json \
+            --output evidence/comparison.json
+      - name: Begin cache-save measurement
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+        id: save-start
+        run: python -I -c 'import os,time; open(os.environ["GITHUB_OUTPUT"],"a").write("started="+str(time.time_ns())+"\n")'
+      - name: Recheck both wheel stores before sharing them
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+        run: |
+          for profile in build validation; do
+            python -I incoming/dependency_downloads.py verify-cache \
+              --lock "work/cold/a/source/release/${profile}-requirements.txt" --profile "${profile}" \
+              --identity "evidence/cold/a/${profile}-identity.json" \
+              --cache "${RUNNER_TEMP}/third-party-downloads/${profile}"
+          done
+      - name: Save verified build downloads for the separate warm job
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/build
+          key: ${{ steps.controls.outputs.build-cache-key }}
+      - name: Save verified validation downloads for the separate warm job
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/validation
+          key: ${{ steps.controls.outputs.validation-cache-key }}
+      - name: Record cache-save overhead
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+        env:
+          STARTED: ${{ steps.save-start.outputs.started }}
+        run: python -I -c 'import json,os,pathlib,time; pathlib.Path("evidence/cache-save.json").write_text(json.dumps({"seconds":(time.time_ns()-int(os.environ["STARTED"]))/1e9}))'
+      - name: Retain complete or partial dependency controls
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: dependency-controls-${{ github.run_attempt }}
+          path: |
+            evidence/**/comparison.json
+            evidence/**/setup.json
+            evidence/**/*.log
+            evidence/cache-save.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  dependency-warm:
+    name: Dependency setup verification with native cache hit
+    if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+    needs: [freeze, dependency-controls]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: dependency-inputs-${{ github.run_attempt }}
+          path: incoming
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ needs.freeze.outputs.dependency-python-version }}
+      - name: Verify the helper before executing it
+        env:
+          INPUTS_SHA256: ${{ needs.freeze.outputs.dependency-inputs-sha256 }}
+        run: >-
+          python -I -c 'import hashlib,json,pathlib,sys; root=pathlib.Path("incoming"); raw=(root/"inputs.json").read_bytes(); assert hashlib.sha256(raw).hexdigest()==sys.argv[1]; manifest=json.loads(raw); assert all(hashlib.sha256((root/name).read_bytes()).hexdigest()==digest for name,digest in manifest["files"].items())'
+          "${INPUTS_SHA256}"
+      - name: Begin cache-restore measurement
+        id: restore-start
+        run: python -I -c 'import os,time; open(os.environ["GITHUB_OUTPUT"],"a").write("started="+str(time.time_ns())+"\n")'
+      - name: Restore the exact build downloads
+        id: build-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/build
+          key: ${{ needs.dependency-controls.outputs.build-cache-key }}
+          fail-on-cache-miss: true
+      - name: Restore the exact validation downloads
+        id: validation-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/validation
+          key: ${{ needs.dependency-controls.outputs.validation-cache-key }}
+          fail-on-cache-miss: true
+      - name: Require actual hits and compare fresh warm builders
+        env:
+          INPUTS_SHA256: ${{ needs.freeze.outputs.dependency-inputs-sha256 }}
+          STARTED: ${{ steps.restore-start.outputs.started }}
+          BUILD_HIT: ${{ steps.build-cache.outputs.cache-hit }}
+          VALIDATION_HIT: ${{ steps.validation-cache.outputs.cache-hit }}
+        run: |
+          test "${BUILD_HIT}" = "true"
+          test "${VALIDATION_HIT}" = "true"
+          elapsed="$(python -I -c 'import os,time; print((time.time_ns()-int(os.environ["STARTED"]))/1e9)')"
+          python -I incoming/dependency_setup_probe.py run \
+            --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" \
+            --case warm --work work/warm --output evidence/warm \
+            --cache "${RUNNER_TEMP}/third-party-downloads" \
+            --namespace release \
+            --cache-restore-seconds "${elapsed}"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: dependency-controls-${{ github.run_attempt }}
+          path: controls
+      - name: Require the same artifacts and consumer results for all six cases
+        run: >-
+          python -I incoming/dependency_setup_probe.py compare
+          --result controls/baseline/comparison.json --result controls/cold/comparison.json
+          --result evidence/warm/comparison.json --result controls/stale/comparison.json
+          --result controls/corrupt/comparison.json --result controls/unavailable/comparison.json
+          --output evidence/comparison.json
+      - name: Retain native cache-service comparison
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: dependency-warm-${{ github.run_attempt }}
+          path: |
+            evidence/**/comparison.json
+            evidence/**/setup.json
+            evidence/**/*.log
+          if-no-files-found: warn
           retention-days: 14
 
   core:
@@ -2523,9 +2718,11 @@ jobs:
           && needs.mcp.result == 'success' && needs.toolchains.result == 'success'
           && needs.oci.result == 'success' && needs.static.result == 'success'
           && needs.action.result == 'success' && needs.reproducible.result == 'success'
-          && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success' }}
+          && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success'
+          && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success') }}
     needs:
       - freeze
+      - dependency-warm
       - core
       - core-windows
       - ubuntu-suites

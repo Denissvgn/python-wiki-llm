@@ -1391,7 +1391,7 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}"
+            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}"
         ),
         "cancel-in-progress": True,
     }
@@ -1948,7 +1948,8 @@ def test_bundle_overrides_skipped_ancestors_but_requires_every_producer() -> Non
         "!inputs.discovery-mode",
         "!inputs.bandit-parity-verification",
         "!inputs.ubuntu-suite-shadow",
-        *(f"needs.{name}.result == 'success'" for name in bundle["needs"]),
+        *(f"needs.{name}.result == 'success'" for name in bundle["needs"] if name != "dependency-warm"),
+        "(!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')",
     }
     assert set(clauses) == expected and len(clauses) == len(expected)
     assert "continue-on-error" not in bundle
