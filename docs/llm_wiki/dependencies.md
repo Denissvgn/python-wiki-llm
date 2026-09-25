@@ -134,12 +134,13 @@ flowchart TD
 | [python_contracts](modules/python_contracts.md) | 2 | 0 |
 | [broker](modules/broker.md) | 2 | 5 |
 | [ci_installer](modules/ci_installer.md) | 2 | 5 |
-| [ci_report](modules/ci_report.md) | 2 | 4 |
+| [ci_report](modules/ci_report.md) | 2 | 5 |
 | [diagrams](modules/diagrams.md) | 2 | 2 |
 | [documentation_native](modules/documentation_native.md) | 2 | 23 |
 | [packet](modules/packet.md) | 2 | 5 |
 | [verify](modules/verify.md) | 2 | 9 |
 | [go_calls](modules/go_calls.md) | 2 | 0 |
+| [health_summary](modules/health_summary.md) | 2 | 0 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [knowledge_storage_access](modules/knowledge_storage_access.md) | 2 | 10 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
@@ -222,7 +223,7 @@ flowchart TD
 | [task_context_v2](modules/task_context_v2.md) | 1 | 23 |
 | [wiki_git_policy](modules/wiki_git_policy.md) | 1 | 0 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 1 | 0 |
-| [render_summary](modules/render_summary.md) | 0 | 1 |
+| [render_summary](modules/render_summary.md) | 0 | 2 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
 | [cli](modules/cli.md) | 0 | 42 |

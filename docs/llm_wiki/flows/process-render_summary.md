@@ -2,9 +2,9 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [render_summary](../modules/render_summary.md)
-**Modules touched:** [ci_report](../modules/ci_report.md), [render_summary](../modules/render_summary.md)
+**Modules touched:** [ci_report](../modules/ci_report.md), [health_summary](../modules/health_summary.md), [render_summary](../modules/render_summary.md)
 
-**Related modules:** [ci_report](../modules/ci_report.md)
+**Related modules:** [ci_report](../modules/ci_report.md), [health_summary](../modules/health_summary.md)
 
 ## Call sequence
 
@@ -36,7 +36,6 @@ sequenceDiagram
     participant p22 as isinstance (integrations/github-actio…render_summary.py:_string)
     participant p23 as value.strip (integrations/github-actio…render_summary.py:_string)
     participant p24 as ValueError (integrations/github-actio…render_summary.py:_string)
-    participant p25 as ValueError (integrations/github-action/render_summary.py:_enum)
     p0->>p1: _arguments
     p1-->>p2: argparse.ArgumentParser
     p1-->>p3: parser.add_argument
@@ -44,6 +43,7 @@ sequenceDiagram
     p1-->>p4: sorted (integrations/github-actio…der_summary.py:_arguments)
     p1-->>p3: parser.add_argument
     p1-->>p5: range
+    p1-->>p3: parser.add_argument
     p1-->>p3: parser.add_argument
     p1-->>p3: parser.add_argument
     p1-->>p6: parser.parse_args
@@ -66,10 +66,9 @@ sequenceDiagram
     p21-->>p22: isinstance (integrations/github-actio…render_summary.py:_string)
     p21-->>p23: value.strip (integrations/github-actio…render_summary.py:_string)
     p21-->>p24: ValueError (integrations/github-actio…render_summary.py:_string)
-    p20-->>p25: ValueError (integrations/github-action/render_summary.py:_enum)
 ```
 
-> Call sequence diagram shows 30 of 304 interactions; 274 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 330 interactions; 300 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -88,8 +87,8 @@ flowchart LR
     s8["8. range"]
     s9["9. parser.add_argument"]
     s10["10. parser.add_argument"]
-    s11["11. parser.parse_args"]
-    s12["12. load_report"]
+    s11["11. parser.add_argument"]
+    s12["12. parser.parse_args"]
     s1 -->|"_arguments(data not statically known)"| s2
     s2 -. "argparse.ArgumentParser(data not statically known)" .-> s3
     s2 -. "parser.add_argument('--report', required=True)" .-> s4
@@ -99,15 +98,14 @@ flowchart LR
     s2 -. "range(4)" .-> s8
     s2 -. "parser.add_argument('--expected-strict', choices=(...), required=True)" .-> s9
     s2 -. "parser.add_argument('--receipt')" .-> s10
-    s2 -. "parser.parse_args(data not statically known)" .-> s11
-    s1 -->|"load_report(args.report, doctor_exit_code=args.doctor_exit_code, expected_strict=...)"| s12
+    s2 -. "parser.add_argument('--evidence-artifact')" .-> s11
+    s2 -. "parser.parse_args(data not statically known)" .-> s12
     b0["environment_read os.environ.get"]
     s1 -. "environment_read os.environ.get" .-> b0
     b1["environment_read os.environ.get"]
     s1 -. "environment_read os.environ.get" .-> b1
     click s1 "../modules/render_summary.md"
     click s2 "../modules/render_summary.md"
-    click s12 "../modules/render_summary.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -127,45 +125,46 @@ flowchart LR
 | `range` | - | - | - | - |
 | `parser.add_argument` | - | - | - | - |
 | `parser.add_argument` | - | - | - | - |
+| `parser.add_argument` | - | - | - | - |
 | `parser.parse_args` | - | - | - | - |
-| `load_report` | `path: str \| Path`, `doctor_exit_code: int`, `expected_strict: bool \| None` | `_strict_json_object`, `_reject_nonfinite`, `json`, `REPORT_FIELDS`, `SCHEMA_VERSION`, `SCHEMA_VERSION`, `STATUS_SEVERITY`, `STATUS_SEVERITY` | - | `report` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _arguments | 508 | `_arguments(data not statically known)` |
-| _arguments | argparse.ArgumentParser | 108 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | parser.add_argument | 109 | `parser.add_argument('--report', required=True)` |
-| _arguments | parser.add_argument | 110 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
-| _arguments | sorted (integrations/github-actio…der_summary.py:_arguments) | 110 | `sorted(FAIL_THRESHOLDS)` |
-| _arguments | parser.add_argument | 111 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
-| _arguments | range | 113 | `range(4)` |
-| _arguments | parser.add_argument | 117 | `parser.add_argument('--expected-strict', choices=(...), required=True)` |
-| _arguments | parser.add_argument | 122 | `parser.add_argument('--receipt')` |
-| _arguments | parser.parse_args | 123 | `parser.parse_args(data not statically known)` |
-| main | load_report | 510 | `load_report(args.report, doctor_exit_code=args.doctor_exit_code, expected_strict=...)` |
+| main | _arguments | 532 | `_arguments(data not statically known)` |
+| _arguments | argparse.ArgumentParser | 116 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | parser.add_argument | 117 | `parser.add_argument('--report', required=True)` |
+| _arguments | parser.add_argument | 118 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
+| _arguments | sorted (integrations/github-actio…der_summary.py:_arguments) | 118 | `sorted(FAIL_THRESHOLDS)` |
+| _arguments | parser.add_argument | 119 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
+| _arguments | range | 121 | `range(4)` |
+| _arguments | parser.add_argument | 125 | `parser.add_argument('--expected-strict', choices=(...), required=True)` |
+| _arguments | parser.add_argument | 130 | `parser.add_argument('--receipt')` |
+| _arguments | parser.add_argument | 131 | `parser.add_argument('--evidence-artifact')` |
+| _arguments | parser.parse_args | 132 | `parser.parse_args(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| environment_read | `os.environ.get` | `main` | 519 |
-| environment_read | `os.environ.get` | `main` | 521 |
+| environment_read | `os.environ.get` | `main` | 546 |
+| environment_read | `os.environ.get` | `main` | 548 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_arguments` | `argparse.ArgumentParser` | 108 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 109 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 110 |
-| external_call | `_arguments` | `sorted` | 110 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 111 |
-| external_call | `_arguments` | `range` | 113 |
+| external_call | `_arguments` | `argparse.ArgumentParser` | 116 |
 | unresolved_call | `_arguments` | `parser.add_argument` | 117 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 122 |
-| unresolved_call | `_arguments` | `parser.parse_args` | 123 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 118 |
+| external_call | `_arguments` | `sorted` | 118 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 119 |
+| external_call | `_arguments` | `range` | 121 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 125 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 130 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 131 |
+| unresolved_call | `_arguments` | `parser.parse_args` | 132 |
 | step_limit | `main` | `first 12 steps` | 0 |
 | truncated_flow | `main` | `depth limit` | 0 |
 

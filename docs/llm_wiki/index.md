@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 597 | [Open section](#entities) |
-| Modules | 203 | [Open section](#modules) |
+| Modules | 204 | [Open section](#modules) |
 | Workflows | 155 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 453 | [Open section](#entry-point-flows) |
@@ -680,6 +680,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [go_calls](modules/go_calls.md) - Resolve captured Go call bindings only within evidenced package scopes.
 - [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
+- [health_summary](modules/health_summary.md) - Pure presentation helpers for detailed local and CI health reports.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.

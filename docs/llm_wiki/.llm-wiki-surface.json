@@ -25,11 +25,11 @@
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 203,
+      "modules": 204,
       "workflows": 155
     },
     "dependency_architecture": 2,
-    "total": 1418
+    "total": 1419
   },
   "dependency_pages": {
     "count": 2,
@@ -35838,7 +35838,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_write",
-              "line": 1488,
+              "line": 1558,
               "step": "main",
               "step_index": 1,
               "target": "output.write_bytes"
@@ -35847,61 +35847,61 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1424,
+              "line": 1491,
               "step": "_arguments",
               "target": "argparse.ArgumentParser"
             },
             {
               "kind": "unresolved_call",
-              "line": 1425,
+              "line": 1492,
               "step": "_arguments",
               "target": "parser.add_subparsers"
             },
             {
               "kind": "unresolved_call",
-              "line": 1426,
+              "line": 1493,
               "step": "_arguments",
               "target": "commands.add_parser"
             },
             {
               "kind": "unresolved_call",
-              "line": 1427,
+              "line": 1494,
               "step": "_arguments",
               "target": "validate.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 1428,
+              "line": 1495,
               "step": "_arguments",
               "target": "validate.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 1429,
+              "line": 1496,
               "step": "_arguments",
               "target": "validate.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 1431,
+              "line": 1498,
               "step": "_arguments",
               "target": "commands.add_parser"
             },
             {
               "kind": "unresolved_call",
-              "line": 1432,
+              "line": 1499,
               "step": "_arguments",
               "target": "summary.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 1433,
+              "line": 1500,
               "step": "_arguments",
               "target": "summary.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 1434,
+              "line": 1501,
               "step": "_arguments",
               "target": "summary.add_argument"
             },
@@ -35920,9 +35920,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/ci_report.py",
-            "src/llm_wiki_cli/services/knowledge_observability.py"
+            "src/llm_wiki_cli/services/knowledge_observability.py",
+            "src/llm_wiki_cli/services/health_summary.py"
           ],
-          "step_count": 383,
+          "step_count": 441,
           "truncated": false
         }
       },
@@ -36103,7 +36104,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 519,
+              "line": 546,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -36111,7 +36112,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 521,
+              "line": 548,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -36120,39 +36121,9 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 108,
+              "line": 116,
               "step": "_arguments",
               "target": "argparse.ArgumentParser"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 109,
-              "step": "_arguments",
-              "target": "parser.add_argument"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 110,
-              "step": "_arguments",
-              "target": "parser.add_argument"
-            },
-            {
-              "kind": "external_call",
-              "line": 110,
-              "step": "_arguments",
-              "target": "sorted"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 111,
-              "step": "_arguments",
-              "target": "parser.add_argument"
-            },
-            {
-              "kind": "external_call",
-              "line": 113,
-              "step": "_arguments",
-              "target": "range"
             },
             {
               "kind": "unresolved_call",
@@ -36162,13 +36133,49 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 122,
+              "line": 118,
+              "step": "_arguments",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "external_call",
+              "line": 118,
+              "step": "_arguments",
+              "target": "sorted"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 119,
+              "step": "_arguments",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "external_call",
+              "line": 121,
+              "step": "_arguments",
+              "target": "range"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 125,
               "step": "_arguments",
               "target": "parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 123,
+              "line": 130,
+              "step": "_arguments",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 131,
+              "step": "_arguments",
+              "target": "parser.add_argument"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 132,
               "step": "_arguments",
               "target": "parser.parse_args"
             },
@@ -36193,9 +36200,10 @@
         "flow": {
           "modules_touched": [
             "integrations/github-action/render_summary.py",
-            "src/llm_wiki_cli/services/ci_report.py"
+            "src/llm_wiki_cli/services/ci_report.py",
+            "src/llm_wiki_cli/services/health_summary.py"
           ],
-          "step_count": 305,
+          "step_count": 331,
           "truncated": true
         }
       },
@@ -37331,6 +37339,7 @@
         "modules/go_calls.md",
         "modules/go_extractor.md",
         "modules/haskell_extractor.md",
+        "modules/health_summary.md",
         "modules/hook_cmd.md",
         "modules/host_broker.md",
         "modules/immutable.md",
@@ -45862,6 +45871,7 @@
         "modules/ci_check_cmd.md",
         "modules/ci_report.md",
         "modules/doctor_service.md",
+        "modules/health_summary.md",
         "modules/knowledge_observability.md",
         "modules/lint_service.md",
         "modules/render_summary.md",
@@ -46674,6 +46684,20 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/extractors/haskell_extractor.py",
       "title": "haskell_extractor Module"
+    },
+    {
+      "canonical_path": "modules/health_summary.md",
+      "id": "health_summary",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/health_summary",
+      "outgoing_internal_links": [
+        "modules/ci_report.md",
+        "modules/health_summary.md",
+        "modules/render_summary.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/health_summary.py",
+      "title": "health_summary Module"
     },
     {
       "canonical_path": "modules/hook_cmd.md",
@@ -48190,6 +48214,7 @@
       "mcp_uri": "llm-wiki://modules/render_summary",
       "outgoing_internal_links": [
         "modules/ci_report.md",
+        "modules/health_summary.md",
         "modules/render_summary.md"
       ],
       "role": "semantic",
@@ -59976,6 +60001,7 @@
       "outgoing_internal_links": [
         "modules/ci_report.md",
         "modules/doctor_service.md",
+        "modules/health_summary.md",
         "modules/knowledge_observability.md",
         "modules/lint_service.md",
         "modules/services_contracts.md"
@@ -60021,6 +60047,7 @@
       "mcp_uri": "llm-wiki://flows/process-render_summary",
       "outgoing_internal_links": [
         "modules/ci_report.md",
+        "modules/health_summary.md",
         "modules/render_summary.md"
       ],
       "role": "mixed",
@@ -60096,6 +60123,7 @@
         "modules/go_calls.md",
         "modules/go_extractor.md",
         "modules/haskell_extractor.md",
+        "modules/health_summary.md",
         "modules/hook_cmd.md",
         "modules/host_broker.md",
         "modules/immutable.md",
@@ -60311,6 +60339,7 @@
         "modules/go_calls.md",
         "modules/go_extractor.md",
         "modules/haskell_extractor.md",
+        "modules/health_summary.md",
         "modules/hook_cmd.md",
         "modules/host_broker.md",
         "modules/immutable.md",
@@ -60459,5 +60488,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:9cfa539e75a5c5097383aecdab475ba92fb0baab389dd18a36a6e5229093dd27"
+  "source_hash": "sha256:a87b57e9ff2d7848a0db2cefba854a08fde5eb2956df60f4d8b05de3f5ed3075"
 }
