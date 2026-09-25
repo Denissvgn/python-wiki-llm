@@ -7,6 +7,11 @@ on:
         description: Full pushed Git SHA to qualify
         required: true
         type: string
+      third-party-download-cache:
+        description: Reuse verified third-party build-tool wheels; keep false until setup measurements justify caching
+        required: true
+        default: false
+        type: boolean
       windows-core-shards:
         description: Split Windows core into two isolated jobs; false restores the full unsharded lane
         required: true
@@ -33,7 +38,7 @@ permissions:
 
 concurrency:
   group: >-
-    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}
+    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}
   cancel-in-progress: true
 
 env:
@@ -159,6 +164,7 @@ jobs:
             --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
+            release/dependency_downloads.py \
             release/hosted_evidence.py \
             release/core_shards.py \
             release/core_shard_runner.py \
@@ -2030,20 +2036,123 @@ jobs:
             --destination candidate
           python -I incoming/tools/release/qualification.py create-venv \
             --path "${RUNNER_TEMP}/build-venv"
-      - name: Install hash-locked build tools
+      - name: Bind build dependency cache identity
+        id: build-identity
         run: >-
-          python -m pip install --require-hashes --no-cache-dir
-          -r candidate/release/requirements.txt
+          python -I incoming/tools/release/dependency_downloads.py key
+          --lock candidate/release/build-requirements.txt --profile build
+          --output evidence/build-dependency-identity.json
+      - name: Restore build third-party downloads
+        id: build-cache
+        if: ${{ inputs.third-party-download-cache }}
+        continue-on-error: true
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        env:
+          SEGMENT_DOWNLOAD_TIMEOUT_MINS: '2'
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/build
+          key: ${{ steps.build-identity.outputs.cache-key }}
+      - name: Install verified build tools into the fresh environment
+        id: build-setup
+        env:
+          USE_CACHE: ${{ inputs.third-party-download-cache }}
+          RESTORE_OUTCOME: ${{ steps.build-cache.outcome }}
+        run: |
+          cache=()
+          if [[ "${USE_CACHE}" == "true" ]]; then
+            cache=(--cache "${RUNNER_TEMP}/third-party-downloads/build")
+            if [[ "${RESTORE_OUTCOME}" == "failure" ]]; then cache+=(--no-cache-available); fi
+          fi
+          python -I incoming/tools/release/dependency_downloads.py setup \
+            --lock candidate/release/build-requirements.txt --profile build \
+            --identity evidence/build-dependency-identity.json \
+            --output evidence/build-setup "${cache[@]}"
       - name: Build both independent distributions
         run: |
           mkdir dist
           python -m build --no-isolation --sdist --wheel \
             --outdir dist candidate
+      - name: Create a separate fresh validation environment
+        if: ${{ matrix.validate }}
+        run: >-
+          python -I incoming/tools/release/qualification.py create-venv
+          --path "${RUNNER_TEMP}/validation-venv"
+      - name: Bind validation dependency cache identity
+        id: validation-identity
+        if: ${{ matrix.validate }}
+        run: >-
+          python -I incoming/tools/release/dependency_downloads.py key
+          --lock candidate/release/validation-requirements.txt --profile validation
+          --output evidence/validation-dependency-identity.json
+      - name: Restore validation third-party downloads
+        id: validation-cache
+        if: ${{ inputs.third-party-download-cache && matrix.validate }}
+        continue-on-error: true
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        env:
+          SEGMENT_DOWNLOAD_TIMEOUT_MINS: '2'
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/validation
+          key: ${{ steps.validation-identity.outputs.cache-key }}
+      - name: Install verified validation tools into the fresh environment
+        id: validation-setup
+        if: ${{ matrix.validate }}
+        env:
+          USE_CACHE: ${{ inputs.third-party-download-cache }}
+          RESTORE_OUTCOME: ${{ steps.validation-cache.outcome }}
+        run: |
+          cache=()
+          if [[ "${USE_CACHE}" == "true" ]]; then
+            cache=(--cache "${RUNNER_TEMP}/third-party-downloads/validation")
+            if [[ "${RESTORE_OUTCOME}" == "failure" ]]; then cache+=(--no-cache-available); fi
+          fi
+          python -I incoming/tools/release/dependency_downloads.py setup \
+            --lock candidate/release/validation-requirements.txt --profile validation \
+            --identity evidence/validation-dependency-identity.json \
+            --output evidence/validation-setup "${cache[@]}"
       - name: Validate the first independent build
         if: ${{ matrix.validate }}
         run: |
           twine check dist/*
-          python candidate/tests/verify_installed_knowledge_schema.py dist
+          python candidate/tests/verify_installed_knowledge_schema.py dist --no-build-isolation
+      - name: Save verified build third-party downloads
+        if: >-
+          ${{ success() && inputs.third-party-download-cache && matrix.copy == 'a'
+              && steps.build-setup.outputs.cache-ready == 'true'
+              && steps.build-cache.outputs.cache-hit != 'true'
+              && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch'
+              && !github.event.repository.fork }}
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/build
+          key: ${{ steps.build-identity.outputs.cache-key }}
+      - name: Save verified validation third-party downloads
+        if: >-
+          ${{ success() && inputs.third-party-download-cache && matrix.copy == 'a'
+              && steps.validation-setup.outputs.cache-ready == 'true'
+              && steps.validation-cache.outputs.cache-hit != 'true'
+              && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch'
+              && !github.event.repository.fork }}
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/third-party-downloads/validation
+          key: ${{ steps.validation-identity.outputs.cache-key }}
+      - name: Retain dependency setup and cache diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: dependency-setup-${{ matrix.copy }}
+          path: |
+            evidence/*-dependency-identity.json
+            evidence/build-setup/setup.json
+            evidence/build-setup/*.log
+            evidence/validation-setup/setup.json
+            evidence/validation-setup/*.log
+          if-no-files-found: warn
+          retention-days: 14
       - name: Upload independent build
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

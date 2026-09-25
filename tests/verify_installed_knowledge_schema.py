@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 import subprocess
 import sys
@@ -104,9 +105,11 @@ def _validate_member_names(names: set[str]) -> None:
         if path.suffix == ".pyc" or path.name in {".coverage", ".DS_Store", ".env"}:
             raise RuntimeError(f"artifact contains a cache/secret member: {name}")
         if "examples" in path.parts:
-            parts = path.parts[path.parts.index("examples") + 1:]
+            parts = path.parts[path.parts.index("examples") + 1 :]
             if parts and parts[0] != "plugins":
-                raise RuntimeError(f"artifact contains a repository-only tutorial: {name}")
+                raise RuntimeError(
+                    f"artifact contains a repository-only tutorial: {name}"
+                )
 
 
 def _verify_contents(wheel: Path, sdist: Path) -> None:
@@ -182,7 +185,9 @@ def _single_artifact(dist_dir: Path, pattern: str) -> Path:
     return matches[0]
 
 
-def _verify_install(artifact: Path, root: Path) -> None:
+def _verify_install(
+    artifact: Path, root: Path, *, build_isolation: bool = True
+) -> None:
     target = root / artifact.name.replace(".", "-")
     subprocess.run(
         [
@@ -191,9 +196,11 @@ def _verify_install(artifact: Path, root: Path) -> None:
             "pip",
             "install",
             "--quiet",
+            "--no-cache-dir",
             "--no-deps",
             "--target",
             str(target),
+            *([] if build_isolation else ["--no-build-isolation"]),
             str(artifact),
         ],
         check=True,
@@ -210,7 +217,15 @@ def _verify_install(artifact: Path, root: Path) -> None:
 
 
 def main() -> None:
-    dist_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "dist").resolve()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("dist", type=Path, nargs="?", default=Path("dist"))
+    parser.add_argument(
+        "--no-build-isolation",
+        action="store_true",
+        help="Use the explicitly hash-locked validation environment's backend",
+    )
+    args = parser.parse_args()
+    dist_dir = args.dist.resolve()
     artifacts = (
         _single_artifact(dist_dir, "*.whl"),
         _single_artifact(dist_dir, "*.tar.gz"),
@@ -219,7 +234,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="llm-wiki-package-check-") as temporary:
         root = Path(temporary)
         for artifact in artifacts:
-            _verify_install(artifact, root)
+            _verify_install(artifact, root, build_isolation=not args.no_build_isolation)
             print(f"verified installed schema from {artifact.name}")
 
 

@@ -351,3 +351,14 @@ def test_qualifying_shard_collection_execution_and_evidence_costs_remain_visible
     name = "Owned shard operation"
     declared = {"steps": [{"name": name, "run": f"python -I incoming/tools/release/core_shard_runner.py {operation} --root candidate"}]}
     assert measurements.phase({"name": name}, declared) == expected
+
+
+@pytest.mark.parametrize('action',['restore','save'])
+def test_dependency_cache_transfer_cost_is_not_hidden_as_unattributed_work(action):
+    declared={'steps':[{'name':'Transfer wheel downloads','uses':'actions/cache/'+action+'@'+'a'*40}]}
+    assert measurements.phase({'name':'Transfer wheel downloads'},declared)=='cache-transfer'
+
+
+def test_verified_dependency_installation_is_classified_as_setup():
+    declared={'steps':[{'name':'Install verified build tools','run':'python -I incoming/tools/release/dependency_downloads.py setup --lock candidate/release/build-requirements.txt'}]}
+    assert measurements.phase({'name':'Install verified build tools'},declared)=='setup'
