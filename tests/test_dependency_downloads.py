@@ -36,11 +36,12 @@ def test_minimal_locks_preserve_release_policy_and_explicit_backend_runtime():
     build = d.read_lock(ROOT / "release/build-requirements.txt")
     validation = d.read_lock(ROOT / "release/validation-requirements.txt")
     assert set(build) == {"build", "setuptools", "pip", "packaging", "pyproject-hooks"}
-    assert set(build) < set(validation) < set(full)
+    assert set(build) < set(full) and set(validation) < set(full)
+    assert not {"build", "pyproject-hooks"} & validation.keys()
     assert {"twine", "pyyaml", "secretstorage", "jeepney"} <= validation.keys()
     assert not {"bandit", "ruff", "pyright", "pip-audit"} & validation.keys()
     assert all(row == full[name] for name, row in validation.items())
-    assert all(row == validation[name] for name, row in build.items())
+    assert all(row == full[name] for name, row in build.items())
     assert (
         f"setuptools=={build['setuptools']['version']}"
         in (ROOT / "pyproject.toml").read_text()

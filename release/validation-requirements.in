@@ -1,5 +1,7 @@
 # Metadata/archive validation runs in its own fresh environment after building.
--r build-requirements.in
+-c requirements.txt
+pip==26.2
+setuptools==83.0.0
 twine==7.0.0
 # Installed artifact probes exercise the package's declared runtime dependency.
 PyYAML==6.0.3
