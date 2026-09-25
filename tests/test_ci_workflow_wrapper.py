@@ -252,6 +252,9 @@ def _run(
         "1",
         "--knowledge-drift-report",
     ]
+    artifact = env.get("FAKE_EVIDENCE_ARTIFACT")
+    if artifact is not None:
+        command.extend(["--evidence-artifact", artifact])
     return subprocess.run(
         command,
         cwd=case["repo"],
@@ -270,6 +273,22 @@ def test_missing_or_invalid_interpreter_fails_closed(
 
     assert result.returncode != 0
     assert "--python" in result.stderr
+
+
+def test_evidence_artifact_is_displayed_as_literal_data(wrapper_case):
+    artifact = "ci-evidence`$(touch artifact-spoofed)|name"
+    result = _run(wrapper_case, environment={"FAKE_EVIDENCE_ARTIFACT": artifact})
+    assert result.returncode == 0, result.stderr
+    summary = wrapper_case["summary"].read_text(encoding="utf-8")
+    assert r"evidence artifact: `ci-evidence\x60$(touch artifact-spoofed)\|name`" in summary
+    assert not (wrapper_case["repo"] / "artifact-spoofed").exists()
+
+
+@pytest.mark.parametrize("artifact", ["", "name\nforged"])
+def test_invalid_evidence_artifact_fails_before_execution(wrapper_case, artifact):
+    result = _run(wrapper_case, environment={"FAKE_EVIDENCE_ARTIFACT": artifact})
+    assert result.returncode == 2
+    assert not wrapper_case["invocations"].exists()
 
 
 def test_omitted_interpreter_argument_fails_before_candidate_execution(

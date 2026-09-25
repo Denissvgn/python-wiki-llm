@@ -1,5 +1,5 @@
 name: LLM Wiki context health dashboard
-description: Publish a strict, diagnostic knowledge-health dashboard without replacing full integrity validation.
+description: Publish a diagnostic knowledge-health dashboard with an explicit failure threshold.
 
 inputs:
   wiki-dir:
@@ -351,7 +351,7 @@ runs:
         [[ -f "${report_path}" && ! -L "${report_path}" && -s "${report_path}" ]]
         printf 'exit-code=%s\n' "${doctor_exit}" >> "${GITHUB_OUTPUT}"
 
-    - name: Publish strict diagnostic dashboard and apply threshold
+    - name: Publish diagnostic dashboard and apply threshold
       id: summary
       shell: bash
       env:
@@ -363,6 +363,7 @@ runs:
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
         INPUT_STRICT: ${{ inputs.strict }}
         DOCTOR_EXIT_CODE: ${{ steps.doctor.outputs.exit-code }}
+        EVIDENCE_ARTIFACT: llm-wiki-doctor-${{ inputs.evidence-id }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.run_id }}-${{ github.run_attempt }}
       run: >-
         "${{ steps.setup-python.outputs.python-path }}"
         -I "${GITHUB_ACTION_PATH}/render_summary.py"
@@ -370,6 +371,7 @@ runs:
         --fail-on "${INPUT_FAIL_ON}"
         --doctor-exit-code "${DOCTOR_EXIT_CODE}"
         --expected-strict "${INPUT_STRICT}"
+        --evidence-artifact "${EVIDENCE_ARTIFACT}"
         --receipt "${LLM_WIKI_DOCTOR_EVIDENCE_DIR}/dashboard-receipt.json"
 
     - name: Upload fixed doctor dashboard evidence

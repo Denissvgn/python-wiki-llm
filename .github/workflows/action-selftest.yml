@@ -73,7 +73,7 @@ jobs:
             exit 1
           fi
 
-      - name: Run context health gate
+      - name: Check Action fixture knowledge health
         uses: ./integrations/github-action
         with:
           wiki-dir: .action-selftest/wiki
@@ -173,7 +173,7 @@ jobs:
           python -m venv "${RUNNER_TEMP}/foreign-bootstrap-venv"
           "${RUNNER_TEMP}/foreign-bootstrap-venv/bin/python" -m pip install ./.provider
           "${RUNNER_TEMP}/foreign-bootstrap-venv/bin/python" -I             .provider/tests/provider_conformance/action_fixture.py prepare             --case "${FIXTURE_CASE}" --kind "${FIXTURE_KIND}"             --helper-cache "${RUNNER_TEMP}/foreign-bootstrap-cache"             --evidence "${RUNNER_TEMP}/foreign-caller-evidence"
-      - name: Run context health against caller
+      - name: Check foreign caller fixture knowledge health
         id: foreign-context
         if: ${{ matrix.integration == 'context' }}
         continue-on-error: true
@@ -184,7 +184,7 @@ jobs:
           strict: "true"
           fail-on: unhealthy
           evidence-id: foreign
-      - name: Run full integrity against caller
+      - name: Check foreign caller fixture integrity
         id: foreign-integrity
         if: ${{ matrix.integration == 'integrity' }}
         continue-on-error: true

@@ -1899,7 +1899,7 @@ jobs:
           if python -m pip show agent-wiki-cli >/dev/null 2>&1; then
             exit 1
           fi
-      - name: Run context health gate
+      - name: Check Action fixture knowledge health
         uses: ./candidate/integrations/github-action
         with:
           wiki-dir: candidate/.action-selftest/wiki

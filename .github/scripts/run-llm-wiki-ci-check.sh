@@ -18,6 +18,8 @@ Usage:
     --jobs 1 \
     --knowledge-drift-report
 
+Optional: --evidence-artifact NAME identifies the uploaded evidence artifact.
+
 The selected Python is used both to invoke `llm_wiki_cli.cli` and to validate
 its versioned JSON output. Project-local plugins are disabled, and the bounded
 integrity plus knowledge-health summary is written to GITHUB_STEP_SUMMARY.
@@ -47,6 +49,7 @@ src_dir=""
 wiki_dir=""
 helper_cache_dir=""
 report_dir=""
+evidence_artifact=""
 jobs=""
 knowledge_drift_report=false
 
@@ -89,6 +92,13 @@ while (($#)); do
       jobs="$2"
       shift 2
       ;;
+    --evidence-artifact)
+      require_value "$1" "$#"
+      [[ -z "${evidence_artifact}" ]] || die "--evidence-artifact may be supplied only once"
+      [[ -n "$2" ]] || die "--evidence-artifact must not be empty"
+      evidence_artifact="$2"
+      shift 2
+      ;;
     --knowledge-drift-report)
       ${knowledge_drift_report} &&
         die "--knowledge-drift-report may be supplied only once"
@@ -118,6 +128,7 @@ for path_and_label in \
   "${wiki_dir}" \
   "${helper_cache_dir}" \
   "${report_dir}" \
+  "${evidence_artifact}" \
   "${GITHUB_STEP_SUMMARY}"; do
   reject_multiline "${path_and_label}" "path"
 done
@@ -373,6 +384,9 @@ summary_args=(
 if ${json_valid}; then
   summary_args+=(--report "${JSON_REPORT}")
 fi
+if [[ -n "${evidence_artifact}" ]]; then
+  summary_args+=(--evidence-artifact "${evidence_artifact}")
+fi
 
 set +e
 "${python_executable}" "${summary_args[@]}"
@@ -391,6 +405,7 @@ if [[ ${summary_exit} -ne 0 ]]; then
     printf '%s\n' "- JSON evidence: ${json_state}"
     printf '%s\n' "- Markdown report: ${markdown_state}"
     printf '%s\n' '- Knowledge health: `unavailable` (summary rendering failed)'
+    printf '%s\n' '- Scope / health policy: unavailable (summary rendering failed).'
     printf '%s\n' '- Summary rendering failed.'
     printf '%s\n' '- Native drift diagnostics are advisory; integrity validation remains blocking.'
   } > "${GITHUB_STEP_SUMMARY}" || true

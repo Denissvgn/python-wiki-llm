@@ -465,6 +465,8 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
         "${LLM_WIKI_CACHE_DIR}",
         "--report-dir",
         "${LLM_WIKI_EVIDENCE_DIR}",
+        "--evidence-artifact",
+        "${EVIDENCE_ARTIFACT}",
         "--jobs",
         "1",
         "--knowledge-drift-report",
@@ -524,6 +526,8 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
     assert upload == steps[-1]
     assert upload["if"] == "always()"
     artifact_name = upload["with"]["name"]
+    validation = _named_step(action, "Validate committed wiki (native drift diagnostics are advisory)")
+    assert validation["env"]["EVIDENCE_ARTIFACT"] == artifact_name
     assert artifact_name == (
         "llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-"
         "${{ github.sha }}-${{ github.run_attempt }}"

@@ -24,7 +24,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Publish the diagnostic knowledge-health dashboard
+      - name: Check repository knowledge health
         uses: ./integrations/github-action
         with:
           wiki-dir: docs/llm_wiki

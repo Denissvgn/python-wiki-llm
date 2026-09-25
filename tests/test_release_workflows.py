@@ -233,8 +233,8 @@ def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evide
     assert checkout["with"]["persist-credentials"] is False
     assert "head.sha" in checkout["with"]["ref"]
     for name in (
-        "Run context health against caller",
-        "Run full integrity against caller",
+        "Check foreign caller fixture knowledge health",
+        "Check foreign caller fixture integrity",
     ):
         step = _named_step(job, name)
         assert step["uses"].startswith("./.provider/integrations/")
@@ -913,7 +913,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     assert '"${RUNNER_TEMP}/full-integrity-plugin-executed"' in bind_paths
     assert '} >> "${GITHUB_ENV}"' in bind_paths
 
-    context = _named_step(job, "Run context health gate")
+    context = _named_step(job, "Check Action fixture knowledge health")
     assert context["uses"] == "./candidate/integrations/github-action"
     assert context["with"] == {
         "wiki-dir": "candidate/.action-selftest/wiki",

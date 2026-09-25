@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ from .contracts import (
     DOCTOR_SCHEMA_VERSION,
 )
 from .doctor_service import compose_doctor_report
+from .health_summary import FRESHNESS_DISCLOSURE, freshness_counts, reason_list, summary_cell
 from .knowledge_observability import KnowledgeAggregateSummary
 from .lint_service import LintReport, report_to_dict
 
@@ -1253,16 +1255,69 @@ def load_ci_check_payload(
     return validate_ci_check_payload(payload, cli_exit=cli_exit)
 
 
-def _clip_utf8(value: str, limit: int = 240) -> str:
-    encoded = value.encode("utf-8")
-    if len(encoded) <= limit:
-        return value
-    prefix = encoded[: limit - 3]
-    while True:
-        try:
-            return prefix.decode("utf-8") + "..."
-        except UnicodeDecodeError as exc:
-            prefix = prefix[: exc.start]
+def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
+    """Summarize the already validated diagnostics; never evaluate source."""
+    health = report["knowledge_health"]
+    records = [row for row in report["diagnostics"] if row["category"] == "knowledge_freshness"]
+    counts: Counter[str] = Counter()
+    examples: dict[str, tuple[bool, bool, str, str]] = {}
+    for row in records:
+        hint, path = row.get("hint") or "", row.get("path") or row.get("target") or ""
+        example = (not bool(hint), not bool(path), hint, path)
+        # Use the validator's existing reason extraction, including legacy
+        # message reason tags. One record may supply several distinct reasons.
+        for reason in _finding_reasons([row]):
+            counts[reason] += 1
+            if reason not in examples or example < examples[reason]:
+                examples[reason] = example
+    ordered = sorted(counts, key=lambda reason: (-counts[reason], reason))
+    groups = "; ".join(
+        f"`{summary_cell(reason + '=' + str(counts[reason]), 160)}`"
+        for reason in ordered[:3]
+    ) or "none reported"
+    if len(ordered) > 3:
+        groups += f"; ... [{len(ordered) - 3} more reasons; see full JSON]"
+    lines = [
+        f"- Freshness diagnostics: `{len(records)}` of `{len(report['diagnostics'])}` total records; reasons (records, may overlap): {groups}.",
+    ]
+    guidance = []
+    for reason in ordered[:3]:
+        _, _, hint, path = examples[reason]
+        if hint or path:
+            line = f"- Guidance for `{summary_cell(reason, 120)}`: "
+            line += f"`{summary_cell(hint)}`" if hint else "no hint supplied"
+            if path:
+                line += f"; example `{summary_cell(path)}`"
+            guidance.append(line)
+    lines.extend(guidance[:1])
+    lines.extend([
+        f"- Freshness states: `{summary_cell(freshness_counts(health['freshness']['counts_by_state']))}`.",
+        f"- Health reasons: `{summary_cell(reason_list(sorted(set(health['unhealthy_reasons'] + health['degraded_reasons']))))}`.",
+        "- " + FRESHNESS_DISCLOSURE,
+    ])
+    lines.extend(guidance[1:])
+    return lines
+
+
+def _bounded_summary(
+    core: list[str], details: list[str], suffix: list[str], *, max_lines: int, max_bytes: int,
+) -> bytes:
+    """Preserve status and dirty paths, disclosing any omitted health detail."""
+    def fits(lines):
+        return len(lines) <= max_lines and len(("\n".join(lines) + "\n").encode("utf-8")) <= max_bytes
+
+    if fits(core + details + suffix):
+        return ("\n".join(core + details + suffix) + "\n").encode("utf-8")
+    omitted = "- Health details abbreviated; see full JSON. Text marked [truncated] is abbreviated."
+    shown: list[str] = []
+    for line in details:
+        if not fits(core + shown + [line, omitted] + suffix):
+            break
+        shown.append(line)
+    lines = core + shown + ([omitted] if details else []) + suffix
+    if not fits(lines):
+        raise CiCheckReportError("bounded summary invariant failed")
+    return ("\n".join(lines) + "\n").encode("utf-8")
 
 
 def render_ci_summary(
@@ -1278,6 +1333,8 @@ def render_ci_summary(
     status_limit: int,
     max_lines: int,
     max_bytes: int,
+    report_name: str = "llm-wiki-ci-report.json",
+    evidence_artifact: str | None = None,
 ) -> bytes:
     """Render fixed-state integrity and health evidence within strict bounds."""
 
@@ -1335,21 +1392,27 @@ def render_ci_summary(
     )
     if result != expected_result:
         raise CiCheckReportError("result does not match the validated evidence")
+    _string(report_name, "report name")
+    if evidence_artifact is not None:
+        _string(evidence_artifact, "evidence artifact")
 
     lines = [
         "## LLM Wiki integrity",
+        "",
         f"- Result: **{result}**",
     ]
     if cli_exit != 0:
         lines.append(f"- Original `ci-check` exit: `{cli_exit}`")
     lines.extend(
         [
-            f"- JSON evidence: {json_state}",
-            f"- Markdown report: {markdown_state}",
-            f"- Worktree: {tree_state}",
+            f"- JSON evidence: {json_state}; Markdown report: {markdown_state}; Worktree: {tree_state}",
         ]
     )
     if report is not None:
+        lines.extend([
+            f"- Scope: wiki `{summary_cell(report['wiki_dir'])}`; source `{summary_cell(report['src_dir'])}`",
+            "- Policies: strict integrity (blocking); non-strict health (advisory).",
+        ])
         health = _object(report["knowledge_health"], "report.knowledge_health")
         availability = _object(
             health["availability"], "report.knowledge_health.availability"
@@ -1378,6 +1441,7 @@ def render_ci_summary(
                 (
                     "- Snapshot / governance: "
                     f"`{snapshot['state']}` / `{governance['state']}`"
+                    + (" (governance optional; absent)" if governance["state"] == "not-present" else "")
                 ),
                 (
                     "- Drift: "
@@ -1385,12 +1449,14 @@ def render_ci_summary(
                     f"(confirmed={drift['confirmed_stale']}, "
                     f"indeterminate={drift['indeterminate']})"
                 ),
-                f"- Verification receipt: `{verification['state']}`",
+                f"- Verification receipt: `{verification['state']}`"
+                + (" (optional; absent)" if verification["state"] == "absent" else ""),
             ]
         )
     else:
         lines.extend(
             [
+                "- Scope / policies: unavailable (no validated report).",
                 "- Blocking issues: unavailable",
                 "- Knowledge health: `unavailable`",
                 "- Availability: `unavailable`",
@@ -1403,21 +1469,22 @@ def render_ci_summary(
     lines.append(
         "- Native drift diagnostics are advisory; integrity validation remains blocking."
     )
+    evidence = f"`{summary_cell(report_name)}`" if report is not None else "unavailable"
+    if evidence_artifact is not None:
+        evidence += f"; evidence artifact: `{summary_cell(evidence_artifact)}`"
+    lines.append(f"- Full JSON: {evidence}. Text marked [truncated] is abbreviated.")
+    details = [] if report is None else _health_detail_lines(report)
+    suffix = []
     if status_count:
-        lines.append("- Dirty-path diagnostics (sorted and bounded):")
+        suffix.append("- Dirty-path diagnostics (sorted and bounded):")
         for raw_record in status_records[:status_limit]:
             record = raw_record.decode("utf-8", "backslashreplace")
-            record = record.replace(chr(96), "\\x60")
-            lines.append(f"  - `{_clip_utf8(record)}`")
+            suffix.append(f"  - `{summary_cell(record)}`")
         if status_count > status_limit:
-            lines.append(
+            suffix.append(
                 f"  - ... {status_count - status_limit} additional status records omitted"
             )
-
-    payload = ("\n".join(lines) + "\n").encode("utf-8")
-    if len(lines) > max_lines or len(payload) > max_bytes:
-        raise CiCheckReportError("bounded summary invariant failed")
-    return payload
+    return _bounded_summary(lines, details, suffix, max_lines=max_lines, max_bytes=max_bytes)
 
 
 def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -1430,6 +1497,7 @@ def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
     summary = commands.add_parser("render-summary")
     summary.add_argument("--report")
+    summary.add_argument("--evidence-artifact")
     summary.add_argument("--cli-exit", required=True, type=int)
     summary.add_argument("--result", choices=("PASS", "FAIL"), required=True)
     summary.add_argument("--json-state", required=True)
@@ -1481,6 +1549,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             status_limit=args.status_limit,
             max_lines=args.max_lines,
             max_bytes=args.max_bytes,
+            report_name=Path(args.report).name if args.report else "llm-wiki-ci-report.json",
+            evidence_artifact=args.evidence_artifact,
         )
         output = Path(args.output)
         if output.is_symlink() or not output.parent.is_dir():

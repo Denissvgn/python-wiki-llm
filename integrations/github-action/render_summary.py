@@ -11,6 +11,14 @@ from pathlib import Path
 from typing import Any
 
 from llm_wiki_cli.services.ci_report import validate_doctor_payload
+from llm_wiki_cli.services.health_summary import (
+    FRESHNESS_DISCLOSURE,
+    freshness_counts,
+    health_policy,
+    optional_status,
+    reason_list,
+    summary_cell,
+)
 
 
 SCHEMA_VERSION = "llm-wiki-doctor/v1"
@@ -120,6 +128,7 @@ def _arguments() -> argparse.Namespace:
         required=True,
     )
     parser.add_argument("--receipt")
+    parser.add_argument("--evidence-artifact")
     return parser.parse_args()
 
 
@@ -396,25 +405,14 @@ def load_report(
     return report
 
 
-def _clip_utf8(value: str, limit: int = CELL_MAX_BYTES) -> str:
-    encoded = value.encode("utf-8")
-    if len(encoded) <= limit:
-        return value
-    prefix = encoded[: limit - 3]
-    while True:
-        try:
-            return prefix.decode("utf-8") + "..."
-        except UnicodeDecodeError as exc:
-            prefix = prefix[: exc.start]
-
-
 def _cell(value: object) -> str:
-    text = str(value).replace("\r", " ").replace("\n", " ")
-    text = text.replace("`", r"\x60").replace("|", r"\|")
-    return _clip_utf8(text)
+    return summary_cell(value, CELL_MAX_BYTES)
 
 
-def render_summary(report: Mapping[str, Any]) -> str:
+def render_summary(
+    report: Mapping[str, Any], *, fail_on: str | None = None,
+    report_name: str = "doctor.json", evidence_artifact: str | None = None,
+) -> str:
     """Return a compact Markdown table without interpreting human text."""
 
     availability = _object(report["availability"], "report.availability")
@@ -426,12 +424,26 @@ def render_summary(report: Mapping[str, Any]) -> str:
         report["verification_receipt"],
         "report.verification_receipt",
     )
+    if fail_on is not None and fail_on not in FAIL_THRESHOLDS:
+        raise ValueError("unsupported dashboard failure threshold")
+    _string(report_name, "report name")
+    if evidence_artifact is not None:
+        _string(evidence_artifact, "evidence artifact")
     rows = (
         ("Overall", report["status"]),
+        ("Wiki scope", report["wiki_dir"]),
+        ("Source scope", report["src_dir"]),
+        ("Health classification", health_policy(report["strict"])),
+        ("Action failure threshold", (
+            "not supplied (classification only)" if fail_on is None else
+            "degraded, unhealthy or absent" if fail_on == "degraded" else
+            "unhealthy or absent"
+        )),
         ("Availability", availability.get("state", "unknown")),
         ("Freshness", freshness.get("disclosure", "unknown")),
+        ("Freshness states", freshness_counts(freshness["counts_by_state"])),
         ("Snapshot parity", snapshot.get("state", "unknown")),
-        ("Governance", governance.get("state", "unknown")),
+        ("Governance", optional_status(governance["state"], absent="not-present")),
         (
             "Drift",
             (
@@ -440,10 +452,15 @@ def render_summary(report: Mapping[str, Any]) -> str:
                 f"indeterminate={drift.get('indeterminate', 0)})"
             ),
         ),
-        ("Verification receipt", verification.get("state", "unknown")),
+        ("Verification receipt", optional_status(verification["state"], absent="absent")),
+        ("Drift diagnostics", drift["diagnostic_count"]),
+        ("Drift reasons", reason_list(drift["reasons"])),
+        ("Health reasons", reason_list(sorted(set(
+            report["unhealthy_reasons"] + report["degraded_reasons"]
+        )))),
     )
     lines = [
-        "## LLM Wiki strict doctor dashboard",
+        "## LLM Wiki doctor dashboard",
         "",
         (
             "> Diagnostic knowledge-health dashboard only. It does not run or "
@@ -455,10 +472,17 @@ def render_summary(report: Mapping[str, Any]) -> str:
         "|---|---|",
         *(f"| {_cell(label)} | `{_cell(value)}` |" for label, value in rows),
         "",
+        FRESHNESS_DISCLOSURE,
+        "",
+        "Doctor v1 supplies no per-reason counts, recovery hints or producer versions.",
+        "",
+        f"Full JSON: `{_cell(report_name)}`. Text marked `[truncated]` is abbreviated.",
     ]
-    rendered = "\n".join(lines)
+    if evidence_artifact is not None:
+        lines.append(f"Evidence artifact: `{_cell(evidence_artifact)}`.")
+    rendered = "\n".join(lines) + "\n\n"
     if (
-        len(lines) > SUMMARY_MAX_LINES
+        len(rendered.splitlines()) > SUMMARY_MAX_LINES
         or len(rendered.encode("utf-8")) > SUMMARY_MAX_BYTES
     ):
         raise ValueError("rendered summary exceeds its fixed bounds")
@@ -512,7 +536,10 @@ def main() -> int:
             doctor_exit_code=args.doctor_exit_code,
             expected_strict=args.expected_strict == "true",
         )
-        summary = render_summary(report)
+        summary = render_summary(
+            report, fail_on=args.fail_on, report_name=Path(args.report).name,
+            evidence_artifact=args.evidence_artifact,
+        )
     except ValueError as exc:
         raise SystemExit(f"Invalid doctor JSON contract: {exc}") from exc
 
