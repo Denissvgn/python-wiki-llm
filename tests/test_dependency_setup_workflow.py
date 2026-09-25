@@ -79,6 +79,10 @@ def test_release_cache_is_opt_in_hash_checked_and_never_an_installed_environment
             and "matrix.copy == 'a'" in save["if"]
         )
         assert "cache-ready" in save["if"]
+        check = named(job, f"Recheck {profile} downloads immediately before saving")
+        assert "verify-cache" in check["run"]
+        assert f"steps.{profile}-cache-verified.outcome == 'success'" in save["if"]
+        assert job["steps"].index(check) + 1 == job["steps"].index(save)
         setup = named(
             job, f"Install verified {profile} tools into the fresh environment"
         )

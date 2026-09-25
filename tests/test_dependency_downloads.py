@@ -338,3 +338,43 @@ def test_preexisting_environment_cannot_supply_an_undeclared_tool(
                 output=tmp_path / "setup",
             )
         )
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["pip-replaced", "extra-candidate", "changed-wheel", "changed-key", "changed-role"],
+)
+def test_cache_save_rechecks_content_and_identity_after_building(
+    tmp_path, monkeypatch, change
+):
+    path = lock_file(tmp_path / "lock.txt")
+    lock = d.read_lock(path)
+    expected = d.identity(path, "build")
+    state = tmp_path / "identity.json"
+    d.write_json(state, expected)
+    cache = tmp_path / "cache"
+    store(cache, expected, lock)
+    args = argparse.Namespace(
+        lock=path, profile="build", namespace="release", identity=state, cache=cache
+    )
+    if change == "pip-replaced":
+        actual = deepcopy(expected["environment"])
+        actual["bootstrap_pip"] = "installed-locked-pip"
+        monkeypatch.setattr(d, "environment_identity", lambda: actual)
+        assert d.verify_command(args) == 0
+        return
+    if change == "extra-candidate":
+        (cache / "agent_wiki_cli-1.0-py3-none-any.whl").write_bytes(
+            b"private candidate"
+        )
+    elif change == "changed-wheel":
+        (cache / "owned-1.0-py3-none-any.whl").write_bytes(
+            b"mutated after installation"
+        )
+    elif change == "changed-key":
+        expected["key"] = "unbound-key"
+        d.write_json(state, expected)
+    else:
+        args.profile = "validation"
+    with pytest.raises(d.DependencyError):
+        d.verify_command(args)

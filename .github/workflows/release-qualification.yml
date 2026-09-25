@@ -2115,10 +2115,20 @@ jobs:
         run: |
           twine check dist/*
           python candidate/tests/verify_installed_knowledge_schema.py dist --no-build-isolation
+      - name: Recheck build downloads immediately before saving
+        id: build-cache-verified
+        if: ${{ inputs.third-party-download-cache && matrix.copy == 'a' }}
+        continue-on-error: true
+        run: >-
+          python -I incoming/tools/release/dependency_downloads.py verify-cache
+          --lock candidate/release/build-requirements.txt --profile build
+          --identity evidence/build-dependency-identity.json
+          --cache "${RUNNER_TEMP}/third-party-downloads/build"
       - name: Save verified build third-party downloads
         if: >-
           ${{ success() && inputs.third-party-download-cache && matrix.copy == 'a'
               && steps.build-setup.outputs.cache-ready == 'true'
+              && steps.build-cache-verified.outcome == 'success'
               && steps.build-cache.outputs.cache-hit != 'true'
               && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch'
               && !github.event.repository.fork }}
@@ -2127,10 +2137,20 @@ jobs:
         with:
           path: ${{ runner.temp }}/third-party-downloads/build
           key: ${{ steps.build-identity.outputs.cache-key }}
+      - name: Recheck validation downloads immediately before saving
+        id: validation-cache-verified
+        if: ${{ inputs.third-party-download-cache && matrix.copy == 'a' }}
+        continue-on-error: true
+        run: >-
+          python -I incoming/tools/release/dependency_downloads.py verify-cache
+          --lock candidate/release/validation-requirements.txt --profile validation
+          --identity evidence/validation-dependency-identity.json
+          --cache "${RUNNER_TEMP}/third-party-downloads/validation"
       - name: Save verified validation third-party downloads
         if: >-
           ${{ success() && inputs.third-party-download-cache && matrix.copy == 'a'
               && steps.validation-setup.outputs.cache-ready == 'true'
+              && steps.validation-cache-verified.outcome == 'success'
               && steps.validation-cache.outputs.cache-hit != 'true'
               && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch'
               && !github.event.repository.fork }}

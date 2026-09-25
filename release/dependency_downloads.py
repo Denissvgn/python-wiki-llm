@@ -240,6 +240,22 @@ def verify_cache(directory, expected, lock):
     return actual
 
 
+def verify_command(args):
+    expected = read_json(args.identity)
+    current = identity(args.lock, args.profile, args.namespace)
+    # Setup intentionally replaces bootstrap pip with the locked installer.
+    # Every other compatibility/policy field must still match before saving.
+    current["environment"]["bootstrap_pip"] = expected["environment"]["bootstrap_pip"]
+    del current["key"]
+    current["key"] = (
+        "agent-wiki-wheels-v1-" + hashlib.sha256(canonical(current)).hexdigest()
+    )
+    require(expected == current, "dependency cache identity changed before saving")
+    verify_cache(args.cache, expected, read_lock(args.lock))
+    outputs({"cache-ready": "true"})
+    return 0
+
+
 def command_environment():
     result = {
         key: value
@@ -441,18 +457,26 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     inventory = commands.add_parser("inventory")
     inventory.set_defaults(function=lambda args: print(json.dumps(installed())) or 0)
-    for name, function in (("key", key_command), ("setup", setup)):
+    for name, function in (
+        ("key", key_command),
+        ("setup", setup),
+        ("verify-cache", verify_command),
+    ):
         command = commands.add_parser(name)
         command.add_argument("--lock", type=Path, required=True)
         command.add_argument("--profile", choices=sorted(PROFILES), required=True)
         command.add_argument("--namespace", default="release")
-        command.add_argument("--output", type=Path, required=True)
+        if name != "verify-cache":
+            command.add_argument("--output", type=Path, required=True)
         if name == "setup":
             command.add_argument("--identity", type=Path, required=True)
             command.add_argument("--cache", type=Path)
             command.add_argument(
                 "--cache-available", action=argparse.BooleanOptionalAction, default=True
             )
+        elif name == "verify-cache":
+            command.add_argument("--identity", type=Path, required=True)
+            command.add_argument("--cache", type=Path, required=True)
         command.set_defaults(function=function)
     args = parser.parse_args()
     return args.function(args)

@@ -118,6 +118,15 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
         id: save-start
         run: python -I -c 'import os,time; open(os.environ["GITHUB_OUTPUT"],"a").write("started="+str(time.time_ns())+"\n")'
+      - name: Recheck both wheel stores before sharing them
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+        run: |
+          for profile in build validation; do
+            python -I incoming/dependency_downloads.py verify-cache \
+              --lock "work/cold/a/source/release/${profile}-requirements.txt" --profile "${profile}" \
+              --identity "evidence/cold/a/${profile}-identity.json" \
+              --cache "${RUNNER_TEMP}/third-party-downloads/${profile}"
+          done
       - name: Save verified build downloads for the separate warm job
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
