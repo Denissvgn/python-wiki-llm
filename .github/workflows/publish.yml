@@ -166,6 +166,15 @@ jobs:
             "${tag_requirement[@]}" \
             --output bundle-verification.json
 
+      - name: Select verified attestations for the exact qualification attempt
+        run: >-
+          python -I trusted-verifier/release/qualification.py select-attestations
+          --manifest qualified-release/qualification-manifest.json
+          --workflow-verification workflow-run-verification.json
+          --build-provenance build-provenance-attestations.jsonl
+          --sbom-attestation sbom-attestations.jsonl
+          --output selected-attestations
+
       - name: Emit the final technical release decision
         run: |
           tag_requirement=()
@@ -179,12 +188,13 @@ jobs:
             --workflow-run-id "${QUALIFICATION_RUN_ID}" \
             --candidate-sha "${CANDIDATE_SHA}" \
             --rd13-evidence "workflow-run=workflow-run-verification.json" \
-            --rd13-evidence "build-provenance=build-provenance-attestations.jsonl" \
-            --rd13-evidence "sbom-attestation=sbom-attestations.jsonl" \
+            --rd13-evidence "build-provenance=selected-attestations/build-provenance-attestations.jsonl" \
+            --rd13-evidence "sbom-attestation=selected-attestations/sbom-attestations.jsonl" \
             "${tag_requirement[@]}" \
             --output promotion-decision.json
 
       - name: Preserve final promotion evidence
+        if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           archive: true
@@ -195,6 +205,7 @@ jobs:
             bundle-verification.json
             build-provenance-attestations.jsonl
             sbom-attestations.jsonl
+            selected-attestations/
           if-no-files-found: error
           retention-days: 14
 

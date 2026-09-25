@@ -682,6 +682,40 @@ def test_publish_uses_trusted_verifier_before_candidate_checkout() -> None:
     assert "candidate-source/release/qualification.py" not in python_commands
 
 
+def test_promotion_selects_verified_attempt_and_retains_raw_evidence_on_failure() -> None:
+    job = _yaml("publish.yml")["jobs"]["verify"]
+    steps = job["steps"]
+    names = [step.get("name") for step in steps]
+    attest = _named_step(job, "Verify GitHub provenance and SPDX attestations")
+    bundle = _named_step(job, "Verify identity, gates, contents, and registry vacancy")
+    select = _named_step(job, "Select verified attestations for the exact qualification attempt")
+    finalize = _named_step(job, "Emit the final technical release decision")
+    upload = _named_step(job, "Preserve final promotion evidence")
+    assert names.index(attest["name"]) < names.index(bundle["name"]) < names.index(select["name"]) < names.index(finalize["name"])
+    for step in (attest, bundle, select, finalize):
+        assert "if" not in step and not step.get("continue-on-error")
+    assert "set -euo pipefail" in attest["run"]
+    assert "selected-attestations" not in attest["run"]
+    assert shlex.split(select["run"]) == [
+        "python", "-I", "trusted-verifier/release/qualification.py", "select-attestations",
+        "--manifest", "qualified-release/qualification-manifest.json",
+        "--workflow-verification", "workflow-run-verification.json",
+        "--build-provenance", "build-provenance-attestations.jsonl",
+        "--sbom-attestation", "sbom-attestations.jsonl",
+        "--output", "selected-attestations",
+    ]
+    for filename, label in [
+        ("build-provenance-attestations.jsonl", "build-provenance"),
+        ("sbom-attestations.jsonl", "sbom-attestation"),
+    ]:
+        assert f'--rd13-evidence "{label}=selected-attestations/{filename}"' in finalize["run"]
+        assert f'--rd13-evidence "{label}={filename}"' not in finalize["run"]
+        assert f">> {filename}" in attest["run"]
+        assert filename in upload["with"]["path"].splitlines()
+    assert "selected-attestations/" in upload["with"]["path"].splitlines()
+    assert upload["if"] == "${{ always() }}"
+
+
 def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None:
     workflow = _yaml("release-qualification.yml")
     jobs = workflow["jobs"]

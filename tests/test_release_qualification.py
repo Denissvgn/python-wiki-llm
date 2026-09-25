@@ -1055,6 +1055,7 @@ def test_promotion_decision_is_derived_from_verified_manifest(
         "attestation-source-sha",
         "attestation-workflow",
         "attestation-run",
+        "attestation-attempt",
         "missing-timestamp",
         "tag",
     ),
@@ -1158,6 +1159,10 @@ def test_promotion_rejects_incomplete_or_mismatched_rd13_evidence(
                 receipts[0][0]["verificationResult"]["signature"]["certificate"][
                     "runInvocationURI"
                 ] = f"https://github.com/{REPOSITORY}/actions/runs/999"
+            elif mutation == "attestation-attempt":
+                receipts[0][0]["verificationResult"]["signature"]["certificate"][
+                    "runInvocationURI"
+                ] = f"https://github.com/{REPOSITORY}/actions/runs/{RUN_ID}/attempts/2"
             else:
                 receipts[0][0]["verificationResult"]["verifiedTimestamps"] = []
             _rewrite_attestation_receipt_lines(provenance_path, receipts)
@@ -1183,6 +1188,187 @@ def test_promotion_accepts_multiple_matching_attestations_per_receipt(
         _rewrite_attestation_receipt_lines(path, receipts)
 
     assert qualification.finalize_promotion(args) == 0
+
+
+def _selection_args(promotion: argparse.Namespace) -> argparse.Namespace:
+    paths = {
+        label: Path(path)
+        for label, path in (spec.split("=", 1) for spec in promotion.rd13_evidence)
+    }
+    return argparse.Namespace(
+        manifest=promotion.manifest,
+        workflow_verification=paths["workflow-run"],
+        build_provenance=paths["build-provenance"],
+        sbom_attestation=paths["sbom-attestation"],
+        output=promotion.output.parent / "selected-attestations",
+    )
+
+
+def _add_other_qualification_signatures(path: Path) -> None:
+    receipts = _load_attestation_receipt_lines(path)
+    for index, receipt in enumerate(receipts):
+        result = receipt[0]
+        statement = result["verificationResult"]["statement"]
+        # Match the real CLI shape: one invocation per wheel/sdist, each with
+        # verified signatures from multiple runs of the identical source.
+        statement["subject"] = [statement["subject"][index]]
+        other_run = deepcopy(result)
+        other_run["verificationResult"]["signature"]["certificate"]["runInvocationURI"] = (
+            f"https://github.com/{REPOSITORY}/actions/runs/{RUN_ID + 1}/attempts/1"
+        )
+        other_attempt = deepcopy(result)
+        other_attempt["verificationResult"]["signature"]["certificate"]["runInvocationURI"] = (
+            f"https://github.com/{REPOSITORY}/actions/runs/{RUN_ID}/attempts/2"
+        )
+        receipt[:] = [other_run, result, other_attempt, deepcopy(result)]
+    _rewrite_attestation_receipt_lines(path, receipts)
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_exact_attempt_selection_preserves_originals_and_strict_promotion(
+    qualified_bundle, tmp_path, reverse
+):
+    bundle, manifest = qualified_bundle
+    promotion = _promotion_args(tmp_path, bundle, manifest)
+    args = _selection_args(promotion)
+    originals = {}
+    for path in (args.build_provenance, args.sbom_attestation):
+        _add_other_qualification_signatures(path)
+        receipts = _load_attestation_receipt_lines(path)
+        if reverse:
+            receipts = [list(reversed(receipt)) for receipt in reversed(receipts)]
+            _rewrite_attestation_receipt_lines(path, receipts)
+        originals[path] = path.read_bytes()
+    with pytest.raises(qualification.QualificationError, match="run and attempt"):
+        qualification.finalize_promotion(promotion)
+
+    assert qualification.main([
+        "select-attestations", "--manifest", str(args.manifest),
+        "--workflow-verification", str(args.workflow_verification),
+        "--build-provenance", str(args.build_provenance),
+        "--sbom-attestation", str(args.sbom_attestation),
+        "--output", str(args.output),
+    ]) == 0
+    record = qualification.load_json(args.output / "selection.json")
+    assert record["schema_version"] == qualification.ATTESTATION_SELECTION_SCHEMA
+    assert record["run_attempt"] == 1 and record["workflow_run_id"] == RUN_ID
+    assert record["manifest_sha256"] == qualification.sha256_file(args.manifest)
+    assert record["workflow_verification_sha256"] == qualification.sha256_file(args.workflow_verification)
+    assert not promotion.output.exists()  # Selection never authorizes a release.
+    for path, original in originals.items():
+        assert path.read_bytes() == original
+        selected = args.output / path.name
+        receipt_record = record["receipts"][path.name]
+        assert receipt_record["input_sha256"] == qualification.sha256_file(path)
+        assert receipt_record["selected_sha256"] == qualification.sha256_file(selected)
+        assert receipt_record["original_counts"] == [4, 4]
+        assert receipt_record["selected_counts"] == [2, 2]
+        assert _load_attestation_receipt_lines(selected) == [
+            [result for result in receipt if result["verificationResult"]["signature"]["certificate"]["runInvocationURI"] == record["run_invocation"]]
+            for receipt in _load_attestation_receipt_lines(path)
+        ]
+    promotion.rd13_evidence = [
+        f"workflow-run={args.workflow_verification}",
+        f"build-provenance={args.output / args.build_provenance.name}",
+        f"sbom-attestation={args.output / args.sbom_attestation.name}",
+    ]
+    assert qualification.finalize_promotion(promotion) == 0
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing-chosen-run", "stale-attempt", "predicate-spoof", "missing-attempt",
+    "wrong-source", "wrong-ref", "wrong-repository", "wrong-signer", "self-hosted",
+    "wrong-subject", "wrong-predicate", "missing-timestamp", "unverified-result",
+    "malformed-discarded-result", "unexpected-discarded-subject", "missing-sbom",
+    "workflow-source", "workflow-run", "workflow-event", "workflow-schema",
+    "duplicate-json-key", "size-limit", "existing-output",
+])
+def test_attestation_selection_fails_closed_before_writing(
+    qualified_bundle, tmp_path, mutation, monkeypatch
+):
+    bundle, manifest = qualified_bundle
+    args = _selection_args(_promotion_args(tmp_path, bundle, manifest))
+    for path in (args.build_provenance, args.sbom_attestation):
+        _add_other_qualification_signatures(path)
+    path = args.build_provenance
+    receipts = _load_attestation_receipt_lines(path)
+    result = receipts[0][1]
+    verified = result["verificationResult"]
+    certificate = verified["signature"]["certificate"]
+    expected_uri = certificate["runInvocationURI"]
+    if mutation in {"missing-chosen-run", "stale-attempt", "predicate-spoof"}:
+        receipts[0] = [receipts[0][0 if mutation == "missing-chosen-run" else 2]]
+        # A predicate controlled by the signer cannot override the certificate.
+        if mutation == "predicate-spoof":
+            receipts[0][0]["verificationResult"]["statement"]["predicate"] = {
+                "runInvocationURI": expected_uri,
+                "runDetails": {"metadata": {"invocationId": expected_uri}},
+            }
+    elif mutation == "missing-attempt":
+        certificate["runInvocationURI"] = expected_uri.removesuffix("/attempts/1")
+    elif mutation in {"wrong-source", "wrong-ref", "wrong-repository", "wrong-signer", "self-hosted"}:
+        field, value = {
+            "wrong-source": ("sourceRepositoryDigest", TREE),
+            "wrong-ref": ("sourceRepositoryRef", "refs/heads/main"),
+            "wrong-repository": ("sourceRepositoryURI", "https://github.com/other/repo"),
+            "wrong-signer": ("buildSignerURI", "https://github.com/other/workflow"),
+            "self-hosted": ("runnerEnvironment", "self-hosted"),
+        }[mutation]
+        certificate[field] = value
+    elif mutation == "wrong-subject":
+        verified["statement"]["subject"][0]["digest"]["sha256"] = "f" * 64
+    elif mutation == "wrong-predicate":
+        verified["statement"]["predicateType"] = qualification.SPDX_SBOM_PREDICATE
+    elif mutation == "missing-timestamp":
+        verified["verifiedTimestamps"] = []
+    elif mutation == "unverified-result":
+        del result["verificationResult"]
+    elif mutation == "malformed-discarded-result":
+        receipts[0][0] = {"attestation": {"bundle": "unverified"}}
+    elif mutation == "unexpected-discarded-subject":
+        receipts[0][0]["verificationResult"]["statement"]["subject"][0]["name"] = "foreign.whl"
+    elif mutation == "missing-sbom":
+        args.sbom_attestation.write_text("[]\n[]\n", encoding="utf-8")
+    elif mutation.startswith("workflow-"):
+        workflow = qualification.load_json(args.workflow_verification)
+        field, value = {
+            "workflow-source": ("workflow_revision", TREE),
+            "workflow-run": ("workflow_run_id", RUN_ID + 1),
+            "workflow-event": ("event", "pull_request"),
+            "workflow-schema": ("schema_version", "unsupported"),
+        }[mutation]
+        workflow[field] = value
+        _write_json(args.workflow_verification, workflow)
+    elif mutation == "size-limit":
+        monkeypatch.setattr(qualification, "MAX_ATTESTATION_RECEIPTS_BYTES", 1)
+    elif mutation == "existing-output":
+        args.output.mkdir()
+        (args.output / "existing").write_text("preserve me", encoding="utf-8")
+    _rewrite_attestation_receipt_lines(path, receipts)
+    if mutation == "duplicate-json-key":
+        path.write_text(path.read_text().replace('"predicateType":', '"predicateType":"duplicate","predicateType":', 1), encoding="utf-8")
+    originals = {p:p.read_bytes() for p in (args.build_provenance, args.sbom_attestation)}
+    with pytest.raises(qualification.QualificationError):
+        qualification.select_attestations(args)
+    assert all(p.read_bytes() == raw for p, raw in originals.items())
+    if mutation == "existing-output":
+        assert list(args.output.iterdir()) == [args.output / "existing"]
+        assert (args.output / "existing").read_text() == "preserve me"
+    else:
+        assert not args.output.exists()
+
+
+def test_attestation_selection_binds_a_later_qualification_attempt(qualified_bundle, tmp_path):
+    bundle, manifest = qualified_bundle
+    args = _selection_args(_promotion_args(tmp_path, bundle, manifest))
+    manifest["qualification_context"]["run_attempt"] = 2
+    _write_json(args.manifest, manifest)
+    for path in (args.build_provenance, args.sbom_attestation):
+        _add_other_qualification_signatures(path)
+    assert qualification.select_attestations(args) == 0
+    record = qualification.load_json(args.output / "selection.json")
+    assert record["run_attempt"] == 2 and record["run_invocation"].endswith("/attempts/2")
+    assert all(value["selected_counts"] == [1, 1] for value in record["receipts"].values())
 
 
 def test_exact_skip_allowlist_rejects_reason_drift(tmp_path: Path) -> None:
