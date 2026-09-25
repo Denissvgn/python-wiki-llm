@@ -28,6 +28,7 @@ def test_native_shadow_has_complete_bounded_matrices_and_attempt_specific_artifa
     assert set(events) == {"pull_request", "workflow_dispatch"}
     assert "release/core_shard_runner.py" in events["pull_request"]["paths"]
     assert "tests/test_core_shard_workflow.py" in events["pull_request"]["paths"]
+    assert "tests/xml_writer_fixtures.py" in events["pull_request"]["paths"]
     jobs = value["jobs"]
     for name, replicas in (("reference", 1), ("shards", 2), ("compare", 1)):
         job = jobs[name]

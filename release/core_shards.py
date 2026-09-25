@@ -602,7 +602,11 @@ def merge_junit(
         suite.append(deepcopy(cases[node]))
     output.parent.mkdir(parents=True, exist_ok=True)
     require(not output.exists(), "aggregate JUnit must be new")
-    ET.ElementTree(suite).write(output, encoding="utf-8", xml_declaration=True)
+    # Filename output goes through a native text writer, which converts LF to
+    # CRLF on Windows. A binary stream preserves the exact bytes replayed by
+    # the Ubuntu bundle verifier, including the XML declaration newline.
+    with output.open("wb") as stream:
+        ET.ElementTree(suite).write(stream, encoding="utf-8", xml_declaration=True)
     return {"receipts": receipts, "outcomes": outcomes(cases)}
 
 

@@ -855,13 +855,15 @@ def project_junit(args: argparse.Namespace) -> int:
     ET.indent(projected_root, space="  ")
     projected_path = args.projected_junit.resolve()
     projected_path.parent.mkdir(parents=True, exist_ok=True)
-    ET.ElementTree(projected_root).write(
-        projected_path,
-        encoding="utf-8",
-        xml_declaration=True,
-        short_empty_elements=True,
-    )
-    with projected_path.open("ab") as stream:
+    # Binary output keeps Windows and Unix projections byte-identical. Passing
+    # a filename to ElementTree instead enables native newline translation.
+    with projected_path.open("wb") as stream:
+        ET.ElementTree(projected_root).write(
+            stream,
+            encoding="utf-8",
+            xml_declaration=True,
+            short_empty_elements=True,
+        )
         stream.write(b"\n")
 
     write_json(

@@ -1,4 +1,4 @@
-# Nonqualifying native equivalence evidence; release qualification stays unsharded.
+# Nonqualifying native equivalence evidence; qualifying shards use separate receipts.
 name: Core shard shadow
 'on':
   pull_request:
@@ -11,6 +11,7 @@ name: Core shard shadow
     - tests/test_core_shards.py
     - tests/test_core_shard_runner.py
     - tests/test_core_shard_workflow.py
+    - tests/xml_writer_fixtures.py
   workflow_dispatch:
     inputs:
       candidate-sha:

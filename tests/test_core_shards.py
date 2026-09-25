@@ -273,6 +273,45 @@ def test_aggregate_preserves_each_node_and_skip_reason_once(shards, tmp_path):
         s.merge_junit(value, directories, destination)
 
 
+@pytest.mark.parametrize("purpose", ["shadow", "qualification"])
+def test_aggregate_xml_bytes_are_portable_between_windows_and_posix(
+    tmp_path, monkeypatch, purpose
+):
+    from tests.xml_writer_fixtures import elementtree_text_newlines
+
+    value = s.plan(NODES, context(s.WINDOWS_LANE), 2, purpose=purpose)
+    directories = [execution(tmp_path / str(i), value, i) for i in range(2)]
+    node = value["shards"][0]["nodes"][0]
+    xml = directories[0] / "junit.xml"
+    write_junit(xml, value["shards"][0]["nodes"], skip=node)
+    tree = ET.parse(xml)
+    skipped = tree.find(".//skipped")
+    assert skipped is not None
+    reason = "razón <owned> & details\r\nnext line\tend"
+    skipped.set("message", reason)
+    xml.write_bytes(ET.tostring(tree.getroot(), encoding="utf-8"))
+    reseal(directories[0])
+    rendered = []
+    for name, newline in (("windows", "\r\n"), ("posix", "\n")):
+        with elementtree_text_newlines(monkeypatch, newline):
+            # Show that the emulated host exposes the original filename-writer
+            # behavior; this check must work on native Windows and Unix alike.
+            probe = tmp_path / (name + "-probe.xml")
+            ET.ElementTree(ET.Element("probe")).write(
+                probe, encoding="utf-8", xml_declaration=True
+            )
+            assert probe.read_bytes().startswith(
+                b"<?xml version='1.0' encoding='utf-8'?>" + newline.encode()
+            )
+            destination = tmp_path / (name + ".xml")
+            result = s.merge_junit(value, directories, destination, purpose=purpose)
+        assert result["outcomes"][node] == {"outcome": "skipped", "reason": reason}
+        rendered.append(destination.read_bytes())
+    assert rendered[0] == rendered[1]
+    assert b"\r" not in rendered[0]
+    assert b"&#13;&#10;" in rendered[0]
+
+
 @pytest.mark.parametrize(
     "mutation",
     [

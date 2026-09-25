@@ -227,12 +227,14 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str, core_layout="uns
         )
     if core_layout == "windows-sharded":
         from tests.core_shard_fixtures import qualifying_core
+        from tests.xml_writer_fixtures import elementtree_text_newlines
         allowlist = tmp_path / "allowlist.json"
         allowlist.write_bytes(allowlist_raw)
-        _, paths = qualifying_core(
-            tmp_path / "windows", identity, hosted.context["harness_sha256"], RUN_ID,
-            allowlist, json.loads(registry_bytes),
-        )
+        with elementtree_text_newlines(monkeypatch, "\r\n"):
+            _, paths = qualifying_core(
+                tmp_path / "windows", identity, hosted.context["harness_sha256"], RUN_ID,
+                allowlist, json.loads(registry_bytes),
+            )
         for binding, directory in paths.items():
             hosted.replace_files(binding, {p.name: p.read_bytes() for p in directory.iterdir()})
     monkeypatch.setattr(hosted_evidence, "GitHub", hosted.client)
@@ -2223,3 +2225,64 @@ def test_qualifying_aggregation_command_rebuilds_the_complete_lane(
     )
     for path in (core / "windows").iterdir():
         assert (output / path.name).read_bytes() == path.read_bytes()
+
+
+def test_windows_producer_bundle_replays_on_posix_without_byte_changes(
+    tmp_path, monkeypatch
+):
+    from tests.xml_writer_fixtures import elementtree_text_newlines
+
+    with elementtree_text_newlines(monkeypatch, "\n"):
+        # The producer fixture switches XML filename output to Windows mode.
+        # Assembly and verification consume those exact hosted ZIP bytes here.
+        bundle, manifest = _qualified_bundle(
+            tmp_path, monkeypatch, "union", "windows-sharded"
+        )
+        before = {
+            p.relative_to(bundle): p.read_bytes()
+            for p in bundle.rglob("*")
+            if p.is_file()
+        }
+        assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+        assert before == {
+            p.relative_to(bundle): p.read_bytes()
+            for p in bundle.rglob("*")
+            if p.is_file()
+        }
+
+
+def test_windows_projection_xml_and_receipt_digests_match_posix(tmp_path, monkeypatch):
+    from tests.xml_writer_fixtures import elementtree_text_newlines
+
+    identity = tmp_path / "identity.json"
+    _write_identity(identity)
+    source = tmp_path / "core.xml"
+    source.write_bytes(
+        b'<testsuite><testcase classname="tests.test_owned" name="test_a" />'
+        b'<testcase classname="tests.test_owned" name="test_skip">'
+        b'<skipped message="reason &amp; more&#13;&#10;next" /></testcase></testsuite>'
+    )
+    outputs = []
+    for name, newline in (("windows", "\r\n"), ("posix", "\n")):
+        xml, receipt = tmp_path / (name + ".xml"), tmp_path / (name + ".json")
+        with elementtree_text_newlines(monkeypatch, newline):
+            assert (
+                qualification.project_junit(
+                    argparse.Namespace(
+                        identity=identity,
+                        source_junit=source,
+                        source_lane="core-windows-3.13",
+                        target_lane="security-windows-2025",
+                        selector=["tests/test_owned.py"],
+                        projected_junit=xml,
+                        receipt=receipt,
+                    )
+                )
+                == 0
+            )
+        outputs.append((xml.read_bytes(), qualification.load_json(receipt)))
+    assert outputs[0] == outputs[1]
+    assert b"\r" not in outputs[0][0] and b"&#13;&#10;" in outputs[0][0]
+    assert outputs[0][1]["projected_junit_sha256"] == qualification.sha256_file(
+        tmp_path / "windows.xml"
+    )
