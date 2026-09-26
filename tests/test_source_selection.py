@@ -1328,14 +1328,15 @@ def test_committed_profile_freezes_intended_product_census():
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 212,
+        "python": 213,
         "typescript": 2,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 214
+    assert len(snapshot.all_source_paths) == 215
     assert {
+        "src/llm_wiki_cli/services/health_summary.py",
         "src/llm_wiki_cli/services/knowledge_storage.py",
         "src/llm_wiki_cli/services/storage_receipts.py",
         "src/llm_wiki_cli/services/task_context_v2.py",
