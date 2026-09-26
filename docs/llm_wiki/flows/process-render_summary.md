@@ -41,7 +41,7 @@ sequenceDiagram
     participant p19 as sorted (integrations/github-actio…mmary.py:_required_object)
     participant p20 as set (integrations/github-actio…mmary.py:_required_object)
     participant p21 as ValueError (integrations/github-actio…mmary.py:_required_object)
-    participant p22 as report.get
+    participant p22 as report.get (integrations/github-actio…py:_validate_report_bytes)
     participant p23 as _enum (integrations/github-action/render_summary.py)
     participant p24 as _string (integrations/github-action/render_summary.py)
     p0->>p1: _arguments
@@ -70,13 +70,13 @@ sequenceDiagram
     p15-->>p19: sorted (integrations/github-actio…mmary.py:_required_object)
     p15-->>p20: set (integrations/github-actio…mmary.py:_required_object)
     p15-->>p21: ValueError (integrations/github-actio…mmary.py:_required_object)
-    p11-->>p22: report.get
+    p11-->>p22: report.get (integrations/github-actio…py:_validate_report_bytes)
     p11-->>p14: ValueError (integrations/github-actio…py:_validate_report_bytes)
     p11->>p23: _enum (integrations/github-action/render_summary.py)
     p23->>p24: _string (integrations/github-action/render_summary.py)
 ```
 
-> Call sequence diagram shows 30 of 481 interactions; 451 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 509 interactions; 479 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -140,39 +140,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _arguments | 547 | `_arguments(data not statically known)` |
-| _arguments | argparse.ArgumentParser | 118 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | parser.add_argument | 119 | `parser.add_argument('--report', required=True)` |
-| _arguments | parser.add_argument | 120 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
-| _arguments | sorted (integrations/github-actio…der_summary.py:_arguments) | 120 | `sorted(FAIL_THRESHOLDS)` |
-| _arguments | parser.add_argument | 121 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
-| _arguments | range | 123 | `range(4)` |
-| _arguments | parser.add_argument | 127 | `parser.add_argument('--expected-strict', choices=(...), required=True)` |
-| _arguments | parser.add_argument | 132 | `parser.add_argument('--receipt')` |
-| _arguments | parser.add_argument | 133 | `parser.add_argument('--evidence-artifact')` |
-| _arguments | parser.parse_args | 134 | `parser.parse_args(data not statically known)` |
+| main | _arguments | 549 | `_arguments(data not statically known)` |
+| _arguments | argparse.ArgumentParser | 119 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | parser.add_argument | 120 | `parser.add_argument('--report', required=True)` |
+| _arguments | parser.add_argument | 121 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
+| _arguments | sorted (integrations/github-actio…der_summary.py:_arguments) | 121 | `sorted(FAIL_THRESHOLDS)` |
+| _arguments | parser.add_argument | 122 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
+| _arguments | range | 124 | `range(4)` |
+| _arguments | parser.add_argument | 128 | `parser.add_argument('--expected-strict', choices=(...), required=True)` |
+| _arguments | parser.add_argument | 133 | `parser.add_argument('--receipt')` |
+| _arguments | parser.add_argument | 134 | `parser.add_argument('--evidence-artifact')` |
+| _arguments | parser.parse_args | 135 | `parser.parse_args(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| environment_read | `os.environ.get` | `main` | 561 |
 | environment_read | `os.environ.get` | `main` | 563 |
+| environment_read | `os.environ.get` | `main` | 565 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_arguments` | `argparse.ArgumentParser` | 118 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 119 |
+| external_call | `_arguments` | `argparse.ArgumentParser` | 119 |
 | unresolved_call | `_arguments` | `parser.add_argument` | 120 |
-| external_call | `_arguments` | `sorted` | 120 |
 | unresolved_call | `_arguments` | `parser.add_argument` | 121 |
-| external_call | `_arguments` | `range` | 123 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 127 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 132 |
+| external_call | `_arguments` | `sorted` | 121 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 122 |
+| external_call | `_arguments` | `range` | 124 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 128 |
 | unresolved_call | `_arguments` | `parser.add_argument` | 133 |
-| unresolved_call | `_arguments` | `parser.parse_args` | 134 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 134 |
+| unresolved_call | `_arguments` | `parser.parse_args` | 135 |
 | step_limit | `main` | `first 12 steps` | 0 |
 | truncated_flow | `main` | `depth limit` | 0 |
 

@@ -39,10 +39,11 @@ flowchart LR
     n2["build_producer_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n3["plugin_producer_inputs (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n4["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n5["_infrastructure_extractor_component (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n6["_producer_evidence (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n7["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n8["build_runtime_live_evaluation (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n5["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
+    n6["_infrastructure_extractor_component (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n7["_producer_evidence (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n8["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n9["build_runtime_live_evaluation (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -51,15 +52,17 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/knowledge_envelope.md"
     click n1 "../modules/knowledge_envelope.md"
     click n2 "../modules/knowledge_envelope.md"
     click n3 "../modules/knowledge_envelope.md"
     click n4 "../modules/knowledge_generation.md"
-    click n5 "../modules/knowledge_orchestration.md"
+    click n5 "../modules/knowledge_maintenance.md"
     click n6 "../modules/knowledge_orchestration.md"
     click n7 "../modules/knowledge_orchestration.md"
     click n8 "../modules/knowledge_orchestration.md"
+    click n9 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -77,6 +80,7 @@ flowchart LR
 | `plugin_producer_inputs` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `plugin_producer_inputs` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
+| `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `_infrastructure_extractor_component` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 1 |
 | `_infrastructure_extractor_component` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_producer_evidence` | call | [knowledge_orchestration](../modules/knowledge_orchestration.md) | 2 |

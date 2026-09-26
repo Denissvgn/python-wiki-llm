@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [capability_diagnostics](../modules/capability_diagnostics.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 35 more
+**Modules touched:** [capability_diagnostics](../modules/capability_diagnostics.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 37 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,8 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
+- [health_policy](../modules/health_policy.md)
+- [health_summary](../modules/health_summary.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [inventory_cache](../modules/inventory_cache.md)
@@ -106,7 +108,7 @@ sequenceDiagram
     p21-->>p22: ctypes.WinDLL
 ```
 
-> Call sequence diagram shows 30 of 1294 interactions; 1264 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1339 interactions; 1309 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

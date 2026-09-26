@@ -19,6 +19,8 @@ verification-receipt evaluation already produced by strict lint.
 | `.extraction_jobs` | `ExtractionJobRequest` |
 | `.health_contract` | `validate_health_details` |
 | `.health_details` | `CapturedHealthDetails` |
+| `.health_policy` | `DoctorStatus`, `DOCTOR_EXIT_CODES`, `classify_health_sections` |
+| `.health_summary` | `detailed_health_rows`, `summary_cell` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME` |
@@ -31,7 +33,6 @@ verification-receipt evaluation already produced by strict lint.
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
 | `dataclasses` | `dataclass` |
-| `enum` | `Enum` |
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
@@ -55,16 +56,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (14) |
+| Outbound | `src` (16) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
-| Class | Kind | Line | Bases / Target | Description |
-|-------|------|------|----------------|-------------|
-| [DoctorStatus](../entities/DoctorStatus.md) | Enum | 40 | `str`, `Enum` | Closed overall health vocabulary for the doctor contract. |
-| [DoctorReport](../entities/DoctorReport.md) | Class | 74 | — | One stable machine report plus its process exit classification. |
+| Class | Line | Bases | Description |
+|-------|------|-------|-------------|
+| [DoctorReport](../entities/DoctorReport.md) | 59 | — | One stable machine report plus its process exit classification. |
 
 ## Functions
 
@@ -83,7 +83,6 @@ flowchart LR
 | `_diagnostic_freshness_states` | `(diagnostics: Iterable[LintIssue], view: KnowledgeReadView \| None) -> list[str]` | — | — |
 | `_diagnostic_reasons` | `(issues: Iterable[LintIssue]) -> list[str]` | — | — |
 | `_verification_section` | `(lint: LintReport, view: KnowledgeReadView \| None) -> dict[str, object]` | — | — |
-| `_classify` | `(*, strict: bool, source_selection_mismatch: bool, availability: Mapping[str, object], freshness: Mapping[str, object], snapshot: Mapping[str, object], governance: Mapping[str, object], drift: Mapping[str, object], verification: Mapping[str, object]) -> tuple[DoctorStatus, tuple[str, ...], tuple[str, ...]]` | — | — |
 | `_issues` | `(lint: LintReport, category: str, *, diagnostics: bool = False) -> list[LintIssue]` | — | — |
 | `_reasons` | `(issues: Iterable[LintIssue]) -> list[str]` | — | — |
 | `_format_counts` | `(value: object) -> str \| None` | — | — |

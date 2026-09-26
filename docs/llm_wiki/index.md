@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 610 | [Open section](#entities) |
-| Modules | 206 | [Open section](#modules) |
-| Workflows | 156 | [Open section](#workflows) |
+| Entities | 611 | [Open section](#entities) |
+| Modules | 208 | [Open section](#modules) |
+| Workflows | 157 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 453 | [Open section](#entry-point-flows) |
+| Entry-point flows | 454 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -343,6 +343,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [MCPDependencyError](entities/MCPDependencyError.md)
 - [MachineVerificationAvailability](entities/MachineVerificationAvailability.md)
 - [MachineVerificationReadView](entities/MachineVerificationReadView.md)
+- [MaintenanceError](entities/MaintenanceError.md)
 - [MaintenanceQueueResult](entities/MaintenanceQueueResult.md)
 - [ManagedLifecycleState](entities/ManagedLifecycleState.md)
 - [ManagedReferenceInboundRoute](entities/ManagedReferenceInboundRoute.md)
@@ -695,6 +696,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
 - [health_contract](modules/health_contract.md) - Closed detailed-health contract shared by doctor and CI report readers.
 - [health_details](modules/health_details.md) - Capture detailed health once from an operation's already evaluated inputs.
+- [health_policy](modules/health_policy.md) - Pure release-health decisions derived from one validated CI evaluation.
 - [health_summary](modules/health_summary.md) - Pure presentation helpers for detailed local and CI health reports.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
@@ -724,6 +726,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_index](modules/knowledge_index.md) - Pure construction and validation of the native knowledge index.
 - [knowledge_links](modules/knowledge_links.md) - Lossless, deterministic observations of links in canonical Markdown.
 - [knowledge_loader](modules/knowledge_loader.md) - Authoritative validation and fallback boundary for generated knowledge state.
+- [knowledge_maintenance](modules/knowledge_maintenance.md) - Read-only candidate/producer preflight and bound health-policy commands.
 - [knowledge_model](modules/knowledge_model.md) - Typed contract and stdlib validation for ``llm-wiki-knowledge/v1``.
 - [knowledge_observability](modules/knowledge_observability.md) - Privacy-safe observability for native knowledge consumers.
 - [knowledge_orchestration](modules/knowledge_orchestration.md) - Command-facing orchestration for generated native knowledge artifacts.
@@ -932,6 +935,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [planned_generated_surface_prune](workflows/planned_generated_surface_prune.md) - entry: `sync_cmd._planned_generated_surface_prune`
 - [planned_write](workflows/planned_write.md) - entry: `knowledge_artifacts._planned_write`
 - [plugins_cmd_flow](workflows/plugins_cmd_flow.md) - entry: `plugins_cmd.run`
+- [preflight](workflows/preflight.md) - entry: `knowledge_maintenance.preflight`
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
 - [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
 - [preflight_lint_source_selection](workflows/preflight_lint_source_selection.md) - entry: `lint_service._preflight_lint_source_selection`
@@ -1472,6 +1476,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 - [process-ci_report](flows/process-ci_report.md) - entry: `main`
 - [process-cli](flows/process-cli.md) - entry: `main`
+- [process-knowledge_maintenance](flows/process-knowledge_maintenance.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
 

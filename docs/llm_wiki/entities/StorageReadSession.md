@@ -35,12 +35,13 @@ Retains request-owned observations of complete files and pack ranges. It counts 
 flowchart LR
     n0["StorageReadSession (src/llm_wiki_cli/services/knowledge_storage_io.py)"]
     n1["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n2["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n3["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n4["recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n5["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n6["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n7["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n2["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
+    n3["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
+    n4["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n5["recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n6["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n7["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n8["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -48,14 +49,16 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/knowledge_storage_io.md"
     click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_storage_access.md"
-    click n3 "../modules/knowledge_storage_lifecycle.md"
+    click n2 "../modules/knowledge_maintenance.md"
+    click n3 "../modules/knowledge_storage_access.md"
     click n4 "../modules/knowledge_storage_lifecycle.md"
     click n5 "../modules/knowledge_storage_lifecycle.md"
-    click n6 "../modules/sync_manifest.md"
-    click n7 "../modules/task_context_v2.md"
+    click n6 "../modules/knowledge_storage_lifecycle.md"
+    click n7 "../modules/sync_manifest.md"
+    click n8 "../modules/task_context_v2.md"
 ```
 
 ### Summary
@@ -69,6 +72,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 2 |
+| `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
 | `_committed_inputs` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |

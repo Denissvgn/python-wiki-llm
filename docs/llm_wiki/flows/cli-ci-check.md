@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 58 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 59 more
 
 **Complete modules touched:**
 
@@ -22,6 +22,7 @@
 - [go_calls](../modules/go_calls.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
+- [health_policy](../modules/health_policy.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)

@@ -2,7 +2,7 @@
 
 **Entry point:** `doctor` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 40 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 41 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
+- [health_policy](../modules/health_policy.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -165,16 +166,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | doctor | build_doctor_report | 1621 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `isinstance(strict, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 139 | `TypeError('strict must be a boolean')` |
-| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 141 | `ValueError('report_schema must be v1 or v3')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 142 | `isinstance(allow_external_src, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 143 | `TypeError('allow_external_src must be a boolean')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 144 | `isinstance(parallel_jobs, bool)` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 144 | `isinstance(parallel_jobs, int)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 145 | `TypeError('parallel_jobs must be an integer')` |
-| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 147 | `ValueError('parallel_jobs must be greater than zero')` |
-| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 149 | `str(wiki_dir)` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 123 | `isinstance(strict, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 124 | `TypeError('strict must be a boolean')` |
+| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 126 | `ValueError('report_schema must be v1 or v3')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 127 | `isinstance(allow_external_src, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 128 | `TypeError('allow_external_src must be a boolean')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 129 | `isinstance(parallel_jobs, bool)` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 129 | `isinstance(parallel_jobs, int)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 130 | `TypeError('parallel_jobs must be an integer')` |
+| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 132 | `ValueError('parallel_jobs must be greater than zero')` |
+| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 134 | `str(wiki_dir)` |
 
 ### Boundary effects
 
@@ -184,14 +185,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_doctor_report` | `isinstance` | 138 |
-| external_call | `build_doctor_report` | `TypeError` | 139 |
-| external_call | `build_doctor_report` | `ValueError` | 141 |
-| external_call | `build_doctor_report` | `isinstance` | 142 |
-| external_call | `build_doctor_report` | `TypeError` | 143 |
-| external_call | `build_doctor_report` | `isinstance` | 144 |
-| external_call | `build_doctor_report` | `TypeError` | 145 |
-| external_call | `build_doctor_report` | `ValueError` | 147 |
+| external_call | `build_doctor_report` | `isinstance` | 123 |
+| external_call | `build_doctor_report` | `TypeError` | 124 |
+| external_call | `build_doctor_report` | `ValueError` | 126 |
+| external_call | `build_doctor_report` | `isinstance` | 127 |
+| external_call | `build_doctor_report` | `TypeError` | 128 |
+| external_call | `build_doctor_report` | `isinstance` | 129 |
+| external_call | `build_doctor_report` | `TypeError` | 130 |
+| external_call | `build_doctor_report` | `ValueError` | 132 |
 | step_limit | `doctor` | `first 12 steps` | 0 |
 | truncated_flow | `doctor` | `depth limit` | 0 |
 

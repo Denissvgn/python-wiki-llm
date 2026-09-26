@@ -19,7 +19,7 @@ and its process exit remain authoritative over the nested health dashboard.
 | `.contracts` | `CI_CHECK_SCHEMA_VERSION`, `CI_CHECK_V2_SCHEMA_VERSION`, `CI_CHECK_V3_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `.doctor_service` | `compose_doctor_report` |
 | `.health_contract` | `HealthDetailsError`, `validate_health_details` |
-| `.health_summary` | `FRESHNESS_DISCLOSURE`, `freshness_counts`, `reason_list`, `summary_cell` |
+| `.health_summary` | `FRESHNESS_DISCLOSURE`, `detailed_health_rows`, `freshness_counts`, `reason_list`, `summary_cell` |
 | `.knowledge_observability` | `KnowledgeAggregateSummary` |
 | `.lint_service` | `LintReport`, `report_to_dict` |
 | `__future__` | `annotations` |
@@ -42,35 +42,40 @@ flowchart LR
     n3["src/llm_wiki_cli/services/contracts.py"]
     n4["src/llm_wiki_cli/services/doctor_service.py"]
     n5["src/llm_wiki_cli/services/health_contract.py"]
-    n6["src/llm_wiki_cli/services/health_summary.py"]
-    n7["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n8["src/llm_wiki_cli/services/lint_service.py"]
+    n6["src/llm_wiki_cli/services/health_policy.py"]
+    n7["src/llm_wiki_cli/services/health_summary.py"]
+    n8["src/llm_wiki_cli/services/knowledge_observability.py"]
+    n9["src/llm_wiki_cli/services/lint_service.py"]
     n0 --> n2
     n0 --> n3
-    n0 --> n6
+    n0 --> n7
     n1 --> n2
-    n1 --> n8
+    n1 --> n9
     n2 --> n3
     n2 --> n4
     n2 --> n5
-    n2 --> n6
     n2 --> n7
     n2 --> n8
+    n2 --> n9
     n4 --> n3
     n4 --> n5
+    n4 --> n6
     n4 --> n7
     n4 --> n8
+    n4 --> n9
     n5 --> n3
-    n8 --> n7
+    n6 --> n2
+    n9 --> n8
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_check_cmd.md"
     click n2 "../modules/ci_report.md"
     click n3 "../modules/services_contracts.md"
     click n4 "../modules/doctor_service.md"
     click n5 "../modules/health_contract.md"
-    click n6 "../modules/health_summary.md"
-    click n7 "../modules/knowledge_observability.md"
-    click n8 "../modules/lint_service.md"
+    click n6 "../modules/health_policy.md"
+    click n7 "../modules/health_summary.md"
+    click n8 "../modules/knowledge_observability.md"
+    click n9 "../modules/lint_service.md"
 ```
 
 ### Internal neighbors
@@ -79,6 +84,7 @@ flowchart LR
 |---|---|
 | Inbound | [render_summary](../modules/render_summary.md) |
 | Inbound | [ci_check_cmd](../modules/ci_check_cmd.md) |
+| Inbound | [health_policy](../modules/health_policy.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [doctor_service](../modules/doctor_service.md) |
 | Outbound | [health_contract](../modules/health_contract.md) |
