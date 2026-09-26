@@ -36,8 +36,18 @@ def test_maintenance_consumer_binds_identity_without_downloading_source():
         "CANDIDATE_VERSION": "${{ needs.freeze.outputs.version }}",
         "SOURCE_SHA256": "${{ needs.freeze.outputs.source-sha256 }}",
     }
+    producer = next(
+        step for step in workflow["jobs"]["action"]["steps"]
+        if step.get("name") == "Upload gate evidence"
+    )
+    artifact = producer["with"]["name"]
     downloads = [step["with"]["name"] for step in job["steps"] if str(step.get("uses", "")).startswith("actions/download-artifact@")]
-    assert set(downloads) == {"qualification-harnesses", "evidence-action"}
+    assert set(downloads) == {"qualification-harnesses", artifact}
+    bundle = next(
+        step for step in workflow["jobs"]["bundle"]["steps"]
+        if step.get("name") == "Build versioned release bundle"
+    )
+    assert f'--evidence "RD-10:action=incoming/gates/{artifact}"' in bundle["run"]
     verify = next(step for step in job["steps"] if step.get("name") == "Verify captured policy and shadow parity")
     assert "--identity expected-identity.json" in verify["run"]
     assert "continue-on-error" not in verify

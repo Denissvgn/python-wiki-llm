@@ -2271,7 +2271,7 @@ jobs:
         continue-on-error: true
         with:
           digest-mismatch: error
-          name: evidence-action
+          name: evidence-rd-10
           path: incoming/action
       - name: Verify captured policy and shadow parity
         run: >-

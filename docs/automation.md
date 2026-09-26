@@ -96,7 +96,7 @@ This repository controls its additional release-health prerequisite through
 Refresh a stale committed wiki with the intended installed candidate before
 qualification. Review the sync preview, commit the coherent result, and qualify
 that exact commit. Routine pull-request health remains advisory. The release
-workflow retains `evidence-action` with original maintenance inputs and
+workflow retains `evidence-rd-10` with original maintenance inputs and
 `knowledge-maintenance-verification` with the separate verification result.
 
 ## Git hook retirement

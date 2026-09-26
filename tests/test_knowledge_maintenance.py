@@ -7,11 +7,17 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import runpy
+import shlex
+import shutil
+import subprocess
+import sys
 import tarfile
 
 import pytest
+import yaml
 
 from llm_wiki_cli.services import health_policy as hp, knowledge_maintenance as km
 from llm_wiki_cli.services.health_details import CapturedHealthDetails
@@ -503,6 +509,54 @@ def test_shadow_requires_original_standalone_parity(tmp_path):
     doctor["wiki_dir"] = "fixture/wiki"
     (directory / "doctor.json").write_bytes(raw(doctor))
     assert RELEASE["admit"](directory, identity, config())["status"] == "fail"
+
+
+@pytest.mark.parametrize("mode", ["shadow", "required"])
+@pytest.mark.parametrize("available", [True, False], ids=["published-artifact", "missing-artifact"])
+def test_workflow_consumer_uses_the_actual_action_upload(tmp_path, mode, available):
+    workflow = yaml.safe_load((ROOT / ".github/workflows/release-qualification.yml").read_text())
+    producer = next(step for step in workflow["jobs"]["action"]["steps"] if step.get("name") == "Upload gate evidence")
+    consumer = workflow["jobs"]["knowledge-maintenance"]["steps"]
+    download = next(step for step in consumer if step.get("with", {}).get("path") == "incoming/action")
+    verify = next(step for step in consumer if step.get("name") == "Verify captured policy and shadow parity")
+    report, ci, before, binding = evidence(tmp_path / "fixture")
+    published = tmp_path / "published/maintenance"
+    published.mkdir(parents=True)
+    for name, payload in (
+        ("ci-report.json", ci), ("preflight.json", before),
+        ("policy.json", hp.derive_policy(raw(ci), raw(before), binding=binding)),
+        ("doctor.json", _doctor(report)),
+    ):
+        (published / name).write_bytes(raw(payload))
+    # Artifact lookup uses the producer's real name; independent matching
+    # expectations must not repeat a wrong literal on the consumer side.
+    assert download["with"]["name"] == producer["with"]["name"]
+    catalog = {producer["with"]["name"]: published.parent} if available else {}
+    selected = catalog.get(download["with"]["name"])
+    if selected is not None:
+        shutil.copytree(selected, tmp_path / download["with"]["path"])
+    tools = tmp_path / "incoming/tools"
+    for relative in ("release/knowledge_maintenance.py", RELEASE["LEAF_PATH"]):
+        target = tools / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / relative, target)
+    (tools / RELEASE["POLICY_PATH"]).write_bytes(raw(config(mode)))
+    (tmp_path / "expected-identity.json").write_bytes(raw({
+        "version": binding["candidate_version"],
+        "source": {"sha": binding["candidate_sha"], "tree": binding["candidate_tree"],
+                   "archive_sha256": binding["source_archive_sha256"].removeprefix("sha256:")},
+    }))
+    command = shlex.split(verify["run"])
+    assert command[0] == "python"
+    command[0] = sys.executable
+    result = subprocess.run(command, cwd=tmp_path, stdin=subprocess.DEVNULL,
+                            env={**os.environ, "GITHUB_STEP_SUMMARY": str(tmp_path / "summary.md")},
+                            capture_output=True, text=True, check=False, timeout=30)
+    assert result.returncode == (1 if not available and mode == "required" else 0), result.stderr
+    receipt = json.loads((tmp_path / "verification.json").read_text())
+    assert receipt["status"] == ("pass" if available else "fail")
+    assert receipt["mode"] == mode and receipt["candidate_sha"] == binding["candidate_sha"]
+    assert bool(receipt["evidence_sha256"]) is available
 
 
 @pytest.fixture
