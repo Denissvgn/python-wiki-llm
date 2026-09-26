@@ -183,7 +183,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1274 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1275 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 208 | `validate_request(...)` |
 | validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(data, Mapping)` |
 | validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `any(...)` |

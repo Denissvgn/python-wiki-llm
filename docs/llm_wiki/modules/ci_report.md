@@ -16,8 +16,9 @@ and its process exit remain authoritative over the nested health dashboard.
 
 | Source | Symbols |
 |--------|---------|
-| `.contracts` | `CI_CHECK_SCHEMA_VERSION`, `CI_CHECK_V2_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION` |
+| `.contracts` | `CI_CHECK_SCHEMA_VERSION`, `CI_CHECK_V2_SCHEMA_VERSION`, `CI_CHECK_V3_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `.doctor_service` | `compose_doctor_report` |
+| `.health_contract` | `HealthDetailsError`, `validate_health_details` |
 | `.health_summary` | `FRESHNESS_DISCLOSURE`, `freshness_counts`, `reason_list`, `summary_cell` |
 | `.knowledge_observability` | `KnowledgeAggregateSummary` |
 | `.lint_service` | `LintReport`, `report_to_dict` |
@@ -40,30 +41,36 @@ flowchart LR
     n2["src/llm_wiki_cli/services/ci_report.py"]
     n3["src/llm_wiki_cli/services/contracts.py"]
     n4["src/llm_wiki_cli/services/doctor_service.py"]
-    n5["src/llm_wiki_cli/services/health_summary.py"]
-    n6["src/llm_wiki_cli/services/knowledge_observability.py"]
-    n7["src/llm_wiki_cli/services/lint_service.py"]
+    n5["src/llm_wiki_cli/services/health_contract.py"]
+    n6["src/llm_wiki_cli/services/health_summary.py"]
+    n7["src/llm_wiki_cli/services/knowledge_observability.py"]
+    n8["src/llm_wiki_cli/services/lint_service.py"]
     n0 --> n2
-    n0 --> n5
+    n0 --> n3
+    n0 --> n6
     n1 --> n2
-    n1 --> n7
+    n1 --> n8
     n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
     n2 --> n7
+    n2 --> n8
     n4 --> n3
-    n4 --> n6
+    n4 --> n5
     n4 --> n7
-    n7 --> n6
+    n4 --> n8
+    n5 --> n3
+    n8 --> n7
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_check_cmd.md"
     click n2 "../modules/ci_report.md"
     click n3 "../modules/services_contracts.md"
     click n4 "../modules/doctor_service.md"
-    click n5 "../modules/health_summary.md"
-    click n6 "../modules/knowledge_observability.md"
-    click n7 "../modules/lint_service.md"
+    click n5 "../modules/health_contract.md"
+    click n6 "../modules/health_summary.md"
+    click n7 "../modules/knowledge_observability.md"
+    click n8 "../modules/lint_service.md"
 ```
 
 ### Internal neighbors
@@ -74,6 +81,7 @@ flowchart LR
 | Inbound | [ci_check_cmd](../modules/ci_check_cmd.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [doctor_service](../modules/doctor_service.md) |
+| Outbound | [health_contract](../modules/health_contract.md) |
 | Outbound | [health_summary](../modules/health_summary.md) |
 | Outbound | [knowledge_observability](../modules/knowledge_observability.md) |
 | Outbound | [lint_service](../modules/lint_service.md) |
@@ -82,7 +90,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [CiCheckReportError](../entities/CiCheckReportError.md) | 181 | `ValueError` | A field-specific failure in the versioned CI report contract. |
+| [CiCheckReportError](../entities/CiCheckReportError.md) | 186 | `ValueError` | A field-specific failure in the versioned CI report contract. |
 
 ## Functions
 
@@ -114,7 +122,9 @@ flowchart LR
 | `_validate_knowledge_summary` | `(value: object, *, health: Mapping[str, Any]) -> None` | — | — |
 | `_expected_health_classification` | `(*, strict: bool, source_selection_mismatch: bool, availability_state: str, freshness_evaluated: bool, snapshot_state: str, governance_state: str, expired_reviews: int, drift_state: str, verification_state: str) -> tuple[str, list[str], list[str]]` | — | — |
 | `_validate_doctor` | `(value: object, *, wiki_dir: str, src_dir: str, source_selection_mismatch: bool \| None, expected_strict: bool, allow_additive: bool = False) -> Mapping[str, Any]` | — | — |
-| `validate_doctor_payload` | `(value: object, *, expected_strict: bool, source_selection_mismatch: bool \| None = None, allow_additive: bool = False) -> Mapping[str, Any]` | — | Validate doctor v1 structure, semantics, and overall classification. |
+| `validate_doctor_payload` | `(value: object, *, expected_strict: bool, source_selection_mismatch: bool \| None = None, allow_additive: bool = False) -> Mapping[str, Any]` | — | Validate supported health doctor contracts and their classification. |
+| `_legacy_doctor_payload` | `(health: Mapping[str, Any]) -> dict[str, Any]` | — | — |
+| `_validate_ci_v3` | `(value: Mapping[str, Any], *, cli_exit: int) -> Mapping[str, Any]` | — | — |
 | `_validate_ci_v2` | `(value: object, *, cli_exit: int) -> Mapping[str, Any]` | — | — |
 | `validate_ci_check_payload` | `(value: object, *, cli_exit: int) -> Mapping[str, Any]` | — | Validate CI v1/v2 and distinguish check and required-output failures. |
 | `load_ci_check_payload` | `(path: str \| Path, *, cli_exit: int) -> Mapping[str, Any]` | — | Read strict UTF-8 JSON and validate the complete CI v1 contract. |

@@ -1,6 +1,6 @@
 # CiCheckReportError
 
-**Location:** `src/llm_wiki_cli/services/ci_report.py:181`
+**Location:** `src/llm_wiki_cli/services/ci_report.py:186`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [ci_report](../modules/ci_report.md)
@@ -93,4 +93,4 @@ flowchart LR
 | `_object` | call | [ci_report](../modules/ci_report.md) | 1 |
 | `_positive_integer` | call | [ci_report](../modules/ci_report.md) | 1 |
 
-> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.
+> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.

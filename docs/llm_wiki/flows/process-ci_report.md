@@ -2,13 +2,14 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [ci_report](../modules/ci_report.md)
-**Modules touched:** [ci_report](../modules/ci_report.md), [health_summary](../modules/health_summary.md), [knowledge_observability](../modules/knowledge_observability.md)
+**Modules touched:** [ci_report](../modules/ci_report.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), [knowledge_observability](../modules/knowledge_observability.md)
 
-**Related modules:** [doctor_service](../modules/doctor_service.md), [health_summary](../modules/health_summary.md), [knowledge_observability](../modules/knowledge_observability.md), [lint_service](../modules/lint_service.md), and 1 more
+**Related modules:** [doctor_service](../modules/doctor_service.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), and 3 more
 
 **Complete related modules:**
 
 - [doctor_service](../modules/doctor_service.md)
+- [health_contract](../modules/health_contract.md)
 - [health_summary](../modules/health_summary.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [lint_service](../modules/lint_service.md)
@@ -66,7 +67,9 @@ sequenceDiagram
     p8->>p12: CiCheckReportError
 ```
 
-> Call sequence diagram shows 30 of 440 interactions; 410 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 514 interactions; 484 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -125,39 +128,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _arguments | 1518 | `_arguments(argv)` |
-| _arguments | argparse.ArgumentParser | 1491 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | parser.add_subparsers | 1492 | `parser.add_subparsers(dest='action', required=True)` |
-| _arguments | commands.add_parser | 1493 | `commands.add_parser('validate')` |
-| _arguments | validate.add_argument | 1494 | `validate.add_argument('--report', required=True)` |
-| _arguments | validate.add_argument | 1495 | `validate.add_argument('--cli-exit', required=True, type=int)` |
-| _arguments | validate.add_argument | 1496 | `validate.add_argument('--schema', choices=(...))` |
-| _arguments | commands.add_parser | 1498 | `commands.add_parser('render-summary')` |
-| _arguments | summary.add_argument | 1499 | `summary.add_argument('--report')` |
-| _arguments | summary.add_argument | 1500 | `summary.add_argument('--evidence-artifact')` |
-| _arguments | summary.add_argument | 1501 | `summary.add_argument('--cli-exit', required=True, type=int)` |
+| main | _arguments | 1559 | `_arguments(argv)` |
+| _arguments | argparse.ArgumentParser | 1532 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | parser.add_subparsers | 1533 | `parser.add_subparsers(dest='action', required=True)` |
+| _arguments | commands.add_parser | 1534 | `commands.add_parser('validate')` |
+| _arguments | validate.add_argument | 1535 | `validate.add_argument('--report', required=True)` |
+| _arguments | validate.add_argument | 1536 | `validate.add_argument('--cli-exit', required=True, type=int)` |
+| _arguments | validate.add_argument | 1537 | `validate.add_argument('--schema', choices=(...))` |
+| _arguments | commands.add_parser | 1539 | `commands.add_parser('render-summary')` |
+| _arguments | summary.add_argument | 1540 | `summary.add_argument('--report')` |
+| _arguments | summary.add_argument | 1541 | `summary.add_argument('--evidence-artifact')` |
+| _arguments | summary.add_argument | 1542 | `summary.add_argument('--cli-exit', required=True, type=int)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `output.write_bytes` | `main` | 1558 |
+| filesystem_write | `output.write_bytes` | `main` | 1599 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_arguments` | `argparse.ArgumentParser` | 1491 |
-| unresolved_call | `_arguments` | `parser.add_subparsers` | 1492 |
-| unresolved_call | `_arguments` | `commands.add_parser` | 1493 |
-| unresolved_call | `_arguments` | `validate.add_argument` | 1494 |
-| unresolved_call | `_arguments` | `validate.add_argument` | 1495 |
-| unresolved_call | `_arguments` | `validate.add_argument` | 1496 |
-| unresolved_call | `_arguments` | `commands.add_parser` | 1498 |
-| unresolved_call | `_arguments` | `summary.add_argument` | 1499 |
-| unresolved_call | `_arguments` | `summary.add_argument` | 1500 |
-| unresolved_call | `_arguments` | `summary.add_argument` | 1501 |
+| external_call | `_arguments` | `argparse.ArgumentParser` | 1532 |
+| unresolved_call | `_arguments` | `parser.add_subparsers` | 1533 |
+| unresolved_call | `_arguments` | `commands.add_parser` | 1534 |
+| unresolved_call | `_arguments` | `validate.add_argument` | 1535 |
+| unresolved_call | `_arguments` | `validate.add_argument` | 1536 |
+| unresolved_call | `_arguments` | `validate.add_argument` | 1537 |
+| unresolved_call | `_arguments` | `commands.add_parser` | 1539 |
+| unresolved_call | `_arguments` | `summary.add_argument` | 1540 |
+| unresolved_call | `_arguments` | `summary.add_argument` | 1541 |
+| unresolved_call | `_arguments` | `summary.add_argument` | 1542 |
 | step_limit | `main` | `first 12 steps` | 0 |
+| truncated_flow | `main` | `depth limit` | 0 |
 
 ## Behavior
 

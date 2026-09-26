@@ -90,7 +90,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `render_doctor_text` | `report: DoctorReport` | - | - | `_render_doctor_payload(...)` |
+| `render_doctor_text` | `report: DoctorReport`, `report_schema: str` | - | - | `_render_doctor_payload(...)` |
 | `_render_doctor_payload` | `payload: Mapping[str, Any]` | `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping` | - | `...` |
 | `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
@@ -107,39 +107,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_doctor_text | _render_doctor_payload | 219 | `_render_doctor_payload(report.to_payload(...))` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 229 | `isinstance(availability, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 230 | `isinstance(freshness, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 231 | `isinstance(snapshot, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 232 | `isinstance(governance, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 233 | `isinstance(drift, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 234 | `isinstance(verification, Mapping)` |
-| _render_doctor_payload | _format_counts | 236 | `_format_counts(freshness[...])` |
-| _format_counts | isinstance (src/llm_wiki_cli/services…_service.py:_format_counts) | 654 | `isinstance(value, Mapping)` |
-| _format_counts | ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts) | 656 | `', '.join(...)` |
-| _render_doctor_payload | lines.append | 247 | `lines.append(...)` |
+| render_doctor_text | _render_doctor_payload | 236 | `_render_doctor_payload(report.to_payload(...))` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 246 | `isinstance(availability, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 247 | `isinstance(freshness, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 248 | `isinstance(snapshot, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 249 | `isinstance(governance, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 250 | `isinstance(drift, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 251 | `isinstance(verification, Mapping)` |
+| _render_doctor_payload | _format_counts | 253 | `_format_counts(freshness[...])` |
+| _format_counts | isinstance (src/llm_wiki_cli/services…_service.py:_format_counts) | 671 | `isinstance(value, Mapping)` |
+| _format_counts | ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts) | 673 | `', '.join(...)` |
+| _render_doctor_payload | lines.append | 264 | `lines.append(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.append` | `_render_doctor_payload` | 247 |
-| mutation | `lines.extend` | `_render_doctor_payload` | 248 |
-| mutation | `lines.append` | `_render_doctor_payload` | 275 |
-| mutation | `lines.append` | `_render_doctor_payload` | 277 |
+| mutation | `lines.append` | `_render_doctor_payload` | 264 |
+| mutation | `lines.extend` | `_render_doctor_payload` | 265 |
+| mutation | `lines.append` | `_render_doctor_payload` | 292 |
+| mutation | `lines.append` | `_render_doctor_payload` | 294 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_render_doctor_payload` | `isinstance` | 229 |
-| external_call | `_render_doctor_payload` | `isinstance` | 230 |
-| external_call | `_render_doctor_payload` | `isinstance` | 231 |
-| external_call | `_render_doctor_payload` | `isinstance` | 232 |
-| external_call | `_render_doctor_payload` | `isinstance` | 233 |
-| external_call | `_render_doctor_payload` | `isinstance` | 234 |
-| external_call | `_format_counts` | `isinstance` | 654 |
-| unresolved_call | `_format_counts` | `', '.join` | 656 |
+| external_call | `_render_doctor_payload` | `isinstance` | 246 |
+| external_call | `_render_doctor_payload` | `isinstance` | 247 |
+| external_call | `_render_doctor_payload` | `isinstance` | 248 |
+| external_call | `_render_doctor_payload` | `isinstance` | 249 |
+| external_call | `_render_doctor_payload` | `isinstance` | 250 |
+| external_call | `_render_doctor_payload` | `isinstance` | 251 |
+| external_call | `_format_counts` | `isinstance` | 671 |
+| unresolved_call | `_format_counts` | `', '.join` | 673 |
 | step_limit | `render_doctor_text` | `first 12 steps` | 0 |
 
 ## Behavior

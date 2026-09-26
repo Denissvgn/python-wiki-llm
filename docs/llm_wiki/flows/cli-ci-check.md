@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 56 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [ci_check_cmd](../modules/ci_check_cmd.md), [ci_report](../modules/ci_report.md), and 58 more
 
 **Complete modules touched:**
 
@@ -20,6 +20,8 @@
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
+- [health_contract](../modules/health_contract.md)
+- [health_details](../modules/health_details.md)
 - [immutable](../modules/immutable.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
@@ -121,7 +123,7 @@ sequenceDiagram
     p4->>p6: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 4100 interactions; 4070 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4101 interactions; 4071 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -149,7 +151,7 @@ flowchart LR
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s6
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'format', 'text')" .-> s7
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'report_schema', 'v1')" .-> s8
-    s1 -->|"RuntimeOutputError('--report-schema must be v1 or v2')"| s9
+    s1 -->|"RuntimeOutputError('--report-schema must be v1, v2 or v3')"| s9
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'helper_cache_dir', None)" .-> s10
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'include_tests', None)" .-> s11
     s1 -. "bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))" .-> s12
@@ -205,7 +207,7 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 103 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 104 | `getattr(args, 'format', 'text')` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 105 | `getattr(args, 'report_schema', 'v1')` |
-| run | RuntimeOutputError | 107 | `RuntimeOutputError('--report-schema must be v1 or v2')` |
+| run | RuntimeOutputError | 107 | `RuntimeOutputError('--report-schema must be v1, v2 or v3')` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 108 | `getattr(args, 'helper_cache_dir', None)` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 109 | `getattr(args, 'include_tests', None)` |
 | run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 110 | `bool(getattr(...))` |
@@ -214,12 +216,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `report.issues.append` | `run` | 150 |
-| mutation | `report.issues.append` | `run` | 153 |
-| mutation | `report.diagnostics.append` | `run` | 156 |
-| output | `print` | `run` | 181 |
-| output | `print` | `run` | 195 |
-| output | `print` | `run` | 202 |
+| mutation | `report.issues.append` | `run` | 151 |
+| mutation | `report.issues.append` | `run` | 154 |
+| mutation | `report.diagnostics.append` | `run` | 157 |
+| output | `print` | `run` | 182 |
+| output | `print` | `run` | 196 |
+| output | `print` | `run` | 203 |
 
 ### Static analysis gaps
 

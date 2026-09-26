@@ -1,6 +1,6 @@
 # _WikiPageIndex
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:319`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:321`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)

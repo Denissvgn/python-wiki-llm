@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [capability_diagnostics](../modules/capability_diagnostics.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 29 more
+**Modules touched:** [capability_diagnostics](../modules/capability_diagnostics.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 35 more
 
 **Complete modules touched:**
 
@@ -17,11 +17,17 @@
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [health_contract](../modules/health_contract.md)
+- [health_details](../modules/health_details.md)
 - [immutable](../modules/immutable.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
+- [knowledge_envelope](../modules/knowledge_envelope.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -47,61 +53,60 @@
 sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    participant p2 as build_capability_doctor
-    participant p3 as build_capability_diagnostics
-    participant p4 as validate_source_root
-    participant p5 as validate_path
-    participant p6 as PathValidationError
-    participant p7 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p9 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p10 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p11 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p13 as candidate.is_absolute
-    participant p14 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p16 as resolved.is_dir
-    participant p17 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p18 as windows_current_user_sid
-    participant p19 as WindowsSecurityGuardError
-    participant p20 as _current_windows_user_sid
-    participant p21 as ctypes.WinDLL
-    participant p22 as ctypes.POINTER
-    participant p23 as wintypes.HANDLE
+    participant p2 as ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    participant p3 as build_capability_doctor
+    participant p4 as build_capability_diagnostics
+    participant p5 as validate_source_root
+    participant p6 as validate_path
+    participant p7 as PathValidationError
+    participant p8 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
+    participant p9 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p10 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    participant p11 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    participant p12 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p13 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p14 as candidate.is_absolute
+    participant p15 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p16 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p17 as resolved.is_dir
+    participant p18 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p19 as windows_current_user_sid
+    participant p20 as WindowsSecurityGuardError
+    participant p21 as _current_windows_user_sid
+    participant p22 as ctypes.WinDLL
     p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    p0->>p2: build_capability_doctor
-    p2->>p3: build_capability_diagnostics
-    p3->>p4: validate_source_root
-    p4->>p5: validate_path
-    p5->>p6: PathValidationError
-    p5-->>p7: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p9: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p10: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p5->>p6: PathValidationError
-    p4-->>p11: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p13: candidate.is_absolute
-    p4-->>p14: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p15: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p4->>p6: PathValidationError
-    p4-->>p16: resolved.is_dir
-    p4->>p6: PathValidationError
-    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p17: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p4->>p18: windows_current_user_sid
-    p18->>p19: WindowsSecurityGuardError
-    p18->>p20: _current_windows_user_sid
-    p20-->>p21: ctypes.WinDLL
-    p20-->>p21: ctypes.WinDLL
-    p20-->>p22: ctypes.POINTER
-    p20-->>p22: ctypes.POINTER
-    p20-->>p23: wintypes.HANDLE
+    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    p0->>p3: build_capability_doctor
+    p3->>p4: build_capability_diagnostics
+    p4->>p5: validate_source_root
+    p5->>p6: validate_path
+    p6->>p7: PathValidationError
+    p6-->>p8: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
+    p6-->>p9: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p6-->>p10: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
+    p6-->>p9: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p6-->>p11: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
+    p6->>p7: PathValidationError
+    p5-->>p12: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    p5-->>p13: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p5-->>p14: candidate.is_absolute
+    p5-->>p15: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p5-->>p16: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    p5->>p7: PathValidationError
+    p5-->>p17: resolved.is_dir
+    p5->>p7: PathValidationError
+    p5-->>p13: Path (src/llm_wiki_cli/config.py:validate_source_root)
+    p5-->>p18: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    p5->>p19: windows_current_user_sid
+    p19->>p20: WindowsSecurityGuardError
+    p19->>p21: _current_windows_user_sid
+    p21-->>p22: ctypes.WinDLL
+    p21-->>p22: ctypes.WinDLL
 ```
 
-> Call sequence diagram shows 30 of 1230 interactions; 1200 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1294 interactions; 1264 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -112,27 +117,27 @@ sequenceDiagram
 flowchart LR
     s1["1. run"]
     s2["2. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
-    s3["3. build_capability_doctor"]
-    s4["4. build_capability_diagnostics"]
-    s5["5. validate_source_root"]
-    s6["6. validate_path"]
-    s7["7. PathValidationError"]
-    s8["8. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s9["9. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s10["10. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s11["11. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s12["12. resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)"]
-    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'capabilities', False)" .-> s2
-    s1 -->|"build_capability_doctor(…)"| s3
-    s3 -->|"build_capability_diagnostics(src_dir, **=...)"| s4
-    s4 -->|"validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)"| s5
-    s5 -->|"validate_path(path, label)"| s6
-    s6 -->|"PathValidationError(...)"| s7
-    s6 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s8
-    s6 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
-    s6 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s10
-    s6 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
-    s6 -. "resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)(cwd)" .-> s12
+    s3["3. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s4["4. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s5["5. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s6["6. build_capability_doctor"]
+    s7["7. build_capability_diagnostics"]
+    s8["8. validate_source_root"]
+    s9["9. validate_path"]
+    s10["10. PathValidationError"]
+    s11["11. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
+    s12["12. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'v1')" .-> s2
+    s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--report-schema must be v1 or v3')" .-> s3
+    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'capabilities', False)" .-> s4
+    s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--capabilities and --report-schema are mutually exclusive')" .-> s5
+    s1 -->|"build_capability_doctor(…)"| s6
+    s6 -->|"build_capability_diagnostics(src_dir, **=...)"| s7
+    s7 -->|"validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)"| s8
+    s8 -->|"validate_path(path, label)"| s9
+    s9 -->|"PathValidationError(...)"| s10
+    s9 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
+    s9 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -140,21 +145,21 @@ flowchart LR
     b2["output print"]
     s1 -. "output print" .-> b2
     b3["mutation argv.append"]
-    s3 -. "mutation argv.append" .-> b3
+    s6 -. "mutation argv.append" .-> b3
     b4["mutation argv.extend"]
-    s3 -. "mutation argv.extend" .-> b4
+    s6 -. "mutation argv.extend" .-> b4
     b5["mutation argv.extend"]
-    s3 -. "mutation argv.extend" .-> b5
+    s6 -. "mutation argv.extend" .-> b5
     b6["mutation providers.append"]
-    s4 -. "mutation providers.append" .-> b6
+    s7 -. "mutation providers.append" .-> b6
     b7["mutation plugin_states.append"]
-    s4 -. "mutation plugin_states.append" .-> b7
+    s7 -. "mutation plugin_states.append" .-> b7
     click s1 "../modules/doctor_cmd.md"
-    click s3 "../modules/capability_diagnostics.md"
-    click s4 "../modules/capability_diagnostics.md"
-    click s5 "../modules/config.md"
-    click s6 "../modules/config.md"
-    click s7 "../modules/config.md"
+    click s6 "../modules/capability_diagnostics.md"
+    click s7 "../modules/capability_diagnostics.md"
+    click s8 "../modules/config.md"
+    click s9 "../modules/config.md"
+    click s10 "../modules/config.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -172,6 +177,9 @@ flowchart LR
 |---|---|---|---|---|
 | `run` | `args` | `DEFAULT_WIKI_DIR` | - | `none` |
 | `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
+| `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
+| `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `build_capability_doctor` | `wiki_dir`, `src_dir`, `kwargs` | `sys`, `DOCTOR_CAPABILITY_VERSION` | - | `{...}` |
 | `build_capability_diagnostics` | `src_dir`, `helper_cache_dir`, `source_selection`, `allow_external_src`, `include_tests` | `helpers`, `_LANGUAGE_LABELS`, `sys`, `_TOOL_HINTS`, `LANGUAGE_EXTENSIONS`, `sys` | `tools[...]` | `{...}` |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
@@ -179,33 +187,30 @@ flowchart LR
 | `PathValidationError` | - | - | - | - |
 | `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 | `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 13 | `getattr(args, 'capabilities', False)` |
-| run | build_capability_doctor | 16 | `build_capability_doctor(args.wiki_dir, args.src_dir, strict=args.strict, allow_external_src=args.allow_external_src, helper_cache_dir=args.helper_cache_dir, source_selection=args.source_selection, include_tests=args.include_tests, parallel_jobs=args.jobs, job_request=extraction_job_request_from_args(...))` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 13 | `getattr(args, 'report_schema', 'v1')` |
+| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 15 | `ValueError('--report-schema must be v1 or v3')` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 16 | `getattr(args, 'capabilities', False)` |
+| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 18 | `ValueError('--capabilities and --report-schema are mutually exclusive')` |
+| run | build_capability_doctor | 21 | `build_capability_doctor(args.wiki_dir, args.src_dir, strict=args.strict, allow_external_src=args.allow_external_src, helper_cache_dir=args.helper_cache_dir, source_selection=args.source_selection, include_tests=args.include_tests, parallel_jobs=args.jobs, job_request=extraction_job_request_from_args(...))` |
 | build_capability_doctor | build_capability_diagnostics | 253 | `build_capability_diagnostics(src_dir, **=...)` |
 | build_capability_diagnostics | validate_source_root | 47 | `validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
-| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
-| validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 21 |
-| output | `print` | `run` | 38 |
-| output | `print` | `run` | 40 |
+| output | `print` | `run` | 26 |
+| output | `print` | `run` | 44 |
+| output | `print` | `run` | 46 |
 | mutation | `argv.append` | `build_capability_doctor` | 287 |
 | mutation | `argv.extend` | `build_capability_doctor` | 289 |
 | mutation | `argv.extend` | `build_capability_doctor` | 291 |
@@ -217,11 +222,11 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 13 |
+| external_call | `run` | `ValueError` | 15 |
+| external_call | `run` | `getattr` | 16 |
+| external_call | `run` | `ValueError` | 18 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
 | external_call | `validate_path` | `Path.cwd` | 135 |
-| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
-| external_call | `validate_path` | `Path.cwd` | 136 |
-| unresolved_call | `validate_path` | `resolved.relative_to` | 138 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

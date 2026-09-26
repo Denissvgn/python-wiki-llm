@@ -1,6 +1,6 @@
 # DoctorStatus
 
-**Location:** `src/llm_wiki_cli/services/doctor_service.py:38`
+**Location:** `src/llm_wiki_cli/services/doctor_service.py:40`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [doctor_service](../modules/doctor_service.md)

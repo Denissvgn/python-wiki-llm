@@ -20,6 +20,7 @@ degraded or unhealthy failure threshold.
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `llm_wiki_cli.services.ci_report` | `validate_doctor_payload` |
+| `llm_wiki_cli.services.contracts` | `DOCTOR_V3_SCHEMA_VERSION` |
 | `llm_wiki_cli.services.health_summary` | `FRESHNESS_DISCLOSURE`, `freshness_counts`, `health_policy`, `optional_status`, `reason_list`, `summary_cell` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -32,13 +33,17 @@ degraded or unhealthy failure threshold.
 flowchart LR
     n0["integrations/github-action/render_summary.py"]
     n1["src/llm_wiki_cli/services/ci_report.py"]
-    n2["src/llm_wiki_cli/services/health_summary.py"]
+    n2["src/llm_wiki_cli/services/contracts.py"]
+    n3["src/llm_wiki_cli/services/health_summary.py"]
     n0 --> n1
     n0 --> n2
+    n0 --> n3
     n1 --> n2
+    n1 --> n3
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_report.md"
-    click n2 "../modules/health_summary.md"
+    click n2 "../modules/services_contracts.md"
+    click n3 "../modules/health_summary.md"
 ```
 
 ### Internal neighbors
@@ -46,6 +51,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Outbound | [ci_report](../modules/ci_report.md) |
+| Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [health_summary](../modules/health_summary.md) |
 
 ## Functions
@@ -71,7 +77,8 @@ flowchart LR
 | `_validate_verification` | `(value: object) -> None` | — | — |
 | `_strict_json_object` | `(pairs: list[tuple[str, Any]]) -> dict[str, Any]` | — | — |
 | `_reject_nonfinite` | `(value: str) -> None` | — | — |
-| `load_report` | `(path: str \| Path, *, doctor_exit_code: int, expected_strict: bool \| None = None) -> Mapping[str, Any]` | — | Load and strictly validate the complete doctor v1 contract. |
+| `load_report` | `(path: str \| Path, *, doctor_exit_code: int, expected_strict: bool \| None = None) -> Mapping[str, Any]` | — | Load and strictly validate a supported health doctor contract. |
+| `_validate_report_bytes` | `(raw: bytes, *, doctor_exit_code: int, expected_strict: bool \| None) -> Mapping[str, Any]` | — | — |
 | `_cell` | `(value: object) -> str` | — | — |
 | `render_summary` | `(report: Mapping[str, Any], *, fail_on: str \| None = None, report_name: str = 'doctor.json', evidence_artifact: str \| None = None) -> str` | — | Return a compact Markdown table without interpreting human text. |
 | `_append` | `(path: str \| None, content: str) -> None` | — | — |

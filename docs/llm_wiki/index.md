@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 597 | [Open section](#entities) |
-| Modules | 204 | [Open section](#modules) |
-| Workflows | 155 | [Open section](#workflows) |
+| Entities | 610 | [Open section](#entities) |
+| Modules | 206 | [Open section](#modules) |
+| Workflows | 156 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 453 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -57,6 +57,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [Candidate](entities/Candidate.md)
 - [CanonicalArray](entities/CanonicalArray.md)
 - [CapturedContextRead](entities/CapturedContextRead.md)
+- [CapturedHealthDetails](entities/CapturedHealthDetails.md)
 - [CapturedStream](entities/CapturedStream.md)
 - [CheckerContract](entities/CheckerContract.md)
 - [CiCheckReportError](entities/CiCheckReportError.md)
@@ -115,6 +116,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DoctorResult](entities/DoctorResult.md)
 - [DoctorSnapshotParity](entities/DoctorSnapshotParity.md)
 - [DoctorStatus](entities/DoctorStatus.md)
+- [DoctorV3Result](entities/DoctorV3Result.md)
 - [DoctorVerificationReceipt](entities/DoctorVerificationReceipt.md)
 - [DocumentRecord](entities/DocumentRecord.md)
 - [DocumentationAgentPacket](entities/DocumentationAgentPacket.md)
@@ -224,6 +226,17 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HaskellExtractionRequest](entities/HaskellExtractionRequest.md)
 - [HaskellExtractor](entities/HaskellExtractor.md)
 - [HeadingCandidate](entities/HeadingCandidate.md)
+- [HealthComparisonBasis](entities/HealthComparisonBasis.md)
+- [HealthComponent](entities/HealthComponent.md)
+- [HealthCoverage](entities/HealthCoverage.md)
+- [HealthDetails](entities/HealthDetails.md)
+- [HealthDetailsError](entities/HealthDetailsError.md)
+- [HealthEvaluation](entities/HealthEvaluation.md)
+- [HealthProducer](entities/HealthProducer.md)
+- [HealthReason](entities/HealthReason.md)
+- [HealthScope](entities/HealthScope.md)
+- [HealthSelection](entities/HealthSelection.md)
+- [HealthSnapshot](entities/HealthSnapshot.md)
 - [HelperPrepareResult](entities/HelperPrepareResult.md)
 - [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
 - [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
@@ -680,6 +693,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [go_calls](modules/go_calls.md) - Resolve captured Go call bindings only within evidenced package scopes.
 - [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
+- [health_contract](modules/health_contract.md) - Closed detailed-health contract shared by doctor and CI report readers.
+- [health_details](modules/health_details.md) - Capture detailed health once from an operation's already evaluated inputs.
 - [health_summary](modules/health_summary.md) - Pure presentation helpers for detailed local and CI health reports.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
@@ -867,6 +882,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_task_read](workflows/build_task_read.md) - entry: `task_context.build_task_read`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
 - [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet.capture_context_read`
+- [capture_health_details](workflows/capture_health_details.md) - entry: `health_details.capture_health_details`
 - [capture_protocol_enrichment_session](workflows/capture_protocol_enrichment_session.md) - entry: `context_service._capture_protocol_enrichment_session`
 - [capture_slice](workflows/capture_slice.md) - entry: `knowledge_storage_access._capture_slice`
 - [captured_query_service](workflows/captured_query_service.md) - entry: `context_packet._captured_query_service`

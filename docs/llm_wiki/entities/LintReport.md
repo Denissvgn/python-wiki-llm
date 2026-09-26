@@ -1,6 +1,6 @@
 # LintReport
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:279`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:280`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)
@@ -26,6 +26,7 @@ _Auto-generated from `LintReport` in `src/llm_wiki_cli/services/lint_service.py`
 | `knowledge_drift_report` | `bool` | `False` | — |
 | `knowledge_enabled` | `bool` | `False` | — |
 | `knowledge_view` | `KnowledgeReadView \| None` | `None` | — |
+| `health_details` | `CapturedHealthDetails \| None` | `None` | — |
 
 ## Methods
 
@@ -86,7 +87,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [lint_service](../modules/lint_service.md) | 5 | `cache_stats`, `diagnostics`, `extraction_job_plan`, `issues`, `knowledge_drift_report`, `knowledge_enabled`, `knowledge_summary`, `knowledge_view`, `src_dir`, `strict`, `wiki_dir` |
+| [lint_service](../modules/lint_service.md) | 5 | `cache_stats`, `diagnostics`, `extraction_job_plan`, `health_details`, `issues`, `knowledge_drift_report`, `knowledge_enabled`, `knowledge_summary`, `knowledge_view`, `src_dir`, `strict`, `wiki_dir` |
 
 ### References
 
