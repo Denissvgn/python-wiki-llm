@@ -153,7 +153,7 @@ def _archive_binding(
             member = tar.extractfile(entry)
             assert member is not None
             with member:
-                expected_bytes = member.read(MAX_EVIDENCE_BYTES + 1)
+                expected_bytes = member.read(entry.size + 1)
             if expected_bytes != read_guarded(path, MAX_EVIDENCE_BYTES).content:
                 raise MaintenanceError(
                     "evaluated input differs from the frozen candidate"
@@ -393,7 +393,12 @@ def main(argv=None) -> int:
             pre = read_guarded(Path(args.preflight), MAX_EVIDENCE_BYTES).content
             binding = strict_json(pre)["binding"]
             for key in ("candidate_sha", "candidate_tree", "src_dir", "wiki_dir"):
-                if binding[key] != getattr(args, key):
+                expected = (
+                    str(Path(args.wiki_dir))
+                    if key == "wiki_dir"
+                    else getattr(args, key)
+                )
+                if binding[key] != expected:
                     raise MaintenanceError(
                         "preflight does not match the requested candidate/scope"
                     )

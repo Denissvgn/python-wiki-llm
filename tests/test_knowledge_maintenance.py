@@ -373,6 +373,43 @@ def test_policy_input_hashes_and_json_types_are_binding(tmp_path):
         hp.strict_json(b'{"status":"pass","status":"fail"}')
 
 
+def test_policy_command_accepts_normalized_wiki_alias_on_native_paths(tmp_path):
+    _, ci, before, binding = evidence(tmp_path / "fixture")
+    normalized = str(Path("candidate/docs/llm_wiki"))
+    ci["wiki_dir"] = normalized
+    ci["knowledge_health"]["wiki_dir"] = normalized
+    ci["knowledge_health"]["health_details"]["scope"]["wiki_dir"] = normalized
+    binding["wiki_dir"] = normalized
+    report = tmp_path / "ci.json"
+    preflight = tmp_path / "preflight.json"
+    report.write_bytes(raw(ci))
+    preflight.write_bytes(raw(before))
+    output = tmp_path / "policy.json"
+    assert (
+        km.main(
+            [
+                "derive",
+                "--report",
+                str(report),
+                "--preflight",
+                str(preflight),
+                "--candidate-sha",
+                binding["candidate_sha"],
+                "--candidate-tree",
+                binding["candidate_tree"],
+                "--src-dir",
+                "candidate",
+                "--wiki-dir",
+                "./candidate/docs/llm_wiki/",
+                "--output",
+                str(output),
+            ]
+        )
+        == 0
+    )
+    assert json.loads(output.read_text())["binding"]["wiki_dir"] == normalized
+
+
 def test_preflight_failure_and_output_failure_remain_blocking_for_policy(tmp_path):
     _, ci, before, binding = evidence(tmp_path)
     before.update(status="blocked", issues=["wrong installed candidate"])
