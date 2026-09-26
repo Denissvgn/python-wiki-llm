@@ -85,7 +85,12 @@ def test_frozen_maintenance_mode_controls_authenticated_producer_set(tmp_path, m
             h.verify(root, server.identity, server.context, server.run_id)
 
 
-@pytest.mark.parametrize("content", [None, b"", b"owned source", b"\0" * 100])
+@pytest.mark.parametrize("content", [
+    pytest.param(None, id="missing"),
+    pytest.param(b"", id="empty"),
+    pytest.param(b"owned source", id="not-tar"),
+    pytest.param(b"\0" * 100, id="truncated-header"),
+])
 def test_missing_or_malformed_source_archive_is_not_legacy_policy(hosted, content):
     root, server = hosted
     archive = root / "evidence/RD-00/source/candidate-source.tar"
@@ -98,8 +103,13 @@ def test_missing_or_malformed_source_archive_is_not_legacy_policy(hosted, conten
 
 
 @pytest.mark.parametrize("content", [
-    b'not json', b'\xff', b'[]', b'{"mode":[]}', b'{"mode":"unknown"}',
-    b'{"mode":"required","mode":"disabled"}', b' ' * 65537,
+    pytest.param(b'not json', id="invalid-json"),
+    pytest.param(b'\xff', id="invalid-utf8"),
+    pytest.param(b'[]', id="non-object"),
+    pytest.param(b'{"mode":[]}', id="non-string-mode"),
+    pytest.param(b'{"mode":"unknown"}', id="unknown-mode"),
+    pytest.param(b'{"mode":"required","mode":"disabled"}', id="duplicate-mode"),
+    pytest.param(b' ' * 65537, id="oversized-policy"),
 ])
 def test_invalid_policy_cannot_remove_required_maintenance(hosted, content):
     root, server = hosted
