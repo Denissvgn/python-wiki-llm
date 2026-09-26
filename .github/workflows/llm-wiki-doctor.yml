@@ -31,3 +31,4 @@ jobs:
           src-dir: .
           strict: "true"
           fail-on: degraded
+          report-schema: v3

@@ -2,6 +2,18 @@ name: LLM Wiki full integrity gate
 description: Validate a committed LLM Wiki with locked toolchains and fixed allowlisted evidence.
 
 inputs:
+  maintenance-candidate-sha:
+    description: Optional exact candidate SHA for advisory producer preflight and health evidence; requires report-schema v3.
+    required: false
+    default: ""
+  maintenance-identity:
+    description: Optional verified frozen-source identity path, paired with maintenance-source-archive.
+    required: false
+    default: ""
+  maintenance-source-archive:
+    description: Frozen source archive bound by maintenance-identity.
+    required: false
+    default: ""
   report-schema:
     description: CI report contract, v2 or v3 with captured coverage and producer details.
     required: false
@@ -409,6 +421,76 @@ runs:
         fi
         exit "${metrics_status}"
 
+    - name: Validate optional maintenance request
+      if: inputs.maintenance-candidate-sha != ''
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        INPUT_CANDIDATE_SHA: ${{ inputs.maintenance-candidate-sha }}
+        INPUT_IDENTITY: ${{ inputs.maintenance-identity }}
+        INPUT_ARCHIVE: ${{ inputs.maintenance-source-archive }}
+        INPUT_SCHEMA: ${{ inputs.report-schema }}
+      run: |
+        set -euo pipefail
+        [[ "${INPUT_CANDIDATE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+        [[ "${INPUT_SCHEMA}" == v3 ]]
+        if [[ -z "${INPUT_IDENTITY}" ]]; then
+          [[ -z "${INPUT_ARCHIVE}" ]]
+        else
+          [[ -n "${INPUT_ARCHIVE}" ]]
+        fi
+
+
+    - name: Reserve optional maintenance evidence
+      id: maintenance-path
+      if: inputs.maintenance-candidate-sha != ''
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+      run: |
+        set -euo pipefail
+        target="${RUNNER_TEMP}/llm-wiki-maintenance-evidence"
+        [[ ! -e "${target}" && ! -L "${target}" ]]
+        mkdir -- "${target}"
+        printf 'LLM_WIKI_MAINTENANCE_DIR=%s\n' "${target}" >> "${GITHUB_ENV}"
+
+    - name: Check installed candidate and recorded producer
+      if: inputs.maintenance-candidate-sha != ''
+      continue-on-error: true
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        INPUT_CANDIDATE_SHA: ${{ inputs.maintenance-candidate-sha }}
+        INPUT_IDENTITY: ${{ inputs.maintenance-identity }}
+        INPUT_ARCHIVE: ${{ inputs.maintenance-source-archive }}
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
+      run: |
+        set -euo pipefail
+        frozen=()
+        if [[ -n "${INPUT_IDENTITY}" ]]; then
+          frozen=(--identity-path "${INPUT_IDENTITY}" --source-archive "${INPUT_ARCHIVE}")
+        fi
+        "${{ steps.setup-python.outputs.python-path }}" -I -m llm_wiki_cli.services.knowledge_maintenance preflight \
+          --candidate-root "${GITHUB_ACTION_PATH}/../.." \
+          --candidate-sha "${INPUT_CANDIDATE_SHA}" \
+          --src-dir "${INPUT_SRC_DIR}" --wiki-dir "${INPUT_WIKI_DIR}" \
+          --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" "${frozen[@]}" \
+          --output "${LLM_WIKI_MAINTENANCE_DIR}/preflight.json"
+
+
     - name: Validate committed wiki (native drift diagnostics are advisory)
       shell: bash
       env:
@@ -432,6 +514,50 @@ runs:
         --report-schema "${INPUT_REPORT_SCHEMA}"
         --jobs 1
         --knowledge-drift-report
+
+    - name: Derive advisory repository health policy from CI
+      if: ${{ always() && !cancelled() && inputs.maintenance-candidate-sha != '' && steps.maintenance-path.outcome == 'success' }}
+      continue-on-error: true
+      shell: bash
+      env:
+        CI: "true"
+        PIP_NO_INPUT: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        PYTHONUTF8: "1"
+        PYTHONIOENCODING: utf-8
+        INPUT_CANDIDATE_SHA: ${{ inputs.maintenance-candidate-sha }}
+        INPUT_IDENTITY: ${{ inputs.maintenance-identity }}
+        INPUT_SRC_DIR: ${{ inputs.src-dir }}
+        INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
+      run: |
+        set -euo pipefail
+        if [[ -n "${INPUT_IDENTITY}" ]]; then
+          tree="$("${{ steps.setup-python.outputs.python-path }}" -I -c \
+            'import json, pathlib, sys; print(json.loads(pathlib.Path(sys.argv[1]).read_text())["source"]["tree"])' "${INPUT_IDENTITY}")"
+        else
+          tree="$(git -C "${GITHUB_ACTION_PATH}/../.." rev-parse 'HEAD^{tree}')"
+        fi
+        cp "${LLM_WIKI_EVIDENCE_DIR}/llm-wiki-ci-report.json" "${LLM_WIKI_MAINTENANCE_DIR}/ci-report.json"
+        "${{ steps.setup-python.outputs.python-path }}" -I -m llm_wiki_cli.services.knowledge_maintenance derive \
+          --report "${LLM_WIKI_MAINTENANCE_DIR}/ci-report.json" \
+          --preflight "${LLM_WIKI_MAINTENANCE_DIR}/preflight.json" \
+          --candidate-sha "${INPUT_CANDIDATE_SHA}" --candidate-tree "${tree}" \
+          --src-dir "${INPUT_SRC_DIR}" --wiki-dir "${INPUT_WIKI_DIR}" \
+          --output "${LLM_WIKI_MAINTENANCE_DIR}/policy.json"
+
+    - name: Upload optional maintenance evidence
+      if: ${{ always() && !cancelled() && inputs.maintenance-candidate-sha != '' && steps.maintenance-path.outcome == 'success' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        archive: true
+        name: llm-wiki-maintenance-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/llm-wiki-maintenance-evidence/preflight.json
+          ${{ runner.temp }}/llm-wiki-maintenance-evidence/ci-report.json
+          ${{ runner.temp }}/llm-wiki-maintenance-evidence/policy.json
+        if-no-files-found: warn
+        retention-days: 14
+
 
     - name: Report advisory change impact
       if: ${{ !cancelled() && inputs.impact-base != '' && inputs.impact-head != '' }}

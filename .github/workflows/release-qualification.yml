@@ -64,6 +64,7 @@ jobs:
       version: ${{ steps.freeze.outputs.version }}
       tag: ${{ steps.freeze.outputs.tag }}
       source-sha256: ${{ steps.freeze.outputs.source-sha256 }}
+      knowledge-mode: ${{ steps.knowledge-policy.outputs.mode }}
       dependency-inputs-sha256: ${{ steps.freeze-dependencies.outputs.inputs-sha256 }}
       dependency-python-version: ${{ steps.python.outputs.python-version }}
       harness-sha256: ${{ steps.harness.outputs.harness-sha256 }}
@@ -134,6 +135,20 @@ jobs:
           esac
           git check-ref-format "${WORKFLOW_REF#"${WORKFLOW_PREFIX}"}"
 
+      - name: Check recorded producer before qualification
+        id: knowledge-policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -I release/knowledge_maintenance.py check-version --root . \
+            --output "${RUNNER_TEMP}/maintenance-version.json"
+          python -I - "${RUNNER_TEMP}/maintenance-version.json" "${GITHUB_OUTPUT}" <<'PY'
+          import json, pathlib, sys
+          data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+          with pathlib.Path(sys.argv[2]).open("a") as stream:
+              stream.write("mode=" + data["mode"] + "\n")
+          PY
+
       - name: Validate identity and create one source archive
         id: freeze
         env:
@@ -176,6 +191,9 @@ jobs:
             --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
+            release/knowledge_maintenance.py \
+            release/knowledge-maintenance.json \
+            src/llm_wiki_cli/services/health_policy.py \
             release/dependency_downloads.py \
             release/hosted_evidence.py \
             release/core_shards.py \
@@ -2007,6 +2025,31 @@ jobs:
         with:
           src-dir: candidate
           wiki-dir: candidate/docs/llm_wiki
+          report-schema: v3
+          maintenance-candidate-sha: ${{ needs.freeze.outputs.sha }}
+          maintenance-identity: ${{ runner.temp }}/rd-10-frozen-inputs/source/identity.json
+          maintenance-source-archive: ${{ runner.temp }}/rd-10-frozen-inputs/source/candidate-source.tar
+
+      - name: Retain repository maintenance evidence
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p "${RD10_EVIDENCE_DIR}/maintenance"
+          for name in preflight.json ci-report.json policy.json; do
+            if [[ -f "${RUNNER_TEMP}/llm-wiki-maintenance-evidence/${name}" ]]; then
+              cp "${RUNNER_TEMP}/llm-wiki-maintenance-evidence/${name}" "${RD10_EVIDENCE_DIR}/maintenance/${name}"
+            fi
+          done
+
+      - name: Compare standalone strict doctor during shadow qualification
+        if: ${{ always() && needs.freeze.outputs.knowledge-mode == 'shadow' }}
+        continue-on-error: true
+        shell: bash
+        run: >-
+          python -I -m llm_wiki_cli.cli doctor
+          --wiki-dir candidate/docs/llm_wiki --src-dir candidate
+          --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" --strict --report-schema v3 --format json
+          > "${RD10_EVIDENCE_DIR}/maintenance/doctor.json"
       - name: Validate fixed full-integrity evidence
         run: |
           set -euo pipefail
@@ -2182,6 +2225,55 @@ jobs:
           path: ${{ runner.temp }}/rd-10-evidence/
           if-no-files-found: error
           retention-days: 14
+
+  knowledge-maintenance:
+    name: Repository knowledge maintenance
+    if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
+    needs: [freeze, action]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; path = pathlib.Path(sys.argv[1]); actual = hashlib.sha256(path.read_bytes()).hexdigest(); print(f"qualification harness sha256={actual}"); raise SystemExit(0 if actual == sys.argv[2] else "qualification harness digest mismatch")' incoming/tools/qualification-harnesses.tar "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract incoming/tools/qualification-harnesses.tar incoming/tools
+          test -f incoming/tools/release/qualification.py
+          test -f incoming/tools/tests/release_artifact_smoke.py
+          test -f incoming/tools/src/llm_wiki_cli/services/health_policy.py
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true
+        with:
+          digest-mismatch: error
+          name: evidence-action
+          path: incoming/action
+      - name: Verify captured policy and shadow parity
+        run: >-
+          python -I incoming/tools/release/knowledge_maintenance.py verify
+          --evidence incoming/action/maintenance --identity incoming/source/identity.json
+          --policy incoming/tools/release/knowledge-maintenance.json
+          --output verification.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          archive: true
+          name: knowledge-maintenance-verification
+          path: verification.json
+          if-no-files-found: error
+          retention-days: 14
+
 
   build:
     name: RD-11 independent build ${{ matrix.copy }}
@@ -2719,9 +2811,11 @@ jobs:
           && needs.oci.result == 'success' && needs.static.result == 'success'
           && needs.action.result == 'success' && needs.reproducible.result == 'success'
           && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success'
-          && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success') }}
+          && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')
+          && (needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success') }}
     needs:
       - freeze
+      - knowledge-maintenance
       - dependency-warm
       - core
       - core-windows
@@ -2820,11 +2914,21 @@ jobs:
           --gate "RD-13=BLOCKED"
           --allow-non-go-exit-zero
           --output gate-decision.json
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ needs.freeze.outputs.knowledge-mode == 'required' }}
+        with:
+          digest-mismatch: error
+          name: knowledge-maintenance-verification
+          path: incoming/maintenance
       - name: Build versioned release bundle
         env:
           GITHUB_TOKEN: ${{ github.token }}
         id: bundle
         run: |
+          maintenance_evidence=()
+          if [[ "${{ needs.freeze.outputs.knowledge-mode }}" == "required" ]]; then
+            maintenance_evidence=(--evidence "RD-10:maintenance=incoming/maintenance")
+          fi
           core_evidence=()
           if [[ "${{ needs.freeze.outputs.core-layout }}" == "windows-sharded" ]]; then
             core_evidence=(
@@ -2840,6 +2944,7 @@ jobs:
           --sdist-smoke incoming/sdist/smoke-sdist.json \
           --smoke-comparison incoming/comparison/smoke-comparison.json \
           --gate-decision gate-decision.json \
+          "${maintenance_evidence[@]}" \
           --evidence "RD-00:source=incoming/source" \
           --evidence "RD-00:harness=incoming/tools/qualification-harnesses.tar" \
           --evidence "RD-01:ubuntu=incoming/gates/evidence-core-ubuntu-3.10" \
@@ -2908,6 +3013,7 @@ jobs:
     if: ${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}
     needs:
       - freeze
+      - knowledge-maintenance
       - core
       - core-windows
       - ubuntu-suites
@@ -2969,6 +3075,13 @@ jobs:
           --gate "RD-13=BLOCKED"
           --allow-non-go-exit-zero
           --output decision.json
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ always() && needs.freeze.outputs.knowledge-mode == 'required' }}
+        continue-on-error: true
+        with:
+          digest-mismatch: error
+          name: knowledge-maintenance-verification
+          path: maintenance
       - name: Require complete pre-promotion qualification
         if: ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
         run: >-
@@ -2977,6 +3090,10 @@ jobs:
           --candidate-sha "${{ needs.freeze.outputs.sha }}"
           --candidate-version "${{ needs.freeze.outputs.version }}"
           --bundle-result "${{ needs.bundle.result }}"
+          --maintenance-mode "${{ needs.freeze.outputs.knowledge-mode }}"
+          --candidate-tree "${{ needs.freeze.outputs.tree }}"
+          --maintenance-result "${{ needs.knowledge-maintenance.result }}"
+          --maintenance-verification maintenance/verification.json
       - name: Upload pre-promotion decision
         if: ${{ always() && needs.freeze.result == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

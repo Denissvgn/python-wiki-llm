@@ -10,7 +10,6 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +17,8 @@ from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from .contracts import DOCTOR_SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION
 from .health_details import CapturedHealthDetails
 from .health_contract import validate_health_details
+from .health_policy import DoctorStatus, DOCTOR_EXIT_CODES, classify_health_sections
+from .health_summary import detailed_health_rows, summary_cell
 from .extraction_jobs import ExtractionJobRequest
 from .knowledge_consumption import (
     KnowledgeAvailability,
@@ -36,22 +37,6 @@ from .sync_manifest import SyncManifest
 from .verification_contracts import VERIFICATION_RECEIPT_FILENAME
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
-
-class DoctorStatus(str, Enum):
-    """Closed overall health vocabulary for the doctor contract."""
-
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    ABSENT = "absent"
-
-
-DOCTOR_EXIT_CODES: Mapping[DoctorStatus, int] = {
-    DoctorStatus.HEALTHY: 0,
-    DoctorStatus.DEGRADED: 1,
-    DoctorStatus.UNHEALTHY: 2,
-    DoctorStatus.ABSENT: 3,
-}
 
 _REASON_RE = re.compile(r"\[reason=([a-z0-9-]+(?:,[a-z0-9-]+)*)\]")
 _FRESHNESS_STATES = tuple(state.value for state in ComputedFreshness)
@@ -292,6 +277,10 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
         lines.append("Unhealthy:            " + ", ".join(payload["unhealthy_reasons"]))
     if payload["degraded_reasons"]:
         lines.append("Degraded:             " + ", ".join(payload["degraded_reasons"]))
+    lines.extend(
+        f"{label}: {summary_cell(value)}"
+        for label, value in detailed_health_rows(payload)
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -585,62 +574,8 @@ def _verification_section(
     }
 
 
-def _classify(
-    *,
-    strict: bool,
-    source_selection_mismatch: bool,
-    availability: Mapping[str, object],
-    freshness: Mapping[str, object],
-    snapshot: Mapping[str, object],
-    governance: Mapping[str, object],
-    drift: Mapping[str, object],
-    verification: Mapping[str, object],
-) -> tuple[DoctorStatus, tuple[str, ...], tuple[str, ...]]:
-    availability_state = availability["state"]
-    if availability_state == KnowledgeAvailability.ABSENT.value:
-        if source_selection_mismatch:
-            return DoctorStatus.UNHEALTHY, (), ("source-selection-mismatch",)
-        return DoctorStatus.ABSENT, (), ()
-
-    unhealthy: list[str] = []
-    degraded: list[str] = []
-    if source_selection_mismatch:
-        unhealthy.append("source-selection-mismatch")
-    if availability_state == KnowledgeAvailability.UNSUPPORTED.value:
-        unhealthy.append("knowledge-unsupported")
-    elif availability_state == KnowledgeAvailability.DEGRADED.value:
-        degraded.append("knowledge-degraded")
-    if snapshot["state"] == "mixed":
-        unhealthy.append("mixed-snapshot")
-    if governance["state"] == "invalid":
-        unhealthy.append("invalid-governance")
-    if drift["state"] == "stale-confirmed":
-        unhealthy.append("stale-confirmed")
-    elif drift["state"] == "indeterminate":
-        (
-            unhealthy if strict else degraded
-        ).append("freshness-indeterminate")
-    elif drift["state"] == "nonsemantic-change":
-        (
-            unhealthy if strict else degraded
-        ).append("nonsemantic-source-change")
-    if not freshness["evaluated"]:
-        degraded.append("freshness-unevaluated")
-    expired_reviews = governance["expired_reviews"]
-    if isinstance(expired_reviews, bool) or not isinstance(expired_reviews, int):
-        raise TypeError("governance expired_reviews must be an integer")
-    if expired_reviews > 0:
-        degraded.append("expired-reviews")
-    if verification["state"] in _VERIFICATION_UNHEALTHY_STATES:
-        unhealthy.append(f"verification-{verification['state']}")
-
-    unhealthy_reasons = tuple(dict.fromkeys(unhealthy))
-    degraded_reasons = tuple(dict.fromkeys(degraded))
-    if unhealthy_reasons:
-        return DoctorStatus.UNHEALTHY, degraded_reasons, unhealthy_reasons
-    if degraded_reasons:
-        return DoctorStatus.DEGRADED, degraded_reasons, ()
-    return DoctorStatus.HEALTHY, (), ()
+# Preserve the internal compatibility name while sharing the same classifier.
+_classify = classify_health_sections
 
 
 def _issues(

@@ -14,6 +14,7 @@ from llm_wiki_cli.services.ci_report import validate_doctor_payload
 from llm_wiki_cli.services.contracts import DOCTOR_V3_SCHEMA_VERSION
 from llm_wiki_cli.services.health_summary import (
     FRESHNESS_DISCLOSURE,
+    detailed_health_rows,
     freshness_counts,
     health_policy,
     optional_status,
@@ -467,6 +468,7 @@ def render_summary(
             report["unhealthy_reasons"] + report["degraded_reasons"]
         )))),
     )
+    rows += tuple(detailed_health_rows(report))
     lines = [
         "## LLM Wiki doctor dashboard",
         "",

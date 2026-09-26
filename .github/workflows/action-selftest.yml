@@ -76,6 +76,7 @@ jobs:
       - name: Check Action fixture knowledge health
         uses: ./integrations/github-action
         with:
+          report-schema: v3
           wiki-dir: .action-selftest/wiki
           src-dir: tests/fixtures/context-health-action/source
           strict: "true"

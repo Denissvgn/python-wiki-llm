@@ -430,6 +430,8 @@ jobs:
         with:
           src-dir: .
           wiki-dir: docs/llm_wiki
+          report-schema: v3
+          maintenance-candidate-sha: ${{ github.sha }}
 
   p0-oci-integration:
     name: P0 synthetic OCI isolation

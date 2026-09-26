@@ -356,7 +356,7 @@ def test_wiki_integrity_delegates_to_the_candidate_composite_contract() -> None:
     assert gate == {
         "name": "Check LLM Wiki integrity",
         "uses": "./integrations/wiki-integrity",
-        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki"},
+        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki", "report-schema": "v3", "maintenance-candidate-sha": "${{ github.sha }}"},
     }
     assert [step.get("name") for step in job["steps"]] == [
         "Check out the candidate without credentials",
@@ -782,7 +782,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         )
         assert "incoming/tools/release/qualification.py" not in earlier_runs
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
-    assert harness_consumers == 20
+    assert harness_consumers == 21
 
     for job_name in ("core", "ubuntu-suites", "security-behavior", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
@@ -967,6 +967,10 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
         "with": {
             "src-dir": "candidate",
             "wiki-dir": "candidate/docs/llm_wiki",
+            "report-schema": "v3",
+            "maintenance-candidate-sha": "${{ needs.freeze.outputs.sha }}",
+            "maintenance-identity": "${{ runner.temp }}/rd-10-frozen-inputs/source/identity.json",
+            "maintenance-source-archive": "${{ runner.temp }}/rd-10-frozen-inputs/source/candidate-source.tar",
         },
     }
 
@@ -1982,8 +1986,9 @@ def test_bundle_overrides_skipped_ancestors_but_requires_every_producer() -> Non
         "!inputs.discovery-mode",
         "!inputs.bandit-parity-verification",
         "!inputs.ubuntu-suite-shadow",
-        *(f"needs.{name}.result == 'success'" for name in bundle["needs"] if name != "dependency-warm"),
+        *(f"needs.{name}.result == 'success'" for name in bundle["needs"] if name not in {"dependency-warm", "knowledge-maintenance"}),
         "(!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')",
+        "(needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success')",
     }
     assert set(clauses) == expected and len(clauses) == len(expected)
     assert "continue-on-error" not in bundle

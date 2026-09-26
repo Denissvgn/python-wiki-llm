@@ -26,7 +26,7 @@ from .contracts import (
 )
 from .doctor_service import compose_doctor_report
 from .health_contract import HealthDetailsError, validate_health_details
-from .health_summary import FRESHNESS_DISCLOSURE, freshness_counts, reason_list, summary_cell
+from .health_summary import FRESHNESS_DISCLOSURE, detailed_health_rows, freshness_counts, reason_list, summary_cell
 from .knowledge_observability import KnowledgeAggregateSummary
 from .lint_service import LintReport, report_to_dict
 
@@ -1336,7 +1336,8 @@ def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
         "- " + FRESHNESS_DISCLOSURE,
     ])
     lines.extend(guidance[1:])
-    return lines
+    detail_lines = [f"- {label}: `{summary_cell(value)}`." for label, value in detailed_health_rows(health)]
+    return detail_lines + lines
 
 
 def _bounded_summary(

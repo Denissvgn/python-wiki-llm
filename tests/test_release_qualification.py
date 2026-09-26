@@ -774,6 +774,33 @@ def completion_arguments(tmp_path):
     ]
 
 
+@pytest.mark.parametrize("result", ["failure", "cancelled", "skipped", "", "PASS"])
+def test_required_maintenance_job_cannot_be_skipped(completion_arguments, result):
+    args = completion_arguments + [
+        "--maintenance-mode", "required", "--maintenance-result", result,
+        "--candidate-tree", TREE,
+    ]
+    assert qualification.main(args) == 2
+
+
+def test_required_maintenance_needs_bound_verification(completion_arguments, tmp_path):
+    path = tmp_path / "verification.json"
+    record = {
+        "schema_version": "agent-wiki-release-knowledge-verification/v1",
+        "mode": "required", "status": "pass", "candidate_sha": SHA,
+        "candidate_tree": TREE, "candidate_version": VERSION, "error": None,
+        "evidence_sha256": {name: "sha256:" + "3"*64 for name in ("ci-report.json", "preflight.json", "policy.json")},
+    }
+    _write_json(path, record)
+    args = completion_arguments + [
+        "--maintenance-mode", "required", "--maintenance-result", "success",
+        "--candidate-tree", TREE, "--maintenance-verification", str(path),
+    ]
+    assert qualification.main(args) == 0
+    record["candidate_sha"] = "f"*40
+    _write_json(path, record)
+    assert qualification.main(args) == 2
+
 def test_complete_qualification_keeps_rd13_blocked(completion_arguments):
     assert qualification.main(completion_arguments) == 0
     decision = qualification.load_json(Path(completion_arguments[2]))

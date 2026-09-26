@@ -1470,6 +1470,22 @@ def verify_qualification_completion(args: argparse.Namespace) -> int:
         raise QualificationError(
             f"qualified release bundle did not succeed: {args.bundle_result!r}"
         )
+    if getattr(args, "maintenance_mode", None) == "required":
+        _require_sha(getattr(args, "candidate_tree", None), "maintenance candidate tree")
+        if getattr(args, "maintenance_result", None) != "success" or getattr(args, "maintenance_verification", None) is None:
+            raise QualificationError("required repository maintenance did not succeed")
+        maintenance = load_json(args.maintenance_verification)
+        commitments = maintenance.get("evidence_sha256")
+        if (maintenance.get("schema_version") != "agent-wiki-release-knowledge-verification/v1"
+                or maintenance.get("status") != "pass" or maintenance.get("mode") != "required"
+                or maintenance.get("candidate_sha") != args.candidate_sha
+                or maintenance.get("candidate_tree") != getattr(args, "candidate_tree", None)
+                or maintenance.get("candidate_version") != args.candidate_version
+                or not isinstance(commitments, dict)
+                or set(commitments) != {"ci-report.json", "preflight.json", "policy.json"}
+                or any(not isinstance(value, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None for value in commitments.values())
+                or maintenance.get("error") is not None):
+            raise QualificationError("required repository maintenance receipt is missing or mismatched")
     print("Qualification complete; RD-13 remains BLOCKED pending promotion")
     return 0
 
@@ -1628,6 +1644,19 @@ def _hosted_verifier():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _validate_qualifying_knowledge_bundle(root: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "_release_knowledge_maintenance", Path(__file__).with_name("knowledge_maintenance.py"))
+    if spec is None or spec.loader is None:
+        raise QualificationError("knowledge maintenance verifier is missing")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        module.bundle_policy(root)
+    except (OSError, ValueError, KeyError, TypeError, tarfile.TarError) as exc:
+        raise QualificationError(f"repository maintenance admission failed: {exc}") from exc
 
 
 def _hosted_provenance(root: Path, identity: Mapping[str, Any], context: dict, run_id: int) -> dict:
@@ -1860,6 +1889,7 @@ def build_bundle(args: argparse.Namespace) -> int:
     producer_provenance = _hosted_provenance(destination, identity, context, args.workflow_run_id)
     _validate_qualifying_core_bundle(destination, identity, context, args.workflow_run_id)
     _validate_qualifying_union_bundle(destination, identity, context)
+    _validate_qualifying_knowledge_bundle(destination)
     write_json(destination / "hosted-evidence.json", producer_provenance)
 
     write_json(destination / "smoke-wheel.json", wheel_smoke)
@@ -2596,6 +2626,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
         raise QualificationError("hosted producer provenance ledger differs")
     _validate_qualifying_core_bundle(root, frozen_identity, manifest["qualification_context"], args.workflow_run_id)
     _validate_qualifying_union_bundle(root, frozen_identity, manifest["qualification_context"])
+    _validate_qualifying_knowledge_bundle(root)
 
     wheel_smoke = _validate_smoke(load_json(root / "smoke-wheel.json"), "wheel")
     sdist_smoke = _validate_smoke(load_json(root / "smoke-sdist.json"), "sdist")
@@ -3119,7 +3150,11 @@ def _parser() -> argparse.ArgumentParser:
     completion.add_argument("--decision", type=Path, required=True)
     completion.add_argument("--candidate-sha", required=True)
     completion.add_argument("--candidate-version", required=True)
+    completion.add_argument("--candidate-tree")
     completion.add_argument("--bundle-result", required=True)
+    completion.add_argument("--maintenance-mode", choices=("shadow", "required", "disabled"))
+    completion.add_argument("--maintenance-result")
+    completion.add_argument("--maintenance-verification", type=Path)
     completion.set_defaults(function=verify_qualification_completion)
 
     smoke = subparsers.add_parser("compare-smoke")

@@ -47,6 +47,19 @@ even when validation fails.
 The full-integrity action defaults to `report-schema: v2`. Select
 `report-schema: v3` to retain captured health coverage and producer details in
 its JSON artifact. The integrity policy and worktree requirement remain unchanged.
+The v3 summary separates modeled, comparable, current, incompatible and unmodeled
+concepts. It shows captured producer versions, primary causes and a suggested
+next action. Unmodeled concepts are a coverage limitation; they are not counted
+as current. Legacy reports identify unavailable detail explicitly.
+
+For this CLI repository's own candidate maintenance, the action also accepts
+`maintenance-candidate-sha` with `report-schema: v3`. The action checks the
+installed implementation and committed producer basis, then derives a separate
+policy receipt from the existing integrity report. A frozen source invocation
+also supplies both `maintenance-identity` and `maintenance-source-archive`.
+The receipt binds the candidate, source/wiki scope, selection, snapshot and
+original report bytes. These optional diagnostics do not change the ordinary
+integrity exit policy. Producer alignment alone does not establish freshness.
 
 Installed pull-request workflows fetch full history and supply the fetched
 base and head commits to the same action for advisory change impact. The action
@@ -63,6 +76,28 @@ workflow instead of this pull-request gate.
 Installation does not bootstrap or synchronize the wiki, change branch
 protection, install hooks, push commits, or add repository secrets. Those
 remain explicit maintainer actions.
+
+### Repository release maintenance
+
+This repository controls its additional release-health prerequisite through
+[`release/knowledge-maintenance.json`](../release/knowledge-maintenance.json):
+
+- `shadow` retains a diagnostic comparison between the derived policy and
+  standalone strict doctor on the same candidate. It adds no release blocker.
+- `required` requires complete, healthy modeled coverage for the actual
+  repository, matching installed implementation and authenticated maintenance
+  evidence. Missing, failed or mismatched evidence prevents release completion.
+  Activation records the reviewed candidate, hosted run/attempt, comparison
+  digest and policy implementation digest; a changed policy requires new proof.
+- `disabled` explicitly disables only this additional prerequisite. Existing
+  integrity and release requirements continue to apply, and the summary records
+  the disabled state.
+
+Refresh a stale committed wiki with the intended installed candidate before
+qualification. Review the sync preview, commit the coherent result, and qualify
+that exact commit. Routine pull-request health remains advisory. The release
+workflow retains `evidence-action` with original maintenance inputs and
+`knowledge-maintenance-verification` with the separate verification result.
 
 ## Git hook retirement
 
@@ -179,6 +214,9 @@ versions. V3 rejects unknown fields in its closed contracts and uses a
 `llm-wiki-doctor-dashboard/v2` receipt bound to the report bytes. The default
 report and receipt retain their v1 contracts. Both versions preserve the
 configured strictness and failure threshold.
+The v3 dashboard and CLI text show the same captured coverage, old/new producer
+versions and remediation guidance. Optional governance and verification absence
+remain neutral under the default policy.
 
 The action reserves isolated runner-temporary cache, toolchain, and evidence
 paths and uploads only the JSON
