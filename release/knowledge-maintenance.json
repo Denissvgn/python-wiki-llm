@@ -1,9 +1,15 @@
 {
   "schema_version": "agent-wiki-release-knowledge-maintenance/v1",
-  "mode": "shadow",
+  "mode": "required",
   "policy": "strict-repository-health/v1",
   "src_dir": ".",
   "wiki_dir": "docs/llm_wiki",
   "selection": ".llm-wiki/source-selection.json",
-  "activation": null
+  "activation": {
+    "candidate_sha": "1484c90f775744892e454fb101252ebdf1366a16",
+    "run_id": 36269921512,
+    "attempt": 1,
+    "comparison_sha256": "cce32c17f2c33c7d1cde0395da9dbfa60e0359b544a4e5c3700c5e2fc81ca5e4",
+    "implementation_sha256": "351f334afe29d248395bbdb98d01154fa9cc471642d3dd942c88b18b78209c54"
+  }
 }
