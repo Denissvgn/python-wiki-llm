@@ -175,8 +175,8 @@ def build_doctor_report(
     return compose_doctor_report(
         lint,
         strict=strict,
-        wiki_dir=wiki_text,
-        src_dir=effective_source,
+        wiki_dir=lint.wiki_dir if report_schema == "v3" else wiki_text,
+        src_dir=lint.src_dir if report_schema == "v3" else effective_source,
     )
 
 

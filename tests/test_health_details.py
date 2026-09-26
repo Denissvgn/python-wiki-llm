@@ -660,3 +660,19 @@ def test_v3_preflight_failure_has_no_invented_zero_coverage(tmp_path, monkeypatc
     assert result["health_details"]["evaluation"]["state"] == "failed"
     assert all(value is None for value in result["health_details"]["coverage"].values())
     assert result["status"] == "absent"
+
+
+@pytest.mark.parametrize("wiki_alias", ["./wiki/", "wiki/.", "wiki//"])
+def test_v3_uses_evaluated_scope_for_equivalent_wiki_paths(
+    recorded_project, wiki_alias
+):
+    detailed = api.doctor("source", wiki_dir=wiki_alias, report_schema="v3")
+    ci_report.validate_doctor_payload(detailed, expected_strict=False)
+    assert detailed["status"] == "healthy"
+    assert (
+        detailed["wiki_dir"]
+        == detailed["health_details"]["scope"]["wiki_dir"]
+        == "wiki"
+    )
+    legacy = api.doctor("source", wiki_dir=wiki_alias)
+    assert legacy["wiki_dir"] == wiki_alias
