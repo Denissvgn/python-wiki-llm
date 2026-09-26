@@ -19,6 +19,7 @@ Usage:
     --knowledge-drift-report
 
 Optional: --evidence-artifact NAME identifies the uploaded evidence artifact.
+Optional: --report-schema v2|v3 selects the JSON contract (default: v2).
 
 The selected Python is used both to invoke `llm_wiki_cli.cli` and to validate
 its versioned JSON output. Project-local plugins are disabled, and the bounded
@@ -50,6 +51,8 @@ wiki_dir=""
 helper_cache_dir=""
 report_dir=""
 evidence_artifact=""
+report_schema="v2"
+report_schema_supplied=false
 jobs=""
 knowledge_drift_report=false
 
@@ -104,6 +107,16 @@ while (($#)); do
         die "--knowledge-drift-report may be supplied only once"
       knowledge_drift_report=true
       shift
+      ;;
+    --report-schema)
+      require_value "$1" "$#"
+      ${report_schema_supplied} && die "--report-schema may be supplied only once"
+      case "$2" in
+        v2|v3) report_schema="$2" ;;
+        *) die "--report-schema must be v2 or v3" ;;
+      esac
+      report_schema_supplied=true
+      shift 2
       ;;
     --help|-h)
       usage
@@ -228,7 +241,7 @@ set +e
   --jobs "${jobs}" \
   --knowledge-drift-report \
   --format json \
-  --report-schema v2 \
+  --report-schema "${report_schema}" \
   --no-plugins > "${raw_output}"
 cli_exit=$?
 ci_completed=true
@@ -254,7 +267,7 @@ elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; the
   set +e
   "${python_executable}" -I -m llm_wiki_cli.services.ci_report validate \
     --report "${raw_output}" \
-    --cli-exit "${cli_exit}" --schema v2
+    --cli-exit "${cli_exit}" --schema "${report_schema}"
   json_validation_exit=$?
   set -e
   if [[ ${json_validation_exit} -eq 0 ]]; then
@@ -262,7 +275,7 @@ elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; the
       mv -- "${raw_output}" "${JSON_REPORT}" &&
       [[ -f "${JSON_REPORT}" && ! -L "${JSON_REPORT}" ]]; then
       json_valid=true
-      json_state="available (validated llm-wiki-ci-check/v2)"
+      json_state="available (validated llm-wiki-ci-check/${report_schema})"
     else
       json_state="unavailable (could not preserve validated output)"
       if [[ -e "${JSON_REPORT}" || -L "${JSON_REPORT}" ]]; then
@@ -273,12 +286,12 @@ elif [[ -f "${raw_output}" && ! -L "${raw_output}" && -s "${raw_output}" ]]; the
       printf 'Could not preserve validated JSON evidence.\n' >&2
     fi
   else
-    json_state="unavailable (invalid v2 output; diagnostic raw available)"
+    json_state="unavailable (invalid ${report_schema} output; diagnostic raw available)"
     if [[ ! -e "${INVALID_REPORT}" && ! -L "${INVALID_REPORT}" ]] &&
       mv -- "${raw_output}" "${INVALID_REPORT}" &&
       [[ -f "${INVALID_REPORT}" && ! -L "${INVALID_REPORT}" ]]; then
-      printf 'CI output does not satisfy llm-wiki-ci-check/v2; preserved as %s.\n' \
-        "${INVALID_REPORT}" >&2
+      printf 'CI output does not satisfy llm-wiki-ci-check/%s; preserved as %s.\n' \
+        "${report_schema}" "${INVALID_REPORT}" >&2
     else
       json_state="unavailable (invalid output could not be preserved)"
       if [[ -e "${INVALID_REPORT}" || -L "${INVALID_REPORT}" ]]; then

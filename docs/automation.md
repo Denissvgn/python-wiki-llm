@@ -44,6 +44,10 @@ diagnostics, verifies that the project worktree stayed clean, and uploads a
 fixed, allowlisted set of validation, cache-measurement, and toolchain evidence
 even when validation fails.
 
+The full-integrity action defaults to `report-schema: v2`. Select
+`report-schema: v3` to retain captured health coverage and producer details in
+its JSON artifact. The integrity policy and worktree requirement remain unchanged.
+
 Installed pull-request workflows fetch full history and supply the fetched
 base and head commits to the same action for advisory change impact. The action
 adds a bounded job summary, up to 50 warning/notice annotations, and
@@ -162,12 +166,19 @@ default source-selection discovery used by the CLI, it plans and prepares any
 detected TypeScript/JavaScript, Go, Rust, or Haskell extractor helper with the
 release's checksum-verified toolchains; Python extraction needs no helper. It
 then invokes `llm-wiki doctor --format json` and reads only the complete,
-versioned `llm-wiki-doctor/v1` object. The renderer rejects a report when its
+versioned doctor object (`llm-wiki-doctor/v1` by default). The renderer rejects a report when its
 strictness or declared exit code does not match the captured request and
-process status, and it never scrapes human output. Within that schema major,
+process status, and it never scrapes human output. Within the v1 schema major,
 required fields and documented state values remain strict while additive
 object fields are ignored. A wiki that has not been initialized is reported as
 `absent` and fails either threshold.
+
+The dashboard defaults to `report-schema: v1`. Select `report-schema: v3` for
+detailed JSON coverage, primary concept reason counts and captured producer
+versions. V3 rejects unknown fields in its closed contracts and uses a
+`llm-wiki-doctor-dashboard/v2` receipt bound to the report bytes. The default
+report and receipt retain their v1 contracts. Both versions preserve the
+configured strictness and failure threshold.
 
 The action reserves isolated runner-temporary cache, toolchain, and evidence
 paths and uploads only the JSON

@@ -145,6 +145,18 @@ _REASON_DESCRIPTIONS = MappingProxyType(
     }
 )
 KNOWN_FRESHNESS_REASON_CODES = frozenset(_REASON_DESCRIPTIONS)
+FRESHNESS_REASON_STATES: Mapping[str, ComputedFreshness] = MappingProxyType({
+    **dict.fromkeys(KNOWN_FRESHNESS_REASON_CODES, ComputedFreshness.BASIS_INCOMPATIBLE),
+    **dict.fromkeys({
+        REASON_LIVE_EVALUATION_NOT_PERFORMED, REASON_RECORDED_BASIS_UNAVAILABLE,
+        REASON_LIVE_BASIS_UNAVAILABLE, REASON_FRESHNESS_NOT_MODELED,
+        REASON_MISSING_SOURCE_HAS_NO_RELIABLE_RECORDED_BASIS,
+    }, ComputedFreshness.UNKNOWN),
+    REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION: ComputedFreshness.CURRENT,
+    REASON_SOURCE_BYTES_CHANGED_CONCEPT_OBSERVATION_UNCHANGED: ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE,
+    REASON_CONCEPT_OBSERVATION_CHANGED: ComputedFreshness.SOURCE_CHANGED,
+    REASON_RELIABLY_MAPPED_SOURCE_MISSING: ComputedFreshness.SOURCE_MISSING,
+})
 
 
 class KnowledgeFreshnessError(ValueError):
@@ -206,6 +218,10 @@ class KnowledgeFreshnessReport:
 
     by_locator: Mapping[str, ConceptFreshnessResult]
     counts: Mapping[ComputedFreshness, int]
+    # Captured comparison inputs, never reconstructed from the current install.
+    live_producer: ProducerRecord | None = None
+    live_generation_options_hash: str | None = None
+    live_schema_version: str | None = None
 
 
 @dataclass(frozen=True)
@@ -273,6 +289,11 @@ def _evaluate_model_freshness(
     return KnowledgeFreshnessReport(
         by_locator=MappingProxyType(results),
         counts=MappingProxyType(complete_counts),
+        live_producer=None if validated_live is None else validated_live.producer,
+        live_generation_options_hash=(
+            None if validated_live is None else validated_live.generation_options_hash
+        ),
+        live_schema_version=None if validated_live is None else validated_live.schema_version,
     )
 
 
@@ -836,6 +857,18 @@ def _version_unknown(component: ProducerComponent) -> bool:
     return component.version == "unknown" or "version-unknown" in component.limitations
 
 
+def comparable_producer_components(
+    recorded: ProducerComponent, live: ProducerComponent, *, configuration_required: bool = True,
+) -> bool:
+    """Apply the same conservative component rule to report consistency checks."""
+    unknown_configuration = _configuration_unknown if configuration_required else _configuration_marked_unknown
+    return not (
+        _version_unknown(recorded) or _version_unknown(live)
+        or unknown_configuration(recorded) or unknown_configuration(live)
+        or _component_change_reason(recorded, live, prefix="tool") is not None
+    )
+
+
 def _result(
     locator: str,
     state: ComputedFreshness,
@@ -845,6 +878,7 @@ def _result(
     *,
     compared: bool,
 ) -> ConceptFreshnessResult:
+    assert FRESHNESS_REASON_STATES[reason_code] is state
     return ConceptFreshnessResult(
         locator=locator,
         state=state,

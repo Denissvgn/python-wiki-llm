@@ -234,11 +234,13 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
         "source-selection",
         "strict",
         "fail-on",
+        "report-schema",
         "evidence-id",
     }
     assert action["inputs"]["source-selection"]["default"] == ""
     assert action["inputs"]["strict"]["default"] == "true"
     assert action["inputs"]["fail-on"]["default"] == "unhealthy"
+    assert action["inputs"]["report-schema"]["default"] == "v1"
     assert action["inputs"]["evidence-id"]["default"] == "default"
     steps = action["runs"]["steps"]
     scalar_validation = steps[0]
@@ -247,6 +249,7 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
         "INPUT_EVIDENCE_ID": "${{ inputs.evidence-id }}",
         "INPUT_STRICT": "${{ inputs.strict }}",
         "INPUT_FAIL_ON": "${{ inputs.fail-on }}",
+        "INPUT_REPORT_SCHEMA": "${{ inputs.report-schema }}",
     }
     assert "^[a-z0-9][a-z0-9._-]{0,39}$" in scalar_validation["run"]
     assert "true|false" in scalar_validation["run"]

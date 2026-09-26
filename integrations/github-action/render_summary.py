@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from llm_wiki_cli.services.ci_report import validate_doctor_payload
+from llm_wiki_cli.services.contracts import DOCTOR_V3_SCHEMA_VERSION
 from llm_wiki_cli.services.health_summary import (
     FRESHNESS_DISCLOSURE,
     freshness_counts,
@@ -23,6 +24,7 @@ from llm_wiki_cli.services.health_summary import (
 
 SCHEMA_VERSION = "llm-wiki-doctor/v1"
 DASHBOARD_RECEIPT_SCHEMA = "llm-wiki-doctor-dashboard/v1"
+DASHBOARD_RECEIPT_V2_SCHEMA = "llm-wiki-doctor-dashboard/v2"
 SUMMARY_MAX_BYTES = 8192
 SUMMARY_MAX_LINES = 40
 CELL_MAX_BYTES = 240
@@ -353,19 +355,25 @@ def load_report(
     doctor_exit_code: int,
     expected_strict: bool | None = None,
 ) -> Mapping[str, Any]:
-    """Load and strictly validate the complete doctor v1 contract."""
+    """Load and strictly validate a supported health doctor contract."""
 
     try:
-        payload = json.loads(
-            Path(path).read_text(encoding="utf-8"),
-            object_pairs_hook=_strict_json_object,
-            parse_constant=_reject_nonfinite,
-        )
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raw = Path(path).read_bytes()
+    except OSError as exc:
+        raise ValueError(f"doctor report is not readable JSON: {exc}") from exc
+    return _validate_report_bytes(raw, doctor_exit_code=doctor_exit_code, expected_strict=expected_strict)
+
+
+def _validate_report_bytes(
+    raw: bytes, *, doctor_exit_code: int, expected_strict: bool | None,
+) -> Mapping[str, Any]:
+    try:
+        payload = json.loads(raw.decode("utf-8"), object_pairs_hook=_strict_json_object, parse_constant=_reject_nonfinite)
+    except (UnicodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"doctor report is not readable JSON: {exc}") from exc
     report = _required_object(payload, "report", REPORT_FIELDS)
-    if report.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError(f"report.schema_version must be {SCHEMA_VERSION!r}")
+    if report.get("schema_version") not in {SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION}:
+        raise ValueError("report.schema_version must be a supported health doctor version")
     status = _enum(report["status"], "report.status", STATUS_SEVERITY)
     exit_code = report.get("exit_code")
     if (
@@ -474,7 +482,11 @@ def render_summary(
         "",
         FRESHNESS_DISCLOSURE,
         "",
-        "Doctor v1 supplies no per-reason counts, recovery hints or producer versions.",
+        (
+            "Captured coverage, primary concept reasons and producer versions are available in the full v3 JSON."
+            if report["schema_version"] == DOCTOR_V3_SCHEMA_VERSION else
+            "Doctor v1 supplies no per-reason counts, recovery hints or producer versions."
+        ),
         "",
         f"Full JSON: `{_cell(report_name)}`. Text marked `[truncated]` is abbreviated.",
     ]
@@ -511,8 +523,11 @@ def _write_receipt(
     if target.exists() or target.is_symlink():
         raise ValueError("dashboard receipt path must not already exist")
     report_bytes = Path(report_path).read_bytes()
+    captured = _validate_report_bytes(report_bytes, doctor_exit_code=doctor_exit_code, expected_strict=report["strict"])
+    if captured != report:
+        raise ValueError("doctor report changed after validation")
     receipt = {
-        "schema_version": DASHBOARD_RECEIPT_SCHEMA,
+        "schema_version": DASHBOARD_RECEIPT_V2_SCHEMA if report["schema_version"] == DOCTOR_V3_SCHEMA_VERSION else DASHBOARD_RECEIPT_SCHEMA,
         "report_schema_version": report["schema_version"],
         "status": report["status"],
         "strict": report["strict"],

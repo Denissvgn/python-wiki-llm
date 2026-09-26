@@ -15,7 +15,9 @@ from pathlib import Path
 from typing import Any
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from .contracts import DOCTOR_SCHEMA_VERSION
+from .contracts import DOCTOR_SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION
+from .health_details import CapturedHealthDetails
+from .health_contract import validate_health_details
 from .extraction_jobs import ExtractionJobRequest
 from .knowledge_consumption import (
     KnowledgeAvailability,
@@ -84,13 +86,16 @@ class DoctorReport:
     verification_receipt: Mapping[str, object]
     degraded_reasons: tuple[str, ...] = ()
     unhealthy_reasons: tuple[str, ...] = ()
+    health_details: CapturedHealthDetails | None = None
 
     @property
     def exit_code(self) -> int:
         return DOCTOR_EXIT_CODES[self.status]
 
-    def to_payload(self) -> dict[str, object]:
-        return {
+    def to_payload(self, *, report_schema: str = "v1") -> dict[str, object]:
+        if report_schema not in {"v1", "v3"}:
+            raise ValueError("report_schema must be v1 or v3")
+        payload: dict[str, object] = {
             "schema_version": DOCTOR_SCHEMA_VERSION,
             "status": self.status.value,
             "exit_code": self.exit_code,
@@ -106,6 +111,13 @@ class DoctorReport:
             "degraded_reasons": list(self.degraded_reasons),
             "unhealthy_reasons": list(self.unhealthy_reasons),
         }
+        if report_schema == "v3":
+            if self.health_details is None:
+                raise ValueError("doctor v3 requires details captured during evaluation")
+            details = self.health_details.to_payload()
+            validate_health_details(details, wiki_dir=self.wiki_dir, src_dir=self.src_dir, freshness=self.freshness, availability=str(self.availability["state"]))
+            payload.update(schema_version=DOCTOR_V3_SCHEMA_VERSION, health_details=details)
+        return payload
 
 
 def build_doctor_report(
@@ -119,11 +131,14 @@ def build_doctor_report(
     parallel_jobs: int = 1,
     job_request: ExtractionJobRequest | None = None,
     source_selection: str | Path | None = None,
+    report_schema: str = "v1",
 ) -> DoctorReport:
     """Build a doctor report by composing existing strict-lint results."""
 
     if not isinstance(strict, bool):
         raise TypeError("strict must be a boolean")
+    if report_schema not in {"v1", "v3"}:
+        raise ValueError("report_schema must be v1 or v3")
     if not isinstance(allow_external_src, bool):
         raise TypeError("allow_external_src must be a boolean")
     if isinstance(parallel_jobs, bool) or not isinstance(parallel_jobs, int):
@@ -155,6 +170,7 @@ def build_doctor_report(
         plan_reporter=None,
         include_plugins=False,
         source_selection=source_selection,
+        include_health_details=report_schema == "v3",
     )
     return compose_doctor_report(
         lint,
@@ -211,12 +227,13 @@ def compose_doctor_report(
         verification_receipt=verification,
         degraded_reasons=degraded,
         unhealthy_reasons=unhealthy,
+        health_details=lint.health_details,
     )
 
 
-def render_doctor_text(report: DoctorReport) -> str:
+def render_doctor_text(report: DoctorReport, *, report_schema: str = "v1") -> str:
     """Render the report as a compact one-screen human summary."""
-    return _render_doctor_payload(report.to_payload())
+    return _render_doctor_payload(report.to_payload(report_schema=report_schema))
 
 
 def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
@@ -373,7 +390,7 @@ def _snapshot_section(
     view: KnowledgeReadView | None,
 ) -> dict[str, object]:
     del lint
-    if view is None:
+    if view is None or view.availability is KnowledgeAvailability.UNSUPPORTED:
         return {
             "state": "not-available",
             "issue_count": 0,

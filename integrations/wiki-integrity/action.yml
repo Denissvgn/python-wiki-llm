@@ -2,6 +2,10 @@ name: LLM Wiki full integrity gate
 description: Validate a committed LLM Wiki with locked toolchains and fixed allowlisted evidence.
 
 inputs:
+  report-schema:
+    description: CI report contract, v2 or v3 with captured coverage and producer details.
+    required: false
+    default: v2
   wiki-dir:
     description: Repository-relative path to the committed LLM Wiki directory.
     required: false
@@ -416,6 +420,7 @@ runs:
         INPUT_SRC_DIR: ${{ inputs.src-dir }}
         INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
         EVIDENCE_ARTIFACT: llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.sha }}-${{ github.run_attempt }}
+        INPUT_REPORT_SCHEMA: ${{ inputs.report-schema }}
       run: >-
         "${GITHUB_ACTION_PATH}/../../.github/scripts/run-llm-wiki-ci-check.sh"
         --python "${{ steps.setup-python.outputs.python-path }}"
@@ -424,6 +429,7 @@ runs:
         --helper-cache-dir "${LLM_WIKI_CACHE_DIR}"
         --report-dir "${LLM_WIKI_EVIDENCE_DIR}"
         --evidence-artifact "${EVIDENCE_ARTIFACT}"
+        --report-schema "${INPUT_REPORT_SCHEMA}"
         --jobs 1
         --knowledge-drift-report
 

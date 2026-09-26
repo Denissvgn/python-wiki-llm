@@ -206,6 +206,7 @@ def _run(
     delete_raw: bool = False,
     python: Path | None = None,
     environment: dict[str, str] | None = None,
+    report_schema: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     env = dict(case["env"])
     env["FAKE_CLI_EXIT"] = str(cli_exit)
@@ -255,6 +256,8 @@ def _run(
     artifact = env.get("FAKE_EVIDENCE_ARTIFACT")
     if artifact is not None:
         command.extend(["--evidence-artifact", artifact])
+    if report_schema is not None:
+        command.extend(["--report-schema", report_schema])
     return subprocess.run(
         command,
         cwd=case["repo"],
@@ -825,3 +828,27 @@ def test_summary_encodes_filename_backticks_without_markdown_injection(
     summary = wrapper_case["summary"].read_text(encoding="utf-8")
     assert dangerous_name not in summary
     assert "?? evil\\x60**SPOOF**.txt" in summary
+
+
+def test_v3_wrapper_preserves_validated_evidence_and_version_label(wrapper_case, tmp_path):
+    from tests.test_health_details import _ci, _report
+
+    payload = _ci(_report(tmp_path / "wiki"))
+    payload["runtime"]["report"] = {
+        "path": str(Path(wrapper_case["report_dir"]) / "llm-wiki-ci-report.md"),
+        "explicit": True, "status": "written", "error": None,
+    }
+    result = _run(wrapper_case, output=json.dumps(payload), report_schema="v3")
+    assert result.returncode == 0, result.stderr
+    summary = Path(wrapper_case["summary"]).read_text()
+    assert "available (validated llm-wiki-ci-check/v3)" in summary
+    retained = json.loads((Path(wrapper_case["report_dir"]) / "llm-wiki-ci-report.json").read_text())
+    assert retained == payload
+
+
+@pytest.mark.parametrize("value", ["v1", "v99", "v3\nv2", "$(exit 99)", ""])
+def test_wrapper_rejects_unknown_report_schema_before_execution(wrapper_case, value):
+    result = _run(wrapper_case, report_schema=value)
+    assert result.returncode == 2
+    assert "--report-schema must be v2 or v3" in result.stderr
+    assert not Path(wrapper_case["invocations"]).exists()

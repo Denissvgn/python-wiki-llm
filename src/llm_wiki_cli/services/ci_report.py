@@ -20,9 +20,12 @@ from typing import Any
 from .contracts import (
     CI_CHECK_SCHEMA_VERSION,
     CI_CHECK_V2_SCHEMA_VERSION,
+    CI_CHECK_V3_SCHEMA_VERSION,
     DOCTOR_SCHEMA_VERSION,
+    DOCTOR_V3_SCHEMA_VERSION,
 )
 from .doctor_service import compose_doctor_report
+from .health_contract import HealthDetailsError, validate_health_details
 from .health_summary import FRESHNESS_DISCLOSURE, freshness_counts, reason_list, summary_cell
 from .knowledge_observability import KnowledgeAggregateSummary
 from .lint_service import LintReport, report_to_dict
@@ -162,11 +165,13 @@ _JSON_EVIDENCE_STATES = frozenset(
     {
         "available (validated llm-wiki-ci-check/v1)",
         "available (validated llm-wiki-ci-check/v2)",
+        "available (validated llm-wiki-ci-check/v3)",
         "unavailable (no output)",
         "unavailable (unexpected evidence-path collision)",
         "unavailable (could not preserve validated output)",
         "unavailable (invalid v1 output; diagnostic raw available)",
         "unavailable (invalid v2 output; diagnostic raw available)",
+        "unavailable (invalid v3 output; diagnostic raw available)",
         "unavailable (invalid output could not be preserved)",
         "unavailable (empty output)",
         "unavailable (raw output is not a regular file)",
@@ -193,8 +198,8 @@ def build_ci_check_payload(
 
     if not isinstance(report, LintReport):
         raise TypeError("report must be a LintReport")
-    if report_schema not in {"v1", "v2"}:
-        raise ValueError("report_schema must be v1 or v2")
+    if report_schema not in {"v1", "v2", "v3"}:
+        raise ValueError("report_schema must be v1, v2 or v3")
     payload: dict[str, object] = {
         "schema_version": CI_CHECK_SCHEMA_VERSION,
         **report_to_dict(report, include_execution=True),
@@ -204,17 +209,17 @@ def build_ci_check_payload(
         strict=False,
         wiki_dir=report.wiki_dir,
         src_dir=report.src_dir,
-    ).to_payload()
-    if report_schema == "v2":
+    ).to_payload(**({"report_schema": "v3"} if report_schema == "v3" else {}))
+    if report_schema in {"v2", "v3"}:
         check_exit = 0 if report.passed else 1
         effective_exit = check_exit if command_exit_code is None else command_exit_code
         payload.update(
-            schema_version=CI_CHECK_V2_SCHEMA_VERSION,
+            schema_version=CI_CHECK_V3_SCHEMA_VERSION if report_schema == "v3" else CI_CHECK_V2_SCHEMA_VERSION,
             check_exit_code=check_exit,
             command_exit_code=effective_exit,
             runtime=runtime,
         )
-        _validate_ci_v2(payload, cli_exit=effective_exit)
+        validate_ci_check_payload(payload, cli_exit=effective_exit)
     return payload
 
 
@@ -1020,7 +1025,23 @@ def validate_doctor_payload(
     source_selection_mismatch: bool | None = None,
     allow_additive: bool = False,
 ) -> Mapping[str, Any]:
-    """Validate doctor v1 structure, semantics, and overall classification."""
+    """Validate supported health doctor contracts and their classification."""
+
+    if isinstance(value, Mapping) and value.get("schema_version") == DOCTOR_V3_SCHEMA_VERSION:
+        health = _exact_object(value, "report.knowledge_health", _DOCTOR_FIELDS | {"health_details"})
+        legacy = _legacy_doctor_payload(health)
+        validate_doctor_payload(
+            legacy, expected_strict=expected_strict,
+            source_selection_mismatch=source_selection_mismatch,
+        )
+        try:
+            validate_health_details(
+                health["health_details"], wiki_dir=health["wiki_dir"], src_dir=health["src_dir"],
+                freshness=health["freshness"], availability=health["availability"]["state"],
+            )
+        except HealthDetailsError as exc:
+            raise CiCheckReportError(str(exc)) from exc
+        return health
 
     health = _contract_object(
         value,
@@ -1038,6 +1059,23 @@ def validate_doctor_payload(
         expected_strict=expected_strict,
         allow_additive=allow_additive,
     )
+
+
+def _legacy_doctor_payload(health: Mapping[str, Any]) -> dict[str, Any]:
+    legacy = {key: value for key, value in health.items() if key != "health_details"}
+    legacy["schema_version"] = DOCTOR_SCHEMA_VERSION
+    return legacy
+
+
+def _validate_ci_v3(value: Mapping[str, Any], *, cli_exit: int) -> Mapping[str, Any]:
+    health = validate_doctor_payload(value.get("knowledge_health"), expected_strict=False)
+    if health["schema_version"] != DOCTOR_V3_SCHEMA_VERSION:
+        raise CiCheckReportError("CI v3 requires doctor v3 details")
+    legacy = dict(value)
+    legacy["schema_version"] = CI_CHECK_V2_SCHEMA_VERSION
+    legacy["knowledge_health"] = _legacy_doctor_payload(health)
+    _validate_ci_v2(legacy, cli_exit=cli_exit)
+    return value
 
 
 def _validate_ci_v2(value: object, *, cli_exit: int) -> Mapping[str, Any]:
@@ -1140,6 +1178,8 @@ def validate_ci_check_payload(
 ) -> Mapping[str, Any]:
     """Validate CI v1/v2 and distinguish check and required-output failures."""
 
+    if isinstance(value, Mapping) and value.get("schema_version") == CI_CHECK_V3_SCHEMA_VERSION:
+        return _validate_ci_v3(value, cli_exit=cli_exit)
     if (
         isinstance(value, Mapping)
         and value.get("schema_version") == CI_CHECK_V2_SCHEMA_VERSION
@@ -1372,6 +1412,7 @@ def render_ci_summary(
     json_available = json_state in {
         "available (validated llm-wiki-ci-check/v1)",
         "available (validated llm-wiki-ci-check/v2)",
+        "available (validated llm-wiki-ci-check/v3)",
     }
     if report_available is not json_available:
         raise CiCheckReportError("validated report and JSON evidence state disagree")
@@ -1493,7 +1534,7 @@ def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
     validate = commands.add_parser("validate")
     validate.add_argument("--report", required=True)
     validate.add_argument("--cli-exit", required=True, type=int)
-    validate.add_argument("--schema", choices=("v1", "v2"))
+    validate.add_argument("--schema", choices=("v1", "v2", "v3"))
 
     summary = commands.add_parser("render-summary")
     summary.add_argument("--report")

@@ -950,6 +950,19 @@ def test_public_dict_return_annotations_import_and_resolve():
         {"schema_version", "read_scope", "cost", "concept", "graph", "sections",
          "coverage", "limits", "truncated"}, set(),
     )
+    expected_keys.update({
+        api_types.DoctorV3Result: (expected_keys[api_types.DoctorResult][0] | {"health_details"}, set()),
+        api_types.HealthDetails: ({"schema_version", "scope", "evaluation", "snapshot", "basis", "coverage", "reasons"}, set()),
+        api_types.HealthSelection: ({"state", "fingerprint", "inputs_hash"}, set()),
+        api_types.HealthScope: ({"wiki_dir", "src_dir", "selection"}, set()),
+        api_types.HealthEvaluation: ({"state", "reason"}, set()),
+        api_types.HealthSnapshot: ({"validated", "knowledge_index_hash", "evaluated_envelope_hash", "surface_index_hash", "recorded_source_hash", "recorded_markdown_hash", "live_source_hash"}, set()),
+        api_types.HealthComponent: ({"id", "version", "configuration_hash", "limitations"}, set()),
+        api_types.HealthProducer: ({"knowledge_schema_version", "generation_options_hash", "tool", "extractors", "plugins"}, set()),
+        api_types.HealthComparisonBasis: ({"policy", "analysis_contract", "recorded", "live"}, set()),
+        api_types.HealthCoverage: ({"total", "modeled", "unmodeled", "evaluated", "comparison_attempted", "comparable", "outcomes"}, set()),
+        api_types.HealthReason: ({"code", "concepts", "examples", "omitted"}, set()),
+    })
     assert set(expected_keys) | {api_types.KnowledgeMode} == {
         getattr(api_types, name) for name in api_types.__all__
     }

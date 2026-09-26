@@ -103,8 +103,8 @@ def run(args) -> None:
     wiki_dir: str = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     output_format: str = getattr(args, "format", "text")
     report_schema = getattr(args, "report_schema", "v1")
-    if report_schema not in {"v1", "v2"}:
-        raise RuntimeOutputError("--report-schema must be v1 or v2")
+    if report_schema not in {"v1", "v2", "v3"}:
+        raise RuntimeOutputError("--report-schema must be v1, v2 or v3")
     helper_cache_dir: str | None = getattr(args, "helper_cache_dir", None)
     include_tests = getattr(args, "include_tests", None)
     allow_external_src = bool(getattr(args, "allow_external_src", False))
@@ -121,7 +121,7 @@ def run(args) -> None:
     destination = _report_destination(args)
     cache_options = prepare_cache_options(src_dir, cache_options)
     assert cache_options is not None
-    if report_schema == "v2":
+    if report_schema in {"v2", "v3"}:
         cache_options = replace(cache_options, stats_enabled=True)
 
     started = time.monotonic()
@@ -139,6 +139,7 @@ def run(args) -> None:
         plan_reporter=print_extraction_job_plan,
         include_plugins=not bool(getattr(args, "no_plugins", False)),
         source_selection=source_selection,
+        include_health_details=report_schema == "v3",
     )
     if getattr(args, "storage_check", False) or storage_base is not None:
         from ..services.knowledge_storage_diagnostics import storage_report

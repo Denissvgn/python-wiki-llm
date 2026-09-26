@@ -43,6 +43,11 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
 
     assert action["runs"]["using"] == "composite"
     assert action["inputs"] == {
+        "report-schema": {
+            "description": "CI report contract, v2 or v3 with captured coverage and producer details.",
+            "required": False,
+            "default": "v2",
+        },
         "wiki-dir": {
             "description": (
                 "Repository-relative path to the committed LLM Wiki directory."
@@ -467,6 +472,8 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
         "${LLM_WIKI_EVIDENCE_DIR}",
         "--evidence-artifact",
         "${EVIDENCE_ARTIFACT}",
+        "--report-schema",
+        "${INPUT_REPORT_SCHEMA}",
         "--jobs",
         "1",
         "--knowledge-drift-report",

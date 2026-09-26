@@ -10,7 +10,12 @@ from ..services.extraction_jobs import extraction_job_request_from_args
 
 
 def run(args) -> None:
+    report_schema = getattr(args, "report_schema", "v1")
+    if report_schema not in {"v1", "v3"}:
+        raise ValueError("--report-schema must be v1 or v3")
     if getattr(args, "capabilities", False):
+        if report_schema != "v1":
+            raise ValueError("--capabilities and --report-schema are mutually exclusive")
         from ..services.capability_diagnostics import build_capability_doctor, render_capability_doctor
 
         report = build_capability_doctor(
@@ -33,10 +38,11 @@ def run(args) -> None:
         parallel_jobs=getattr(args, "jobs", 1),
         job_request=extraction_job_request_from_args(args),
         source_selection=getattr(args, "source_selection", None),
+        **({"report_schema": report_schema} if report_schema != "v1" else {}),
     )
     if getattr(args, "format", "text") == "json":
-        print(json.dumps(report.to_payload(), indent=2, sort_keys=True))
+        print(json.dumps(report.to_payload(**({"report_schema": report_schema} if report_schema != "v1" else {})), indent=2, sort_keys=True))
     else:
-        print(render_doctor_text(report), end="")
+        print(render_doctor_text(report, report_schema=report_schema), end="")
     if report.exit_code:
         raise SystemExit(report.exit_code)

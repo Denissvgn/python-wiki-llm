@@ -22,6 +22,10 @@ inputs:
     description: Lowest health level that fails the action (unhealthy or degraded).
     required: false
     default: unhealthy
+  report-schema:
+    description: Health report contract, v1 or v3 with captured coverage and producer details.
+    required: false
+    default: v1
   evidence-id:
     description: Safe unique suffix when the action is invoked more than once in one job.
     required: false
@@ -44,6 +48,7 @@ runs:
         INPUT_EVIDENCE_ID: ${{ inputs.evidence-id }}
         INPUT_STRICT: ${{ inputs.strict }}
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_REPORT_SCHEMA: ${{ inputs.report-schema }}
       run: |
         set -euo pipefail
         if [[ ! "${INPUT_EVIDENCE_ID}" =~ ^[a-z0-9][a-z0-9._-]{0,39}$ ]]; then
@@ -57,6 +62,10 @@ runs:
         case "${INPUT_FAIL_ON}" in
           unhealthy|degraded) ;;
           *) printf 'fail-on must be unhealthy or degraded\n' >&2; exit 2 ;;
+        esac
+        case "${INPUT_REPORT_SCHEMA}" in
+          v1|v3) ;;
+          *) printf 'report-schema must be v1 or v3\n' >&2; exit 2 ;;
         esac
 
     - name: Set up Python 3.13
@@ -153,6 +162,7 @@ runs:
           --src-dir "${INPUT_SRC_DIR}"
           --plan
           --format json
+          --report-schema "${INPUT_REPORT_SCHEMA}"
         )
         if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
           plan_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")
@@ -318,6 +328,7 @@ runs:
         INPUT_SRC_DIR: ${{ inputs.src-dir }}
         INPUT_SOURCE_SELECTION: ${{ inputs.source-selection }}
         INPUT_STRICT: ${{ inputs.strict }}
+        INPUT_REPORT_SCHEMA: ${{ inputs.report-schema }}
       run: |
         set -euo pipefail
         case "${INPUT_STRICT}" in
