@@ -36257,7 +36257,7 @@
             "src/llm_wiki_cli/services/health_contract.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 3231,
+          "step_count": 3233,
           "truncated": true
         }
       },
@@ -61083,5 +61083,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:e8fc3f8cad1903df1153deb77ca572ad83f9c68609a2337ea40d2726c6bb1a01"
+  "source_hash": "sha256:980382d74be2ddd8e0f0f54250457f57838da549983494caf53592df5cd5e5dc"
 }

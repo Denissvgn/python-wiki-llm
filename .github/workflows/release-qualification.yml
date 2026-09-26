@@ -2234,11 +2234,25 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          digest-mismatch: error
-          name: candidate-source
-          path: incoming/source
+      - name: Bind expected identity to the frozen candidate
+        env:
+          CANDIDATE_SHA: ${{ needs.freeze.outputs.sha }}
+          CANDIDATE_TREE: ${{ needs.freeze.outputs.tree }}
+          CANDIDATE_VERSION: ${{ needs.freeze.outputs.version }}
+          SOURCE_SHA256: ${{ needs.freeze.outputs.source-sha256 }}
+        run: |
+          python -I - <<'PY'
+          import json, os, pathlib
+          expected = {
+              "version": os.environ["CANDIDATE_VERSION"],
+              "source": {
+                  "sha": os.environ["CANDIDATE_SHA"],
+                  "tree": os.environ["CANDIDATE_TREE"],
+                  "archive_sha256": os.environ["SOURCE_SHA256"],
+              },
+          }
+          pathlib.Path("expected-identity.json").write_text(json.dumps(expected), encoding="utf-8")
+          PY
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           digest-mismatch: error
@@ -2262,7 +2276,7 @@ jobs:
       - name: Verify captured policy and shadow parity
         run: >-
           python -I incoming/tools/release/knowledge_maintenance.py verify
-          --evidence incoming/action/maintenance --identity incoming/source/identity.json
+          --evidence incoming/action/maintenance --identity expected-identity.json
           --policy incoming/tools/release/knowledge-maintenance.json
           --output verification.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

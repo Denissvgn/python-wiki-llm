@@ -24,6 +24,25 @@ WIKI_CI_WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
 REMOTE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 
 
+def test_maintenance_consumer_binds_identity_without_downloading_source():
+    workflow = yaml.safe_load((WORKFLOWS / "release-qualification.yml").read_text())
+    job = workflow["jobs"]["knowledge-maintenance"]
+    assert job["needs"] == ["freeze", "action"]
+    assert "always()" in job["if"] and "needs.freeze.result == 'success'" in job["if"]
+    identity = next(step for step in job["steps"] if step.get("name") == "Bind expected identity to the frozen candidate")
+    assert identity["env"] == {
+        "CANDIDATE_SHA": "${{ needs.freeze.outputs.sha }}",
+        "CANDIDATE_TREE": "${{ needs.freeze.outputs.tree }}",
+        "CANDIDATE_VERSION": "${{ needs.freeze.outputs.version }}",
+        "SOURCE_SHA256": "${{ needs.freeze.outputs.source-sha256 }}",
+    }
+    downloads = [step["with"]["name"] for step in job["steps"] if str(step.get("uses", "")).startswith("actions/download-artifact@")]
+    assert set(downloads) == {"qualification-harnesses", "evidence-action"}
+    verify = next(step for step in job["steps"] if step.get("name") == "Verify captured policy and shadow parity")
+    assert "--identity expected-identity.json" in verify["run"]
+    assert "continue-on-error" not in verify
+
+
 def _test_definitions(relative_path: str) -> set[tuple[str | None, str]]:
     tree = ast.parse((ROOT / relative_path).read_text(encoding="utf-8"))
     definitions: set[tuple[str | None, str]] = set()

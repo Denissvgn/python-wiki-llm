@@ -117,7 +117,7 @@ sequenceDiagram
     p14-->>p17: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
 ```
 
-> Call sequence diagram shows 30 of 3230 interactions; 3200 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3232 interactions; 3202 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
