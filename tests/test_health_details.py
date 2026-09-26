@@ -662,6 +662,39 @@ def test_v3_preflight_failure_has_no_invented_zero_coverage(tmp_path, monkeypatc
     assert result["status"] == "absent"
 
 
+@pytest.mark.parametrize("include", [False, True])
+@pytest.mark.parametrize("stage", ["collection", "partial"])
+def test_report_finalization_preserves_failed_and_partial_capture(
+    recorded_project, monkeypatch, stage, include,
+):
+    if stage == "collection":
+        monkeypatch.setattr(lint_service, "_collect_lint_inputs", lambda *a, **kw: None)
+    else:
+        checks = lint_service._run_report_checks
+
+        def incomplete(report, *args, **kwargs):
+            checks(report, *args, **kwargs)
+            lint_service._add(report, "extractor_failure", "provider incomplete")
+
+        monkeypatch.setattr(lint_service, "_run_report_checks", incomplete)
+    report = lint_service.build_report(
+        "wiki", "source", strict=True, knowledge_drift_report=True,
+        include_plugins=False, include_health_details=include,
+    )
+    if not include:
+        assert report.health_details is None
+        return
+    assert report.health_details is not None
+    payload = report.health_details.to_payload()
+    assert payload["evaluation"]["state"] == ("failed" if stage == "collection" else "partial")
+    if stage == "collection":
+        assert all(value is None for value in payload["coverage"].values())
+        assert payload["snapshot"]["live_source_hash"] is None
+    else:
+        assert payload["coverage"]["evaluated"] > 0
+        assert payload["snapshot"]["live_source_hash"] is not None
+
+
 @pytest.mark.parametrize("wiki_alias", ["./wiki/", "wiki/.", "wiki//"])
 def test_v3_uses_evaluated_scope_for_equivalent_wiki_paths(
     recorded_project, wiki_alias

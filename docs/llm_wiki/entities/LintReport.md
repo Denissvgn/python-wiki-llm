@@ -106,4 +106,4 @@ flowchart LR
 | `_add_extractor_failures` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_add_missing_wiki` | type_reference | [lint_service](../modules/lint_service.md) | — |
 
-> References: showing 12 of 51 logical references; 39 omitted by the 12-row generated summary limit.
+> References: showing 12 of 52 logical references; 40 omitted by the 12-row generated summary limit.

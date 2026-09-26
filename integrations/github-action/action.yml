@@ -162,7 +162,6 @@ runs:
           --src-dir "${INPUT_SRC_DIR}"
           --plan
           --format json
-          --report-schema "${INPUT_REPORT_SCHEMA}"
         )
         if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
           plan_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")
@@ -342,6 +341,7 @@ runs:
           --helper-cache-dir "${LLM_WIKI_DOCTOR_CACHE_DIR}"
           --jobs 1
           --format json
+          --report-schema "${INPUT_REPORT_SCHEMA}"
         )
         if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
           doctor_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")

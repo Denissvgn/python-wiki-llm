@@ -172,6 +172,7 @@ flowchart LR
 | `_new_lint_report` | `(wiki_path: Path, src_dir: str, effective_strict: bool, knowledge_drift_report: bool) -> LintReport` | — | — |
 | `_add_missing_wiki` | `(report: LintReport, wiki_path: Path) -> None` | — | — |
 | `_preflight_lint_inputs` | `(report: LintReport, wiki_path: Path, src_dir: str, source_selection: str \| Path \| None) -> _LintPreflight \| None` | — | — |
+| `_finalize_lint_report` | `(report: LintReport, include_health_details: bool, inputs: _LintInputs \| None = None) -> LintReport` | — | Attach optional health evidence from this operation's captured inputs. |
 | `build_report` | `(wiki_dir: str \| Path, src_dir: str = '.', *, strict: bool = False, knowledge_drift_report: bool = False, profiler: _LintProfiler \| None = None, cache_options: InventoryCacheOptions \| None = None, parallel_jobs: int = 1, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, include_health_details: bool = False) -> LintReport` | — | Build a structured lint report without rendering or exiting. |
 | `_lint_issue_payload` | `(issue: LintIssue) -> dict[str, object]` | — | — |
 | `report_to_dict` | `(report: LintReport, *, include_execution: bool = False) -> dict` | — | — |

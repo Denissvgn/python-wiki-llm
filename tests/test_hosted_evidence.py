@@ -2,6 +2,8 @@
 
 from copy import deepcopy
 import os
+import json
+import tarfile
 from pathlib import Path
 import zipfile
 import io
@@ -9,7 +11,7 @@ import io
 import pytest
 
 from release import hosted_evidence as h, qualification as q
-from tests.hosted_evidence_fixtures import HostedEvidence
+from tests.hosted_evidence_fixtures import HostedEvidence, source_archive
 
 
 @pytest.fixture
@@ -22,11 +24,14 @@ def sharded_hosted(tmp_path, monkeypatch):
     return _hosted(tmp_path, monkeypatch, "windows-sharded")
 
 
-def _hosted(tmp_path, monkeypatch, core_layout):
+def _hosted(tmp_path, monkeypatch, core_layout, maintenance_mode=None):
     source = tmp_path / "source"
     source.mkdir()
     archive = source / "candidate-source.tar"
-    archive.write_bytes(b"owned source")
+    files = {"README.md": b"owned source\n"}
+    if maintenance_mode is not None:
+        files["release/knowledge-maintenance.json"] = json.dumps({"mode": maintenance_mode}).encode()
+    archive.write_bytes(source_archive(files))
     identity = {
         "schema_version": q.IDENTITY_SCHEMA,
         "repository": "owned/repo",
@@ -44,7 +49,7 @@ def _hosted(tmp_path, monkeypatch, core_layout):
     (source / "SHA256SUMS").write_text(
         q.sha256_file(archive) + "  candidate-source.tar\n"
     )
-    server = HostedEvidence(identity, 123, source, core_layout=core_layout)
+    server = HostedEvidence(identity, 123, source, core_layout=core_layout, maintenance=maintenance_mode == "required")
     root = tmp_path / "bundle"
     for spec in server.specs(tmp_path / "inputs"):
         binding, _, directory = spec.partition("=")
@@ -66,6 +71,55 @@ def test_exact_hosted_artifacts_produce_deterministic_complete_bindings(hosted):
     assert result["bindings"]["RD-03:slow"]["files"]["slow.xml"] == q.sha256_file(
         root / "evidence/RD-03/slow/slow.xml"
     )
+
+
+@pytest.mark.parametrize("mode", [None, "shadow", "required", "disabled"])
+def test_frozen_maintenance_mode_controls_authenticated_producer_set(tmp_path, monkeypatch, mode):
+    root, server = _hosted(tmp_path, monkeypatch, "unsharded", mode)
+    ledger = h.verify(root, server.identity, server.context, server.run_id)
+    assert ("RD-10:maintenance" in ledger["bindings"]) is (mode == "required")
+    if mode == "required":
+        producer = next(job for job in server.jobs if job["name"] == "Repository knowledge maintenance")
+        producer["conclusion"] = "failure"
+        with pytest.raises(h.EvidenceError, match="hosted producer did not succeed"):
+            h.verify(root, server.identity, server.context, server.run_id)
+
+
+@pytest.mark.parametrize("content", [None, b"", b"owned source", b"\0" * 100])
+def test_missing_or_malformed_source_archive_is_not_legacy_policy(hosted, content):
+    root, server = hosted
+    archive = root / "evidence/RD-00/source/candidate-source.tar"
+    if content is None:
+        archive.unlink()
+    else:
+        archive.write_bytes(content)
+    with pytest.raises(h.EvidenceError, match="source archive"):
+        h.verify(root, server.identity, server.context, server.run_id)
+
+
+@pytest.mark.parametrize("content", [
+    b'not json', b'\xff', b'[]', b'{"mode":[]}', b'{"mode":"unknown"}',
+    b'{"mode":"required","mode":"disabled"}', b' ' * 65537,
+])
+def test_invalid_policy_cannot_remove_required_maintenance(hosted, content):
+    root, server = hosted
+    archive = root / "evidence/RD-00/source/candidate-source.tar"
+    archive.write_bytes(source_archive({"release/knowledge-maintenance.json": content}))
+    with pytest.raises(h.EvidenceError):
+        h.verify(root, server.identity, server.context, server.run_id)
+
+
+def test_duplicate_policy_members_cannot_override_required_mode(hosted):
+    root, server = hosted
+    path = root / "evidence/RD-00/source/candidate-source.tar"
+    with tarfile.open(path, "w") as archive:
+        for mode in ("required", "disabled"):
+            raw = json.dumps({"mode": mode}).encode()
+            member = tarfile.TarInfo("release/knowledge-maintenance.json")
+            member.size = len(raw)
+            archive.addfile(member, io.BytesIO(raw))
+    with pytest.raises(h.EvidenceError, match="duplicate maintenance"):
+        h.verify(root, server.identity, server.context, server.run_id)
 
 
 @pytest.mark.parametrize(

@@ -293,6 +293,8 @@ def test_action_couples_to_doctor_json_without_scraping_text() -> None:
 
     assert "-I -m llm_wiki_cli.cli doctor" in doctor["run"]
     assert "--format json" in doctor["run"]
+    assert doctor["env"]["INPUT_REPORT_SCHEMA"] == "${{ inputs.report-schema }}"
+    assert '--report-schema "${INPUT_REPORT_SCHEMA}"' in doctor["run"]
     assert doctor["env"]["INPUT_SOURCE_SELECTION"] == ("${{ inputs.source-selection }}")
     assert '--source-selection "${INPUT_SOURCE_SELECTION}"' in doctor["run"]
     assert "render_summary.py" in summary["run"]
@@ -324,6 +326,8 @@ def test_action_plans_and_prepares_every_detected_locked_helper() -> None:
 
     assert "--plan" in plan["run"]
     assert "--format json" in plan["run"]
+    assert "--report-schema" not in plan["run"]
+    assert "INPUT_REPORT_SCHEMA" not in plan["run"]
     assert "llm-wiki-prepare-extractors-plan/v1" in plan["run"]
     assert 'supported = ("typescript", "go", "rust", "haskell")' in plan["run"]
     assert "duplicate object key" in plan["run"]

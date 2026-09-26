@@ -19,6 +19,7 @@ collect_ignore = (
     [
         "test_ci_toolchain_setup.py",
         "test_ci_workflow_wrapper.py",
+        "test_github_action_shell.py",
         "test_llm_wiki_convergence_script.py",
     ]
     if os.name == "nt"

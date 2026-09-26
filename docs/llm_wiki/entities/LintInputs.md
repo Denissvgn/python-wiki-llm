@@ -39,19 +39,22 @@ flowchart LR
     n1["_check_team_issues (src/llm_wiki_cli/services/lint_service.py)"]
     n2["_collect_lint_inputs (src/llm_wiki_cli/services/lint_service.py)"]
     n3["_evaluate_knowledge_lint_state (src/llm_wiki_cli/services/lint_service.py)"]
-    n4["_load_knowledge_lint_state (src/llm_wiki_cli/services/lint_service.py)"]
-    n5["_run_report_checks (src/llm_wiki_cli/services/lint_service.py)"]
+    n4["_finalize_lint_report (src/llm_wiki_cli/services/lint_service.py)"]
+    n5["_load_knowledge_lint_state (src/llm_wiki_cli/services/lint_service.py)"]
+    n6["_run_report_checks (src/llm_wiki_cli/services/lint_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/lint_service.md"
     click n1 "../modules/lint_service.md"
     click n2 "../modules/lint_service.md"
     click n3 "../modules/lint_service.md"
     click n4 "../modules/lint_service.md"
     click n5 "../modules/lint_service.md"
+    click n6 "../modules/lint_service.md"
 ```
 
 ### Summary
@@ -68,5 +71,6 @@ flowchart LR
 | `_collect_lint_inputs` | call | [lint_service](../modules/lint_service.md) | 1 |
 | `_collect_lint_inputs` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_evaluate_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_finalize_lint_report` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_load_knowledge_lint_state` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_run_report_checks` | type_reference | [lint_service](../modules/lint_service.md) | — |
