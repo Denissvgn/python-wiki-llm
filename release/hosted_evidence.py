@@ -14,6 +14,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import stat
+import tarfile
 from typing import Any
 import urllib.error
 import urllib.parse
@@ -53,8 +54,14 @@ def _json(raw: bytes) -> Any:
     return json.loads(raw, object_pairs_hook=unique, parse_constant=invalid)
 
 
-def artifact_contract(layout: str) -> dict[str, tuple[str, str, tuple[str, ...]]]:
+def artifact_contract(
+    layout: str, core_layout: str = "unsharded"
+) -> dict[str, tuple[str, str, tuple[str, ...]]]:
     require(layout in {"legacy", "union"}, "unknown qualifying suite layout")
+    require(
+        core_layout in {"unsharded", "windows-sharded"},
+        "unknown qualifying core layout",
+    )
 
     def core(lane: str) -> str:
         return f"RD-01/RD-02 core ({lane})"
@@ -162,6 +169,41 @@ def artifact_contract(layout: str) -> dict[str, tuple[str, str, tuple[str, ...]]
                 "union.xml",
             ),
         )
+    if core_layout == "windows-sharded":
+        contract["RD-01:windows"] = (
+            "evidence-core-windows-3.13",
+            core("core-windows-3.13"),
+            (
+                "core-windows-3.13.xml",
+                "result-core-windows-3.13.json",
+                "aggregation.json",
+            ),
+        )
+        contract["RD-01:windows-plan"] = (
+            "evidence-core-windows-plan",
+            "Plan Windows core shards",
+            (
+                "preparation.json",
+                "plan.json",
+                "collected.json",
+                "constraints.txt",
+                "collection.log",
+                "started.jsonl",
+            ),
+        )
+        for index in range(2):
+            contract[f"RD-01:windows-shard-{index}"] = (
+                f"evidence-core-windows-shard-{index}",
+                f"Execute Windows core shard ({index})",
+                (
+                    "execution.json",
+                    "collected.json",
+                    "selected.json",
+                    "started.jsonl",
+                    "worker.log",
+                    "junit.xml",
+                ),
+            )
     return contract
 
 
@@ -299,7 +341,9 @@ def zip_inventory(raw: bytes) -> dict[str, str]:
                 "noncanonical artifact member name",
             )
             name = (
-                member.filename.removesuffix("/") if member.is_dir() else member.filename
+                member.filename.removesuffix("/")
+                if member.is_dir()
+                else member.filename
             )
             path = PurePosixPath(name)
             require(
@@ -325,12 +369,46 @@ def zip_inventory(raw: bytes) -> dict[str, str]:
     return dict(sorted(result.items()))
 
 
+def _requires_maintenance(source_archive: Path) -> bool:
+    """Read the optional policy; unavailable or malformed source fails closed."""
+    try:
+        require(not source_archive.is_symlink(), "redirected source archive")
+        with tarfile.open(source_archive, "r:") as archive:
+            policies = [entry for entry in archive if entry.name == "release/knowledge-maintenance.json"]
+            require(len(policies) <= 1, "duplicate maintenance policy member")
+            if not policies:
+                return False
+            policy_entry = policies[0]
+            require(
+                policy_entry.isfile() and 0 <= policy_entry.size <= 65536,
+                "invalid maintenance policy member",
+            )
+            stream = archive.extractfile(policy_entry)
+            if stream is None:
+                raise EvidenceError("missing maintenance policy")
+            with stream:
+                maintenance = _json(stream.read(policy_entry.size + 1))
+            require(
+                isinstance(maintenance, dict)
+                and isinstance(maintenance.get("mode"), str)
+                and maintenance["mode"] in {"shadow", "required", "disabled"},
+                "unsupported maintenance mode",
+            )
+            return maintenance["mode"] == "required"
+    except (OSError, tarfile.TarError, UnicodeError, json.JSONDecodeError, RecursionError) as exc:
+        raise EvidenceError("source archive or maintenance policy cannot be read") from exc
+
+
 def verify(root: Path, identity: dict, context: dict, run_id: int) -> dict:
     """Recompute a provenance ledger from authenticated remote originals."""
     require(type(run_id) is int and run_id > 0, "invalid workflow run ID")
     require(
         isinstance(context, dict)
-        and set(context) == {"run_attempt", "harness_sha256", "suite_layout"},
+        and set(context)
+        in (
+            {"run_attempt", "harness_sha256", "suite_layout"},
+            {"run_attempt", "harness_sha256", "suite_layout", "core_layout"},
+        ),
         "invalid qualification context",
     )
     attempt = context["run_attempt"]
@@ -340,7 +418,14 @@ def verify(root: Path, identity: dict, context: dict, run_id: int) -> dict:
         and re.fullmatch(r"[0-9a-f]{64}", context["harness_sha256"]) is not None,
         "invalid harness commitment",
     )
-    contract = artifact_contract(context["suite_layout"])
+    contract = artifact_contract(
+        context["suite_layout"], context.get("core_layout", "unsharded")
+    )
+    source_archive = root / "evidence/RD-00/source/candidate-source.tar"
+    if _requires_maintenance(source_archive):
+        contract["RD-10:maintenance"] = (
+            "knowledge-maintenance-verification", "Repository knowledge maintenance", ("verification.json",),
+        )
     repository, candidate = identity["repository"], identity["source"]["sha"]
     client = GitHub(repository)
     run = client.get(f"/actions/runs/{run_id}")

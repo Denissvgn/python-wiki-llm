@@ -2,6 +2,8 @@
 
 from copy import deepcopy
 import os
+import json
+import tarfile
 from pathlib import Path
 import zipfile
 import io
@@ -9,15 +11,27 @@ import io
 import pytest
 
 from release import hosted_evidence as h, qualification as q
-from tests.hosted_evidence_fixtures import HostedEvidence
+from tests.hosted_evidence_fixtures import HostedEvidence, source_archive
 
 
 @pytest.fixture
 def hosted(tmp_path, monkeypatch):
+    return _hosted(tmp_path, monkeypatch, "unsharded")
+
+
+@pytest.fixture
+def sharded_hosted(tmp_path, monkeypatch):
+    return _hosted(tmp_path, monkeypatch, "windows-sharded")
+
+
+def _hosted(tmp_path, monkeypatch, core_layout, maintenance_mode=None):
     source = tmp_path / "source"
     source.mkdir()
     archive = source / "candidate-source.tar"
-    archive.write_bytes(b"owned source")
+    files = {"README.md": b"owned source\n"}
+    if maintenance_mode is not None:
+        files["release/knowledge-maintenance.json"] = json.dumps({"mode": maintenance_mode}).encode()
+    archive.write_bytes(source_archive(files))
     identity = {
         "schema_version": q.IDENTITY_SCHEMA,
         "repository": "owned/repo",
@@ -35,7 +49,7 @@ def hosted(tmp_path, monkeypatch):
     (source / "SHA256SUMS").write_text(
         q.sha256_file(archive) + "  candidate-source.tar\n"
     )
-    server = HostedEvidence(identity, 123, source)
+    server = HostedEvidence(identity, 123, source, core_layout=core_layout, maintenance=maintenance_mode == "required")
     root = tmp_path / "bundle"
     for spec in server.specs(tmp_path / "inputs"):
         binding, _, directory = spec.partition("=")
@@ -57,6 +71,65 @@ def test_exact_hosted_artifacts_produce_deterministic_complete_bindings(hosted):
     assert result["bindings"]["RD-03:slow"]["files"]["slow.xml"] == q.sha256_file(
         root / "evidence/RD-03/slow/slow.xml"
     )
+
+
+@pytest.mark.parametrize("mode", [None, "shadow", "required", "disabled"])
+def test_frozen_maintenance_mode_controls_authenticated_producer_set(tmp_path, monkeypatch, mode):
+    root, server = _hosted(tmp_path, monkeypatch, "unsharded", mode)
+    ledger = h.verify(root, server.identity, server.context, server.run_id)
+    assert ("RD-10:maintenance" in ledger["bindings"]) is (mode == "required")
+    if mode == "required":
+        producer = next(job for job in server.jobs if job["name"] == "Repository knowledge maintenance")
+        producer["conclusion"] = "failure"
+        with pytest.raises(h.EvidenceError, match="hosted producer did not succeed"):
+            h.verify(root, server.identity, server.context, server.run_id)
+
+
+@pytest.mark.parametrize("content", [
+    pytest.param(None, id="missing"),
+    pytest.param(b"", id="empty"),
+    pytest.param(b"owned source", id="not-tar"),
+    pytest.param(b"\0" * 100, id="truncated-header"),
+])
+def test_missing_or_malformed_source_archive_is_not_legacy_policy(hosted, content):
+    root, server = hosted
+    archive = root / "evidence/RD-00/source/candidate-source.tar"
+    if content is None:
+        archive.unlink()
+    else:
+        archive.write_bytes(content)
+    with pytest.raises(h.EvidenceError, match="source archive"):
+        h.verify(root, server.identity, server.context, server.run_id)
+
+
+@pytest.mark.parametrize("content", [
+    pytest.param(b'not json', id="invalid-json"),
+    pytest.param(b'\xff', id="invalid-utf8"),
+    pytest.param(b'[]', id="non-object"),
+    pytest.param(b'{"mode":[]}', id="non-string-mode"),
+    pytest.param(b'{"mode":"unknown"}', id="unknown-mode"),
+    pytest.param(b'{"mode":"required","mode":"disabled"}', id="duplicate-mode"),
+    pytest.param(b' ' * 65537, id="oversized-policy"),
+])
+def test_invalid_policy_cannot_remove_required_maintenance(hosted, content):
+    root, server = hosted
+    archive = root / "evidence/RD-00/source/candidate-source.tar"
+    archive.write_bytes(source_archive({"release/knowledge-maintenance.json": content}))
+    with pytest.raises(h.EvidenceError):
+        h.verify(root, server.identity, server.context, server.run_id)
+
+
+def test_duplicate_policy_members_cannot_override_required_mode(hosted):
+    root, server = hosted
+    path = root / "evidence/RD-00/source/candidate-source.tar"
+    with tarfile.open(path, "w") as archive:
+        for mode in ("required", "disabled"):
+            raw = json.dumps({"mode": mode}).encode()
+            member = tarfile.TarInfo("release/knowledge-maintenance.json")
+            member.size = len(raw)
+            archive.addfile(member, io.BytesIO(raw))
+    with pytest.raises(h.EvidenceError, match="duplicate maintenance"):
+        h.verify(root, server.identity, server.context, server.run_id)
 
 
 @pytest.mark.parametrize(
@@ -280,3 +353,63 @@ def test_artifact_redirect_never_receives_the_api_bearer_token(monkeypatch):
 def test_auth_cannot_be_sent_to_another_origin():
     with pytest.raises(h.EvidenceError, match="credentials"):
         h._http("https://owned.invalid/", "secret", 100)
+
+
+def test_sharded_provenance_requires_planner_both_workers_and_logical_gate(
+    sharded_hosted,
+):
+    root, server = sharded_hosted
+    ledger = h.verify(root, server.identity, server.context, server.run_id)
+    assert set(ledger["bindings"]) == set(
+        h.artifact_contract("legacy", "windows-sharded")
+    )
+    for label in ("windows", "windows-plan", "windows-shard-0", "windows-shard-1"):
+        assert ledger["bindings"]["RD-01:" + label]["producer_job_id"] > 0
+
+
+@pytest.mark.parametrize(
+    "binding", ["windows-plan", "windows-shard-0", "windows-shard-1", "windows"]
+)
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing-job",
+        "failed-job",
+        "cancelled-job",
+        "wrong-attempt",
+        "missing-artifact",
+        "stripped-sidecars",
+    ],
+)
+def test_successful_logical_job_cannot_hide_an_invalid_shard_producer(
+    sharded_hosted, binding, mutation
+):
+    root, server = sharded_hosted
+    name, producer, _ = h.artifact_contract("legacy", "windows-sharded")[
+        "RD-01:" + binding
+    ]
+    job = next(j for j in server.jobs if j["name"] == producer)
+    artifact = next(a for a in server.artifacts if a["name"] == name)
+    if mutation == "missing-job":
+        server.jobs.remove(job)
+    elif mutation in {"failed-job", "cancelled-job"}:
+        job["conclusion"] = "failure" if mutation == "failed-job" else "cancelled"
+    elif mutation == "wrong-attempt":
+        job["run_attempt"] += 1
+    elif mutation == "missing-artifact":
+        server.artifacts.remove(artifact)
+    else:
+        directory = root / "evidence/RD-01" / binding
+        for path in directory.glob("*.json"):
+            path.unlink()
+    with pytest.raises(h.EvidenceError):
+        h.verify(root, server.identity, server.context, server.run_id)
+
+
+def test_unsharded_provenance_cannot_adopt_shard_xml_by_changing_the_layout(
+    sharded_hosted,
+):
+    root, server = sharded_hosted
+    server.context["core_layout"] = "unsharded"
+    with pytest.raises(h.EvidenceError, match="unbound"):
+        h.verify(root, server.identity, server.context, server.run_id)

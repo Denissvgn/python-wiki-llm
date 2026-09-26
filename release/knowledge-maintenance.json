@@ -1,0 +1,9 @@
+{
+  "schema_version": "agent-wiki-release-knowledge-maintenance/v1",
+  "mode": "shadow",
+  "policy": "strict-repository-health/v1",
+  "src_dir": ".",
+  "wiki_dir": "docs/llm_wiki",
+  "selection": ".llm-wiki/source-selection.json",
+  "activation": null
+}

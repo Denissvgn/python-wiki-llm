@@ -136,14 +136,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 235 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
-| evaluate_knowledge_freshness | require_validated_artifacts | 234 | `require_validated_artifacts(knowledge)` |
+| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 251 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
+| evaluate_knowledge_freshness | require_validated_artifacts | 250 | `require_validated_artifacts(knowledge)` |
 | require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 163 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 164 | `TypeError('expected validator-issued knowledge artifacts')` |
 | require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 167 | `isinstance(validation, _ArtifactValidation)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 180 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
-| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 237 | `isinstance(knowledge, KnowledgeIndex)` |
-| evaluate_knowledge_freshness | parse_knowledge_index | 236 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
+| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 253 | `isinstance(knowledge, KnowledgeIndex)` |
+| evaluate_knowledge_freshness | parse_knowledge_index | 252 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
 | _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1581 | `_object(value, ...)` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1667 | `dict(require_mapping(...))` |
@@ -156,12 +156,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `evaluate_knowledge_freshness` | `isinstance` | 235 |
+| external_call | `evaluate_knowledge_freshness` | `isinstance` | 251 |
 | external_call | `require_validated_artifacts` | `isinstance` | 163 |
 | external_call | `require_validated_artifacts` | `TypeError` | 164 |
 | external_call | `require_validated_artifacts` | `isinstance` | 167 |
 | external_call | `require_validated_artifacts` | `TypeError` | 180 |
-| external_call | `evaluate_knowledge_freshness` | `isinstance` | 237 |
+| external_call | `evaluate_knowledge_freshness` | `isinstance` | 253 |
 | step_limit | `evaluate_knowledge_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_knowledge_freshness` | `depth limit` | 0 |
 

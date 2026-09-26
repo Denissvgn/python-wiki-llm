@@ -39,11 +39,14 @@ Stable ``llm-wiki-doctor/v1`` Python API payload.
 flowchart LR
     n0["DoctorResult (src/llm_wiki_cli/api_types.py)"]
     n1["TypedDict"]
-    n2["doctor (src/llm_wiki_cli/api.py)"]
+    n2["DoctorV3Result (src/llm_wiki_cli/api_types.py)"]
+    n3["doctor (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/api_types.md"
-    click n2 "../modules/api.md"
+    click n2 "../modules/api_types.md"
+    click n3 "../modules/api.md"
 ```
 
 ### Summary
@@ -57,6 +60,7 @@ flowchart LR
 | Kind | Entity | Module |
 |---|---|---|
 | Base | `TypedDict` | — |
+| Subclass | `DoctorV3Result` | [api_types](../modules/api_types.md) |
 
 ### References
 

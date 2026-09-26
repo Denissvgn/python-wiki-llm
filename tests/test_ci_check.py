@@ -1713,6 +1713,10 @@ def test_ci_summary_renders_validated_health_and_bounded_dirty_paths() -> None:
     assert "- Freshness: `evaluated (6 concepts)`" in summary
     assert "- Snapshot / governance: `valid` / `not-present`" in summary
     assert "- Drift: `current` (confirmed=0, indeterminate=0)" in summary
+    assert "- Scope: wiki `wiki`; source `.`" in summary
+    assert "strict integrity (blocking); non-strict health (advisory)" in summary
+    assert "(governance optional; absent)" in summary
+    assert "- Verification receipt: `absent` (optional; absent)" in summary
 
     long_record = ("a" * 236 + "€" * 3).encode()
     failure = _render_summary(
@@ -1732,6 +1736,117 @@ def test_ci_summary_renders_validated_health_and_bounded_dirty_paths() -> None:
     assert r"path\x60with-mark\xff" in failure
     assert "... 1 additional status records omitted" in failure
     assert "a" * 100 in failure
+
+
+def test_ci_scope_is_escaped_and_all_twenty_dirty_paths_stay_visible() -> None:
+    payload = _ready_ci_payload()
+    for record in (payload, payload["knowledge_health"]):
+        record["wiki_dir"] = "wiki`|\n## forged\u2028row\u202e"
+        record["src_dir"] = "source/" + "界" * 300
+    before = deepcopy(payload)
+    paths = [f"M path-{index:02d}".encode() for index in range(25)]
+    rendered = _render_summary(
+        payload, result="FAIL", tree_state="dirty (25 status records)",
+        status_records=paths, status_count=25,
+    ).decode()
+
+    assert r"wiki\x60\| ## forged row\u202e" in rendered
+    assert "\n## forged" not in rendered and "\u2028" not in rendered and "\u202e" not in rendered
+    assert "... [truncated]" in rendered
+    assert len([line for line in rendered.splitlines() if line.startswith("  - `")]) == 20
+    assert "5 additional status records omitted" in rendered
+    assert payload == before
+    assert len(rendered.splitlines()) <= 40 and len(rendered.encode()) <= 8192
+
+
+def _drift_ci_payload(diagnostics=None):
+    payload = _ready_ci_payload()
+    if diagnostics is None:
+        diagnostics = [
+            {"category": "knowledge_freshness", "message": "Changed producer", "severity": "warning",
+             "path": "modules/account.md", "target": "one-concept",
+             "reason_code": "producer-tool-version-changed", "hint": "Sync with the intended installed producer."},
+            {"category": "knowledge_freshness", "message": "Repeated observation", "severity": "warning",
+             "path": "modules/account.md", "target": "one-concept",
+             "reason_code": "producer-tool-version-changed"},
+            {"category": "knowledge_freshness", "message": "Changed configuration", "severity": "warning",
+             "path": "modules/other.md", "target": "other-concept",
+             "reason_code": "extractor-configuration-changed", "hint": "Use the recorded extraction configuration."},
+        ]
+    payload["diagnostics"] = diagnostics
+    counts = {key: 0 for key in payload["knowledge_health"]["freshness"]["counts_by_state"]}
+    counts.update({"basis-incompatible": 3, "unknown": 3})
+    for key in ("freshness_counts", "freshness_by_state"):
+        payload["knowledge_summary"][key] = dict(counts)
+    health = payload["knowledge_health"]
+    health.update(status="degraded", exit_code=1, degraded_reasons=["freshness-indeterminate"])
+    health["freshness"]["counts_by_state"] = dict(counts)
+    health["drift"].update(
+        state="indeterminate", indeterminate=3, diagnostic_count=len(diagnostics),
+        counts_by_state=dict(counts), reasons=ci_report._finding_reasons(diagnostics),
+    )
+    ci_report.validate_ci_check_payload(payload, cli_exit=0)
+    return payload
+
+
+def test_ci_groups_actual_diagnostic_records_and_supplied_hints_without_rescanning(monkeypatch):
+    payload = _drift_ci_payload()
+    before = deepcopy(payload)
+    def no_evaluation(*_args, **_kwargs):
+        pytest.fail("summary must reuse the validated report")
+    monkeypatch.setattr(ci_report, "compose_doctor_report", no_evaluation)
+    text = _render_summary(payload, evidence_artifact="ci-evidence-123-1").decode()
+
+    assert "Freshness diagnostics: `3` of `3` total records" in text
+    assert "records, may overlap" in text
+    assert "`producer-tool-version-changed=2`" in text
+    assert "`extractor-configuration-changed=1`" in text
+    assert "Sync with the intended installed producer." in text
+    assert "example `modules/account.md`" in text
+    assert "current=0, basis-incompatible=3, unknown=3" in text
+    assert "- Result: **PASS**" in text and "- Knowledge health: `degraded`" in text
+    assert "evidence artifact: `ci-evidence-123-1`" in text
+    assert "2.2.0" not in text and "2.3.0" not in text
+    assert payload == before
+
+
+def test_ci_reason_groups_count_each_record_once_for_each_supplied_reason():
+    payload = _drift_ci_payload()
+    payload["diagnostics"][0]["message"] = (
+        "[reason=producer-tool-version-changed,extractor-configuration-changed]"
+    )
+    payload["knowledge_health"]["drift"]["reasons"] = ci_report._finding_reasons(payload["diagnostics"])
+    text = _render_summary(payload).decode()
+    assert "Freshness diagnostics: `3`" in text
+    assert "`producer-tool-version-changed=2`" in text
+    assert "`extractor-configuration-changed=2`" in text
+    assert "records, may overlap" in text
+
+
+def test_ci_bounds_hostile_and_repeated_drift_details_while_preserving_dirty_paths():
+    rows = []
+    for index in range(20):
+        rows.append({
+            "category": "knowledge_freshness", "message": "drift", "severity": "warning",
+            "path": "file`|\n## forged\u2028row\ud800" + "界" * 1000,
+            "target": "same-concept", "reason_code": f"reason-{index:02d}",
+            "hint": "hint`|\n## forged\u202e" + "界" * 1000,
+        })
+    payload = _drift_ci_payload(rows)
+    text = _render_summary(payload).decode()
+    assert "17 more reasons; see full JSON" in text
+    assert "reason-19=1" not in text
+    assert "... [truncated]" in text
+    assert "\n## forged" not in text and "\u2028" not in text and "\u202e" not in text
+    assert r"hint\x60\| ## forged\u202e" in text
+    paths = [f"M path-{index:02d}".encode() for index in range(25)]
+    dirty = _render_summary(payload, result="FAIL", tree_state="dirty (25 status records)",
+                            status_records=paths, status_count=25).decode()
+    assert "- Result: **FAIL**" in dirty and "- Knowledge health: `degraded`" in dirty
+    assert len([line for line in dirty.splitlines() if line.startswith("  - `")]) == 20
+    assert "Health details abbreviated; see full JSON" in dirty
+    assert "5 additional status records omitted" in dirty
+    assert len(dirty.splitlines()) <= 40 and len(dirty.encode()) <= 8192
 
 
 @pytest.mark.parametrize(

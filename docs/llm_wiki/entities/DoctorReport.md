@@ -1,6 +1,6 @@
 # DoctorReport
 
-**Location:** `src/llm_wiki_cli/services/doctor_service.py:72`
+**Location:** `src/llm_wiki_cli/services/doctor_service.py:59`
 **Kind:** Class
 **Bases:** —
 **Module:** [doctor_service](../modules/doctor_service.md)
@@ -27,13 +27,14 @@ One stable machine report plus its process exit classification.
 | `verification_receipt` | `Mapping[str, object]` | *required* | — |
 | `degraded_reasons` | `tuple[str, ...]` | `()` | — |
 | `unhealthy_reasons` | `tuple[str, ...]` | `()` | — |
+| `health_details` | `CapturedHealthDetails \| None` | `None` | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `exit_code` | `() -> int` | `@property` | — |
-| `to_payload` | `() -> dict[str, object]` | — | — |
+| `to_payload` | `(*, report_schema: str = 'v1') -> dict[str, object]` | — | — |
 
 ## Relationships
 
@@ -57,7 +58,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [doctor_service](../modules/doctor_service.md) | 2 | `availability`, `degraded_reasons`, `drift`, `freshness`, `governance`, `snapshot_parity`, `src_dir`, `status`, `strict`, `unhealthy_reasons`, `verification_receipt`, `wiki_dir` |
+| [doctor_service](../modules/doctor_service.md) | 2 | `availability`, `degraded_reasons`, `drift`, `freshness`, `governance`, `health_details`, `snapshot_parity`, `src_dir`, `status`, `strict`, `unhealthy_reasons`, `verification_receipt` |
 
 ### References
 

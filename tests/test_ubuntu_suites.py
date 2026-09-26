@@ -161,7 +161,7 @@ def test_registry_preserves_the_legacy_selectors_and_freezes_all_helpers():
     for gate in ["security", "product"]:
         command = next(
             step["run"]
-            for step in jobs["core"]["steps"]
+            for step in jobs["core-windows"]["steps"]
             if f"--target-lane {gate}-windows-2025" in step.get("run", "")
         )
         tokens = shlex.split(command.replace("\\\n", " "))
@@ -692,7 +692,7 @@ def test_shadow_workflow_uses_one_runner_and_preserves_platform_consumers():
         in shadow_owner
     )
     assert (
-        '--owner-result "security-windows-2025=${{ needs.core.result }}"'
+        '--owner-result "security-windows-2025=${{ needs.core-windows.result }}"'
         in shadow_owner
     )
     assert (

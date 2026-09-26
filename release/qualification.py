@@ -40,9 +40,11 @@ SKIP_DISCOVERY_SCHEMA = "agent-wiki-release-skip-discovery/v1"
 JUNIT_PROJECTION_SCHEMA = "agent-wiki-release-junit-projection/v1"
 OWNER_LANE_SCHEMA = "agent-wiki-release-owner-lanes/v2"
 DECISION_SCHEMA = "agent-wiki-release-decision/v1"
-QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v3"
+QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v4"
+PREVIOUS_QUALIFICATION_SCHEMA = "agent-wiki-release-qualification/v3"
 VERIFICATION_SCHEMA = "agent-wiki-release-verification/v1"
 WORKFLOW_VERIFICATION_SCHEMA = "agent-wiki-release-workflow-verification/v1"
+ATTESTATION_SELECTION_SCHEMA = "agent-wiki-release-attestation-selection/v1"
 PROMOTION_SCHEMA = "agent-wiki-release-promotion/v1"
 SMOKE_SCHEMA = "agent-wiki-artifact-smoke/v1"
 SMOKE_COMPARISON_SCHEMA = "agent-wiki-artifact-smoke-comparison/v1"
@@ -854,13 +856,15 @@ def project_junit(args: argparse.Namespace) -> int:
     ET.indent(projected_root, space="  ")
     projected_path = args.projected_junit.resolve()
     projected_path.parent.mkdir(parents=True, exist_ok=True)
-    ET.ElementTree(projected_root).write(
-        projected_path,
-        encoding="utf-8",
-        xml_declaration=True,
-        short_empty_elements=True,
-    )
-    with projected_path.open("ab") as stream:
+    # Binary output keeps Windows and Unix projections byte-identical. Passing
+    # a filename to ElementTree instead enables native newline translation.
+    with projected_path.open("wb") as stream:
+        ET.ElementTree(projected_root).write(
+            stream,
+            encoding="utf-8",
+            xml_declaration=True,
+            short_empty_elements=True,
+        )
         stream.write(b"\n")
 
     write_json(
@@ -1466,6 +1470,22 @@ def verify_qualification_completion(args: argparse.Namespace) -> int:
         raise QualificationError(
             f"qualified release bundle did not succeed: {args.bundle_result!r}"
         )
+    if getattr(args, "maintenance_mode", None) == "required":
+        _require_sha(getattr(args, "candidate_tree", None), "maintenance candidate tree")
+        if getattr(args, "maintenance_result", None) != "success" or getattr(args, "maintenance_verification", None) is None:
+            raise QualificationError("required repository maintenance did not succeed")
+        maintenance = load_json(args.maintenance_verification)
+        commitments = maintenance.get("evidence_sha256")
+        if (maintenance.get("schema_version") != "agent-wiki-release-knowledge-verification/v1"
+                or maintenance.get("status") != "pass" or maintenance.get("mode") != "required"
+                or maintenance.get("candidate_sha") != args.candidate_sha
+                or maintenance.get("candidate_tree") != getattr(args, "candidate_tree", None)
+                or maintenance.get("candidate_version") != args.candidate_version
+                or not isinstance(commitments, dict)
+                or set(commitments) != {"ci-report.json", "preflight.json", "policy.json"}
+                or any(not isinstance(value, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None for value in commitments.values())
+                or maintenance.get("error") is not None):
+            raise QualificationError("required repository maintenance receipt is missing or mismatched")
     print("Qualification complete; RD-13 remains BLOCKED pending promotion")
     return 0
 
@@ -1581,18 +1601,34 @@ def _reject_shadow_value(value: object) -> None:
         in {
             "agent-wiki-ubuntu-execution/v1",
             "agent-wiki-ubuntu-shadow-orchestration/v1",
+            "agent-wiki-core-shard-plan/v1",
+            "agent-wiki-core-shard-plan/v2",
+            "agent-wiki-core-shard-freeze/v1",
+            "agent-wiki-core-shard-execution/v1",
+            "agent-wiki-core-shard-execution/v2",
+            "agent-wiki-core-shard-comparison/v1",
+            "agent-wiki-core-shard-comparison/v2",
         }
         or (
             value.get("schema_version") == "agent-wiki-ubuntu-execution/v2"
             and value.get("purpose") != "qualification"
         )
         or (
+            value.get("schema_version") in {
+                "agent-wiki-core-shard-plan/v3",
+                "agent-wiki-core-shard-execution/v3",
+                "agent-wiki-core-shard-preparation/v1",
+                "agent-wiki-core-shard-aggregation/v1",
+            }
+            and (value.get("purpose") != "qualification" or value.get("qualifying") is not True)
+        )
+        or (
             value.get("schema_version") == JUNIT_PROJECTION_SCHEMA
-            and value.get("source_lane") == "ubuntu-union"
+            and value.get("source_lane") in {"ubuntu-union", "core-shard-shadow-windows"}
         )
     ):
         raise QualificationError(
-            "Ubuntu shadow evidence cannot assemble or qualify a release"
+            "Nonqualifying shadow evidence cannot assemble or qualify a release"
         )
 
 
@@ -1608,6 +1644,19 @@ def _hosted_verifier():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _validate_qualifying_knowledge_bundle(root: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "_release_knowledge_maintenance", Path(__file__).with_name("knowledge_maintenance.py"))
+    if spec is None or spec.loader is None:
+        raise QualificationError("knowledge maintenance verifier is missing")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        module.bundle_policy(root)
+    except (OSError, ValueError, KeyError, TypeError, tarfile.TarError) as exc:
+        raise QualificationError(f"repository maintenance admission failed: {exc}") from exc
 
 
 def _hosted_provenance(root: Path, identity: Mapping[str, Any], context: dict, run_id: int) -> dict:
@@ -1699,6 +1748,99 @@ def _validate_qualifying_union_bundle(
         ) from exc
 
 
+def _validate_qualifying_core_bundle(
+    root: Path, identity: Mapping[str, Any], context: Mapping[str, Any], run_id: int
+) -> None:
+    core = root / "evidence/RD-01"
+    sharded = context.get("core_layout", "unsharded") == "windows-sharded"
+    shard_names = {"windows-plan", "windows-shard-0", "windows-shard-1"}
+    present = {p.name for p in core.iterdir() if p.name.startswith("windows-")}
+    if not sharded:
+        if present or (core / "windows/aggregation.json").exists():
+            raise QualificationError("unsharded qualification contains shard evidence")
+        return
+    if present != shard_names:
+        raise QualificationError("qualifying Windows shard evidence is incomplete")
+    try:
+        if __package__:
+            from . import core_shards
+        else:
+            spec = importlib.util.spec_from_file_location(
+                "_release_qualifying_core", Path(__file__).with_name("core_shards.py")
+            )
+            if spec is None or spec.loader is None:
+                raise QualificationError("qualifying core verifier is missing")
+            core_shards = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(core_shards)
+        with tarfile.open(
+            root / "evidence/RD-00/source/candidate-source.tar", "r:"
+        ) as archive:
+            if archive.pax_headers.get("comment") != identity["source"]["sha"]:
+                raise QualificationError("source archive commit differs from identity")
+            member = archive.getmember("release/skip-allowlist.json")
+            if not member.isfile() or member.size > 4 * 1024 * 1024:
+                raise QualificationError("invalid source skip allowlist member")
+            stream = archive.extractfile(member)
+            assert stream is not None
+            allowlist_bytes = stream.read()
+            registry_member = archive.getmember("release/ubuntu-suites.json")
+            if not registry_member.isfile() or registry_member.size > 1024 * 1024:
+                raise QualificationError("invalid source suite registry member")
+            registry_stream = archive.extractfile(registry_member)
+            assert registry_stream is not None
+            registry_bytes = registry_stream.read()
+        with tempfile.TemporaryDirectory(prefix="qualifying-core-") as directory:
+            temporary = Path(directory)
+            allowlist = temporary / "allowlist.json"
+            allowlist.write_bytes(allowlist_bytes)
+            core_shards.validate_aggregation(
+                core / "windows",
+                core / "windows-plan",
+                [core / f"windows-shard-{index}" for index in range(2)],
+                dict(identity),
+                context["harness_sha256"],
+                run_id,
+                context["run_attempt"],
+                allowlist,
+            )
+            registry_path = temporary / "registry.json"
+            registry_path.write_bytes(registry_bytes)
+            registry = load_json(registry_path)
+            # Windows retains the same security/product selectors as Ubuntu.
+            # Recreate both views from the verified complete logical core lane.
+            for kind, gate in (("security", "RD-04"), ("product", "RD-05")):
+                lane = kind + "-windows-2025"
+                project_junit(
+                    argparse.Namespace(
+                        identity=root / "evidence/RD-00/source/identity.json",
+                        source_junit=core / "windows/core-windows-3.13.xml",
+                        source_lane="core-windows-3.13",
+                        target_lane=lane,
+                        selector=registry["gates"][kind + "-ubuntu-24.04"],
+                        projected_junit=temporary / (lane + ".xml"),
+                        receipt=temporary / (lane + "-projection.json"),
+                    )
+                )
+                for filename in (lane + ".xml", lane + "-projection.json"):
+                    expected = temporary / filename
+                    actual = root / "evidence" / gate / "windows" / filename
+                    # The hosted ledger authenticates original bytes. JSON
+                    # replay compares values across Windows/Ubuntu newlines.
+                    equal = (
+                        load_json(expected) == load_json(actual)
+                        if filename.endswith(".json")
+                        else expected.read_bytes() == actual.read_bytes()
+                    )
+                    if not equal:
+                        raise QualificationError(
+                            f"Windows gate projection differs: {filename}"
+                        )
+    except Exception as exc:
+        raise QualificationError(
+            f"qualifying core bundle lineage is invalid: {exc}"
+        ) from exc
+
+
 def build_bundle(args: argparse.Namespace) -> int:
     # Shadow evidence remains inadmissible. Qualifying evidence also requires
     # positive binding to authenticated hosted artifacts below.
@@ -1742,9 +1884,12 @@ def build_bundle(args: argparse.Namespace) -> int:
     )
     gates = _copy_gate_evidence(args.evidence, destination=destination)
     context = {"run_attempt": args.workflow_run_attempt,
-               "harness_sha256": args.harness_sha256, "suite_layout": args.suite_layout}
+               "harness_sha256": args.harness_sha256, "suite_layout": args.suite_layout,
+               "core_layout": getattr(args, "core_layout", "unsharded")}
     producer_provenance = _hosted_provenance(destination, identity, context, args.workflow_run_id)
+    _validate_qualifying_core_bundle(destination, identity, context, args.workflow_run_id)
     _validate_qualifying_union_bundle(destination, identity, context)
+    _validate_qualifying_knowledge_bundle(destination)
     write_json(destination / "hosted-evidence.json", producer_provenance)
 
     write_json(destination / "smoke-wheel.json", wheel_smoke)
@@ -1827,7 +1972,7 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
             "gates",
         ),
     )
-    if manifest["schema_version"] != QUALIFICATION_SCHEMA:
+    if manifest["schema_version"] not in {QUALIFICATION_SCHEMA, PREVIOUS_QUALIFICATION_SCHEMA}:
         raise QualificationError("qualification schema_version is unsupported")
     _require_string(manifest["repository"], "manifest.repository")
     if (
@@ -1836,13 +1981,18 @@ def _validate_manifest(value: object) -> Mapping[str, Any]:
         or manifest["workflow_run_id"] <= 0
     ):
         raise QualificationError("manifest.workflow_run_id must be positive")
+    context_keys = ("run_attempt", "harness_sha256", "suite_layout")
+    if manifest["schema_version"] == QUALIFICATION_SCHEMA:
+        context_keys += ("core_layout",)
     context = _require_object(manifest["qualification_context"], name="qualification context",
-        keys=("run_attempt", "harness_sha256", "suite_layout"))
+        keys=context_keys)
     if type(context["run_attempt"]) is not int or context["run_attempt"] <= 0:
         raise QualificationError("qualification context run_attempt must be positive")
     _require_sha256(context["harness_sha256"], "qualification context harness")
     if context["suite_layout"] not in {"legacy", "union"}:
         raise QualificationError("qualification context suite layout is invalid")
+    if context.get("core_layout", "unsharded") not in {"unsharded", "windows-sharded"}:
+        raise QualificationError("qualification context core layout is invalid")
     source = _require_object(
         manifest["source"],
         name="manifest.source",
@@ -2042,6 +2192,59 @@ def _validate_attestation_receipts(
     workflow_receipt: Mapping[str, Any],
 ) -> None:
     receipts = _load_attestation_receipts(path, label=label)
+    _validate_selected_attestations(
+        receipts,
+        label=label,
+        predicate_type=predicate_type,
+        manifest=manifest,
+        workflow_receipt=workflow_receipt,
+    )
+
+
+def _qualification_run_invocation(manifest: Mapping[str, Any]) -> str:
+    return (
+        f"https://github.com/{manifest['repository']}/actions/runs/"
+        f"{manifest['workflow_run_id']}/attempts/"
+        f"{manifest['qualification_context']['run_attempt']}"
+    )
+
+
+def _validate_selected_attestations(
+    receipts: list[list[object]],
+    *,
+    label: str,
+    predicate_type: str,
+    manifest: Mapping[str, Any],
+    workflow_receipt: Mapping[str, Any],
+) -> None:
+    invocations = _validate_attestation_results(
+        receipts,
+        label=label,
+        predicate_type=predicate_type,
+        manifest=manifest,
+        workflow_receipt=workflow_receipt,
+    )
+    expected = _qualification_run_invocation(manifest)
+    if any(invocation != expected for row in invocations for invocation in row):
+        raise QualificationError(
+            f"{label} run invocation does not match qualification run and attempt"
+        )
+
+
+def _validate_attestation_results(
+    receipts: list[list[object]],
+    *,
+    label: str,
+    predicate_type: str,
+    manifest: Mapping[str, Any],
+    workflow_receipt: Mapping[str, Any],
+) -> list[list[str]]:
+    """Check every CLI-verified result before selecting certificate invocations.
+
+    Cryptographic verification belongs to the preceding trusted ``gh`` step.
+    This checks its complete output, including results from other runs, so
+    filtering cannot hide malformed claims or mismatched subjects/lineage.
+    """
     expected_subjects = {
         artifact["filename"]: artifact["sha256"]
         for artifact in manifest["artifacts"]
@@ -2072,10 +2275,7 @@ def _validate_attestation_receipts(
         f"https://github.com/{repository}/{workflow_path}@{workflow_ref}"
     )
     repository_uri = f"https://github.com/{repository}"
-    run_uri = (
-        f"https://github.com/{repository}/actions/runs/"
-        f"{manifest['workflow_run_id']}"
-    )
+    run_prefix = f"https://github.com/{repository}/actions/runs/"
     expected_certificate = {
         "subjectAlternativeName": signer_uri,
         "issuer": GITHUB_ACTIONS_OIDC_ISSUER,
@@ -2092,7 +2292,11 @@ def _validate_attestation_receipts(
 
     covered_subjects: set[tuple[str, str]] = set()
     expected_pairs = set(expected_subjects.items())
+    invocations: list[list[str]] = []
     for receipt_number, receipt in enumerate(receipts, start=1):
+        if not receipt:
+            raise QualificationError(f"{label} receipt {receipt_number} has no matching results")
+        receipt_invocations: list[str] = []
         receipt_subjects: set[tuple[str, str]] = set()
         for result_number, raw_result in enumerate(receipt, start=1):
             result_name = (
@@ -2196,13 +2400,15 @@ def _validate_attestation_receipts(
                 f"{result_name} certificate runInvocationURI",
             )
             if not re.fullmatch(
-                rf"{re.escape(run_uri)}(?:/attempts/[1-9][0-9]*)?",
+                rf"{re.escape(run_prefix)}[1-9][0-9]*/attempts/[1-9][0-9]*",
                 invocation,
             ):
                 raise QualificationError(
-                    f"{result_name} run invocation does not match "
-                    "qualification run"
+                    f"{result_name} certificate run invocation must identify "
+                    "a repository run and attempt"
                 )
+            receipt_invocations.append(invocation)
+        invocations.append(receipt_invocations)
         covered_subjects.update(receipt_subjects)
 
     if covered_subjects != expected_pairs:
@@ -2211,6 +2417,93 @@ def _validate_attestation_receipts(
             f"missing={sorted(expected_pairs - covered_subjects)}, "
             f"extra={sorted(covered_subjects - expected_pairs)}"
         )
+    return invocations
+
+
+def _validate_workflow_receipt(
+    path: Path, manifest: Mapping[str, Any]
+) -> Mapping[str, Any]:
+    workflow_receipt = _require_object(
+        load_json(path),
+        name="workflow verification receipt",
+        keys=(
+            "schema_version", "repository", "workflow_run_id", "candidate_sha",
+            "workflow_path", "workflow_ref", "workflow_revision", "event",
+        ),
+    )
+    if workflow_receipt["schema_version"] != WORKFLOW_VERIFICATION_SCHEMA:
+        raise QualificationError("workflow verification receipt schema is unsupported")
+    expected_workflow = {
+        "repository": manifest["repository"],
+        "workflow_run_id": manifest["workflow_run_id"],
+        "candidate_sha": manifest["source"]["sha"],
+        "workflow_revision": manifest["source"]["sha"],
+        "event": "workflow_dispatch",
+    }
+    for field, expected in expected_workflow.items():
+        if workflow_receipt[field] != expected:
+            raise QualificationError(
+                f"workflow verification receipt {field} does not match qualification"
+            )
+    return workflow_receipt
+
+
+def select_attestations(args: argparse.Namespace) -> int:
+    """Select one exact attempt from verified CLI output; never emit release GO."""
+    manifest = _validate_manifest(load_json(args.manifest))
+    workflow_receipt = _validate_workflow_receipt(args.workflow_verification, manifest)
+    invocation = _qualification_run_invocation(manifest)
+    output = args.output
+    if output.exists() or output.is_symlink():
+        raise QualificationError("attestation selection output directory must be new")
+    contents: dict[str, bytes] = {}
+    records = {}
+    for label, path, filename, predicate in (
+        ("build provenance", args.build_provenance,
+         "build-provenance-attestations.jsonl", SLSA_PROVENANCE_PREDICATE),
+        ("SPDX SBOM", args.sbom_attestation,
+         "sbom-attestations.jsonl", SPDX_SBOM_PREDICATE),
+    ):
+        receipts = _load_attestation_receipts(path, label=label)
+        invocations = _validate_attestation_results(
+            receipts, label=label, predicate_type=predicate,
+            manifest=manifest, workflow_receipt=workflow_receipt,
+        )
+        selected = [
+            [result for result, actual in zip(receipt, row) if actual == invocation]
+            for receipt, row in zip(receipts, invocations)
+        ]
+        _validate_selected_attestations(
+            selected, label=label, predicate_type=predicate,
+            manifest=manifest, workflow_receipt=workflow_receipt,
+        )
+        contents[filename] = "".join(
+            json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n"
+            for receipt in selected
+        ).encode("utf-8")
+        records[filename] = {
+            "input_filename": path.name,
+            "input_sha256": sha256_file(path),
+            "selected_sha256": _sha256_bytes(contents[filename]),
+            "original_counts": [len(receipt) for receipt in receipts],
+            "selected_counts": [len(receipt) for receipt in selected],
+        }
+    # Validate both predicates completely before creating any selected evidence.
+    output.mkdir(parents=True)
+    for filename, raw in contents.items():
+        (output / filename).write_bytes(raw)
+    write_json(output / "selection.json", {
+        "schema_version": ATTESTATION_SELECTION_SCHEMA,
+        "repository": manifest["repository"],
+        "workflow_run_id": manifest["workflow_run_id"],
+        "run_attempt": manifest["qualification_context"]["run_attempt"],
+        "candidate_sha": manifest["source"]["sha"],
+        "manifest_sha256": sha256_file(args.manifest),
+        "workflow_verification_sha256": sha256_file(args.workflow_verification),
+        "run_invocation": invocation,
+        "receipts": records,
+    })
+    return 0
 
 
 def verify_bundle(args: argparse.Namespace) -> int:
@@ -2331,7 +2624,9 @@ def verify_bundle(args: argparse.Namespace) -> int:
         dict(manifest["qualification_context"]), args.workflow_run_id)
     if producer_provenance != load_json(root / "hosted-evidence.json"):
         raise QualificationError("hosted producer provenance ledger differs")
+    _validate_qualifying_core_bundle(root, frozen_identity, manifest["qualification_context"], args.workflow_run_id)
     _validate_qualifying_union_bundle(root, frozen_identity, manifest["qualification_context"])
+    _validate_qualifying_knowledge_bundle(root)
 
     wheel_smoke = _validate_smoke(load_json(root / "smoke-wheel.json"), "wheel")
     sdist_smoke = _validate_smoke(load_json(root / "smoke-sdist.json"), "sdist")
@@ -2503,34 +2798,7 @@ def finalize_promotion(args: argparse.Namespace) -> int:
             f"missing={sorted(required_evidence - set(evidence))}, "
             f"extra={sorted(set(evidence) - required_evidence)}"
         )
-    workflow_receipt = _require_object(
-        load_json(evidence_paths["workflow-run"]),
-        name="workflow verification receipt",
-        keys=(
-            "schema_version",
-            "repository",
-            "workflow_run_id",
-            "candidate_sha",
-            "workflow_path",
-            "workflow_ref",
-            "workflow_revision",
-            "event",
-        ),
-    )
-    if workflow_receipt["schema_version"] != WORKFLOW_VERIFICATION_SCHEMA:
-        raise QualificationError("workflow verification receipt schema is unsupported")
-    expected_workflow = {
-        "repository": manifest["repository"],
-        "workflow_run_id": manifest["workflow_run_id"],
-        "candidate_sha": manifest["source"]["sha"],
-        "workflow_revision": manifest["source"]["sha"],
-        "event": "workflow_dispatch",
-    }
-    for field, expected in expected_workflow.items():
-        if workflow_receipt[field] != expected:
-            raise QualificationError(
-                f"workflow verification receipt {field} does not match qualification"
-            )
+    workflow_receipt = _validate_workflow_receipt(evidence_paths["workflow-run"], manifest)
     _validate_attestation_receipts(
         evidence_paths["build-provenance"],
         label="build provenance",
@@ -2882,7 +3150,11 @@ def _parser() -> argparse.ArgumentParser:
     completion.add_argument("--decision", type=Path, required=True)
     completion.add_argument("--candidate-sha", required=True)
     completion.add_argument("--candidate-version", required=True)
+    completion.add_argument("--candidate-tree")
     completion.add_argument("--bundle-result", required=True)
+    completion.add_argument("--maintenance-mode", choices=("shadow", "required", "disabled"))
+    completion.add_argument("--maintenance-result")
+    completion.add_argument("--maintenance-verification", type=Path)
     completion.set_defaults(function=verify_qualification_completion)
 
     smoke = subparsers.add_parser("compare-smoke")
@@ -2914,6 +3186,7 @@ def _parser() -> argparse.ArgumentParser:
     bundle.add_argument("--workflow-run-attempt", type=int, required=True)
     bundle.add_argument("--harness-sha256", required=True)
     bundle.add_argument("--suite-layout", choices=("legacy", "union"), required=True)
+    bundle.add_argument("--core-layout", choices=("unsharded", "windows-sharded"), default="unsharded")
     bundle.add_argument("--output", type=Path, required=True)
     bundle.set_defaults(function=build_bundle)
 
@@ -2930,6 +3203,14 @@ def _parser() -> argparse.ArgumentParser:
     verify.add_argument("--check-registry", action="store_true")
     verify.add_argument("--output", type=Path)
     verify.set_defaults(function=verify_bundle)
+
+    selection = subparsers.add_parser("select-attestations")
+    selection.add_argument("--manifest", type=Path, required=True)
+    selection.add_argument("--workflow-verification", type=Path, required=True)
+    selection.add_argument("--build-provenance", type=Path, required=True)
+    selection.add_argument("--sbom-attestation", type=Path, required=True)
+    selection.add_argument("--output", type=Path, required=True)
+    selection.set_defaults(function=select_attestations)
 
     promote = subparsers.add_parser("finalize-promotion")
     promote.add_argument("--manifest", type=Path, required=True)

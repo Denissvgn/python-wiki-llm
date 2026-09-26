@@ -14,7 +14,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 
 | Source | Symbols |
 |--------|---------|
-| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult` |
+| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `DoctorV3Result`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult` |
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.services` | `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
@@ -91,12 +91,12 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 261 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 342 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 357 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 361 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 365 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1367 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 262 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 343 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 358 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 362 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 366 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [ContextSession](../entities/api_ContextSession.md) | 1368 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -143,7 +143,9 @@ flowchart LR
 | `compare_context_packet_basis` | `(packet_bytes: bytes \| bytearray \| memoryview, expected_basis: Mapping[str, Any]) -> ContextBasisComparison` | `@_api_boundary` | Compare caller basis without upgrading it to a currentness claim. |
 | `reconcile_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview, src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> ContextPacketReconciliation` | `@_api_boundary` | Reconcile packet facets against one fresh official read. |
 | `list_wiki_pages` | `(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult` | `@_api_boundary` | Return registry-backed wiki page metadata without source extraction. |
-| `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None) -> DoctorResult` | `@_api_boundary` | Return the stable read-only knowledge health report. |
+| `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None, report_schema: Literal['v1'] = 'v1') -> DoctorResult` | `@overload` | — |
+| `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None, report_schema: Literal['v3']) -> DoctorV3Result` | `@overload` | — |
+| `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None, report_schema: Literal['v1', 'v3'] = 'v1') -> DoctorResult` | `@_api_boundary` | Return the stable read-only knowledge health report. |
 | `build_documentation_query_service` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, helper_cache_dir: str \| Path \| None = None) -> DocumentationGraphQueryService` | `@_native_query_boundary` | Build a supported graph query service over derived documentation data. |
 | `_normalize_query_input` | `(callback: Callable[[], _R], *, field: str = 'request') -> _R` | — | — |
 | `_normalize_query_choice` | `(value: object, *, field: str, allowed: tuple[str, ...]) -> str` | — | — |

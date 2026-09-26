@@ -34,8 +34,14 @@ def _artifacts(tmp_path: Path, version: str, sdist_root: str) -> tuple[Path, Pat
             *(f"src/{name}" for name in package_check._REQUIRED_HELPERS),
             "docs/standalone-documentation.md",
             "release_build_backend.py",
-            *(f"{package_check._SAMPLE_ROOT}/{name}" for name in package_check._SAMPLE_FILES),
-            *(f"src/llm_wiki_cli/{package_check._SAMPLE_ROOT}/{name}" for name in package_check._SAMPLE_FILES),
+            *(
+                f"{package_check._SAMPLE_ROOT}/{name}"
+                for name in package_check._SAMPLE_FILES
+            ),
+            *(
+                f"src/llm_wiki_cli/{package_check._SAMPLE_ROOT}/{name}"
+                for name in package_check._SAMPLE_FILES
+            ),
         ):
             archive.addfile(tarfile.TarInfo(f"{sdist_root}/{name}"), io.BytesIO())
     return wheel, sdist
@@ -48,7 +54,9 @@ def test_matching_release_artifacts_accept_each_version(tmp_path, version):
     package_check._verify_contents(*artifacts)
 
 
-@pytest.mark.parametrize("sdist_root", ["agent_wiki_cli-1.8.0", "another_package-1.8.1"])
+@pytest.mark.parametrize(
+    "sdist_root", ["agent_wiki_cli-1.8.0", "another_package-1.8.1"]
+)
 def test_release_artifacts_reject_mismatched_sdist_identity(tmp_path, sdist_root):
     artifacts = _artifacts(tmp_path, "1.8.1", sdist_root)
 
@@ -56,16 +64,19 @@ def test_release_artifacts_reject_mismatched_sdist_identity(tmp_path, sdist_root
         package_check._verify_contents(*artifacts)
 
 
-@pytest.mark.parametrize("name", [
-    "examples/python-basic/project/app.py",
-    "examples/fastapi-contracts/requirements.txt",
-    "src/llm_wiki_cli/examples/go-http/project/go.mod",
-    "llm_wiki_cli/examples/plugin-hooks/project/tasks.py",
-    "agent_wiki_cli-2.2.0/examples/native-workflow/project/src",
-    "agent_wiki_cli-2.2.0/examples/native-workflow/project/client.py",
-    "llm_wiki_cli/examples/native-workflow/project/request.json",
-    "examples/README.md",
-])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "examples/python-basic/project/app.py",
+        "examples/fastapi-contracts/requirements.txt",
+        "src/llm_wiki_cli/examples/go-http/project/go.mod",
+        "llm_wiki_cli/examples/plugin-hooks/project/tasks.py",
+        "agent_wiki_cli-2.2.0/examples/native-workflow/project/src",
+        "agent_wiki_cli-2.2.0/examples/native-workflow/project/client.py",
+        "llm_wiki_cli/examples/native-workflow/project/request.json",
+        "examples/README.md",
+    ],
+)
 def test_repository_tutorials_are_rejected_from_distributions(name):
     with pytest.raises(RuntimeError, match="repository-only tutorial"):
         package_check._validate_member_names({name})
@@ -83,3 +94,37 @@ def test_bundled_readme_must_match_the_source_mirror(tmp_path):
             archive.writestr(member, data)
     with pytest.raises(RuntimeError, match="source and packaged sample differ"):
         package_check._verify_contents(wheel, sdist)
+
+
+def test_locked_validation_explicitly_uses_its_backend_without_caching_candidate_wheels(
+    tmp_path, monkeypatch
+):
+    commands = []
+    monkeypatch.setattr(
+        package_check.subprocess,
+        "run",
+        lambda command, **kwargs: commands.append((command, kwargs)),
+    )
+    package_check._verify_install(
+        tmp_path / "candidate.tar.gz", tmp_path, build_isolation=False
+    )
+    install = commands[0][0]
+    assert (
+        "--no-build-isolation" in install
+        and "--no-cache-dir" in install
+        and "--no-deps" in install
+    )
+    assert commands[1][1]["env"]["PYTHONPATH"].startswith(str(tmp_path))
+
+
+def test_default_artifact_validation_keeps_build_isolation_for_existing_callers(
+    tmp_path, monkeypatch
+):
+    commands = []
+    monkeypatch.setattr(
+        package_check.subprocess,
+        "run",
+        lambda command, **kwargs: commands.append(command),
+    )
+    package_check._verify_install(tmp_path / "candidate.tar.gz", tmp_path)
+    assert "--no-build-isolation" not in commands[0] and "--no-cache-dir" in commands[0]

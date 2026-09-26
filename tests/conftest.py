@@ -9,6 +9,19 @@ import textwrap
 
 import pytest
 
+from tests.pytest_portability import require_portable_node_ids
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    # Check on every host so an auto-generated payload ID cannot pass locally
+    # and then fail Windows's PYTEST_CURRENT_TEST update after a long CI run.
+    try:
+        require_portable_node_ids(item.nodeid for item in items)
+    except ValueError as exc:
+        raise pytest.UsageError(str(exc)) from exc
+
+
 # True when git is on PATH; used to skip/stub git-dependent steps
 _GIT_AVAILABLE = shutil.which("git") is not None
 
@@ -19,6 +32,7 @@ collect_ignore = (
     [
         "test_ci_toolchain_setup.py",
         "test_ci_workflow_wrapper.py",
+        "test_github_action_shell.py",
         "test_llm_wiki_convergence_script.py",
     ]
     if os.name == "nt"

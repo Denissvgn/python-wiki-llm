@@ -1,0 +1,6 @@
+# Build both independent distributions with the same small tool closure.
+-c requirements.txt
+build==1.5.0
+setuptools==83.0.0
+# Bind the installer used for wheel verification and offline installation.
+pip==26.2

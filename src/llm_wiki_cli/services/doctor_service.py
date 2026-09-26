@@ -10,12 +10,15 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Any
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
-from .contracts import DOCTOR_SCHEMA_VERSION
+from .contracts import DOCTOR_SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION
+from .health_details import CapturedHealthDetails
+from .health_contract import validate_health_details
+from .health_policy import DoctorStatus, DOCTOR_EXIT_CODES, classify_health_sections
+from .health_summary import detailed_health_rows, summary_cell
 from .extraction_jobs import ExtractionJobRequest
 from .knowledge_consumption import (
     KnowledgeAvailability,
@@ -34,22 +37,6 @@ from .sync_manifest import SyncManifest
 from .verification_contracts import VERIFICATION_RECEIPT_FILENAME
 from .wiki_surface_index import SURFACE_INDEX_FILENAME
 
-
-class DoctorStatus(str, Enum):
-    """Closed overall health vocabulary for the doctor contract."""
-
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    ABSENT = "absent"
-
-
-DOCTOR_EXIT_CODES: Mapping[DoctorStatus, int] = {
-    DoctorStatus.HEALTHY: 0,
-    DoctorStatus.DEGRADED: 1,
-    DoctorStatus.UNHEALTHY: 2,
-    DoctorStatus.ABSENT: 3,
-}
 
 _REASON_RE = re.compile(r"\[reason=([a-z0-9-]+(?:,[a-z0-9-]+)*)\]")
 _FRESHNESS_STATES = tuple(state.value for state in ComputedFreshness)
@@ -84,13 +71,16 @@ class DoctorReport:
     verification_receipt: Mapping[str, object]
     degraded_reasons: tuple[str, ...] = ()
     unhealthy_reasons: tuple[str, ...] = ()
+    health_details: CapturedHealthDetails | None = None
 
     @property
     def exit_code(self) -> int:
         return DOCTOR_EXIT_CODES[self.status]
 
-    def to_payload(self) -> dict[str, object]:
-        return {
+    def to_payload(self, *, report_schema: str = "v1") -> dict[str, object]:
+        if report_schema not in {"v1", "v3"}:
+            raise ValueError("report_schema must be v1 or v3")
+        payload: dict[str, object] = {
             "schema_version": DOCTOR_SCHEMA_VERSION,
             "status": self.status.value,
             "exit_code": self.exit_code,
@@ -106,6 +96,13 @@ class DoctorReport:
             "degraded_reasons": list(self.degraded_reasons),
             "unhealthy_reasons": list(self.unhealthy_reasons),
         }
+        if report_schema == "v3":
+            if self.health_details is None:
+                raise ValueError("doctor v3 requires details captured during evaluation")
+            details = self.health_details.to_payload()
+            validate_health_details(details, wiki_dir=self.wiki_dir, src_dir=self.src_dir, freshness=self.freshness, availability=str(self.availability["state"]))
+            payload.update(schema_version=DOCTOR_V3_SCHEMA_VERSION, health_details=details)
+        return payload
 
 
 def build_doctor_report(
@@ -119,11 +116,14 @@ def build_doctor_report(
     parallel_jobs: int = 1,
     job_request: ExtractionJobRequest | None = None,
     source_selection: str | Path | None = None,
+    report_schema: str = "v1",
 ) -> DoctorReport:
     """Build a doctor report by composing existing strict-lint results."""
 
     if not isinstance(strict, bool):
         raise TypeError("strict must be a boolean")
+    if report_schema not in {"v1", "v3"}:
+        raise ValueError("report_schema must be v1 or v3")
     if not isinstance(allow_external_src, bool):
         raise TypeError("allow_external_src must be a boolean")
     if isinstance(parallel_jobs, bool) or not isinstance(parallel_jobs, int):
@@ -155,12 +155,13 @@ def build_doctor_report(
         plan_reporter=None,
         include_plugins=False,
         source_selection=source_selection,
+        include_health_details=report_schema == "v3",
     )
     return compose_doctor_report(
         lint,
         strict=strict,
-        wiki_dir=wiki_text,
-        src_dir=effective_source,
+        wiki_dir=lint.wiki_dir if report_schema == "v3" else wiki_text,
+        src_dir=lint.src_dir if report_schema == "v3" else effective_source,
     )
 
 
@@ -211,12 +212,13 @@ def compose_doctor_report(
         verification_receipt=verification,
         degraded_reasons=degraded,
         unhealthy_reasons=unhealthy,
+        health_details=lint.health_details,
     )
 
 
-def render_doctor_text(report: DoctorReport) -> str:
+def render_doctor_text(report: DoctorReport, *, report_schema: str = "v1") -> str:
     """Render the report as a compact one-screen human summary."""
-    return _render_doctor_payload(report.to_payload())
+    return _render_doctor_payload(report.to_payload(report_schema=report_schema))
 
 
 def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
@@ -275,6 +277,10 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
         lines.append("Unhealthy:            " + ", ".join(payload["unhealthy_reasons"]))
     if payload["degraded_reasons"]:
         lines.append("Degraded:             " + ", ".join(payload["degraded_reasons"]))
+    lines.extend(
+        f"{label}: {summary_cell(value)}"
+        for label, value in detailed_health_rows(payload)
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -373,7 +379,7 @@ def _snapshot_section(
     view: KnowledgeReadView | None,
 ) -> dict[str, object]:
     del lint
-    if view is None:
+    if view is None or view.availability is KnowledgeAvailability.UNSUPPORTED:
         return {
             "state": "not-available",
             "issue_count": 0,
@@ -568,62 +574,8 @@ def _verification_section(
     }
 
 
-def _classify(
-    *,
-    strict: bool,
-    source_selection_mismatch: bool,
-    availability: Mapping[str, object],
-    freshness: Mapping[str, object],
-    snapshot: Mapping[str, object],
-    governance: Mapping[str, object],
-    drift: Mapping[str, object],
-    verification: Mapping[str, object],
-) -> tuple[DoctorStatus, tuple[str, ...], tuple[str, ...]]:
-    availability_state = availability["state"]
-    if availability_state == KnowledgeAvailability.ABSENT.value:
-        if source_selection_mismatch:
-            return DoctorStatus.UNHEALTHY, (), ("source-selection-mismatch",)
-        return DoctorStatus.ABSENT, (), ()
-
-    unhealthy: list[str] = []
-    degraded: list[str] = []
-    if source_selection_mismatch:
-        unhealthy.append("source-selection-mismatch")
-    if availability_state == KnowledgeAvailability.UNSUPPORTED.value:
-        unhealthy.append("knowledge-unsupported")
-    elif availability_state == KnowledgeAvailability.DEGRADED.value:
-        degraded.append("knowledge-degraded")
-    if snapshot["state"] == "mixed":
-        unhealthy.append("mixed-snapshot")
-    if governance["state"] == "invalid":
-        unhealthy.append("invalid-governance")
-    if drift["state"] == "stale-confirmed":
-        unhealthy.append("stale-confirmed")
-    elif drift["state"] == "indeterminate":
-        (
-            unhealthy if strict else degraded
-        ).append("freshness-indeterminate")
-    elif drift["state"] == "nonsemantic-change":
-        (
-            unhealthy if strict else degraded
-        ).append("nonsemantic-source-change")
-    if not freshness["evaluated"]:
-        degraded.append("freshness-unevaluated")
-    expired_reviews = governance["expired_reviews"]
-    if isinstance(expired_reviews, bool) or not isinstance(expired_reviews, int):
-        raise TypeError("governance expired_reviews must be an integer")
-    if expired_reviews > 0:
-        degraded.append("expired-reviews")
-    if verification["state"] in _VERIFICATION_UNHEALTHY_STATES:
-        unhealthy.append(f"verification-{verification['state']}")
-
-    unhealthy_reasons = tuple(dict.fromkeys(unhealthy))
-    degraded_reasons = tuple(dict.fromkeys(degraded))
-    if unhealthy_reasons:
-        return DoctorStatus.UNHEALTHY, degraded_reasons, unhealthy_reasons
-    if degraded_reasons:
-        return DoctorStatus.DEGRADED, degraded_reasons, ()
-    return DoctorStatus.HEALTHY, (), ()
+# Preserve the internal compatibility name while sharing the same classifier.
+_classify = classify_health_sections
 
 
 def _issues(

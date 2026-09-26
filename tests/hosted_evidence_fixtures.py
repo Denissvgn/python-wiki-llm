@@ -3,16 +3,31 @@
 from copy import deepcopy
 import io
 from pathlib import Path
+import tarfile
 import zipfile
 
 from release import hosted_evidence as hosted
 
 
+def source_archive(files):
+    """Build deterministic frozen-source bytes, including real TAR headers."""
+    stream = io.BytesIO()
+    with tarfile.open(fileobj=stream, mode="w", format=tarfile.PAX_FORMAT) as archive:
+        for name, data in sorted(files.items()):
+            member = tarfile.TarInfo(name)
+            member.size = len(data)
+            archive.addfile(member, io.BytesIO(data))
+    return stream.getvalue()
+
+
 class HostedEvidence:
-    def __init__(self, identity, run_id, source, layout="legacy"):
+    def __init__(
+        self, identity, run_id, source, layout="legacy", core_layout="unsharded", maintenance=False
+    ):
         self.identity = identity
         self.run_id = run_id
         self.layout = layout
+        self.core_layout = core_layout
         self.run = {
             "id": run_id,
             "run_attempt": 1,
@@ -24,7 +39,12 @@ class HostedEvidence:
             "repository": {"id": 10, "full_name": identity["repository"]},
             "head_repository": {"id": 10, "full_name": identity["repository"]},
         }
-        contract = hosted.artifact_contract(layout)
+        contract = hosted.artifact_contract(layout, core_layout)
+        if maintenance:
+            contract["RD-10:maintenance"] = (
+                "knowledge-maintenance-verification", "Repository knowledge maintenance", ("verification.json",),
+            )
+        self.contract = contract
         self.jobs = [
             {
                 "id": number,
@@ -83,6 +103,8 @@ class HostedEvidence:
             "run_attempt": 1,
             "harness_sha256": hosted.sha256(b"owned frozen harness"),
         }
+        if core_layout != "unsharded":
+            self.context["core_layout"] = core_layout
 
     @staticmethod
     def file_bytes(name):
@@ -118,7 +140,7 @@ class HostedEvidence:
 
     def replace_files(self, binding, files):
         self.files[binding] = files
-        name = hosted.artifact_contract(self.layout)[binding][0]
+        name = self.contract[binding][0]
         artifact = next(row for row in self.artifacts if row["name"] == name)
         raw = self.zip(files)
         self.archives[artifact["id"]] = raw

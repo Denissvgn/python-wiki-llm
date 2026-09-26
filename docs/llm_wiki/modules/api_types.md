@@ -103,4 +103,15 @@ flowchart LR
 | [DoctorDrift](../entities/DoctorDrift.md) | Class | 463 | `TypedDict` | — |
 | [DoctorVerificationReceipt](../entities/DoctorVerificationReceipt.md) | Class | 473 | `TypedDict` | — |
 | [DoctorResult](../entities/DoctorResult.md) | Class | 480 | `TypedDict` | Stable ``llm-wiki-doctor/v1`` Python API payload. |
-| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 499 | `TypedDict` | Bounded component results sharing one source/wiki read scope. |
+| [HealthSelection](../entities/HealthSelection.md) | Class | 499 | `TypedDict` | — |
+| [HealthScope](../entities/HealthScope.md) | Class | 505 | `TypedDict` | — |
+| [HealthEvaluation](../entities/HealthEvaluation.md) | Class | 511 | `TypedDict` | — |
+| [HealthSnapshot](../entities/HealthSnapshot.md) | Class | 516 | `TypedDict` | — |
+| [HealthComponent](../entities/HealthComponent.md) | Class | 526 | `TypedDict` | — |
+| [HealthProducer](../entities/HealthProducer.md) | Class | 533 | `TypedDict` | — |
+| [HealthComparisonBasis](../entities/HealthComparisonBasis.md) | Class | 541 | `TypedDict` | — |
+| [HealthCoverage](../entities/HealthCoverage.md) | Class | 548 | `TypedDict` | — |
+| [HealthReason](../entities/HealthReason.md) | Class | 558 | `TypedDict` | — |
+| [HealthDetails](../entities/HealthDetails.md) | Class | 565 | `TypedDict` | — |
+| [DoctorV3Result](../entities/DoctorV3Result.md) | Class | 575 | `DoctorResult` | Opt-in health report with captured coverage and comparison evidence. |
+| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 581 | `TypedDict` | Bounded component results sharing one source/wiki read scope. |

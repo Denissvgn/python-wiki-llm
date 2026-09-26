@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 597 | [Open section](#entities) |
-| Modules | 203 | [Open section](#modules) |
-| Workflows | 155 | [Open section](#workflows) |
+| Entities | 611 | [Open section](#entities) |
+| Modules | 208 | [Open section](#modules) |
+| Workflows | 157 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 453 | [Open section](#entry-point-flows) |
+| Entry-point flows | 454 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -57,6 +57,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [Candidate](entities/Candidate.md)
 - [CanonicalArray](entities/CanonicalArray.md)
 - [CapturedContextRead](entities/CapturedContextRead.md)
+- [CapturedHealthDetails](entities/CapturedHealthDetails.md)
 - [CapturedStream](entities/CapturedStream.md)
 - [CheckerContract](entities/CheckerContract.md)
 - [CiCheckReportError](entities/CiCheckReportError.md)
@@ -115,6 +116,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DoctorResult](entities/DoctorResult.md)
 - [DoctorSnapshotParity](entities/DoctorSnapshotParity.md)
 - [DoctorStatus](entities/DoctorStatus.md)
+- [DoctorV3Result](entities/DoctorV3Result.md)
 - [DoctorVerificationReceipt](entities/DoctorVerificationReceipt.md)
 - [DocumentRecord](entities/DocumentRecord.md)
 - [DocumentationAgentPacket](entities/DocumentationAgentPacket.md)
@@ -224,6 +226,17 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HaskellExtractionRequest](entities/HaskellExtractionRequest.md)
 - [HaskellExtractor](entities/HaskellExtractor.md)
 - [HeadingCandidate](entities/HeadingCandidate.md)
+- [HealthComparisonBasis](entities/HealthComparisonBasis.md)
+- [HealthComponent](entities/HealthComponent.md)
+- [HealthCoverage](entities/HealthCoverage.md)
+- [HealthDetails](entities/HealthDetails.md)
+- [HealthDetailsError](entities/HealthDetailsError.md)
+- [HealthEvaluation](entities/HealthEvaluation.md)
+- [HealthProducer](entities/HealthProducer.md)
+- [HealthReason](entities/HealthReason.md)
+- [HealthScope](entities/HealthScope.md)
+- [HealthSelection](entities/HealthSelection.md)
+- [HealthSnapshot](entities/HealthSnapshot.md)
 - [HelperPrepareResult](entities/HelperPrepareResult.md)
 - [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
 - [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
@@ -330,6 +343,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [MCPDependencyError](entities/MCPDependencyError.md)
 - [MachineVerificationAvailability](entities/MachineVerificationAvailability.md)
 - [MachineVerificationReadView](entities/MachineVerificationReadView.md)
+- [MaintenanceError](entities/MaintenanceError.md)
 - [MaintenanceQueueResult](entities/MaintenanceQueueResult.md)
 - [ManagedLifecycleState](entities/ManagedLifecycleState.md)
 - [ManagedReferenceInboundRoute](entities/ManagedReferenceInboundRoute.md)
@@ -680,6 +694,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [go_calls](modules/go_calls.md) - Resolve captured Go call bindings only within evidenced package scopes.
 - [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
+- [health_contract](modules/health_contract.md) - Closed detailed-health contract shared by doctor and CI report readers.
+- [health_details](modules/health_details.md) - Capture detailed health once from an operation's already evaluated inputs.
+- [health_policy](modules/health_policy.md) - Pure release-health decisions derived from one validated CI evaluation.
+- [health_summary](modules/health_summary.md) - Pure presentation helpers for detailed local and CI health reports.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
@@ -708,6 +726,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_index](modules/knowledge_index.md) - Pure construction and validation of the native knowledge index.
 - [knowledge_links](modules/knowledge_links.md) - Lossless, deterministic observations of links in canonical Markdown.
 - [knowledge_loader](modules/knowledge_loader.md) - Authoritative validation and fallback boundary for generated knowledge state.
+- [knowledge_maintenance](modules/knowledge_maintenance.md) - Read-only candidate/producer preflight and bound health-policy commands.
 - [knowledge_model](modules/knowledge_model.md) - Typed contract and stdlib validation for ``llm-wiki-knowledge/v1``.
 - [knowledge_observability](modules/knowledge_observability.md) - Privacy-safe observability for native knowledge consumers.
 - [knowledge_orchestration](modules/knowledge_orchestration.md) - Command-facing orchestration for generated native knowledge artifacts.
@@ -866,6 +885,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_task_read](workflows/build_task_read.md) - entry: `task_context.build_task_read`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
 - [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet.capture_context_read`
+- [capture_health_details](workflows/capture_health_details.md) - entry: `health_details.capture_health_details`
 - [capture_protocol_enrichment_session](workflows/capture_protocol_enrichment_session.md) - entry: `context_service._capture_protocol_enrichment_session`
 - [capture_slice](workflows/capture_slice.md) - entry: `knowledge_storage_access._capture_slice`
 - [captured_query_service](workflows/captured_query_service.md) - entry: `context_packet._captured_query_service`
@@ -915,6 +935,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [planned_generated_surface_prune](workflows/planned_generated_surface_prune.md) - entry: `sync_cmd._planned_generated_surface_prune`
 - [planned_write](workflows/planned_write.md) - entry: `knowledge_artifacts._planned_write`
 - [plugins_cmd_flow](workflows/plugins_cmd_flow.md) - entry: `plugins_cmd.run`
+- [preflight](workflows/preflight.md) - entry: `knowledge_maintenance.preflight`
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
 - [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
 - [preflight_lint_source_selection](workflows/preflight_lint_source_selection.md) - entry: `lint_service._preflight_lint_source_selection`
@@ -1455,6 +1476,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 - [process-ci_report](flows/process-ci_report.md) - entry: `main`
 - [process-cli](flows/process-cli.md) - entry: `main`
+- [process-knowledge_maintenance](flows/process-knowledge_maintenance.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
 

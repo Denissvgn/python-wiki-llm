@@ -52,6 +52,7 @@ from .inventory_cache import (
 from .progress import phase as progress_phase
 from .io import read_md
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from .health_details import CapturedHealthDetails, capture_health_details
 from .knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadView,
@@ -292,6 +293,7 @@ class LintReport:
     # validated read without reloading artifacts or re-running extraction.
     knowledge_enabled: bool = False
     knowledge_view: KnowledgeReadView | None = None
+    health_details: CapturedHealthDetails | None = None
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -2651,6 +2653,26 @@ def _preflight_lint_inputs(
     return _LintPreflight(team_policy, selection_inputs, manifest)
 
 
+def _finalize_lint_report(
+    report: LintReport,
+    include_health_details: bool,
+    inputs: _LintInputs | None = None,
+) -> LintReport:
+    """Attach optional health evidence from this operation's captured inputs."""
+    if include_health_details:
+        view = report.knowledge_view if inputs is not None else None
+        report.health_details = capture_health_details(
+            view,
+            wiki_dir=report.wiki_dir,
+            src_dir=report.src_dir,
+            source_snapshot=inputs.source_snapshot if inputs is not None else None,
+            evaluation_failed=inputs is None or bool(report.count("extractor_failure")) or (
+                view is not None and view.ready and view.freshness is None
+            ),
+        )
+    return report
+
+
 def build_report(
     wiki_dir: str | Path,
     src_dir: str = ".",
@@ -2668,8 +2690,11 @@ def build_report(
     include_plugins: bool = True,
     source_plugins_only: bool = False,
     source_selection: str | Path | None = None,
+    include_health_details: bool = False,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
+    if not isinstance(include_health_details, bool):
+        raise TypeError("include_health_details must be a boolean")
     wiki_path = Path(wiki_dir)
     effective_strict = bool(strict or knowledge_drift_report)
     report = _new_lint_report(
@@ -2677,7 +2702,7 @@ def build_report(
     )
     preflight = _preflight_lint_inputs(report, wiki_path, src_dir, source_selection)
     if preflight is None:
-        return report
+        return _finalize_lint_report(report, include_health_details)
     cache_options = prepare_cache_options(src_dir, cache_options)
     inputs = _collect_lint_inputs(
         report,
@@ -2698,7 +2723,7 @@ def build_report(
         manifest=preflight.manifest,
     )
     if inputs is None:
-        return report
+        return _finalize_lint_report(report, include_health_details)
     _run_report_checks(
         report,
         wiki_path,
@@ -2710,7 +2735,7 @@ def build_report(
         include_plugins,
         source_plugins_only,
     )
-    return report
+    return _finalize_lint_report(report, include_health_details, inputs)
 
 
 def _lint_issue_payload(issue: LintIssue) -> dict[str, object]:

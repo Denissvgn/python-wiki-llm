@@ -2,7 +2,7 @@
 
 **Entry point:** `render_doctor_text` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [doctor_service](../modules/doctor_service.md)
+**Modules touched:** [doctor_service](../modules/doctor_service.md), [health_summary](../modules/health_summary.md)
 
 ## Call sequence
 
@@ -18,8 +18,18 @@ sequenceDiagram
     participant p6 as lines.append
     participant p7 as lines.extend
     participant p8 as ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)
-    participant p9 as '\n'.join
-    participant p10 as report.to_payload
+    participant p9 as summary_cell
+    participant p10 as len (src/llm_wiki_cli/services…th_summary.py:summary_cell)
+    participant p11 as ValueError
+    participant p12 as str
+    participant p13 as unicodedata.category
+    participant p14 as ord
+    participant p15 as character.replace(…).replace
+    participant p16 as character.replace
+    participant p17 as pieces.append
+    participant p18 as piece.encode
+    participant p19 as (…).join(…).encode
+    participant p20 as ''.join
     p0->>p1: _render_doctor_payload
     p1-->>p2: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)
     p1-->>p2: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)
@@ -36,9 +46,23 @@ sequenceDiagram
     p1-->>p8: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)
     p1-->>p6: lines.append
     p1-->>p8: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)
-    p1-->>p9: '\n'.join
-    p0-->>p10: report.to_payload
+    p1-->>p7: lines.extend
+    p1->>p9: summary_cell
+    p9-->>p10: len (src/llm_wiki_cli/services…th_summary.py:summary_cell)
+    p9-->>p11: ValueError
+    p9-->>p12: str
+    p9-->>p13: unicodedata.category
+    p9-->>p14: ord
+    p9-->>p15: character.replace(…).replace
+    p9-->>p16: character.replace
+    p9-->>p17: pieces.append
+    p9-->>p10: len (src/llm_wiki_cli/services…th_summary.py:summary_cell)
+    p9-->>p18: piece.encode
+    p9-->>p19: (…).join(…).encode
+    p9-->>p20: ''.join
 ```
+
+> Call sequence diagram shows 30 of 63 interactions; 33 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -76,6 +100,8 @@ flowchart LR
     s2 -. "mutation lines.append" .-> b2
     b3["mutation lines.append"]
     s2 -. "mutation lines.append" .-> b3
+    b4["mutation lines.extend"]
+    s2 -. "mutation lines.extend" .-> b4
     click s1 "../modules/doctor_service.md"
     click s2 "../modules/doctor_service.md"
     click s9 "../modules/doctor_service.md"
@@ -84,13 +110,14 @@ flowchart LR
     class b1 boundary
     class b2 boundary
     class b3 boundary
+    class b4 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `render_doctor_text` | `report: DoctorReport` | - | - | `_render_doctor_payload(...)` |
+| `render_doctor_text` | `report: DoctorReport`, `report_schema: str` | - | - | `_render_doctor_payload(...)` |
 | `_render_doctor_payload` | `payload: Mapping[str, Any]` | `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping`, `Mapping` | - | `...` |
 | `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)` | - | - | - | - |
@@ -107,39 +134,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_doctor_text | _render_doctor_payload | 219 | `_render_doctor_payload(report.to_payload(...))` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 229 | `isinstance(availability, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 230 | `isinstance(freshness, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 231 | `isinstance(snapshot, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 232 | `isinstance(governance, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 233 | `isinstance(drift, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 234 | `isinstance(verification, Mapping)` |
-| _render_doctor_payload | _format_counts | 236 | `_format_counts(freshness[...])` |
-| _format_counts | isinstance (src/llm_wiki_cli/services…_service.py:_format_counts) | 654 | `isinstance(value, Mapping)` |
-| _format_counts | ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts) | 656 | `', '.join(...)` |
-| _render_doctor_payload | lines.append | 247 | `lines.append(...)` |
+| render_doctor_text | _render_doctor_payload | 221 | `_render_doctor_payload(report.to_payload(...))` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 231 | `isinstance(availability, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 232 | `isinstance(freshness, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 233 | `isinstance(snapshot, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 234 | `isinstance(governance, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 235 | `isinstance(drift, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 236 | `isinstance(verification, Mapping)` |
+| _render_doctor_payload | _format_counts | 238 | `_format_counts(freshness[...])` |
+| _format_counts | isinstance (src/llm_wiki_cli/services…_service.py:_format_counts) | 606 | `isinstance(value, Mapping)` |
+| _format_counts | ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts) | 608 | `', '.join(...)` |
+| _render_doctor_payload | lines.append | 249 | `lines.append(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.append` | `_render_doctor_payload` | 247 |
-| mutation | `lines.extend` | `_render_doctor_payload` | 248 |
-| mutation | `lines.append` | `_render_doctor_payload` | 275 |
+| mutation | `lines.append` | `_render_doctor_payload` | 249 |
+| mutation | `lines.extend` | `_render_doctor_payload` | 250 |
 | mutation | `lines.append` | `_render_doctor_payload` | 277 |
+| mutation | `lines.append` | `_render_doctor_payload` | 279 |
+| mutation | `lines.extend` | `_render_doctor_payload` | 280 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_render_doctor_payload` | `isinstance` | 229 |
-| external_call | `_render_doctor_payload` | `isinstance` | 230 |
 | external_call | `_render_doctor_payload` | `isinstance` | 231 |
 | external_call | `_render_doctor_payload` | `isinstance` | 232 |
 | external_call | `_render_doctor_payload` | `isinstance` | 233 |
 | external_call | `_render_doctor_payload` | `isinstance` | 234 |
-| external_call | `_format_counts` | `isinstance` | 654 |
-| unresolved_call | `_format_counts` | `', '.join` | 656 |
+| external_call | `_render_doctor_payload` | `isinstance` | 235 |
+| external_call | `_render_doctor_payload` | `isinstance` | 236 |
+| external_call | `_format_counts` | `isinstance` | 606 |
+| unresolved_call | `_format_counts` | `', '.join` | 608 |
 | step_limit | `render_doctor_text` | `first 12 steps` | 0 |
 
 ## Behavior

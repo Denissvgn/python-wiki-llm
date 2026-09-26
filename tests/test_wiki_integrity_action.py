@@ -43,6 +43,23 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
 
     assert action["runs"]["using"] == "composite"
     assert action["inputs"] == {
+        "maintenance-candidate-sha": {
+            "description": "Optional exact candidate SHA for advisory producer preflight and health evidence; requires report-schema v3.",
+            "required": False, "default": "",
+        },
+        "maintenance-identity": {
+            "description": "Optional verified frozen-source identity path, paired with maintenance-source-archive.",
+            "required": False, "default": "",
+        },
+        "maintenance-source-archive": {
+            "description": "Frozen source archive bound by maintenance-identity.",
+            "required": False, "default": "",
+        },
+        "report-schema": {
+            "description": "CI report contract, v2 or v3 with captured coverage and producer details.",
+            "required": False,
+            "default": "v2",
+        },
         "wiki-dir": {
             "description": (
                 "Repository-relative path to the committed LLM Wiki directory."
@@ -70,7 +87,9 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
 
     steps = action["runs"]["steps"]
     assert all(step.get("shell") == "bash" for step in steps if "run" in step)
-    assert all("continue-on-error" not in step for step in steps)
+    advisory = {"Check installed candidate and recorded producer", "Derive advisory repository health policy from CI"}
+    assert {step["name"] for step in steps if step.get("continue-on-error")} == advisory
+    assert all("continue-on-error" not in step for step in steps if step.get("name") not in advisory)
     expected_environment = {
         "CI": "true",
         "PIP_NO_INPUT": "1",
@@ -90,8 +109,9 @@ def test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only() -
     assert [step["uses"] for step in steps if "uses" in step] == [
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1",
         "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
         "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
-        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     ]
 
     source = ACTION_PATH.read_text(encoding="utf-8")
@@ -99,9 +119,9 @@ def test_full_integrity_action_is_pinned_caller_checkout_owned_and_read_only() -
         "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0",
         "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
         "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
-        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2",
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1",
     ):
-        assert source.count(reviewed_line) == 1
+        assert source.count(reviewed_line) == (2 if reviewed_line.startswith("actions/upload-artifact@") else 1)
     assert "actions/checkout@" not in source
     for use in re.findall(r"^\s*uses:\s*(\S+)", source, flags=re.MULTILINE):
         assert re.fullmatch(r"[^@]+@[0-9a-f]{40}", use)
@@ -465,6 +485,10 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
         "${LLM_WIKI_CACHE_DIR}",
         "--report-dir",
         "${LLM_WIKI_EVIDENCE_DIR}",
+        "--evidence-artifact",
+        "${EVIDENCE_ARTIFACT}",
+        "--report-schema",
+        "${INPUT_REPORT_SCHEMA}",
         "--jobs",
         "1",
         "--knowledge-drift-report",
@@ -524,6 +548,8 @@ def test_full_integrity_action_reserves_and_always_uploads_allowlisted_evidence(
     assert upload == steps[-1]
     assert upload["if"] == "always()"
     artifact_name = upload["with"]["name"]
+    validation = _named_step(action, "Validate committed wiki (native drift diagnostics are advisory)")
+    assert validation["env"]["EVIDENCE_ARTIFACT"] == artifact_name
     assert artifact_name == (
         "llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-"
         "${{ github.sha }}-${{ github.run_attempt }}"

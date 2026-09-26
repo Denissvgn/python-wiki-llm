@@ -36,6 +36,7 @@ from .api_types import (
     DocumentationQueryResult,
     DocumentationExportResult,
     DoctorResult,
+    DoctorV3Result,
     EvidenceExplanationResult,
     ExtractSourceResult,
     FlowForEntrypointResult,
@@ -1589,6 +1590,22 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult:
     }
 
 
+@overload
+def doctor(
+    src_dir: str = ".", *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False,
+    allow_external_src: bool = False, source_selection: str | Path | None = None,
+    report_schema: Literal["v1"] = "v1",
+) -> DoctorResult: ...
+
+
+@overload
+def doctor(
+    src_dir: str = ".", *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False,
+    allow_external_src: bool = False, source_selection: str | Path | None = None,
+    report_schema: Literal["v3"],
+) -> DoctorV3Result: ...
+
+
 @_api_boundary
 def doctor(
     src_dir: str = ".",
@@ -1597,6 +1614,7 @@ def doctor(
     strict: bool = False,
     allow_external_src: bool = False,
     source_selection: str | Path | None = None,
+    report_schema: Literal["v1", "v3"] = "v1",
 ) -> DoctorResult:
     """Return the stable read-only knowledge health report."""
 
@@ -1606,8 +1624,9 @@ def doctor(
         strict=strict,
         allow_external_src=allow_external_src,
         source_selection=source_selection,
+        report_schema=report_schema,
     )
-    return cast(DoctorResult, report.to_payload())
+    return cast(DoctorResult, report.to_payload(**({"report_schema": report_schema} if report_schema != "v1" else {})))
 
 
 @_native_query_boundary
@@ -3323,6 +3342,7 @@ __all__ = [
     "DocumentationAgentResult",
     "DocumentationExportResult",
     "DoctorResult",
+    "DoctorV3Result",
     "DOCTOR_SCHEMA_VERSION",
     "EXTRACT_SCHEMA_VERSION",
     "DocumentationGraphQueryService",

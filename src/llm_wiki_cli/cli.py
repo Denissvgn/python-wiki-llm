@@ -293,7 +293,9 @@ def _add_doctor_command(subparsers):
         "doctor",
         help="Report current wiki knowledge health with CI-friendly exit codes",
     )
-    doctor_parser.add_argument("--capabilities", action="store_true", help="Opt into doctor v2 with provider prerequisites and corrective commands")
+    doctor_contract = doctor_parser.add_mutually_exclusive_group()
+    doctor_contract.add_argument("--capabilities", action="store_true", help="Opt into doctor v2 with provider prerequisites and corrective commands")
+    doctor_contract.add_argument("--report-schema", choices=("v1", "v3"), default="v1", help="Health report schema; v3 includes captured coverage and producer details")
     doctor_parser.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
@@ -591,9 +593,9 @@ def _add_ci_check_command(subparsers):
     )
     ci_parser.add_argument(
         "--report-schema",
-        choices=("v1", "v2"),
+        choices=("v1", "v2", "v3"),
         default="v1",
-        help="JSON result schema; v2 includes runtime output status",
+        help="JSON result schema; v2 includes runtime output status, v3 adds detailed knowledge health",
     )
     ci_parser.add_argument(
         "--cache-dir", metavar="PATH", help="Inventory cache directory"

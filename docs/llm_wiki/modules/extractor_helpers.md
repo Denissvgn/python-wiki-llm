@@ -40,6 +40,7 @@ flowchart LR
     n5["src/llm_wiki_cli/services/capability_diagnostics.py"]
     n6["src/llm_wiki_cli/services/extractor_helpers.py"]
     n7["src/llm_wiki_cli/services/inventory_cache.py"]
+    n8["src/llm_wiki_cli/services/knowledge_maintenance.py"]
     n0 --> n6
     n1 --> n6
     n2 --> n6
@@ -47,6 +48,7 @@ flowchart LR
     n4 --> n6
     n5 --> n6
     n6 --> n7
+    n8 --> n6
     click n0 "../modules/prepare_extractors_cmd.md"
     click n1 "../modules/go_extractor.md"
     click n2 "../modules/haskell_extractor.md"
@@ -55,6 +57,7 @@ flowchart LR
     click n5 "../modules/capability_diagnostics.md"
     click n6 "../modules/extractor_helpers.md"
     click n7 "../modules/inventory_cache.md"
+    click n8 "../modules/knowledge_maintenance.md"
 ```
 
 ### Internal neighbors
@@ -67,6 +70,7 @@ flowchart LR
 | Inbound | [rust_extractor](../modules/rust_extractor.md) |
 | Inbound | [ts_extractor](../modules/ts_extractor.md) |
 | Inbound | [capability_diagnostics](../modules/capability_diagnostics.md) |
+| Inbound | [knowledge_maintenance](../modules/knowledge_maintenance.md) |
 | Outbound | [inventory_cache](../modules/inventory_cache.md) |
 
 ## Classes

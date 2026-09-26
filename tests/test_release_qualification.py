@@ -79,7 +79,12 @@ def qualified_union_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
     return _qualified_bundle(tmp_path, monkeypatch, "union")
 
 
-def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, dict]:
+@pytest.fixture
+def qualified_sharded_bundle(tmp_path: Path, monkeypatch) -> tuple[Path, dict]:
+    return _qualified_bundle(tmp_path, monkeypatch, "union", "windows-sharded")
+
+
+def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str, core_layout="unsharded") -> tuple[Path, dict]:
     dist = tmp_path / "dist"
     dist.mkdir()
     wheel = dist / f"agent_wiki_cli-{VERSION}-py3-none-any.whl"
@@ -113,6 +118,10 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
         member = tarfile.TarInfo("release/skip-allowlist.json")
         member.size = len(allowlist_raw)
         archive.addfile(member, io.BytesIO(allowlist_raw))
+        registry_bytes = Path("release/ubuntu-suites.json").read_bytes()
+        member = tarfile.TarInfo("release/ubuntu-suites.json")
+        member.size = len(registry_bytes)
+        archive.addfile(member, io.BytesIO(registry_bytes))
     identity = {
         "schema_version": qualification.IDENTITY_SCHEMA,
         "repository": REPOSITORY,
@@ -160,7 +169,7 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
     }
     gate_decision_path = tmp_path / "gate-decision.json"
     _write_json(gate_decision_path, gate_decision)
-    hosted = HostedEvidence(identity, RUN_ID, frozen, layout=layout)
+    hosted = HostedEvidence(identity, RUN_ID, frozen, layout=layout, core_layout=core_layout)
     if layout == "union":
         union = qualifying_union(
             tmp_path / "union", identity, hosted.context["harness_sha256"]
@@ -216,6 +225,18 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
             "RD-02:owners",
             {"owner-lane-verification.json": (tmp_path / "owners.json").read_bytes()},
         )
+    if core_layout == "windows-sharded":
+        from tests.core_shard_fixtures import qualifying_core
+        from tests.xml_writer_fixtures import elementtree_text_newlines
+        allowlist = tmp_path / "allowlist.json"
+        allowlist.write_bytes(allowlist_raw)
+        with elementtree_text_newlines(monkeypatch, "\r\n"):
+            _, paths = qualifying_core(
+                tmp_path / "windows", identity, hosted.context["harness_sha256"], RUN_ID,
+                allowlist, json.loads(registry_bytes),
+            )
+        for binding, directory in paths.items():
+            hosted.replace_files(binding, {p.name: p.read_bytes() for p in directory.iterdir()})
     monkeypatch.setattr(hosted_evidence, "GitHub", hosted.client)
     evidence_specs = hosted.specs(tmp_path / "hosted-input")
     present = {spec.partition(":")[0] for spec in evidence_specs}
@@ -239,6 +260,7 @@ def _qualified_bundle(tmp_path: Path, monkeypatch, layout: str) -> tuple[Path, d
         workflow_run_attempt=1,
         harness_sha256=hosted.context["harness_sha256"],
         suite_layout=layout,
+        core_layout=core_layout,
         output=bundle,
     )
     assert qualification.build_bundle(args) == 0
@@ -752,6 +774,33 @@ def completion_arguments(tmp_path):
     ]
 
 
+@pytest.mark.parametrize("result", ["failure", "cancelled", "skipped", "", "PASS"])
+def test_required_maintenance_job_cannot_be_skipped(completion_arguments, result):
+    args = completion_arguments + [
+        "--maintenance-mode", "required", "--maintenance-result", result,
+        "--candidate-tree", TREE,
+    ]
+    assert qualification.main(args) == 2
+
+
+def test_required_maintenance_needs_bound_verification(completion_arguments, tmp_path):
+    path = tmp_path / "verification.json"
+    record = {
+        "schema_version": "agent-wiki-release-knowledge-verification/v1",
+        "mode": "required", "status": "pass", "candidate_sha": SHA,
+        "candidate_tree": TREE, "candidate_version": VERSION, "error": None,
+        "evidence_sha256": {name: "sha256:" + "3"*64 for name in ("ci-report.json", "preflight.json", "policy.json")},
+    }
+    _write_json(path, record)
+    args = completion_arguments + [
+        "--maintenance-mode", "required", "--maintenance-result", "success",
+        "--candidate-tree", TREE, "--maintenance-verification", str(path),
+    ]
+    assert qualification.main(args) == 0
+    record["candidate_sha"] = "f"*40
+    _write_json(path, record)
+    assert qualification.main(args) == 2
+
 def test_complete_qualification_keeps_rd13_blocked(completion_arguments):
     assert qualification.main(completion_arguments) == 0
     decision = qualification.load_json(Path(completion_arguments[2]))
@@ -1033,6 +1082,7 @@ def test_promotion_decision_is_derived_from_verified_manifest(
         "attestation-source-sha",
         "attestation-workflow",
         "attestation-run",
+        "attestation-attempt",
         "missing-timestamp",
         "tag",
     ),
@@ -1136,6 +1186,10 @@ def test_promotion_rejects_incomplete_or_mismatched_rd13_evidence(
                 receipts[0][0]["verificationResult"]["signature"]["certificate"][
                     "runInvocationURI"
                 ] = f"https://github.com/{REPOSITORY}/actions/runs/999"
+            elif mutation == "attestation-attempt":
+                receipts[0][0]["verificationResult"]["signature"]["certificate"][
+                    "runInvocationURI"
+                ] = f"https://github.com/{REPOSITORY}/actions/runs/{RUN_ID}/attempts/2"
             else:
                 receipts[0][0]["verificationResult"]["verifiedTimestamps"] = []
             _rewrite_attestation_receipt_lines(provenance_path, receipts)
@@ -1161,6 +1215,187 @@ def test_promotion_accepts_multiple_matching_attestations_per_receipt(
         _rewrite_attestation_receipt_lines(path, receipts)
 
     assert qualification.finalize_promotion(args) == 0
+
+
+def _selection_args(promotion: argparse.Namespace) -> argparse.Namespace:
+    paths = {
+        label: Path(path)
+        for label, path in (spec.split("=", 1) for spec in promotion.rd13_evidence)
+    }
+    return argparse.Namespace(
+        manifest=promotion.manifest,
+        workflow_verification=paths["workflow-run"],
+        build_provenance=paths["build-provenance"],
+        sbom_attestation=paths["sbom-attestation"],
+        output=promotion.output.parent / "selected-attestations",
+    )
+
+
+def _add_other_qualification_signatures(path: Path) -> None:
+    receipts = _load_attestation_receipt_lines(path)
+    for index, receipt in enumerate(receipts):
+        result = receipt[0]
+        statement = result["verificationResult"]["statement"]
+        # Match the real CLI shape: one invocation per wheel/sdist, each with
+        # verified signatures from multiple runs of the identical source.
+        statement["subject"] = [statement["subject"][index]]
+        other_run = deepcopy(result)
+        other_run["verificationResult"]["signature"]["certificate"]["runInvocationURI"] = (
+            f"https://github.com/{REPOSITORY}/actions/runs/{RUN_ID + 1}/attempts/1"
+        )
+        other_attempt = deepcopy(result)
+        other_attempt["verificationResult"]["signature"]["certificate"]["runInvocationURI"] = (
+            f"https://github.com/{REPOSITORY}/actions/runs/{RUN_ID}/attempts/2"
+        )
+        receipt[:] = [other_run, result, other_attempt, deepcopy(result)]
+    _rewrite_attestation_receipt_lines(path, receipts)
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_exact_attempt_selection_preserves_originals_and_strict_promotion(
+    qualified_bundle, tmp_path, reverse
+):
+    bundle, manifest = qualified_bundle
+    promotion = _promotion_args(tmp_path, bundle, manifest)
+    args = _selection_args(promotion)
+    originals = {}
+    for path in (args.build_provenance, args.sbom_attestation):
+        _add_other_qualification_signatures(path)
+        receipts = _load_attestation_receipt_lines(path)
+        if reverse:
+            receipts = [list(reversed(receipt)) for receipt in reversed(receipts)]
+            _rewrite_attestation_receipt_lines(path, receipts)
+        originals[path] = path.read_bytes()
+    with pytest.raises(qualification.QualificationError, match="run and attempt"):
+        qualification.finalize_promotion(promotion)
+
+    assert qualification.main([
+        "select-attestations", "--manifest", str(args.manifest),
+        "--workflow-verification", str(args.workflow_verification),
+        "--build-provenance", str(args.build_provenance),
+        "--sbom-attestation", str(args.sbom_attestation),
+        "--output", str(args.output),
+    ]) == 0
+    record = qualification.load_json(args.output / "selection.json")
+    assert record["schema_version"] == qualification.ATTESTATION_SELECTION_SCHEMA
+    assert record["run_attempt"] == 1 and record["workflow_run_id"] == RUN_ID
+    assert record["manifest_sha256"] == qualification.sha256_file(args.manifest)
+    assert record["workflow_verification_sha256"] == qualification.sha256_file(args.workflow_verification)
+    assert not promotion.output.exists()  # Selection never authorizes a release.
+    for path, original in originals.items():
+        assert path.read_bytes() == original
+        selected = args.output / path.name
+        receipt_record = record["receipts"][path.name]
+        assert receipt_record["input_sha256"] == qualification.sha256_file(path)
+        assert receipt_record["selected_sha256"] == qualification.sha256_file(selected)
+        assert receipt_record["original_counts"] == [4, 4]
+        assert receipt_record["selected_counts"] == [2, 2]
+        assert _load_attestation_receipt_lines(selected) == [
+            [result for result in receipt if result["verificationResult"]["signature"]["certificate"]["runInvocationURI"] == record["run_invocation"]]
+            for receipt in _load_attestation_receipt_lines(path)
+        ]
+    promotion.rd13_evidence = [
+        f"workflow-run={args.workflow_verification}",
+        f"build-provenance={args.output / args.build_provenance.name}",
+        f"sbom-attestation={args.output / args.sbom_attestation.name}",
+    ]
+    assert qualification.finalize_promotion(promotion) == 0
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing-chosen-run", "stale-attempt", "predicate-spoof", "missing-attempt",
+    "wrong-source", "wrong-ref", "wrong-repository", "wrong-signer", "self-hosted",
+    "wrong-subject", "wrong-predicate", "missing-timestamp", "unverified-result",
+    "malformed-discarded-result", "unexpected-discarded-subject", "missing-sbom",
+    "workflow-source", "workflow-run", "workflow-event", "workflow-schema",
+    "duplicate-json-key", "size-limit", "existing-output",
+])
+def test_attestation_selection_fails_closed_before_writing(
+    qualified_bundle, tmp_path, mutation, monkeypatch
+):
+    bundle, manifest = qualified_bundle
+    args = _selection_args(_promotion_args(tmp_path, bundle, manifest))
+    for path in (args.build_provenance, args.sbom_attestation):
+        _add_other_qualification_signatures(path)
+    path = args.build_provenance
+    receipts = _load_attestation_receipt_lines(path)
+    result = receipts[0][1]
+    verified = result["verificationResult"]
+    certificate = verified["signature"]["certificate"]
+    expected_uri = certificate["runInvocationURI"]
+    if mutation in {"missing-chosen-run", "stale-attempt", "predicate-spoof"}:
+        receipts[0] = [receipts[0][0 if mutation == "missing-chosen-run" else 2]]
+        # A predicate controlled by the signer cannot override the certificate.
+        if mutation == "predicate-spoof":
+            receipts[0][0]["verificationResult"]["statement"]["predicate"] = {
+                "runInvocationURI": expected_uri,
+                "runDetails": {"metadata": {"invocationId": expected_uri}},
+            }
+    elif mutation == "missing-attempt":
+        certificate["runInvocationURI"] = expected_uri.removesuffix("/attempts/1")
+    elif mutation in {"wrong-source", "wrong-ref", "wrong-repository", "wrong-signer", "self-hosted"}:
+        field, value = {
+            "wrong-source": ("sourceRepositoryDigest", TREE),
+            "wrong-ref": ("sourceRepositoryRef", "refs/heads/main"),
+            "wrong-repository": ("sourceRepositoryURI", "https://github.com/other/repo"),
+            "wrong-signer": ("buildSignerURI", "https://github.com/other/workflow"),
+            "self-hosted": ("runnerEnvironment", "self-hosted"),
+        }[mutation]
+        certificate[field] = value
+    elif mutation == "wrong-subject":
+        verified["statement"]["subject"][0]["digest"]["sha256"] = "f" * 64
+    elif mutation == "wrong-predicate":
+        verified["statement"]["predicateType"] = qualification.SPDX_SBOM_PREDICATE
+    elif mutation == "missing-timestamp":
+        verified["verifiedTimestamps"] = []
+    elif mutation == "unverified-result":
+        del result["verificationResult"]
+    elif mutation == "malformed-discarded-result":
+        receipts[0][0] = {"attestation": {"bundle": "unverified"}}
+    elif mutation == "unexpected-discarded-subject":
+        receipts[0][0]["verificationResult"]["statement"]["subject"][0]["name"] = "foreign.whl"
+    elif mutation == "missing-sbom":
+        args.sbom_attestation.write_text("[]\n[]\n", encoding="utf-8")
+    elif mutation.startswith("workflow-"):
+        workflow = qualification.load_json(args.workflow_verification)
+        field, value = {
+            "workflow-source": ("workflow_revision", TREE),
+            "workflow-run": ("workflow_run_id", RUN_ID + 1),
+            "workflow-event": ("event", "pull_request"),
+            "workflow-schema": ("schema_version", "unsupported"),
+        }[mutation]
+        workflow[field] = value
+        _write_json(args.workflow_verification, workflow)
+    elif mutation == "size-limit":
+        monkeypatch.setattr(qualification, "MAX_ATTESTATION_RECEIPTS_BYTES", 1)
+    elif mutation == "existing-output":
+        args.output.mkdir()
+        (args.output / "existing").write_text("preserve me", encoding="utf-8")
+    _rewrite_attestation_receipt_lines(path, receipts)
+    if mutation == "duplicate-json-key":
+        path.write_text(path.read_text().replace('"predicateType":', '"predicateType":"duplicate","predicateType":', 1), encoding="utf-8")
+    originals = {p:p.read_bytes() for p in (args.build_provenance, args.sbom_attestation)}
+    with pytest.raises(qualification.QualificationError):
+        qualification.select_attestations(args)
+    assert all(p.read_bytes() == raw for p, raw in originals.items())
+    if mutation == "existing-output":
+        assert list(args.output.iterdir()) == [args.output / "existing"]
+        assert (args.output / "existing").read_text() == "preserve me"
+    else:
+        assert not args.output.exists()
+
+
+def test_attestation_selection_binds_a_later_qualification_attempt(qualified_bundle, tmp_path):
+    bundle, manifest = qualified_bundle
+    args = _selection_args(_promotion_args(tmp_path, bundle, manifest))
+    manifest["qualification_context"]["run_attempt"] = 2
+    _write_json(args.manifest, manifest)
+    for path in (args.build_provenance, args.sbom_attestation):
+        _add_other_qualification_signatures(path)
+    assert qualification.select_attestations(args) == 0
+    record = qualification.load_json(args.output / "selection.json")
+    assert record["run_attempt"] == 2 and record["run_invocation"].endswith("/attempts/2")
+    assert all(value["selected_counts"] == [1, 1] for value in record["receipts"].values())
 
 
 def test_exact_skip_allowlist_rejects_reason_drift(tmp_path: Path) -> None:
@@ -1952,3 +2187,315 @@ def test_bundler_semantics_reject_bad_union_even_if_uploaded_by_a_successful_pro
         qualification._validate_qualifying_union_bundle(
             bundle, identity, manifest["qualification_context"]
         )
+
+
+def test_qualifying_shards_round_trip_keeps_logical_gates_and_producer_bindings(
+    qualified_sharded_bundle,
+):
+    bundle, manifest = qualified_sharded_bundle
+    assert manifest["schema_version"] == qualification.QUALIFICATION_SCHEMA
+    assert manifest["qualification_context"]["core_layout"] == "windows-sharded"
+    assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+    ledger = qualification.load_json(bundle / "hosted-evidence.json")
+    for index in range(2):
+        binding = ledger["bindings"][f"RD-01:windows-shard-{index}"]
+        assert binding["producer"] == f"Execute Windows core shard ({index})"
+    assert (
+        ledger["bindings"]["RD-01:windows-plan"]["producer"]
+        == "Plan Windows core shards"
+    )
+    assert (
+        ledger["bindings"]["RD-01:windows"]["producer"]
+        == "RD-01/RD-02 core (core-windows-3.13)"
+    )
+    assert set(manifest["gates"]) == set(qualification.REQUIRED_GATES)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing",
+        "extra",
+        "shadow-plan",
+        "old-plan",
+        "attempt",
+        "harness",
+        "partial-plan",
+        "cancelled",
+        "partial-worker",
+        "duplicate-index",
+        "missing-node",
+        "duplicate-start",
+        "altered-junit",
+        "altered-result",
+        "partial-aggregate",
+        "altered-projection",
+        "altered-receipt",
+        "unsharded-claim",
+    ],
+)
+def test_qualifying_core_replays_raw_evidence_even_if_producers_claim_success(
+    qualified_sharded_bundle, mutation
+):
+    import shutil
+    from release import core_shards as s
+
+    bundle, manifest = qualified_sharded_bundle
+    identity = qualification.load_json(bundle / "evidence/RD-00/source/identity.json")
+    core = bundle / "evidence/RD-01"
+
+    def change(path, transform):
+        value = qualification.load_json(path)
+        transform(value)
+        _write_json(path, value)
+
+    if mutation == "missing":
+        shutil.rmtree(core / "windows-shard-1")
+    elif mutation == "extra":
+        shutil.copytree(core / "windows-shard-1", core / "windows-shard-2")
+    elif mutation in {"shadow-plan", "old-plan", "attempt", "harness"}:
+
+        def edit_plan(value):
+            if mutation == "shadow-plan":
+                value["purpose"], value["qualifying"] = "shadow", False
+            elif mutation == "old-plan":
+                value["schema_version"] = s.PLAN_SCHEMA
+            elif mutation == "attempt":
+                value["context"]["run_attempt"] += 1
+            else:
+                value["context"]["harness_sha256"] = "0" * 64
+
+        change(core / "windows-plan/plan.json", edit_plan)
+    elif mutation == "partial-plan":
+        change(
+            core / "windows-plan/preparation.json", lambda v: v.update(complete=False)
+        )
+    elif mutation in {"cancelled", "partial-worker", "duplicate-index"}:
+        changes = {
+            "cancelled": {"exit_code": 124},
+            "partial-worker": {"complete": False},
+            "duplicate-index": {"index": 0},
+        }
+        change(
+            core / "windows-shard-1/execution.json",
+            lambda v: v.update(changes[mutation]),
+        )
+    elif mutation == "missing-node":
+        change(core / "windows-shard-0/selected.json", lambda v: v.pop())
+        from tests.test_core_shards import reseal
+
+        reseal(core / "windows-shard-0")
+    elif mutation == "duplicate-start":
+        journal = core / "windows-shard-0/started.jsonl"
+        raw = journal.read_bytes()
+        journal.write_bytes(raw + raw.splitlines(keepends=True)[0])
+        from tests.test_core_shards import reseal
+
+        reseal(core / "windows-shard-0")
+    elif mutation == "altered-junit":
+        xml = core / "windows/core-windows-3.13.xml"
+        xml.write_bytes(
+            xml.read_bytes().replace(b"test_owned_0", b"test_tampered_0", 1)
+        )
+        change(
+            core / "windows/aggregation.json",
+            lambda v: v["files"].update({xml.name: qualification.sha256_file(xml)}),
+        )
+    elif mutation == "altered-result":
+        result = core / "windows/result-core-windows-3.13.json"
+        change(result, lambda v: v.update(owned_forgery=True))
+        change(
+            core / "windows/aggregation.json",
+            lambda v: v["files"].update(
+                {result.name: qualification.sha256_file(result)}
+            ),
+        )
+    elif mutation == "partial-aggregate":
+        change(core / "windows/aggregation.json", lambda v: v.update(complete=False))
+    elif mutation == "altered-projection":
+        (bundle / "evidence/RD-04/windows/security-windows-2025.xml").write_text(
+            "<testsuite />"
+        )
+    elif mutation == "altered-receipt":
+        change(
+            bundle / "evidence/RD-05/windows/product-windows-2025-projection.json",
+            lambda v: v.update(selectors=[]),
+        )
+    else:
+        manifest["qualification_context"]["core_layout"] = "unsharded"
+    with pytest.raises(qualification.QualificationError):
+        qualification._validate_qualifying_core_bundle(
+            bundle, identity, manifest["qualification_context"], RUN_ID
+        )
+
+
+def test_previous_v3_unsharded_bundle_verifies_without_rewriting_its_schema(
+    qualified_bundle,
+):
+    bundle, manifest = qualified_bundle
+    manifest["schema_version"] = qualification.PREVIOUS_QUALIFICATION_SCHEMA
+    del manifest["qualification_context"]["core_layout"]
+    ledger = qualification.load_json(bundle / "hosted-evidence.json")
+    del ledger["context"]["core_layout"]
+    _write_json(bundle / "hosted-evidence.json", ledger)
+    manifest["supporting_files"]["hosted-evidence.json"] = qualification.sha256_file(
+        bundle / "hosted-evidence.json"
+    )
+    _write_json(bundle / "qualification-manifest.json", manifest)
+    before = (bundle / "qualification-manifest.json").read_bytes()
+    assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+    assert (bundle / "qualification-manifest.json").read_bytes() == before
+
+
+@pytest.mark.parametrize(
+    "schema,context_change",
+    [
+        (qualification.PREVIOUS_QUALIFICATION_SCHEMA, "add-layout"),
+        (qualification.QUALIFICATION_SCHEMA, "missing-layout"),
+        (qualification.QUALIFICATION_SCHEMA, "unknown-layout"),
+    ],
+)
+def test_manifest_version_cannot_silently_change_core_evidence_contract(
+    qualified_bundle, schema, context_change
+):
+    _, manifest = qualified_bundle
+    manifest["schema_version"] = schema
+    if context_change == "missing-layout":
+        del manifest["qualification_context"]["core_layout"]
+    elif context_change == "unknown-layout":
+        manifest["qualification_context"]["core_layout"] = "sharded-everywhere"
+    with pytest.raises(qualification.QualificationError):
+        qualification._validate_manifest(manifest)
+
+
+@pytest.mark.parametrize(
+    "mutation", [None, "pins", "collection", "started", "plan-context"]
+)
+def test_qualifying_preparation_is_bound_to_collection_and_pins(
+    qualified_sharded_bundle, mutation
+):
+    from release import core_shards as s
+
+    bundle, _ = qualified_sharded_bundle
+    directory = bundle / "evidence/RD-01/windows-plan"
+    value = s.read(directory / "plan.json")
+    if mutation is None:
+        assert s.validate_preparation(directory, value)["complete"] is True
+        return
+    if mutation == "pins":
+        (directory / "constraints.txt").write_text("pytest==1.0\n")
+    elif mutation == "collection":
+        _write_json(directory / "collected.json", value["inventory"][:-1])
+    elif mutation == "started":
+        (directory / "started.jsonl").write_text(
+            json.dumps(value["inventory"][0]) + "\n"
+        )
+    else:
+        record = s.read(directory / "preparation.json")
+        record["context"]["environment"]["runner_image"] = "different-planning-job"
+        _write_json(directory / "preparation.json", record)
+    record = s.read(directory / "preparation.json")
+    record["files"] = {
+        name: qualification.sha256_file(directory / name) for name in record["files"]
+    }
+    _write_json(directory / "preparation.json", record)
+    with pytest.raises(s.q.QualificationError):
+        s.validate_preparation(directory, value)
+
+
+def test_qualifying_aggregation_command_rebuilds_the_complete_lane(
+    qualified_sharded_bundle, tmp_path, monkeypatch
+):
+    import shutil
+    from release import core_shard_runner as r
+
+    bundle, _ = qualified_sharded_bundle
+    core = bundle / "evidence/RD-01"
+    value = r.s.read(core / "windows-plan/plan.json")
+    root = tmp_path / "candidate"
+    (root / "release").mkdir(parents=True)
+    with tarfile.open(bundle / "evidence/RD-00/source/candidate-source.tar") as archive:
+        stream = archive.extractfile("release/skip-allowlist.json")
+        assert stream is not None
+        (root / "release/skip-allowlist.json").write_bytes(
+            stream.read()
+        )
+    shards = tmp_path / "shards"
+    for index in range(2):
+        shutil.copytree(core / f"windows-shard-{index}", shards / str(index))
+    monkeypatch.setattr(r, "context", lambda args: value["context"])
+    output = tmp_path / "rebuilt"
+    assert (
+        r.aggregate_qualification(
+            argparse.Namespace(
+                root=root,
+                output=output,
+                preparation=core / "windows-plan",
+                shards_root=shards,
+            )
+        )
+        == 0
+    )
+    for path in (core / "windows").iterdir():
+        assert (output / path.name).read_bytes() == path.read_bytes()
+
+
+def test_windows_producer_bundle_replays_on_posix_without_byte_changes(
+    tmp_path, monkeypatch
+):
+    from tests.xml_writer_fixtures import elementtree_text_newlines
+
+    with elementtree_text_newlines(monkeypatch, "\n"):
+        # The producer fixture switches XML filename output to Windows mode.
+        # Assembly and verification consume those exact hosted ZIP bytes here.
+        bundle, manifest = _qualified_bundle(
+            tmp_path, monkeypatch, "union", "windows-sharded"
+        )
+        before = {
+            p.relative_to(bundle): p.read_bytes()
+            for p in bundle.rglob("*")
+            if p.is_file()
+        }
+        assert qualification.verify_bundle(_verify_args(bundle, manifest)) == 0
+        assert before == {
+            p.relative_to(bundle): p.read_bytes()
+            for p in bundle.rglob("*")
+            if p.is_file()
+        }
+
+
+def test_windows_projection_xml_and_receipt_digests_match_posix(tmp_path, monkeypatch):
+    from tests.xml_writer_fixtures import elementtree_text_newlines
+
+    identity = tmp_path / "identity.json"
+    _write_identity(identity)
+    source = tmp_path / "core.xml"
+    source.write_bytes(
+        b'<testsuite><testcase classname="tests.test_owned" name="test_a" />'
+        b'<testcase classname="tests.test_owned" name="test_skip">'
+        b'<skipped message="reason &amp; more&#13;&#10;next" /></testcase></testsuite>'
+    )
+    outputs = []
+    for name, newline in (("windows", "\r\n"), ("posix", "\n")):
+        xml, receipt = tmp_path / (name + ".xml"), tmp_path / (name + ".json")
+        with elementtree_text_newlines(monkeypatch, newline):
+            assert (
+                qualification.project_junit(
+                    argparse.Namespace(
+                        identity=identity,
+                        source_junit=source,
+                        source_lane="core-windows-3.13",
+                        target_lane="security-windows-2025",
+                        selector=["tests/test_owned.py"],
+                        projected_junit=xml,
+                        receipt=receipt,
+                    )
+                )
+                == 0
+            )
+        outputs.append((xml.read_bytes(), qualification.load_json(receipt)))
+    assert outputs[0] == outputs[1]
+    assert b"\r" not in outputs[0][0] and b"&#13;&#10;" in outputs[0][0]
+    assert outputs[0][1]["projected_junit_sha256"] == qualification.sha256_file(
+        tmp_path / "windows.xml"
+    )

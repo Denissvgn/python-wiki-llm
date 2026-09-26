@@ -24,6 +24,35 @@ WIKI_CI_WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
 REMOTE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 
 
+def test_maintenance_consumer_binds_identity_without_downloading_source():
+    workflow = yaml.safe_load((WORKFLOWS / "release-qualification.yml").read_text())
+    job = workflow["jobs"]["knowledge-maintenance"]
+    assert job["needs"] == ["freeze", "action"]
+    assert "always()" in job["if"] and "needs.freeze.result == 'success'" in job["if"]
+    identity = next(step for step in job["steps"] if step.get("name") == "Bind expected identity to the frozen candidate")
+    assert identity["env"] == {
+        "CANDIDATE_SHA": "${{ needs.freeze.outputs.sha }}",
+        "CANDIDATE_TREE": "${{ needs.freeze.outputs.tree }}",
+        "CANDIDATE_VERSION": "${{ needs.freeze.outputs.version }}",
+        "SOURCE_SHA256": "${{ needs.freeze.outputs.source-sha256 }}",
+    }
+    producer = next(
+        step for step in workflow["jobs"]["action"]["steps"]
+        if step.get("name") == "Upload gate evidence"
+    )
+    artifact = producer["with"]["name"]
+    downloads = [step["with"]["name"] for step in job["steps"] if str(step.get("uses", "")).startswith("actions/download-artifact@")]
+    assert set(downloads) == {"qualification-harnesses", artifact}
+    bundle = next(
+        step for step in workflow["jobs"]["bundle"]["steps"]
+        if step.get("name") == "Build versioned release bundle"
+    )
+    assert f'--evidence "RD-10:action=incoming/gates/{artifact}"' in bundle["run"]
+    verify = next(step for step in job["steps"] if step.get("name") == "Verify captured policy and shadow parity")
+    assert "--identity expected-identity.json" in verify["run"]
+    assert "continue-on-error" not in verify
+
+
 def _test_definitions(relative_path: str) -> set[tuple[str | None, str]]:
     tree = ast.parse((ROOT / relative_path).read_text(encoding="utf-8"))
     definitions: set[tuple[str | None, str]] = set()
@@ -233,8 +262,8 @@ def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evide
     assert checkout["with"]["persist-credentials"] is False
     assert "head.sha" in checkout["with"]["ref"]
     for name in (
-        "Run context health against caller",
-        "Run full integrity against caller",
+        "Check foreign caller fixture knowledge health",
+        "Check foreign caller fixture integrity",
     ):
         step = _named_step(job, name)
         assert step["uses"].startswith("./.provider/integrations/")
@@ -356,7 +385,7 @@ def test_wiki_integrity_delegates_to_the_candidate_composite_contract() -> None:
     assert gate == {
         "name": "Check LLM Wiki integrity",
         "uses": "./integrations/wiki-integrity",
-        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki"},
+        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki", "report-schema": "v3", "maintenance-candidate-sha": "${{ github.sha }}"},
     }
     assert [step.get("name") for step in job["steps"]] == [
         "Check out the candidate without credentials",
@@ -682,6 +711,40 @@ def test_publish_uses_trusted_verifier_before_candidate_checkout() -> None:
     assert "candidate-source/release/qualification.py" not in python_commands
 
 
+def test_promotion_selects_verified_attempt_and_retains_raw_evidence_on_failure() -> None:
+    job = _yaml("publish.yml")["jobs"]["verify"]
+    steps = job["steps"]
+    names = [step.get("name") for step in steps]
+    attest = _named_step(job, "Verify GitHub provenance and SPDX attestations")
+    bundle = _named_step(job, "Verify identity, gates, contents, and registry vacancy")
+    select = _named_step(job, "Select verified attestations for the exact qualification attempt")
+    finalize = _named_step(job, "Emit the final technical release decision")
+    upload = _named_step(job, "Preserve final promotion evidence")
+    assert names.index(attest["name"]) < names.index(bundle["name"]) < names.index(select["name"]) < names.index(finalize["name"])
+    for step in (attest, bundle, select, finalize):
+        assert "if" not in step and not step.get("continue-on-error")
+    assert "set -euo pipefail" in attest["run"]
+    assert "selected-attestations" not in attest["run"]
+    assert shlex.split(select["run"]) == [
+        "python", "-I", "trusted-verifier/release/qualification.py", "select-attestations",
+        "--manifest", "qualified-release/qualification-manifest.json",
+        "--workflow-verification", "workflow-run-verification.json",
+        "--build-provenance", "build-provenance-attestations.jsonl",
+        "--sbom-attestation", "sbom-attestations.jsonl",
+        "--output", "selected-attestations",
+    ]
+    for filename, label in [
+        ("build-provenance-attestations.jsonl", "build-provenance"),
+        ("sbom-attestations.jsonl", "sbom-attestation"),
+    ]:
+        assert f'--rd13-evidence "{label}=selected-attestations/{filename}"' in finalize["run"]
+        assert f'--rd13-evidence "{label}={filename}"' not in finalize["run"]
+        assert f">> {filename}" in attest["run"]
+        assert filename in upload["with"]["path"].splitlines()
+    assert "selected-attestations/" in upload["with"]["path"].splitlines()
+    assert upload["if"] == "${{ always() }}"
+
+
 def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None:
     workflow = _yaml("release-qualification.yml")
     jobs = workflow["jobs"]
@@ -748,7 +811,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         )
         assert "incoming/tools/release/qualification.py" not in earlier_runs
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
-    assert harness_consumers == 17
+    assert harness_consumers == 21
 
     for job_name in ("core", "ubuntu-suites", "security-behavior", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
@@ -826,8 +889,14 @@ def test_qualification_has_every_gate_and_fail_closed_discovery() -> None:
     assert "qualified-release" in text
     assert "compare-builds" in text
     assert "compare-smoke" in text
-    assert "actions/attest-build-provenance@" in text
-    assert "actions/attest-sbom@" in text
+    attestations = [step for step in workflow["jobs"]["bundle"]["steps"]
+                    if step.get("uses", "").startswith("actions/attest@")]
+    assert len(attestations) == 2
+    assert all(step["with"]["subject-path"] == "qualified-release/dist/*" for step in attestations)
+    assert "sbom-path" not in attestations[0]["with"]
+    assert attestations[1]["with"]["sbom-path"] == "qualified-release/sbom.spdx.json"
+    assert attestations[1]["env"]["NODE_OPTIONS"] == "--max-http-header-size=32768"
+    assert all(not any(key.startswith("predicate") for key in step["with"]) for step in attestations)
     assert "--gate-decision gate-decision.json" in text
     for gate in range(13):
         assert f'--evidence "RD-{gate:02d}:' in text
@@ -873,7 +942,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     assert '"${RUNNER_TEMP}/full-integrity-plugin-executed"' in bind_paths
     assert '} >> "${GITHUB_ENV}"' in bind_paths
 
-    context = _named_step(job, "Run context health gate")
+    context = _named_step(job, "Check Action fixture knowledge health")
     assert context["uses"] == "./candidate/integrations/github-action"
     assert context["with"] == {
         "wiki-dir": "candidate/.action-selftest/wiki",
@@ -927,6 +996,10 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
         "with": {
             "src-dir": "candidate",
             "wiki-dir": "candidate/docs/llm_wiki",
+            "report-schema": "v3",
+            "maintenance-candidate-sha": "${{ needs.freeze.outputs.sha }}",
+            "maintenance-identity": "${{ runner.temp }}/rd-10-frozen-inputs/source/identity.json",
+            "maintenance-source-archive": "${{ runner.temp }}/rd-10-frozen-inputs/source/candidate-source.tar",
         },
     }
 
@@ -973,6 +1046,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     upload = _named_step(job, "Upload gate evidence")
     assert upload["if"] == "always()"
     assert upload["with"] == {
+        "archive": True,
         "name": "evidence-rd-10",
         "path": "${{ runner.temp }}/rd-10-evidence/",
         "if-no-files-found": "error",
@@ -1142,7 +1216,7 @@ def test_javascript_migration_skips_have_executable_toolchain_ownership() -> Non
     lanes = {
         lane["lane"]
         for lane in workflow["jobs"]["core"]["strategy"]["matrix"]["include"]
-    }
+    } | {"core-windows-3.13"}
     assert actual == {
         (
             lane,
@@ -1208,12 +1282,6 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
             "coverage": True,
         },
         {
-            "lane": "core-windows-3.13",
-            "os": "windows-2025",
-            "python": "3.13",
-            "coverage": False,
-        },
-        {
             "lane": "core-macos-3.14",
             "os": "macos-15",
             "python": "3.14",
@@ -1233,6 +1301,7 @@ def test_core_qualification_preserves_the_supported_cross_platform_contract() ->
 
     source_test_jobs = (
         "core",
+        "core-windows",
         "security-behavior",
         "mcp",
         "toolchains",
@@ -1389,7 +1458,7 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}"
+            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}"
         ),
         "cancel-in-progress": True,
     }
@@ -1446,7 +1515,7 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
     assert jobs["security-behavior"]["strategy"]["matrix"]["os"] == ["macos-15"]
     assert "product" not in jobs
 
-    core = jobs["core"]
+    core = jobs["core-windows"]
     security_projection = _named_step(
         core, "Project Windows core evidence for RD-04"
     )
@@ -1485,10 +1554,7 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
         ("product-windows-2025", product_projection),
     ):
         command = step["run"]
-        assert step["if"] == (
-            "${{ !inputs.discovery-mode && "
-            "matrix.lane == 'core-windows-3.13' }}"
-        )
+        assert step["if"] == "${{ !inputs.discovery-mode }}"
         assert "project-junit" in command
         assert "--identity incoming/source/identity.json" in command
         assert "--source-junit evidence/core-windows-3.13.xml" in command
@@ -1514,8 +1580,8 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
         assert "-projection.json" in upload["with"]["path"]
 
     core_upload = _named_step(core, "Upload lane evidence")
-    assert "evidence/${{ matrix.lane }}.xml" in core_upload["with"]["path"]
-    assert "evidence/result-${{ matrix.lane }}.json" in core_upload["with"]["path"]
+    assert "evidence/core-windows-3.13.xml" in core_upload["with"]["path"]
+    assert "evidence/result-core-windows-3.13.json" in core_upload["with"]["path"]
     assert "-projection.json" not in core_upload["with"]["path"]
 
     owner_command = _named_step(
@@ -1523,11 +1589,11 @@ def test_windows_core_projects_candidate_bound_rd04_and_rd05_evidence() -> None:
         "Verify reviewed owners against hosted lane results",
     )["run"]
     assert (
-        '--owner-result "security-windows-2025=${{ needs.core.result }}"'
+        '--owner-result "security-windows-2025=${{ needs.core-windows.result }}"'
         in owner_command
     )
     assert (
-        '--owner-result "product-windows-2025=${{ needs.core.result }}"'
+        '--owner-result "product-windows-2025=${{ needs.core-windows.result }}"'
         in owner_command
     )
     bundle_command = _named_step(
@@ -1949,7 +2015,9 @@ def test_bundle_overrides_skipped_ancestors_but_requires_every_producer() -> Non
         "!inputs.discovery-mode",
         "!inputs.bandit-parity-verification",
         "!inputs.ubuntu-suite-shadow",
-        *(f"needs.{name}.result == 'success'" for name in bundle["needs"]),
+        *(f"needs.{name}.result == 'success'" for name in bundle["needs"] if name not in {"dependency-warm", "knowledge-maintenance"}),
+        "(!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')",
+        "(needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success')",
     }
     assert set(clauses) == expected and len(clauses) == len(expected)
     assert "continue-on-error" not in bundle

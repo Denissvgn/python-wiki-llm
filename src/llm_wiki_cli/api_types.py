@@ -496,6 +496,88 @@ class DoctorResult(TypedDict):
     unhealthy_reasons: list[str]
 
 
+class HealthSelection(TypedDict):
+    state: str
+    fingerprint: str | None
+    inputs_hash: str | None
+
+
+class HealthScope(TypedDict):
+    wiki_dir: str
+    src_dir: str
+    selection: HealthSelection
+
+
+class HealthEvaluation(TypedDict):
+    state: str
+    reason: str
+
+
+class HealthSnapshot(TypedDict):
+    validated: bool
+    knowledge_index_hash: str | None
+    evaluated_envelope_hash: str | None
+    surface_index_hash: str | None
+    recorded_source_hash: str | None
+    recorded_markdown_hash: str | None
+    live_source_hash: str | None
+
+
+class HealthComponent(TypedDict):
+    id: str
+    version: str
+    configuration_hash: str | None
+    limitations: list[str]
+
+
+class HealthProducer(TypedDict):
+    knowledge_schema_version: str
+    generation_options_hash: str
+    tool: HealthComponent
+    extractors: list[HealthComponent]
+    plugins: list[HealthComponent]
+
+
+class HealthComparisonBasis(TypedDict):
+    policy: str
+    analysis_contract: str | None
+    recorded: HealthProducer | None
+    live: HealthProducer | None
+
+
+class HealthCoverage(TypedDict):
+    total: int | None
+    modeled: int | None
+    unmodeled: int | None
+    evaluated: int | None
+    comparison_attempted: int | None
+    comparable: int | None
+    outcomes: dict[str, int] | None
+
+
+class HealthReason(TypedDict):
+    code: str
+    concepts: int
+    examples: list[str]
+    omitted: int
+
+
+class HealthDetails(TypedDict):
+    schema_version: str
+    scope: HealthScope
+    evaluation: HealthEvaluation
+    snapshot: HealthSnapshot
+    basis: HealthComparisonBasis
+    coverage: HealthCoverage
+    reasons: list[HealthReason]
+
+
+class DoctorV3Result(DoctorResult):
+    """Opt-in health report with captured coverage and comparison evidence."""
+
+    health_details: HealthDetails
+
+
 class NativeInspectionResult(TypedDict):
     """Bounded component results sharing one source/wiki read scope."""
 
@@ -529,6 +611,17 @@ __all__ = [
     "DoctorFreshness",
     "DoctorGovernance",
     "DoctorResult",
+    "DoctorV3Result",
+    "HealthDetails",
+    "HealthSelection",
+    "HealthScope",
+    "HealthEvaluation",
+    "HealthSnapshot",
+    "HealthComponent",
+    "HealthProducer",
+    "HealthComparisonBasis",
+    "HealthCoverage",
+    "HealthReason",
     "DoctorSnapshotParity",
     "DoctorVerificationReceipt",
     "EvidenceExplanationResult",

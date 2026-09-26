@@ -626,6 +626,14 @@ Use `--report-schema v2` for the `llm-wiki-ci-check/v2` envelope. It adds
 Report status is `written`, `disabled`, or `failed`; the nested doctor health
 continues to describe the check itself. The default schema remains v1.
 
+Use `--report-schema v3` for `llm-wiki-ci-check/v3`. It retains the v2 runtime
+fields and includes a `llm-wiki-doctor/v3` health projection with captured
+coverage, snapshot commitments and producer versions. It reuses the same
+evaluation and preserves the integrity exit policy. Generic lint and MCP lint
+payloads retain their existing contracts.
+Detailed coverage describes the captured evaluation; `knowledge_drift_report`
+continues to control lint diagnostic occurrences.
+
 CI accepts the same `--cache-dir`, `--no-cache`, `--rebuild-cache`, and
 `--cache-stats` controls as lint and sync. Reports are replaced atomically.
 If the implicit `.git/llm-wiki-ci-report.md` cannot be saved, CI prints its
@@ -659,6 +667,32 @@ define a separate source analyzer. Human output is a compact screen summary.
 JSON output uses the stable `llm-wiki-doctor/v1` schema and contains the same
 six named sections, complete freshness counts when evaluation succeeds, and
 the required evaluated or snapshot-only disclosure.
+
+Select detailed JSON with `--report-schema v3 --format json`, or call
+`llm_wiki_cli.api.doctor(..., report_schema="v3")`. The default remains v1.
+The v3 `health_details` object adds:
+
+- Captured source/wiki scope, source-selection fingerprints and snapshot hashes.
+- Recorded and live tool, extractor and plugin versions, configuration hashes
+  and generation-option hashes. Comparison still uses exact producer versions;
+  `analysis_contract: null` means no cross-version compatibility contract is available.
+- Disjoint `modeled` and `unmodeled` counts whose sum is `total`. Modeled outcomes
+  distinguish current, nonsemantic change, changed/missing source, incompatible
+  basis and unknown evidence. Missing recorded evidence does not make a modeled
+  concept unmodeled.
+- Separate evaluation, comparison-attempt and compatible-content counts.
+  Confirmed missing sources are outside compatible-content comparisons, because
+  absence can be established before comparing producer versions.
+- Primary reason counts in unique concepts, with at most three sorted example
+  locators per reason and an exact omitted count. Diagnostic occurrence counts
+  remain separate and can include overlapping findings.
+
+Unavailable inventory and unevaluated comparison counts are `null`, not zero.
+Partial extraction is disclosed explicitly. These details describe the captured
+evaluation; later filesystem or installed-package changes do not rewrite it.
+Snapshot hashes identify declared input sets and do not themselves prove freshness.
+The v3 option cannot be combined with `--capabilities`, which retains its
+separate v2 contract.
 
 To keep the health read from executing project plugin code, `doctor` never
 loads source plugins. Evidence that only a source plugin can produce may

@@ -184,7 +184,10 @@ def workflow_contract(workflow: dict, input_hashes: dict, skip_entries: list[dic
                 "pytest": executions,
                 "suite_runners": [{"argv": argv, "condition": step.get("if")}
                                   for step in steps for argv in commands(step.get("run", ""))
-                                  if any(token.endswith(("/ubuntu_suites.py", "/ubuntu_shadow.py")) for token in argv)],
+                                  if any(token.endswith(("/ubuntu_suites.py", "/ubuntu_shadow.py", "/core_shard_runner.py")) for token in argv)],
+                "setup_runners": [{"argv": argv, "condition": step.get("if")}
+                                  for step in steps for argv in commands(step.get("run", ""))
+                                  if any(token.endswith("/dependency_downloads.py") for token in argv)],
                 "environment": {**workflow.get("env", {}), **lane.get("env", {})},
             })
     decision_script = "\n".join(s.get("run", "") for s in jobs["decision"]["steps"])
@@ -269,6 +272,9 @@ def freeze(root: Path, source: str, output: Path, repository: str, *,
         "pyproject.toml", "package-lock.json", "Cargo.lock", "go.mod", "go.sum",
         "requirements.txt", "requirements.in", "requirements-ci.txt", "toolchain-lock.json",
         "skip-allowlist.json", "pyrightconfig.json", "ubuntu-suites.json", "ubuntu_suites.py", "ubuntu_shadow.py",
+        "core_shards.py", "core_shard_runner.py", "core-shard-timings.json",
+        "build-requirements.in", "build-requirements.txt", "validation-requirements.in", "validation-requirements.txt",
+        "dependency_downloads.py", "dependency_setup_probe.py",
     } or p in {WORKFLOW, PROMOTION_WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py", "release/hosted_evidence.py"})
     hashes = {p: digest(source_bytes(root, source, p)) for p in inputs}
     skips = json.loads(source_bytes(root, source, "release/skip-allowlist.json"))["entries"]

@@ -27,7 +27,7 @@ WORKFLOW_PATH = ROOT / ".github" / "workflows" / "action-selftest.yml"
 DASHBOARD_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "llm-wiki-doctor.yml"
 SETUP_PYTHON_SHA = "ece7cb06caefa5fff74198d8649806c4678c61a1"
 CHECKOUT_SHA = "d23441a48e516b6c34aea4fa41551a30e30af803"
-UPLOAD_ARTIFACT_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"
+UPLOAD_ARTIFACT_SHA = "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
 FRESHNESS_COUNTS = {
     "unknown": 0,
     "current": 2,
@@ -234,11 +234,13 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
         "source-selection",
         "strict",
         "fail-on",
+        "report-schema",
         "evidence-id",
     }
     assert action["inputs"]["source-selection"]["default"] == ""
     assert action["inputs"]["strict"]["default"] == "true"
     assert action["inputs"]["fail-on"]["default"] == "unhealthy"
+    assert action["inputs"]["report-schema"]["default"] == "v1"
     assert action["inputs"]["evidence-id"]["default"] == "default"
     steps = action["runs"]["steps"]
     scalar_validation = steps[0]
@@ -247,6 +249,7 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
         "INPUT_EVIDENCE_ID": "${{ inputs.evidence-id }}",
         "INPUT_STRICT": "${{ inputs.strict }}",
         "INPUT_FAIL_ON": "${{ inputs.fail-on }}",
+        "INPUT_REPORT_SCHEMA": "${{ inputs.report-schema }}",
     }
     assert "^[a-z0-9][a-z0-9._-]{0,39}$" in scalar_validation["run"]
     assert "true|false" in scalar_validation["run"]
@@ -285,11 +288,13 @@ def test_action_couples_to_doctor_json_without_scraping_text() -> None:
     summary = next(
         step
         for step in steps
-        if step["name"] == "Publish strict diagnostic dashboard and apply threshold"
+        if step["name"] == "Publish diagnostic dashboard and apply threshold"
     )
 
     assert "-I -m llm_wiki_cli.cli doctor" in doctor["run"]
     assert "--format json" in doctor["run"]
+    assert doctor["env"]["INPUT_REPORT_SCHEMA"] == "${{ inputs.report-schema }}"
+    assert '--report-schema "${INPUT_REPORT_SCHEMA}"' in doctor["run"]
     assert doctor["env"]["INPUT_SOURCE_SELECTION"] == ("${{ inputs.source-selection }}")
     assert '--source-selection "${INPUT_SOURCE_SELECTION}"' in doctor["run"]
     assert "render_summary.py" in summary["run"]
@@ -299,6 +304,9 @@ def test_action_couples_to_doctor_json_without_scraping_text() -> None:
     assert '--doctor-exit-code "${DOCTOR_EXIT_CODE}"' in summary["run"]
     assert '--expected-strict "${INPUT_STRICT}"' in summary["run"]
     assert "--receipt" in summary["run"]
+    upload = next(step for step in steps if step["name"] == "Upload fixed doctor dashboard evidence")
+    assert summary["env"]["EVIDENCE_ARTIFACT"] == upload["with"]["name"]
+    assert '--evidence-artifact "${EVIDENCE_ARTIFACT}"' in summary["run"]
     combined = "\n".join(str(step.get("run", "")) for step in steps)
     assert not any(command in combined for command in ("grep ", "sed ", "awk ", "cut "))
     source = SUMMARY_SCRIPT.read_text(encoding="utf-8")
@@ -318,6 +326,8 @@ def test_action_plans_and_prepares_every_detected_locked_helper() -> None:
 
     assert "--plan" in plan["run"]
     assert "--format json" in plan["run"]
+    assert "--report-schema" not in plan["run"]
+    assert "INPUT_REPORT_SCHEMA" not in plan["run"]
     assert "llm-wiki-prepare-extractors-plan/v1" in plan["run"]
     assert 'supported = ("typescript", "go", "rust", "haskell")' in plan["run"]
     assert "duplicate object key" in plan["run"]
@@ -464,11 +474,13 @@ def test_manual_dashboard_workflow_is_separate_and_read_only() -> None:
     dashboard = next(
         step for step in steps if step.get("uses") == "./integrations/github-action"
     )
+    assert dashboard["name"] == "Check repository knowledge health"
     assert dashboard["with"] == {
         "wiki-dir": "docs/llm_wiki",
         "src-dir": ".",
         "strict": "true",
         "fail-on": "degraded",
+        "report-schema": "v3",
     }
     raw = DASHBOARD_WORKFLOW_PATH.read_text(encoding="utf-8")
     assert "pull_request" not in raw
@@ -522,6 +534,8 @@ def test_summary_renderer_applies_the_selected_threshold(
             "true",
             "--receipt",
             str(receipt),
+            "--evidence-artifact",
+            "doctor-fixture-evidence-123-1",
         ],
         check=False,
         capture_output=True,
@@ -537,6 +551,15 @@ def test_summary_renderer_applies_the_selected_threshold(
     assert receipt_payload["schema_version"] == "llm-wiki-doctor-dashboard/v1"
     assert receipt_payload["status"] == status
     assert receipt_payload["dashboard_exit_code"] == expected
+    text = summary.read_text(encoding="utf-8")
+    assert "| Wiki scope | `docs/llm_wiki` |" in text
+    assert "| Source scope | `.` |" in text
+    assert "| Health classification | `strict;" in text
+    threshold = "degraded, unhealthy or absent" if fail_on == "degraded" else "unhealthy or absent"
+    assert f"| Action failure threshold | `{threshold}` |" in text
+    assert "Evidence artifact: `doctor-fixture-evidence-123-1`" in text
+    assert "Full JSON: `doctor.json`" in text
+    assert report.read_text(encoding="utf-8") == json.dumps(_doctor_payload(status))
 
 
 def test_summary_renderer_rejects_contract_mismatch(tmp_path: Path) -> None:
@@ -592,6 +615,87 @@ def test_summary_renderer_bounds_and_escapes_human_disclosure(
     assert r"evil\x60**spoof**\|next row" in rendered
     assert len(rendered.splitlines()) <= 40
     assert len(rendered.encode("utf-8")) <= 8192
+
+
+def test_dashboard_scope_is_literal_and_non_strict_mode_is_explicit(tmp_path):
+    payload = _doctor_payload("healthy")
+    payload["strict"] = False
+    payload["wiki_dir"] = "caller/fixture-named-wiki`|\n## forged\u2028row\u202e\ud800"
+    payload["src_dir"] = "source/" + "界" * 300
+    payload["governance"].update(state="not-present", ledger="not-present", projection="not-present")
+    loaded = _load_report(tmp_path, payload, expected_strict=False)
+    rendered = SUMMARY_RENDERER["render_summary"](loaded, fail_on="degraded")
+
+    assert rendered.startswith("## LLM Wiki doctor dashboard\n")
+    assert "| Health classification | `non-strict;" in rendered
+    assert "| Action failure threshold | `degraded, unhealthy or absent` |" in rendered
+    assert r"fixture-named-wiki\x60\| ## forged row\u202e\ud800" in rendered
+    assert "\n## forged" not in rendered and "\u2028" not in rendered and "\u202e" not in rendered
+    assert "... [truncated]" in rendered
+    assert "| Governance | `not-present (optional; absent)` |" in rendered
+    assert "| Verification receipt | `absent (optional; absent)` |" in rendered
+    assert "Repository health" not in rendered
+    assert len(rendered.splitlines()) <= 40 and len(rendered.encode()) <= 8192
+
+
+def test_doctor_lists_reasons_without_inventing_counts_hints_or_versions(tmp_path):
+    payload = _doctor_payload("unhealthy")
+    payload["verification_receipt"] = _doctor_payload("healthy")["verification_receipt"]
+    counts = {key: 0 for key in FRESHNESS_COUNTS}
+    counts.update({"basis-incompatible": 1, "unknown": 1})
+    payload["freshness"]["counts_by_state"] = counts
+    payload["drift"].update(
+        state="indeterminate", counts_by_state=counts, indeterminate=1,
+        diagnostic_count=1, reasons=["producer-tool-version-changed"],
+    )
+    payload["unhealthy_reasons"] = ["freshness-indeterminate"]
+    report = _load_report(tmp_path, payload, doctor_exit_code=2, expected_strict=True)
+    before = deepcopy(report)
+    text = SUMMARY_RENDERER["render_summary"](report, fail_on="unhealthy")
+
+    assert "| Drift diagnostics | `1` |" in text
+    assert "| Drift reasons | `producer-tool-version-changed` |" in text
+    assert "producer-tool-version-changed=1" not in text
+    assert "basis-incompatible=1" in text and "unknown=1" in text
+    assert "Unknown may include unmodeled or unavailable evidence" in text
+    assert "zero confirmed drift alone does not establish currentness" in text
+    assert "no per-reason counts, recovery hints or producer versions" in text
+    assert "2.2.0" not in text and "2.3.0" not in text
+    assert report == before
+
+
+def test_doctor_reason_lists_are_bounded_and_unevaluated_counts_are_not_zero(tmp_path):
+    payload = _doctor_payload("unhealthy")
+    payload["verification_receipt"] = _doctor_payload("healthy")["verification_receipt"]
+    counts = {key: 0 for key in FRESHNESS_COUNTS}
+    counts.update({"basis-incompatible": 1, "unknown": 1})
+    payload["freshness"]["counts_by_state"] = counts
+    payload["drift"].update(
+        state="indeterminate", counts_by_state=counts, indeterminate=1,
+        diagnostic_count=10, reasons=[f"reason-{index:02d}" for index in range(10)],
+    )
+    payload["unhealthy_reasons"] = ["freshness-indeterminate"]
+    report = _load_report(tmp_path, payload, doctor_exit_code=2)
+    text = SUMMARY_RENDERER["render_summary"](report, evidence_artifact="evidence`|\nforged")
+    assert "5 more reasons; see full JSON" in text
+    assert "reason-09" not in text
+    assert r"evidence\x60\| forged" in text
+    assert len(text.splitlines()) <= 40 and len(text.encode()) <= 8192
+    absent = _load_report(tmp_path, _doctor_payload("absent"), doctor_exit_code=3)
+    text = SUMMARY_RENDERER["render_summary"](absent)
+    assert "| Freshness states | `not evaluated` |" in text
+    assert "current=0" not in text
+
+
+def test_doctor_summaries_remain_separate_when_appended(tmp_path):
+    report = _load_report(tmp_path, _doctor_payload("healthy"))
+    text = SUMMARY_RENDERER["render_summary"](report, fail_on="unhealthy")
+    target = tmp_path / "summary.md"
+    SUMMARY_RENDERER["_append"](str(target), text)
+    SUMMARY_RENDERER["_append"](str(target), text)
+    assert text.endswith("\n\n")
+    assert target.read_text(encoding="utf-8") == text + text
+    assert target.read_text(encoding="utf-8").count("\n\n## LLM Wiki doctor dashboard") == 1
 
 
 @pytest.mark.parametrize("path", REQUIRED_REPORT_PATHS)
@@ -883,6 +987,7 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
         "strict": "true",
         "fail-on": "unhealthy",
         "evidence-id": "valid",
+        "report-schema": "v3",
     }
     invalid_strict = next(step for step in steps if step.get("id") == "invalid-strict")
     invalid_evidence_id = next(
