@@ -2,10 +2,12 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 28 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 32 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [canonical_pages](../modules/canonical_pages.md)
 - [common](../modules/common.md)
@@ -13,6 +15,7 @@
 - [data_flow](../modules/data_flow.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
+- [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
@@ -104,7 +107,7 @@ sequenceDiagram
     p21-->>p27: os.fdopen
 ```
 
-> Call sequence diagram shows 30 of 2214 interactions; 2184 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2279 interactions; 2249 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

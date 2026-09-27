@@ -134,40 +134,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_doctor_text | _render_doctor_payload | 221 | `_render_doctor_payload(report.to_payload(...))` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 231 | `isinstance(availability, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 232 | `isinstance(freshness, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 233 | `isinstance(snapshot, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 234 | `isinstance(governance, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 235 | `isinstance(drift, Mapping)` |
-| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 236 | `isinstance(verification, Mapping)` |
-| _render_doctor_payload | _format_counts | 238 | `_format_counts(freshness[...])` |
-| _format_counts | isinstance (src/llm_wiki_cli/services…_service.py:_format_counts) | 606 | `isinstance(value, Mapping)` |
-| _format_counts | ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts) | 608 | `', '.join(...)` |
-| _render_doctor_payload | lines.append | 249 | `lines.append(...)` |
+| render_doctor_text | _render_doctor_payload | 231 | `_render_doctor_payload(report.to_payload(...))` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 241 | `isinstance(availability, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 242 | `isinstance(freshness, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 243 | `isinstance(snapshot, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 244 | `isinstance(governance, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 245 | `isinstance(drift, Mapping)` |
+| _render_doctor_payload | isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload) | 246 | `isinstance(verification, Mapping)` |
+| _render_doctor_payload | _format_counts | 248 | `_format_counts(freshness[...])` |
+| _format_counts | isinstance (src/llm_wiki_cli/services…_service.py:_format_counts) | 616 | `isinstance(value, Mapping)` |
+| _format_counts | ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts) | 618 | `', '.join(...)` |
+| _render_doctor_payload | lines.append | 259 | `lines.append(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.append` | `_render_doctor_payload` | 249 |
-| mutation | `lines.extend` | `_render_doctor_payload` | 250 |
-| mutation | `lines.append` | `_render_doctor_payload` | 277 |
-| mutation | `lines.append` | `_render_doctor_payload` | 279 |
-| mutation | `lines.extend` | `_render_doctor_payload` | 280 |
+| mutation | `lines.append` | `_render_doctor_payload` | 259 |
+| mutation | `lines.extend` | `_render_doctor_payload` | 260 |
+| mutation | `lines.append` | `_render_doctor_payload` | 287 |
+| mutation | `lines.append` | `_render_doctor_payload` | 289 |
+| mutation | `lines.extend` | `_render_doctor_payload` | 290 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_render_doctor_payload` | `isinstance` | 231 |
-| external_call | `_render_doctor_payload` | `isinstance` | 232 |
-| external_call | `_render_doctor_payload` | `isinstance` | 233 |
-| external_call | `_render_doctor_payload` | `isinstance` | 234 |
-| external_call | `_render_doctor_payload` | `isinstance` | 235 |
-| external_call | `_render_doctor_payload` | `isinstance` | 236 |
-| external_call | `_format_counts` | `isinstance` | 606 |
-| unresolved_call | `_format_counts` | `', '.join` | 608 |
+| external_call | `_render_doctor_payload` | `isinstance` | 241 |
+| external_call | `_render_doctor_payload` | `isinstance` | 242 |
+| external_call | `_render_doctor_payload` | `isinstance` | 243 |
+| external_call | `_render_doctor_payload` | `isinstance` | 244 |
+| external_call | `_render_doctor_payload` | `isinstance` | 245 |
+| external_call | `_render_doctor_payload` | `isinstance` | 246 |
+| external_call | `_format_counts` | `isinstance` | 616 |
+| unresolved_call | `_format_counts` | `', '.join` | 618 |
 | step_limit | `render_doctor_text` | `first 12 steps` | 0 |
 
 ## Behavior

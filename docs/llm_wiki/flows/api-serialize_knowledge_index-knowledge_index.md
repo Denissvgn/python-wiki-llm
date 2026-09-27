@@ -147,11 +147,11 @@ flowchart LR
 | serialize_knowledge_index | knowledge_index_to_payload | 317 | `knowledge_index_to_payload(value)` |
 | knowledge_index_to_payload | _model_to_payload | 277 | `_model_to_payload(validate_knowledge_index(...))` |
 | _model_to_payload | _knowledge_index_to_payload_unchecked | 283 | `_knowledge_index_to_payload_unchecked(model)` |
-| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2197 | `_bundle_to_payload(model.bundle)` |
-| _bundle_to_payload | _emit_extensions | 2016 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
-| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 1976 | `isinstance(extensions, FrozenDict)` |
-| _emit_extensions | _parse_extensions | 1977 | `_parse_extensions(extensions, path)` |
-| _bundle_to_payload | _wire_enum | 2020 | `_wire_enum(bundle.repository.working_tree)` |
+| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2205 | `_bundle_to_payload(model.bundle)` |
+| _bundle_to_payload | _emit_extensions | 2024 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
+| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 1984 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 1985 | `_parse_extensions(extensions, path)` |
+| _bundle_to_payload | _wire_enum | 2028 | `_wire_enum(bundle.repository.working_tree)` |
 
 ### Boundary effects
 
@@ -162,7 +162,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `_serialize_payload` | `json.dumps` | 302 |
-| external_call | `_emit_extensions` | `isinstance` | 1976 |
+| external_call | `_emit_extensions` | `isinstance` | 1984 |
 | step_limit | `serialize_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_knowledge_index` | `depth limit` | 0 |
 

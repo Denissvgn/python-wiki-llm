@@ -1,6 +1,6 @@
 # MaintenanceError
 
-**Location:** `src/llm_wiki_cli/services/health_policy.py:94`
+**Location:** `src/llm_wiki_cli/services/health_policy.py:109`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [health_policy](../modules/health_policy.md)
@@ -72,11 +72,11 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_binding` | call | [health_policy](../modules/health_policy.md) | 5 |
-| `derive_policy` | call | [health_policy](../modules/health_policy.md) | 13 |
+| `derive_policy` | call | [health_policy](../modules/health_policy.md) | 15 |
 | `strict_json` | call | [health_policy](../modules/health_policy.md) | 2 |
 | `verify_policy` | call | [health_policy](../modules/health_policy.md) | 1 |
-| `_archive_binding` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 4 |
-| `_installed` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 4 |
+| `_archive_binding` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 5 |
+| `_installed` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 5 |
 | `main` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 7 |
 | `project_version` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |

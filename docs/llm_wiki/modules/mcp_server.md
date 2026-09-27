@@ -15,7 +15,7 @@ origin validation; stdio remains the default.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `circuit_breaker`, `context_service`, `lint_service`, `wiki_surface` |
+| `.` | `analysis_compatibility`, `circuit_breaker`, `context_service`, `lint_service`, `wiki_surface` |
 | `..` | `api` |
 | `..api` | `LlmWikiApiError`, `build_documentation_query_service`, `query_documentation` |
 | `..api_types` | `KnowledgeMode` |
@@ -74,7 +74,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (23) |
+| Outbound | `src` (24) |
 
 ### External packages
 
@@ -82,23 +82,23 @@ flowchart LR
 |---|---:|---:|
 | python | 3 | 2 |
 
-> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MCPDependencyError](../entities/MCPDependencyError.md) | 116 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
-| [McpWikiError](../entities/McpWikiError.md) | 120 | `ValueError` | Raised for invalid MCP wiki requests. |
-| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 217 | `TypedDict` | — |
-| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 221 | `TypedDict` | — |
-| [_McpHttpApplication](../entities/McpHttpApplication.md) | 225 | `Protocol` | — |
-| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 233 | `Protocol` | — |
-| [McpServerConfig](../entities/McpServerConfig.md) | 240 | — | — |
-| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 259 | — | — |
-| [WikiPage](../entities/mcp_server_WikiPage.md) | 278 | — | — |
-| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 365 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
-| [McpWikiService](../entities/McpWikiService.md) | 407 | — | Pure read/check operations exposed through MCP tools and resources. |
+| [MCPDependencyError](../entities/MCPDependencyError.md) | 118 | `RuntimeError` | Raised when the optional MCP runtime cannot be used. |
+| [McpWikiError](../entities/McpWikiError.md) | 122 | `ValueError` | Raised for invalid MCP wiki requests. |
+| [_SourceSelectionOptions](../entities/SourceSelectionOptions.md) | 219 | `TypedDict` | — |
+| [_ExternalSourceOptions](../entities/ExternalSourceOptions.md) | 223 | `TypedDict` | — |
+| [_McpHttpApplication](../entities/McpHttpApplication.md) | 227 | `Protocol` | — |
+| [_RunnableMcpServer](../entities/RunnableMcpServer.md) | 235 | `Protocol` | — |
+| [McpServerConfig](../entities/McpServerConfig.md) | 242 | — | — |
+| [_SourceSelectionPin](../entities/SourceSelectionPin.md) | 262 | — | — |
+| [WikiPage](../entities/mcp_server_WikiPage.md) | 281 | — | — |
+| [OriginValidationMiddleware](../entities/OriginValidationMiddleware.md) | 368 | — | Minimal ASGI middleware that rejects unexpected browser origins. |
+| [McpWikiService](../entities/McpWikiService.md) | 410 | — | Pure read/check operations exposed through MCP tools and resources. |
 
 ## Functions
 

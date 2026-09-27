@@ -2,10 +2,12 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 41 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 43 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -110,7 +112,7 @@ sequenceDiagram
     p1-->>p20: payload.get (src/llm_wiki_cli/services…y:validate_context_packet)
 ```
 
-> Call sequence diagram shows 30 of 3683 interactions; 3653 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3694 interactions; 3664 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

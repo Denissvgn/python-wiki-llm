@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 611 | [Open section](#entities) |
-| Modules | 208 | [Open section](#modules) |
-| Workflows | 157 | [Open section](#workflows) |
+| Entities | 619 | [Open section](#entities) |
+| Modules | 210 | [Open section](#modules) |
+| Workflows | 159 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 454 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -23,6 +23,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [AgentConfigInspection](entities/AgentConfigInspection.md)
 - [AgentConfigState](entities/AgentConfigState.md)
 - [AliasType](entities/AliasType.md)
+- [AnalysisComparisonContract](entities/AnalysisComparisonContract.md)
+- [AnalysisComparisonDecision](entities/AnalysisComparisonDecision.md)
+- [AnalysisCompatibilityRecord](entities/AnalysisCompatibilityRecord.md)
 - [ApiContractError](entities/ApiContractError.md)
 - [ApiContractResult](entities/ApiContractResult.md)
 - [ApplyDiffContext](entities/ApplyDiffContext.md)
@@ -56,6 +59,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [CallersResult](entities/CallersResult.md)
 - [Candidate](entities/Candidate.md)
 - [CanonicalArray](entities/CanonicalArray.md)
+- [CapturedAnalysis](entities/CapturedAnalysis.md)
 - [CapturedContextRead](entities/CapturedContextRead.md)
 - [CapturedHealthDetails](entities/CapturedHealthDetails.md)
 - [CapturedStream](entities/CapturedStream.md)
@@ -65,6 +69,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [CommitStage](entities/CommitStage.md)
 - [CommittedKnowledgeState](entities/CommittedKnowledgeState.md)
 - [CommittedRuntimeProvenance](entities/CommittedRuntimeProvenance.md)
+- [ComparisonPolicy](entities/ComparisonPolicy.md)
 - [CompatibilityModule](entities/CompatibilityModule.md)
 - [ComponentVisitor](entities/ComponentVisitor.md)
 - [ComposeParserState](entities/ComposeParserState.md)
@@ -117,6 +122,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DoctorSnapshotParity](entities/DoctorSnapshotParity.md)
 - [DoctorStatus](entities/DoctorStatus.md)
 - [DoctorV3Result](entities/DoctorV3Result.md)
+- [DoctorV4Result](entities/DoctorV4Result.md)
 - [DoctorVerificationReceipt](entities/DoctorVerificationReceipt.md)
 - [DocumentRecord](entities/DocumentRecord.md)
 - [DocumentationAgentPacket](entities/DocumentationAgentPacket.md)
@@ -227,10 +233,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HaskellExtractor](entities/HaskellExtractor.md)
 - [HeadingCandidate](entities/HeadingCandidate.md)
 - [HealthComparisonBasis](entities/HealthComparisonBasis.md)
+- [HealthComparisonBasisV2](entities/HealthComparisonBasisV2.md)
 - [HealthComponent](entities/HealthComponent.md)
 - [HealthCoverage](entities/HealthCoverage.md)
 - [HealthDetails](entities/HealthDetails.md)
 - [HealthDetailsError](entities/HealthDetailsError.md)
+- [HealthDetailsV2](entities/HealthDetailsV2.md)
 - [HealthEvaluation](entities/HealthEvaluation.md)
 - [HealthProducer](entities/HealthProducer.md)
 - [HealthReason](entities/HealthReason.md)
@@ -632,6 +640,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 ## Modules
 
+- [analysis_capture](modules/analysis_capture.md) - Operation-owned capture of installed analysis implementation and runtimes.
+- [analysis_compatibility](modules/analysis_compatibility.md) - Pure, versioned comparison of application-owned analysis commitments.
 - [api](modules/api.md) - Supported API for extraction, wiki, native knowledge, and documentation.
 - [api_contracts](modules/api_contracts.md) - Static FastAPI and exported OpenAPI contract assembly.
 - [api_diff](modules/api_diff.md) - Conservative compatibility checks over supplied OpenAPI exports only.
@@ -862,9 +872,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
 - [build_capability_diagnostics](workflows/build_capability_diagnostics.md) - entry: `capability_diagnostics.build_capability_diagnostics`
+- [build_ci_check_payload](workflows/build_ci_check_payload.md) - entry: `ci_report.build_ci_check_payload`
 - [build_context_impl](workflows/build_context_impl.md) - entry: `context_service._build_context_impl`
 - [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
 - [build_dependency_graph](workflows/build_dependency_graph.md) - entry: `dependencies.build_dependency_graph`
+- [build_doctor_report](workflows/build_doctor_report.md) - entry: `doctor_service.build_doctor_report`
 - [build_extract_payload](workflows/build_extract_payload.md) - entry: `extraction_service.build_extract_payload`
 - [build_generated_section_context](workflows/build_generated_section_context.md) - entry: `sync_cmd._build_generated_section_context`
 - [build_impact](workflows/build_impact.md) - entry: `impact.build_impact`

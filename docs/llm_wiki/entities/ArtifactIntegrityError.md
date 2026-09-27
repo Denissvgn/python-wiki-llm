@@ -1,6 +1,6 @@
 # ArtifactIntegrityError
 
-**Location:** `src/llm_wiki_cli/api.py:366`
+**Location:** `src/llm_wiki_cli/api.py:369`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)

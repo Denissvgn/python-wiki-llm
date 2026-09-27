@@ -10,14 +10,14 @@ Read-only candidate/producer preflight and bound health-policy commands.
 
 | Source | Symbols |
 |--------|---------|
-| `.` | `extractor_helpers` |
+| `.` | `extractor_helpers`, `analysis_compatibility` |
 | `..config` | `EXTRACTOR_REGISTRY`, `validate_path`, `validate_source_root` |
 | `..extractors.common` | `inventory_language_for_path` |
+| `.analysis_capture` | `capture_analysis`, `attach` |
 | `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
 | `.health_policy` | `PREFLIGHT_SCHEMA`, `MaintenanceError`, `derive_policy`, `digest`, `strict_json`, `verify_policy`, `_binding` |
 | `.knowledge_envelope` | `ProducerComponentInput`, `build_producer_record`, `hash_source_snapshot` |
 | `.knowledge_evidence` | `hash_json` |
-| `.knowledge_freshness` | `comparable_producer_components` |
 | `.knowledge_model` | `_parse_bundle`, `parse_knowledge_index` |
 | `.knowledge_orchestration` | `_producer_evidence`, `_infrastructure_extractor_component`, `runtime_generation_options`, `runtime_generation_options_hash` |
 | `.knowledge_packs` | `parse_packed_root` |
@@ -58,7 +58,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Outbound | `src` (18) |
+| Outbound | `src` (19) |
 
 ### External packages
 
@@ -66,7 +66,7 @@ flowchart LR
 |---|---:|---:|
 | python | 1 | 0 |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -76,5 +76,5 @@ flowchart LR
 | `_git` | `(root: Path, *args: str) -> str` | — | — |
 | `_installed` | `(candidate: Path, version: str, allow_editable: bool) -> dict[str, Any]` | — | — |
 | `_archive_binding` | `(archive: Path, identity: dict, candidate: Path, snapshot, wiki: Path) -> None` | — | — |
-| `preflight` | `(*, candidate_root: str, candidate_sha: str, src_dir: str, wiki_dir: str, helper_cache_dir: str \| None = None, source_selection: str \| None = None, identity_path: str \| None = None, source_archive: str \| None = None, allow_editable: bool = False) -> dict[str, Any]` | — | — |
+| `preflight` | `(*, candidate_root: str, candidate_sha: str, src_dir: str, wiki_dir: str, helper_cache_dir: str \| None = None, source_selection: str \| None = None, identity_path: str \| None = None, source_archive: str \| None = None, allow_editable: bool = False, comparison_policy: str \| None = None) -> dict[str, Any]` | `@ac.comparison_entrypoint` | — |
 | `main` | `(argv = None) -> int` | — | — |

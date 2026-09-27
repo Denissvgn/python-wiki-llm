@@ -25,6 +25,7 @@ freshness. Loading the packaged JSON Schema is the sole resource read.
 | Source | Symbols |
 |--------|---------|
 | `.` | `wiki_surface` |
+| `.analysis_compatibility` | `EXTENSION`, `validate_record`, `configuration_commitment` |
 | `.contracts` | `KNOWLEDGE_SCHEMA_FILENAME`, `KNOWLEDGE_SCHEMA_VERSION`, `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.immutable` | `FrozenDict` |
 | `.knowledge_evidence` | `SHA256_PATTERN` |
@@ -65,9 +66,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (30) |
-| Outbound | `src` (10) |
+| Outbound | `src` (11) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

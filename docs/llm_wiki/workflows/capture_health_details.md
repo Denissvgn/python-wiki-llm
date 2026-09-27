@@ -1,7 +1,7 @@
 # capture_health_details
 
 **Entry point:** `health_details.capture_health_details`
-**Modules involved:** [health_contract](../modules/health_contract.md), [health_details](../modules/health_details.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_freshness](../modules/knowledge_freshness.md)
+**Modules involved:** [analysis_compatibility](../modules/analysis_compatibility.md), [health_contract](../modules/health_contract.md), [health_details](../modules/health_details.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_freshness](../modules/knowledge_freshness.md)
 
 > Capture inventory, exact comparison basis and bounded primary examples.
 
@@ -15,10 +15,15 @@
 5. `health_contract.HealthDetailsError`
 6. `health_contract.HealthDetailsError`
 7. `knowledge_freshness.structural_freshness_modeled`
-8. `knowledge_evidence.canonical_json_text`
+8. `analysis_compatibility.has_contract`
+9. `analysis_compatibility.selected_policy`
+10. `analysis_compatibility.selected_policy`
+11. `analysis_compatibility.basis_decision`
+12. `knowledge_evidence.canonical_json_text`
 
 ## Touches
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)

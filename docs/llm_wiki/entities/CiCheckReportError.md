@@ -1,6 +1,6 @@
 # CiCheckReportError
 
-**Location:** `src/llm_wiki_cli/services/ci_report.py:186`
+**Location:** `src/llm_wiki_cli/services/ci_report.py:188`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [ci_report](../modules/ci_report.md)

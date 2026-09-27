@@ -2,10 +2,11 @@
 
 **Entry point:** `build_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_consumption](../modules/knowledge_consumption.md), and 9 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 10 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -71,7 +72,7 @@ sequenceDiagram
     p8-->>p12: ValueError (src/llm_wiki_cli/services….py:_validate_load_result)
 ```
 
-> Call sequence diagram shows 30 of 846 interactions; 816 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 853 interactions; 823 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

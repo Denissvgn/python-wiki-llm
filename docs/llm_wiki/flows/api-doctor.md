@@ -2,10 +2,11 @@
 
 **Entry point:** `doctor` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 41 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 42 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [common](../modules/common.md)
@@ -108,7 +109,7 @@ sequenceDiagram
     p12->>p7: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 1570 interactions; 1540 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1600 interactions; 1570 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -132,7 +133,7 @@ flowchart LR
     s1 -->|"build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)"| s2
     s2 -. "isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(strict, bool)" .-> s3
     s2 -. "TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('strict must be a boolean')" .-> s4
-    s2 -. "ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('report_schema must be v1 or v3')" .-> s5
+    s2 -. "ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('report_schema must be auto, v1, v3 or v4')" .-> s5
     s2 -. "isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(allow_external_src, bool)" .-> s6
     s2 -. "TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('allow_external_src must be a boolean')" .-> s7
     s2 -. "isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(parallel_jobs, bool)" .-> s8
@@ -148,7 +149,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `doctor` | `src_dir: str`, `wiki_dir: str`, `strict: bool`, `allow_external_src: bool`, `source_selection: str \| Path \| None`, `report_schema: Literal['v1', 'v3']` | `DoctorResult` | - | `cast(...)` |
+| `doctor` | `src_dir: str`, `wiki_dir: str`, `strict: bool`, `allow_external_src: bool`, `source_selection: str \| Path \| None`, `report_schema: Literal['auto', 'v1', 'v3', 'v4']`, `comparison_policy: str \| None` | `DoctorResult` | - | `cast(...)` |
 | `build_doctor_report` | `wiki_dir: str \| Path`, `src_dir: str \| Path`, `strict: bool`, `allow_external_src: bool`, `helper_cache_dir: str \| Path \| None`, `include_tests: Iterable[str] \| None`, `parallel_jobs: int`, `job_request: ExtractionJobRequest \| None` | - | - | `compose_doctor_report(...)` |
 | `isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | - | - | - | - |
@@ -165,17 +166,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 1621 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 123 | `isinstance(strict, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 124 | `TypeError('strict must be a boolean')` |
-| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 126 | `ValueError('report_schema must be v1 or v3')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 127 | `isinstance(allow_external_src, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 128 | `TypeError('allow_external_src must be a boolean')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 129 | `isinstance(parallel_jobs, bool)` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 129 | `isinstance(parallel_jobs, int)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 130 | `TypeError('parallel_jobs must be an integer')` |
-| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 132 | `ValueError('parallel_jobs must be greater than zero')` |
-| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 134 | `str(wiki_dir)` |
+| doctor | build_doctor_report | 1657 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 132 | `isinstance(strict, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 133 | `TypeError('strict must be a boolean')` |
+| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 135 | `ValueError('report_schema must be auto, v1, v3 or v4')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 136 | `isinstance(allow_external_src, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 137 | `TypeError('allow_external_src must be a boolean')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `isinstance(parallel_jobs, bool)` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `isinstance(parallel_jobs, int)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 139 | `TypeError('parallel_jobs must be an integer')` |
+| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 141 | `ValueError('parallel_jobs must be greater than zero')` |
+| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 143 | `str(wiki_dir)` |
 
 ### Boundary effects
 
@@ -185,14 +186,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_doctor_report` | `isinstance` | 123 |
-| external_call | `build_doctor_report` | `TypeError` | 124 |
-| external_call | `build_doctor_report` | `ValueError` | 126 |
-| external_call | `build_doctor_report` | `isinstance` | 127 |
-| external_call | `build_doctor_report` | `TypeError` | 128 |
-| external_call | `build_doctor_report` | `isinstance` | 129 |
-| external_call | `build_doctor_report` | `TypeError` | 130 |
-| external_call | `build_doctor_report` | `ValueError` | 132 |
+| external_call | `build_doctor_report` | `isinstance` | 132 |
+| external_call | `build_doctor_report` | `TypeError` | 133 |
+| external_call | `build_doctor_report` | `ValueError` | 135 |
+| external_call | `build_doctor_report` | `isinstance` | 136 |
+| external_call | `build_doctor_report` | `TypeError` | 137 |
+| external_call | `build_doctor_report` | `isinstance` | 138 |
+| external_call | `build_doctor_report` | `TypeError` | 139 |
+| external_call | `build_doctor_report` | `ValueError` | 141 |
 | step_limit | `doctor` | `first 12 steps` | 0 |
 | truncated_flow | `doctor` | `depth limit` | 0 |
 

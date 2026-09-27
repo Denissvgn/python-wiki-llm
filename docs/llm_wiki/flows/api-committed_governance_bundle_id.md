@@ -152,12 +152,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_governance_bundle_id | _previous_committed_artifacts | 710 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 697 | `capture_committed_knowledge(wiki_dir, manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 228 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 228 | `Path(wiki_dir)` |
-| capture_committed_knowledge | (…).read_bytes | 232 | `(root / name).read_bytes(data not statically known)` |
-| capture_committed_knowledge | SyncManifest.from_payload | 239 | `SyncManifest.from_payload(_decode_json_object(...), object_reader=...)` |
+| committed_governance_bundle_id | _previous_committed_artifacts | 724 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 711 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| capture_committed_knowledge | Path(…).resolve | 229 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 229 | `Path(wiki_dir)` |
+| capture_committed_knowledge | (…).read_bytes | 233 | `(root / name).read_bytes(data not statically known)` |
+| capture_committed_knowledge | SyncManifest.from_payload | 240 | `SyncManifest.from_payload(_decode_json_object(...), object_reader=...)` |
 | SyncManifest.from_payload | _mapping_value | 992 | `_mapping_value(value, 'manifest')` |
 | _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
@@ -168,14 +168,14 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 254 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 255 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 228 |
-| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 232 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 229 |
+| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 233 |
 | external_call | `require_mapping` | `isinstance` | 765 |
 | external_call | `require_mapping` | `isinstance` | 769 |
 | unresolved_call | `require_mapping` | `key.encode` | 774 |

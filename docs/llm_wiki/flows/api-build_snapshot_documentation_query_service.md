@@ -2,10 +2,11 @@
 
 **Entry point:** `build_snapshot_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), [documentation_query_builder](../modules/documentation_query_builder.md), [immutable](../modules/immutable.md), and 22 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), and 24 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [context_packet](../modules/context_packet.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
@@ -99,7 +100,7 @@ sequenceDiagram
     p26->>p28: KnowledgeMismatchPolicy
 ```
 
-> Call sequence diagram shows 30 of 773 interactions; 743 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 774 interactions; 744 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

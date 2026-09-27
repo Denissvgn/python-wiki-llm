@@ -114,4 +114,11 @@ flowchart LR
 | [HealthReason](../entities/HealthReason.md) | Class | 558 | `TypedDict` | — |
 | [HealthDetails](../entities/HealthDetails.md) | Class | 565 | `TypedDict` | — |
 | [DoctorV3Result](../entities/DoctorV3Result.md) | Class | 575 | `DoctorResult` | Opt-in health report with captured coverage and comparison evidence. |
-| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 581 | `TypedDict` | Bounded component results sharing one source/wiki read scope. |
+| [ComparisonPolicy](../entities/ComparisonPolicy.md) | Type alias | 580 | `Literal['auto', 'exact-v1', 'analysis-v1']` | — |
+| [AnalysisCompatibilityRecord](../entities/AnalysisCompatibilityRecord.md) | Class | 583 | `TypedDict` | — |
+| [AnalysisComparisonContract](../entities/AnalysisComparisonContract.md) | Class | 594 | `TypedDict` | — |
+| [AnalysisComparisonDecision](../entities/AnalysisComparisonDecision.md) | Class | 600 | `TypedDict` | — |
+| [HealthComparisonBasisV2](../entities/HealthComparisonBasisV2.md) | Class | 606 | `TypedDict` | — |
+| [HealthDetailsV2](../entities/HealthDetailsV2.md) | Class | 614 | `TypedDict` | — |
+| [DoctorV4Result](../entities/DoctorV4Result.md) | Class | 624 | `DoctorResult` | Compatibility-aware health with versioned captured comparison evidence. |
+| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 629 | `TypedDict` | Bounded component results sharing one source/wiki read scope. |

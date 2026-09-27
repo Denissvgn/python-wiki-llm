@@ -2,10 +2,11 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [render_summary](../modules/render_summary.md)
-**Modules touched:** [ci_report](../modules/ci_report.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), [knowledge_freshness](../modules/knowledge_freshness.md), and 1 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [ci_report](../modules/ci_report.md), [health_contract](../modules/health_contract.md), [health_summary](../modules/health_summary.md), and 2 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [ci_report](../modules/ci_report.md)
 - [health_contract](../modules/health_contract.md)
 - [health_summary](../modules/health_summary.md)
@@ -76,7 +77,7 @@ sequenceDiagram
     p23->>p24: _string (integrations/github-action/render_summary.py)
 ```
 
-> Call sequence diagram shows 30 of 509 interactions; 479 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 571 interactions; 541 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -1,6 +1,6 @@
 # DoctorReport
 
-**Location:** `src/llm_wiki_cli/services/doctor_service.py:59`
+**Location:** `src/llm_wiki_cli/services/doctor_service.py:60`
 **Kind:** Class
 **Bases:** —
 **Module:** [doctor_service](../modules/doctor_service.md)
@@ -34,7 +34,7 @@ One stable machine report plus its process exit classification.
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `exit_code` | `() -> int` | `@property` | — |
-| `to_payload` | `(*, report_schema: str = 'v1') -> dict[str, object]` | — | — |
+| `to_payload` | `(*, report_schema: str = 'auto') -> dict[str, object]` | — | — |
 
 ## Relationships
 

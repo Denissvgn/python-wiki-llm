@@ -1,6 +1,6 @@
 # KnowledgeFreshnessReport
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:216`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:220`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -20,6 +20,7 @@ Freshness results for every recorded concept and aggregate counts.
 | `live_producer` | `ProducerRecord \| None` | `None` | — |
 | `live_generation_options_hash` | `str \| None` | `None` | — |
 | `live_schema_version` | `str \| None` | `None` | — |
+| `comparison_policy` | `str` | `field(default_factory=ac.selected_policy)` | — |
 
 ## Methods
 
@@ -53,7 +54,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `by_locator`, `counts`, `live_generation_options_hash`, `live_producer`, `live_schema_version` |
+| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `by_locator`, `comparison_policy`, `counts`, `live_generation_options_hash`, `live_producer`, `live_schema_version` |
 
 ### References
 

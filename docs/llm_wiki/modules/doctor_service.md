@@ -14,6 +14,7 @@ verification-receipt evaluation already produced by strict lint.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `analysis_compatibility` |
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `.contracts` | `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `.extraction_jobs` | `ExtractionJobRequest` |
@@ -56,23 +57,23 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (16) |
+| Outbound | `src` (17) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DoctorReport](../entities/DoctorReport.md) | 59 | — | One stable machine report plus its process exit classification. |
+| [DoctorReport](../entities/DoctorReport.md) | 60 | — | One stable machine report plus its process exit classification. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `build_doctor_report` | `(wiki_dir: str \| Path = DEFAULT_WIKI_DIR, src_dir: str \| Path = '.', *, strict: bool = False, allow_external_src: bool = False, helper_cache_dir: str \| Path \| None = None, include_tests: Iterable[str] \| None = None, parallel_jobs: int = 1, job_request: ExtractionJobRequest \| None = None, source_selection: str \| Path \| None = None, report_schema: str = 'v1') -> DoctorReport` | — | Build a doctor report by composing existing strict-lint results. |
+| `build_doctor_report` | `(wiki_dir: str \| Path = DEFAULT_WIKI_DIR, src_dir: str \| Path = '.', *, strict: bool = False, allow_external_src: bool = False, helper_cache_dir: str \| Path \| None = None, include_tests: Iterable[str] \| None = None, parallel_jobs: int = 1, job_request: ExtractionJobRequest \| None = None, source_selection: str \| Path \| None = None, report_schema: str = 'auto', comparison_policy: str \| None = None) -> DoctorReport` | `@ac.comparison_entrypoint` | Build a doctor report by composing existing strict-lint results. |
 | `compose_doctor_report` | `(lint: LintReport, *, strict: bool, wiki_dir: str, src_dir: str) -> DoctorReport` | — | Compose health sections from one already-computed lint operation. |
-| `render_doctor_text` | `(report: DoctorReport, *, report_schema: str = 'v1') -> str` | — | Render the report as a compact one-screen human summary. |
+| `render_doctor_text` | `(report: DoctorReport, *, report_schema: str = 'auto') -> str` | — | Render the report as a compact one-screen human summary. |
 | `_render_doctor_payload` | `(payload: Mapping[str, Any]) -> str` | — | — |
 | `_availability_section` | `(lint: LintReport, view: KnowledgeReadView \| None, wiki_root: Path) -> dict[str, object]` | — | — |
 | `_knowledge_declared` | `(wiki_root: Path) -> bool` | — | — |

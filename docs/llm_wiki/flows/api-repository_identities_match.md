@@ -114,13 +114,13 @@ flowchart LR
 | repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 503 | `isinstance(right, RepositoryRecord)` |
 | repository_identities_match | TypeError | 506 | `TypeError('left and right must be RepositoryRecord values')` |
 | repository_identities_match | _repository_identity | 507 | `_repository_identity(left.identity, 'left.identity')` |
-| _repository_identity | _nonempty_string | 1796 | `_nonempty_string(value, path)` |
-| _nonempty_string | _string | 1703 | `_string(value, path)` |
-| _string | require_string | 1692 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
+| _repository_identity | _nonempty_string | 1804 | `_nonempty_string(value, path)` |
+| _nonempty_string | _string | 1711 | `_string(value, path)` |
+| _string | require_string | 1700 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
 | require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 744 | `isinstance(value, str)` |
 | require_string | value.encode | 748 | `value.encode('utf-8')` |
-| _string | KnowledgeModelError | 1694 | `KnowledgeModelError(path, 'must be a string')` |
-| _string | KnowledgeModelError | 1695 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
+| _string | KnowledgeModelError | 1702 | `KnowledgeModelError(path, 'must be a string')` |
+| _string | KnowledgeModelError | 1703 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
 
 ### Boundary effects
 

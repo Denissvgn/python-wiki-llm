@@ -1,6 +1,6 @@
 # HealthDetailsError
 
-**Location:** `src/llm_wiki_cli/services/health_contract.py:38`
+**Location:** `src/llm_wiki_cli/services/health_contract.py:39`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [health_contract](../modules/health_contract.md)

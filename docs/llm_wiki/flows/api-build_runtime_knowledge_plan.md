@@ -2,10 +2,12 @@
 
 **Entry point:** `build_runtime_knowledge_plan` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 26 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 28 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
@@ -95,7 +97,7 @@ sequenceDiagram
     p18->>p12: SyncManifestError
 ```
 
-> Call sequence diagram shows 30 of 2725 interactions; 2695 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2790 interactions; 2760 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -159,13 +161,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 365 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 366 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| build_runtime_knowledge_plan | capture_committed_knowledge | 369 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 228 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 228 | `Path(wiki_dir)` |
-| capture_committed_knowledge | (…).read_bytes | 232 | `(root / name).read_bytes(data not statically known)` |
-| capture_committed_knowledge | SyncManifest.from_payload | 239 | `SyncManifest.from_payload(_decode_json_object(...), object_reader=...)` |
+| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 374 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 375 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| build_runtime_knowledge_plan | capture_committed_knowledge | 378 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| capture_committed_knowledge | Path(…).resolve | 229 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 229 | `Path(wiki_dir)` |
+| capture_committed_knowledge | (…).read_bytes | 233 | `(root / name).read_bytes(data not statically known)` |
+| capture_committed_knowledge | SyncManifest.from_payload | 240 | `SyncManifest.from_payload(_decode_json_object(...), object_reader=...)` |
 | SyncManifest.from_payload | _mapping_value | 992 | `_mapping_value(value, 'manifest')` |
 | _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
@@ -175,16 +177,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 254 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 255 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_runtime_knowledge_plan` | `isinstance` | 365 |
-| external_call | `build_runtime_knowledge_plan` | `TypeError` | 366 |
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 228 |
-| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 232 |
+| external_call | `build_runtime_knowledge_plan` | `isinstance` | 374 |
+| external_call | `build_runtime_knowledge_plan` | `TypeError` | 375 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 229 |
+| unresolved_call | `capture_committed_knowledge` | `(root / name).read_bytes` | 233 |
 | external_call | `require_mapping` | `isinstance` | 765 |
 | external_call | `require_mapping` | `isinstance` | 769 |
 | step_limit | `build_runtime_knowledge_plan` | `first 12 steps` | 0 |

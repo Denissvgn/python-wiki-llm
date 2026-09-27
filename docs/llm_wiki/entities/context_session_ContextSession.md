@@ -1,6 +1,6 @@
 # ContextSession
 
-**Location:** `src/llm_wiki_cli/services/context_session.py:185`
+**Location:** `src/llm_wiki_cli/services/context_session.py:187`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_session](../modules/context_session.md)
@@ -27,9 +27,9 @@ The bounded session implementation owns capture and rendering reuse, input reval
 | `_validate` | `(entry, environment, request, profile, counter, *, cold = False)` | — | — |
 | `_build` | `(request, *, cancelled, shared = None)` | — | — |
 | `_compatible_capture` | `(normalized, profile, environment)` | — | — |
-| `read` | `(request, *, if_result_id = None, delta = False, reuse = True, cancelled: Callable[[], bool] \| None = None) -> SessionReply` | — | — |
-| `hint` | `(*, unsaved_buffers = False)` | — | — |
-| `close` | `()` | — | — |
+| `read` | `(request, *, if_result_id = None, delta = False, reuse = True, cancelled: Callable[[], bool] \| None = None) -> SessionReply` | `@ac.bound_comparison` | — |
+| `hint` | `(*, unsaved_buffers = False)` | `@ac.bound_comparison` | — |
+| `close` | `()` | `@ac.bound_comparison` | — |
 | `__enter__` | `()` | — | — |
 | `__exit__` | `(*_)` | — | — |
 

@@ -1,6 +1,6 @@
 # LiveKnowledgeEvaluation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:172`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:174`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -26,6 +26,7 @@ they are ignored because freshness is evaluated for recorded concepts.
 | `source_content_hashes` | `Mapping[str, str]` | *required* | — |
 | `missing_source_paths` | `AbstractSet[str]` | `frozenset()` | — |
 | `concept_bases` | `Mapping[str, ConceptObservationBasis]` | `field(default_factory=dict)` | — |
+| `comparison_policy` | `str` | `field(default_factory=ac.selected_policy)` | — |
 
 ## Methods
 
@@ -68,7 +69,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `concept_bases`, `generation_options_hash`, `missing_source_paths`, `producer`, `schema_version`, `source_content_hashes` |
+| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `comparison_policy`, `concept_bases`, `generation_options_hash`, `missing_source_paths`, `producer`, `schema_version`, `source_content_hashes` |
 
 ### References
 

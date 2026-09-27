@@ -2,10 +2,12 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [knowledge_maintenance](../modules/knowledge_maintenance.md)
-**Modules touched:** [ci_report](../modules/ci_report.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 28 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [ci_report](../modules/ci_report.md), [common](../modules/common.md), and 29 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [ci_report](../modules/ci_report.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
@@ -17,7 +19,6 @@
 - [io](../modules/io.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_generation](../modules/knowledge_generation.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
@@ -39,16 +40,16 @@
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
-**Related modules:** [common](../modules/common.md), [config](../modules/config.md), [health_policy](../modules/health_policy.md), [knowledge_envelope](../modules/knowledge_envelope.md), and 13 more
+**Related modules:** [analysis_capture](../modules/analysis_capture.md), [common](../modules/common.md), [config](../modules/config.md), [health_policy](../modules/health_policy.md), and 13 more
 
 **Complete related modules:**
 
+- [analysis_capture](../modules/analysis_capture.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [health_policy](../modules/health_policy.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
-- [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
@@ -71,53 +72,53 @@ sequenceDiagram
     participant p2 as parser.add_subparsers
     participant p3 as commands.add_parser
     participant p4 as before.add_argument
-    participant p5 as command.add_argument
-    participant p6 as parser.parse_args
-    participant p7 as vars(…).copy
-    participant p8 as vars
-    participant p9 as Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    participant p10 as values.pop
-    participant p11 as preflight
-    participant p12 as Path(…).resolve (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    participant p13 as Path (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    participant p14 as validate_path
-    participant p15 as PathValidationError
-    participant p16 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p17 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p18 as Path.cwd().resolve
+    participant p5 as sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)
+    participant p6 as command.add_argument
+    participant p7 as parser.parse_args
+    participant p8 as vars(…).copy
+    participant p9 as vars
+    participant p10 as Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)
+    participant p11 as values.pop
+    participant p12 as preflight
+    participant p13 as Path(…).resolve (src/llm_wiki_cli/services…_maintenance.py:preflight)
+    participant p14 as Path (src/llm_wiki_cli/services…_maintenance.py:preflight)
+    participant p15 as validate_path
+    participant p16 as PathValidationError
+    participant p17 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
+    participant p18 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
     p0-->>p1: argparse.ArgumentParser
     p0-->>p2: parser.add_subparsers
     p0-->>p3: commands.add_parser
     p0-->>p4: before.add_argument
     p0-->>p4: before.add_argument
     p0-->>p4: before.add_argument
+    p0-->>p4: before.add_argument
+    p0-->>p5: sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)
     p0-->>p3: commands.add_parser
-    p0-->>p5: command.add_argument
-    p0-->>p5: command.add_argument
-    p0-->>p5: command.add_argument
-    p0-->>p5: command.add_argument
-    p0-->>p5: command.add_argument
-    p0-->>p5: command.add_argument
-    p0-->>p5: command.add_argument
-    p0-->>p5: command.add_argument
-    p0-->>p6: parser.parse_args
-    p0-->>p7: vars(…).copy
-    p0-->>p8: vars
-    p0-->>p9: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    p0-->>p10: values.pop
-    p0-->>p10: values.pop
-    p0->>p11: preflight
-    p11-->>p12: Path(…).resolve (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    p11-->>p13: Path (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    p11->>p14: validate_path
-    p14->>p15: PathValidationError
-    p14-->>p16: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p14-->>p17: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p14-->>p18: Path.cwd().resolve
-    p14-->>p17: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p0-->>p6: command.add_argument
+    p0-->>p6: command.add_argument
+    p0-->>p6: command.add_argument
+    p0-->>p6: command.add_argument
+    p0-->>p6: command.add_argument
+    p0-->>p6: command.add_argument
+    p0-->>p6: command.add_argument
+    p0-->>p6: command.add_argument
+    p0-->>p7: parser.parse_args
+    p0-->>p8: vars(…).copy
+    p0-->>p9: vars
+    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)
+    p0-->>p11: values.pop
+    p0-->>p11: values.pop
+    p0->>p12: preflight
+    p12-->>p13: Path(…).resolve (src/llm_wiki_cli/services…_maintenance.py:preflight)
+    p12-->>p14: Path (src/llm_wiki_cli/services…_maintenance.py:preflight)
+    p12->>p15: validate_path
+    p15->>p16: PathValidationError
+    p15-->>p17: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
+    p15-->>p18: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
 ```
 
-> Call sequence diagram shows 30 of 3232 interactions; 3202 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3453 interactions; 3423 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -133,9 +134,9 @@ flowchart LR
     s5["5. before.add_argument"]
     s6["6. before.add_argument"]
     s7["7. before.add_argument"]
-    s8["8. commands.add_parser"]
-    s9["9. command.add_argument"]
-    s10["10. command.add_argument"]
+    s8["8. before.add_argument"]
+    s9["9. sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)"]
+    s10["10. commands.add_parser"]
     s11["11. command.add_argument"]
     s12["12. command.add_argument"]
     s1 -. "argparse.ArgumentParser(data not statically known)" .-> s2
@@ -144,11 +145,11 @@ flowchart LR
     s1 -. "before.add_argument(..., required=True)" .-> s5
     s1 -. "before.add_argument(...)" .-> s6
     s1 -. "before.add_argument('--allow-editable', action='store_true')" .-> s7
-    s1 -. "commands.add_parser(name)" .-> s8
-    s1 -. "command.add_argument('--report', required=True)" .-> s9
-    s1 -. "command.add_argument('--preflight', required=True)" .-> s10
-    s1 -. "command.add_argument('--candidate-sha', required=True)" .-> s11
-    s1 -. "command.add_argument('--candidate-tree', required=True)" .-> s12
+    s1 -. "before.add_argument('--comparison-policy', choices=sorted(...), default='auto')" .-> s8
+    s1 -. "sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)(ac.POLICIES)" .-> s9
+    s1 -. "commands.add_parser(name)" .-> s10
+    s1 -. "command.add_argument('--report', required=True)" .-> s11
+    s1 -. "command.add_argument('--preflight', required=True)" .-> s12
     b0["mutation values.pop"]
     s1 -. "mutation values.pop" .-> b0
     b1["mutation values.pop"]
@@ -163,16 +164,16 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `main` | `argv` | `MAX_EVIDENCE_BYTES`, `MAX_EVIDENCE_BYTES`, `MAX_EVIDENCE_BYTES`, `tarfile`, `subprocess` | - | `...` |
+| `main` | `argv` | `ac`, `MAX_EVIDENCE_BYTES`, `MAX_EVIDENCE_BYTES`, `MAX_EVIDENCE_BYTES`, `tarfile`, `subprocess` | - | `...` |
 | `argparse.ArgumentParser` | - | - | - | - |
 | `parser.add_subparsers` | - | - | - | - |
 | `commands.add_parser` | - | - | - | - |
 | `before.add_argument` | - | - | - | - |
 | `before.add_argument` | - | - | - | - |
 | `before.add_argument` | - | - | - | - |
+| `before.add_argument` | - | - | - | - |
+| `sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)` | - | - | - | - |
 | `commands.add_parser` | - | - | - | - |
-| `command.add_argument` | - | - | - | - |
-| `command.add_argument` | - | - | - | - |
 | `command.add_argument` | - | - | - | - |
 | `command.add_argument` | - | - | - | - |
 
@@ -180,40 +181,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | argparse.ArgumentParser | 358 | `argparse.ArgumentParser(data not statically known)` |
-| main | parser.add_subparsers | 359 | `parser.add_subparsers(dest='command', required=True)` |
-| main | commands.add_parser | 360 | `commands.add_parser('preflight')` |
-| main | before.add_argument | 362 | `before.add_argument(..., required=True)` |
-| main | before.add_argument | 369 | `before.add_argument(...)` |
-| main | before.add_argument | 370 | `before.add_argument('--allow-editable', action='store_true')` |
-| main | commands.add_parser | 372 | `commands.add_parser(name)` |
-| main | command.add_argument | 373 | `command.add_argument('--report', required=True)` |
-| main | command.add_argument | 374 | `command.add_argument('--preflight', required=True)` |
-| main | command.add_argument | 375 | `command.add_argument('--candidate-sha', required=True)` |
-| main | command.add_argument | 376 | `command.add_argument('--candidate-tree', required=True)` |
+| main | argparse.ArgumentParser | 388 | `argparse.ArgumentParser(data not statically known)` |
+| main | parser.add_subparsers | 389 | `parser.add_subparsers(dest='command', required=True)` |
+| main | commands.add_parser | 390 | `commands.add_parser('preflight')` |
+| main | before.add_argument | 392 | `before.add_argument(..., required=True)` |
+| main | before.add_argument | 399 | `before.add_argument(...)` |
+| main | before.add_argument | 400 | `before.add_argument('--allow-editable', action='store_true')` |
+| main | before.add_argument | 401 | `before.add_argument('--comparison-policy', choices=sorted(...), default='auto')` |
+| main | sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main) | 401 | `sorted(ac.POLICIES)` |
+| main | commands.add_parser | 403 | `commands.add_parser(name)` |
+| main | command.add_argument | 404 | `command.add_argument('--report', required=True)` |
+| main | command.add_argument | 405 | `command.add_argument('--preflight', required=True)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `values.pop` | `main` | 385 |
-| mutation | `values.pop` | `main` | 386 |
+| mutation | `values.pop` | `main` | 416 |
+| mutation | `values.pop` | `main` | 417 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `main` | `argparse.ArgumentParser` | 358 |
-| unresolved_call | `main` | `parser.add_subparsers` | 359 |
-| unresolved_call | `main` | `commands.add_parser` | 360 |
-| unresolved_call | `main` | `before.add_argument` | 362 |
-| unresolved_call | `main` | `before.add_argument` | 369 |
-| unresolved_call | `main` | `before.add_argument` | 370 |
-| unresolved_call | `main` | `commands.add_parser` | 372 |
-| unresolved_call | `main` | `command.add_argument` | 373 |
-| unresolved_call | `main` | `command.add_argument` | 374 |
-| unresolved_call | `main` | `command.add_argument` | 375 |
-| unresolved_call | `main` | `command.add_argument` | 376 |
+| external_call | `main` | `argparse.ArgumentParser` | 388 |
+| unresolved_call | `main` | `parser.add_subparsers` | 389 |
+| unresolved_call | `main` | `commands.add_parser` | 390 |
+| unresolved_call | `main` | `before.add_argument` | 392 |
+| unresolved_call | `main` | `before.add_argument` | 399 |
+| unresolved_call | `main` | `before.add_argument` | 400 |
+| unresolved_call | `main` | `before.add_argument` | 401 |
+| external_call | `main` | `sorted` | 401 |
+| unresolved_call | `main` | `commands.add_parser` | 403 |
+| unresolved_call | `main` | `command.add_argument` | 404 |
+| unresolved_call | `main` | `command.add_argument` | 405 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

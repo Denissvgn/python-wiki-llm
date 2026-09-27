@@ -2,10 +2,12 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 42 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), and 44 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
 - [change_selection](../modules/change_selection.md)
 - [common](../modules/common.md)
@@ -115,7 +117,7 @@ sequenceDiagram
     p23-->>p24: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
 ```
 
-> Call sequence diagram shows 30 of 3431 interactions; 3401 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3442 interactions; 3412 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -159,7 +161,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_qualified_context (src/llm_wiki_cli/api.py)` | `src_dir: str`, `wiki_dir: str`, `request: Mapping[str, Any] \| None`, `allow_external_src: bool`, `read_only: bool`, `source_selection: str \| Path \| None`, `knowledge_mode: KnowledgeMode \| None` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `context_cmd`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` | - | `packet` |
+| `build_qualified_context (src/llm_wiki_cli/api.py)` | `src_dir: str`, `wiki_dir: str`, `request: Mapping[str, Any] \| None`, `allow_external_src: bool`, `read_only: bool`, `source_selection: str \| Path \| None`, `knowledge_mode: KnowledgeMode \| None`, `comparison_policy: str \| None` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `context_cmd`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` | - | `packet` |
 | `_normalize_optional_knowledge_mode` | `value: object` | `KNOWLEDGE_MODE_VALUES`, `KNOWLEDGE_MODE_VALUES`, `KNOWLEDGE_MODE_REQUEST_FIELD`, `KnowledgeMode` | - | `None`, `cast(...)` |
 | `isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
 | `', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | - | - | - | - |
@@ -176,17 +178,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context (src/llm_wiki_cli/api.py) | _normalize_optional_knowledge_mode | 1441 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
-| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 386 | `isinstance(value, str)` |
-| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 387 | `', '.join(...)` |
-| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 387 | `repr(item)` |
-| _normalize_optional_knowledge_mode | InvalidRequestError | 388 | `InvalidRequestError(..., code='invalid-request', details={...})` |
-| _normalize_optional_knowledge_mode | cast | 393 | `cast(KnowledgeMode, value)` |
-| build_qualified_context (src/llm_wiki_cli/api.py) | InvalidRequestError | 1445 | `InvalidRequestError('knowledge_mode cannot be supplied both as an API parameter and in the packet request', code='invalid-request', details={...})` |
-| build_qualified_context (src/llm_wiki_cli/api.py) | request.get (src/llm_wiki_cli/api.py:build_qualified_context) | 1451 | `request.get('protocol')` |
-| build_qualified_context (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:build_qualified_context) | 1453 | `isinstance(supplied_protocol, str)` |
-| build_qualified_context (src/llm_wiki_cli/api.py) | InvalidRequestError | 1460 | `InvalidRequestError('protocol is not supported', code='invalid-request', details={...})` |
-| build_qualified_context (src/llm_wiki_cli/api.py) | build_qualified_context (src/llm_wiki_cli/services/context_packet.py) | 1483 | `context_packet_service.build_qualified_context(src_dir, wiki_dir, packet_request, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
+| build_qualified_context (src/llm_wiki_cli/api.py) | _normalize_optional_knowledge_mode | 1463 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 389 | `isinstance(value, str)` |
+| _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 390 | `', '.join(...)` |
+| _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 390 | `repr(item)` |
+| _normalize_optional_knowledge_mode | InvalidRequestError | 391 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| _normalize_optional_knowledge_mode | cast | 396 | `cast(KnowledgeMode, value)` |
+| build_qualified_context (src/llm_wiki_cli/api.py) | InvalidRequestError | 1467 | `InvalidRequestError('knowledge_mode cannot be supplied both as an API parameter and in the packet request', code='invalid-request', details={...})` |
+| build_qualified_context (src/llm_wiki_cli/api.py) | request.get (src/llm_wiki_cli/api.py:build_qualified_context) | 1473 | `request.get('protocol')` |
+| build_qualified_context (src/llm_wiki_cli/api.py) | isinstance (src/llm_wiki_cli/api.py:build_qualified_context) | 1475 | `isinstance(supplied_protocol, str)` |
+| build_qualified_context (src/llm_wiki_cli/api.py) | InvalidRequestError | 1482 | `InvalidRequestError('protocol is not supported', code='invalid-request', details={...})` |
+| build_qualified_context (src/llm_wiki_cli/api.py) | build_qualified_context (src/llm_wiki_cli/services/context_packet.py) | 1505 | `context_packet_service.build_qualified_context(src_dir, wiki_dir, packet_request, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
 
 ### Boundary effects
 
@@ -196,11 +198,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 386 |
-| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 387 |
-| external_call | `_normalize_optional_knowledge_mode` | `cast` | 393 |
-| unresolved_call | `build_qualified_context` | `request.get` | 1451 |
-| external_call | `build_qualified_context` | `isinstance` | 1453 |
+| external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 389 |
+| unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 390 |
+| external_call | `_normalize_optional_knowledge_mode` | `cast` | 396 |
+| unresolved_call | `build_qualified_context` | `request.get` | 1473 |
+| external_call | `build_qualified_context` | `isinstance` | 1475 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_qualified_context` | `depth limit` | 0 |
 

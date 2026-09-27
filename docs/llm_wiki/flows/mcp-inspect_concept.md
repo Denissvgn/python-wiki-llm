@@ -62,12 +62,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| inspect_concept | _native_tool_call | 1409 | `_native_tool_call(service.inspect_concept, locator_or_exact_route, live=live, limit=limit, include_evidence=include_evidence)` |
-| _native_tool_call | callback | 1275 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1283 | `str(exc)` |
-| _native_tool_call | CallToolResult | 1287 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent | 1289 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1289 | `json.dumps(failure, sort_keys=True)` |
+| inspect_concept | _native_tool_call | 1443 | `_native_tool_call(service.inspect_concept, locator_or_exact_route, live=live, limit=limit, include_evidence=include_evidence)` |
+| _native_tool_call | callback | 1309 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1317 | `str(exc)` |
+| _native_tool_call | CallToolResult | 1321 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent | 1323 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1323 | `json.dumps(failure, sort_keys=True)` |
 
 ### Boundary effects
 
@@ -77,10 +77,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1275 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1287 |
-| external_call | `_native_tool_call` | `TextContent` | 1289 |
-| external_call | `_native_tool_call` | `json.dumps` | 1289 |
+| unresolved_call | `_native_tool_call` | `callback` | 1309 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1321 |
+| external_call | `_native_tool_call` | `TextContent` | 1323 |
+| external_call | `_native_tool_call` | `json.dumps` | 1323 |
 
 ## Behavior
 

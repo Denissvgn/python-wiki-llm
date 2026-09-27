@@ -17,8 +17,10 @@ extraction of its own.
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
-| `..config` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS` |
+| `..config` | `AGENT_WORKTREE_DIR_PATTERNS`, `EXCLUDED_DIRS`, `EXTRACTOR_REGISTRY` |
 | `..extractors.common` | `BUNDLED_HELPER_IMPLEMENTATION_PATHS`, `is_bundled_helper_implementation_path` |
+| `.analysis_capture` | `attach`, `attach`, `attach` |
+| `.analysis_compatibility` | `has_contract` |
 | `.contracts` | `KNOWLEDGE_SCHEMA_VERSION` |
 | `.immutable` | `freeze` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_EXTRACTOR_REF`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `current_infrastructure_bases`, `infrastructure_evidence_by_page` |
@@ -61,19 +63,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (19) |
+| Outbound | `src` (21) |
 
-> All 27 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 131 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 178 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 275 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 284 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 305 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 179 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 276 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 285 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 307 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 
@@ -82,7 +84,8 @@ flowchart LR
 | `capture_committed_knowledge` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None) -> CommittedKnowledgeState` | `@observed_phase('prior_artifacts')` | — |
 | `prepare_runtime_generation_options` | `(generation_options: Mapping[str, Any], *, generation_option_defaults: Mapping[str, Any], generation_option_allowlist: Sequence[str], inventory_complete: bool) -> PreparedRuntimeGenerationOptions` | — | Add the evaluated inventory mode to one generation-options projection. |
 | `_runtime_manifest_generation_inputs` | `(inputs: RuntimeKnowledgeInputs) -> Mapping[str, object]` | — | — |
-| `_infrastructure_extractor_component` | `() -> ProducerComponentInput` | — | — |
+| `_tool_component` | `(analysis_components, **kwargs)` | — | — |
+| `_infrastructure_extractor_component` | `(analysis_components = None) -> ProducerComponentInput` | — | — |
 | `build_runtime_knowledge_plan` | `(inputs: RuntimeKnowledgeInputs) -> KnowledgeCommitPlan` | — | Build a commit plan from one command's already evaluated run state. |
 | `_stabilize_revision_only_noop` | `(runtime_inputs: RuntimeKnowledgeInputs, plan_inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | Keep a validated artifact set stable across an output-only Git commit. |
 | `build_runtime_live_evaluation` | `(inputs: RuntimeLiveEvaluationInputs) -> LiveKnowledgeEvaluation` | — | Adapt one existing inventory/snapshot run to the freshness boundary. |
@@ -101,7 +104,7 @@ flowchart LR
 | `persist_runtime_generation_policy` | `(generation_inputs: Mapping[str, object], *, data_flow_enabled: bool, dependency_graph_detail: str, workflows_enabled: bool) -> dict[str, object]` | — | Persist bootstrap-only generation policy for later sync parity. |
 | `_runtime_policy_from_generation_inputs` | `(generation_inputs: Mapping[str, object] \| None) -> dict[str, object] \| None` | — | — |
 | `_validate_runtime_policy` | `(policy: Mapping[str, object]) -> None` | — | — |
-| `_producer_evidence` | `(inventory: Mapping[str, Mapping[str, Any]], *, inventory_complete: bool, historical_extractor_refs: frozenset[str] = frozenset(), extractor_registry: Mapping[str, str] \| None = None, plugin_extractor_components: Sequence[Mapping[str, Any]] = (), plugin_components: Sequence[Mapping[str, Any]] = ()) -> tuple[dict[str, str], dict[str, bool], tuple[ProducerComponentInput, ...], tuple[ProducerComponentInput, ...]]` | — | — |
+| `_producer_evidence` | `(inventory: Mapping[str, Mapping[str, Any]], *, inventory_complete: bool, historical_extractor_refs: frozenset[str] = frozenset(), extractor_registry: Mapping[str, str] \| None = None, plugin_extractor_components: Sequence[Mapping[str, Any]] = (), plugin_components: Sequence[Mapping[str, Any]] = (), analysis_components: Mapping[str, Any] \| None = None) -> tuple[dict[str, str], dict[str, bool], tuple[ProducerComponentInput, ...], tuple[ProducerComponentInput, ...]]` | — | — |
 | `_builtin_extractor_id` | `(language: str) -> str` | — | — |
 | `_plugin_extractors_by_language` | `(components: Sequence[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]` | — | — |
 | `_manifest_extractor_refs` | `(manifest: SyncManifest \| None) -> frozenset[str]` | — | — |

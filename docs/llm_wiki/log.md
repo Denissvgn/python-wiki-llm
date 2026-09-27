@@ -1276,3 +1276,28 @@ Added explicit task requirements, qualified context composition, public query/se
 - Infrastructure moved: 0
 - Infrastructure removed: 0
 - Unsupported infrastructure YAML: 2
+
+## 2026-09-27
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:ec9d59ad78bcf9bd72f1c58e6a3bb500a7eb3e0034290bcf26a3e7cff5b8894f`
+- Pages created: 12
+- Pages updated: 225
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1224
+- Pages deprecated: 0
+- Semantic fields preserved: 29
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 2
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Infrastructure added: 0
+- Infrastructure changed: 0
+- Infrastructure moved: 0
+- Infrastructure removed: 0
+- Unsupported infrastructure YAML: 2

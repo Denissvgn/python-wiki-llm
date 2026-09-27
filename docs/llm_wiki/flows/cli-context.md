@@ -183,10 +183,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3530 | `getattr(args, 'request', None)` |
-| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3531 | `_run_protocol(args)` |
-| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3368 | `getattr(args, 'output', None)` |
-| _run_protocol | _read_protocol_request | 3371 | `_read_protocol_request(args.request)` |
+| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3531 | `getattr(args, 'request', None)` |
+| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3532 | `_run_protocol(args)` |
+| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3369 | `getattr(args, 'output', None)` |
+| _run_protocol | _read_protocol_request | 3372 | `_read_protocol_request(args.request)` |
 | _read_protocol_request | sys.stdin.read | 1059 | `sys.stdin.read(data not statically known)` |
 | _read_protocol_request | Path(…).read_text | 1061 | `Path(source).read_text(encoding='utf-8')` |
 | _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1061 | `Path(source)` |
@@ -199,21 +199,21 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3547 |
-| output | `print` | `run` | 3550 |
-| output | `print` | `run` | 3594 |
-| output | `print` | `run` | 3597 |
-| output | `print` | `run` | 3604 |
-| output | `print` | `run` | 3606 |
-| output | `print` | `run` | 3615 |
-| output | `print` | `run` | 3617 |
+| output | `print` | `run` | 3548 |
+| output | `print` | `run` | 3551 |
+| output | `print` | `run` | 3595 |
+| output | `print` | `run` | 3598 |
+| output | `print` | `run` | 3605 |
+| output | `print` | `run` | 3607 |
+| output | `print` | `run` | 3616 |
+| output | `print` | `run` | 3618 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3530 |
-| external_call | `_run_protocol` | `getattr` | 3368 |
+| external_call | `run` | `getattr` | 3531 |
+| external_call | `_run_protocol` | `getattr` | 3369 |
 | external_call | `_read_protocol_request` | `sys.stdin.read` | 1059 |
 | unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1061 |
 | external_call | `_read_protocol_request` | `json.loads` | 1067 |

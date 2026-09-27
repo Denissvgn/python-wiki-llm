@@ -2,12 +2,13 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [cli](../modules/cli.md)
-**Modules touched:** [cli](../modules/cli.md), [progress](../modules/progress.md), [resource_diagnostics](../modules/resource_diagnostics.md)
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [cli](../modules/cli.md), [progress](../modules/progress.md), [resource_diagnostics](../modules/resource_diagnostics.md)
 
-**Related modules:** [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md), [maintenance_queue](../modules/maintenance_queue.md), and 4 more
+**Related modules:** [analysis_compatibility](../modules/analysis_compatibility.md), [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md), and 5 more
 
 **Complete related modules:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [config](../modules/config.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)
@@ -74,7 +75,7 @@ sequenceDiagram
     p18-->>p19: parser.add_argument (src/llm_wiki_cli/cli.py:_add_helper_cache_argument)
 ```
 
-> Call sequence diagram shows 30 of 661 interactions; 631 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 673 interactions; 643 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -150,28 +151,28 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2560 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2564 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 221 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 222 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers | 225 | `parser.add_subparsers(dest='command', required=True)` |
 | _build_parser | _register_commands | 226 | `_register_commands(subparsers)` |
 | _register_commands | _add_init_command | 255 | `_add_init_command(subparsers)` |
-| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 332 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
-| _add_init_command | init_parser.add_argument | 335 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
-| _add_init_command | init_parser.add_argument | 341 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
-| _add_init_command | init_parser.add_argument | 346 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
-| _add_init_command | init_parser.add_argument | 352 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
+| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 333 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
+| _add_init_command | init_parser.add_argument | 336 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
+| _add_init_command | init_parser.add_argument | 342 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
+| _add_init_command | init_parser.add_argument | 347 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
+| _add_init_command | init_parser.add_argument | 353 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2566 |
-| output | `print` | `main` | 2569 |
 | output | `print` | `main` | 2572 |
-| environment_read | `os.environ.get` | `main` | 2575 |
-| output | `print` | `main` | 2577 |
-| output | `print` | `main` | 2580 |
+| output | `print` | `main` | 2575 |
+| output | `print` | `main` | 2578 |
+| environment_read | `os.environ.get` | `main` | 2581 |
+| output | `print` | `main` | 2583 |
+| output | `print` | `main` | 2586 |
 
 ### Static analysis gaps
 
@@ -180,11 +181,11 @@ flowchart LR
 | external_call | `_build_parser` | `argparse.ArgumentParser` | 221 |
 | unresolved_call | `_build_parser` | `parser.add_argument` | 222 |
 | unresolved_call | `_build_parser` | `parser.add_subparsers` | 225 |
-| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 332 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 335 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 341 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 346 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 352 |
+| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 333 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 336 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 342 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 347 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 353 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

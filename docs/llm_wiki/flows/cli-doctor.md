@@ -2,10 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [capability_diagnostics](../modules/capability_diagnostics.md), [common](../modules/common.md), [config](../modules/config.md), [data_flow](../modules/data_flow.md), and 37 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [capability_diagnostics](../modules/capability_diagnostics.md), [common](../modules/common.md), [config](../modules/config.md), and 38 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [capability_diagnostics](../modules/capability_diagnostics.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -108,7 +109,7 @@ sequenceDiagram
     p21-->>p22: ctypes.WinDLL
 ```
 
-> Call sequence diagram shows 30 of 1319 interactions; 1289 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1331 interactions; 1301 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -129,7 +130,7 @@ flowchart LR
     s10["10. PathValidationError"]
     s11["11. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
     s12["12. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
-    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'v1')" .-> s2
+    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')" .-> s2
     s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--report-schema must be v1 or v3')" .-> s3
     s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'capabilities', False)" .-> s4
     s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--capabilities and --report-schema are mutually exclusive')" .-> s5
@@ -194,7 +195,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 13 | `getattr(args, 'report_schema', 'v1')` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 13 | `getattr(args, 'report_schema', 'auto')` |
 | run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 15 | `ValueError('--report-schema must be v1 or v3')` |
 | run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 16 | `getattr(args, 'capabilities', False)` |
 | run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 18 | `ValueError('--capabilities and --report-schema are mutually exclusive')` |
@@ -211,8 +212,8 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | output | `print` | `run` | 26 |
-| output | `print` | `run` | 44 |
-| output | `print` | `run` | 46 |
+| output | `print` | `run` | 45 |
+| output | `print` | `run` | 47 |
 | mutation | `argv.append` | `build_capability_doctor` | 287 |
 | mutation | `argv.extend` | `build_capability_doctor` | 289 |
 | mutation | `argv.extend` | `build_capability_doctor` | 291 |

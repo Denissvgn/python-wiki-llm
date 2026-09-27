@@ -1,6 +1,6 @@
 # CapturedHealthDetails
 
-**Location:** `src/llm_wiki_cli/services/health_details.py:33`
+**Location:** `src/llm_wiki_cli/services/health_details.py:34`
 **Kind:** Class
 **Bases:** —
 **Module:** [health_details](../modules/health_details.md)

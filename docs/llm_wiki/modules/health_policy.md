@@ -10,13 +10,16 @@ Pure release-health decisions derived from one validated CI evaluation.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `analysis_compatibility` |
 | `.ci_report` | `validate_doctor_payload`, `validate_ci_check_payload` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `copy` | `copy` |
 | `enum` | `Enum` |
 | `hashlib` | `hashlib` |
+| `importlib.util` | `importlib.util` |
 | `json` | `json` |
+| `pathlib` | `Path` |
 | `re` | `re` |
 | `typing` | `Any` |
 
@@ -25,18 +28,24 @@ Pure release-health decisions derived from one validated CI evaluation.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/ci_report.py"]
-    n1["src/llm_wiki_cli/services/doctor_service.py"]
-    n2["src/llm_wiki_cli/services/health_policy.py"]
-    n3["src/llm_wiki_cli/services/knowledge_maintenance.py"]
-    n0 --> n1
+    n0["src/llm_wiki_cli/services/analysis_compatibility.py"]
+    n1["src/llm_wiki_cli/services/ci_report.py"]
+    n2["src/llm_wiki_cli/services/doctor_service.py"]
+    n3["src/llm_wiki_cli/services/health_policy.py"]
+    n4["src/llm_wiki_cli/services/knowledge_maintenance.py"]
+    n1 --> n0
     n1 --> n2
     n2 --> n0
-    n3 --> n2
-    click n0 "../modules/ci_report.md"
-    click n1 "../modules/doctor_service.md"
-    click n2 "../modules/health_policy.md"
-    click n3 "../modules/knowledge_maintenance.md"
+    n2 --> n3
+    n3 --> n0
+    n3 --> n1
+    n4 --> n0
+    n4 --> n3
+    click n0 "../modules/analysis_compatibility.md"
+    click n1 "../modules/ci_report.md"
+    click n2 "../modules/doctor_service.md"
+    click n3 "../modules/health_policy.md"
+    click n4 "../modules/knowledge_maintenance.md"
 ```
 
 ### Internal neighbors
@@ -45,6 +54,7 @@ flowchart LR
 |---|---|
 | Inbound | [doctor_service](../modules/doctor_service.md) |
 | Inbound | [knowledge_maintenance](../modules/knowledge_maintenance.md) |
+| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
 | Outbound | [ci_report](../modules/ci_report.md) |
 
 ## Classes
@@ -52,7 +62,7 @@ flowchart LR
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
 | [DoctorStatus](../entities/DoctorStatus.md) | Enum | 14 | `str`, `Enum` | Closed overall health vocabulary for the doctor contract. |
-| [MaintenanceError](../entities/MaintenanceError.md) | Class | 94 | `ValueError` | Maintenance evidence is absent, inconsistent or not bound to this candidate. |
+| [MaintenanceError](../entities/MaintenanceError.md) | Class | 109 | `ValueError` | Maintenance evidence is absent, inconsistent or not bound to this candidate. |
 
 ## Functions
 

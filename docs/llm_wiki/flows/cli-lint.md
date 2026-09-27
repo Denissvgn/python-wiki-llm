@@ -2,10 +2,12 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [lint_service](../modules/lint_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_pages](../modules/canonical_pages.md), [common](../modules/common.md), [config](../modules/config.md), and 51 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 54 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [canonical_pages](../modules/canonical_pages.md)
 - [common](../modules/common.md)
@@ -116,7 +118,7 @@ sequenceDiagram
     p11->>p5: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 2955 interactions; 2925 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3025 interactions; 2995 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -182,35 +184,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3128 | `Path(args.wiki_dir)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3129 | `getattr(args, 'src_dir', '.')` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3130 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3130 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3131 | `bool(...)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3131 | `getattr(args, 'strict', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3132 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3132 | `getattr(args, 'profile', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3133 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3133 | `getattr(args, 'cache_stats', False)` |
+| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3132 | `Path(args.wiki_dir)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3133 | `getattr(args, 'src_dir', '.')` |
 | run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3134 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3134 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3135 | `bool(...)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3135 | `getattr(args, 'strict', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3136 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3136 | `getattr(args, 'profile', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3137 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3137 | `getattr(args, 'cache_stats', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3138 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3166 |
-| output | `print` | `run` | 3169 |
-| output | `print` | `run` | 3177 |
+| output | `print` | `run` | 3170 |
+| output | `print` | `run` | 3173 |
+| output | `print` | `run` | 3181 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3129 |
-| external_call | `run` | `getattr` | 3130 |
-| external_call | `run` | `getattr` | 3131 |
-| external_call | `run` | `getattr` | 3132 |
 | external_call | `run` | `getattr` | 3133 |
+| external_call | `run` | `getattr` | 3134 |
+| external_call | `run` | `getattr` | 3135 |
+| external_call | `run` | `getattr` | 3136 |
+| external_call | `run` | `getattr` | 3137 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

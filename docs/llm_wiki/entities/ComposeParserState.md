@@ -1,6 +1,6 @@
 # _ComposeParserState
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:3140`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:3150`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)

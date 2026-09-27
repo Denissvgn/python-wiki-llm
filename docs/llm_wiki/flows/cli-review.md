@@ -2,10 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [review_cmd](../modules/review_cmd.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 30 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), and 31 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
 - [api_contracts](../modules/api_contracts.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [change_selection](../modules/change_selection.md)
@@ -100,7 +101,7 @@ sequenceDiagram
     p19-->>p21: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
 ```
 
-> Call sequence diagram shows 30 of 2004 interactions; 1974 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2007 interactions; 1977 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

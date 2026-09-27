@@ -1,6 +1,6 @@
 # _ExtractionOutcome
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:261`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:264`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)

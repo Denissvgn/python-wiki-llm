@@ -2,10 +2,12 @@
 
 **Entry point:** `inspect_concept` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 41 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), and 43 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -114,7 +116,7 @@ sequenceDiagram
     p23-->>p24: isinstance (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
 ```
 
-> Call sequence diagram shows 30 of 2488 interactions; 2458 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2499 interactions; 2469 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -175,11 +177,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| inspect_concept | _normalize_query_input | 978 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback | 1738 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1740 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1741 | `str(exc)` |
-| inspect_concept | normalize_concept_coordinate | 979 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| inspect_concept | _normalize_query_input | 985 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback | 1776 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1778 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1779 | `str(exc)` |
+| inspect_concept | normalize_concept_coordinate | 986 | `normalize_concept_coordinate(locator_or_exact_route)` |
 | normalize_concept_coordinate | normalize_documentation_query_text | 73 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
 | normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
 | normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `value.strip(data not statically known)` |
@@ -195,7 +197,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1738 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1776 |
 | external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
 | unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |
