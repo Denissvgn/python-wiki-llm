@@ -211,3 +211,22 @@ def test_isolated_comparison_versions_match_public_protocol_registry():
     assert ac.COMPARISON_SCHEMA == contracts.ANALYSIS_COMPARISON_SCHEMA_VERSION
     assert ac.SCHEMA in contracts.PROTOCOL_VERSIONS
     assert ac.COMPARISON_SCHEMA in contracts.PROTOCOL_VERSIONS
+
+
+def test_active_node_runtime_is_not_inferred_from_helper_preparation(tmp_path, monkeypatch):
+    from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+    from llm_wiki_cli.services import extractor_helpers
+
+    prepared = capture.registry()["portable_helper_toolchains"]["typescript"]
+    original_node = prepared.split(";", 1)[0].removeprefix("node ")
+    monkeypatch.setattr(extractor_helpers, "resolve_helper_cache_root", lambda *a, **kw: tmp_path)
+    monkeypatch.setattr(extractor_helpers, "_manifest_current", lambda *a: {"toolchain": prepared})
+    monkeypatch.setattr(extractor_helpers, "command_output", lambda *a: original_node)
+    first = capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"typescript"})
+    monkeypatch.setattr(extractor_helpers, "command_output", lambda *a: "v99.0.0")
+    changed = capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"typescript"})
+    name = "llm-wiki/extractor/typescript"
+    assert first[name]["runtime"] != changed[name]["runtime"]
+    assert "active-node v99.0.0" in changed[name]["provenance"]["helper"]
+    monkeypatch.setattr(extractor_helpers, "command_output", lambda *a: None)
+    assert name not in capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"typescript"})

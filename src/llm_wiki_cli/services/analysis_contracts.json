@@ -250,6 +250,9 @@
       "linux"
     ]
   },
+  "portable_helper_toolchains": {
+    "typescript": "node v24.18.0; npm 11.16.0"
+  },
   "portable_python_profiles": [
     [
       "linux",

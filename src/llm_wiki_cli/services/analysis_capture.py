@@ -9,6 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 import platform
+import re
 import sys
 
 from . import analysis_compatibility as ac
@@ -112,19 +113,30 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
         try:
             implementation = implementation_hash(root, rules["providers"][owner])
             helper = ""
+            portable_helper = False
             if owner not in {"python", "infrastructure"}:
                 helper_root = extractor_helpers.resolve_helper_cache_root(source_root, helper_cache_dir)
                 prepared = None if helper_root is None else extractor_helpers._manifest_current(helper_root, owner)
                 if prepared is None or not prepared.get("toolchain"):
                     continue
                 helper = prepared["toolchain"]
+                if owner == "typescript":
+                    active_node = extractor_helpers.command_output(["node", "--version"])
+                    if not active_node or re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:[-+].+)?", active_node) is None:
+                        continue
+                    portable_helper = (
+                        helper == rules.get("portable_helper_toolchains", {}).get(owner)
+                        and helper.startswith("node " + active_node + ";")
+                        and sys.platform in rules.get("portable_helper_platforms", {}).get(owner, [])
+                    )
+                    helper += "; active-node " + active_node
             dependencies = {}
             if owner == "infrastructure":
                 from importlib.metadata import version
                 dependencies["PyYAML"] = version("PyYAML")
             result["llm-wiki/extractor/" + language] = {
                 "implementation": implementation,
-                "runtime": ac.digest({"python": python_identity if owner == "python" or sys.platform in rules.get("portable_helper_platforms", {}).get(owner, []) else runtime, "helper": helper, "dependencies": dependencies}),
+                "runtime": ac.digest({"python": python_identity if owner == "python" or portable_helper else runtime, "helper": helper, "dependencies": dependencies}),
                 "provenance": {**provenance, "helper": helper},
             }
         except (OSError, ValueError):

@@ -74,7 +74,9 @@ Built-in providers support this contract; custom extractors and third-party plug
 contributions retain exact-version requirements.
 
 Qualified runtime profiles can share a comparison identity across platforms.
-Other identified runtimes require an exact runtime match. Missing or unsupported
+Other identified runtimes require an exact runtime match. TypeScript capture
+records the active Node version as well as the prepared helper toolchain, so a
+changed Node executable changes the comparison basis even with an existing cache. Missing or unsupported
 analysis information remains visible and cannot establish freshness. Changes to a
 registered implementation input require refresh even when the package version is
 unchanged. The first contract uses conservative file-level implementation inputs.
