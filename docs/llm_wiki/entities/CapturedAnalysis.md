@@ -1,6 +1,6 @@
 # _CapturedAnalysis
 
-**Location:** `src/llm_wiki_cli/services/analysis_capture.py:20`
+**Location:** `src/llm_wiki_cli/services/analysis_capture.py:21`
 **Kind:** Class
 **Bases:** `FrozenDict`
 **Module:** [analysis_capture](../modules/analysis_capture.md)

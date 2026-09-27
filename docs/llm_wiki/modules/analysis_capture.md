@@ -23,6 +23,7 @@ Operation-owned capture of installed analysis implementation and runtimes.
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `platform` | `platform` |
+| `re` | `re` |
 | `sys` | `sys` |
 
 ## Local dependency map
@@ -85,7 +86,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_CapturedAnalysis](../entities/CapturedAnalysis.md) | 20 | `FrozenDict` | — |
+| [_CapturedAnalysis](../entities/CapturedAnalysis.md) | 21 | `FrozenDict` | — |
 
 ## Functions
 

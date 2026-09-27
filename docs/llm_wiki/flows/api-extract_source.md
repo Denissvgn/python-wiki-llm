@@ -98,7 +98,7 @@ sequenceDiagram
     p18-->>p23: get_current_process
 ```
 
-> Call sequence diagram shows 30 of 2837 interactions; 2807 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2842 interactions; 2812 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

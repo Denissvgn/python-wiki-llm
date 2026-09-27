@@ -5466,7 +5466,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 4817,
+          "step_count": 4822,
           "truncated": true
         }
       },
@@ -8895,7 +8895,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 3162,
+          "step_count": 3167,
           "truncated": true
         }
       },
@@ -9837,7 +9837,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py"
           ],
-          "step_count": 2838,
+          "step_count": 2843,
           "truncated": true
         }
       },
@@ -20121,7 +20121,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 5115,
+          "step_count": 5120,
           "truncated": true
         }
       },
@@ -31110,7 +31110,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py"
           ],
-          "step_count": 2894,
+          "step_count": 2899,
           "truncated": true
         }
       },
@@ -32395,7 +32395,7 @@
             "src/llm_wiki_cli/services/knowledge_generation.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 3713,
+          "step_count": 3718,
           "truncated": true
         }
       },
@@ -34438,7 +34438,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/python_imports.py"
           ],
-          "step_count": 2280,
+          "step_count": 2285,
           "truncated": true
         }
       },
@@ -36327,7 +36327,7 @@
             "src/llm_wiki_cli/services/health_contract.py",
             "src/llm_wiki_cli/services/knowledge_observability.py"
           ],
-          "step_count": 3454,
+          "step_count": 3462,
           "truncated": true
         }
       },
@@ -61408,5 +61408,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:ad6e3dbce6acedd439f86d6bd2c7223fc41d2a6e05675a334ee5fe7277b370a0"
+  "source_hash": "sha256:0016ca0435a7ecf30d50777e4e44da1319cae5c4166a5947e4a3e6c550ab2f27"
 }
