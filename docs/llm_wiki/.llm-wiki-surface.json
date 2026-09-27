@@ -12471,7 +12471,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 326,
+              "line": 328,
               "step": "install_ci_workflow",
               "step_index": 1,
               "target": "target.read_bytes"
@@ -12991,61 +12991,61 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 234,
+              "line": 236,
               "step": "_normalize_newlines",
               "target": "content.decode"
             },
             {
               "kind": "unresolved_call",
-              "line": 237,
+              "line": 239,
               "step": "_normalize_newlines",
               "target": "text.replace('\\r\\n', '\\n').replace('\\r', '\\n').encode"
             },
             {
               "kind": "unresolved_call",
-              "line": 237,
+              "line": 239,
               "step": "_normalize_newlines",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 237,
+              "line": 239,
               "step": "_normalize_newlines",
               "target": "text.replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 246,
+              "line": 248,
               "step": "is_unmodified_managed_workflow",
               "target": "normalized.decode"
             },
             {
               "kind": "unresolved_call",
-              "line": 247,
+              "line": 249,
               "step": "is_unmodified_managed_workflow",
               "target": "_MANAGED_HEADER_RE.match"
             },
             {
               "kind": "unresolved_call",
-              "line": 250,
+              "line": 252,
               "step": "is_unmodified_managed_workflow",
               "target": "text[match.end():].encode"
             },
             {
               "kind": "unresolved_call",
-              "line": 250,
+              "line": 252,
               "step": "is_unmodified_managed_workflow",
               "target": "match.end"
             },
             {
               "kind": "unresolved_call",
-              "line": 251,
+              "line": 253,
               "step": "is_unmodified_managed_workflow",
               "target": "hashlib.sha256(body).hexdigest"
             },
             {
               "kind": "external_call",
-              "line": 251,
+              "line": 253,
               "step": "is_unmodified_managed_workflow",
               "target": "hashlib.sha256"
             },
@@ -23399,7 +23399,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 326,
+              "line": 328,
               "step": "install_ci_workflow",
               "step_index": 2,
               "target": "target.read_bytes"
@@ -31634,7 +31634,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 326,
+              "line": 328,
               "step": "install_ci_workflow",
               "step_index": 2,
               "target": "target.read_bytes"
@@ -36063,14 +36063,6 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2572,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
               "line": 2575,
               "step": "main",
               "step_index": 1,
@@ -36086,8 +36078,16 @@
             },
             {
               "confidence": "unknown",
-              "kind": "environment_read",
+              "kind": "output",
               "line": 2581,
+              "step": "main",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "environment_read",
+              "line": 2584,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -36095,7 +36095,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2583,
+              "line": 2586,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -36103,7 +36103,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2586,
+              "line": 2589,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -61408,5 +61408,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:0016ca0435a7ecf30d50777e4e44da1319cae5c4166a5947e4a3e6c550ab2f27"
+  "source_hash": "sha256:6ba3fed38ff272ca17b8e8c6c3fd501abcfd9cce3515056012e57bd774592ecf"
 }

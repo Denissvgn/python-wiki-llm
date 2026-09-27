@@ -151,7 +151,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2564 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2567 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 221 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 222 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers | 225 | `parser.add_subparsers(dest='command', required=True)` |
@@ -167,12 +167,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2572 |
 | output | `print` | `main` | 2575 |
 | output | `print` | `main` | 2578 |
-| environment_read | `os.environ.get` | `main` | 2581 |
-| output | `print` | `main` | 2583 |
+| output | `print` | `main` | 2581 |
+| environment_read | `os.environ.get` | `main` | 2584 |
 | output | `print` | `main` | 2586 |
+| output | `print` | `main` | 2589 |
 
 ### Static analysis gaps
 
