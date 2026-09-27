@@ -615,9 +615,11 @@ exits nonzero on validation failure. Native freshness/drift is disabled unless
 `--knowledge-drift-report` is supplied, and enabled findings remain
 nonblocking. Structured output discloses the report mode through
 `knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
-is always `false`. For legacy knowledge, automatic JSON output uses the closed `llm-wiki-ci-check/v1`
-envelope. Migrated knowledge selects `llm-wiki-ci-check/v4` with captured analysis compatibility. Its `knowledge_health` member is a `llm-wiki-doctor/v1` projection
-composed from the same lint report, not a second source scan. The top-level
+is always `false`. For legacy knowledge, automatic JSON output uses the closed
+`llm-wiki-ci-check/v1` envelope with a `llm-wiki-doctor/v1` health projection.
+Migrated knowledge selects `llm-wiki-ci-check/v4` with a `llm-wiki-doctor/v4`
+projection and captured analysis compatibility. Both projections are composed
+from the same lint report. The top-level
 `ok`, issue count, and process exit remain the authoritative blocking integrity
 result; the nested health status presents availability, freshness, snapshot,
 governance, drift, and verification state without changing that policy.
@@ -682,7 +684,8 @@ For legacy knowledge, automatic JSON output uses `llm-wiki-doctor/v1` and contai
 six named sections, complete freshness counts when evaluation succeeds, and
 the required evaluated or snapshot-only disclosure.
 
-Select detailed JSON with `--report-schema v3 --format json`, or call
+Select conservative detailed JSON with
+`--report-schema v3 --comparison-policy exact-v1 --format json`, or call
 `llm_wiki_cli.api.doctor(..., report_schema="v3", comparison_policy="exact-v1")`.
 The default `auto` selects v1 for legacy knowledge and v4 for migrated knowledge.
 The v3 `health_details` object adds:
