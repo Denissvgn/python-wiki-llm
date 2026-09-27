@@ -15,7 +15,8 @@ from typing import Any
 import llm_wiki_cli
 from ..config import EXTRACTOR_REGISTRY, validate_path, validate_source_root
 from ..extractors.common import inventory_language_for_path
-from . import extractor_helpers
+from . import extractor_helpers, analysis_compatibility as ac
+from .analysis_capture import capture_analysis, attach
 from .contracts import KNOWLEDGE_SCHEMA_VERSION
 from .health_policy import (
     PREFLIGHT_SCHEMA,
@@ -32,7 +33,6 @@ from .knowledge_envelope import (
     hash_source_snapshot,
 )
 from .knowledge_evidence import hash_json
-from .knowledge_freshness import comparable_producer_components
 from .knowledge_model import _parse_bundle, parse_knowledge_index
 from .knowledge_orchestration import (
     _producer_evidence,
@@ -102,6 +102,18 @@ def _installed(candidate: Path, version: str, allow_editable: bool) -> dict[str,
         asset = candidate / name
         if name.startswith("examples/") and asset.is_file():
             expected_files[name] = digest(asset.read_bytes())
+    registry_name = "services/analysis_contracts.json"
+    if (source / registry_name).exists() or (actual / registry_name).exists():
+        definitions = strict_json((source / registry_name).read_bytes())
+        resources = {registry_name, *definitions["shared"]}
+        for names in definitions["providers"].values():
+            resources.update(names)
+        for name in sorted(resources):
+            path = PurePosixPath(name)
+            if path.is_absolute() or ".." in path.parts or "\\" in name or ":" in name:
+                raise MaintenanceError("invalid registered analysis resource")
+            expected_files[name] = digest((source / name).read_bytes())
+            actual_files[name] = digest((actual / name).read_bytes())
     if not expected_files or actual_files != expected_files:
         raise MaintenanceError(
             "installed implementation differs from the intended candidate"
@@ -128,6 +140,18 @@ def _archive_binding(
     paths = {snapshot.root / name for name in snapshot.captured_content_hashes}
     paths.update(candidate.joinpath("src/llm_wiki_cli").rglob("*.py"))
     paths.update(candidate.joinpath("examples").rglob("*.py"))
+    registry = candidate / "src/llm_wiki_cli/services/analysis_contracts.json"
+    if registry.exists():
+        paths.add(registry)
+        definitions = strict_json(read_guarded(registry, MAX_EVIDENCE_BYTES).content)
+        resources = set(definitions["shared"])
+        for names in definitions["providers"].values():
+            resources.update(names)
+        for name in resources:
+            relative = PurePosixPath(name)
+            if relative.is_absolute() or ".." in relative.parts or "\\" in name or ":" in name:
+                raise MaintenanceError("invalid registered analysis resource")
+            paths.add(candidate / "src/llm_wiki_cli" / name)
     paths.update(
         wiki / name
         for name in (
@@ -160,6 +184,7 @@ def _archive_binding(
                 )
 
 
+@ac.comparison_entrypoint
 def preflight(
     *,
     candidate_root: str,
@@ -171,6 +196,7 @@ def preflight(
     identity_path: str | None = None,
     source_archive: str | None = None,
     allow_editable: bool = False,
+    comparison_policy: str | None = None,
 ) -> dict[str, Any]:
     candidate = Path(candidate_root).resolve()
     validate_path(wiki_dir, "--wiki-dir")
@@ -257,35 +283,38 @@ def preflight(
         for language, files in snapshot.files_by_language.items()
         for item in files
     }
+    migrated = ac.has_contract(bundle.producer)
+    modern_result = migrated or ac.selected_policy() == "analysis-v1"
+    if not migrated and ac.selected_policy() == "analysis-v1":
+        issues.append("committed knowledge lacks analysis compatibility metadata; run supported sync")
+    analysis = capture_analysis(EXTRACTOR_REGISTRY, source_root=source, helper_cache_dir=helper_cache_dir, languages={v["language"] for v in inventory.values()}) if migrated else None
     _, _, components, plugins = _producer_evidence(
-        inventory, inventory_complete=True, extractor_registry=EXTRACTOR_REGISTRY
+        inventory, inventory_complete=True, extractor_registry=EXTRACTOR_REGISTRY, analysis_components=analysis
     )
-    infrastructure = _infrastructure_extractor_component()
+    infrastructure = _infrastructure_extractor_component(analysis)
     if any(
         c.component_id == infrastructure.component_id
         for c in bundle.producer.extractors
     ):
         components = (*components, infrastructure)
     live = build_producer_record(
-        tool=ProducerComponentInput(
+        tool=attach(ProducerComponentInput(
             component_id="agent-wiki-cli",
             version=llm_wiki_cli.__version__,
             configuration={
                 "knowledge_schema": KNOWLEDGE_SCHEMA_VERSION,
                 "surface_schema": WIKI_SURFACE_INDEX_SCHEMA_VERSION,
             },
-        ),
+        ), analysis),
         extractors=components,
         plugins=plugins,
     )
-    if not comparable_producer_components(
-        bundle.producer.tool, live.tool, configuration_required=False
-    ):
+    if ac.compare_components(bundle.producer.tool, live.tool, policy=ac.selected_policy(), plugins=bool(bundle.producer.plugins), configuration_required=False) is not None:
         issues.append("recorded producer differs from the installed candidate")
     current = {c.component_id: c for c in live.extractors}
     for recorded in bundle.producer.extractors:
         actual = current.get(recorded.component_id)
-        if actual is None or not comparable_producer_components(recorded, actual):
+        if actual is None or ac.compare_components(recorded, actual, policy=ac.selected_policy(), plugins=bool(bundle.producer.plugins)) is not None:
             issues.append("recorded extractor basis differs: " + recorded.component_id)
     if bundle.producer.plugins:
         issues.append(
@@ -341,7 +370,8 @@ def preflight(
     }
     _binding(binding)
     return {
-        "schema_version": PREFLIGHT_SCHEMA,
+        "schema_version": "llm-wiki-maintenance-preflight/v2" if modern_result else PREFLIGHT_SCHEMA,
+        **({"analysis": {"schema_version": ac.COMPARISON_SCHEMA, "recorded": ac.producer_contracts(bundle.producer), "live": ac.producer_contracts(live)}} if modern_result else {}),
         "status": "blocked" if issues else "ready",
         "binding": binding,
         "installed": installed,
@@ -368,6 +398,7 @@ def main(argv=None) -> int:
     ):
         before.add_argument("--" + name)
     before.add_argument("--allow-editable", action="store_true")
+    before.add_argument("--comparison-policy", choices=sorted(ac.POLICIES), default="auto")
     for name in ("derive", "verify"):
         command = commands.add_parser(name)
         command.add_argument("--report", required=True)

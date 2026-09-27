@@ -215,7 +215,7 @@ def test_cli_commands_share_progress_and_keep_result_stdout(
     if command == "lint":
         args += ["--strict", "--profile"]
     elif command == "ci-check":
-        args += ["--no-report", "--format", "json", "--report-schema", "v2"]
+        args += ["--no-report", "--format", "json", "--report-schema", "v2", "--comparison-policy", "exact-v1"]
     monkeypatch.setattr("sys.argv", args)
     cli.main()
     captured = capsys.readouterr()

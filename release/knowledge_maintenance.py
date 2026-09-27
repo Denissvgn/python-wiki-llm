@@ -14,8 +14,17 @@ import tarfile
 
 POLICY_PATH = "release/knowledge-maintenance.json"
 CONFIG_SCHEMA = "agent-wiki-release-knowledge-maintenance/v1"
+CONFIG_V2_SCHEMA = "agent-wiki-release-knowledge-maintenance/v2"
 VERIFICATION_SCHEMA = "agent-wiki-release-knowledge-verification/v1"
 LEAF_PATH = "src/llm_wiki_cli/services/health_policy.py"
+POLICY_INPUTS = (LEAF_PATH, "src/llm_wiki_cli/services/analysis_compatibility.py",
+                 "src/llm_wiki_cli/services/analysis_contracts.json", "release/knowledge_maintenance.py")
+
+
+def composite_policy_digest(read_bytes) -> str:
+    entries = {name: hashlib.sha256(read_bytes(name)).hexdigest() for name in POLICY_INPUTS}
+    return hashlib.sha256(json.dumps(entries, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
 
 
 def leaf():
@@ -42,8 +51,8 @@ def policy(raw: bytes, *, implementation_hash: str | None = None):
     }:
         raise ValueError("invalid maintenance configuration fields")
     if (
-        value["schema_version"] != CONFIG_SCHEMA
-        or value["policy"] != module.POLICY_ID
+        value["schema_version"] not in {CONFIG_SCHEMA, CONFIG_V2_SCHEMA}
+        or value["policy"] != (module.POLICY_V2_ID if value["schema_version"] == CONFIG_V2_SCHEMA else module.POLICY_ID)
         or value["mode"] not in {"shadow", "required", "disabled"}
     ):
         raise ValueError("unsupported maintenance configuration")
@@ -77,11 +86,11 @@ def policy(raw: bytes, *, implementation_hash: str | None = None):
             raise ValueError("invalid activation run identity")
         if not re.fullmatch(r"[0-9a-f]{64}", str(activation["comparison_sha256"])):
             raise ValueError("invalid activation evidence digest")
-        current = (
-            implementation_hash
-            or hashlib.sha256(
-                (Path(__file__).resolve().parents[1] / LEAF_PATH).read_bytes()
-            ).hexdigest()
+        root = Path(__file__).resolve().parents[1]
+        current = implementation_hash or (
+            composite_policy_digest(lambda name: (root / name).read_bytes())
+            if value["schema_version"] == CONFIG_V2_SCHEMA
+            else hashlib.sha256((root / LEAF_PATH).read_bytes()).hexdigest()
         )
         if activation["implementation_sha256"] != current:
             raise ValueError("health policy changed since its reviewed shadow proof")
@@ -122,10 +131,22 @@ def version_check(root: Path, config) -> dict:
     )
     recorded = bundle["producer"]["tool"]["version"]
     ready = recorded == versions[0] and recorded != "unknown"
+    deferred = False
+    if config["schema_version"] == CONFIG_V2_SCHEMA:
+        record = module.ac.component_record(bundle["producer"]["tool"])
+        if record is None:
+            ready = False
+        if record is not None:
+            module.ac.validate_record(record, "agent-wiki-cli")
+            rules = module.strict_json(read(root / "src/llm_wiki_cli/services/analysis_contracts.json"))
+            inputs = {name: hashlib.sha256(read(root / "src/llm_wiki_cli" / name).replace(b"\r\n", b"\n")).hexdigest() for name in sorted(rules["shared"])}
+            ready = record["implementation"] == module.ac.digest(inputs)
+            deferred = ready
+
     return {
-        "schema_version": "agent-wiki-release-knowledge-version/v1",
+        "schema_version": "agent-wiki-release-knowledge-version/v2" if config["schema_version"] == CONFIG_V2_SCHEMA else "agent-wiki-release-knowledge-version/v1",
         "mode": config["mode"],
-        "status": "ready" if ready else "blocked",
+        "status": "full-preflight-required" if deferred else "ready" if ready else "blocked",
         "candidate_version": versions[0],
         "recorded_version": recorded,
         "remedy": "Refresh the committed wiki with the intended installed candidate before qualification.",
@@ -173,10 +194,15 @@ def admit(evidence: Path, identity, config, *, scope_prefix="candidate") -> dict
             binding=binding,
             validate_full_report=False,
         )
+        if rebuilt["policy"] != config["policy"]:
+            raise ValueError("captured policy differs from the configured release contract")
         if rebuilt["status"] != "pass":
             raise ValueError(
                 "repository health policy failed: " + ", ".join(rebuilt["reasons"])
             )
+        if config["schema_version"] == CONFIG_V2_SCHEMA:
+            if receipt["policy"] != module.POLICY_V2_ID or module.strict_json(payloads["ci-report.json"])["knowledge_health"]["health_details"]["basis"]["policy"] != "analysis-v1":
+                raise ValueError("release compatibility admission requires analysis-v1 evidence")
         if preflight["installed"]["editable"] is not False:
             raise ValueError("release maintenance requires a noneditable installation")
         if config["mode"] == "shadow":
@@ -230,6 +256,17 @@ def bundle_policy(bundle: Path):
             raise ValueError("frozen health-policy implementation is missing")
         with implementation:
             implementation_hash = hashlib.sha256(implementation.read()).hexdigest()
+        if leaf().strict_json(policy_bytes)["schema_version"] == CONFIG_V2_SCHEMA:
+            def frozen_input(name):
+                item = tar.getmember(name)
+                if not item.isfile() or item.size > 1024 * 1024:
+                    raise ValueError("invalid composite policy input")
+                stream = tar.extractfile(item)
+                if stream is None:
+                    raise ValueError("missing composite policy input")
+                with stream:
+                    return stream.read()
+            implementation_hash = composite_policy_digest(frozen_input)
         config = policy(policy_bytes, implementation_hash=implementation_hash)
     identity = leaf().strict_json(read(source / "identity.json"))
     result = admit(bundle / "evidence/RD-10/action/maintenance", identity, config)
@@ -288,6 +325,8 @@ def main(argv=None):
                     "## Repository knowledge maintenance\n\n"
                     f"Mode: **{config['mode']}**. Result: **{result['status']}**.\n\n{meaning}\n\n"
                 )
+        if args.command == "check-version":
+            return 1 if result["status"] == "blocked" else 0
         return (
             1
             if config["mode"] == "required"

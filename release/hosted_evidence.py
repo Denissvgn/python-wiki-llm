@@ -426,6 +426,11 @@ def verify(root: Path, identity: dict, context: dict, run_id: int) -> dict:
         contract["RD-10:maintenance"] = (
             "knowledge-maintenance-verification", "Repository knowledge maintenance", ("verification.json",),
         )
+    with tarfile.open(source_archive, "r:") as archive:
+        if "src/llm_wiki_cli/services/analysis_contracts.json" in archive.getnames():
+            contract["RD-10:analysis"] = (
+                "analysis-compatibility-pairs", "Installed analysis compatibility", ("result.json",),
+            )
     repository, candidate = identity["repository"], identity["source"]["sha"]
     client = GitHub(repository)
     run = client.get(f"/actions/runs/{run_id}")

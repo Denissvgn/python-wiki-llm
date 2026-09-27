@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import zipfile
 import tempfile
 import urllib.error
 import urllib.request
@@ -1659,6 +1660,110 @@ def _validate_qualifying_knowledge_bundle(root: Path) -> None:
         raise QualificationError(f"repository maintenance admission failed: {exc}") from exc
 
 
+def _validate_analysis_conformance(root: Path) -> None:
+    """Require real native observation parity for compatibility-aware source."""
+    try:
+        _validate_analysis_conformance_inputs(root)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, tarfile.TarError, zipfile.BadZipFile) as exc:
+        raise QualificationError(f"analysis conformance evidence is invalid: {exc}") from exc
+
+
+def _validate_analysis_conformance_inputs(root: Path) -> None:
+    source = root / "evidence/RD-00/source/candidate-source.tar"
+    with tarfile.open(source, "r:") as archive:
+        if "src/llm_wiki_cli/services/analysis_contracts.json" not in archive.getnames():
+            return
+        def member_bytes(name):
+            member = archive.getmember(name)
+            if not member.isfile() or member.size > 1024 * 1024:
+                raise QualificationError("invalid analysis conformance input")
+            stream = archive.extractfile(member)
+            if stream is None:
+                raise QualificationError("missing analysis conformance input")
+            with stream:
+                return stream.read()
+        raw = member_bytes("tests/fixtures/analysis-portability.json")
+        fixture = json.loads(raw, object_pairs_hook=_strict_object)
+        registry = json.loads(member_bytes("src/llm_wiki_cli/services/analysis_contracts.json"), object_pairs_hook=_strict_object)
+        hashes = {name: _sha256_bytes(member_bytes("src/llm_wiki_cli/" + name).replace(b"\r\n", b"\n")) for name in sorted(registry["shared"])}
+        implementation = "sha256:" + _sha256_bytes(json.dumps(hashes, sort_keys=True, separators=(",", ":")).encode())
+        python_source = member_bytes("src/llm_wiki_cli/extractors/python_extractor.py")
+    paths = [
+        (root / "evidence/RD-01/ubuntu/core-ubuntu-3.10-analysis.json", "linux", [3, 10]),
+        (root / "evidence/RD-01/macos/core-macos-3.14-analysis.json", "darwin", [3, 14]),
+    ]
+    shards = list((root / "evidence/RD-01").glob("windows-shard-*/junit-analysis.json"))
+    if len(shards) > 1:
+        raise QualificationError("duplicate Windows analysis conformance evidence")
+    windows = shards[0] if shards else root / "evidence/RD-01/windows/core-windows-3.13-analysis.json"
+    paths.append((windows, "win32", [3, 13]))
+    for path, platform_name, python_version in paths:
+        record = load_json(path)
+        if (record.get("schema_version") != "llm-wiki-analysis-conformance/v1"
+                or record.get("status") != "pass" or record.get("platform") != platform_name
+                or record.get("python") != python_version
+                or record.get("fixture_sha256") != _sha256_bytes(raw)
+                or record.get("observations") != fixture["observations"]
+                or record.get("components", {}).get("agent-wiki-cli", {}).get("implementation") != implementation):
+            raise QualificationError("native analysis conformance differs from frozen inputs")
+    _validate_installed_analysis_pairs(root, python_source)
+
+
+def _validate_installed_analysis_pairs(root: Path, python_source: bytes) -> None:
+    directory = root / "evidence/RD-10/analysis"
+    result = load_json(directory / "result.json")
+    identity = load_json(root / "evidence/RD-00/source/identity.json")
+    version = identity["version"]
+    expected = {
+        "baseline": (version, "healthy", False),
+        "version-only": (version + ".post1", "healthy", False),
+        "same-version-analysis-change": (version, "unhealthy", True),
+        "new-version-analysis-change": (version + ".post1", "unhealthy", True),
+    }
+    if (result.get("schema_version") != "llm-wiki-installed-analysis-pairs/v1"
+            or result.get("status") != "pass" or not isinstance(result.get("cases"), list)
+            or len(result["cases"]) != len(expected)
+            or {r.get("name") for r in result["cases"]} != set(expected)
+            or len(result.get("commands", [])) != 13
+            or any(row.get("exit") != 0 for row in result["commands"])):
+        raise QualificationError("installed analysis pair evidence is incomplete")
+    for row in result["cases"]:
+        selected_version, state, mutated = expected[row["name"]]
+        path = directory / (row["name"] + "-doctor.json")
+        report = load_json(path)
+        wheels = list((directory / row["name"] / "dist").glob("*.whl"))
+        if (len(wheels) != 1 or sha256_file(wheels[0]) != row.get("wheel_sha256")
+                or sha256_file(path) != row.get("report_sha256") or row.get("version") != selected_version
+                or row.get("status") != state or report.get("status") != state
+                or report.get("schema_version") != "llm-wiki-doctor/v4"):
+            raise QualificationError("installed analysis pair bytes or verdict differ")
+        basis = report["health_details"]["basis"]
+        if (basis["recorded"]["tool"]["version"] != version
+                or basis["live"]["tool"]["version"] != selected_version):
+            raise QualificationError("installed comparison lost producer versions")
+        native_reports = []
+        for kind in ("native", "mcp"):
+            native_path = Path(str(path) + "." + kind + ".json")
+            if sha256_file(native_path) != row.get(kind + "_sha256"):
+                raise QualificationError("installed native comparison bytes differ")
+            native_reports.append(load_json(native_path))
+        if native_reports[0]["counts"] != native_reports[1]["counts"]:
+            raise QualificationError("installed native and MCP decisions differ")
+        counts = native_reports[0]["counts"]
+        if (not counts or counts["modeled"] <= 0
+                or (counts["modeled_freshness"]["current"] == counts["modeled"]) != (state == "healthy")):
+            raise QualificationError("installed native and doctor decisions differ")
+        with zipfile.ZipFile(wheels[0]) as wheel:
+            expected_source = python_source + (b"\n# Controlled analysis implementation mutation.\n" if mutated else b"")
+            members = [m for m in wheel.infolist() if m.filename == "llm_wiki_cli/extractors/python_extractor.py"]
+            if len(members) != 1 or members[0].is_dir() or members[0].file_size != len(expected_source):
+                raise QualificationError("invalid analysis implementation wheel member")
+            with wheel.open(members[0]) as stream:
+                actual = stream.read(len(expected_source) + 1)
+            if actual != expected_source:
+                raise QualificationError("installed pair did not use the declared analysis mutation")
+
+
 def _hosted_provenance(root: Path, identity: Mapping[str, Any], context: dict, run_id: int) -> dict:
     try:
         return _hosted_verifier().verify(root, dict(identity), context, run_id)
@@ -1890,6 +1995,7 @@ def build_bundle(args: argparse.Namespace) -> int:
     _validate_qualifying_core_bundle(destination, identity, context, args.workflow_run_id)
     _validate_qualifying_union_bundle(destination, identity, context)
     _validate_qualifying_knowledge_bundle(destination)
+    _validate_analysis_conformance(destination)
     write_json(destination / "hosted-evidence.json", producer_provenance)
 
     write_json(destination / "smoke-wheel.json", wheel_smoke)
@@ -2627,6 +2733,7 @@ def verify_bundle(args: argparse.Namespace) -> int:
     _validate_qualifying_core_bundle(root, frozen_identity, manifest["qualification_context"], args.workflow_run_id)
     _validate_qualifying_union_bundle(root, frozen_identity, manifest["qualification_context"])
     _validate_qualifying_knowledge_bundle(root)
+    _validate_analysis_conformance(root)
 
     wheel_smoke = _validate_smoke(load_json(root / "smoke-wheel.json"), "wheel")
     sdist_smoke = _validate_smoke(load_json(root / "smoke-sdist.json"), "sdist")

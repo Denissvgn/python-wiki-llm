@@ -2,8 +2,12 @@ name: LLM Wiki full integrity gate
 description: Validate a committed LLM Wiki with locked toolchains and fixed allowlisted evidence.
 
 inputs:
+  comparison-policy:
+    description: Analysis comparison policy (auto, exact-v1 or analysis-v1).
+    required: false
+    default: auto
   maintenance-candidate-sha:
-    description: Optional exact candidate SHA for advisory producer preflight and health evidence; requires report-schema v3.
+    description: Optional exact candidate SHA for advisory producer preflight and health evidence; requires report-schema v3 or v4.
     required: false
     default: ""
   maintenance-identity:
@@ -15,7 +19,7 @@ inputs:
     required: false
     default: ""
   report-schema:
-    description: CI report contract, v2 or v3 with captured coverage and producer details.
+    description: CI report contract, v2, v3 or compatibility-aware v4.
     required: false
     default: v2
   wiki-dir:
@@ -431,13 +435,14 @@ runs:
         PYTHONUTF8: "1"
         PYTHONIOENCODING: utf-8
         INPUT_CANDIDATE_SHA: ${{ inputs.maintenance-candidate-sha }}
+        INPUT_COMPARISON_POLICY: ${{ inputs.comparison-policy }}
         INPUT_IDENTITY: ${{ inputs.maintenance-identity }}
         INPUT_ARCHIVE: ${{ inputs.maintenance-source-archive }}
         INPUT_SCHEMA: ${{ inputs.report-schema }}
       run: |
         set -euo pipefail
         [[ "${INPUT_CANDIDATE_SHA}" =~ ^[0-9a-f]{40}$ ]]
-        [[ "${INPUT_SCHEMA}" == v3 ]]
+        [[ "${INPUT_SCHEMA}" == v3 || "${INPUT_SCHEMA}" == v4 ]]
         if [[ -z "${INPUT_IDENTITY}" ]]; then
           [[ -z "${INPUT_ARCHIVE}" ]]
         else
@@ -473,6 +478,7 @@ runs:
         PYTHONUTF8: "1"
         PYTHONIOENCODING: utf-8
         INPUT_CANDIDATE_SHA: ${{ inputs.maintenance-candidate-sha }}
+        INPUT_COMPARISON_POLICY: ${{ inputs.comparison-policy }}
         INPUT_IDENTITY: ${{ inputs.maintenance-identity }}
         INPUT_ARCHIVE: ${{ inputs.maintenance-source-archive }}
         INPUT_SRC_DIR: ${{ inputs.src-dir }}
@@ -484,6 +490,7 @@ runs:
           frozen=(--identity-path "${INPUT_IDENTITY}" --source-archive "${INPUT_ARCHIVE}")
         fi
         "${{ steps.setup-python.outputs.python-path }}" -I -m llm_wiki_cli.services.knowledge_maintenance preflight \
+          --comparison-policy "${INPUT_COMPARISON_POLICY:-auto}" \
           --candidate-root "${GITHUB_ACTION_PATH}/../.." \
           --candidate-sha "${INPUT_CANDIDATE_SHA}" \
           --src-dir "${INPUT_SRC_DIR}" --wiki-dir "${INPUT_WIKI_DIR}" \
@@ -503,6 +510,7 @@ runs:
         INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}
         EVIDENCE_ARTIFACT: llm-wiki-ci-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ github.sha }}-${{ github.run_attempt }}
         INPUT_REPORT_SCHEMA: ${{ inputs.report-schema }}
+        INPUT_COMPARISON_POLICY: ${{ inputs.comparison-policy }}
       run: >-
         "${GITHUB_ACTION_PATH}/../../.github/scripts/run-llm-wiki-ci-check.sh"
         --python "${{ steps.setup-python.outputs.python-path }}"
@@ -512,6 +520,7 @@ runs:
         --report-dir "${LLM_WIKI_EVIDENCE_DIR}"
         --evidence-artifact "${EVIDENCE_ARTIFACT}"
         --report-schema "${INPUT_REPORT_SCHEMA}"
+        --comparison-policy "${INPUT_COMPARISON_POLICY:-auto}"
         --jobs 1
         --knowledge-drift-report
 
@@ -526,6 +535,7 @@ runs:
         PYTHONUTF8: "1"
         PYTHONIOENCODING: utf-8
         INPUT_CANDIDATE_SHA: ${{ inputs.maintenance-candidate-sha }}
+        INPUT_COMPARISON_POLICY: ${{ inputs.comparison-policy }}
         INPUT_IDENTITY: ${{ inputs.maintenance-identity }}
         INPUT_SRC_DIR: ${{ inputs.src-dir }}
         INPUT_WIKI_DIR: ${{ inputs.wiki-dir }}

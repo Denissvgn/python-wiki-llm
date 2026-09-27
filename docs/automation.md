@@ -53,7 +53,8 @@ next action. Unmodeled concepts are a coverage limitation; they are not counted
 as current. Legacy reports identify unavailable detail explicitly.
 
 For this CLI repository's own candidate maintenance, the action also accepts
-`maintenance-candidate-sha` with `report-schema: v3`. The action checks the
+`maintenance-candidate-sha` with `report-schema: v4` and
+`comparison-policy: analysis-v1`. The action checks the
 installed implementation and committed producer basis, then derives a separate
 policy receipt from the existing integrity report. A frozen source invocation
 also supplies both `maintenance-identity` and `maintenance-source-archive`.
@@ -77,6 +78,11 @@ Installation does not bootstrap or synchronize the wiki, change branch
 protection, install hooks, push commits, or add repository secrets. Those
 remain explicit maintainer actions.
 
+For knowledge carrying analysis compatibility metadata, select `report-schema: v4`.
+Both Actions accept `comparison-policy: auto`, `exact-v1`, or `analysis-v1`.
+Use `exact-v1` when retaining an explicitly older report format. The v4 dashboard
+shows the captured comparison policy alongside exact producer versions and coverage.
+
 ### Repository release maintenance
 
 This repository controls its additional release-health prerequisite through
@@ -88,7 +94,8 @@ This repository controls its additional release-health prerequisite through
   repository, matching installed implementation and authenticated maintenance
   evidence. Missing, failed or mismatched evidence prevents release completion.
   Activation records the reviewed candidate, hosted run/attempt, comparison
-  digest and policy implementation digest; a changed policy requires new proof.
+  digest and a composite policy implementation digest. Changes to the classifier,
+  compatibility evaluator, registry or admission wrapper require new proof.
 - `disabled` explicitly disables only this additional prerequisite. Existing
   integrity and release requirements continue to apply, and the summary records
   the disabled state.

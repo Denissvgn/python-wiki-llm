@@ -2,6 +2,10 @@ name: LLM Wiki context health dashboard
 description: Publish a diagnostic knowledge-health dashboard with an explicit failure threshold.
 
 inputs:
+  comparison-policy:
+    description: Analysis comparison policy (auto, exact-v1 or analysis-v1).
+    required: false
+    default: auto
   wiki-dir:
     description: Repository-relative path to the LLM Wiki directory.
     required: false
@@ -23,7 +27,7 @@ inputs:
     required: false
     default: unhealthy
   report-schema:
-    description: Health report contract, v1 or v3 with captured coverage and producer details.
+    description: Health report contract, v1, v3 or compatibility-aware v4.
     required: false
     default: v1
   evidence-id:
@@ -49,6 +53,7 @@ runs:
         INPUT_STRICT: ${{ inputs.strict }}
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
         INPUT_REPORT_SCHEMA: ${{ inputs.report-schema }}
+        INPUT_COMPARISON_POLICY: ${{ inputs.comparison-policy }}
       run: |
         set -euo pipefail
         if [[ ! "${INPUT_EVIDENCE_ID}" =~ ^[a-z0-9][a-z0-9._-]{0,39}$ ]]; then
@@ -63,9 +68,13 @@ runs:
           unhealthy|degraded) ;;
           *) printf 'fail-on must be unhealthy or degraded\n' >&2; exit 2 ;;
         esac
+        case "${INPUT_COMPARISON_POLICY:-auto}" in
+          auto|exact-v1|analysis-v1) ;;
+          *) printf 'invalid comparison-policy\n' >&2; exit 2 ;;
+        esac
         case "${INPUT_REPORT_SCHEMA}" in
-          v1|v3) ;;
-          *) printf 'report-schema must be v1 or v3\n' >&2; exit 2 ;;
+          v1|v3|v4) ;;
+          *) printf 'report-schema must be v1, v3 or v4\n' >&2; exit 2 ;;
         esac
 
     - name: Set up Python 3.13
@@ -328,6 +337,7 @@ runs:
         INPUT_SOURCE_SELECTION: ${{ inputs.source-selection }}
         INPUT_STRICT: ${{ inputs.strict }}
         INPUT_REPORT_SCHEMA: ${{ inputs.report-schema }}
+        INPUT_COMPARISON_POLICY: ${{ inputs.comparison-policy }}
       run: |
         set -euo pipefail
         case "${INPUT_STRICT}" in
@@ -342,6 +352,7 @@ runs:
           --jobs 1
           --format json
           --report-schema "${INPUT_REPORT_SCHEMA}"
+          --comparison-policy "${INPUT_COMPARISON_POLICY:-auto}"
         )
         if [[ -n "${INPUT_SOURCE_SELECTION}" ]]; then
           doctor_args+=(--source-selection "${INPUT_SOURCE_SELECTION}")

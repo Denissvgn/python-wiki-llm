@@ -43,8 +43,9 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
 
     assert action["runs"]["using"] == "composite"
     assert action["inputs"] == {
+        "comparison-policy": {"description": "Analysis comparison policy (auto, exact-v1 or analysis-v1).", "required": False, "default": "auto"},
         "maintenance-candidate-sha": {
-            "description": "Optional exact candidate SHA for advisory producer preflight and health evidence; requires report-schema v3.",
+            "description": "Optional exact candidate SHA for advisory producer preflight and health evidence; requires report-schema v3 or v4.",
             "required": False, "default": "",
         },
         "maintenance-identity": {
@@ -56,7 +57,7 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
             "required": False, "default": "",
         },
         "report-schema": {
-            "description": "CI report contract, v2 or v3 with captured coverage and producer details.",
+            "description": "CI report contract, v2, v3 or compatibility-aware v4.",
             "required": False,
             "default": "v2",
         },
@@ -489,6 +490,8 @@ def test_full_integrity_action_preserves_default_selection_and_gate_exit() -> No
         "${EVIDENCE_ARTIFACT}",
         "--report-schema",
         "${INPUT_REPORT_SCHEMA}",
+        "--comparison-policy",
+        "${INPUT_COMPARISON_POLICY:-auto}",
         "--jobs",
         "1",
         "--knowledge-drift-report",

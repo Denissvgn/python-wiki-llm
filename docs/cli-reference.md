@@ -615,8 +615,8 @@ exits nonzero on validation failure. Native freshness/drift is disabled unless
 `--knowledge-drift-report` is supplied, and enabled findings remain
 nonblocking. Structured output discloses the report mode through
 `knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
-is always `false`. JSON output uses the closed `llm-wiki-ci-check/v1`
-envelope. Its `knowledge_health` member is a `llm-wiki-doctor/v1` projection
+is always `false`. For legacy knowledge, automatic JSON output uses the closed `llm-wiki-ci-check/v1`
+envelope. Migrated knowledge selects `llm-wiki-ci-check/v4` with captured analysis compatibility. Its `knowledge_health` member is a `llm-wiki-doctor/v1` projection
 composed from the same lint report, not a second source scan. The top-level
 `ok`, issue count, and process exit remain the authoritative blocking integrity
 result; the nested health status presents availability, freshness, snapshot,
@@ -651,6 +651,20 @@ disclosed with a warning, symlinks owned by another user are rejected, and
 `--report` is an output path, so explicit
 absolute paths and relative artifact paths outside the project root are allowed.
 
+### Analysis comparison policy
+
+`doctor`, `ci-check`, `context` and `mcp` accept
+`--comparison-policy auto|exact-v1|analysis-v1`. `auto` uses supported analysis
+commitments after sync and conservative comparison for legacy knowledge.
+`exact-v1` additionally requires producer versions to match. `analysis-v1` requires
+supported analysis commitments and reports unknown or incompatible inputs.
+
+`--report-schema v4` selects `llm-wiki-doctor/v4` or `llm-wiki-ci-check/v4`, with
+`llm-wiki-health-details/v2`. These reports retain exact versions and add the
+comparison policy and captured compatibility identities. Explicit older health
+report formats require `--comparison-policy exact-v1` for migrated knowledge.
+The capability report remains the separate doctor v2 contract.
+
 ## `doctor`
 
 Inspect current wiki knowledge health in one read-only command:
@@ -664,12 +678,13 @@ llm-wiki doctor --wiki-dir docs/llm_wiki --src-dir . --strict
 The report composes the existing availability, live freshness, snapshot parity,
 governance and review, drift, and verification-receipt checks. It does not
 define a separate source analyzer. Human output is a compact screen summary.
-JSON output uses the stable `llm-wiki-doctor/v1` schema and contains the same
+For legacy knowledge, automatic JSON output uses `llm-wiki-doctor/v1` and contains the same
 six named sections, complete freshness counts when evaluation succeeds, and
 the required evaluated or snapshot-only disclosure.
 
 Select detailed JSON with `--report-schema v3 --format json`, or call
-`llm_wiki_cli.api.doctor(..., report_schema="v3")`. The default remains v1.
+`llm_wiki_cli.api.doctor(..., report_schema="v3", comparison_policy="exact-v1")`.
+The default `auto` selects v1 for legacy knowledge and v4 for migrated knowledge.
 The v3 `health_details` object adds:
 
 - Captured source/wiki scope, source-selection fingerprints and snapshot hashes.

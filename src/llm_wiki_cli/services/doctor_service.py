@@ -15,6 +15,7 @@ from typing import Any
 
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from .contracts import DOCTOR_SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION
+from . import analysis_compatibility as ac
 from .health_details import CapturedHealthDetails
 from .health_contract import validate_health_details
 from .health_policy import DoctorStatus, DOCTOR_EXIT_CODES, classify_health_sections
@@ -77,9 +78,11 @@ class DoctorReport:
     def exit_code(self) -> int:
         return DOCTOR_EXIT_CODES[self.status]
 
-    def to_payload(self, *, report_schema: str = "v1") -> dict[str, object]:
-        if report_schema not in {"v1", "v3"}:
-            raise ValueError("report_schema must be v1 or v3")
+    def to_payload(self, *, report_schema: str = "auto") -> dict[str, object]:
+        if report_schema not in {"auto", "v1", "v3", "v4"}:
+            raise ValueError("report_schema must be auto, v1, v3 or v4")
+        captured = None if self.health_details is None else self.health_details.to_payload()
+        report_schema = ac.report_schema(report_schema, captured)
         payload: dict[str, object] = {
             "schema_version": DOCTOR_SCHEMA_VERSION,
             "status": self.status.value,
@@ -96,15 +99,20 @@ class DoctorReport:
             "degraded_reasons": list(self.degraded_reasons),
             "unhealthy_reasons": list(self.unhealthy_reasons),
         }
-        if report_schema == "v3":
+        if report_schema in {"v3", "v4"}:
             if self.health_details is None:
                 raise ValueError("doctor v3 requires details captured during evaluation")
             details = self.health_details.to_payload()
+            if report_schema == "v4":
+                details = ac.detailed_v2(details)
+            if report_schema == "v3" and details["schema_version"] == "llm-wiki-health-details/v2":
+                details = ac.legacy_details(details)
             validate_health_details(details, wiki_dir=self.wiki_dir, src_dir=self.src_dir, freshness=self.freshness, availability=str(self.availability["state"]))
-            payload.update(schema_version=DOCTOR_V3_SCHEMA_VERSION, health_details=details)
+            payload.update(schema_version="llm-wiki-doctor/v4" if report_schema == "v4" else DOCTOR_V3_SCHEMA_VERSION, health_details=details)
         return payload
 
 
+@ac.comparison_entrypoint
 def build_doctor_report(
     wiki_dir: str | Path = DEFAULT_WIKI_DIR,
     src_dir: str | Path = ".",
@@ -116,14 +124,15 @@ def build_doctor_report(
     parallel_jobs: int = 1,
     job_request: ExtractionJobRequest | None = None,
     source_selection: str | Path | None = None,
-    report_schema: str = "v1",
+    report_schema: str = "auto",
+    comparison_policy: str | None = None,
 ) -> DoctorReport:
     """Build a doctor report by composing existing strict-lint results."""
 
     if not isinstance(strict, bool):
         raise TypeError("strict must be a boolean")
-    if report_schema not in {"v1", "v3"}:
-        raise ValueError("report_schema must be v1 or v3")
+    if report_schema not in {"auto", "v1", "v3", "v4"}:
+        raise ValueError("report_schema must be auto, v1, v3 or v4")
     if not isinstance(allow_external_src, bool):
         raise TypeError("allow_external_src must be a boolean")
     if isinstance(parallel_jobs, bool) or not isinstance(parallel_jobs, int):
@@ -155,13 +164,14 @@ def build_doctor_report(
         plan_reporter=None,
         include_plugins=False,
         source_selection=source_selection,
-        include_health_details=report_schema == "v3",
+        include_health_details=True,
     )
+    report_schema = ac.report_schema(report_schema, None if lint.health_details is None else lint.health_details.to_payload())
     return compose_doctor_report(
         lint,
         strict=strict,
-        wiki_dir=lint.wiki_dir if report_schema == "v3" else wiki_text,
-        src_dir=lint.src_dir if report_schema == "v3" else effective_source,
+        wiki_dir=lint.wiki_dir if report_schema in {"auto", "v3", "v4"} else wiki_text,
+        src_dir=lint.src_dir if report_schema in {"auto", "v3", "v4"} else effective_source,
     )
 
 
@@ -216,7 +226,7 @@ def compose_doctor_report(
     )
 
 
-def render_doctor_text(report: DoctorReport, *, report_schema: str = "v1") -> str:
+def render_doctor_text(report: DoctorReport, *, report_schema: str = "auto") -> str:
     """Render the report as a compact one-screen human summary."""
     return _render_doctor_payload(report.to_payload(report_schema=report_schema))
 

@@ -31,4 +31,5 @@ jobs:
           src-dir: .
           strict: "true"
           fail-on: degraded
-          report-schema: v3
+          report-schema: v4
+          comparison-policy: analysis-v1

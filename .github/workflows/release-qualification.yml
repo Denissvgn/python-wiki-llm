@@ -192,8 +192,11 @@ jobs:
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
             release/knowledge_maintenance.py \
+            release/analysis_pairs.py \
             release/knowledge-maintenance.json \
             src/llm_wiki_cli/services/health_policy.py \
+            src/llm_wiki_cli/services/analysis_compatibility.py \
+            src/llm_wiki_cli/services/analysis_contracts.json \
             release/dependency_downloads.py \
             release/hosted_evidence.py \
             release/core_shards.py \
@@ -547,6 +550,7 @@ jobs:
           name: evidence-${{ matrix.lane }}
           path: |
             evidence/${{ matrix.lane }}.xml
+            evidence/${{ matrix.lane }}-analysis.json
             evidence/result-${{ matrix.lane }}.json
             evidence/coverage-${{ matrix.lane }}.xml
           if-no-files-found: error
@@ -949,6 +953,7 @@ jobs:
           name: evidence-core-windows-3.13
           path: |
             evidence/core-windows-3.13.xml
+            evidence/core-windows-3.13-analysis.json
             evidence/result-core-windows-3.13.json
             evidence/aggregation.json
           if-no-files-found: error
@@ -1920,6 +1925,7 @@ jobs:
       - name: Check Action fixture knowledge health
         uses: ./candidate/integrations/github-action
         with:
+          comparison-policy: exact-v1
           wiki-dir: candidate/.action-selftest/wiki
           src-dir: candidate/tests/fixtures/context-health-action/source
           evidence-id: valid
@@ -1930,6 +1936,7 @@ jobs:
         continue-on-error: true
         uses: ./candidate/integrations/github-action
         with:
+          comparison-policy: exact-v1
           wiki-dir: candidate/.action-selftest/wiki
           src-dir: candidate/tests/fixtures/context-health-action/source
           evidence-id: invalid-strict
@@ -1940,6 +1947,7 @@ jobs:
         continue-on-error: true
         uses: ./candidate/integrations/github-action
         with:
+          comparison-policy: exact-v1
           wiki-dir: candidate/.action-selftest/wiki
           src-dir: candidate/tests/fixtures/context-health-action/source
           evidence-id: invalid-fail-on
@@ -2025,7 +2033,8 @@ jobs:
         with:
           src-dir: candidate
           wiki-dir: candidate/docs/llm_wiki
-          report-schema: v3
+          report-schema: v4
+          comparison-policy: analysis-v1
           maintenance-candidate-sha: ${{ needs.freeze.outputs.sha }}
           maintenance-identity: ${{ runner.temp }}/rd-10-frozen-inputs/source/identity.json
           maintenance-source-archive: ${{ runner.temp }}/rd-10-frozen-inputs/source/candidate-source.tar
@@ -2048,7 +2057,7 @@ jobs:
         run: >-
           python -I -m llm_wiki_cli.cli doctor
           --wiki-dir candidate/docs/llm_wiki --src-dir candidate
-          --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" --strict --report-schema v3 --format json
+          --helper-cache-dir "${LLM_WIKI_CACHE_DIR}" --strict --report-schema v4 --comparison-policy analysis-v1 --format json
           > "${RD10_EVIDENCE_DIR}/maintenance/doctor.json"
       - name: Validate fixed full-integrity evidence
         run: |
@@ -2813,6 +2822,58 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  analysis-compatibility:
+    name: Installed analysis compatibility
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+    needs: freeze
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: candidate-source
+          path: incoming/source
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: qualification-harnesses
+          path: incoming/tools
+      - name: Verify and extract qualification harnesses
+        env:
+          EXPECTED_HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        run: |
+          python -I -c 'import hashlib, pathlib, sys; raw = pathlib.Path(sys.argv[1]).read_bytes(); raise SystemExit(0 if hashlib.sha256(raw).hexdigest() == sys.argv[2] else "qualification harness digest mismatch")' incoming/tools/qualification-harnesses.tar "${EXPECTED_HARNESS_SHA256}"
+          python -I -m tarfile --extract incoming/tools/qualification-harnesses.tar incoming/tools
+      - name: Extract the exact candidate
+        run: >-
+          python -I incoming/tools/release/qualification.py extract-source
+          --archive incoming/source/candidate-source.tar --sha256 "${{ needs.freeze.outputs.source-sha256 }}"
+          --destination candidate
+      - name: Create isolated comparison environment
+        run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/analysis-venv"
+      - name: Install the candidate and its build dependencies
+        run: python -m pip install --no-cache-dir "./candidate[dev]"
+      - name: Verify real installed version and implementation pairs
+        run: python -I incoming/tools/release/analysis_pairs.py --root candidate --work evidence/analysis-pairs
+      - name: Retain installed comparison evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: analysis-compatibility-pairs
+          path: |
+            evidence/analysis-pairs/*.json
+            evidence/analysis-pairs/*.stdout
+            evidence/analysis-pairs/*.stderr
+            evidence/analysis-pairs/*/dist/*.whl
+          if-no-files-found: error
+          retention-days: 14
+
   bundle:
     name: Assemble immutable qualified release
     # The optional shadow ancestor is skipped in normal runs. Override implicit
@@ -2825,9 +2886,11 @@ jobs:
           && needs.oci.result == 'success' && needs.static.result == 'success'
           && needs.action.result == 'success' && needs.reproducible.result == 'success'
           && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success'
+          && needs.analysis-compatibility.result == 'success'
           && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')
           && (needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success') }}
     needs:
+      - analysis-compatibility
       - freeze
       - knowledge-maintenance
       - dependency-warm
@@ -2934,6 +2997,11 @@ jobs:
           digest-mismatch: error
           name: knowledge-maintenance-verification
           path: incoming/maintenance
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          digest-mismatch: error
+          name: analysis-compatibility-pairs
+          path: incoming/analysis
       - name: Build versioned release bundle
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -2959,6 +3027,7 @@ jobs:
           --smoke-comparison incoming/comparison/smoke-comparison.json \
           --gate-decision gate-decision.json \
           "${maintenance_evidence[@]}" \
+          --evidence "RD-10:analysis=incoming/analysis" \
           --evidence "RD-00:source=incoming/source" \
           --evidence "RD-00:harness=incoming/tools/qualification-harnesses.tar" \
           --evidence "RD-01:ubuntu=incoming/gates/evidence-core-ubuntu-3.10" \

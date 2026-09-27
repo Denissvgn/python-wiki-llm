@@ -14,6 +14,7 @@ import re
 from typing import Any, NoReturn
 
 from .contracts import HEALTH_DETAILS_SCHEMA_VERSION
+from . import analysis_compatibility as ac
 from .knowledge_freshness import (
     FRESHNESS_REASON_STATES,
     KNOWN_FRESHNESS_REASON_CODES,
@@ -132,14 +133,15 @@ def _producer(value: object, field: str) -> None:
 
 
 def _compatible_global_basis(
-    recorded: Mapping[str, Any], live: Mapping[str, Any]
+    recorded: Mapping[str, Any], live: Mapping[str, Any], analysis=None, policy="exact-v1"
 ) -> bool:
-    def component(row: Mapping[str, Any]) -> ProducerComponent:
+    def component(row: Mapping[str, Any], side="recorded") -> ProducerComponent:
         return ProducerComponent(
             row["id"],
             row["version"],
             row["configuration_hash"],
             tuple(row["limitations"]),
+            {} if analysis is None or analysis[side].get(row["id"]) is None else {ac.EXTENSION: analysis[side][row["id"]]},
         )
 
     if any(
@@ -147,25 +149,21 @@ def _compatible_global_basis(
         for key in ("knowledge_schema_version", "generation_options_hash")
     ):
         return False
-    if not comparable_producer_components(
-        component(recorded["tool"]),
-        component(live["tool"]),
-        configuration_required=False,
-    ):
+    if ac.compare_components(component(recorded["tool"]), component(live["tool"], "live"), policy=policy, plugins=bool(recorded["plugins"] or live["plugins"]), configuration_required=False) is not None:
         return False
     if [p["id"] for p in recorded["plugins"]] != [p["id"] for p in live["plugins"]]:
         return False
     if not all(
-        comparable_producer_components(component(left), component(right))
+        comparable_producer_components(component(left), component(right, "live"))
         for left, right in zip(recorded["plugins"], live["plugins"])
     ):
         return False
     live_extractors = {p["id"]: p for p in live["extractors"]}
     return any(
         p["id"] in live_extractors
-        and comparable_producer_components(
-            component(p), component(live_extractors[p["id"]])
-        )
+        and ac.compare_components(
+            component(p), component(live_extractors[p["id"]], "live"), policy=policy, plugins=bool(recorded["plugins"] or live["plugins"])
+        ) is None
         for p in recorded["extractors"]
     )
 
@@ -192,7 +190,7 @@ def validate_health_details(
             "reasons",
         },
     )
-    if details["schema_version"] != HEALTH_DETAILS_SCHEMA_VERSION:
+    if details["schema_version"] not in {HEALTH_DETAILS_SCHEMA_VERSION, "llm-wiki-health-details/v2"}:
         _fail("health_details.schema_version", "unsupported version")
     scope = _object(details["scope"], "scope", {"wiki_dir", "src_dir", "selection"})
     if (
@@ -259,13 +257,37 @@ def validate_health_details(
         _fail("snapshot", "unvalidated artifacts cannot claim exact-byte commitments")
 
     basis = _object(
-        details["basis"], "basis", {"policy", "analysis_contract", "recorded", "live"}
+        details["basis"], "basis", {"policy", "analysis_contract", "recorded", "live"} | ({"comparison"} if details["schema_version"] == "llm-wiki-health-details/v2" else set())
     )
-    if (
-        basis["policy"] != "exact-producer-versions"
-        or basis["analysis_contract"] is not None
-    ):
-        _fail("basis", "unsupported comparison contract")
+    analysis = None
+    if details["schema_version"] == HEALTH_DETAILS_SCHEMA_VERSION:
+        if basis["policy"] != "exact-producer-versions" or basis["analysis_contract"] is not None:
+            _fail("basis", "unsupported comparison contract")
+    else:
+        ac.selected_policy(basis["policy"])
+        analysis = _object(basis["analysis_contract"], "basis.analysis_contract", {"schema_version", "recorded", "live"})
+        if analysis["schema_version"] != ac.COMPARISON_SCHEMA:
+            _fail("basis", "unsupported analysis contract")
+        for side in ("recorded", "live"):
+            producer = basis[side]
+            captured = analysis[side]
+            if producer is None:
+                if captured is not None:
+                    _fail("basis", "unavailable producer carries analysis contracts")
+                continue
+            ids = {c["id"] for c in [producer["tool"], *producer["extractors"], *producer["plugins"]]}
+            _object(captured, "basis.analysis_contract." + side, ids)
+            for component_id, record in captured.items():
+                if record is not None:
+                    try:
+                        ac.validate_record(record, component_id)
+                        item = next(c for c in [producer["tool"], *producer["extractors"], *producer["plugins"]] if c["id"] == component_id)
+                        if item["configuration_hash"] != ac.configuration_commitment(record):
+                            _fail("basis.analysis_contract", "record is not bound by configuration")
+                    except ValueError as exc:
+                        _fail("basis.analysis_contract", str(exc))
+    if analysis is not None and basis["comparison"] != ac.basis_decision(basis):
+        _fail("basis.comparison", "decision differs from captured inputs")
     _producer(basis["recorded"], "basis.recorded")
     _producer(basis["live"], "basis.live")
     if (basis["live"] is not None) != evaluated:
@@ -331,7 +353,7 @@ def validate_health_details(
             if (
                 not isinstance(recorded, Mapping)
                 or not isinstance(live, Mapping)
-                or not _compatible_global_basis(recorded, live)
+                or not _compatible_global_basis(recorded, live, analysis, basis["policy"] if analysis is not None else "exact-v1")
             ):
                 _fail("basis", "incompatible producer cannot claim comparable content")
         if (

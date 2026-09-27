@@ -147,6 +147,7 @@ class RuntimeKnowledgeInputs:
     force_unknown_evidence: bool = False
     untrusted_evidence_page_paths: AbstractSet[str] = frozenset()
     regenerated_evidence_page_paths: AbstractSet[str] = frozenset()
+    analysis_components: Mapping[str, Any] | None = None
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
     plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
     plugin_components: Sequence[Mapping[str, Any]] = ()
@@ -296,6 +297,7 @@ class RuntimeLiveEvaluationInputs:
     )
     missing_source_paths: AbstractSet[str] = frozenset()
     inventory_complete: bool = True
+    analysis_components: Mapping[str, Any] | None = None
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
     plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
     plugin_components: Sequence[Mapping[str, Any]] = ()
@@ -347,14 +349,21 @@ def _runtime_manifest_generation_inputs(
     return {}
 
 
-def _infrastructure_extractor_component() -> ProducerComponentInput:
-    return ProducerComponentInput(
+def _tool_component(analysis_components, **kwargs):
+    from .analysis_capture import attach
+    return attach(ProducerComponentInput(component_id="agent-wiki-cli", **kwargs), analysis_components)
+
+
+def _infrastructure_extractor_component(analysis_components=None) -> ProducerComponentInput:
+    from .analysis_capture import attach
+    component = ProducerComponentInput(
         component_id=INFRASTRUCTURE_EXTRACTOR_REF,
         version=__version__,
         configuration={
             "observation_schema": INFRASTRUCTURE_SYNC_SCHEMA_VERSION,
         },
     )
+    return attach(component, analysis_components)
 
 
 def build_runtime_knowledge_plan(
@@ -388,6 +397,7 @@ def build_runtime_knowledge_plan(
         extractor_registry=inputs.extractor_registry,
         plugin_extractor_components=inputs.plugin_extractor_components,
         plugin_components=inputs.plugin_components,
+        analysis_components=inputs.analysis_components,
     )
     try:
         generation_inputs = with_source_selection_generation_input(
@@ -406,7 +416,7 @@ def build_runtime_knowledge_plan(
     if infrastructure_evidence_by_page(generation_inputs):
         extractor_components = (
             *extractor_components,
-            _infrastructure_extractor_component(),
+            _infrastructure_extractor_component(inputs.analysis_components),
         )
     prepared_generation_options = prepare_runtime_generation_options(
         inputs.generation_options,
@@ -439,8 +449,8 @@ def build_runtime_knowledge_plan(
             generation_options=prepared_generation_options.values,
             generation_option_defaults=prepared_generation_options.defaults,
             generation_option_allowlist=prepared_generation_options.allowlist,
-            tool=ProducerComponentInput(
-                component_id="agent-wiki-cli",
+            tool=_tool_component(
+                inputs.analysis_components,
                 version=__version__,
                 configuration={
                     "knowledge_schema": KNOWLEDGE_SCHEMA_VERSION,
@@ -551,6 +561,9 @@ def build_runtime_live_evaluation(
     if not isinstance(inputs.infrastructure_inventory, Mapping):
         raise TypeError("inputs.infrastructure_inventory must be a mapping")
 
+    from .analysis_compatibility import has_contract
+    if not has_contract(inputs.knowledge.bundle.producer):
+        inputs = replace(inputs, analysis_components=None)
     inventory = dict(inputs.inventory)
     infrastructure_inventory = {
         path: dict(record)
@@ -581,15 +594,16 @@ def build_runtime_live_evaluation(
         extractor_registry=inputs.extractor_registry,
         plugin_extractor_components=inputs.plugin_extractor_components,
         plugin_components=inputs.plugin_components,
+        analysis_components=inputs.analysis_components,
     )
     if recorded_infrastructure_paths or infrastructure_inventory:
         extractor_components = (
             *extractor_components,
-            _infrastructure_extractor_component(),
+            _infrastructure_extractor_component(inputs.analysis_components),
         )
     producer = build_producer_record(
-        tool=ProducerComponentInput(
-            component_id="agent-wiki-cli",
+        tool=_tool_component(
+            inputs.analysis_components,
             version=__version__,
             configuration={
                 "knowledge_schema": KNOWLEDGE_SCHEMA_VERSION,
@@ -1219,6 +1233,7 @@ def _producer_evidence(
     extractor_registry: Mapping[str, str] | None = None,
     plugin_extractor_components: Sequence[Mapping[str, Any]] = (),
     plugin_components: Sequence[Mapping[str, Any]] = (),
+    analysis_components: Mapping[str, Any] | None = None,
 ) -> tuple[
     dict[str, str],
     dict[str, bool],
@@ -1289,8 +1304,10 @@ def _producer_evidence(
             ),
         )
 
+    from .analysis_capture import attach
+    from ..config import EXTRACTOR_REGISTRY
     components = tuple(
-        components_by_id[component_id] for component_id in sorted(components_by_id)
+        attach(components_by_id[component_id], analysis_components if component_id.startswith("llm-wiki/extractor/") and (analysis_components is None or component_id in analysis_components or registry.get(component_id.rsplit("/", 1)[-1]) in EXTRACTOR_REGISTRY.values()) else None) for component_id in sorted(components_by_id)
     )
     historical_components = tuple(
         ProducerComponentInput(

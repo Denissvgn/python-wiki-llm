@@ -354,8 +354,8 @@ def test_legacy_payloads_and_capability_contract_keep_defaults(tmp_path, monkeyp
     assert api.doctor(report_schema="v3")["schema_version"] == "llm-wiki-doctor/v3"
     parser = cli._build_parser()
     assert parser.parse_args(["doctor", "--capabilities"]).capabilities
-    assert parser.parse_args(["doctor"]).report_schema == "v1"
-    assert parser.parse_args(["ci-check"]).report_schema == "v1"
+    assert parser.parse_args(["doctor"]).report_schema == "auto"
+    assert parser.parse_args(["ci-check"]).report_schema == "auto"
     with pytest.raises(SystemExit):
         parser.parse_args(["doctor", "--capabilities", "--report-schema", "v3"])
 

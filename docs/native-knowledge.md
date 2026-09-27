@@ -64,6 +64,32 @@ concepts are current. MCP also returns `freshness_evaluated: false`; when a
 projection is present, its `knowledge_summary` has null freshness counts. The
 status CLI renders the disclosure as a text line.
 
+## Analysis compatibility
+
+A supported sync records the analysis implementation, effective configuration and
+runtime identity alongside exact producer versions. Readers automatically use
+these commitments to compare knowledge across package releases when the relevant
+analysis inputs match. Source edits and deletions still produce freshness findings.
+Built-in providers support this contract; custom extractors and third-party plugin
+contributions retain exact-version requirements.
+
+Qualified runtime profiles can share a comparison identity across platforms.
+Other identified runtimes require an exact runtime match. Missing or unsupported
+analysis information remains visible and cannot establish freshness. Changes to a
+registered implementation input require refresh even when the package version is
+unchanged. The first contract uses conservative file-level implementation inputs.
+
+Use `--comparison-policy exact-v1` to require exact producer versions, or
+`--comparison-policy analysis-v1` to require the new analysis metadata. The default
+`auto` uses conservative comparison for legacy knowledge. A normal sync migrates
+legacy knowledge; read-only commands never migrate it. Artifact hashes, verification
+receipts and human review retain their existing binding rules.
+
+Doctor and CI reports automatically select v4 for migrated knowledge. Applications
+that pin an older report format can select `exact-v1` explicitly. Python read APIs
+accept `comparison_policy`; MCP servers accept the same option at startup. A
+captured service or context session keeps its comparison policy for its lifetime.
+
 ## Availability states
 
 Every native read exposes an availability and a stable reason:

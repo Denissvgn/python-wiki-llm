@@ -81,7 +81,7 @@ def action_shell(tmp_path):
     return run, inputs, evidence
 
 
-@pytest.mark.parametrize("schema", [None, "v1", "v3"], ids=["default", "v1", "v3"])
+@pytest.mark.parametrize("schema", [None, "v1", "v3", "v4"], ids=["default", "v1", "v3", "v4"])
 @pytest.mark.parametrize("scenario", ["clean", "drift", "corrupt"])
 def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
     tmp_path,
@@ -93,6 +93,7 @@ def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
     from tests.provider_conformance.action_fixture import hashes
 
     run, inputs, evidence = action_shell
+    inputs["comparison-policy"] = "analysis-v1" if schema == "v4" else "exact-v1"
     if schema is not None:
         inputs["report-schema"] = schema
     shutil.copytree(
@@ -147,7 +148,7 @@ def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
         assert report["snapshot_parity"]["state"] == "not-available"
     assert receipt["report_schema_version"] == report["schema_version"]
     assert receipt["schema_version"] == "llm-wiki-doctor-dashboard/" + (
-        "v2" if schema == "v3" else "v1"
+        "v2" if schema in {"v3", "v4"} else "v1"
     )
     assert receipt["doctor_exit_code"] == report["exit_code"]
     assert receipt["dashboard_exit_code"] == rendered.returncode
@@ -165,5 +166,5 @@ def test_actual_action_rejects_invalid_schema_before_creating_evidence(
     run, inputs, evidence = action_shell
     inputs["report-schema"] = schema
     result = run("Validate scalar inputs")
-    assert result.returncode == 2 and "report-schema must be v1 or v3" in result.stderr
+    assert result.returncode == 2 and "report-schema must be v1, v3 or v4" in result.stderr
     assert not list(evidence.iterdir())

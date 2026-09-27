@@ -76,7 +76,8 @@ jobs:
       - name: Check Action fixture knowledge health
         uses: ./integrations/github-action
         with:
-          report-schema: v3
+          report-schema: v4
+          comparison-policy: analysis-v1
           wiki-dir: .action-selftest/wiki
           src-dir: tests/fixtures/context-health-action/source
           strict: "true"
@@ -180,6 +181,7 @@ jobs:
         continue-on-error: true
         uses: ./.provider/integrations/github-action
         with:
+          comparison-policy: exact-v1
           src-dir: source
           wiki-dir: wiki
           strict: "true"
@@ -191,6 +193,7 @@ jobs:
         continue-on-error: true
         uses: ./.provider/integrations/wiki-integrity
         with:
+          comparison-policy: exact-v1
           src-dir: source
           wiki-dir: wiki
       - name: Verify actual action outcome and unchanged caller

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .services import analysis_compatibility as ac
+
 import inspect
 import json
 import re
@@ -37,6 +39,7 @@ from .api_types import (
     DocumentationExportResult,
     DoctorResult,
     DoctorV3Result,
+    DoctorV4Result,
     EvidenceExplanationResult,
     ExtractSourceResult,
     FlowForEntrypointResult,
@@ -871,6 +874,7 @@ def _native_query_boundary(function: Callable[_P, _R]) -> Callable[_P, _R]:
 
 
 @_native_query_boundary
+@ac.comparison_entrypoint
 def get_knowledge_coverage(
     *,
     src_dir: str = ".",
@@ -880,6 +884,7 @@ def get_knowledge_coverage(
     allow_external_src: bool = False,
     source_selection: str | Path | None = None,
     helper_cache_dir: str | Path | None = None,
+    comparison_policy: str | None = None,
 ) -> KnowledgeCoverageResult:
     """Explain modeled coverage from a snapshot, live capture or existing service.
 
@@ -954,6 +959,7 @@ def get_knowledge_coverage(
 
 
 @_native_query_boundary
+@ac.comparison_entrypoint
 def inspect_concept(
     locator_or_exact_route: object,
     *,
@@ -965,6 +971,7 @@ def inspect_concept(
     allow_external_src: bool = False,
     source_selection: str | Path | None = None,
     helper_cache_dir: str | Path | None = None,
+    comparison_policy: str | None = None,
 ) -> NativeInspectionResult:
     """Inspect a concept, typed edges, sections and coverage from one read.
 
@@ -1126,6 +1133,7 @@ def build_context(
     read_only: bool = True,
     source_selection: str | Path | None = None,
     knowledge_mode: KnowledgeMode | None = None,
+    comparison_policy: str | None = None,
 ) -> ContextPayload: ...
 
 
@@ -1143,6 +1151,7 @@ def build_context(
     read_only: bool = True,
     source_selection: str | Path | None = None,
     knowledge_mode: KnowledgeMode | None = None,
+    comparison_policy: str | None = None,
 ) -> MarkdownContextResult: ...
 
 
@@ -1160,10 +1169,12 @@ def build_context(
     read_only: bool = True,
     source_selection: str | Path | None = None,
     knowledge_mode: KnowledgeMode | None = None,
+    comparison_policy: str | None = None,
 ) -> ContextPayload | MarkdownContextResult: ...
 
 
 @_api_boundary
+@ac.comparison_entrypoint
 def build_context(
     src_dir: str = ".",
     *,
@@ -1177,6 +1188,7 @@ def build_context(
     read_only: bool = True,
     source_selection: str | Path | None = None,
     knowledge_mode: KnowledgeMode | None = None,
+    comparison_policy: str | None = None,
 ) -> ContextPayload | MarkdownContextResult:
     """Return a supported context payload without depending on CLI internals."""
     focus_values = _normalise_focus(focus)
@@ -1260,6 +1272,7 @@ def build_context(
 
 
 @_api_boundary
+@ac.comparison_entrypoint
 def build_budgeted_context(
     src_dir: str = ".",
     wiki_dir: str = DEFAULT_WIKI_DIR,
@@ -1268,6 +1281,7 @@ def build_budgeted_context(
     counter: TokenCounter | None = None,
     allow_external_src: bool = False,
     source_selection: str | Path | None = None,
+    comparison_policy: str | None = None,
 ) -> BudgetedContext:
     """Render opt-in v3 context with a trusted complete-output token counter."""
     from .services.context_budget import build_budgeted_context as build
@@ -1314,12 +1328,14 @@ def load_workflow_profile(
 
 
 @_api_boundary
+@ac.comparison_entrypoint
 def build_task_context(
     request: Mapping[str, Any], *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
     profile: WorkflowProfile | Mapping[str, Any] | None = None,
     policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
     allow_external_src: bool = False, source_selection: str | Path | None = None,
     helper_cache_dir: str | None = None, cancelled: Callable[[], bool] | None = None,
+    comparison_policy: str | None = None,
 ) -> TaskContext:
     """Compose bounded qualified evidence; coverage does not mean task correctness."""
     from .services.task_context import build_task_context as build
@@ -1350,12 +1366,14 @@ def expand_task_storage_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
 
 
 @_api_boundary
+@ac.comparison_entrypoint
 def reconcile_task_context(
     rendered: str, request: Mapping[str, Any], *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
     profile: WorkflowProfile | Mapping[str, Any] | None = None,
     policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
     allow_external_src: bool = False, source_selection: str | Path | None = None,
     helper_cache_dir: str | None = None,
+    comparison_policy: str | None = None,
 ) -> dict[str, Any]:
     """Validate saved task context and reconcile through one fresh scoped read."""
     from .services.task_context import reconcile_task_context as reconcile
@@ -1384,6 +1402,7 @@ class ContextSession(_ContextSession):
 
 
 @_api_boundary
+@ac.comparison_entrypoint
 def open_context_session(
     *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
     profile: WorkflowProfile | Mapping[str, Any] | None = None,
@@ -1391,6 +1410,7 @@ def open_context_session(
     source_selection: str | Path | None = None, helper_cache_dir: str | None = None,
     allow_external_src: bool = False, max_entries: int = 8,
     max_bytes: int = 16_777_216, ttl_seconds: float = 300,
+    comparison_policy: str | None = None,
 ) -> ContextSession:
     """Create an explicitly owned, bounded, in-memory context session."""
     return ContextSession(src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy,
@@ -1426,6 +1446,7 @@ def build_maintenance_queue(
 
 
 @_api_boundary
+@ac.comparison_entrypoint
 def build_qualified_context(
     src_dir: str = ".",
     wiki_dir: str = DEFAULT_WIKI_DIR,
@@ -1435,6 +1456,7 @@ def build_qualified_context(
     read_only: bool = True,
     source_selection: str | Path | None = None,
     knowledge_mode: KnowledgeMode | None = None,
+    comparison_policy: str | None = None,
 ) -> QualifiedContextPacket:
     """Build a canonical in-memory qualified-context packet."""
 
@@ -1530,6 +1552,7 @@ def compare_context_packet_basis(
 
 
 @_api_boundary
+@ac.comparison_entrypoint
 def reconcile_context_packet(
     packet_bytes: bytes | bytearray | memoryview,
     src_dir: str = ".",
@@ -1538,6 +1561,7 @@ def reconcile_context_packet(
     allow_external_src: bool = False,
     read_only: bool = True,
     source_selection: str | Path | None = None,
+    comparison_policy: str | None = None,
 ) -> ContextPacketReconciliation:
     """Reconcile packet facets against one fresh official read."""
 
@@ -1594,7 +1618,8 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult:
 def doctor(
     src_dir: str = ".", *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False,
     allow_external_src: bool = False, source_selection: str | Path | None = None,
-    report_schema: Literal["v1"] = "v1",
+    report_schema: Literal["v1", "auto"] = "auto",
+    comparison_policy: str | None = None,
 ) -> DoctorResult: ...
 
 
@@ -1603,10 +1628,20 @@ def doctor(
     src_dir: str = ".", *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False,
     allow_external_src: bool = False, source_selection: str | Path | None = None,
     report_schema: Literal["v3"],
+    comparison_policy: str | None = None,
 ) -> DoctorV3Result: ...
 
 
+@overload
+def doctor(
+    src_dir: str = ".", *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False,
+    allow_external_src: bool = False, source_selection: str | Path | None = None,
+    report_schema: Literal["v4"], comparison_policy: str | None = None,
+) -> DoctorV4Result: ...
+
+
 @_api_boundary
+@ac.comparison_entrypoint
 def doctor(
     src_dir: str = ".",
     *,
@@ -1614,7 +1649,8 @@ def doctor(
     strict: bool = False,
     allow_external_src: bool = False,
     source_selection: str | Path | None = None,
-    report_schema: Literal["v1", "v3"] = "v1",
+    report_schema: Literal["auto", "v1", "v3", "v4"] = "auto",
+    comparison_policy: str | None = None,
 ) -> DoctorResult:
     """Return the stable read-only knowledge health report."""
 
@@ -1626,10 +1662,11 @@ def doctor(
         source_selection=source_selection,
         report_schema=report_schema,
     )
-    return cast(DoctorResult, report.to_payload(**({"report_schema": report_schema} if report_schema != "v1" else {})))
+    return cast(DoctorResult, report.to_payload(**({"report_schema": report_schema} if report_schema != "auto" else {})))
 
 
 @_native_query_boundary
+@ac.comparison_entrypoint
 def build_documentation_query_service(
     src_dir: str = ".",
     *,
@@ -1639,6 +1676,7 @@ def build_documentation_query_service(
     read_only: bool = True,
     source_selection: str | Path | None = None,
     helper_cache_dir: str | Path | None = None,
+    comparison_policy: str | None = None,
 ) -> DocumentationGraphQueryService:
     """Build a supported graph query service over derived documentation data."""
     try:
@@ -2757,6 +2795,7 @@ def _impact_query(
 
 
 @_native_query_boundary
+@ac.comparison_entrypoint
 def query_documentation(
     request: Mapping[str, Any],
     *,
@@ -2764,6 +2803,7 @@ def query_documentation(
     wiki_dir: str = DEFAULT_WIKI_DIR,
     allow_external_src: bool = False,
     source_selection: str | Path | None = None,
+    comparison_policy: str | None = None,
 ) -> DocumentationQueryResult:
     """Dispatch one exact bounded read-only documentation query."""
 
@@ -3343,6 +3383,7 @@ __all__ = [
     "DocumentationExportResult",
     "DoctorResult",
     "DoctorV3Result",
+    "DoctorV4Result",
     "DOCTOR_SCHEMA_VERSION",
     "EXTRACT_SCHEMA_VERSION",
     "DocumentationGraphQueryService",

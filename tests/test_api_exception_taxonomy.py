@@ -963,7 +963,12 @@ def test_public_dict_return_annotations_import_and_resolve():
         api_types.HealthCoverage: ({"total", "modeled", "unmodeled", "evaluated", "comparison_attempted", "comparable", "outcomes"}, set()),
         api_types.HealthReason: ({"code", "concepts", "examples", "omitted"}, set()),
     })
-    assert set(expected_keys) | {api_types.KnowledgeMode} == {
+    expected_keys.update({
+        api_types.DoctorV4Result: (expected_keys[api_types.DoctorResult][0] | {"health_details"}, set()),
+        api_types.AnalysisCompatibilityRecord: ({"schema_version", "component", "contract", "implementation", "configuration", "runtime", "provenance", "identity"}, set()),
+        api_types.HealthDetailsV2: ({"schema_version", "scope", "evaluation", "snapshot", "basis", "coverage", "reasons"}, set()),
+    })
+    assert set(expected_keys) | {api_types.KnowledgeMode, api_types.ComparisonPolicy} == {
         getattr(api_types, name) for name in api_types.__all__
     }
     for contract, (required, optional) in expected_keys.items():

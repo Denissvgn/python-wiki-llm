@@ -74,7 +74,7 @@ def test_javascript_health_refresh_and_first_sync_converge(
             refs,
             complete,
             tuple(
-                replace(component, configuration=None)
+                replace(component, configuration=None, extensions={})
                 if component.component_id == "llm-wiki/extractor/javascript"
                 else component
                 for component in extractors

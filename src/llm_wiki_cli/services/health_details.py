@@ -14,6 +14,7 @@ import json
 from typing import Any
 
 from .contracts import HEALTH_DETAILS_SCHEMA_VERSION
+from . import analysis_compatibility as ac
 from .health_contract import (
     COMPARABLE_STATES,
     EXAMPLE_LIMIT,
@@ -212,8 +213,18 @@ def capture_health_details(
                 }
                 for code, count in sorted(reason_counts.items())
             ]
+    migrated = (knowledge is not None and ac.has_contract(knowledge.bundle.producer)) or ac.selected_policy() == "analysis-v1"
+    if migrated:
+        def contracts(producer):
+            if producer is None:
+                return None
+            return {c.component_id: ac.component_record(c) for c in (producer.tool, *producer.extractors, *producer.plugins)}
+        basis["policy"] = freshness.comparison_policy if freshness is not None else ac.selected_policy()
+        basis["analysis_contract"] = {"schema_version": ac.COMPARISON_SCHEMA,
+                                     "recorded": contracts(None if knowledge is None else knowledge.bundle.producer), "live": contracts(live)}
+        basis["comparison"] = ac.basis_decision(basis)
     payload = {
-        "schema_version": HEALTH_DETAILS_SCHEMA_VERSION,
+        "schema_version": "llm-wiki-health-details/v2" if migrated else HEALTH_DETAILS_SCHEMA_VERSION,
         "scope": {"wiki_dir": wiki_dir, "src_dir": src_dir, "selection": selection},
         "evaluation": {"state": state, "reason": reason},
         "snapshot": snapshot,

@@ -22,7 +22,7 @@ def source_archive(files):
 
 class HostedEvidence:
     def __init__(
-        self, identity, run_id, source, layout="legacy", core_layout="unsharded", maintenance=False
+        self, identity, run_id, source, layout="legacy", core_layout="unsharded", maintenance=False, analysis=False
     ):
         self.identity = identity
         self.run_id = run_id
@@ -44,6 +44,8 @@ class HostedEvidence:
             contract["RD-10:maintenance"] = (
                 "knowledge-maintenance-verification", "Repository knowledge maintenance", ("verification.json",),
             )
+        if analysis:
+            contract["RD-10:analysis"] = ("analysis-compatibility-pairs", "Installed analysis compatibility", ("result.json",))
         self.contract = contract
         self.jobs = [
             {

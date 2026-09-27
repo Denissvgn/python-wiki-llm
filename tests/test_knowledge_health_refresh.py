@@ -66,7 +66,12 @@ def _health(**kwargs):
 
 
 @pytest.fixture
-def recorded_project(tmp_path, monkeypatch):
+def recorded_project(tmp_path, monkeypatch, request):
+    # Default cases exercise legacy exact-version refresh. P2 cases explicitly
+    # request the current producer through this fixture's indirect parameter.
+    if getattr(request, "param", "legacy") == "legacy":
+        from llm_wiki_cli.services import analysis_capture
+        monkeypatch.setattr(analysis_capture, "capture_analysis", lambda *a, **kw: None)
     monkeypatch.chdir(tmp_path)
     subprocess.run(
         ["git", "init", "-q"], check=True, capture_output=True,

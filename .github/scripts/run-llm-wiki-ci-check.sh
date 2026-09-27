@@ -19,7 +19,7 @@ Usage:
     --knowledge-drift-report
 
 Optional: --evidence-artifact NAME identifies the uploaded evidence artifact.
-Optional: --report-schema v2|v3 selects the JSON contract (default: v2).
+Optional: --report-schema v2|v3|v4 selects the JSON contract (default: v2).
 
 The selected Python is used both to invoke `llm_wiki_cli.cli` and to validate
 its versioned JSON output. Project-local plugins are disabled, and the bounded
@@ -51,6 +51,8 @@ wiki_dir=""
 helper_cache_dir=""
 report_dir=""
 evidence_artifact=""
+comparison_policy="auto"
+comparison_policy_supplied=false
 report_schema="v2"
 report_schema_supplied=false
 jobs=""
@@ -108,12 +110,22 @@ while (($#)); do
       knowledge_drift_report=true
       shift
       ;;
+    --comparison-policy)
+      require_value "$1" "$#"
+      ${comparison_policy_supplied} && die "--comparison-policy may be supplied only once"
+      case "$2" in
+        auto|exact-v1|analysis-v1) comparison_policy="$2" ;;
+        *) die "invalid comparison policy" ;;
+      esac
+      comparison_policy_supplied=true
+      shift 2
+      ;;
     --report-schema)
       require_value "$1" "$#"
       ${report_schema_supplied} && die "--report-schema may be supplied only once"
       case "$2" in
-        v2|v3) report_schema="$2" ;;
-        *) die "--report-schema must be v2 or v3" ;;
+        v2|v3|v4) report_schema="$2" ;;
+        *) die "--report-schema must be v2, v3 or v4" ;;
       esac
       report_schema_supplied=true
       shift 2
@@ -242,6 +254,7 @@ set +e
   --knowledge-drift-report \
   --format json \
   --report-schema "${report_schema}" \
+  --comparison-policy "${comparison_policy}" \
   --no-plugins > "${raw_output}"
 cli_exit=$?
 ci_completed=true

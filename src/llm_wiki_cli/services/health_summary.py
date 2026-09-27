@@ -126,6 +126,7 @@ def detailed_health_rows(report: Mapping) -> list[tuple[str, str]]:
         ("Comparison", ", ".join(f"{key}={value(coverage[key])}" for key in ("evaluated", "comparison_attempted", "comparable"))),
         ("Modeled outcomes", freshness_counts(outcome)),
         ("Producer", tool),
+        ("Comparison policy", basis["policy"] + ("; " + basis["comparison"]["reason"] if "comparison" in basis else "")),
         ("Components", "extractors: " + _versions(recorded, live, "extractors") + "; plugins: " + _versions(recorded, live, "plugins")),
         ("Primary causes (concepts)", causes),
         ("Affected examples", "; ".join(examples) or "none reported"),

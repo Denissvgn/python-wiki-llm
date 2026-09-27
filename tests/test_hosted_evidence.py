@@ -24,13 +24,15 @@ def sharded_hosted(tmp_path, monkeypatch):
     return _hosted(tmp_path, monkeypatch, "windows-sharded")
 
 
-def _hosted(tmp_path, monkeypatch, core_layout, maintenance_mode=None):
+def _hosted(tmp_path, monkeypatch, core_layout, maintenance_mode=None, analysis=False):
     source = tmp_path / "source"
     source.mkdir()
     archive = source / "candidate-source.tar"
     files = {"README.md": b"owned source\n"}
     if maintenance_mode is not None:
         files["release/knowledge-maintenance.json"] = json.dumps({"mode": maintenance_mode}).encode()
+    if analysis:
+        files["src/llm_wiki_cli/services/analysis_contracts.json"] = b'{}'
     archive.write_bytes(source_archive(files))
     identity = {
         "schema_version": q.IDENTITY_SCHEMA,
@@ -49,7 +51,7 @@ def _hosted(tmp_path, monkeypatch, core_layout, maintenance_mode=None):
     (source / "SHA256SUMS").write_text(
         q.sha256_file(archive) + "  candidate-source.tar\n"
     )
-    server = HostedEvidence(identity, 123, source, core_layout=core_layout, maintenance=maintenance_mode == "required")
+    server = HostedEvidence(identity, 123, source, core_layout=core_layout, maintenance=maintenance_mode == "required", analysis=analysis)
     root = tmp_path / "bundle"
     for spec in server.specs(tmp_path / "inputs"):
         binding, _, directory = spec.partition("=")
@@ -412,4 +414,15 @@ def test_unsharded_provenance_cannot_adopt_shard_xml_by_changing_the_layout(
     root, server = sharded_hosted
     server.context["core_layout"] = "unsharded"
     with pytest.raises(h.EvidenceError, match="unbound"):
+        h.verify(root, server.identity, server.context, server.run_id)
+
+
+@pytest.mark.parametrize("conclusion", ["failure", "cancelled", "skipped"])
+def test_analysis_pairs_require_a_successful_authenticated_producer(tmp_path, monkeypatch, conclusion):
+    root, server = _hosted(tmp_path, monkeypatch, "unsharded", analysis=True)
+    ledger = h.verify(root, server.identity, server.context, server.run_id)
+    assert ledger["bindings"]["RD-10:analysis"]["artifact"] == "analysis-compatibility-pairs"
+    job = next(job for job in server.jobs if job["name"] == "Installed analysis compatibility")
+    job["conclusion"] = conclusion
+    with pytest.raises(h.EvidenceError, match="producer did not succeed"):
         h.verify(root, server.identity, server.context, server.run_id)

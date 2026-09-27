@@ -235,6 +235,7 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
         "strict",
         "fail-on",
         "report-schema",
+        "comparison-policy",
         "evidence-id",
     }
     assert action["inputs"]["source-selection"]["default"] == ""
@@ -250,6 +251,7 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
         "INPUT_STRICT": "${{ inputs.strict }}",
         "INPUT_FAIL_ON": "${{ inputs.fail-on }}",
         "INPUT_REPORT_SCHEMA": "${{ inputs.report-schema }}",
+        "INPUT_COMPARISON_POLICY": "${{ inputs.comparison-policy }}",
     }
     assert "^[a-z0-9][a-z0-9._-]{0,39}$" in scalar_validation["run"]
     assert "true|false" in scalar_validation["run"]
@@ -480,7 +482,8 @@ def test_manual_dashboard_workflow_is_separate_and_read_only() -> None:
         "src-dir": ".",
         "strict": "true",
         "fail-on": "degraded",
-        "report-schema": "v3",
+        "report-schema": "v4",
+        "comparison-policy": "analysis-v1",
     }
     raw = DASHBOARD_WORKFLOW_PATH.read_text(encoding="utf-8")
     assert "pull_request" not in raw
@@ -987,7 +990,8 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
         "strict": "true",
         "fail-on": "unhealthy",
         "evidence-id": "valid",
-        "report-schema": "v3",
+        "report-schema": "v4",
+        "comparison-policy": "analysis-v1",
     }
     invalid_strict = next(step for step in steps if step.get("id") == "invalid-strict")
     invalid_evidence_id = next(

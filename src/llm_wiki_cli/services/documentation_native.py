@@ -258,6 +258,7 @@ def evaluate_documentation_native_freshness(
                 ),
                 missing_source_paths=missing_source_paths,
                 inventory_complete=True,
+                analysis_components=runtime.inventory_result.analysis_components,
                 extractor_registry=runtime.inventory_result.extractor_registry,
                 plugin_extractor_components=(
                     runtime.inventory_result.plugin_components
@@ -373,6 +374,7 @@ def refresh_documentation_native_projection(
                 regenerated_evidence_page_paths=_regenerated_evidence_pages(
                     page_maps
                 ),
+                analysis_components=runtime.inventory_result.analysis_components,
                 extractor_registry=runtime.inventory_result.extractor_registry,
                 plugin_extractor_components=(
                     runtime.inventory_result.plugin_components

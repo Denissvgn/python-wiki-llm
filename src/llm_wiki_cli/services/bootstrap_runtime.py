@@ -5874,6 +5874,7 @@ def _finalize_bootstrap_artifacts(
             regenerated_evidence_page_paths=frozenset(
                 state.written_structural_page_paths
             ),
+            analysis_components=inventory_result.analysis_components,
             extractor_registry=inventory_result.extractor_registry,
             plugin_extractor_components=inventory_result.plugin_components,
             plugin_components=inventory_result.producer_plugin_components,

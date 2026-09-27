@@ -385,7 +385,7 @@ def test_wiki_integrity_delegates_to_the_candidate_composite_contract() -> None:
     assert gate == {
         "name": "Check LLM Wiki integrity",
         "uses": "./integrations/wiki-integrity",
-        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki", "report-schema": "v3", "maintenance-candidate-sha": "${{ github.sha }}"},
+        "with": {"src-dir": ".", "wiki-dir": "docs/llm_wiki", "report-schema": "v4", "comparison-policy": "analysis-v1", "maintenance-candidate-sha": "${{ github.sha }}"},
     }
     assert [step.get("name") for step in job["steps"]] == [
         "Check out the candidate without credentials",
@@ -811,7 +811,7 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         )
         assert "incoming/tools/release/qualification.py" not in earlier_runs
         assert "incoming/tools/tests/release_artifact_smoke.py" not in earlier_runs
-    assert harness_consumers == 21
+    assert harness_consumers == 22
 
     for job_name in ("core", "ubuntu-suites", "security-behavior", "mcp"):
         text = "\n".join(str(step) for step in jobs[job_name]["steps"])
@@ -945,6 +945,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
     context = _named_step(job, "Check Action fixture knowledge health")
     assert context["uses"] == "./candidate/integrations/github-action"
     assert context["with"] == {
+        "comparison-policy": "exact-v1",
         "wiki-dir": "candidate/.action-selftest/wiki",
         "src-dir": "candidate/tests/fixtures/context-health-action/source",
         "evidence-id": "valid",
@@ -996,7 +997,7 @@ def test_rd10_qualifies_both_composite_actions_from_the_frozen_candidate() -> No
         "with": {
             "src-dir": "candidate",
             "wiki-dir": "candidate/docs/llm_wiki",
-            "report-schema": "v3",
+            "report-schema": "v4", "comparison-policy": "analysis-v1",
             "maintenance-candidate-sha": "${{ needs.freeze.outputs.sha }}",
             "maintenance-identity": "${{ runner.temp }}/rd-10-frozen-inputs/source/identity.json",
             "maintenance-source-archive": "${{ runner.temp }}/rd-10-frozen-inputs/source/candidate-source.tar",

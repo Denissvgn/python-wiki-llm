@@ -105,8 +105,8 @@ def test_save_writes_schema_and_prunes_to_given_files(tmp_path):
     )
 
     payload = json.loads((cache_dir / CACHE_FILENAME).read_text(encoding="utf-8"))
-    assert payload["schema"] == "inventory-v3"
-    assert payload["version"] == 3
+    assert payload["schema"] == "inventory-v4"
+    assert payload["version"] == 4
     assert payload["source_selection_identity"] is None
     assert sorted(payload["files"]) == ["app.py"]
     assert payload["files"]["app.py"]["hash"] == "sha256:test"
@@ -248,7 +248,7 @@ def test_cache_key_uses_semantic_source_selection_identity(tmp_path):
     write_profile(["a"])
     narrowed = key()
 
-    assert first["schema"] == "inventory-v3"
+    assert first["schema"] == "inventory-v4"
     assert (
         first["source_selection_identity"]
         == formatting_only["source_selection_identity"]

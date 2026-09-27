@@ -52,6 +52,7 @@ from .inventory_cache import (
 from .progress import phase as progress_phase
 from .io import read_md
 from .knowledge_artifacts import KNOWLEDGE_INDEX_FILENAME
+from .analysis_compatibility import comparison_entrypoint
 from .health_details import CapturedHealthDetails, capture_health_details
 from .knowledge_consumption import (
     KnowledgeAvailability,
@@ -1847,6 +1848,7 @@ def _evaluate_knowledge_lint_state(
                     inputs.source_snapshot,
                 ),
                 inventory_complete=True,
+                analysis_components=inputs.inventory_result.analysis_components,
                 extractor_registry=inputs.inventory_result.extractor_registry,
                 plugin_extractor_components=(inputs.inventory_result.plugin_components),
                 plugin_components=(inputs.inventory_result.producer_plugin_components),
@@ -2673,6 +2675,7 @@ def _finalize_lint_report(
     return report
 
 
+@comparison_entrypoint
 def build_report(
     wiki_dir: str | Path,
     src_dir: str = ".",
@@ -2691,6 +2694,7 @@ def build_report(
     source_plugins_only: bool = False,
     source_selection: str | Path | None = None,
     include_health_details: bool = False,
+    comparison_policy: str | None = None,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     if not isinstance(include_health_details, bool):

@@ -82,6 +82,21 @@ def classify_health_sections(
     return DoctorStatus.HEALTHY, (), ()
 
 
+# Import the same stdlib leaf in installed and isolated frozen-harness modes.
+if __package__:
+    from . import analysis_compatibility as ac
+else:
+    import importlib.util
+    from pathlib import Path
+    _spec = importlib.util.spec_from_file_location("_release_analysis_compatibility", Path(__file__).with_name("analysis_compatibility.py"))
+    assert _spec and _spec.loader
+    ac = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(ac)
+
+CI_CHECK_V4_SCHEMA_VERSION = "llm-wiki-ci-check/v4"
+PREFLIGHT_V2_SCHEMA = "llm-wiki-maintenance-preflight/v2"
+POLICY_V2_SCHEMA = "llm-wiki-repository-health-policy/v2"
+POLICY_V2_ID = "strict-repository-health/v2"
 CI_CHECK_V3_SCHEMA_VERSION = "llm-wiki-ci-check/v3"
 
 POLICY_SCHEMA = "llm-wiki-repository-health-policy/v1"
@@ -270,7 +285,7 @@ def _admission_shape(report: Mapping[str, Any]) -> None:
     health = report["knowledge_health"]
     require(
         isinstance(health, dict)
-        and health.get("schema_version") == "llm-wiki-doctor/v3"
+        and health.get("schema_version") in {"llm-wiki-doctor/v3", "llm-wiki-doctor/v4"}
         and health.get("strict") is False,
         "invalid nested health version/policy",
     )
@@ -280,8 +295,11 @@ def _admission_shape(report: Mapping[str, Any]) -> None:
         "inconsistent nested scope",
     )
     details = health["health_details"]
+    modern = report["schema_version"] == CI_CHECK_V4_SCHEMA_VERSION
+    require(health["schema_version"] == ("llm-wiki-doctor/v4" if modern else "llm-wiki-doctor/v3"), "report/health version mismatch")
+    require(details["schema_version"] == ("llm-wiki-health-details/v2" if modern else "llm-wiki-health-details/v1"), "report/detail version mismatch")
     require(
-        details["schema_version"] == "llm-wiki-health-details/v1",
+        details["schema_version"] in {"llm-wiki-health-details/v1", "llm-wiki-health-details/v2"},
         "unsupported health detail",
     )
     require(
@@ -456,7 +474,8 @@ def derive_policy(
     """Return an auditable result; input reports never change integrity outcomes."""
     binding = _binding(binding)
     report = strict_json(report_bytes)
-    if report.get("schema_version") != CI_CHECK_V3_SCHEMA_VERSION:
+    version2 = report.get("schema_version") == CI_CHECK_V4_SCHEMA_VERSION
+    if report.get("schema_version") not in {CI_CHECK_V3_SCHEMA_VERSION, CI_CHECK_V4_SCHEMA_VERSION}:
         raise MaintenanceError("repository health requires an explicit CI v3 report")
     exit_code = report.get("command_exit_code")
     if type(exit_code) is not int:
@@ -475,9 +494,9 @@ def derive_policy(
         "issues",
         "limitations",
         "remedy",
-    }:
+    } | ({"analysis"} if version2 else set()):
         raise MaintenanceError("invalid preflight envelope")
-    if preflight["schema_version"] != PREFLIGHT_SCHEMA or preflight["status"] not in {
+    if preflight["schema_version"] != (PREFLIGHT_V2_SCHEMA if version2 else PREFLIGHT_SCHEMA) or preflight["status"] not in {
         "ready",
         "blocked",
     }:
@@ -554,7 +573,15 @@ def derive_policy(
         reasons.append("preflight-blocked")
     if not report["ok"] or report["command_exit_code"] != 0:
         reasons.append("integrity-or-output-failed")
-    if (
+    if version2:
+        basis = details["basis"]
+        if basis["analysis_contract"] != preflight["analysis"]:
+            raise MaintenanceError("report compatibility inputs differ from preflight")
+        if basis["comparison"] != ac.basis_decision(basis):
+            raise MaintenanceError("copied compatibility decision differs")
+        if not ac.compatible_basis(basis):
+            reasons.append("analysis-basis-incompatible")
+    elif (
         details["basis"]["recorded"] is None
         or details["basis"]["live"] is None
         or details["basis"]["recorded"] != details["basis"]["live"]
@@ -599,8 +626,8 @@ def derive_policy(
     ):
         reasons.append("modeled-freshness-not-current")
     return {
-        "schema_version": POLICY_SCHEMA,
-        "policy": POLICY_ID,
+        "schema_version": POLICY_V2_SCHEMA if version2 else POLICY_SCHEMA,
+        "policy": POLICY_V2_ID if version2 else POLICY_ID,
         "binding": dict(binding),
         "report_sha256": digest(report_bytes),
         "preflight_sha256": digest(preflight_bytes),

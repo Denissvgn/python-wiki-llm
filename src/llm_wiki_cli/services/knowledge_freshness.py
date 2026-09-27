@@ -14,6 +14,8 @@ from collections.abc import Set as AbstractSet
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
+from . import analysis_compatibility as ac
+
 from .contracts import (
     GOVERNANCE_HASH_EXTENSION_KEY,
     KNOWLEDGE_SCHEMA_VERSION,
@@ -185,6 +187,8 @@ class LiveKnowledgeEvaluation:
     missing_source_paths: AbstractSet[str] = frozenset()
     concept_bases: Mapping[str, ConceptObservationBasis] = field(default_factory=dict)
 
+    comparison_policy: str = field(default_factory=ac.selected_policy)
+
 
 @dataclass(frozen=True)
 class ConceptFreshnessBasis:
@@ -223,6 +227,8 @@ class KnowledgeFreshnessReport:
     live_generation_options_hash: str | None = None
     live_schema_version: str | None = None
 
+    comparison_policy: str = field(default_factory=ac.selected_policy)
+
 
 @dataclass(frozen=True)
 class _ValidatedLiveEvaluation:
@@ -232,6 +238,8 @@ class _ValidatedLiveEvaluation:
     source_content_hashes: Mapping[str, str]
     missing_source_paths: frozenset[str]
     concept_bases: Mapping[str, ConceptObservationBasis]
+
+    comparison_policy: str = "auto"
 
 
 def evaluate_knowledge_freshness(
@@ -294,6 +302,7 @@ def _evaluate_model_freshness(
             None if validated_live is None else validated_live.generation_options_hash
         ),
         live_schema_version=None if validated_live is None else validated_live.schema_version,
+        comparison_policy=ac.selected_policy(None if live is None else live.comparison_policy),
     )
 
 
@@ -396,6 +405,7 @@ def _validate_live_evaluation(
         source_content_hashes=MappingProxyType(source_hashes),
         missing_source_paths=frozenset(missing),
         concept_bases=MappingProxyType(bases),
+        comparison_policy=ac.selected_policy(live.comparison_policy),
     )
 
 
@@ -667,7 +677,7 @@ def _basis_incompatibility_reason(
     component_reason = _component_change_reason(
         recorded.bundle.producer.tool,
         live.producer.tool,
-        prefix="tool",
+        prefix="tool", policy=live.comparison_policy, plugins=bool(recorded.bundle.producer.plugins or live.producer.plugins),
     )
     if component_reason is not None:
         return component_reason
@@ -688,7 +698,7 @@ def _basis_incompatibility_reason(
     component_reason = _component_change_reason(
         recorded_extractor,
         live_extractor,
-        prefix="extractor",
+        prefix="extractor", policy=live.comparison_policy, plugins=bool(recorded.bundle.producer.plugins or live.producer.plugins),
     )
     if component_reason is not None:
         return component_reason
@@ -709,7 +719,7 @@ def _basis_incompatibility_reason(
         component_reason = _component_change_reason(
             recorded_plugin,
             live_plugin,
-            prefix="plugin",
+            prefix="plugin", policy="exact-v1", plugins=True,
         )
         if component_reason is not None:
             return component_reason
@@ -719,37 +729,18 @@ def _basis_incompatibility_reason(
     return None
 
 
-def _component_change_reason(
-    recorded: ProducerComponent,
-    live: ProducerComponent,
-    *,
-    prefix: str,
-) -> str | None:
-    if recorded.component_id != live.component_id:
-        return (
-            REASON_TOOL_ID_CHANGED
-            if prefix == "tool"
-            else REASON_EXTRACTOR_SELECTION_CHANGED
-        )
-    if recorded.version != live.version:
-        return {
-            "tool": REASON_TOOL_VERSION_CHANGED,
-            "extractor": REASON_EXTRACTOR_VERSION_CHANGED,
-            "plugin": REASON_PLUGIN_VERSION_CHANGED,
-        }[prefix]
-    if recorded.configuration_hash != live.configuration_hash:
-        return {
-            "tool": REASON_TOOL_CONFIGURATION_CHANGED,
-            "extractor": REASON_EXTRACTOR_CONFIGURATION_CHANGED,
-            "plugin": REASON_PLUGIN_CONFIGURATION_CHANGED,
-        }[prefix]
-    if recorded.limitations != live.limitations:
-        return {
-            "tool": REASON_TOOL_LIMITATIONS_CHANGED,
-            "extractor": REASON_EXTRACTOR_LIMITATIONS_CHANGED,
-            "plugin": REASON_PLUGIN_LIMITATIONS_CHANGED,
-        }[prefix]
-    return None
+def _component_change_reason(recorded: ProducerComponent, live: ProducerComponent, *,
+                             prefix: str, policy: str = "auto", plugins: bool = False) -> str | None:
+    difference = ac.compare_components(recorded, live, policy=policy, plugins=plugins, configuration_required=prefix != "tool")
+    if difference is None:
+        return None
+    if difference == "id":
+        return REASON_TOOL_ID_CHANGED if prefix == "tool" else REASON_EXTRACTOR_SELECTION_CHANGED
+    return {
+        "tool": {"version": REASON_TOOL_VERSION_CHANGED, "configuration": REASON_TOOL_CONFIGURATION_CHANGED, "limitations": REASON_TOOL_LIMITATIONS_CHANGED},
+        "extractor": {"version": REASON_EXTRACTOR_VERSION_CHANGED, "configuration": REASON_EXTRACTOR_CONFIGURATION_CHANGED, "limitations": REASON_EXTRACTOR_LIMITATIONS_CHANGED},
+        "plugin": {"version": REASON_PLUGIN_VERSION_CHANGED, "configuration": REASON_PLUGIN_CONFIGURATION_CHANGED, "limitations": REASON_PLUGIN_LIMITATIONS_CHANGED},
+    }[prefix][difference]
 
 
 def _recorded_basis_details(
@@ -865,7 +856,7 @@ def comparable_producer_components(
     return not (
         _version_unknown(recorded) or _version_unknown(live)
         or unknown_configuration(recorded) or unknown_configuration(live)
-        or _component_change_reason(recorded, live, prefix="tool") is not None
+        or _component_change_reason(recorded, live, prefix="tool", policy="exact-v1") is not None
     )
 
 

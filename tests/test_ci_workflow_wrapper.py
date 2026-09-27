@@ -850,5 +850,5 @@ def test_v3_wrapper_preserves_validated_evidence_and_version_label(wrapper_case,
 def test_wrapper_rejects_unknown_report_schema_before_execution(wrapper_case, value):
     result = _run(wrapper_case, report_schema=value)
     assert result.returncode == 2
-    assert "--report-schema must be v2 or v3" in result.stderr
+    assert "--report-schema must be v2, v3 or v4" in result.stderr
     assert not Path(wrapper_case["invocations"]).exists()

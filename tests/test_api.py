@@ -244,6 +244,7 @@ def test_supported_api_signatures_preserve_existing_callers():
         "read_only",
         "source_selection",
         "knowledge_mode",
+        "comparison_policy",
     ]
     assert context_params["src_dir"].default == "."
     assert context_params["budget"].default == 32000
@@ -266,6 +267,7 @@ def test_knowledge_api_signatures_are_explicit_and_builder_stays_compatible():
         "read_only",
         "source_selection",
         "helper_cache_dir",
+        "comparison_policy",
     ]
     assert builder_params["src_dir"].default == "."
     assert builder_params["wiki_dir"].kind is inspect.Parameter.KEYWORD_ONLY

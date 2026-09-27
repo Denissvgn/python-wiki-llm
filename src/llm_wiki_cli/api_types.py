@@ -574,8 +574,56 @@ class HealthDetails(TypedDict):
 
 class DoctorV3Result(DoctorResult):
     """Opt-in health report with captured coverage and comparison evidence."""
-
     health_details: HealthDetails
+
+
+ComparisonPolicy = Literal["auto", "exact-v1", "analysis-v1"]
+
+
+class AnalysisCompatibilityRecord(TypedDict):
+    schema_version: str
+    component: str
+    contract: str
+    implementation: str
+    configuration: str
+    runtime: str
+    provenance: dict[str, str]
+    identity: str
+
+
+class AnalysisComparisonContract(TypedDict):
+    schema_version: str
+    recorded: dict[str, AnalysisCompatibilityRecord | None] | None
+    live: dict[str, AnalysisCompatibilityRecord | None] | None
+
+
+class AnalysisComparisonDecision(TypedDict):
+    state: str
+    reason: str
+    component: str | None
+
+
+class HealthComparisonBasisV2(TypedDict):
+    policy: ComparisonPolicy
+    comparison: AnalysisComparisonDecision
+    analysis_contract: AnalysisComparisonContract
+    recorded: HealthProducer | None
+    live: HealthProducer | None
+
+
+class HealthDetailsV2(TypedDict):
+    schema_version: str
+    scope: HealthScope
+    evaluation: HealthEvaluation
+    snapshot: HealthSnapshot
+    basis: HealthComparisonBasisV2
+    coverage: HealthCoverage
+    reasons: list[HealthReason]
+
+
+class DoctorV4Result(DoctorResult):
+    """Compatibility-aware health with versioned captured comparison evidence."""
+    health_details: HealthDetailsV2
 
 
 class NativeInspectionResult(TypedDict):
@@ -612,6 +660,10 @@ __all__ = [
     "DoctorGovernance",
     "DoctorResult",
     "DoctorV3Result",
+    "DoctorV4Result",
+    "ComparisonPolicy",
+    "AnalysisCompatibilityRecord",
+    "HealthDetailsV2",
     "HealthDetails",
     "HealthSelection",
     "HealthScope",

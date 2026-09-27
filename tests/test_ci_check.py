@@ -358,7 +358,7 @@ def test_ci_check_uses_inventory_cache_options(tmp_path, monkeypatch, capsys):
     _assert_versioned_ci_payload(payload)
     assert payload["ok"] is True
     assert seen["cache_options"].enabled is True
-    assert seen["cache_options"].stats_enabled is False
+    assert seen["cache_options"].stats_enabled is True
     assert seen["helper_cache_dir"] == str(tmp_path / "helper-cache")
     assert seen["include_tests"] == ["go"]
     assert seen["parallel_jobs"] == 1

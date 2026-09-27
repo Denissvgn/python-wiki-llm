@@ -295,7 +295,8 @@ def _add_doctor_command(subparsers):
     )
     doctor_contract = doctor_parser.add_mutually_exclusive_group()
     doctor_contract.add_argument("--capabilities", action="store_true", help="Opt into doctor v2 with provider prerequisites and corrective commands")
-    doctor_contract.add_argument("--report-schema", choices=("v1", "v3"), default="v1", help="Health report schema; v3 includes captured coverage and producer details")
+    doctor_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
+    doctor_contract.add_argument("--report-schema", choices=("auto", "v1", "v3", "v4"), default="auto", help="Health report schema; v3 includes captured coverage and producer details")
     doctor_parser.add_argument(
         "--wiki-dir",
         default=DEFAULT_WIKI_DIR,
@@ -591,10 +592,11 @@ def _add_ci_check_command(subparsers):
     report_destination.add_argument(
         "--no-report", action="store_true", help="Disable the Markdown report file"
     )
+    ci_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
     ci_parser.add_argument(
         "--report-schema",
-        choices=("v1", "v2", "v3"),
-        default="v1",
+        choices=("auto", "v1", "v2", "v3", "v4"),
+        default="auto",
         help="JSON result schema; v2 includes runtime output status, v3 adds detailed knowledge health",
     )
     ci_parser.add_argument(
@@ -1454,6 +1456,7 @@ def _add_mcp_command(subparsers):
         "mcp",
         help="Run a local MCP server exposing read-only LLM Wiki tools and resources",
     )
+    mcp_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
     mcp_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan (default: .)"
     )
@@ -2075,6 +2078,7 @@ def _add_context_command(subparsers):
             "validation alone does not establish live currentness."
         ),
     )
+    context_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
     context_parser.add_argument(
         "--budget",
         type=int,
@@ -2561,7 +2565,9 @@ def main():
     args = parser.parse_args()
 
     try:
-        _dispatch_command(args)
+        from .services.analysis_compatibility import comparison_scope
+        with comparison_scope(getattr(args, "comparison_policy", "auto")):
+            _dispatch_command(args)
     except KeyboardInterrupt:
         print("\nAborted.")
         sys.exit(130)

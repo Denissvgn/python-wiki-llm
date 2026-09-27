@@ -433,6 +433,7 @@ def test_preflight_failure_and_output_failure_remain_blocking_for_policy(tmp_pat
 
 def config(mode="shadow"):
     value = json.loads((ROOT / "release/knowledge-maintenance.json").read_text())
+    value.update(schema_version=RELEASE["CONFIG_SCHEMA"], policy=hp.POLICY_ID)
     value["mode"] = mode
     if mode == "required":
         value["activation"] = {
@@ -456,6 +457,43 @@ def test_required_mode_requires_reviewed_activation_and_unchanged_policy():
     value["activation"] = None
     with pytest.raises(ValueError, match="activation"):
         RELEASE["policy"](raw(value))
+
+
+@pytest.mark.parametrize("changed", RELEASE["POLICY_INPUTS"])
+def test_v2_activation_binds_every_policy_input(changed):
+    value = json.loads((ROOT / RELEASE["POLICY_PATH"]).read_text())
+    expected = RELEASE["composite_policy_digest"](lambda name: (ROOT / name).read_bytes())
+    value.update(mode="required", activation={
+        "candidate_sha": "1" * 40, "run_id": 123, "attempt": 1,
+        "comparison_sha256": "2" * 64, "implementation_sha256": expected,
+    })
+    assert RELEASE["policy"](raw(value))["mode"] == "required"
+    different = RELEASE["composite_policy_digest"](
+        lambda name: (ROOT / name).read_bytes() + (b" changed" if name == changed else b"")
+    )
+    with pytest.raises(ValueError, match="changed since"):
+        RELEASE["policy"](raw(value), implementation_hash=different)
+
+
+@pytest.mark.parametrize("recorded_project", ["current"], indirect=True)
+def test_v2_preflight_and_policy_bind_the_captured_comparison(preflight_project):
+    from llm_wiki_cli.services import lint_service
+
+    before = km.preflight(**preflight_project, comparison_policy="analysis-v1")
+    assert before["status"] == "ready", before
+    assert before["schema_version"] == hp.PREFLIGHT_V2_SCHEMA
+    report = lint_service.build_report("wiki", "source", strict=True, knowledge_drift_report=True,
+                                      include_plugins=False, include_health_details=True,
+                                      comparison_policy="analysis-v1")
+    ci = _ci(report, schema="v4")
+    receipt = hp.derive_policy(raw(ci), raw(before), binding=before["binding"])
+    assert receipt["schema_version"] == hp.POLICY_V2_SCHEMA
+    assert receipt["status"] == "pass", receipt
+    assert hp.verify_policy(receipt, raw(ci), raw(before), binding=before["binding"], validate_full_report=False) == receipt
+    copied = deepcopy(before)
+    copied["analysis"]["live"]["agent-wiki-cli"]["identity"] = "sha256:" + "f" * 64
+    with pytest.raises(ValueError, match="compatibility inputs"):
+        hp.derive_policy(raw(ci), raw(copied), binding=before["binding"])
 
 
 @pytest.mark.parametrize("mode", ["shadow", "required", "disabled"])
@@ -567,7 +605,7 @@ def test_workflow_consumer_uses_the_actual_action_upload(tmp_path, mode, availab
     if selected is not None:
         shutil.copytree(selected, tmp_path / download["with"]["path"])
     tools = tmp_path / "incoming/tools"
-    for relative in ("release/knowledge_maintenance.py", RELEASE["LEAF_PATH"]):
+    for relative in ("release/knowledge_maintenance.py", RELEASE["LEAF_PATH"], "src/llm_wiki_cli/services/analysis_compatibility.py", "src/llm_wiki_cli/services/analysis_contracts.json"):
         target = tools / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / relative, target)

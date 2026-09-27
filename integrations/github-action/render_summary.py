@@ -373,7 +373,7 @@ def _validate_report_bytes(
     except (UnicodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"doctor report is not readable JSON: {exc}") from exc
     report = _required_object(payload, "report", REPORT_FIELDS)
-    if report.get("schema_version") not in {SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION}:
+    if report.get("schema_version") not in {SCHEMA_VERSION, DOCTOR_V3_SCHEMA_VERSION, "llm-wiki-doctor/v4"}:
         raise ValueError("report.schema_version must be a supported health doctor version")
     status = _enum(report["status"], "report.status", STATUS_SEVERITY)
     exit_code = report.get("exit_code")
@@ -486,7 +486,7 @@ def render_summary(
         "",
         (
             "Captured coverage, primary concept reasons and producer versions are available in the full v3 JSON."
-            if report["schema_version"] == DOCTOR_V3_SCHEMA_VERSION else
+            if report["schema_version"] in {DOCTOR_V3_SCHEMA_VERSION, "llm-wiki-doctor/v4"} else
             "Doctor v1 supplies no per-reason counts, recovery hints or producer versions."
         ),
         "",
@@ -529,7 +529,7 @@ def _write_receipt(
     if captured != report:
         raise ValueError("doctor report changed after validation")
     receipt = {
-        "schema_version": DASHBOARD_RECEIPT_V2_SCHEMA if report["schema_version"] == DOCTOR_V3_SCHEMA_VERSION else DASHBOARD_RECEIPT_SCHEMA,
+        "schema_version": DASHBOARD_RECEIPT_V2_SCHEMA if report["schema_version"] in {DOCTOR_V3_SCHEMA_VERSION, "llm-wiki-doctor/v4"} else DASHBOARD_RECEIPT_SCHEMA,
         "report_schema_version": report["schema_version"],
         "status": report["status"],
         "strict": report["strict"],
