@@ -177,6 +177,8 @@ def admit(evidence: Path, identity, config, *, scope_prefix="candidate") -> dict
             raise ValueError(
                 "repository health policy failed: " + ", ".join(rebuilt["reasons"])
             )
+        if preflight["installed"]["editable"] is not False:
+            raise ValueError("release maintenance requires a noneditable installation")
         if config["mode"] == "shadow":
             raw = read(evidence / "doctor.json")
             doctor = module.strict_json(raw)

@@ -486,6 +486,37 @@ def test_release_admission_and_explicit_rollback(tmp_path, mode):
     assert result["status"] == ("disabled" if mode == "disabled" else "fail")
 
 
+@pytest.mark.parametrize("mode", ["shadow", "required", "disabled"])
+def test_release_admission_rejects_editable_producer(tmp_path, mode):
+    report, ci, before, binding = evidence(tmp_path / "wiki")
+    before["installed"]["editable"] = True
+    receipt = hp.derive_policy(raw(ci), raw(before), binding=binding)
+    # The local --allow-editable preflight can legitimately produce a healthy
+    # policy. Release admission must enforce its stricter installation rule.
+    assert receipt["status"] == "pass"
+    directory = tmp_path / "evidence"
+    directory.mkdir()
+    for name, value in (
+        ("ci-report.json", ci),
+        ("preflight.json", before),
+        ("policy.json", receipt),
+        ("doctor.json", _doctor(report)),
+    ):
+        (directory / name).write_bytes(raw(value))
+    identity = {
+        "source": {
+            "sha": binding["candidate_sha"],
+            "tree": binding["candidate_tree"],
+            "archive_sha256": "d" * 64,
+        },
+        "version": binding["candidate_version"],
+    }
+    result = RELEASE["admit"](directory, identity, config(mode))
+    assert result["status"] == ("disabled" if mode == "disabled" else "fail")
+    if mode != "disabled":
+        assert "noneditable" in result["error"]
+
+
 def test_shadow_requires_original_standalone_parity(tmp_path):
     report, ci, before, binding = evidence(tmp_path / "wiki")
     directory = tmp_path / "evidence"
@@ -603,7 +634,10 @@ def maintenance_bundle(tmp_path):
 
 @pytest.mark.parametrize(
     "mutation",
-    ["none", "missing-producer", "copied-producer", "missing-input", "changed-input"],
+    [
+        "none", "missing-producer", "copied-producer", "missing-input",
+        "changed-input", "editable-producer",
+    ],
 )
 def test_bundle_rechecks_required_inputs_and_separate_producer(
     maintenance_bundle, mutation
@@ -620,6 +654,22 @@ def test_bundle_rechecks_required_inputs_and_separate_producer(
         report.unlink()
     if mutation == "changed-input":
         report.write_bytes(report.read_bytes() + b"\n")
+    if mutation == "editable-producer":
+        preflight = report.with_name("preflight.json")
+        before = json.loads(preflight.read_bytes())
+        before["installed"]["editable"] = True
+        preflight.write_bytes(raw(before))
+        policy = report.with_name("policy.json")
+        receipt = hp.derive_policy(
+            report.read_bytes(), preflight.read_bytes(), binding=before["binding"]
+        )
+        assert receipt["status"] == "pass"
+        policy.write_bytes(raw(receipt))
+        # Rebind every byte commitment so rejection must come from the release
+        # installation rule, not an incidental stale input/receipt hash.
+        for path in (preflight, policy):
+            result["evidence_sha256"][path.name] = hp.digest(path.read_bytes())
+        verification.write_bytes(raw(result))
     if mutation == "none":
         assert RELEASE["bundle_policy"](bundle) == result
     else:
