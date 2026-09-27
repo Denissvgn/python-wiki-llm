@@ -1082,6 +1082,10 @@ def test_automation_guide_documents_the_ci_gate_inputs_and_thresholds() -> None:
     assert "fail-on: unhealthy" in section
     assert "fail-on: degraded" in section
     assert "llm-wiki-doctor/v1" in section
+    assert "llm-wiki-doctor/v4" in section
+    assert "report-schema: v4" in section
+    assert "comparison-policy: auto" in section
+    assert "comparison-policy: exact-v1" in section
     assert "same action checkout" in section
     assert "declared exit code" in section
     assert "immutable released commit" in section

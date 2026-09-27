@@ -84,12 +84,19 @@ def test_cli_reference_documents_the_versioned_ci_health_envelope() -> None:
     section = guide.split("## `lint` and `ci-check`", 1)[1].split(
         "\n## `doctor`", 1
     )[0]
+    section = " ".join(section.split())
 
     assert "llm-wiki-ci-check/v1" in section
     assert "knowledge_health" in section
     assert "llm-wiki-doctor/v1" in section
     assert "same lint report, not a second source scan" in section
     assert "authoritative blocking integrity" in section
+    assert "llm-wiki-ci-check/v4" in section
+    assert "llm-wiki-doctor/v4" in section
+    assert "Automatic output selects v1 for legacy knowledge and v4" in section
+    for schema in ("v2", "v3"):
+        assert f"--report-schema {schema} --comparison-policy exact-v1" in section
+    assert "The default schema remains v1" not in section
 
 
 def test_ci_check_validator_recomputes_nested_health_classification() -> None:

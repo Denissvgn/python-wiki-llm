@@ -410,8 +410,15 @@ def test_action_reader_accepts_v3_but_still_rejects_duplicate_json(tmp_path):
         )
 
 
+@pytest.mark.parametrize("recorded_project,schema,policy", [
+    ("legacy", "v3", "auto"),
+    ("legacy", "v4", "auto"),
+    ("current", "v4", "auto"),
+    ("current", "v4", "analysis-v1"),
+    ("current", "v3", "exact-v1"),
+], indirect=["recorded_project"])
 def test_one_evaluation_serves_both_v3_reports_without_metrics_expansion(
-    recorded_project, monkeypatch
+    recorded_project, monkeypatch, schema, policy
 ):
     from llm_wiki_cli.services import knowledge_consumption
 
@@ -437,9 +444,10 @@ def test_one_evaluation_serves_both_v3_reports_without_metrics_expansion(
         knowledge_drift_report=True,
         include_plugins=False,
         include_health_details=True,
+        comparison_policy=policy,
     )
-    doctor = _doctor(report)
-    ci = _ci(report)
+    doctor = _doctor(report, schema=schema)
+    ci = _ci(report, schema=schema)
     ci_report.validate_doctor_payload(doctor, expected_strict=True)
     assert doctor["health_details"] == ci["knowledge_health"]["health_details"]
     assert doctor["status"] == "healthy"

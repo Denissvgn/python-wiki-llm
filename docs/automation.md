@@ -17,6 +17,11 @@ llm-wiki install-ci --action-ref "$RELEASE_COMMIT_SHA" --dry-run
 llm-wiki install-ci --action-ref "$RELEASE_COMMIT_SHA"
 ```
 
+Use the full 40-character commit SHA of a release whose integrity Action supports
+`report-schema: v4`. The installer validates the SHA spelling locally; it does
+not contact GitHub to discover that commit's capabilities. Workflows pinned to
+older Actions require a compatible older installer and wiki snapshot.
+
 The command writes only
 `.github/workflows/llm-wiki-integrity.yml`. Rerunning it with the same inputs is
 an exact no-op, while an older unmodified workflow installed by this command is
@@ -26,7 +31,11 @@ are never modified.
 
 The installed workflow checks out the project without persisted credentials
 and calls the release's reusable full-integrity action with read-only
-permissions. That action installs the CLI from its immutable action checkout,
+permissions. It explicitly sets `report-schema: v4` and
+`comparison-policy: auto`, supporting migrated knowledge while retaining
+conservative comparison for legacy knowledge. These inputs also apply when an
+older unmodified managed workflow is updated. That action installs the CLI from
+its immutable action checkout,
 discovers helper languages through default source-selection discovery (using
 `.llm-wiki/source-selection.json` when present), installs their
 checksum-verified toolchains in runner-temporary storage, and prepares detected
@@ -44,9 +53,15 @@ diagnostics, verifies that the project worktree stayed clean, and uploads a
 fixed, allowlisted set of validation, cache-measurement, and toolchain evidence
 even when validation fails.
 
-The full-integrity action defaults to `report-schema: v2`. Select
-`report-schema: v3` to retain captured health coverage and producer details in
-its JSON artifact. The integrity policy and worktree requirement remain unchanged.
+When called directly without schema inputs, the full-integrity Action defaults
+to `report-schema: v2` and `comparison-policy: auto`. The generated workflow
+explicitly selects v4; the CLI's unpinned output instead selects v1 for legacy
+knowledge and v4 for migrated knowledge. For migrated knowledge in a custom
+workflow, set `report-schema: v4` and `comparison-policy: auto` together.
+To retain explicit v2 or v3 output for migrated knowledge, set
+`comparison-policy: exact-v1` with the chosen schema.
+V3 retains captured health coverage and producer details in its JSON artifact.
+The integrity policy and worktree requirement remain unchanged.
 The v3 summary separates modeled, comparable, current, incompatible and unmodeled
 concepts. It shows captured producer versions, primary causes and a suggested
 next action. Unmodeled concepts are a coverage limitation; they are not counted
@@ -191,6 +206,8 @@ wiki checks, trusted plugin validation, or team-owned review policy.
     source-selection: .llm-wiki/source-selection.json
     strict: "true"
     fail-on: unhealthy
+    report-schema: v4
+    comparison-policy: auto
     evidence-id: default
 ```
 
@@ -199,8 +216,8 @@ mixed snapshots, invalid governance, confirmed stale concepts, and invalid
 verification receipts. Use `fail-on: degraded` when any degraded result must
 block the job. `strict: "true"` also classifies indeterminate or nonsemantic
 source drift as unhealthy. Replace `<FULL_RELEASE_COMMIT_SHA>` with the full
-40-character SHA of the immutable released commit; never use a branch or tag
-for a protected workflow.
+40-character SHA of an immutable released commit supporting v4; never use a
+branch or tag for a protected workflow.
 
 The action installs `agent-wiki-cli` from the same action checkout, so pinning
 the action reference also binds the CLI implementation. Through the same
@@ -208,18 +225,22 @@ default source-selection discovery used by the CLI, it plans and prepares any
 detected TypeScript/JavaScript, Go, Rust, or Haskell extractor helper with the
 release's checksum-verified toolchains; Python extraction needs no helper. It
 then invokes `llm-wiki doctor --format json` and reads only the complete,
-versioned doctor object (`llm-wiki-doctor/v1` by default). The renderer rejects a report when its
-strictness or declared exit code does not match the captured request and
+versioned doctor object (`llm-wiki-doctor/v4` in the example above). The renderer
+rejects a report when its strictness or declared exit code does not match the captured request and
 process status, and it never scrapes human output. Within the v1 schema major,
 required fields and documented state values remain strict while additive
 object fields are ignored. A wiki that has not been initialized is reported as
 `absent` and fails either threshold.
 
-The dashboard defaults to `report-schema: v1`. Select `report-schema: v3` for
+Without explicit inputs, the dashboard Action defaults to `report-schema: v1`
+(the `llm-wiki-doctor/v1` contract) and `comparison-policy: auto`.
+For migrated knowledge, use the v4/auto inputs
+shown above, or select `comparison-policy: exact-v1` with an older report schema.
+Select `report-schema: v3` for
 detailed JSON coverage, primary concept reason counts and captured producer
-versions. V3 rejects unknown fields in its closed contracts and uses a
+versions. V3 and v4 reject unknown fields in their closed contracts and use a
 `llm-wiki-doctor-dashboard/v2` receipt bound to the report bytes. The default
-report and receipt retain their v1 contracts. Both versions preserve the
+report and receipt retain their v1 contracts. These versions preserve the
 configured strictness and failure threshold.
 The v3 dashboard and CLI text show the same captured coverage, old/new producer
 versions and remediation guidance. Optional governance and verification absence

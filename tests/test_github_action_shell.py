@@ -1,4 +1,4 @@
-"""Execute the POSIX composite Action boundary with the installed CLI.
+"""Execute POSIX workflow and composite Action boundaries with the installed CLI.
 
 Windows retains shared CLI and static Action contracts; conftest collects these
 Bash executions on the same Ubuntu/Darwin hosts as the other shell boundaries.
@@ -16,6 +16,57 @@ import pytest
 
 from llm_wiki_cli.commands import bootstrap_cmd
 from tests.test_github_action import ACTION_PATH, ROOT, _yaml
+
+
+@pytest.mark.parametrize("shadow", [False, True])
+@pytest.mark.parametrize("core,windows,union", [
+    ("success", "success", "success"),
+    ("failure", "success", "success"),
+    ("cancelled", "success", "success"),
+    ("skipped", "success", "success"),
+    ("success", "failure", "success"),
+    ("success", "cancelled", "success"),
+    ("success", "skipped", "success"),
+    ("failure", "skipped", "success"),
+    ("success", "success", "failure"),
+    ("success", "success", "cancelled"),
+    ("success", "success", "skipped"),
+])
+def test_owner_prerequisites_explain_failures_and_preserve_verifier_boundary(
+    tmp_path, shadow, core, windows, union
+):
+    workflow = _yaml(ROOT / ".github/workflows/release-qualification.yml")
+    name = (
+        "Verify shadow union owners against hosted lane results"
+        if shadow else "Verify reviewed owners against hosted lane results"
+    )
+    step = next(
+        step for step in workflow["jobs"]["owner-lanes"]["steps"]
+        if step.get("name") == name
+    )
+    guard, invocation = step["run"].split(
+        "python -I incoming/tools/release/qualification.py verify-owner-lanes", 1
+    )
+    assert "--output owner-lane-verification.json" in invocation
+    for job, state in (("core", core), ("core-windows", windows), ("ubuntu-shadow", union)):
+        guard = guard.replace("${{ needs." + job + ".result }}", state)
+    assert "${{" not in guard
+    result = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-e", "-o", "pipefail"],
+        input=guard + "printf 'VERIFIER_REACHED\\n'\n", cwd=tmp_path,
+        capture_output=True, text=True, timeout=10, check=False,
+    )
+    blocked = (
+        core != "success" or windows != "success" or (shadow and union != "success")
+    )
+    assert (result.returncode != 0) is blocked
+    assert ("VERIFIER_REACHED" in result.stdout) is not blocked
+    if core != "success" or windows != "success":
+        assert f"core producers ended with {core} / Windows {windows}" in result.stderr
+    elif blocked:
+        assert f"Ubuntu shadow ended with {union}" in result.stderr
+    else:
+        assert not result.stderr
 
 
 @pytest.fixture

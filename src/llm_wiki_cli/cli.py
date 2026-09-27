@@ -639,7 +639,10 @@ def _add_install_ci_command(subparsers):
         "--action-ref",
         required=True,
         metavar="SHA",
-        help="Immutable 40-hex commit for the reusable integrity action",
+        help=(
+            "Immutable 40-hex commit for a v4-capable integrity action; "
+            "SHA spelling checked offline"
+        ),
     )
     install_ci_parser.add_argument(
         "--src-dir",

@@ -199,6 +199,8 @@ jobs:
         with:
           src-dir: {source_value}
           wiki-dir: {wiki_value}
+          report-schema: v4
+          comparison-policy: auto
           impact-base: ${{{{ github.event.pull_request.base.sha }}}}
           impact-head: ${{{{ github.event.pull_request.head.sha }}}}
 """

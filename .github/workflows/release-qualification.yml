@@ -2758,8 +2758,10 @@ jobs:
       - name: Verify reviewed owners against hosted lane results
         if: ${{ !inputs.ubuntu-suite-shadow }}
         run: |
-          test "${{ needs.core.result }}" = "success"
-          test "${{ needs.core-windows.result }}" = "success"
+          if [ "${{ needs.core.result }}" != "success" ] || [ "${{ needs.core-windows.result }}" != "success" ]; then
+            echo "Owner verification blocked: core producers ended with ${{ needs.core.result }} / Windows ${{ needs.core-windows.result }}" >&2
+            exit 1
+          fi
           python -I incoming/tools/release/qualification.py verify-owner-lanes \
             --identity incoming/source/identity.json \
             --ubuntu-union incoming/owner-evidence/evidence-ubuntu-suites \

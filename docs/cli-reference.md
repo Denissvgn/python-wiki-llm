@@ -605,7 +605,7 @@ llm-wiki ci-check --helper-cache-dir .cache/llm-wiki-helpers --src-dir . --wiki-
 llm-wiki ci-check --include-tests go --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --src-dir /path/to/repo --wiki-dir docs/llm_wiki --allow-external-src
 llm-wiki ci-check --format json --report .git/llm-wiki-ci-report.md
-llm-wiki ci-check --format json --report-schema v2 --no-report --cache-dir .cache/llm-wiki-inventory
+llm-wiki ci-check --format json --report-schema v2 --comparison-policy exact-v1 --no-report --cache-dir .cache/llm-wiki-inventory
 llm-wiki ci-check --format markdown
 ```
 
@@ -618,17 +618,21 @@ nonblocking. Structured output discloses the report mode through
 is always `false`. For legacy knowledge, automatic JSON output uses the closed
 `llm-wiki-ci-check/v1` envelope with a `llm-wiki-doctor/v1` health projection.
 Migrated knowledge selects `llm-wiki-ci-check/v4` with a `llm-wiki-doctor/v4`
-projection and captured analysis compatibility. Both projections are composed
-from the same lint report. The top-level
+projection and captured analysis compatibility. The `knowledge_health` member is
+composed from the same lint report, not a second source scan. The top-level
 `ok`, issue count, and process exit remain the authoritative blocking integrity
 result; the nested health status presents availability, freshness, snapshot,
 governance, drift, and verification state without changing that policy.
 Use `--report-schema v2` for the `llm-wiki-ci-check/v2` envelope. It adds
 `runtime.cache`, `runtime.report`, `check_exit_code`, and `command_exit_code`.
 Report status is `written`, `disabled`, or `failed`; the nested doctor health
-continues to describe the check itself. The default schema remains v1.
+continues to describe the check itself. Automatic output selects v1 for legacy
+knowledge and v4 for knowledge carrying analysis compatibility metadata.
 
-Use `--report-schema v3` for `llm-wiki-ci-check/v3`. It retains the v2 runtime
+For migrated knowledge, explicit v2 and v3 formats require
+`--comparison-policy exact-v1`. Use
+`--report-schema v3 --comparison-policy exact-v1` for `llm-wiki-ci-check/v3`.
+It retains the v2 runtime
 fields and includes a `llm-wiki-doctor/v3` health projection with captured
 coverage, snapshot commitments and producer versions. It reuses the same
 evaluation and preserves the integrity exit policy. Generic lint and MCP lint
