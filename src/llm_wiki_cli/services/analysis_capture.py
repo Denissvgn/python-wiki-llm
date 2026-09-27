@@ -89,13 +89,12 @@ def capture_analysis(registry_entries: Mapping[str, str], *, helper_cache_dir=No
         return _issued({})
     if discovered - set(rules["classified_python_files"]):
         return _issued({})
-    profile = [sys.platform, sys.version_info.major, sys.version_info.minor]
+    profile = [sys.platform, sys.version_info.major, sys.version_info.minor, platform.machine().casefold()]
     runtime = {"implementation": platform.python_implementation(), "version": platform.python_version(),
                "platform": sys.platform, "machine": platform.machine()}
     if not all(isinstance(value, str) and value for value in runtime.values()):
         return _issued({})
-    portable = (platform.python_implementation() == "CPython" and profile in rules["portable_python_profiles"]
-                and platform.machine().casefold() in {"x86_64", "amd64", "arm64", "aarch64"})
+    portable = platform.python_implementation() == "CPython" and profile in rules["portable_python_profiles"]
     python_identity = {"profile": "qualified-python-observations/v1"} if portable else runtime
     provenance = {"python": platform.python_version(), "platform": sys.platform + "/" + platform.machine(), "helper": ""}
     result = {}

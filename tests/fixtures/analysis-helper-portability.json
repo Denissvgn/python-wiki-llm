@@ -1,0 +1,73 @@
+{
+  "schema_version": "llm-wiki-analysis-portability-fixture/v1",
+  "sources": {
+    "model.ts": "export class User { name: string; }\nexport function greet(user: User, prefix: string = \"Hi\"): string { return prefix + user.name; }\n",
+    "web.js": "export function answer(value = 42) { return value; }\n"
+  },
+  "observations": {
+    "model.ts": {
+      "scope": "module",
+      "language": "typescript",
+      "imports": [],
+      "classes": [
+        {
+          "name": "User",
+          "kind": "class",
+          "bases": [],
+          "occurrence": 1
+        }
+      ],
+      "functions": [
+        {
+          "name": "greet",
+          "kind": "function",
+          "params": [
+            {
+              "name": "user",
+              "type": "User"
+            },
+            {
+              "default": "\"Hi\"",
+              "name": "prefix",
+              "type": "string"
+            }
+          ],
+          "return_type": "string",
+          "is_async": false,
+          "decorators": []
+        }
+      ],
+      "exports": [
+        "User",
+        "greet"
+      ],
+      "constants": [],
+      "module_calls": []
+    },
+    "web.js": {
+      "scope": "module",
+      "language": "javascript",
+      "imports": [],
+      "classes": [],
+      "functions": [
+        {
+          "name": "answer",
+          "kind": "function",
+          "params": [
+            {
+              "default": "42",
+              "name": "value",
+              "type": ""
+            }
+          ],
+          "return_type": "",
+          "is_async": false,
+          "decorators": []
+        }
+      ],
+      "exports": [],
+      "constants": [],
+      "module_calls": []
+    }
+  }
+}

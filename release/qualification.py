@@ -1684,28 +1684,55 @@ def _validate_analysis_conformance_inputs(root: Path) -> None:
                 return stream.read()
         raw = member_bytes("tests/fixtures/analysis-portability.json")
         fixture = json.loads(raw, object_pairs_hook=_strict_object)
+        helper_raw = member_bytes("tests/fixtures/analysis-helper-portability.json")
+        helper_fixture = json.loads(helper_raw, object_pairs_hook=_strict_object)
         registry = json.loads(member_bytes("src/llm_wiki_cli/services/analysis_contracts.json"), object_pairs_hook=_strict_object)
-        hashes = {name: _sha256_bytes(member_bytes("src/llm_wiki_cli/" + name).replace(b"\r\n", b"\n")) for name in sorted(registry["shared"])}
-        implementation = "sha256:" + _sha256_bytes(json.dumps(hashes, sort_keys=True, separators=(",", ":")).encode())
+        def digest(value):
+            return "sha256:" + _sha256_bytes(json.dumps(value, sort_keys=True, separators=(",", ":")).encode())
+        def implementation(paths):
+            return digest({name: _sha256_bytes(member_bytes("src/llm_wiki_cli/" + name).replace(b"\r\n", b"\n")) for name in sorted(set(paths))})
+        implementations = {"agent-wiki-cli": implementation(registry["shared"])}
+        for provider in ("python", "typescript"):
+            implementations["llm-wiki/extractor/" + provider] = implementation(registry["providers"][provider])
+        implementations["llm-wiki/extractor/javascript"] = implementations["llm-wiki/extractor/typescript"]
         python_source = member_bytes("src/llm_wiki_cli/extractors/python_extractor.py")
+    portable_python = {"profile": "qualified-python-observations/v1"}
+    helper = registry["portable_helper_toolchains"]["typescript"]
+    helper += "; active-node " + helper.split(";", 1)[0].removeprefix("node ")
+    runtimes = {"agent-wiki-cli": digest(portable_python),
+                "llm-wiki/extractor/python": digest({"python": portable_python, "helper": "", "dependencies": {}})}
+    for language in ("typescript", "javascript"):
+        runtimes["llm-wiki/extractor/" + language] = digest({"python": portable_python, "helper": helper, "dependencies": {}})
     paths = [
         (root / "evidence/RD-01/ubuntu/core-ubuntu-3.10-analysis.json", "linux", [3, 10]),
         (root / "evidence/RD-01/macos/core-macos-3.14-analysis.json", "darwin", [3, 14]),
+        (root / "evidence/RD-07/toolchains/analysis-python.json", "linux", [3, 13]),
     ]
     shards = list((root / "evidence/RD-01").glob("windows-shard-*/junit-analysis.json"))
     if len(shards) > 1:
         raise QualificationError("duplicate Windows analysis conformance evidence")
     windows = shards[0] if shards else root / "evidence/RD-01/windows/core-windows-3.13-analysis.json"
     paths.append((windows, "win32", [3, 13]))
-    for path, platform_name, python_version in paths:
+    def validate(path, platform_name, python_version, raw, fixture, components):
         record = load_json(path)
         if (record.get("schema_version") != "llm-wiki-analysis-conformance/v1"
                 or record.get("status") != "pass" or record.get("platform") != platform_name
                 or record.get("python") != python_version
+                or [platform_name, *python_version, record.get("machine", "").casefold()] not in registry["portable_python_profiles"]
                 or record.get("fixture_sha256") != _sha256_bytes(raw)
                 or record.get("observations") != fixture["observations"]
-                or record.get("components", {}).get("agent-wiki-cli", {}).get("implementation") != implementation):
+                or any(record.get("components", {}).get(component, {}).get("implementation") != implementations[component]
+                       or record.get("components", {}).get(component, {}).get("runtime") != runtimes[component]
+                       for component in components)):
             raise QualificationError("native analysis conformance differs from frozen inputs")
+    for path, platform_name, python_version in paths:
+        validate(path, platform_name, python_version, raw, fixture, ("agent-wiki-cli", "llm-wiki/extractor/python"))
+    for path, platform_name, python_version in (
+        (root / "evidence/RD-01/macos/core-macos-3.14-helpers.json", "darwin", [3, 14]),
+        (root / "evidence/RD-07/toolchains/analysis-helpers.json", "linux", [3, 13]),
+    ):
+        validate(path, platform_name, python_version, helper_raw, helper_fixture,
+                 ("agent-wiki-cli", "llm-wiki/extractor/typescript", "llm-wiki/extractor/javascript"))
     _validate_installed_analysis_pairs(root, python_source)
 
 

@@ -193,6 +193,7 @@ jobs:
             release/qualification.py \
             release/knowledge_maintenance.py \
             release/analysis_pairs.py \
+            release/analysis_conformance.py \
             release/knowledge-maintenance.json \
             src/llm_wiki_cli/services/health_policy.py \
             src/llm_wiki_cli/services/analysis_compatibility.py \
@@ -542,6 +543,23 @@ jobs:
             --output "evidence/result-${{ matrix.lane }}.json" \
             "${discovery[@]}"
 
+      - name: Prepare locked macOS comparison toolchain
+        if: ${{ matrix.os == 'macos-15' && !inputs.discovery-mode }}
+        run: >-
+          bash candidate/.github/scripts/setup-llm-wiki-ci-toolchains.sh
+          --mode routine --install-root "${RUNNER_TEMP}/analysis-toolchains"
+          --python "$(command -v python)"
+
+      - name: Capture macOS helper observation compatibility
+        if: ${{ matrix.os == 'macos-15' && !inputs.discovery-mode }}
+        run: |
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir candidate \
+            --cache-dir "${RUNNER_TEMP}/analysis-helpers" --language typescript
+          python -I incoming/tools/release/analysis_conformance.py \
+            --fixture candidate/tests/fixtures/analysis-helper-portability.json \
+            --helper-cache-dir "${RUNNER_TEMP}/analysis-helpers" \
+            --output "evidence/${{ matrix.lane }}-helpers.json"
+
       - name: Upload lane evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -551,6 +569,7 @@ jobs:
           path: |
             evidence/${{ matrix.lane }}.xml
             evidence/${{ matrix.lane }}-analysis.json
+            evidence/${{ matrix.lane }}-helpers.json
             evidence/result-${{ matrix.lane }}.json
             evidence/coverage-${{ matrix.lane }}.xml
           if-no-files-found: error
@@ -1576,6 +1595,16 @@ jobs:
           -p no:cacheprovider --strict-config --strict-markers
           -W error -o xfail_strict=true --durations=20
           --junitxml=../evidence/toolchains.xml
+      - name: Capture Linux Python and helper observation compatibility
+        run: |
+          python -I incoming/tools/release/analysis_conformance.py \
+            --fixture candidate/tests/fixtures/analysis-portability.json \
+            --helper-cache-dir "${RUNNER_TEMP}/extractor-cache" \
+            --output evidence/analysis-python.json
+          python -I incoming/tools/release/analysis_conformance.py \
+            --fixture candidate/tests/fixtures/analysis-helper-portability.json \
+            --helper-cache-dir "${RUNNER_TEMP}/extractor-cache" \
+            --output evidence/analysis-helpers.json
       - name: Enforce complete toolchain owner evidence
         run: >-
           python -I incoming/tools/release/qualification.py verify-junit

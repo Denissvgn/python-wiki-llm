@@ -230,3 +230,17 @@ def test_active_node_runtime_is_not_inferred_from_helper_preparation(tmp_path, m
     assert "active-node v99.0.0" in changed[name]["provenance"]["helper"]
     monkeypatch.setattr(extractor_helpers, "command_output", lambda *a: None)
     assert name not in capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"typescript"})
+
+
+def test_portable_python_identity_requires_qualified_architecture(monkeypatch):
+    from types import SimpleNamespace
+    from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+    monkeypatch.setattr(capture, "sys", SimpleNamespace(platform="linux", version_info=SimpleNamespace(major=3, minor=13)))
+    monkeypatch.setattr(capture.platform, "python_implementation", lambda: "CPython")
+    monkeypatch.setattr(capture.platform, "python_version", lambda: "3.13.0")
+    monkeypatch.setattr(capture.platform, "machine", lambda: "x86_64")
+    qualified = capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"python"})
+    monkeypatch.setattr(capture.platform, "machine", lambda: "aarch64")
+    other = capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"python"})
+    assert qualified["agent-wiki-cli"]["runtime"] != other["agent-wiki-cli"]["runtime"]
+    assert other["agent-wiki-cli"]["runtime"] == ac.digest({"implementation": "CPython", "version": "3.13.0", "platform": "linux", "machine": "aarch64"})
