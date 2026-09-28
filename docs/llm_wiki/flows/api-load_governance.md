@@ -2,7 +2,7 @@
 
 **Entry point:** `load_governance` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 3 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 4 more
 
 **Complete modules touched:**
 
@@ -12,6 +12,7 @@
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [validation](../modules/validation.md)
+- [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
@@ -72,7 +73,7 @@ sequenceDiagram
     p19-->>p20: path.lstat
 ```
 
-> Call sequence diagram shows 30 of 472 interactions; 442 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 503 interactions; 473 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -133,8 +134,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_governance | Path (src/llm_wiki_cli/services…rnance.py:load_governance) | 765 | `Path(wiki_dir)` |
-| load_governance | first_unsafe_path_component | 766 | `first_unsafe_path_component(root)` |
+| load_governance | Path (src/llm_wiki_cli/services…rnance.py:load_governance) | 767 | `Path(wiki_dir)` |
+| load_governance | first_unsafe_path_component | 768 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |

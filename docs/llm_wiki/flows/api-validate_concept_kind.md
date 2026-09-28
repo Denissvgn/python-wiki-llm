@@ -97,17 +97,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_concept_kind | _machine_text | 305 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
-| _machine_text | isinstance | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len | 914 | `len(value)` |
-| _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip | 916 | `value.strip(data not statically known)` |
-| _machine_text | any | 916 | `any(...)` |
-| _machine_text | character.isspace | 916 | `character.isspace(data not statically known)` |
-| _machine_text | ConceptIdentityError | 917 | `ConceptIdentityError(field, 'must not contain whitespace')` |
-| _machine_text | unicodedata.normalize | 918 | `unicodedata.normalize('NFC', value)` |
-| _machine_text | ConceptIdentityError | 919 | `ConceptIdentityError(field, 'must use Unicode NFC normalization')` |
+| validate_concept_kind | _machine_text | 306 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
+| _machine_text | isinstance | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len | 944 | `len(value)` |
+| _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
+| _machine_text | value.strip | 946 | `value.strip(data not statically known)` |
+| _machine_text | any | 946 | `any(...)` |
+| _machine_text | character.isspace | 946 | `character.isspace(data not statically known)` |
+| _machine_text | ConceptIdentityError | 947 | `ConceptIdentityError(field, 'must not contain whitespace')` |
+| _machine_text | unicodedata.normalize | 948 | `unicodedata.normalize('NFC', value)` |
+| _machine_text | ConceptIdentityError | 949 | `ConceptIdentityError(field, 'must use Unicode NFC normalization')` |
 
 ### Boundary effects
 
@@ -117,11 +117,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_machine_text` | `isinstance` | 912 |
-| unresolved_call | `_machine_text` | `value.strip` | 916 |
-| external_call | `_machine_text` | `any` | 916 |
-| unresolved_call | `_machine_text` | `character.isspace` | 916 |
-| external_call | `_machine_text` | `unicodedata.normalize` | 918 |
+| external_call | `_machine_text` | `isinstance` | 942 |
+| unresolved_call | `_machine_text` | `value.strip` | 946 |
+| external_call | `_machine_text` | `any` | 946 |
+| unresolved_call | `_machine_text` | `character.isspace` | 946 |
+| external_call | `_machine_text` | `unicodedata.normalize` | 948 |
 | step_limit | `validate_concept_kind` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import importlib
+import importlib.util
 from importlib.metadata import version
 import json
 from pathlib import Path, PurePosixPath
@@ -208,11 +209,19 @@ def _write_json(path: Path, payload: object) -> None:
     )
 
 
-def _report_error(check: Check) -> str | None:
+def _report_error(check: Check, *, run_id: str, command: tuple[str, ...], returncode: int | None) -> str | None:
     if check.report is None:
         return None
+    if check.report_kind == "pip-audit":
+        # -I excludes the script directory from sys.path. Load only the owned
+        # sibling adapter, without importing candidate code into the runner.
+        spec = importlib.util.spec_from_file_location("release_dependency_audit", Path(__file__).with_name("dependency_audit.py"))
+        assert spec is not None and spec.loader is not None
+        adapter = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(adapter)
+        return adapter.result_error(check.report.parent, run_id, list(command), returncode)
     try:
-        data = json.loads(check.report.read_text(encoding="utf-8"))
+        json.loads(check.report.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return f"Required report is unreadable: {exc}"
     if check.report_kind == "bandit":
@@ -221,12 +230,6 @@ def _report_error(check: Check) -> str | None:
         except (OSError, ValueError) as exc:
             return str(exc)
         valid = True
-    elif check.report_kind == "pip-audit":
-        valid = (
-            isinstance(data, dict)
-            and isinstance(data.get("dependencies"), list)
-            and bool(data["dependencies"])
-        )
     else:
         valid = False
     return None if valid else "Required report is incomplete or records analysis errors"
@@ -275,15 +278,14 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
             derived_from="bandit-full",
         ),
         Check(
+            "pip-audit-contract",
+            (sys.executable, "-I", str(root / "tests/dependency_audit_probe.py"),
+             "--evidence", str(evidence / "pip-audit-contract")),
+        ),
+        Check(
             "pip-audit",
-            module(
-                "pip_audit",
-                "--local",
-                "--format",
-                "json",
-                "--output",
-                str(audit_report),
-            ),
+            (sys.executable, "-I", str(root / "release/dependency_audit.py"),
+             "--candidate", str(root), "--evidence", str(evidence)),
             report=audit_report,
             report_kind="pip-audit",
         ),
@@ -319,10 +321,15 @@ def run_checks(checks: list[Check], root: Path, evidence: Path) -> dict:
         log = evidence / f"{check.name}.log"
         observation: dict | None = None
         scan_started = None
+        command = check.command
+        if check.report_kind == "pip-audit":
+            command += ("--run-id", run_id)
         try:
             log.write_bytes(b"")
             if check.report is not None:
                 check.report.unlink(missing_ok=True)
+            if check.report_kind == "pip-audit":
+                (evidence / "pip-audit-execution.json").unlink(missing_ok=True)
             if check.derived_from is not None:
                 if check.command or check.report_kind != "bandit-decision" or check.report is None:
                     raise ValueError("invalid derived Bandit check")
@@ -357,7 +364,7 @@ def run_checks(checks: list[Check], root: Path, evidence: Path) -> dict:
                     scan_started = time.perf_counter_ns()
                 with log.open("wb") as stream:
                     result = subprocess.run(
-                        check.command, cwd=root, stdin=subprocess.DEVNULL,
+                        command, cwd=root, stdin=subprocess.DEVNULL,
                         stdout=stream, stderr=subprocess.STDOUT, check=False, timeout=600,
                     )
                 returncode = result.returncode
@@ -373,7 +380,7 @@ def run_checks(checks: list[Check], root: Path, evidence: Path) -> dict:
                     evaluate_bandit(raw, log_raw, observation, run_id=run_id, command=check.command,
                                     source=source_manifest(root, check.source_paths))
                 else:
-                    error = _report_error(check)
+                    error = _report_error(check, run_id=run_id, command=command, returncode=returncode)
         except (OSError, ValueError, ImportError, subprocess.TimeoutExpired) as exc:
             error = str(exc)
             try:
@@ -408,7 +415,7 @@ def run_checks(checks: list[Check], root: Path, evidence: Path) -> dict:
         results.append(
             {
                 "name": check.name,
-                "command": list(check.command),
+                "command": list(command),
                 "returncode": returncode,
                 "error": error,
                 "passed": passed,

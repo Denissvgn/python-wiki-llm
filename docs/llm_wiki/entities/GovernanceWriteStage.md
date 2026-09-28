@@ -1,6 +1,6 @@
 # GovernanceWriteStage
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:134`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:135`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

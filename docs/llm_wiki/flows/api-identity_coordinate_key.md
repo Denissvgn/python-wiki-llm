@@ -128,17 +128,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| identity_coordinate_key | validate_alias_type | 474 | `validate_alias_type(alias_type)` |
-| validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 445 | `isinstance(value, AliasType)` |
-| validate_alias_type | AliasType | 445 | `AliasType(value)` |
-| validate_alias_type | ConceptIdentityError | 447 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
-| identity_coordinate_key | validate_alias_value | 475 | `validate_alias_value(selected, value)` |
-| validate_alias_value | validate_alias_type | 456 | `validate_alias_type(alias_type)` |
-| validate_alias_value | validate_locator | 458 | `validate_locator(value)` |
-| validate_locator | _machine_text | 408 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 914 | `len(value)` |
+| identity_coordinate_key | validate_alias_type | 504 | `validate_alias_type(alias_type)` |
+| validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
+| validate_alias_type | AliasType | 475 | `AliasType(value)` |
+| validate_alias_type | ConceptIdentityError | 477 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
+| identity_coordinate_key | validate_alias_value | 505 | `validate_alias_value(selected, value)` |
+| validate_alias_value | validate_alias_type | 486 | `validate_alias_type(alias_type)` |
+| validate_alias_value | validate_locator | 488 | `validate_locator(value)` |
+| validate_locator | _machine_text | 438 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
 
 ### Boundary effects
 
@@ -148,8 +148,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_alias_type` | `isinstance` | 445 |
-| external_call | `_machine_text` | `isinstance` | 912 |
+| external_call | `validate_alias_type` | `isinstance` | 475 |
+| external_call | `_machine_text` | `isinstance` | 942 |
 | step_limit | `identity_coordinate_key` | `first 12 steps` | 0 |
 | truncated_flow | `identity_coordinate_key` | `depth limit` | 0 |
 

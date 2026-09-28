@@ -130,17 +130,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| alias_key | _alias_type | 379 | `_alias_type(alias_type, 'alias.type')` |
-| _alias_type | isinstance (src/llm_wiki_cli/services…governance.py:_alias_type) | 3275 | `isinstance(value, str)` |
-| _alias_type | GovernanceError | 3276 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
-| alias_key | _identity_value | 380 | `_identity_value(value, selected_type, 'alias.value')` |
-| _identity_value | _alias_type | 3284 | `_alias_type(alias_type, ...)` |
-| _identity_value | validate_alias_value | 3286 | `validate_alias_value(..., value)` |
-| validate_alias_value | validate_alias_type | 456 | `validate_alias_type(alias_type)` |
-| validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 445 | `isinstance(value, AliasType)` |
-| validate_alias_type | AliasType | 445 | `AliasType(value)` |
-| validate_alias_type | ConceptIdentityError | 447 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
-| validate_alias_value | validate_locator | 458 | `validate_locator(value)` |
+| alias_key | _alias_type | 380 | `_alias_type(alias_type, 'alias.type')` |
+| _alias_type | isinstance (src/llm_wiki_cli/services…governance.py:_alias_type) | 3277 | `isinstance(value, str)` |
+| _alias_type | GovernanceError | 3278 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
+| alias_key | _identity_value | 381 | `_identity_value(value, selected_type, 'alias.value')` |
+| _identity_value | _alias_type | 3286 | `_alias_type(alias_type, ...)` |
+| _identity_value | validate_alias_value | 3288 | `validate_alias_value(..., value)` |
+| validate_alias_value | validate_alias_type | 486 | `validate_alias_type(alias_type)` |
+| validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
+| validate_alias_type | AliasType | 475 | `AliasType(value)` |
+| validate_alias_type | ConceptIdentityError | 477 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
+| validate_alias_value | validate_locator | 488 | `validate_locator(value)` |
 
 ### Boundary effects
 
@@ -150,8 +150,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_alias_type` | `isinstance` | 3275 |
-| external_call | `validate_alias_type` | `isinstance` | 445 |
+| external_call | `_alias_type` | `isinstance` | 3277 |
+| external_call | `validate_alias_type` | `isinstance` | 475 |
 | step_limit | `alias_key` | `first 12 steps` | 0 |
 | truncated_flow | `alias_key` | `depth limit` | 0 |
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 from contextlib import contextmanager
 import gc
 import hashlib
@@ -21,10 +22,12 @@ import tarfile
 import tempfile
 import time
 import tracemalloc
+import traceback
 import types
 
-SCHEMA = "agent-wiki-core-check-comparison/v1"
+SCHEMA = "agent-wiki-core-check-comparison/v2"
 INPUT_SCHEMA = "agent-wiki-core-check-inputs/v1"
+ADAPTER_INVENTORY = "REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY"
 TARGETS = {
     "adapters": (
         "test_architecture_layers.py",
@@ -207,6 +210,92 @@ def load_policy(policy_root: Path, source_root: Path, filename: str, label: str)
     return module
 
 
+def adapter_inventory(policy_root: Path) -> dict[str, list[str]] | None:
+    """Read only the declared adapter data, without executing either policy."""
+    path = policy_root / "tests/test_architecture_layers.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    declarations = []
+    for node in tree.body:
+        if isinstance(node, (ast.Assign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            if any(isinstance(t, ast.Name) and t.id == ADAPTER_INVENTORY for t in targets):
+                declarations.append(node.value)
+    if not declarations:
+        return None
+    if len(declarations) != 1 or not isinstance(declarations[0], ast.Dict):
+        raise ValueError("adapter inventory must be one literal declaration")
+    result = {}
+    for key, value in zip(declarations[0].keys, declarations[0].values):
+        if (not isinstance(key, ast.Constant) or not isinstance(key.value, str)
+                or not re.fullmatch(r"[A-Za-z_]\w*(?:/[A-Za-z_]\w*)?", key.value, re.ASCII)
+                or key.value in result or not isinstance(value, ast.Call)
+                or not isinstance(value.func, ast.Name) or value.func.id != "frozenset"
+                or len(value.args) > 1 or value.keywords):
+            raise ValueError("adapter inventory must map service families to literal frozensets")
+        names = ast.literal_eval(value.args[0]) if value.args else []
+        if not isinstance(names, (set, list, tuple)) or any(
+            not isinstance(name, str) or not name.isidentifier() for name in names
+        ):
+            raise ValueError("adapter inventory names must be identifiers")
+        result[key.value] = sorted(set(names))
+    return dict(sorted(result.items()))
+
+
+def inventory_digest(inventory) -> str | None:
+    if inventory is None:
+        return None
+    return hashlib.sha256(
+        json.dumps(inventory, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def comparison_inventory(work: Path) -> dict:
+    """Bind current ownership as shared input, preserving existing obligations."""
+    baseline = adapter_inventory(work / "baseline")
+    current = adapter_inventory(work / "candidate")
+    if (baseline is None) != (current is None):
+        raise ValueError("both policies must declare an adapter inventory, or neither")
+    old = {(family, name) for family, names in (baseline or {}).items() for name in names}
+    new = {(family, name) for family, names in (current or {}).items() for name in names}
+    removed = sorted(old - new)
+    services = work / "candidate/src/llm_wiki_cli/services"
+    for family, name in removed:
+        location = services / family
+        paths = [location.with_suffix(".py")] if location.with_suffix(".py").is_file() else []
+        if location.is_dir():
+            paths.extend(sorted(location.rglob("*.py")))
+        for path in paths:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            if any(isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name
+                   for node in ast.walk(tree)):
+                raise ValueError(f"candidate drops a required adapter that still exists: {family}.{name}")
+    return {
+        "schema_version": "agent-wiki-core-adapter-inventory/v1",
+        "source": "candidate/tests/test_architecture_layers.py",
+        "baseline": baseline,
+        "candidate": current,
+        "baseline_sha256": inventory_digest(baseline),
+        "candidate_sha256": inventory_digest(current),
+        "added": [list(item) for item in sorted(new - old)],
+        "removed": [list(item) for item in removed],
+    }
+
+
+def require_inventory(module, expected) -> None:
+    actual = getattr(module, ADAPTER_INVENTORY, None)
+    wanted = None if expected is None else {k: frozenset(v) for k, v in expected.items()}
+    if (actual != wanted or (wanted is not None and (
+        type(actual) is not dict or any(type(v) is not frozenset for v in actual.values())
+    ))):
+        raise ValueError("loaded policy changed its declared adapter inventory")
+
+
+def bind_inventory(module, original, shared) -> None:
+    require_inventory(module, original)
+    if shared is not None:
+        setattr(module, ADAPTER_INVENTORY, {k: frozenset(v) for k, v in shared.items()})
+
+
 def tree_identity(root: Path) -> str:
     rows = []
     for path in sorted(root.rglob("*")):
@@ -247,6 +336,9 @@ def worker(args) -> int:
         (args.inputs / "candidate-source.tar").resolve()
     )
     module = load_policy(policy_root, candidate, filename, args.role)
+    inventory = comparison_inventory(args.work) if args.target == "adapters" else None
+    if inventory is not None:
+        bind_inventory(module, inventory[args.role], inventory["candidate"])
     gc.collect()
     if args.memory:
         tracemalloc.start()
@@ -261,6 +353,8 @@ def worker(args) -> int:
             tracemalloc.stop()
     if tree_identity(candidate) != before:
         raise ValueError("static check modified its candidate inputs")
+    if inventory is not None:
+        require_inventory(module, inventory["candidate"])
     write(
         args.output,
         {
@@ -272,6 +366,7 @@ def worker(args) -> int:
             "coverage": args.coverage and not args.memory,
             "input_tree_sha256": before,
             "policy_sha256": digest(policy_root / "tests" / filename),
+            "adapter_inventory_sha256": None if inventory is None else inventory["candidate_sha256"],
         },
     )
     return 0
@@ -379,11 +474,59 @@ def control_parity(args) -> dict:
         "documentation_cases": len(texts),
         "architecture_cases": len(observed),
         "architecture_results": observed,
+        "adapter_controls": adapter_control_parity(args),
     }
 
 
+def adapter_control_parity(args) -> list[dict]:
+    """Exercise complete adapter assertions with identical positive/negative data."""
+    results = []
+    shared = {"concept_identity": ["natural_key_for"]}
+    valid = ("from .validation import require_value\n"
+             "def natural_key_for(value):\n    checked = require_value(value)\n    return checked\n")
+    cases = {
+        "shared": (valid, True),
+        "missing": ("", False),
+        "bypassed": ("def natural_key_for(value):\n    return value\n", False),
+        "expanded": (valid.replace("    return checked", "    extra = checked\n    another = extra\n    return another"), False),
+        "split-bypass": (valid, False),
+    }
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        services = root / "src/llm_wiki_cli/services"
+        services.mkdir(parents=True)
+        (services / "validation.py").write_text("def require_value(value):\n    return value\n", encoding="utf-8")
+        for name, (source, expected) in cases.items():
+            (services / "concept_identity.py").write_text(source, encoding="utf-8")
+            if name == "split-bypass":
+                nested = services / "concept_identity/other.py"
+                nested.parent.mkdir()
+                nested.write_text("def natural_key_for(value):\n    return value\n", encoding="utf-8")
+            outcomes = {}
+            for role in ("baseline", "candidate"):
+                policy_root = args.work / role
+                module = load_policy(policy_root, root, TARGETS["adapters"][0], role)
+                original = adapter_inventory(policy_root)
+                if original is None:
+                    raise ValueError("adapter mutation controls require declared inventories")
+                bind_inventory(module, original, shared)
+                try:
+                    getattr(module, TARGETS["adapters"][1])()
+                except AssertionError:
+                    passed = False
+                else:
+                    passed = True
+                require_inventory(module, shared)
+                if passed is not expected:
+                    raise ValueError(f"adapter control outcome differs: {name}/{role}")
+                outcomes[role] = passed
+            results.append({"case": name, "expected_pass": expected, **outcomes})
+    return results
+
+
 def validate_observation(
-    row, *, target: str, role: str, coverage: bool, memory: bool, policy_sha256: str
+    row, *, target: str, role: str, coverage: bool, memory: bool, policy_sha256: str,
+    adapter_inventory_sha256: str | None = None,
 ) -> None:
     if not isinstance(row, dict) or set(row) != {
         "target",
@@ -394,6 +537,7 @@ def validate_observation(
         "coverage",
         "input_tree_sha256",
         "policy_sha256",
+        "adapter_inventory_sha256",
     }:
         raise ValueError("comparison observation fields differ")
     if (
@@ -402,6 +546,7 @@ def validate_observation(
         or row["passed"] is not True
         or row["coverage"] is not (coverage and not memory)
         or row["policy_sha256"] != policy_sha256
+        or row["adapter_inventory_sha256"] != adapter_inventory_sha256
         or not isinstance(row["input_tree_sha256"], str)
         or not re.fullmatch(r"[0-9a-f]{64}", row["input_tree_sha256"])
         or type(row["seconds"]) not in (int, float)
@@ -502,10 +647,11 @@ def compare(args) -> int:
         "observations": [],
         "targets": {},
         "errors": [],
-        "limits": "Fresh processes; paired order alternates. Timing excludes imports. Memory is a separate uninstrumented tracemalloc observation, not total RSS. No speed SLO or full-core timing claim.",
+        "limits": "Fresh processes; paired order alternates. Timing excludes imports and shared inventory binding. Each role retains its own checking logic and exemptions. Memory is a separate uninstrumented tracemalloc observation, not total RSS. No speed SLO or full-core timing claim.",
     }
     write(args.output / "comparison.json", report)
     try:
+        report["adapter_inventory"] = comparison_inventory(args.work)
         report["controls"] = control_parity(args)
         for target in TARGETS:
             for sample in range(args.samples + 1):
@@ -562,6 +708,10 @@ def compare(args) -> int:
                         memory=memory,
                         policy_sha256=digest(
                             args.work / role / "tests" / TARGETS[target][0]
+                        ),
+                        adapter_inventory_sha256=(
+                            report["adapter_inventory"]["candidate_sha256"]
+                            if target == "adapters" else None
                         ),
                     )
                     report["observations"].append(row)
@@ -650,6 +800,8 @@ def main() -> int:
         ImportError,
         subprocess.SubprocessError,
     ) as exc:
+        if isinstance(exc, AssertionError):
+            traceback.print_exc()
         print(f"Core comparison refused: {exc}", file=sys.stderr)
         return 1
 

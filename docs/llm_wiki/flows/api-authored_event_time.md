@@ -91,17 +91,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| authored_event_time | datetime.now | 1418 | `datetime.now(timezone.utc)` |
-| authored_event_time | isinstance | 1419 | `isinstance(selected, str)` |
-| authored_event_time | datetime.fromisoformat | 1422 | `datetime.fromisoformat(raw.replace(...))` |
-| authored_event_time | raw.replace | 1422 | `raw.replace('Z', '+00:00')` |
-| authored_event_time | GovernanceError | 1424 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')` |
-| authored_event_time | isinstance | 1428 | `isinstance(selected, datetime)` |
-| authored_event_time | GovernanceError | 1431 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')` |
-| authored_event_time | parsed.utcoffset | 1435 | `parsed.utcoffset(data not statically known)` |
-| authored_event_time | GovernanceError | 1436 | `GovernanceError('authored_at', 'must include a timezone')` |
-| authored_event_time | parsed.astimezone | 1437 | `parsed.astimezone(timezone.utc)` |
-| authored_event_time | utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time) | 1439 | `utc.isoformat(timespec='microseconds').replace('+00:00', 'Z')` |
+| authored_event_time | datetime.now | 1420 | `datetime.now(timezone.utc)` |
+| authored_event_time | isinstance | 1421 | `isinstance(selected, str)` |
+| authored_event_time | datetime.fromisoformat | 1424 | `datetime.fromisoformat(raw.replace(...))` |
+| authored_event_time | raw.replace | 1424 | `raw.replace('Z', '+00:00')` |
+| authored_event_time | GovernanceError | 1426 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp with timezone')` |
+| authored_event_time | isinstance | 1430 | `isinstance(selected, datetime)` |
+| authored_event_time | GovernanceError | 1433 | `GovernanceError('authored_at', 'must be an RFC 3339 timestamp or datetime')` |
+| authored_event_time | parsed.utcoffset | 1437 | `parsed.utcoffset(data not statically known)` |
+| authored_event_time | GovernanceError | 1438 | `GovernanceError('authored_at', 'must include a timezone')` |
+| authored_event_time | parsed.astimezone | 1439 | `parsed.astimezone(timezone.utc)` |
+| authored_event_time | utc.isoformat(…).replace (src/llm_wiki_cli/services…nce.py:authored_event_time) | 1441 | `utc.isoformat(timespec='microseconds').replace('+00:00', 'Z')` |
 
 ### Boundary effects
 
@@ -111,14 +111,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `authored_event_time` | `datetime.now` | 1418 |
-| external_call | `authored_event_time` | `isinstance` | 1419 |
-| external_call | `authored_event_time` | `datetime.fromisoformat` | 1422 |
-| unresolved_call | `authored_event_time` | `raw.replace` | 1422 |
-| external_call | `authored_event_time` | `isinstance` | 1428 |
-| unresolved_call | `authored_event_time` | `parsed.utcoffset` | 1435 |
-| unresolved_call | `authored_event_time` | `parsed.astimezone` | 1437 |
-| unresolved_call | `authored_event_time` | `utc.isoformat(timespec='microseconds').replace` | 1439 |
+| external_call | `authored_event_time` | `datetime.now` | 1420 |
+| external_call | `authored_event_time` | `isinstance` | 1421 |
+| external_call | `authored_event_time` | `datetime.fromisoformat` | 1424 |
+| unresolved_call | `authored_event_time` | `raw.replace` | 1424 |
+| external_call | `authored_event_time` | `isinstance` | 1430 |
+| unresolved_call | `authored_event_time` | `parsed.utcoffset` | 1437 |
+| unresolved_call | `authored_event_time` | `parsed.astimezone` | 1439 |
+| unresolved_call | `authored_event_time` | `utc.isoformat(timespec='microseconds').replace` | 1441 |
 | step_limit | `authored_event_time` | `first 12 steps` | 0 |
 
 ## Behavior

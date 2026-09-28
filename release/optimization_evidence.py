@@ -274,7 +274,7 @@ def freeze(root: Path, source: str, output: Path, repository: str, *,
         "skip-allowlist.json", "pyrightconfig.json", "ubuntu-suites.json", "ubuntu_suites.py", "ubuntu_shadow.py",
         "core_shards.py", "core_shard_runner.py", "core-shard-timings.json",
         "build-requirements.in", "build-requirements.txt", "validation-requirements.in", "validation-requirements.txt",
-        "dependency_downloads.py", "dependency_setup_probe.py",
+        "dependency_downloads.py", "dependency_setup_probe.py", "dependency_audit.py", "dependency_audit_probe.py",
     } or p in {WORKFLOW, PROMOTION_WORKFLOW, ".github/workflows/ci.yml", "release/static_checks.py", "release/qualification.py", "release/hosted_evidence.py"})
     hashes = {p: digest(source_bytes(root, source, p)) for p in inputs}
     skips = json.loads(source_bytes(root, source, "release/skip-allowlist.json"))["entries"]

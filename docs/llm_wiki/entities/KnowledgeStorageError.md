@@ -36,8 +36,8 @@ flowchart LR
     n9["_pack_structure (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n10["decode_member (src/llm_wiki_cli/services/knowledge_packs.py)"]
     n11["inspect_pack (src/llm_wiki_cli/services/knowledge_packs.py)"]
-    n12["_fail (src/llm_wiki_cli/services/knowledge_storage.py)"]
-    n13["_validate_selected_record (src/llm_wiki_cli/services/knowledge_storage.py)"]
+    n12["_concept_aliases (src/llm_wiki_cli/services/knowledge_storage.py)"]
+    n13["_fail (src/llm_wiki_cli/services/knowledge_storage.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -92,7 +92,7 @@ flowchart LR
 | `_pack_structure` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `decode_member` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `inspect_pack` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
+| `_concept_aliases` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 | `_fail` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
-| `_validate_selected_record` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 
-> References: showing 12 of 71 logical references; 59 omitted by the 12-row generated summary limit.
+> References: showing 12 of 72 logical references; 60 omitted by the 12-row generated summary limit.

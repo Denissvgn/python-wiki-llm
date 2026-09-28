@@ -249,6 +249,7 @@ def test_extracted_input_changes_are_rejected(frozen, tmp_path):
         ("python_peak_bytes", 100),
         ("input_tree_sha256", {}),
         ("policy_sha256", "b" * 64),
+        ("adapter_inventory_sha256", "b" * 64),
     ],
 )
 def test_observation_results_are_bound_and_finite(field, value):
@@ -261,6 +262,7 @@ def test_observation_results_are_bound_and_finite(field, value):
         "python_peak_bytes": None,
         "input_tree_sha256": "c" * 64,
         "policy_sha256": "a" * 64,
+        "adapter_inventory_sha256": None,
     }
     changed = deepcopy(row)
     changed[field] = value
@@ -399,3 +401,153 @@ def test_failed_windows_tree_cleanup_is_reported_and_root_is_reaped(
             ["owned"], cwd=tmp_path, env={}, log=io.BytesIO(), platform_name="nt"
         )
     assert process.killed and process.waits == 2
+
+
+def _inventory_work(tmp_path):
+    work = tmp_path / "work"
+    for role, inventory in (
+        ("baseline", "{'knowledge_governance': frozenset({'_relative_path'})}"),
+        ("candidate", "{'concept_identity': frozenset({'natural_key_for'})}"),
+    ):
+        policy = work / role / "tests/test_architecture_layers.py"
+        policy.parent.mkdir(parents=True)
+        policy.write_text(
+            "import ast\nfrom pathlib import Path\n"
+            f"{performance.ADAPTER_INVENTORY} = {inventory}\n"
+            "def test_shared_validation_adapters_remain_thin():\n"
+            "    root = Path(__file__).parents[1] / 'src/llm_wiki_cli/services'\n"
+            f"    for family, names in {performance.ADAPTER_INVENTORY}.items():\n"
+            "        tree = ast.parse((root / (family + '.py')).read_text())\n"
+            "        defined = {n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}\n"
+            "        assert names <= defined\n",
+            encoding="utf-8",
+        )
+    services = work / "candidate/src/llm_wiki_cli/services"
+    services.mkdir(parents=True)
+    (services / "concept_identity.py").write_text("def natural_key_for(value):\n    return value\n")
+    return work
+
+
+@pytest.fixture
+def policy_imports():
+    previous_path = sys.path[:]
+    previous_modules = {name: module for name, module in sys.modules.items()
+                        if name == "tests" or name.startswith("tests.")}
+    try:
+        yield
+    finally:
+        sys.path[:] = previous_path
+        for name in list(sys.modules):
+            if name == "tests" or name.startswith("tests."):
+                del sys.modules[name]
+        sys.modules.update(previous_modules)
+
+
+def test_moved_adapter_inventory_is_identical_input_for_both_policy_workers(tmp_path):
+    work = _inventory_work(tmp_path)
+    inventory = performance.comparison_inventory(work)
+    assert inventory["removed"] == [["knowledge_governance", "_relative_path"]]
+    assert inventory["added"] == [["concept_identity", "natural_key_for"]]
+    assert inventory["baseline_sha256"] != inventory["candidate_sha256"]
+    before = performance.tree_identity(work)
+    for role in ("baseline", "candidate"):
+        output = tmp_path / f"{role}.json"
+        result = subprocess.run(
+            [sys.executable, "-I", "-B", performance.__file__, "worker", "--work", str(work),
+             "--inputs", str(tmp_path), "--role", role, "--target", "adapters", "--output", str(output)],
+            stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0, result.stderr
+        row = json.loads(output.read_text())
+        performance.validate_observation(
+            row, target="adapters", role=role, coverage=False, memory=False,
+            policy_sha256=performance.digest(work / role / "tests/test_architecture_layers.py"),
+            adapter_inventory_sha256=inventory["candidate_sha256"],
+        )
+        with pytest.raises(ValueError, match="identity"):
+            performance.validate_observation(
+                row, target="adapters", role=role, coverage=False, memory=False,
+                policy_sha256=row["policy_sha256"], adapter_inventory_sha256=inventory["baseline_sha256"],
+            )
+    assert performance.tree_identity(work) == before
+
+
+@pytest.mark.parametrize("role", ["baseline", "candidate"])
+def test_worker_retains_failed_assertion_traceback_with_current_inventory(tmp_path, role):
+    work = _inventory_work(tmp_path)
+    (work / "candidate/src/llm_wiki_cli/services/concept_identity.py").write_text("")
+    output = tmp_path / "observation.json"
+    result = subprocess.run(
+        [sys.executable, "-I", "-B", performance.__file__, "worker", "--work", str(work),
+         "--inputs", str(tmp_path), "--role", role, "--target", "adapters", "--output", str(output)],
+        stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 1
+    assert "test_shared_validation_adapters_remain_thin" in result.stderr
+    assert "AssertionError" in result.stderr
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("relative", ["knowledge_governance.py", "knowledge_governance/nested.py"])
+def test_comparison_cannot_drop_requirements_for_remaining_definitions(tmp_path, relative):
+    work = _inventory_work(tmp_path)
+    path = work / "candidate/src/llm_wiki_cli/services" / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("class Adapter:\n    def _relative_path(self, value):\n        return value\n")
+    with pytest.raises(ValueError, match="required adapter that still exists"):
+        performance.comparison_inventory(work)
+
+
+@pytest.mark.parametrize("declaration", [
+    "get_inventory()", "{'../escape': frozenset({'validate'})}",
+    "{'owner': frozenset({123})}", "{'owner': frozenset(build_names())}",
+    "{'owner': frozenset({'one'}), 'owner': frozenset({'two'})}",
+])
+def test_adapter_inventory_rejects_nonliteral_or_ambiguous_data(tmp_path, declaration):
+    policy = tmp_path / "tests/test_architecture_layers.py"
+    policy.parent.mkdir()
+    policy.write_text(f"{performance.ADAPTER_INVENTORY} = {declaration}\n")
+    with pytest.raises(ValueError):
+        performance.adapter_inventory(tmp_path)
+
+
+def test_adapter_inventory_accepts_an_empty_literal_frozenset(tmp_path):
+    policy = tmp_path / "tests/test_architecture_layers.py"
+    policy.parent.mkdir()
+    policy.write_text(f"{performance.ADAPTER_INVENTORY} = {{'owner': frozenset()}}\n")
+    assert performance.adapter_inventory(tmp_path) == {"owner": []}
+
+
+def test_mixed_missing_inventory_is_not_silently_accepted(tmp_path):
+    work = _inventory_work(tmp_path)
+    (work / "baseline/tests/test_architecture_layers.py").write_text("pass\n")
+    with pytest.raises(ValueError, match="both policies"):
+        performance.comparison_inventory(work)
+
+
+def test_runtime_inventory_must_match_its_frozen_declaration(tmp_path, policy_imports):
+    work = _inventory_work(tmp_path)
+    policy = work / "baseline/tests/test_architecture_layers.py"
+    policy.write_text(policy.read_text() + f"\n{performance.ADAPTER_INVENTORY}.clear()\n")
+    inventory = performance.adapter_inventory(work / "baseline")
+    module = performance.load_policy(work / "baseline", work / "candidate", policy.name, "baseline")
+    with pytest.raises(ValueError, match="changed its declared adapter inventory"):
+        performance.bind_inventory(module, inventory, performance.adapter_inventory(work / "candidate"))
+
+
+def test_complete_adapter_controls_detect_a_weakened_candidate_assertion(tmp_path, policy_imports):
+    work = tmp_path / "work"
+    tests = Path(__file__).parent
+    for role in ("baseline", "candidate"):
+        target = work / role / "tests"
+        target.mkdir(parents=True)
+        (target / "__init__.py").write_text("")
+        for name in ("test_architecture_layers.py", "python_source_inventory.py"):
+            shutil.copyfile(tests / name, target / name)
+    args = argparse.Namespace(work=work)
+    results = performance.adapter_control_parity(args)
+    assert [r["expected_pass"] for r in results] == [True, False, False, False, False]
+    policy = work / "candidate/tests/test_architecture_layers.py"
+    policy.write_text(policy.read_text() + "\ndef test_shared_validation_adapters_remain_thin():\n    pass\n")
+    with pytest.raises(ValueError, match="adapter control outcome differs: missing/candidate"):
+        performance.adapter_control_parity(args)

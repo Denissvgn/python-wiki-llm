@@ -1,6 +1,6 @@
 # IdentityCollision
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:170`
+**Location:** `src/llm_wiki_cli/services/concept_identity.py:171`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)

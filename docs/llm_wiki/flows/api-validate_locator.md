@@ -122,17 +122,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_locator | _machine_text | 408 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…_identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…_identity.py:_machine_text) | 914 | `len(value)` |
-| _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip (src/llm_wiki_cli/services…_identity.py:_machine_text) | 916 | `value.strip(data not statically known)` |
-| _machine_text | any (src/llm_wiki_cli/services…_identity.py:_machine_text) | 916 | `any(...)` |
-| _machine_text | character.isspace | 916 | `character.isspace(data not statically known)` |
-| _machine_text | ConceptIdentityError | 917 | `ConceptIdentityError(field, 'must not contain whitespace')` |
-| _machine_text | unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text) | 918 | `unicodedata.normalize('NFC', value)` |
-| _machine_text | ConceptIdentityError | 919 | `ConceptIdentityError(field, 'must use Unicode NFC normalization')` |
+| validate_locator | _machine_text | 438 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…_identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len (src/llm_wiki_cli/services…_identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
+| _machine_text | value.strip (src/llm_wiki_cli/services…_identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
+| _machine_text | any (src/llm_wiki_cli/services…_identity.py:_machine_text) | 946 | `any(...)` |
+| _machine_text | character.isspace | 946 | `character.isspace(data not statically known)` |
+| _machine_text | ConceptIdentityError | 947 | `ConceptIdentityError(field, 'must not contain whitespace')` |
+| _machine_text | unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text) | 948 | `unicodedata.normalize('NFC', value)` |
+| _machine_text | ConceptIdentityError | 949 | `ConceptIdentityError(field, 'must use Unicode NFC normalization')` |
 
 ### Boundary effects
 
@@ -142,11 +142,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_machine_text` | `isinstance` | 912 |
-| unresolved_call | `_machine_text` | `value.strip` | 916 |
-| external_call | `_machine_text` | `any` | 916 |
-| unresolved_call | `_machine_text` | `character.isspace` | 916 |
-| external_call | `_machine_text` | `unicodedata.normalize` | 918 |
+| external_call | `_machine_text` | `isinstance` | 942 |
+| unresolved_call | `_machine_text` | `value.strip` | 946 |
+| external_call | `_machine_text` | `any` | 946 |
+| unresolved_call | `_machine_text` | `character.isspace` | 946 |
+| external_call | `_machine_text` | `unicodedata.normalize` | 948 |
 | step_limit | `validate_locator` | `first 12 steps` | 0 |
 
 ## Behavior

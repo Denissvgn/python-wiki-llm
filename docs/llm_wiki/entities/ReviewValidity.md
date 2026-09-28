@@ -1,6 +1,6 @@
 # ReviewValidity
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:346`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:347`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

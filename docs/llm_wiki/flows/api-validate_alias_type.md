@@ -48,9 +48,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_alias_type | isinstance | 445 | `isinstance(value, AliasType)` |
-| validate_alias_type | AliasType | 445 | `AliasType(value)` |
-| validate_alias_type | ConceptIdentityError | 447 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
+| validate_alias_type | isinstance | 475 | `isinstance(value, AliasType)` |
+| validate_alias_type | AliasType | 475 | `AliasType(value)` |
+| validate_alias_type | ConceptIdentityError | 477 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
 
 ### Boundary effects
 
@@ -60,7 +60,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_alias_type` | `isinstance` | 445 |
+| external_call | `validate_alias_type` | `isinstance` | 475 |
 
 ## Behavior
 

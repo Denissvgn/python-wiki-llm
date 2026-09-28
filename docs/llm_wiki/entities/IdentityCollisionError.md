@@ -1,6 +1,6 @@
 # IdentityCollisionError
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:214`
+**Location:** `src/llm_wiki_cli/services/concept_identity.py:215`
 **Kind:** Class
 **Bases:** `ConceptIdentityError`
 **Module:** [concept_identity](../modules/concept_identity.md)

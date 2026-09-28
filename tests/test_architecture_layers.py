@@ -41,6 +41,7 @@ _VALIDATION_DUPLICATE_EXEMPT_NAMES = frozenset(
 )
 REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
     "bootstrap_runtime": frozenset({"_path_text", "_safe_page_component"}),
+    "concept_identity": frozenset({"natural_key_for"}),
     "context_service": frozenset({"_nonnegative_count"}),
     "data_flow": frozenset({"_positive_source_line"}),
     "dependencies": frozenset(
@@ -197,7 +198,6 @@ REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY = {
             "_hash",
             "_nonnegative_int",
             "_object",
-            "_relative_path",
         }
     ),
     "knowledge_graph": frozenset(

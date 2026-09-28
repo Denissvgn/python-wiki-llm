@@ -141,39 +141,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_identity_registry | _typed_tuple | 728 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 983 | `isinstance(values, (...))` |
-| _typed_tuple | TypeError | 984 | `TypeError(...)` |
-| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 986 | `tuple(values)` |
-| _typed_tuple | TypeError | 988 | `TypeError(...)` |
-| _typed_tuple | enumerate | 991 | `enumerate(result)` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 992 | `isinstance(value, expected_type)` |
-| _typed_tuple | TypeError | 993 | `TypeError(...)` |
-| validate_identity_registry | _typed_tuple | 729 | `_typed_tuple(aliases, IdentityAlias, 'aliases')` |
-| validate_identity_registry | find_identity_collisions | 730 | `find_identity_collisions(current, historical)` |
-| find_identity_collisions | _typed_tuple | 615 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
+| validate_identity_registry | _typed_tuple | 758 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
+| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
+| _typed_tuple | TypeError | 1014 | `TypeError(...)` |
+| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
+| _typed_tuple | TypeError | 1018 | `TypeError(...)` |
+| _typed_tuple | enumerate | 1021 | `enumerate(result)` |
+| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1022 | `isinstance(value, expected_type)` |
+| _typed_tuple | TypeError | 1023 | `TypeError(...)` |
+| validate_identity_registry | _typed_tuple | 759 | `_typed_tuple(aliases, IdentityAlias, 'aliases')` |
+| validate_identity_registry | find_identity_collisions | 760 | `find_identity_collisions(current, historical)` |
+| find_identity_collisions | _typed_tuple | 645 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `collisions.append` | `find_identity_collisions` | 641 |
-| mutation | `collisions.append` | `find_identity_collisions` | 653 |
-| mutation | `collisions.append` | `find_identity_collisions` | 675 |
-| mutation | `collisions.append` | `find_identity_collisions` | 687 |
-| mutation | `collisions.append` | `find_identity_collisions` | 696 |
-| mutation | `collisions.append` | `find_identity_collisions` | 710 |
+| mutation | `collisions.append` | `find_identity_collisions` | 671 |
+| mutation | `collisions.append` | `find_identity_collisions` | 683 |
+| mutation | `collisions.append` | `find_identity_collisions` | 705 |
+| mutation | `collisions.append` | `find_identity_collisions` | 717 |
+| mutation | `collisions.append` | `find_identity_collisions` | 726 |
+| mutation | `collisions.append` | `find_identity_collisions` | 740 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_typed_tuple` | `isinstance` | 983 |
-| external_call | `_typed_tuple` | `TypeError` | 984 |
-| external_call | `_typed_tuple` | `TypeError` | 988 |
-| external_call | `_typed_tuple` | `enumerate` | 991 |
-| external_call | `_typed_tuple` | `isinstance` | 992 |
-| external_call | `_typed_tuple` | `TypeError` | 993 |
+| external_call | `_typed_tuple` | `isinstance` | 1013 |
+| external_call | `_typed_tuple` | `TypeError` | 1014 |
+| external_call | `_typed_tuple` | `TypeError` | 1018 |
+| external_call | `_typed_tuple` | `enumerate` | 1021 |
+| external_call | `_typed_tuple` | `isinstance` | 1022 |
+| external_call | `_typed_tuple` | `TypeError` | 1023 |
 | step_limit | `validate_identity_registry` | `first 12 steps` | 0 |
 | truncated_flow | `validate_identity_registry` | `depth limit` | 0 |
 

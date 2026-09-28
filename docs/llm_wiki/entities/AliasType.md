@@ -1,6 +1,6 @@
 # AliasType
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:85`
+**Location:** `src/llm_wiki_cli/services/concept_identity.py:86`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [concept_identity](../modules/concept_identity.md)

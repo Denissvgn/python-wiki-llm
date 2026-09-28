@@ -127,37 +127,37 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| aliases_for_move | isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 757 | `isinstance(allocation, ConceptAllocation)` |
-| aliases_for_move | TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 758 | `TypeError('allocation must be a ConceptAllocation')` |
-| aliases_for_move | isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 759 | `isinstance(new_reference, ConceptReference)` |
-| aliases_for_move | TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 760 | `TypeError('new_reference must be a ConceptReference')` |
-| aliases_for_move | ConceptIdentityError | 762 | `ConceptIdentityError('concept_kind', 'a move cannot change concept kind', code='concept-kind-change')` |
-| aliases_for_move | _typed_tuple | 767 | `_typed_tuple(aliases, IdentityAlias, 'aliases')` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 983 | `isinstance(values, (...))` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 984 | `TypeError(...)` |
-| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 986 | `tuple(values)` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 988 | `TypeError(...)` |
-| _typed_tuple | enumerate | 991 | `enumerate(result)` |
+| aliases_for_move | isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 787 | `isinstance(allocation, ConceptAllocation)` |
+| aliases_for_move | TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 788 | `TypeError('allocation must be a ConceptAllocation')` |
+| aliases_for_move | isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 789 | `isinstance(new_reference, ConceptReference)` |
+| aliases_for_move | TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move) | 790 | `TypeError('new_reference must be a ConceptReference')` |
+| aliases_for_move | ConceptIdentityError | 792 | `ConceptIdentityError('concept_kind', 'a move cannot change concept kind', code='concept-kind-change')` |
+| aliases_for_move | _typed_tuple | 797 | `_typed_tuple(aliases, IdentityAlias, 'aliases')` |
+| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1014 | `TypeError(...)` |
+| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1018 | `TypeError(...)` |
+| _typed_tuple | enumerate | 1021 | `enumerate(result)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `result.append` | `aliases_for_move` | 790 |
-| mutation | `result.append` | `aliases_for_move` | 801 |
+| mutation | `result.append` | `aliases_for_move` | 820 |
+| mutation | `result.append` | `aliases_for_move` | 831 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `aliases_for_move` | `isinstance` | 757 |
-| external_call | `aliases_for_move` | `TypeError` | 758 |
-| external_call | `aliases_for_move` | `isinstance` | 759 |
-| external_call | `aliases_for_move` | `TypeError` | 760 |
-| external_call | `_typed_tuple` | `isinstance` | 983 |
-| external_call | `_typed_tuple` | `TypeError` | 984 |
-| external_call | `_typed_tuple` | `TypeError` | 988 |
-| external_call | `_typed_tuple` | `enumerate` | 991 |
+| external_call | `aliases_for_move` | `isinstance` | 787 |
+| external_call | `aliases_for_move` | `TypeError` | 788 |
+| external_call | `aliases_for_move` | `isinstance` | 789 |
+| external_call | `aliases_for_move` | `TypeError` | 790 |
+| external_call | `_typed_tuple` | `isinstance` | 1013 |
+| external_call | `_typed_tuple` | `TypeError` | 1014 |
+| external_call | `_typed_tuple` | `TypeError` | 1018 |
+| external_call | `_typed_tuple` | `enumerate` | 1021 |
 | step_limit | `aliases_for_move` | `first 12 steps` | 0 |
 | truncated_flow | `aliases_for_move` | `depth limit` | 0 |
 

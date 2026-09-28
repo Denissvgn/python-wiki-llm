@@ -1,6 +1,6 @@
 # IdentityUpdate
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:232`
+**Location:** `src/llm_wiki_cli/services/concept_identity.py:233`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)

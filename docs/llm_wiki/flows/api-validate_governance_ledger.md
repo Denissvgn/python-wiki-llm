@@ -73,7 +73,7 @@ sequenceDiagram
     p0->>p3: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 349 interactions; 319 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 356 interactions; 326 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -135,17 +135,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 523 | `isinstance(ledger, GovernanceLedger)` |
-| validate_governance_ledger | TypeError | 524 | `TypeError('ledger must be a GovernanceLedger')` |
-| validate_governance_ledger | GovernanceError | 526 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
-| validate_governance_ledger | _bundle_id | 531 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3368 | `validate_bundle_id(value)` |
-| validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 914 | `len(value)` |
-| _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 916 | `value.strip(data not statically known)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 525 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | TypeError | 526 | `TypeError('ledger must be a GovernanceLedger')` |
+| validate_governance_ledger | GovernanceError | 528 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
+| validate_governance_ledger | _bundle_id | 533 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
+| _bundle_id | validate_bundle_id | 3363 | `validate_bundle_id(value)` |
+| validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
+| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -155,10 +155,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_governance_ledger` | `isinstance` | 523 |
-| external_call | `validate_governance_ledger` | `TypeError` | 524 |
-| external_call | `_machine_text` | `isinstance` | 912 |
-| unresolved_call | `_machine_text` | `value.strip` | 916 |
+| external_call | `validate_governance_ledger` | `isinstance` | 525 |
+| external_call | `validate_governance_ledger` | `TypeError` | 526 |
+| external_call | `_machine_text` | `isinstance` | 942 |
+| unresolved_call | `_machine_text` | `value.strip` | 946 |
 | step_limit | `validate_governance_ledger` | `first 12 steps` | 0 |
 | truncated_flow | `validate_governance_ledger` | `depth limit` | 0 |
 

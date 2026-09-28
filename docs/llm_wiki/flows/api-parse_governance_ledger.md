@@ -72,7 +72,7 @@ sequenceDiagram
     p18->>p20: ConceptIdentityError
 ```
 
-> Call sequence diagram shows 30 of 434 interactions; 404 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 441 interactions; 411 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -134,16 +134,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| parse_governance_ledger | _object | 419 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3147 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| parse_governance_ledger | _object | 421 | `_object(payload, 'governance')` |
+| _object | require_mapping | 3149 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 | require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object | GovernanceError | 3149 | `GovernanceError(path, 'must be an object')` |
-| _object | GovernanceError | 3151 | `GovernanceError(path, 'must use string keys')` |
-| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3153 | `dict(selected)` |
-| parse_governance_ledger | _exact_fields | 420 | `_exact_fields(root, 'governance', {...})` |
-| _exact_fields | require_exact_fields | 3170 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
+| _object | GovernanceError | 3151 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3153 | `GovernanceError(path, 'must use string keys')` |
+| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3155 | `dict(selected)` |
+| parse_governance_ledger | _exact_fields | 422 | `_exact_fields(root, 'governance', {...})` |
+| _exact_fields | require_exact_fields | 3172 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
 | require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1243 | `isinstance(value, Mapping)` |
 
 ### Boundary effects

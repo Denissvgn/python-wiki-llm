@@ -2,15 +2,15 @@
 
 **Entry point:** `natural_key_for` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_governance](../modules/knowledge_governance.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md)
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_governance](../modules/knowledge_governance.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
-    participant p0 as natural_key_for
-    participant p1 as _concept_kind
+    participant p0 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p1 as natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
     participant p2 as validate_concept_kind
     participant p3 as _machine_text
     participant p4 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
@@ -23,15 +23,15 @@ sequenceDiagram
     participant p11 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
     participant p12 as unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
     participant p13 as _QUALIFIED_KIND_RE.fullmatch
-    participant p14 as GovernanceError
-    participant p15 as _relative_path
-    participant p16 as require_repository_relative_path
-    participant p17 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p18 as _syntax_key
-    participant p19 as type
-    participant p20 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p21 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p0->>p1: _concept_kind
+    participant p14 as require_repository_relative_path
+    participant p15 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p16 as _syntax_key
+    participant p17 as type
+    participant p18 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p19 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    participant p20 as _known_syntax
+    participant p21 as _PATH_SYNTAX.get
+    p0->>p1: natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
     p1->>p2: validate_concept_kind
     p2->>p3: _machine_text
     p3-->>p4: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
@@ -50,28 +50,28 @@ sequenceDiagram
     p3->>p5: ConceptIdentityError
     p2-->>p13: _QUALIFIED_KIND_RE.fullmatch
     p2->>p5: ConceptIdentityError
-    p1->>p14: GovernanceError
-    p0->>p15: _relative_path
-    p15->>p16: require_repository_relative_path
-    p16-->>p17: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p16->>p18: _syntax_key
-    p18-->>p19: type
-    p18-->>p20: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p18-->>p21: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p18-->>p19: type
-    p18-->>p19: type
-    p18-->>p20: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p1->>p14: require_repository_relative_path
+    p14-->>p15: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    p14->>p16: _syntax_key
+    p16-->>p17: type
+    p16-->>p18: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p16-->>p19: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p16-->>p17: type
+    p16-->>p17: type
+    p16-->>p18: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p14->>p20: _known_syntax
+    p20-->>p21: _PATH_SYNTAX.get
 ```
 
-> Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 145 interactions; 115 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
 ```mermaid
 flowchart LR
-    s1["1. natural_key_for"]
-    s2["2. _concept_kind"]
+    s1["1. natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    s2["2. natural_key_for (src/llm_wiki_cli/services/concept_identity.py)"]
     s3["3. validate_concept_kind"]
     s4["4. _machine_text"]
     s5["5. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
@@ -82,8 +82,8 @@ flowchart LR
     s10["10. any (src/llm_wiki_cli/services…identity.py:_machine_text)"]
     s11["11. character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)"]
     s12["12. ConceptIdentityError"]
-    s1 -->|"_concept_kind(concept_kind, 'concept_kind')"| s2
-    s2 -->|"validate_concept_kind(value)"| s3
+    s1 -->|"natural_key_for (src/llm_wiki_cli/services/concept_identity.py)(concept_kind, canonical_path)"| s2
+    s2 -->|"validate_concept_kind(concept_kind)"| s3
     s3 -->|"_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)"| s4
     s4 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s5
     s4 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s6
@@ -94,7 +94,7 @@ flowchart LR
     s4 -. "character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)(data not statically known)" .-> s11
     s4 -->|"ConceptIdentityError(field, 'must not contain whitespace')"| s12
     click s1 "../modules/knowledge_governance.md"
-    click s2 "../modules/knowledge_governance.md"
+    click s2 "../modules/concept_identity.md"
     click s3 "../modules/concept_identity.md"
     click s4 "../modules/concept_identity.md"
     click s6 "../modules/concept_identity.md"
@@ -106,8 +106,8 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `natural_key_for` | `concept_kind: str`, `canonical_path: str` | - | - | `_natural_key(...)` |
-| `_concept_kind` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_concept_kind(...)` |
+| `natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)` | `concept_kind: str`, `canonical_path: str` | `ConceptIdentityError` | - | `_identity_natural_key_for(...)` |
+| `natural_key_for (src/llm_wiki_cli/services/concept_identity.py)` | `concept_kind: str`, `canonical_path: str` | - | - | `validate_natural_key(...)` |
 | `validate_concept_kind` | `value: object` | `_MAX_CONCEPT_KIND_LENGTH`, `_UID_TAG_BY_KIND` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
@@ -123,17 +123,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| natural_key_for | _concept_kind | 394 | `_concept_kind(concept_kind, 'concept_kind')` |
-| _concept_kind | validate_concept_kind | 3375 | `validate_concept_kind(value)` |
-| validate_concept_kind | _machine_text | 305 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 914 | `len(value)` |
-| _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 916 | `value.strip(data not statically known)` |
-| _machine_text | any (src/llm_wiki_cli/services…identity.py:_machine_text) | 916 | `any(...)` |
-| _machine_text | character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text) | 916 | `character.isspace(data not statically known)` |
-| _machine_text | ConceptIdentityError | 917 | `ConceptIdentityError(field, 'must not contain whitespace')` |
+| natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py) | natural_key_for (src/llm_wiki_cli/services/concept_identity.py) | 396 | `_identity_natural_key_for(concept_kind, canonical_path)` |
+| natural_key_for (src/llm_wiki_cli/services/concept_identity.py) | validate_concept_kind | 327 | `validate_concept_kind(concept_kind)` |
+| validate_concept_kind | _machine_text | 306 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
+| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
+| _machine_text | any (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `any(...)` |
+| _machine_text | character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `character.isspace(data not statically known)` |
+| _machine_text | ConceptIdentityError | 947 | `ConceptIdentityError(field, 'must not contain whitespace')` |
 
 ### Boundary effects
 
@@ -143,10 +143,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_machine_text` | `isinstance` | 912 |
-| unresolved_call | `_machine_text` | `value.strip` | 916 |
-| external_call | `_machine_text` | `any` | 916 |
-| unresolved_call | `_machine_text` | `character.isspace` | 916 |
+| external_call | `_machine_text` | `isinstance` | 942 |
+| unresolved_call | `_machine_text` | `value.strip` | 946 |
+| external_call | `_machine_text` | `any` | 946 |
+| unresolved_call | `_machine_text` | `character.isspace` | 946 |
 | step_limit | `natural_key_for` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -126,17 +126,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| current_review_evidence | isinstance (src/llm_wiki_cli/services…py:current_review_evidence) | 1503 | `isinstance(concept, ConceptRecord)` |
-| current_review_evidence | TypeError | 1504 | `TypeError('concept must be a ConceptRecord')` |
-| current_review_evidence | ReviewEvidence | 1508 | `ReviewEvidence(mode='no-source')` |
-| current_review_evidence | ReviewEvidence | 1512 | `ReviewEvidence(mode='no-source')` |
-| current_review_evidence | _review_evidence | 1531 | `_review_evidence(ReviewEvidence(...), 'evidence')` |
-| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 2900 | `isinstance(value, ReviewEvidence)` |
-| _review_evidence | GovernanceError | 2901 | `GovernanceError(path, 'must be ReviewEvidence')` |
-| _review_evidence | GovernanceError | 2903 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
-| _review_evidence | GovernanceError | 2909 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
-| _review_evidence | ReviewEvidence | 2913 | `ReviewEvidence(mode='no-source')` |
-| _review_evidence | GovernanceError | 2915 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
+| current_review_evidence | isinstance (src/llm_wiki_cli/services…py:current_review_evidence) | 1505 | `isinstance(concept, ConceptRecord)` |
+| current_review_evidence | TypeError | 1506 | `TypeError('concept must be a ConceptRecord')` |
+| current_review_evidence | ReviewEvidence | 1510 | `ReviewEvidence(mode='no-source')` |
+| current_review_evidence | ReviewEvidence | 1514 | `ReviewEvidence(mode='no-source')` |
+| current_review_evidence | _review_evidence | 1533 | `_review_evidence(ReviewEvidence(...), 'evidence')` |
+| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 2902 | `isinstance(value, ReviewEvidence)` |
+| _review_evidence | GovernanceError | 2903 | `GovernanceError(path, 'must be ReviewEvidence')` |
+| _review_evidence | GovernanceError | 2905 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
+| _review_evidence | GovernanceError | 2911 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
+| _review_evidence | ReviewEvidence | 2915 | `ReviewEvidence(mode='no-source')` |
+| _review_evidence | GovernanceError | 2917 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
 
 ### Boundary effects
 
@@ -146,9 +146,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `current_review_evidence` | `isinstance` | 1503 |
-| external_call | `current_review_evidence` | `TypeError` | 1504 |
-| external_call | `_review_evidence` | `isinstance` | 2900 |
+| external_call | `current_review_evidence` | `isinstance` | 1505 |
+| external_call | `current_review_evidence` | `TypeError` | 1506 |
+| external_call | `_review_evidence` | `isinstance` | 2902 |
 | step_limit | `current_review_evidence` | `first 12 steps` | 0 |
 
 ## Behavior

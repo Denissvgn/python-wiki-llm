@@ -160,9 +160,25 @@ def _node_aliases(node: Any) -> set[str]:
 
 
 def _concept_aliases(concept: Mapping[str, Any]) -> set[str]:
-    from .knowledge_governance import natural_key_for
+    from .concept_identity import ConceptIdentityError, natural_key_for, validate_locator
+
+    path = concept["document"]["canonical_path"]
+    try:
+        natural_key = natural_key_for(concept["concept_kind"], path)
+    except ConceptIdentityError as exc:
+        # Include only a validated page coordinate; unsafe values (including
+        # URI credentials) must never be reflected in storage diagnostics.
+        try:
+            coordinate = repr(validate_locator(path))
+        except ConceptIdentityError:
+            coordinate = "a concept (invalid canonical path omitted)"
+        raise KnowledgeStorageError(
+            f"concepts.aliases.{exc.field}",
+            f"cannot build lookup identity for {coordinate}: {exc.message}",
+            code="storage-identity-invalid",
+        ) from exc
     aliases = {"concept:" + concept["locator"], "page:" + concept["document"]["canonical_path"],
-               "concept:" + natural_key_for(concept["concept_kind"], concept["document"]["canonical_path"]),
+               "concept:" + natural_key,
                _owner(concept), *("term:" + term for term in re.findall(r"\w+", concept["title"].casefold())[:64])}
     from .contracts import GOVERNANCE_EXTENSION_KEY
     governance = concept.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY)
