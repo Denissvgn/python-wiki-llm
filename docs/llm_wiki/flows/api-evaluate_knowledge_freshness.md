@@ -2,10 +2,11 @@
 
 **Entry point:** `evaluate_knowledge_freshness` (`api`)
 **Source:** [knowledge_freshness](../modules/knowledge_freshness.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 10 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), and 11 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -76,7 +77,7 @@ sequenceDiagram
     p16-->>p18: _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
 ```
 
-> Call sequence diagram shows 30 of 1592 interactions; 1562 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1622 interactions; 1592 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -136,17 +137,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 235 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
-| evaluate_knowledge_freshness | require_validated_artifacts | 234 | `require_validated_artifacts(knowledge)` |
+| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 259 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
+| evaluate_knowledge_freshness | require_validated_artifacts | 258 | `require_validated_artifacts(knowledge)` |
 | require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 163 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 164 | `TypeError('expected validator-issued knowledge artifacts')` |
 | require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 167 | `isinstance(validation, _ArtifactValidation)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 180 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
-| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 237 | `isinstance(knowledge, KnowledgeIndex)` |
-| evaluate_knowledge_freshness | parse_knowledge_index | 236 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
+| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 261 | `isinstance(knowledge, KnowledgeIndex)` |
+| evaluate_knowledge_freshness | parse_knowledge_index | 260 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1581 | `_object(value, ...)` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1667 | `dict(require_mapping(...))` |
+| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1589 | `_object(value, ...)` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1675 | `dict(require_mapping(...))` |
 
 ### Boundary effects
 
@@ -156,12 +157,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `evaluate_knowledge_freshness` | `isinstance` | 235 |
+| external_call | `evaluate_knowledge_freshness` | `isinstance` | 259 |
 | external_call | `require_validated_artifacts` | `isinstance` | 163 |
 | external_call | `require_validated_artifacts` | `TypeError` | 164 |
 | external_call | `require_validated_artifacts` | `isinstance` | 167 |
 | external_call | `require_validated_artifacts` | `TypeError` | 180 |
-| external_call | `evaluate_knowledge_freshness` | `isinstance` | 237 |
+| external_call | `evaluate_knowledge_freshness` | `isinstance` | 261 |
 | step_limit | `evaluate_knowledge_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_knowledge_freshness` | `depth limit` | 0 |
 

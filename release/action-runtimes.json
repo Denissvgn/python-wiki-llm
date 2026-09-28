@@ -1,0 +1,70 @@
+{
+  "schema_version": "agent-wiki-action-runtimes/v1",
+  "minimum_node_major": 24,
+  "actions": {
+    "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6": {
+      "using": "node24",
+      "manifest_sha256": "9e4a1b808433f9ec87120b534e11fc35469a039bdbdc62b019441444c9ad0449",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9": {
+      "using": "node24",
+      "manifest_sha256": "bb552a94cec165255080b7e13fe3d2051c6c79e321e99435b5859dc7de5e9057",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9": {
+      "using": "node24",
+      "manifest_sha256": "5da400e1a7551cee617339fd1a5281483d71e6c56d86dd117fbd354f047308ec",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803": {
+      "using": "node24",
+      "manifest_sha256": "d59219cb79590abdb877deaa14e3b65a00c05318bf5a6f3b989b9162b5d08c35",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c": {
+      "using": "node24",
+      "manifest_sha256": "e98559b7a31ba31be4709f20d22102dc2737fa630f69a339eb89981151e505fe",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": {
+      "using": "node24",
+      "manifest_sha256": "cbfae748992b96b9a1bfa3f1679d17c898c78375aad8a0d0184820683c82c482",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405": {
+      "using": "node24",
+      "manifest_sha256": "a95cf5ade72699eb8a044e77a74b1e127a223759f13c42a1068bb9cf918b8830",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1": {
+      "using": "node24",
+      "manifest_sha256": "a95cf5ade72699eb8a044e77a74b1e127a223759f13c42a1068bb9cf918b8830",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a": {
+      "using": "node24",
+      "manifest_sha256": "c5979822866a72362e609844b6ebe77d4b7e759af68cc1c2c425dcf51481fab4",
+      "dependencies": [],
+      "generated_actions": {}
+    },
+    "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33": {
+      "using": "composite",
+      "manifest_sha256": "4833fe3c15180e27fc7af77018b1d8c670abf1f17958d45d5e0feb4f9acc5d3d",
+      "dependencies": [
+        "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405"
+      ],
+      "generated_actions": {
+        "./.github/.tmp/.generated-actions/run-pypi-publish-in-docker-container": "docker"
+      }
+    }
+  }
+}

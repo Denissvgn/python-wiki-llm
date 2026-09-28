@@ -17,6 +17,7 @@ requirements without changing the underlying issue model.
 | `.` | `wiki_media` |
 | `..config` | `validate_path`, `validate_source_root` |
 | `..extractors.common` | `normalize_include_tests` |
+| `.analysis_compatibility` | `comparison_entrypoint` |
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.data_flow` | `analyze_data_flow` |
 | `.dependencies` | `analyze_dependencies` |
@@ -24,6 +25,7 @@ requirements without changing the underlying issue model.
 | `.entrypoints` | `build_flow`, `get_entry_points`, `javascript_flow_limitations`, `read_console_scripts` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_from_args`, `print_extraction_job_plan` |
 | `.extraction_service` | `ExtractorStatus`, `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `resolve_call_edges` |
+| `.health_details` | `CapturedHealthDetails`, `capture_health_details` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
@@ -80,22 +82,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (35) |
+| Outbound | `src` (37) |
 
-> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LintProfiler](../entities/LintProfiler.md) | 191 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 230 | — | — |
-| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 241 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 279 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 319 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 326 | — | — |
-| [_LintPreflight](../entities/LintPreflight.md) | 340 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 347 | — | — |
+| [_LintProfiler](../entities/LintProfiler.md) | 193 | — | — |
+| [LintIssue](../entities/LintIssue.md) | 232 | — | — |
+| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 243 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
+| [LintReport](../entities/LintReport.md) | 281 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 322 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 329 | — | — |
+| [_LintPreflight](../entities/LintPreflight.md) | 343 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 350 | — | — |
 
 ## Functions
 
@@ -171,7 +173,8 @@ flowchart LR
 | `_new_lint_report` | `(wiki_path: Path, src_dir: str, effective_strict: bool, knowledge_drift_report: bool) -> LintReport` | — | — |
 | `_add_missing_wiki` | `(report: LintReport, wiki_path: Path) -> None` | — | — |
 | `_preflight_lint_inputs` | `(report: LintReport, wiki_path: Path, src_dir: str, source_selection: str \| Path \| None) -> _LintPreflight \| None` | — | — |
-| `build_report` | `(wiki_dir: str \| Path, src_dir: str = '.', *, strict: bool = False, knowledge_drift_report: bool = False, profiler: _LintProfiler \| None = None, cache_options: InventoryCacheOptions \| None = None, parallel_jobs: int = 1, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None) -> LintReport` | — | Build a structured lint report without rendering or exiting. |
+| `_finalize_lint_report` | `(report: LintReport, include_health_details: bool, inputs: _LintInputs \| None = None) -> LintReport` | — | Attach optional health evidence from this operation's captured inputs. |
+| `build_report` | `(wiki_dir: str \| Path, src_dir: str = '.', *, strict: bool = False, knowledge_drift_report: bool = False, profiler: _LintProfiler \| None = None, cache_options: InventoryCacheOptions \| None = None, parallel_jobs: int = 1, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, media_size_warn_bytes: int = wiki_media.DEFAULT_MEDIA_SIZE_WARN_BYTES, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, include_health_details: bool = False, comparison_policy: str \| None = None) -> LintReport` | `@comparison_entrypoint` | Build a structured lint report without rendering or exiting. |
 | `_lint_issue_payload` | `(issue: LintIssue) -> dict[str, object]` | — | — |
 | `report_to_dict` | `(report: LintReport, *, include_execution: bool = False) -> dict` | — | — |
 | `_profile_report_to_dict` | `(report: LintReport, profiler: _LintProfiler, *, include_cache: bool = False) -> dict` | — | — |

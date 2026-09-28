@@ -650,7 +650,7 @@ def test_service_composes_the_real_strict_lint_operation(
     )
     cli.main()
     payload = json.loads(capsys.readouterr().out)
-    assert payload["schema_version"] == DOCTOR_SCHEMA_VERSION
+    assert payload["schema_version"] == "llm-wiki-doctor/v4"
     assert payload["status"] == "healthy"
     assert payload["exit_code"] == 0
 

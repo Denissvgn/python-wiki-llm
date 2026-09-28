@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from . import analysis_compatibility as ac
+
 from collections import OrderedDict
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, fields, is_dataclass, replace
@@ -188,6 +190,7 @@ class ContextSession:
     def __init__(self, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR, profile=None, policy=None,
                  counter=None, source_selection=None, helper_cache_dir=None, allow_external_src=False,
                  max_entries=8, max_bytes=16_777_216, ttl_seconds: float = 300):
+        self.comparison_policy = ac.selected_policy()
         bounded_int(max_entries, "max_entries", 128, minimum=0)
         bounded_int(max_bytes, "max_bytes", 268_435_456, minimum=0)
         if (isinstance(ttl_seconds, bool) or not isinstance(ttl_seconds, (int, float))
@@ -361,6 +364,7 @@ class ContextSession:
                 return captured
         return None
 
+    @ac.bound_comparison
     def read(self, request, *, if_result_id=None, delta=False, reuse=True,
              cancelled: Callable[[], bool] | None = None) -> SessionReply:
         with self._lock:
@@ -474,6 +478,7 @@ class ContextSession:
             return SessionReply(state, current.result_id, current if state == "full" else None,
                                 freeze(delta_payload) if delta_payload else None, freeze(metadata))
 
+    @ac.bound_comparison
     def hint(self, *, unsaved_buffers=False):
         with self._lock:
             if self._closed or type(unsaved_buffers) is not bool:
@@ -481,6 +486,7 @@ class ContextSession:
             self._dirty = True
             self._unsaved = unsaved_buffers
 
+    @ac.bound_comparison
     def close(self):
         with self._lock:
             self._clear()

@@ -1,0 +1,42 @@
+{
+  "observations": {
+    "model.py": {
+      "classes": [
+        {
+          "bases": [],
+          "kind": "class",
+          "name": "User",
+          "occurrence": 1
+        }
+      ],
+      "functions": [
+        {
+          "decorators": [],
+          "is_async": false,
+          "name": "greet",
+          "params": [
+            {
+              "kind": "positional_or_keyword",
+              "name": "user",
+              "type": "User"
+            },
+            {
+              "default": "'Hi'",
+              "kind": "keyword_only",
+              "name": "prefix",
+              "type": "str"
+            }
+          ],
+          "return_type": "str"
+        }
+      ],
+      "imports": [],
+      "language": "python",
+      "scope": "module"
+    }
+  },
+  "schema_version": "llm-wiki-analysis-portability-fixture/v1",
+  "sources": {
+    "model.py": "class User:\n    name: str\n\ndef greet(user: User, *, prefix: str = \"Hi\") -> str:\n    return prefix + user.name\n"
+  }
+}

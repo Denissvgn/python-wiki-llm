@@ -605,7 +605,7 @@ llm-wiki ci-check --helper-cache-dir .cache/llm-wiki-helpers --src-dir . --wiki-
 llm-wiki ci-check --include-tests go --src-dir . --wiki-dir docs/llm_wiki
 llm-wiki ci-check --src-dir /path/to/repo --wiki-dir docs/llm_wiki --allow-external-src
 llm-wiki ci-check --format json --report .git/llm-wiki-ci-report.md
-llm-wiki ci-check --format json --report-schema v2 --no-report --cache-dir .cache/llm-wiki-inventory
+llm-wiki ci-check --format json --report-schema v2 --comparison-policy exact-v1 --no-report --cache-dir .cache/llm-wiki-inventory
 llm-wiki ci-check --format markdown
 ```
 
@@ -615,8 +615,10 @@ exits nonzero on validation failure. Native freshness/drift is disabled unless
 `--knowledge-drift-report` is supplied, and enabled findings remain
 nonblocking. Structured output discloses the report mode through
 `knowledge_drift_report`; the legacy `knowledge_drift_gate` compatibility field
-is always `false`. JSON output uses the closed `llm-wiki-ci-check/v1`
-envelope. Its `knowledge_health` member is a `llm-wiki-doctor/v1` projection
+is always `false`. For legacy knowledge, automatic JSON output uses the closed
+`llm-wiki-ci-check/v1` envelope with a `llm-wiki-doctor/v1` health projection.
+Migrated knowledge selects `llm-wiki-ci-check/v4` with a `llm-wiki-doctor/v4`
+projection and captured analysis compatibility. The `knowledge_health` member is
 composed from the same lint report, not a second source scan. The top-level
 `ok`, issue count, and process exit remain the authoritative blocking integrity
 result; the nested health status presents availability, freshness, snapshot,
@@ -624,7 +626,19 @@ governance, drift, and verification state without changing that policy.
 Use `--report-schema v2` for the `llm-wiki-ci-check/v2` envelope. It adds
 `runtime.cache`, `runtime.report`, `check_exit_code`, and `command_exit_code`.
 Report status is `written`, `disabled`, or `failed`; the nested doctor health
-continues to describe the check itself. The default schema remains v1.
+continues to describe the check itself. Automatic output selects v1 for legacy
+knowledge and v4 for knowledge carrying analysis compatibility metadata.
+
+For migrated knowledge, explicit v2 and v3 formats require
+`--comparison-policy exact-v1`. Use
+`--report-schema v3 --comparison-policy exact-v1` for `llm-wiki-ci-check/v3`.
+It retains the v2 runtime
+fields and includes a `llm-wiki-doctor/v3` health projection with captured
+coverage, snapshot commitments and producer versions. It reuses the same
+evaluation and preserves the integrity exit policy. Generic lint and MCP lint
+payloads retain their existing contracts.
+Detailed coverage describes the captured evaluation; `knowledge_drift_report`
+continues to control lint diagnostic occurrences.
 
 CI accepts the same `--cache-dir`, `--no-cache`, `--rebuild-cache`, and
 `--cache-stats` controls as lint and sync. Reports are replaced atomically.
@@ -643,6 +657,20 @@ disclosed with a warning, symlinks owned by another user are rejected, and
 `--report` is an output path, so explicit
 absolute paths and relative artifact paths outside the project root are allowed.
 
+### Analysis comparison policy
+
+`doctor`, `ci-check`, `context` and `mcp` accept
+`--comparison-policy auto|exact-v1|analysis-v1`. `auto` uses supported analysis
+commitments after sync and conservative comparison for legacy knowledge.
+`exact-v1` additionally requires producer versions to match. `analysis-v1` requires
+supported analysis commitments and reports unknown or incompatible inputs.
+
+`--report-schema v4` selects `llm-wiki-doctor/v4` or `llm-wiki-ci-check/v4`, with
+`llm-wiki-health-details/v2`. These reports retain exact versions and add the
+comparison policy and captured compatibility identities. Explicit older health
+report formats require `--comparison-policy exact-v1` for migrated knowledge.
+The capability report remains the separate doctor v2 contract.
+
 ## `doctor`
 
 Inspect current wiki knowledge health in one read-only command:
@@ -656,9 +684,37 @@ llm-wiki doctor --wiki-dir docs/llm_wiki --src-dir . --strict
 The report composes the existing availability, live freshness, snapshot parity,
 governance and review, drift, and verification-receipt checks. It does not
 define a separate source analyzer. Human output is a compact screen summary.
-JSON output uses the stable `llm-wiki-doctor/v1` schema and contains the same
+For legacy knowledge, automatic JSON output uses `llm-wiki-doctor/v1` and contains the same
 six named sections, complete freshness counts when evaluation succeeds, and
 the required evaluated or snapshot-only disclosure.
+
+Select conservative detailed JSON with
+`--report-schema v3 --comparison-policy exact-v1 --format json`, or call
+`llm_wiki_cli.api.doctor(..., report_schema="v3", comparison_policy="exact-v1")`.
+The default `auto` selects v1 for legacy knowledge and v4 for migrated knowledge.
+The v3 `health_details` object adds:
+
+- Captured source/wiki scope, source-selection fingerprints and snapshot hashes.
+- Recorded and live tool, extractor and plugin versions, configuration hashes
+  and generation-option hashes. Comparison still uses exact producer versions;
+  `analysis_contract: null` means no cross-version compatibility contract is available.
+- Disjoint `modeled` and `unmodeled` counts whose sum is `total`. Modeled outcomes
+  distinguish current, nonsemantic change, changed/missing source, incompatible
+  basis and unknown evidence. Missing recorded evidence does not make a modeled
+  concept unmodeled.
+- Separate evaluation, comparison-attempt and compatible-content counts.
+  Confirmed missing sources are outside compatible-content comparisons, because
+  absence can be established before comparing producer versions.
+- Primary reason counts in unique concepts, with at most three sorted example
+  locators per reason and an exact omitted count. Diagnostic occurrence counts
+  remain separate and can include overlapping findings.
+
+Unavailable inventory and unevaluated comparison counts are `null`, not zero.
+Partial extraction is disclosed explicitly. These details describe the captured
+evaluation; later filesystem or installed-package changes do not rewrite it.
+Snapshot hashes identify declared input sets and do not themselves prove freshness.
+The v3 option cannot be combined with `--capabilities`, which retains its
+separate v2 contract.
 
 To keep the health read from executing project plugin code, `doctor` never
 loads source plugins. Evidence that only a source plugin can produce may

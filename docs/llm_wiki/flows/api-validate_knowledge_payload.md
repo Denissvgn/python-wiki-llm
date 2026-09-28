@@ -2,10 +2,11 @@
 
 **Entry point:** `validate_knowledge_payload` (`api`)
 **Source:** [knowledge_model](../modules/knowledge_model.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 8 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 9 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -74,7 +75,7 @@ sequenceDiagram
     p16-->>p17: isinstance (src/llm_wiki_cli/services…ormalize_json_value_inner)
 ```
 
-> Call sequence diagram shows 30 of 1403 interactions; 1373 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1409 interactions; 1379 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -139,15 +140,15 @@ flowchart LR
 |---|---|---:|---|
 | validate_knowledge_payload | parse_knowledge_index | 645 | `parse_knowledge_index(payload)` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1581 | `_object(value, ...)` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1667 | `dict(require_mapping(...))` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1668 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
+| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1589 | `_object(value, ...)` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1675 | `dict(require_mapping(...))` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1676 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 | require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1670 | `KnowledgeModelError(path, 'must be an object')` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1672 | `KnowledgeModelError(path, 'object keys must be strings')` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1676 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1678 | `KnowledgeModelError(path, 'must be an object')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1680 | `KnowledgeModelError(path, 'object keys must be strings')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1684 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
 
 ### Boundary effects
 

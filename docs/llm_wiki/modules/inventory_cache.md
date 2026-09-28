@@ -13,6 +13,8 @@ Persistent inventory cache used by lint and CI validation.
 | `..` | `__version__` |
 | `..config` | `AGENT_WORKTREE_DIR_PATTERNS`, `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `is_agent_worktree_path` |
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
+| `.analysis_capture` | `capture_analysis` |
+| `.analysis_compatibility` | `digest` |
 | `.io` | `write_json_atomic` |
 | `.plugins` | `lock_path`, `plugin_store` |
 | `.progress` | `observed_phase` |
@@ -46,9 +48,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (8) |
+| Outbound | `src` (10) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -56,7 +58,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [InventoryCacheOptions](../entities/InventoryCacheOptions.md) | 42 | — | Runtime cache controls for inventory-producing commands. |
 | [InventoryCacheStats](../entities/InventoryCacheStats.md) | 56 | — | — |
-| [InventoryCache](../entities/InventoryCache.md) | 350 | — | JSON-backed cache for per-file built-in inventory entries. |
+| [InventoryCache](../entities/InventoryCache.md) | 357 | — | JSON-backed cache for per-file built-in inventory entries. |
 
 ## Functions
 
@@ -73,7 +75,7 @@ flowchart LR
 | `_implementation_fingerprint` | `() -> str` | — | — |
 | `_plugin_fingerprint` | `(root: Path) -> str` | — | — |
 | `_filter_fingerprint` | `() -> str` | — | — |
-| `build_inventory_cache_key` | `(src_dir: str \| Path, source_snapshot: SourceSnapshot, *, deep: bool, include_empty: bool, extractor_registry: dict[str, str]) -> dict[str, Any]` | — | Build cache metadata that must match before entries are reused. |
+| `build_inventory_cache_key` | `(src_dir: str \| Path, source_snapshot: SourceSnapshot, *, deep: bool, include_empty: bool, extractor_registry: dict[str, str], helper_cache_dir: str \| None = None) -> dict[str, Any]` | — | Build cache metadata that must match before entries are reused. |
 | `_resolve_gitdir_file` | `(git_file: Path) -> Path \| None` | — | — |
 | `_nearest_git_dir` | `(start: Path) -> Path \| None` | — | — |
 | `resolve_inventory_cache_path` | `(src_dir: str \| Path, cache_dir: str \| None = None, *, env: dict[str, str] \| None = None) -> Path \| None` | — | Resolve the cache file path for a source tree and optional override. |

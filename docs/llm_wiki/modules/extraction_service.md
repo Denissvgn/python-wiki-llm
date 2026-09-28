@@ -21,6 +21,7 @@ and explicit extractor status, cache, plugin, and source-snapshot metadata.
 | `..extractors.python_contracts` | `finalize_inventory_model_kinds` |
 | `..extractors.python_extractor` | `ComponentVisitor` |
 | `..extractors.rust_extractor` | `RustExtractionRequest` |
+| `.analysis_capture` | `capture_operation`, `capture_analysis` |
 | `.api_contracts` | `attach_routes_to_entry_points`, `build_api_contracts` |
 | `.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |
@@ -74,24 +75,24 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (21) |
-| Outbound | `src` (26) |
+| Outbound | `src` (27) |
 
-> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 48 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 138 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 146 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 171 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 203 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 223 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 248 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 261 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 272 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 292 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 3140 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 140 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 148 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 173 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 206 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 226 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 251 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 264 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 275 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 295 | — | — |
+| [_ComposeParserState](../entities/ComposeParserState.md) | 3150 | — | — |
 
 ## Functions
 
@@ -107,7 +108,7 @@ flowchart LR
 | `_merge_language_inventory` | `(target: dict, source_order: list[str], *sources: dict) -> None` | — | — |
 | `_coerce_inventory_request` | `(request, legacy_args: tuple, legacy_kwargs: dict) -> InventoryRequest` | — | — |
 | `get_inventory_result` | `(request = _MISSING_INVENTORY_REQUEST, *legacy_args, **legacy_kwargs) -> InventoryResult` | — | Scan source files across all registered languages and return inventory. |
-| `_build_inventory_result` | `(request: InventoryRequest) -> InventoryResult` | — | — |
+| `_build_inventory_result` | `(request: InventoryRequest) -> InventoryResult` | `@capture_operation` | — |
 | `_completed_inventory_result` | `(context: _InventoryBuildContext, *, inventory: dict, statuses: dict[str, ExtractorStatus], extraction_job_plan: ExtractionJobPlan, selected_plugin_components: tuple[dict, ...], producer_plugin_components: tuple[dict, ...], evaluated_source_snapshot: SourceSnapshot, outcomes_by_language: dict[str, _ExtractionOutcome]) -> InventoryResult` | — | — |
 | `_python_extraction_sidecars` | `(context: _InventoryBuildContext, outcomes_by_language: dict[str, _ExtractionOutcome]) -> dict` | `@observed_phase('sidecar_observations')` | — |
 | `_inventory_plugin_state` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus], inventory: dict) -> tuple[tuple[dict, ...], tuple[dict, ...], SourceSnapshot]` | — | — |

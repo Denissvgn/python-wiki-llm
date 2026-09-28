@@ -1,6 +1,6 @@
 # _ValidatedLiveEvaluation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:212`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:234`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -21,6 +21,7 @@ _Auto-generated from `_ValidatedLiveEvaluation` in `src/llm_wiki_cli/services/kn
 | `source_content_hashes` | `Mapping[str, str]` | *required* | — |
 | `missing_source_paths` | `frozenset[str]` | *required* | — |
 | `concept_bases` | `Mapping[str, ConceptObservationBasis]` | *required* | — |
+| `comparison_policy` | `str` | `'auto'` | — |
 
 ## Methods
 
@@ -51,7 +52,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `concept_bases`, `generation_options_hash`, `missing_source_paths`, `producer`, `schema_version`, `source_content_hashes` |
+| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `comparison_policy`, `concept_bases`, `generation_options_hash`, `missing_source_paths`, `producer`, `schema_version`, `source_content_hashes` |
 
 ### References
 

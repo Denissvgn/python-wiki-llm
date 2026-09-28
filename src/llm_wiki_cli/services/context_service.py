@@ -2820,6 +2820,7 @@ def _build_context_knowledge_view(
                             source_snapshot,
                         ),
                         inventory_complete=True,
+                        analysis_components=inventory_result.analysis_components,
                         extractor_registry=inventory_result.extractor_registry,
                         plugin_extractor_components=(
                             inventory_result.plugin_components

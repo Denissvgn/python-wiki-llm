@@ -31,81 +31,23 @@ Stores logical knowledge objects in bounded indexed ZIP containers. V3 retains i
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n1["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n2["src/llm_wiki_cli/services/knowledge_packs.py"]
-    n3["src/llm_wiki_cli/services/knowledge_reuse.py"]
-    n4["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage_access.py"]
-    n6["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
-    n7["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
-    n8["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
-    n9["src/llm_wiki_cli/services/storage_receipts.py"]
-    n10["src/llm_wiki_cli/services/storage_spool.py"]
-    n11["src/llm_wiki_cli/services/task_context_v2.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/knowledge_packs.py"]
     n0 --> n1
-    n0 --> n2
-    n1 --> n2
-    n1 --> n3
-    n1 --> n4
-    n1 --> n10
-    n2 --> n1
-    n2 --> n4
-    n2 --> n10
-    n3 --> n1
-    n3 --> n2
-    n5 --> n1
-    n5 --> n2
-    n5 --> n4
-    n6 --> n1
-    n6 --> n2
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n7 --> n1
-    n7 --> n2
-    n7 --> n4
-    n7 --> n10
-    n8 --> n2
-    n8 --> n4
-    n8 --> n10
-    n9 --> n2
-    n9 --> n4
-    n10 --> n4
-    n11 --> n2
-    n11 --> n4
-    n11 --> n5
-    n11 --> n9
-    click n0 "../modules/documentation_wiki_input.md"
-    click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_packs.md"
-    click n3 "../modules/knowledge_reuse.md"
-    click n4 "../modules/knowledge_storage.md"
-    click n5 "../modules/knowledge_storage_access.md"
-    click n6 "../modules/knowledge_storage_diagnostics.md"
-    click n7 "../modules/knowledge_storage_lifecycle.md"
-    click n8 "../modules/knowledge_stream_audit.md"
-    click n9 "../modules/storage_receipts.md"
-    click n10 "../modules/storage_spool.md"
-    click n11 "../modules/task_context_v2.md"
+    n1 --> n0
+    click n1 "../modules/knowledge_packs.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [documentation_wiki_input](../modules/documentation_wiki_input.md) |
-| Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Inbound | [knowledge_reuse](../modules/knowledge_reuse.md) |
-| Inbound | [knowledge_storage_access](../modules/knowledge_storage_access.md) |
-| Inbound | [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md) |
-| Inbound | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) |
-| Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
-| Inbound | [storage_receipts](../modules/storage_receipts.md) |
-| Inbound | [task_context_v2](../modules/task_context_v2.md) |
-| Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
-| Outbound | [storage_spool](../modules/storage_spool.md) |
+| Inbound | `src` (10) |
+| Outbound | `src` (3) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

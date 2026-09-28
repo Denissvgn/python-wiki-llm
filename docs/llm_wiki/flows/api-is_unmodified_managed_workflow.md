@@ -91,17 +91,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_unmodified_managed_workflow | _normalize_newlines | 243 | `_normalize_newlines(content)` |
-| _normalize_newlines | content.decode | 234 | `content.decode('utf-8')` |
-| _normalize_newlines | text.replace(…).replace(…).encode | 237 | `text.replace('\r\n', '\n').replace('\r', '\n').encode('utf-8')` |
-| _normalize_newlines | text.replace(…).replace | 237 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| _normalize_newlines | text.replace | 237 | `text.replace('\r\n', '\n')` |
-| is_unmodified_managed_workflow | normalized.decode | 246 | `normalized.decode('utf-8')` |
-| is_unmodified_managed_workflow | _MANAGED_HEADER_RE.match | 247 | `_MANAGED_HEADER_RE.match(text)` |
-| is_unmodified_managed_workflow | text[…].encode | 250 | `text[match.end():].encode('utf-8')` |
-| is_unmodified_managed_workflow | match.end | 250 | `match.end(data not statically known)` |
-| is_unmodified_managed_workflow | hashlib.sha256(…).hexdigest | 251 | `hashlib.sha256(body).hexdigest(data not statically known)` |
-| is_unmodified_managed_workflow | hashlib.sha256 | 251 | `hashlib.sha256(body)` |
+| is_unmodified_managed_workflow | _normalize_newlines | 245 | `_normalize_newlines(content)` |
+| _normalize_newlines | content.decode | 236 | `content.decode('utf-8')` |
+| _normalize_newlines | text.replace(…).replace(…).encode | 239 | `text.replace('\r\n', '\n').replace('\r', '\n').encode('utf-8')` |
+| _normalize_newlines | text.replace(…).replace | 239 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| _normalize_newlines | text.replace | 239 | `text.replace('\r\n', '\n')` |
+| is_unmodified_managed_workflow | normalized.decode | 248 | `normalized.decode('utf-8')` |
+| is_unmodified_managed_workflow | _MANAGED_HEADER_RE.match | 249 | `_MANAGED_HEADER_RE.match(text)` |
+| is_unmodified_managed_workflow | text[…].encode | 252 | `text[match.end():].encode('utf-8')` |
+| is_unmodified_managed_workflow | match.end | 252 | `match.end(data not statically known)` |
+| is_unmodified_managed_workflow | hashlib.sha256(…).hexdigest | 253 | `hashlib.sha256(body).hexdigest(data not statically known)` |
+| is_unmodified_managed_workflow | hashlib.sha256 | 253 | `hashlib.sha256(body)` |
 
 ### Boundary effects
 
@@ -111,16 +111,16 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_newlines` | `content.decode` | 234 |
-| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace('\r', '\n').encode` | 237 |
-| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace` | 237 |
-| unresolved_call | `_normalize_newlines` | `text.replace` | 237 |
-| unresolved_call | `is_unmodified_managed_workflow` | `normalized.decode` | 246 |
-| unresolved_call | `is_unmodified_managed_workflow` | `_MANAGED_HEADER_RE.match` | 247 |
-| unresolved_call | `is_unmodified_managed_workflow` | `text[match.end():].encode` | 250 |
-| unresolved_call | `is_unmodified_managed_workflow` | `match.end` | 250 |
-| unresolved_call | `is_unmodified_managed_workflow` | `hashlib.sha256(body).hexdigest` | 251 |
-| external_call | `is_unmodified_managed_workflow` | `hashlib.sha256` | 251 |
+| unresolved_call | `_normalize_newlines` | `content.decode` | 236 |
+| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace('\r', '\n').encode` | 239 |
+| unresolved_call | `_normalize_newlines` | `text.replace('\r\n', '\n').replace` | 239 |
+| unresolved_call | `_normalize_newlines` | `text.replace` | 239 |
+| unresolved_call | `is_unmodified_managed_workflow` | `normalized.decode` | 248 |
+| unresolved_call | `is_unmodified_managed_workflow` | `_MANAGED_HEADER_RE.match` | 249 |
+| unresolved_call | `is_unmodified_managed_workflow` | `text[match.end():].encode` | 252 |
+| unresolved_call | `is_unmodified_managed_workflow` | `match.end` | 252 |
+| unresolved_call | `is_unmodified_managed_workflow` | `hashlib.sha256(body).hexdigest` | 253 |
+| external_call | `is_unmodified_managed_workflow` | `hashlib.sha256` | 253 |
 | step_limit | `is_unmodified_managed_workflow` | `first 12 steps` | 0 |
 
 ## Behavior

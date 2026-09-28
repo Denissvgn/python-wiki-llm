@@ -10,7 +10,12 @@ from ..services.extraction_jobs import extraction_job_request_from_args
 
 
 def run(args) -> None:
+    report_schema = getattr(args, "report_schema", "auto")
+    if report_schema not in {"auto", "v1", "v3", "v4"}:
+        raise ValueError("--report-schema must be v1 or v3")
     if getattr(args, "capabilities", False):
+        if report_schema not in {"auto", "v1"}:
+            raise ValueError("--capabilities and --report-schema are mutually exclusive")
         from ..services.capability_diagnostics import build_capability_doctor, render_capability_doctor
 
         report = build_capability_doctor(
@@ -26,6 +31,7 @@ def run(args) -> None:
     report = build_doctor_report(
         getattr(args, "wiki_dir", DEFAULT_WIKI_DIR),
         getattr(args, "src_dir", "."),
+        comparison_policy=getattr(args, "comparison_policy", "auto"),
         strict=bool(getattr(args, "strict", False)),
         allow_external_src=bool(getattr(args, "allow_external_src", False)),
         helper_cache_dir=getattr(args, "helper_cache_dir", None),
@@ -33,10 +39,11 @@ def run(args) -> None:
         parallel_jobs=getattr(args, "jobs", 1),
         job_request=extraction_job_request_from_args(args),
         source_selection=getattr(args, "source_selection", None),
+        report_schema=report_schema,
     )
     if getattr(args, "format", "text") == "json":
-        print(json.dumps(report.to_payload(), indent=2, sort_keys=True))
+        print(json.dumps(report.to_payload(report_schema=report_schema), indent=2, sort_keys=True))
     else:
-        print(render_doctor_text(report), end="")
+        print(render_doctor_text(report, report_schema=report_schema), end="")
     if report.exit_code:
         raise SystemExit(report.exit_code)

@@ -31,6 +31,7 @@ Evaluated command state needed to plan one three-artifact commit.
 | `force_unknown_evidence` | `bool` | `False` | — |
 | `untrusted_evidence_page_paths` | `AbstractSet[str]` | `frozenset()` | — |
 | `regenerated_evidence_page_paths` | `AbstractSet[str]` | `frozenset()` | — |
+| `analysis_components` | `Mapping[str, Any] \| None` | `None` | — |
 | `extractor_registry` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
 | `plugin_extractor_components` | `Sequence[Mapping[str, Any]]` | `()` | — |
 | `plugin_components` | `Sequence[Mapping[str, Any]]` | `()` | — |
@@ -100,7 +101,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `call_edges`, `committed_state`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry`, `flows`, `force_unknown_evidence`, `generation_option_allowlist`, `generation_option_defaults` |
+| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `analysis_components`, `call_edges`, `committed_state`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry`, `flows`, `force_unknown_evidence`, `generation_option_allowlist` |
 
 ### References
 

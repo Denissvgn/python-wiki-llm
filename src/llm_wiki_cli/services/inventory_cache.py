@@ -33,8 +33,8 @@ from .runtime_output import (
 )
 
 CACHE_FILENAME = "llm-wiki-inventory-cache.json"
-CACHE_SCHEMA = "inventory-v3"
-CACHE_VERSION = 3
+CACHE_SCHEMA = "inventory-v4"
+CACHE_VERSION = 4
 ENV_CACHE_DIR = "LLM_WIKI_CACHE_DIR"
 
 
@@ -231,13 +231,20 @@ def build_inventory_cache_key(
     deep: bool,
     include_empty: bool,
     extractor_registry: dict[str, str],
+    helper_cache_dir: str | None = None,
 ) -> dict[str, Any]:
     """Build cache metadata that must match before entries are reused."""
+    from .analysis_capture import capture_analysis
+    from .analysis_compatibility import digest
+    analysis = capture_analysis(extractor_registry, source_root=source_snapshot.root, helper_cache_dir=helper_cache_dir, languages={k for k, v in source_snapshot.files_by_language.items() if v})
     project_root = Path.cwd().resolve()
+    active = {"agent-wiki-cli", "llm-wiki/extractor/infrastructure"} | {"llm-wiki/extractor/" + k for k, v in source_snapshot.files_by_language.items() if v}
+    complete = analysis is not None and active <= set(analysis) and not (project_root / ".llm-wiki/plugins.lock.json").exists() and not (source_snapshot.root / ".llm-wiki/plugins.lock.json").exists()
+    identity = None if analysis is None else {k: {f: v[f] for f in ("implementation", "runtime")} for k, v in analysis.items() if k in active}
     return {
         "version": CACHE_VERSION,
         "schema": CACHE_SCHEMA,
-        "llm_wiki_version": LLM_WIKI_VERSION,
+        "analysis_identity": digest(identity) if complete else digest({"inputs": identity, "legacy_version": LLM_WIKI_VERSION}),
         "src_dir": str(Path(src_dir).resolve()),
         "deep": bool(deep),
         "include_empty": bool(include_empty),
@@ -436,6 +443,7 @@ class InventoryCache:
         if not self.enabled or self.path is None:
             return
         payload = dict(cache_key)
+        payload["producer_version"] = LLM_WIKI_VERSION
         payload["files"] = dict(sorted(files.items()))
         try:
             write_json_atomic(self.path, payload)

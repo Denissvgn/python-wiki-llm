@@ -515,6 +515,9 @@ def test_wiki_integrity_uses_the_automatic_locked_helper_plan():
     assert delegation["with"] == {
         "src-dir": ".",
         "wiki-dir": "docs/llm_wiki",
+        "report-schema": "v4",
+        "comparison-policy": "analysis-v1",
+        "maintenance-candidate-sha": "${{ github.sha }}",
     }
 
     action = yaml.safe_load(

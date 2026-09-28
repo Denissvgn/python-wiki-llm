@@ -2,10 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [sync_cmd](../modules/sync_cmd.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 53 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [canonical_json](../modules/canonical_json.md), and 54 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
 - [api_contracts](../modules/api_contracts.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [canonical_json](../modules/canonical_json.md)
@@ -118,7 +119,7 @@ sequenceDiagram
     p13-->>p16: getattr (src/llm_wiki_cli/services…ion_job_request_from_args)
 ```
 
-> Call sequence diagram shows 30 of 6540 interactions; 6510 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 6551 interactions; 6521 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -193,7 +194,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 4655 | `_sync_run_options_from_args(args)` |
+| run | _sync_run_options_from_args | 4656 | `_sync_run_options_from_args(args)` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2272 | `getattr(args, 'src_dir', '.')` |
 | _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2273 | `Path(getattr(...))` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2273 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
@@ -203,14 +204,14 @@ flowchart LR
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2275 | `getattr(args, 'no_plugins', False)` |
 | _sync_run_options_from_args | _cache_options_from_args | 2276 | `_cache_options_from_args(args)` |
 | _cache_options_from_args | cache_options_from_args | 275 | `cache_options_from_args(args)` |
-| cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 304 | `bool(getattr(...))` |
+| cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 311 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 4665 |
-| output | `print` | `run` | 4671 |
+| output | `print` | `run` | 4666 |
+| output | `print` | `run` | 4672 |
 | output | `print` | `_sync_run_options_from_args` | 2293 |
 | output | `print` | `_sync_run_options_from_args` | 2299 |
 | output | `print` | `_sync_run_options_from_args` | 2305 |

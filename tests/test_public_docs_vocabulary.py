@@ -30,6 +30,7 @@ _QUALIFICATION_SOURCE_ARCHIVE_ENV = (
 MARKDOWN = MarkdownIt("commonmark").enable(("strikethrough", "table"))
 _PROSE_GAP = r"(?:[^\S\r\n]+|[^\S\r\n]*(?:\r\n?|\n)[^\S\r\n]*)"
 _URI_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+_NON_ASCII = re.compile(r"[^\x00-\x7f]")
 _HTML_NUMBER = re.compile(
     r"-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
 )
@@ -344,6 +345,8 @@ def _decode_public_text(path: str, raw: bytes) -> str | None:
 
 
 def _mask_public_legacy_identifiers(text: str) -> str:
+    if not any(literal in text for literal in PUBLIC_LEGACY_IDENTIFIERS):
+        return text
     chars = list(text)
     for literal in PUBLIC_LEGACY_IDENTIFIERS:
         start = 0
@@ -741,15 +744,21 @@ def _semantic_markdown_segments(text: str) -> Iterator[tuple[int, str]]:
 
 
 def _without_invisible_formatting(text: str) -> str:
-    return "".join(
-        character
-        for character in text
-        if unicodedata.category(character) != "Cf"
-        and not any(
-            start <= ord(character) <= end
-            for start, end in _DEFAULT_IGNORABLE_RANGES
-        )
-    )
+    # None of the filtered categories/ranges contains ASCII. Let the regex
+    # engine skip that common case instead of running Python per character.
+    if text.isascii():
+        return text
+
+    def visible(match: re.Match[str]) -> str:
+        character = match.group(0)
+        point = ord(character)
+        if unicodedata.category(character) == "Cf" or any(
+            start <= point <= end for start, end in _DEFAULT_IGNORABLE_RANGES
+        ):
+            return ""
+        return character
+
+    return _NON_ASCII.sub(visible, text)
 
 
 def _identity_is_embedded_in_unicode_word(
@@ -891,6 +900,34 @@ class _LocalDestination:
     requires_directory: bool
 
 
+@dataclass(frozen=True, init=False)
+class DocumentationInventory:
+    """Immutable tracked membership for one documentation scan."""
+
+    files: frozenset[str]
+    directories: frozenset[str]
+
+    def __init__(self, paths: Iterable[str]):
+        files = frozenset(paths)
+        directories = {"."}
+        for path in files:
+            # Keep lexical prefix semantics; normalizing malformed caller
+            # paths here would silently widen the set of permitted targets.
+            parent, slash, _ = path.rpartition("/")
+            while slash:
+                directories.add(parent)
+                parent, slash, _ = parent.rpartition("/")
+        object.__setattr__(self, "files", files)
+        object.__setattr__(self, "directories", frozenset(directories))
+
+    @classmethod
+    def capture(cls, paths: Iterable[str]) -> DocumentationInventory:
+        return cls(paths)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.files)
+
+
 def _normalize_local_destination(
     source_path: str,
     destination: str,
@@ -927,7 +964,12 @@ def scan_markdown_links(
 ) -> list[PublicDocsFinding]:
     """Reject ignored-report, repository-escape, and untracked local links."""
 
-    tracked = set(tracked_files)
+    inventory = (
+        tracked_files
+        if isinstance(tracked_files, DocumentationInventory)
+        else DocumentationInventory.capture(tracked_files)
+    )
+    tracked = inventory.files
     findings: list[PublicDocsFinding] = []
     for line, destination in _markdown_link_destinations(text):
         local = _normalize_local_destination(path, destination)
@@ -954,10 +996,7 @@ def scan_markdown_links(
                 )
             )
             continue
-        tracked_directory = normalized == "." or any(
-            candidate.startswith(normalized.rstrip("/") + "/")
-            for candidate in tracked
-        )
+        tracked_directory = normalized in inventory.directories
         target_is_tracked = normalized in tracked or tracked_directory
         target_exists = root is None or (
             (root / normalized).is_dir()
@@ -1849,6 +1888,7 @@ def test_scan_set_is_tracked_and_excludes_internal_reports():
 
 def test_tracked_public_documentation_has_no_internal_vocabulary_or_dead_links():
     tracked = _tracked_files()
+    inventory = DocumentationInventory.capture(tracked)
     findings: list[PublicDocsFinding] = []
     for path in public_documentation_files(tracked):
         raw = (REPO_ROOT / path).read_bytes()
@@ -1859,7 +1899,7 @@ def test_tracked_public_documentation_has_no_internal_vocabulary_or_dead_links()
             scan_public_document(
                 text,
                 path=path,
-                tracked_files=tracked,
+                tracked_files=inventory,
                 root=REPO_ROOT,
             )
         )

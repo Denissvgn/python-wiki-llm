@@ -1,6 +1,6 @@
 # McpWikiError
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:120`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:122`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [mcp_server](../modules/mcp_server.md)

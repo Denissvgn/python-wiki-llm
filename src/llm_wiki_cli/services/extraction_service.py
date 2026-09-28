@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .analysis_capture import capture_operation
+
 from .progress import observed_phase, current_progress, with_progress, record_counts
 
 import hashlib
@@ -179,6 +181,7 @@ class InventoryResult:
     plugin_lock_path: str | None = None
     plugin_lock_hash: str | None = None
     source_snapshot: SourceSnapshot | None = None
+    analysis_components: dict | None = field(default=None, repr=False, compare=False)
     data_effect_observations: dict | None = field(
         default=None,
         repr=False,
@@ -469,6 +472,7 @@ def get_inventory_result(
     )
 
 
+@capture_operation
 def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
     context = _prepare_inventory_build_context(request)
     planning = _plan_inventory_extractions(context)
@@ -527,7 +531,12 @@ def _completed_inventory_result(
         record_counts(
             cache_hits=context.cache.stats.hits, cache_misses=context.cache.stats.misses
         )
+    from .analysis_capture import capture_analysis
+    analysis = capture_analysis(context.registry, source_root=context.source_snapshot.root,
+                                helper_cache_dir=context.request.helper_cache_dir,
+                                languages={v.get("language", "") for v in inventory.values()})
     return InventoryResult(
+        analysis_components=analysis,
         inventory=inventory,
         statuses=statuses,
         cache_stats=context.cache.stats if context.cache is not None else None,
@@ -894,6 +903,7 @@ def _load_inventory_cache_state(
         deep=request.deep,
         include_empty=request.include_empty,
         extractor_registry=registry,
+        helper_cache_dir=request.helper_cache_dir,
     )
     cache_files = cache.load(cache_key)
     cache.stats.deleted = len(set(cache_files) - set(source_file_by_path))

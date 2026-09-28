@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -19,9 +20,14 @@ from typing import Any
 from .contracts import (
     CI_CHECK_SCHEMA_VERSION,
     CI_CHECK_V2_SCHEMA_VERSION,
+    CI_CHECK_V3_SCHEMA_VERSION,
     DOCTOR_SCHEMA_VERSION,
+    DOCTOR_V3_SCHEMA_VERSION,
 )
 from .doctor_service import compose_doctor_report
+from . import analysis_compatibility as ac
+from .health_contract import HealthDetailsError, validate_health_details
+from .health_summary import FRESHNESS_DISCLOSURE, detailed_health_rows, freshness_counts, reason_list, summary_cell
 from .knowledge_observability import KnowledgeAggregateSummary
 from .lint_service import LintReport, report_to_dict
 
@@ -160,11 +166,14 @@ _JSON_EVIDENCE_STATES = frozenset(
     {
         "available (validated llm-wiki-ci-check/v1)",
         "available (validated llm-wiki-ci-check/v2)",
+        "available (validated llm-wiki-ci-check/v3)",
+        "available (validated llm-wiki-ci-check/v4)",
         "unavailable (no output)",
         "unavailable (unexpected evidence-path collision)",
         "unavailable (could not preserve validated output)",
         "unavailable (invalid v1 output; diagnostic raw available)",
         "unavailable (invalid v2 output; diagnostic raw available)",
+        "unavailable (invalid v3 output; diagnostic raw available)",
         "unavailable (invalid output could not be preserved)",
         "unavailable (empty output)",
         "unavailable (raw output is not a regular file)",
@@ -183,7 +192,7 @@ class CiCheckReportError(ValueError):
 def build_ci_check_payload(
     report: LintReport,
     *,
-    report_schema: str = "v1",
+    report_schema: str = "auto",
     runtime: Mapping[str, object] | None = None,
     command_exit_code: int | None = None,
 ) -> dict[str, object]:
@@ -191,8 +200,10 @@ def build_ci_check_payload(
 
     if not isinstance(report, LintReport):
         raise TypeError("report must be a LintReport")
-    if report_schema not in {"v1", "v2"}:
-        raise ValueError("report_schema must be v1 or v2")
+    if report_schema not in {"auto", "v1", "v2", "v3", "v4"}:
+        raise ValueError("report_schema must be v1, v2 or v3")
+    details = None if report.health_details is None else report.health_details.to_payload()
+    report_schema = ac.report_schema(report_schema, details)
     payload: dict[str, object] = {
         "schema_version": CI_CHECK_SCHEMA_VERSION,
         **report_to_dict(report, include_execution=True),
@@ -202,17 +213,17 @@ def build_ci_check_payload(
         strict=False,
         wiki_dir=report.wiki_dir,
         src_dir=report.src_dir,
-    ).to_payload()
-    if report_schema == "v2":
+    ).to_payload(**({"report_schema": report_schema if report_schema in {"v3", "v4"} else "v1"} if report_schema in {"v3", "v4"} or (details and details["schema_version"] == "llm-wiki-health-details/v2") else {}))
+    if report_schema in {"v2", "v3", "v4"}:
         check_exit = 0 if report.passed else 1
         effective_exit = check_exit if command_exit_code is None else command_exit_code
         payload.update(
-            schema_version=CI_CHECK_V2_SCHEMA_VERSION,
+            schema_version="llm-wiki-ci-check/v4" if report_schema == "v4" else CI_CHECK_V3_SCHEMA_VERSION if report_schema == "v3" else CI_CHECK_V2_SCHEMA_VERSION,
             check_exit_code=check_exit,
             command_exit_code=effective_exit,
             runtime=runtime,
         )
-        _validate_ci_v2(payload, cli_exit=effective_exit)
+        validate_ci_check_payload(payload, cli_exit=effective_exit)
     return payload
 
 
@@ -1018,7 +1029,26 @@ def validate_doctor_payload(
     source_selection_mismatch: bool | None = None,
     allow_additive: bool = False,
 ) -> Mapping[str, Any]:
-    """Validate doctor v1 structure, semantics, and overall classification."""
+    """Validate supported health doctor contracts and their classification."""
+
+    if isinstance(value, Mapping) and value.get("schema_version") in {DOCTOR_V3_SCHEMA_VERSION, "llm-wiki-doctor/v4"}:
+        health = _exact_object(value, "report.knowledge_health", _DOCTOR_FIELDS | {"health_details"})
+        expected_detail = "llm-wiki-health-details/v2" if health["schema_version"] == "llm-wiki-doctor/v4" else "llm-wiki-health-details/v1"
+        if health["health_details"].get("schema_version") != expected_detail:
+            raise CiCheckReportError("doctor/detail version mismatch")
+        legacy = _legacy_doctor_payload(health)
+        validate_doctor_payload(
+            legacy, expected_strict=expected_strict,
+            source_selection_mismatch=source_selection_mismatch,
+        )
+        try:
+            validate_health_details(
+                health["health_details"], wiki_dir=health["wiki_dir"], src_dir=health["src_dir"],
+                freshness=health["freshness"], availability=health["availability"]["state"],
+            )
+        except HealthDetailsError as exc:
+            raise CiCheckReportError(str(exc)) from exc
+        return health
 
     health = _contract_object(
         value,
@@ -1036,6 +1066,24 @@ def validate_doctor_payload(
         expected_strict=expected_strict,
         allow_additive=allow_additive,
     )
+
+
+def _legacy_doctor_payload(health: Mapping[str, Any]) -> dict[str, Any]:
+    legacy = {key: value for key, value in health.items() if key != "health_details"}
+    legacy["schema_version"] = DOCTOR_SCHEMA_VERSION
+    return legacy
+
+
+def _validate_ci_v3(value: Mapping[str, Any], *, cli_exit: int) -> Mapping[str, Any]:
+    health = validate_doctor_payload(value.get("knowledge_health"), expected_strict=False)
+    expected_health = "llm-wiki-doctor/v4" if value["schema_version"] == "llm-wiki-ci-check/v4" else DOCTOR_V3_SCHEMA_VERSION
+    if health["schema_version"] != expected_health:
+        raise CiCheckReportError("CI v3 requires doctor v3 details")
+    legacy = dict(value)
+    legacy["schema_version"] = CI_CHECK_V2_SCHEMA_VERSION
+    legacy["knowledge_health"] = _legacy_doctor_payload(health)
+    _validate_ci_v2(legacy, cli_exit=cli_exit)
+    return value
 
 
 def _validate_ci_v2(value: object, *, cli_exit: int) -> Mapping[str, Any]:
@@ -1138,6 +1186,8 @@ def validate_ci_check_payload(
 ) -> Mapping[str, Any]:
     """Validate CI v1/v2 and distinguish check and required-output failures."""
 
+    if isinstance(value, Mapping) and value.get("schema_version") in {CI_CHECK_V3_SCHEMA_VERSION, "llm-wiki-ci-check/v4"}:
+        return _validate_ci_v3(value, cli_exit=cli_exit)
     if (
         isinstance(value, Mapping)
         and value.get("schema_version") == CI_CHECK_V2_SCHEMA_VERSION
@@ -1253,16 +1303,70 @@ def load_ci_check_payload(
     return validate_ci_check_payload(payload, cli_exit=cli_exit)
 
 
-def _clip_utf8(value: str, limit: int = 240) -> str:
-    encoded = value.encode("utf-8")
-    if len(encoded) <= limit:
-        return value
-    prefix = encoded[: limit - 3]
-    while True:
-        try:
-            return prefix.decode("utf-8") + "..."
-        except UnicodeDecodeError as exc:
-            prefix = prefix[: exc.start]
+def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
+    """Summarize the already validated diagnostics; never evaluate source."""
+    health = report["knowledge_health"]
+    records = [row for row in report["diagnostics"] if row["category"] == "knowledge_freshness"]
+    counts: Counter[str] = Counter()
+    examples: dict[str, tuple[bool, bool, str, str]] = {}
+    for row in records:
+        hint, path = row.get("hint") or "", row.get("path") or row.get("target") or ""
+        example = (not bool(hint), not bool(path), hint, path)
+        # Use the validator's existing reason extraction, including legacy
+        # message reason tags. One record may supply several distinct reasons.
+        for reason in _finding_reasons([row]):
+            counts[reason] += 1
+            if reason not in examples or example < examples[reason]:
+                examples[reason] = example
+    ordered = sorted(counts, key=lambda reason: (-counts[reason], reason))
+    groups = "; ".join(
+        f"`{summary_cell(reason + '=' + str(counts[reason]), 160)}`"
+        for reason in ordered[:3]
+    ) or "none reported"
+    if len(ordered) > 3:
+        groups += f"; ... [{len(ordered) - 3} more reasons; see full JSON]"
+    lines = [
+        f"- Freshness diagnostics: `{len(records)}` of `{len(report['diagnostics'])}` total records; reasons (records, may overlap): {groups}.",
+    ]
+    guidance = []
+    for reason in ordered[:3]:
+        _, _, hint, path = examples[reason]
+        if hint or path:
+            line = f"- Guidance for `{summary_cell(reason, 120)}`: "
+            line += f"`{summary_cell(hint)}`" if hint else "no hint supplied"
+            if path:
+                line += f"; example `{summary_cell(path)}`"
+            guidance.append(line)
+    lines.extend(guidance[:1])
+    lines.extend([
+        f"- Freshness states: `{summary_cell(freshness_counts(health['freshness']['counts_by_state']))}`.",
+        f"- Health reasons: `{summary_cell(reason_list(sorted(set(health['unhealthy_reasons'] + health['degraded_reasons']))))}`.",
+        "- " + FRESHNESS_DISCLOSURE,
+    ])
+    lines.extend(guidance[1:])
+    detail_lines = [f"- {label}: `{summary_cell(value)}`." for label, value in detailed_health_rows(health)]
+    return detail_lines + lines
+
+
+def _bounded_summary(
+    core: list[str], details: list[str], suffix: list[str], *, max_lines: int, max_bytes: int,
+) -> bytes:
+    """Preserve status and dirty paths, disclosing any omitted health detail."""
+    def fits(lines):
+        return len(lines) <= max_lines and len(("\n".join(lines) + "\n").encode("utf-8")) <= max_bytes
+
+    if fits(core + details + suffix):
+        return ("\n".join(core + details + suffix) + "\n").encode("utf-8")
+    omitted = "- Health details abbreviated; see full JSON. Text marked [truncated] is abbreviated."
+    shown: list[str] = []
+    for line in details:
+        if not fits(core + shown + [line, omitted] + suffix):
+            break
+        shown.append(line)
+    lines = core + shown + ([omitted] if details else []) + suffix
+    if not fits(lines):
+        raise CiCheckReportError("bounded summary invariant failed")
+    return ("\n".join(lines) + "\n").encode("utf-8")
 
 
 def render_ci_summary(
@@ -1278,6 +1382,8 @@ def render_ci_summary(
     status_limit: int,
     max_lines: int,
     max_bytes: int,
+    report_name: str = "llm-wiki-ci-report.json",
+    evidence_artifact: str | None = None,
 ) -> bytes:
     """Render fixed-state integrity and health evidence within strict bounds."""
 
@@ -1315,6 +1421,8 @@ def render_ci_summary(
     json_available = json_state in {
         "available (validated llm-wiki-ci-check/v1)",
         "available (validated llm-wiki-ci-check/v2)",
+        "available (validated llm-wiki-ci-check/v3)",
+        "available (validated llm-wiki-ci-check/v4)",
     }
     if report_available is not json_available:
         raise CiCheckReportError("validated report and JSON evidence state disagree")
@@ -1335,21 +1443,27 @@ def render_ci_summary(
     )
     if result != expected_result:
         raise CiCheckReportError("result does not match the validated evidence")
+    _string(report_name, "report name")
+    if evidence_artifact is not None:
+        _string(evidence_artifact, "evidence artifact")
 
     lines = [
         "## LLM Wiki integrity",
+        "",
         f"- Result: **{result}**",
     ]
     if cli_exit != 0:
         lines.append(f"- Original `ci-check` exit: `{cli_exit}`")
     lines.extend(
         [
-            f"- JSON evidence: {json_state}",
-            f"- Markdown report: {markdown_state}",
-            f"- Worktree: {tree_state}",
+            f"- JSON evidence: {json_state}; Markdown report: {markdown_state}; Worktree: {tree_state}",
         ]
     )
     if report is not None:
+        lines.extend([
+            f"- Scope: wiki `{summary_cell(report['wiki_dir'])}`; source `{summary_cell(report['src_dir'])}`",
+            "- Policies: strict integrity (blocking); non-strict health (advisory).",
+        ])
         health = _object(report["knowledge_health"], "report.knowledge_health")
         availability = _object(
             health["availability"], "report.knowledge_health.availability"
@@ -1378,6 +1492,7 @@ def render_ci_summary(
                 (
                     "- Snapshot / governance: "
                     f"`{snapshot['state']}` / `{governance['state']}`"
+                    + (" (governance optional; absent)" if governance["state"] == "not-present" else "")
                 ),
                 (
                     "- Drift: "
@@ -1385,12 +1500,14 @@ def render_ci_summary(
                     f"(confirmed={drift['confirmed_stale']}, "
                     f"indeterminate={drift['indeterminate']})"
                 ),
-                f"- Verification receipt: `{verification['state']}`",
+                f"- Verification receipt: `{verification['state']}`"
+                + (" (optional; absent)" if verification["state"] == "absent" else ""),
             ]
         )
     else:
         lines.extend(
             [
+                "- Scope / policies: unavailable (no validated report).",
                 "- Blocking issues: unavailable",
                 "- Knowledge health: `unavailable`",
                 "- Availability: `unavailable`",
@@ -1403,21 +1520,22 @@ def render_ci_summary(
     lines.append(
         "- Native drift diagnostics are advisory; integrity validation remains blocking."
     )
+    evidence = f"`{summary_cell(report_name)}`" if report is not None else "unavailable"
+    if evidence_artifact is not None:
+        evidence += f"; evidence artifact: `{summary_cell(evidence_artifact)}`"
+    lines.append(f"- Full JSON: {evidence}. Text marked [truncated] is abbreviated.")
+    details = [] if report is None else _health_detail_lines(report)
+    suffix = []
     if status_count:
-        lines.append("- Dirty-path diagnostics (sorted and bounded):")
+        suffix.append("- Dirty-path diagnostics (sorted and bounded):")
         for raw_record in status_records[:status_limit]:
             record = raw_record.decode("utf-8", "backslashreplace")
-            record = record.replace(chr(96), "\\x60")
-            lines.append(f"  - `{_clip_utf8(record)}`")
+            suffix.append(f"  - `{summary_cell(record)}`")
         if status_count > status_limit:
-            lines.append(
+            suffix.append(
                 f"  - ... {status_count - status_limit} additional status records omitted"
             )
-
-    payload = ("\n".join(lines) + "\n").encode("utf-8")
-    if len(lines) > max_lines or len(payload) > max_bytes:
-        raise CiCheckReportError("bounded summary invariant failed")
-    return payload
+    return _bounded_summary(lines, details, suffix, max_lines=max_lines, max_bytes=max_bytes)
 
 
 def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -1426,10 +1544,11 @@ def _arguments(argv: Sequence[str] | None = None) -> argparse.Namespace:
     validate = commands.add_parser("validate")
     validate.add_argument("--report", required=True)
     validate.add_argument("--cli-exit", required=True, type=int)
-    validate.add_argument("--schema", choices=("v1", "v2"))
+    validate.add_argument("--schema", choices=("v1", "v2", "v3", "v4"))
 
     summary = commands.add_parser("render-summary")
     summary.add_argument("--report")
+    summary.add_argument("--evidence-artifact")
     summary.add_argument("--cli-exit", required=True, type=int)
     summary.add_argument("--result", choices=("PASS", "FAIL"), required=True)
     summary.add_argument("--json-state", required=True)
@@ -1481,6 +1600,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             status_limit=args.status_limit,
             max_lines=args.max_lines,
             max_bytes=args.max_bytes,
+            report_name=Path(args.report).name if args.report else "llm-wiki-ci-report.json",
+            evidence_artifact=args.evidence_artifact,
         )
         output = Path(args.output)
         if output.is_symlink() or not output.parent.is_dir():

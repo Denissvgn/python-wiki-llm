@@ -111,4 +111,4 @@ flowchart LR
 | `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 | `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 
-> References: showing 12 of 46 logical references; 34 omitted by the 12-row generated summary limit.
+> References: showing 12 of 47 logical references; 35 omitted by the 12-row generated summary limit.

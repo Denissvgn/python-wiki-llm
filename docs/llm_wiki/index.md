@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 597 | [Open section](#entities) |
-| Modules | 203 | [Open section](#modules) |
-| Workflows | 155 | [Open section](#workflows) |
+| Entities | 619 | [Open section](#entities) |
+| Modules | 210 | [Open section](#modules) |
+| Workflows | 159 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
-| Entry-point flows | 453 | [Open section](#entry-point-flows) |
+| Entry-point flows | 454 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -23,6 +23,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [AgentConfigInspection](entities/AgentConfigInspection.md)
 - [AgentConfigState](entities/AgentConfigState.md)
 - [AliasType](entities/AliasType.md)
+- [AnalysisComparisonContract](entities/AnalysisComparisonContract.md)
+- [AnalysisComparisonDecision](entities/AnalysisComparisonDecision.md)
+- [AnalysisCompatibilityRecord](entities/AnalysisCompatibilityRecord.md)
 - [ApiContractError](entities/ApiContractError.md)
 - [ApiContractResult](entities/ApiContractResult.md)
 - [ApplyDiffContext](entities/ApplyDiffContext.md)
@@ -56,7 +59,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [CallersResult](entities/CallersResult.md)
 - [Candidate](entities/Candidate.md)
 - [CanonicalArray](entities/CanonicalArray.md)
+- [CapturedAnalysis](entities/CapturedAnalysis.md)
 - [CapturedContextRead](entities/CapturedContextRead.md)
+- [CapturedHealthDetails](entities/CapturedHealthDetails.md)
 - [CapturedStream](entities/CapturedStream.md)
 - [CheckerContract](entities/CheckerContract.md)
 - [CiCheckReportError](entities/CiCheckReportError.md)
@@ -64,6 +69,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [CommitStage](entities/CommitStage.md)
 - [CommittedKnowledgeState](entities/CommittedKnowledgeState.md)
 - [CommittedRuntimeProvenance](entities/CommittedRuntimeProvenance.md)
+- [ComparisonPolicy](entities/ComparisonPolicy.md)
 - [CompatibilityModule](entities/CompatibilityModule.md)
 - [ComponentVisitor](entities/ComponentVisitor.md)
 - [ComposeParserState](entities/ComposeParserState.md)
@@ -115,6 +121,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DoctorResult](entities/DoctorResult.md)
 - [DoctorSnapshotParity](entities/DoctorSnapshotParity.md)
 - [DoctorStatus](entities/DoctorStatus.md)
+- [DoctorV3Result](entities/DoctorV3Result.md)
+- [DoctorV4Result](entities/DoctorV4Result.md)
 - [DoctorVerificationReceipt](entities/DoctorVerificationReceipt.md)
 - [DocumentRecord](entities/DocumentRecord.md)
 - [DocumentationAgentPacket](entities/DocumentationAgentPacket.md)
@@ -224,6 +232,19 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [HaskellExtractionRequest](entities/HaskellExtractionRequest.md)
 - [HaskellExtractor](entities/HaskellExtractor.md)
 - [HeadingCandidate](entities/HeadingCandidate.md)
+- [HealthComparisonBasis](entities/HealthComparisonBasis.md)
+- [HealthComparisonBasisV2](entities/HealthComparisonBasisV2.md)
+- [HealthComponent](entities/HealthComponent.md)
+- [HealthCoverage](entities/HealthCoverage.md)
+- [HealthDetails](entities/HealthDetails.md)
+- [HealthDetailsError](entities/HealthDetailsError.md)
+- [HealthDetailsV2](entities/HealthDetailsV2.md)
+- [HealthEvaluation](entities/HealthEvaluation.md)
+- [HealthProducer](entities/HealthProducer.md)
+- [HealthReason](entities/HealthReason.md)
+- [HealthScope](entities/HealthScope.md)
+- [HealthSelection](entities/HealthSelection.md)
+- [HealthSnapshot](entities/HealthSnapshot.md)
 - [HelperPrepareResult](entities/HelperPrepareResult.md)
 - [HostBrokerAuthenticationError](entities/HostBrokerAuthenticationError.md)
 - [HostBrokerAuthenticationProof](entities/HostBrokerAuthenticationProof.md)
@@ -330,6 +351,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [MCPDependencyError](entities/MCPDependencyError.md)
 - [MachineVerificationAvailability](entities/MachineVerificationAvailability.md)
 - [MachineVerificationReadView](entities/MachineVerificationReadView.md)
+- [MaintenanceError](entities/MaintenanceError.md)
 - [MaintenanceQueueResult](entities/MaintenanceQueueResult.md)
 - [ManagedLifecycleState](entities/ManagedLifecycleState.md)
 - [ManagedReferenceInboundRoute](entities/ManagedReferenceInboundRoute.md)
@@ -618,6 +640,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 ## Modules
 
+- [analysis_capture](modules/analysis_capture.md) - Operation-owned capture of installed analysis implementation and runtimes.
+- [analysis_compatibility](modules/analysis_compatibility.md) - Pure, versioned comparison of application-owned analysis commitments.
 - [api](modules/api.md) - Supported API for extraction, wiki, native knowledge, and documentation.
 - [api_contracts](modules/api_contracts.md) - Static FastAPI and exported OpenAPI contract assembly.
 - [api_diff](modules/api_diff.md) - Conservative compatibility checks over supplied OpenAPI exports only.
@@ -680,6 +704,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [go_calls](modules/go_calls.md) - Resolve captured Go call bindings only within evidenced package scopes.
 - [go_extractor](modules/go_extractor.md) - Go AST extractor for agent-wiki-cli.
 - [haskell_extractor](modules/haskell_extractor.md) - Haskell source extractor backed by a prepared helper binary.
+- [health_contract](modules/health_contract.md) - Closed detailed-health contract shared by doctor and CI report readers.
+- [health_details](modules/health_details.md) - Capture detailed health once from an operation's already evaluated inputs.
+- [health_policy](modules/health_policy.md) - Pure release-health decisions derived from one validated CI evaluation.
+- [health_summary](modules/health_summary.md) - Pure presentation helpers for detailed local and CI health reports.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
@@ -708,6 +736,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [knowledge_index](modules/knowledge_index.md) - Pure construction and validation of the native knowledge index.
 - [knowledge_links](modules/knowledge_links.md) - Lossless, deterministic observations of links in canonical Markdown.
 - [knowledge_loader](modules/knowledge_loader.md) - Authoritative validation and fallback boundary for generated knowledge state.
+- [knowledge_maintenance](modules/knowledge_maintenance.md) - Read-only candidate/producer preflight and bound health-policy commands.
 - [knowledge_model](modules/knowledge_model.md) - Typed contract and stdlib validation for ``llm-wiki-knowledge/v1``.
 - [knowledge_observability](modules/knowledge_observability.md) - Privacy-safe observability for native knowledge consumers.
 - [knowledge_orchestration](modules/knowledge_orchestration.md) - Command-facing orchestration for generated native knowledge artifacts.
@@ -843,9 +872,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
 - [build_capability_diagnostics](workflows/build_capability_diagnostics.md) - entry: `capability_diagnostics.build_capability_diagnostics`
+- [build_ci_check_payload](workflows/build_ci_check_payload.md) - entry: `ci_report.build_ci_check_payload`
 - [build_context_impl](workflows/build_context_impl.md) - entry: `context_service._build_context_impl`
 - [build_context_knowledge_view](workflows/build_context_knowledge_view.md) - entry: `context_service._build_context_knowledge_view`
 - [build_dependency_graph](workflows/build_dependency_graph.md) - entry: `dependencies.build_dependency_graph`
+- [build_doctor_report](workflows/build_doctor_report.md) - entry: `doctor_service.build_doctor_report`
 - [build_extract_payload](workflows/build_extract_payload.md) - entry: `extraction_service.build_extract_payload`
 - [build_generated_section_context](workflows/build_generated_section_context.md) - entry: `sync_cmd._build_generated_section_context`
 - [build_impact](workflows/build_impact.md) - entry: `impact.build_impact`
@@ -866,6 +897,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_task_read](workflows/build_task_read.md) - entry: `task_context.build_task_read`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
 - [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet.capture_context_read`
+- [capture_health_details](workflows/capture_health_details.md) - entry: `health_details.capture_health_details`
 - [capture_protocol_enrichment_session](workflows/capture_protocol_enrichment_session.md) - entry: `context_service._capture_protocol_enrichment_session`
 - [capture_slice](workflows/capture_slice.md) - entry: `knowledge_storage_access._capture_slice`
 - [captured_query_service](workflows/captured_query_service.md) - entry: `context_packet._captured_query_service`
@@ -915,6 +947,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [planned_generated_surface_prune](workflows/planned_generated_surface_prune.md) - entry: `sync_cmd._planned_generated_surface_prune`
 - [planned_write](workflows/planned_write.md) - entry: `knowledge_artifacts._planned_write`
 - [plugins_cmd_flow](workflows/plugins_cmd_flow.md) - entry: `plugins_cmd.run`
+- [preflight](workflows/preflight.md) - entry: `knowledge_maintenance.preflight`
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
 - [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
 - [preflight_lint_source_selection](workflows/preflight_lint_source_selection.md) - entry: `lint_service._preflight_lint_source_selection`
@@ -1455,6 +1488,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 - [process-ci_report](flows/process-ci_report.md) - entry: `main`
 - [process-cli](flows/process-cli.md) - entry: `main`
+- [process-knowledge_maintenance](flows/process-knowledge_maintenance.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
 

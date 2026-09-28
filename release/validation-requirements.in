@@ -1,0 +1,10 @@
+# Metadata/archive validation runs in its own fresh environment after building.
+-c requirements.txt
+pip==26.2
+setuptools==83.0.0
+twine==7.0.0
+# Installed artifact probes exercise the package's declared runtime dependency.
+PyYAML==6.0.3
+# Include keyring's Linux closure when regenerating on macOS, as in the full lock.
+jeepney==0.9.0
+secretstorage==3.4.0

@@ -1,9 +1,9 @@
 # DoctorStatus
 
-**Location:** `src/llm_wiki_cli/services/doctor_service.py:38`
+**Location:** `src/llm_wiki_cli/services/health_policy.py:14`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
-**Module:** [doctor_service](../modules/doctor_service.md)
+**Module:** [health_policy](../modules/health_policy.md)
 
 ## Description
 
@@ -27,22 +27,25 @@ Closed overall health vocabulary for the doctor contract.
 <!-- Auto-generated relationship summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["DoctorStatus (src/llm_wiki_cli/services/doctor_service.py)"]
+    n0["DoctorStatus (src/llm_wiki_cli/services/health_policy.py)"]
     n1["Enum"]
     n2["str"]
-    n3["_classify (src/llm_wiki_cli/services/doctor_service.py)"]
+    n3["src/llm_wiki_cli/services/doctor_service.py"]
+    n4["classify_health_sections (src/llm_wiki_cli/services/health_policy.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
-    click n0 "../modules/doctor_service.md"
+    n4 --> n0
+    click n0 "../modules/health_policy.md"
     click n3 "../modules/doctor_service.md"
+    click n4 "../modules/health_policy.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [doctor_service](../modules/doctor_service.md) | 0 | `ABSENT`, `DEGRADED`, `HEALTHY`, `UNHEALTHY` |
+| [health_policy](../modules/health_policy.md) | 0 | `ABSENT`, `DEGRADED`, `HEALTHY`, `UNHEALTHY` |
 
 ### Structure
 
@@ -55,4 +58,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `_classify` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
+| `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
+| `classify_health_sections` | type_reference | [health_policy](../modules/health_policy.md) | — |

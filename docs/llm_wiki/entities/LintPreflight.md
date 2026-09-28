@@ -1,6 +1,6 @@
 # _LintPreflight
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:340`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:343`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)

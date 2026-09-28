@@ -30,25 +30,28 @@ _Auto-generated from `ProducerRecord` in `src/llm_wiki_cli/services/knowledge_mo
 ```mermaid
 flowchart LR
     n0["ProducerRecord (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n1["build_producer_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
-    n2["_analysis_basis_hash (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n3["_downgrade_incompatible_tombstones (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n4["_validated_previous_producer (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n5["_parse_producer (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n6["_previous_committed_producer (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n1["_producer (src/llm_wiki_cli/services/health_details.py)"]
+    n2["build_producer_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
+    n3["_analysis_basis_hash (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n4["_downgrade_incompatible_tombstones (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n5["_validated_previous_producer (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n6["_parse_producer (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n7["_previous_committed_producer (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/knowledge_model.md"
-    click n1 "../modules/knowledge_envelope.md"
-    click n2 "../modules/knowledge_freshness.md"
-    click n3 "../modules/knowledge_generation.md"
+    click n1 "../modules/health_details.md"
+    click n2 "../modules/knowledge_envelope.md"
+    click n3 "../modules/knowledge_freshness.md"
     click n4 "../modules/knowledge_generation.md"
-    click n5 "../modules/knowledge_model.md"
-    click n6 "../modules/knowledge_orchestration.md"
+    click n5 "../modules/knowledge_generation.md"
+    click n6 "../modules/knowledge_model.md"
+    click n7 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -61,6 +64,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_producer` | type_reference | [health_details](../modules/health_details.md) | — |
 | `build_producer_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `_analysis_basis_hash` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |

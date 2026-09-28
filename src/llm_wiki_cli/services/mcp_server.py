@@ -7,6 +7,8 @@ surface that does not require an MCP runtime.
 
 from __future__ import annotations
 
+from . import analysis_compatibility as ac
+
 import ipaddress
 import json
 import re
@@ -253,6 +255,7 @@ class McpServerConfig:
     workflow_profile: WorkflowProfile | None = None
     enable_sessions: bool = False
     max_sessions: int = 8
+    comparison_policy: str = "auto"
 
 
 @dataclass(frozen=True)
@@ -413,6 +416,7 @@ class McpWikiService:
         wiki_dir: str = "docs/llm_wiki",
         *,
         source_selection: str | None = None,
+        comparison_policy: str = "auto",
         allow_external_src: bool = False,
         counter: TokenCounter | None = None,
         workflow_policy: WorkflowPolicy | None = None,
@@ -420,6 +424,7 @@ class McpWikiService:
         enable_sessions: bool = False,
         max_sessions: int = 8,
     ):
+        self.comparison_policy = ac.selected_policy(comparison_policy)
         self.src_dir = src_dir
         self.wiki_dir = Path(wiki_dir)
         self.source_selection = source_selection
@@ -510,11 +515,13 @@ class McpWikiService:
             return {}
         return {"allow_external_src": True}
 
+    @ac.bound_comparison
     def get_entity(self, entity_id: str) -> dict:
         self._assert_source_selection_current()
         page = self._page_for("entities", entity_id)
         return self._read_page_result(page)
 
+    @ac.bound_comparison
     def get_module(self, module_id_or_source_path: str) -> dict:
         source_snapshot = self._assert_source_selection_current()
         page_id = self._resolve_module_page_id(
@@ -524,11 +531,13 @@ class McpWikiService:
         page = self._page_for("modules", page_id)
         return self._read_page_result(page)
 
+    @ac.bound_comparison
     def get_flow(self, flow_id: str) -> dict:
         self._assert_source_selection_current()
         page = self._page_for("flows", flow_id)
         return self._read_page_result(page)
 
+    @ac.bound_comparison
     def get_architecture_page(self, page: str) -> dict:
         self._assert_source_selection_current()
         if not isinstance(page, str) or page.strip() not in _ARCHITECTURE_PAGE_KINDS:
@@ -536,6 +545,7 @@ class McpWikiService:
         root_page = self._page_from_uri(wiki_surface.mcp_uri(page.strip()))
         return self._read_page_result(root_page)
 
+    @ac.bound_comparison
     def query_graph(self, query: Mapping[str, object]) -> dict:
         query_type, value, limit = _graph_query_args(query)
         try:
@@ -553,6 +563,7 @@ class McpWikiService:
         except DocumentationQueryError as exc:
             raise McpWikiError(str(exc)) from exc
 
+    @ac.bound_comparison
     def query_documentation(self, request: Mapping[str, Any]) -> dict:
         """Dispatch an exact bounded query through the shared API contract."""
 
@@ -569,6 +580,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
+    @ac.bound_comparison
     def get_concept(
         self,
         locator_or_exact_route: str,
@@ -583,6 +595,7 @@ class McpWikiService:
             limit=bounded_limit,
         )
 
+    @ac.bound_comparison
     def related_concepts(
         self,
         locator_or_exact_route: str,
@@ -603,6 +616,7 @@ class McpWikiService:
             kinds=selected_kinds,
         )
 
+    @ac.bound_comparison
     def list_concept_sections(
         self,
         locator_or_exact_route: str,
@@ -620,6 +634,7 @@ class McpWikiService:
             ownership=selected_ownership,
         )
 
+    @ac.bound_comparison
     def traverse_typed_graph(
         self,
         locator_or_exact_route: str,
@@ -658,6 +673,7 @@ class McpWikiService:
             include_evidence=include_evidence,
         )
 
+    @ac.bound_comparison
     def explain_evidence(
         self,
         locator_or_exact_route: str,
@@ -672,6 +688,7 @@ class McpWikiService:
             limit=bounded_limit,
         )
 
+    @ac.bound_comparison
     def inspect_concept(
         self, locator_or_exact_route: str, *, live: bool = False,
         limit: int = 20, include_evidence: bool = False,
@@ -687,6 +704,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
+    @ac.bound_comparison
     def get_knowledge_coverage(self, live: bool = False) -> dict:
         """Explain eligible observations without treating unmodeled content as drift."""
         try:
@@ -697,6 +715,7 @@ class McpWikiService:
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
+    @ac.bound_comparison
     def search_wiki(
         self,
         query: str,
@@ -716,6 +735,7 @@ class McpWikiService:
                 raise
             raise McpWikiError(str(exc)) from exc
 
+    @ac.bound_comparison
     def build_budgeted_context(self, request: Mapping[str, Any]) -> str:
         """Return precisely the canonical v3 text counted by the host counter."""
         from .context_budget import validate_request
@@ -749,6 +769,7 @@ class McpWikiService:
                                code="cannot-fit", data={"accounting": dict(result.accounting)})
         return result.rendered
 
+    @ac.bound_comparison
     def get_maintenance_queue(self, limit: int = 30) -> dict:
         from .maintenance_queue import validate_queue_limit
 
@@ -764,6 +785,7 @@ class McpWikiService:
             raise McpWikiError("Invalid queue limit", code="invalid-request",
                                data={"field": "limit"}) from exc
 
+    @ac.bound_comparison
     def build_task_context(self, request: Mapping[str, Any]) -> str:
         from .task_contract import normalize_task_request
         from .task_context import _counter
@@ -785,6 +807,7 @@ class McpWikiService:
                                code="cannot-fit", data={"accounting": dict(result.accounting)})
         return result.rendered
 
+    @ac.bound_comparison
     def open_context_session(self) -> dict:
         if not self.enable_sessions:
             raise McpWikiError("Sessions are not enabled by the host", code="session-unavailable")
@@ -808,12 +831,14 @@ class McpWikiService:
             raise McpWikiError("Unknown or expired session", code="invalid-session")
         return self._sessions[session_id]
 
+    @ac.bound_comparison
     def read_context_session(self, session_id, request, *, if_result_id=None, delta=False):
         try:
             return self._session(session_id).read(request, if_result_id=if_result_id, delta=delta)
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
+    @ac.bound_comparison
     def hint_context_session(self, session_id, *, unsaved_buffers=False):
         try:
             self._session(session_id).hint(unsaved_buffers=unsaved_buffers)
@@ -821,16 +846,19 @@ class McpWikiService:
             raise _api_mcp_error(exc) from exc
         return {"state": "hint-recorded", "freshness_established": False}
 
+    @ac.bound_comparison
     def close_context_session(self, session_id):
         self._session(session_id).close()
         del self._sessions[session_id]
         return {"state": "closed"}
 
+    @ac.bound_comparison
     def close_sessions(self):
         for session in self._sessions.values():
             session.close()
         self._sessions.clear()
 
+    @ac.bound_comparison
     def get_context(
         self,
         budget_tokens: int = 32000,
@@ -897,6 +925,7 @@ class McpWikiService:
             ) from exc
         return context_cmd._protocol_success_payload(validated, payload, warnings)
 
+    @ac.bound_comparison
     def get_context_packet(
         self,
         budget_tokens: int = 32000,
@@ -970,6 +999,7 @@ class McpWikiService:
             "packet": packet.to_payload(),
         }
 
+    @ac.bound_comparison
     def check_wiki(
         self,
         strict: bool = False,
@@ -994,6 +1024,7 @@ class McpWikiService:
         payload["format"] = format
         return payload
 
+    @ac.bound_comparison
     def get_status(self) -> dict:
         self._assert_source_selection_current()
         wiki = self.wiki_dir
@@ -1075,6 +1106,7 @@ class McpWikiService:
             except LlmWikiApiError as failure:
                 raise _api_mcp_error(failure) from exc
 
+    @ac.bound_comparison
     def read_resource(self, uri: str) -> dict:
         self._assert_source_selection_current()
         page = self._page_from_uri(uri)
@@ -1091,6 +1123,7 @@ class McpWikiService:
             },
         }
 
+    @ac.bound_comparison
     def list_resources(self) -> list[dict]:
         self._assert_source_selection_current()
         resources = []
@@ -1232,6 +1265,7 @@ def create_mcp_server(config: McpServerConfig):
     if config.tokenizer is not None:
         counter = LocalTokenizerCounter(config.tokenizer)
     service = McpWikiService(
+        comparison_policy=config.comparison_policy,
         src_dir=config.src_dir,
         wiki_dir=config.wiki_dir,
         source_selection=config.source_selection,

@@ -56,6 +56,7 @@ def run(args) -> None:
     )
 
     config = config_type(
+        comparison_policy=getattr(args, "comparison_policy", "auto"),
         src_dir=str(source_root) if allow_external else requested_source,
         allow_external_src=allow_external,
         wiki_dir=getattr(args, "wiki_dir", "docs/llm_wiki"),

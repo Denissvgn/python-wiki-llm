@@ -1,7 +1,7 @@
 # build_runtime_knowledge_plan
 
 **Entry point:** `knowledge_orchestration.build_runtime_knowledge_plan`
-**Modules involved:** [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_generation](../modules/knowledge_generation.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [source_selection](../modules/source_selection.md)
+**Modules involved:** [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_generation](../modules/knowledge_generation.md), [knowledge_orchestration](../modules/knowledge_orchestration.md), [source_selection](../modules/source_selection.md)
 
 > Build a commit plan from one command's already evaluated run state.
 
@@ -12,12 +12,10 @@
 2. `knowledge_generation.KnowledgeGenerationError`
 3. `infrastructure_sync.infrastructure_evidence_by_page`
 4. `knowledge_generation.KnowledgeGenerationInputs`
-5. `knowledge_envelope.ProducerComponentInput`
 
 ## Touches
 
 - [infrastructure_sync](../modules/infrastructure_sync.md)
-- [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_generation](../modules/knowledge_generation.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [source_selection](../modules/source_selection.md)

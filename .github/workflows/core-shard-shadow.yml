@@ -1,0 +1,379 @@
+# Nonqualifying native equivalence evidence; qualifying shards use separate receipts.
+name: Core shard shadow
+'on':
+  pull_request:
+    paths:
+    - .github/workflows/core-shard-shadow.yml
+    - release/core_shards.py
+    - release/core_shard_runner.py
+    - release/core-shard-timings.json
+    - release/qualification.py
+    - tests/test_core_shards.py
+    - tests/test_core_shard_runner.py
+    - tests/test_core_shard_workflow.py
+    - tests/xml_writer_fixtures.py
+  workflow_dispatch:
+    inputs:
+      candidate-sha:
+        description: Full pushed branch-tip SHA (leave empty to use this branch tip)
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CI: '1'
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  PIP_NO_INPUT: '1'
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+jobs:
+  freeze:
+    name: Freeze core shard shadow inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      source-sha256: ${{ steps.freeze.outputs.source-sha256 }}
+      harness-sha256: ${{ steps.freeze.outputs.harness-sha256 }}
+    steps:
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      with:
+        ref: ${{ inputs.candidate-sha || github.sha }}
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+    - name: Bind and freeze the shadow candidate
+      id: freeze
+      env:
+        CANDIDATE_SHA: ${{ inputs.candidate-sha || github.sha }}
+        EVENT: ${{ github.event_name }}
+        WORKFLOW_SHA: ${{ github.workflow_sha }}
+      run: |
+        if [[ "${EVENT}" == "workflow_dispatch" && "${WORKFLOW_SHA}" != "${CANDIDATE_SHA}" ]]; then
+          echo "Dispatch from a branch whose tip is the candidate SHA" >&2
+          exit 1
+        fi
+        python -I release/core_shard_runner.py freeze --root . \
+          --candidate-sha "${CANDIDATE_SHA}" --repository "${GITHUB_REPOSITORY}" \
+          --output "${RUNNER_TEMP}/core-shard-inputs"
+    - name: Upload immutable shadow inputs
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        archive: true
+        name: core-shard-inputs-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/core-shard-inputs/
+        compression-level: 0
+        if-no-files-found: error
+        retention-days: 14
+  reference:
+    name: Core reference (${{ matrix.lane }})
+    needs: freeze
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+        - lane: core-windows-3.13
+          os: windows-2025
+          python: '3.13'
+        - lane: core-ubuntu-3.10
+          os: ubuntu-24.04
+          python: '3.10'
+        - lane: core-macos-3.14
+          os: macos-15
+          python: '3.14'
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - name: Download frozen shadow inputs
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        digest-mismatch: error
+        name: core-shard-inputs-${{ github.run_attempt }}
+        path: incoming
+    - name: Set up native Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Verify and extract the frozen harness
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+      run: |
+        python -I -c 'import hashlib, pathlib, sys; p=pathlib.Path(sys.argv[1]); assert hashlib.sha256(p.read_bytes()).hexdigest() == sys.argv[2], "harness digest differs"' incoming/qualification-harnesses.tar "${HARNESS_SHA256}"
+        python -I -m tarfile --extract incoming/qualification-harnesses.tar incoming/tools --filter data
+    - name: Extract the exact candidate
+      env:
+        SOURCE_SHA256: ${{ needs.freeze.outputs.source-sha256 }}
+      run: |
+        python -I incoming/tools/release/qualification.py extract-source \
+          --archive incoming/candidate-source.tar --sha256 "${SOURCE_SHA256}" --destination candidate
+    - name: Create a fresh job environment
+      run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/core-shard-venv"
+    - name: Install the candidate noneditably
+      run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+    - name: Collect a complete plan and execute the unsharded reference
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        LANE: ${{ matrix.lane }}
+      run: |
+        python -I incoming/tools/release/core_shard_runner.py execute \
+          --root candidate --identity incoming/identity.json --archive incoming/candidate-source.tar \
+          --harness incoming/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}" \
+          --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}" \
+          --shards 2 --output evidence/reference
+    - name: Retain complete or partial shadow evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        archive: true
+        name: core-shard-reference-${{ matrix.lane }}-${{ github.run_attempt }}
+        path: evidence/reference/
+        if-no-files-found: warn
+        retention-days: 14
+        include-hidden-files: true
+  shards:
+    name: Core shard (${{ matrix.lane }}, ${{ matrix.shard }})
+    needs:
+    - freeze
+    - reference
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+        - lane: core-windows-3.13
+          os: windows-2025
+          python: '3.13'
+          shard: 0
+        - lane: core-windows-3.13
+          os: windows-2025
+          python: '3.13'
+          shard: 1
+        - lane: core-ubuntu-3.10
+          os: ubuntu-24.04
+          python: '3.10'
+          shard: 0
+        - lane: core-ubuntu-3.10
+          os: ubuntu-24.04
+          python: '3.10'
+          shard: 1
+        - lane: core-macos-3.14
+          os: macos-15
+          python: '3.14'
+          shard: 0
+        - lane: core-macos-3.14
+          os: macos-15
+          python: '3.14'
+          shard: 1
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - name: Download frozen shadow inputs
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        digest-mismatch: error
+        name: core-shard-inputs-${{ github.run_attempt }}
+        path: incoming
+    - name: Set up native Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Verify and extract the frozen harness
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+      run: |
+        python -I -c 'import hashlib, pathlib, sys; p=pathlib.Path(sys.argv[1]); assert hashlib.sha256(p.read_bytes()).hexdigest() == sys.argv[2], "harness digest differs"' incoming/qualification-harnesses.tar "${HARNESS_SHA256}"
+        python -I -m tarfile --extract incoming/qualification-harnesses.tar incoming/tools --filter data
+    - name: Extract the exact candidate
+      env:
+        SOURCE_SHA256: ${{ needs.freeze.outputs.source-sha256 }}
+      run: |
+        python -I incoming/tools/release/qualification.py extract-source \
+          --archive incoming/candidate-source.tar --sha256 "${SOURCE_SHA256}" --destination candidate
+    - name: Create a fresh job environment
+      run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/core-shard-venv"
+    - name: Download this attempt reference plan
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        digest-mismatch: error
+        name: core-shard-reference-${{ matrix.lane }}-${{ github.run_attempt }}
+        path: incoming/reference
+    - name: Verify reference plan and resolved dependency pins
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        LANE: ${{ matrix.lane }}
+      run: |
+        python -I incoming/tools/release/core_shard_runner.py verify-plan \
+          --plan incoming/reference/plan.json --constraints incoming/reference/constraints.txt \
+          --identity incoming/identity.json --harness-sha256 "${HARNESS_SHA256}" \
+          --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+    - name: Install the identical resolved dependency profile
+      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt "./candidate[dev,tokens]"
+    - name: Execute exactly one planned shard
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        LANE: ${{ matrix.lane }}
+        SHARD: ${{ matrix.shard }}
+      run: |
+        python -I incoming/tools/release/core_shard_runner.py execute \
+          --root candidate --identity incoming/identity.json --archive incoming/candidate-source.tar \
+          --harness incoming/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}" \
+          --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}" \
+          --plan incoming/reference/plan.json --index "${SHARD}" --output evidence/shard
+    - name: Retain complete or partial shadow evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        archive: true
+        name: core-shard-${{ matrix.lane }}-${{ matrix.shard }}-${{ github.run_attempt }}
+        path: evidence/shard/
+        if-no-files-found: warn
+        retention-days: 14
+        include-hidden-files: true
+    if: ${{ !cancelled() && needs.freeze.result == 'success' && needs.reference.result == 'success' }}
+  compare:
+    name: Core shard parity (${{ matrix.lane }})
+    needs:
+    - freeze
+    - reference
+    - shards
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+        - lane: core-windows-3.13
+          os: windows-2025
+          python: '3.13'
+        - lane: core-ubuntu-3.10
+          os: ubuntu-24.04
+          python: '3.10'
+        - lane: core-macos-3.14
+          os: macos-15
+          python: '3.14'
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - name: Download frozen shadow inputs
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        digest-mismatch: error
+        name: core-shard-inputs-${{ github.run_attempt }}
+        path: incoming
+    - name: Set up native Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Verify and extract the frozen harness
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+      run: |
+        python -I -c 'import hashlib, pathlib, sys; p=pathlib.Path(sys.argv[1]); assert hashlib.sha256(p.read_bytes()).hexdigest() == sys.argv[2], "harness digest differs"' incoming/qualification-harnesses.tar "${HARNESS_SHA256}"
+        python -I -m tarfile --extract incoming/qualification-harnesses.tar incoming/tools --filter data
+    - name: Extract the exact candidate
+      env:
+        SOURCE_SHA256: ${{ needs.freeze.outputs.source-sha256 }}
+      run: |
+        python -I incoming/tools/release/qualification.py extract-source \
+          --archive incoming/candidate-source.tar --sha256 "${SOURCE_SHA256}" --destination candidate
+    - name: Create a fresh job environment
+      run: python -I incoming/tools/release/qualification.py create-venv --path "${RUNNER_TEMP}/core-shard-venv"
+    - name: Download this attempt reference
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        digest-mismatch: error
+        name: core-shard-reference-${{ matrix.lane }}-${{ github.run_attempt }}
+        path: incoming/reference
+    - name: Download every shard with its separate identity
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        digest-mismatch: error
+        pattern: core-shard-${{ matrix.lane }}-*-${{ github.run_attempt }}
+        path: incoming/shards
+        merge-multiple: false
+    - name: Verify reference plan and resolved dependency pins
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        LANE: ${{ matrix.lane }}
+      run: |
+        python -I incoming/tools/release/core_shard_runner.py verify-plan \
+          --plan incoming/reference/plan.json --constraints incoming/reference/constraints.txt \
+          --identity incoming/identity.json --harness-sha256 "${HARNESS_SHA256}" \
+          --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+    - name: Install the identical aggregation profile
+      run: python -m pip install --no-cache-dir --constraint incoming/reference/constraints.txt --requirement incoming/reference/constraints.txt "./candidate[dev,tokens]"
+    - name: Require complete inventory coverage and outcome parity
+      env:
+        HARNESS_SHA256: ${{ needs.freeze.outputs.harness-sha256 }}
+        LANE: ${{ matrix.lane }}
+      working-directory: .
+      run: |
+        python -I incoming/tools/release/core_shard_runner.py compare \
+          --root candidate --identity incoming/identity.json --archive incoming/candidate-source.tar \
+          --harness incoming/qualification-harnesses.tar --harness-sha256 "${HARNESS_SHA256}" \
+          --lane "${LANE}" --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}" \
+          --plan incoming/reference/plan.json --reference incoming/reference \
+          --shards-root incoming/shards --output evidence/comparison
+    - name: Retain complete or partial shadow evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        archive: true
+        name: core-shard-comparison-${{ matrix.lane }}-${{ github.run_attempt }}
+        path: evidence/comparison/
+        if-no-files-found: warn
+        retention-days: 14
+        include-hidden-files: true
+    if: ${{ !cancelled() && needs.freeze.result == 'success' && needs.reference.result == 'success' }}
+  complete:
+    name: Require complete core shard shadow
+    if: ${{ always() }}
+    needs:
+    - freeze
+    - reference
+    - shards
+    - compare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+    - name: Require every producer and comparison to succeed
+      env:
+        NEEDS_JSON: ${{ toJSON(needs) }}
+      run: |
+        python -I - <<'PY'
+        import json
+        import os
+        import sys
+
+        jobs = json.loads(os.environ["NEEDS_JSON"])
+        expected = ("freeze", "reference", "shards", "compare")
+        if not isinstance(jobs, dict) or set(jobs) != set(expected):
+            sys.exit("core shard shadow has missing or unexpected job results")
+        states = {name: jobs[name].get("result", "missing") for name in expected}
+        for name, result in states.items():
+            print(f"{name}: {result}", flush=True)
+        if any(result != "success" for result in states.values()):
+            if states["reference"] != "success":
+                print(
+                    "Reference jobs did not succeed. Downstream shard matrices are skipped "
+                    "before expansion; unexpanded matrix labels are not missing variables.",
+                    file=sys.stderr,
+                )
+            sys.exit("core shard shadow is incomplete or failed; inspect the producer logs and artifacts")
+        PY

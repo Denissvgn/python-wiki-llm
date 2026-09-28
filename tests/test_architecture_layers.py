@@ -7,6 +7,8 @@ import re
 from copy import deepcopy
 from pathlib import Path
 
+from tests.python_source_inventory import ParsedSource, PythonSourceInventory
+
 
 SERVICES_ROOT = (
     Path(__file__).resolve().parents[1] / "src" / "llm_wiki_cli" / "services"
@@ -426,14 +428,39 @@ def _is_docstring_statement(node: ast.stmt) -> bool:
     )
 
 
+class _ValidationAnalysis:
+    """Derived bindings belong to exactly one content-bound source snapshot."""
+
+    def __init__(self, inventory: PythonSourceInventory, validation_path: Path):
+        self.inventory = inventory
+        self.validation_path = validation_path
+        self.bindings: dict[str, tuple[dict[str, str], frozenset[str]]] = {}
+        self.exports: dict[str, frozenset[str] | None] = {}
+        self._helpers: frozenset[str] | None = None
+
+    @property
+    def helpers(self) -> frozenset[str]:
+        if self._helpers is None:
+            self._helpers = _shared_validation_helpers(
+                self.validation_path, parsed=self.inventory.module(self.validation_path)
+            )
+        return self._helpers
+
+
 def _shared_validation_helpers(
     validation_path: Path = VALIDATION_PATH,
+    *,
+    parsed: ParsedSource | None = None,
 ) -> frozenset[str]:
     """Discover public shared validators without importing service code."""
 
-    tree = ast.parse(
-        validation_path.read_text(encoding="utf-8"),
-        filename=str(validation_path),
+    tree = (
+        parsed.tree
+        if parsed is not None
+        else ast.parse(
+            validation_path.read_text(encoding="utf-8"),
+            filename=str(validation_path),
+        )
     )
     return frozenset(
         node.name
@@ -557,14 +584,19 @@ def _module_validation_bindings(
     services_root: Path,
     validation_path: Path,
     helper_names: frozenset[str],
-    cache: dict[Path, tuple[dict[str, str], frozenset[str]]],
+    cache: dict[str, tuple[dict[str, str], frozenset[str]]],
+    analysis: _ValidationAnalysis | None = None,
 ) -> tuple[dict[str, str], frozenset[str]]:
     """Resolve shared-validator aliases through local service re-exports."""
 
-    cached = cache.get(path)
+    cached = cache.get(str(path))
     if cached is not None:
         return cached
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    tree = (
+        analysis.inventory.module(path).tree
+        if analysis is not None
+        else ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    )
     direct_aliases, module_aliases = _validation_imports(
         path,
         tree,
@@ -573,7 +605,7 @@ def _module_validation_bindings(
     )
     # Seed the cache before following imports so benign service import cycles
     # cannot recurse indefinitely. Direct bindings remain authoritative.
-    cache[path] = (direct_aliases, module_aliases)
+    cache[str(path)] = (direct_aliases, module_aliases)
     for node in tree.body:
         if not isinstance(node, ast.ImportFrom):
             continue
@@ -592,15 +624,20 @@ def _module_validation_bindings(
             validation_path=validation_path,
             helper_names=helper_names,
             cache=cache,
+            analysis=analysis,
         )
         if not target_aliases:
             continue
-        exports = _literal_exports(
-            ast.parse(
-                target.read_text(encoding="utf-8"),
-                filename=str(target),
+        if analysis is not None:
+            if str(target) not in analysis.exports:
+                analysis.exports[str(target)] = _literal_exports(
+                    analysis.inventory.module(target).tree
+                )
+            exports = analysis.exports[str(target)]
+        else:
+            exports = _literal_exports(
+                ast.parse(target.read_text(encoding="utf-8"), filename=str(target))
             )
-        )
         for alias in node.names:
             if alias.name == "*":
                 for imported_name, helper_name in target_aliases.items():
@@ -763,24 +800,34 @@ def _shared_validation_adapters(
     path: Path,
     *,
     validation_path: Path = VALIDATION_PATH,
-    binding_cache: dict[
-        Path, tuple[dict[str, str], frozenset[str]]
-    ] | None = None,
+    analysis: _ValidationAnalysis | None = None,
+    parsed: ParsedSource | None = None,
 ) -> dict[tuple[str, int], tuple[int, frozenset[str]]]:
     """Discover adapters from their dependency on shared validation helpers."""
 
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    helper_names = _shared_validation_helpers(validation_path)
+    if analysis is not None and parsed is None:
+        parsed = analysis.inventory.module(path)
+    tree = (
+        parsed.tree
+        if parsed is not None
+        else ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    )
+    helper_names = (
+        analysis.helpers
+        if analysis is not None
+        else _shared_validation_helpers(validation_path)
+    )
     services_root = validation_path.parent
     direct_aliases, module_aliases = _module_validation_bindings(
         path,
         services_root=services_root,
         validation_path=validation_path,
         helper_names=helper_names,
-        cache=binding_cache if binding_cache is not None else {},
+        cache=analysis.bindings if analysis is not None else {},
+        analysis=analysis,
     )
     adapters: dict[tuple[str, int], tuple[int, frozenset[str]]] = {}
-    for node in ast.walk(tree):
+    for node in parsed.nodes if parsed is not None else ast.walk(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
         called = _called_shared_helpers(
@@ -811,14 +858,19 @@ def _unshared_required_adapter_definitions(
     *,
     adapters: dict[tuple[str, int], tuple[int, frozenset[str]]],
     required: frozenset[str],
+    parsed: ParsedSource | None = None,
 ) -> list[tuple[int, str]]:
     """Return required-name definitions that do not themselves delegate."""
 
     discovered = set(adapters)
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    tree = (
+        parsed.tree
+        if parsed is not None
+        else ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    )
     return [
         (node.lineno, node.name)
-        for node in ast.walk(tree)
+        for node in (parsed.nodes if parsed is not None else ast.walk(tree))
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         and node.name in required
         and (node.name, node.lineno) not in discovered
@@ -926,41 +978,40 @@ def _duplicated_unshared_validation_helpers(
     """Find repeated validator bodies not fully backed by shared validation."""
 
     groups: dict[str, list[tuple[str, int, str, bool]]] = {}
-    binding_cache: dict[
-        Path, tuple[dict[str, str], frozenset[str]]
-    ] = {}
-    for path in sorted(services_root.rglob("*.py")):
-        if path == validation_path:
-            continue
-        adapters = _shared_validation_adapters(
-            path,
-            validation_path=validation_path,
-            binding_cache=binding_cache,
-        )
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        relative = path.relative_to(services_root).as_posix()
-        for node in ast.walk(tree):
-            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+    with PythonSourceInventory([services_root]) as inventory:
+        analysis = _ValidationAnalysis(inventory, validation_path)
+        for path in inventory.paths:
+            if path == validation_path:
                 continue
-            if node.name in _VALIDATION_DUPLICATE_EXEMPT_NAMES:
-                continue
-            if _VALIDATION_LIKE_NAME_RE.search(node.name) is None:
-                continue
-            fingerprint = _validation_body_fingerprint(node)
-            groups.setdefault(fingerprint, []).append(
-                (
-                    relative,
-                    node.lineno,
-                    node.name,
-                    (node.name, node.lineno) in adapters,
-                )
+            parsed = inventory.module(path)
+            adapters = _shared_validation_adapters(
+                path,
+                validation_path=validation_path,
+                analysis=analysis,
+                parsed=parsed,
             )
+            relative = path.relative_to(services_root).as_posix()
+            for node in parsed.nodes:
+                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                if node.name in _VALIDATION_DUPLICATE_EXEMPT_NAMES:
+                    continue
+                if _VALIDATION_LIKE_NAME_RE.search(node.name) is None:
+                    continue
+                fingerprint = _validation_body_fingerprint(node)
+                groups.setdefault(fingerprint, []).append(
+                    (
+                        relative,
+                        node.lineno,
+                        node.name,
+                        (node.name, node.lineno) in adapters,
+                    )
+                )
     return sorted(
         (
             sorted(records)
             for records in groups.values()
-            if len({relative for relative, _line, _name, _shared in records})
-            >= 2
+            if len({relative for relative, _line, _name, _shared in records}) >= 2
             and not all(shared for _relative, _line, _name, shared in records)
         ),
         key=lambda records: records[0],
@@ -1022,37 +1073,39 @@ def test_shared_validation_adapters_remain_thin() -> None:
     violations: dict[str, dict[str, dict[str, object]]] = {}
     unshared_required: dict[str, list[tuple[int, str]]] = {}
     covered_adapters: dict[str, set[str]] = {}
-    binding_cache: dict[
-        Path, tuple[dict[str, str], frozenset[str]]
-    ] = {}
-    for path in sorted(SERVICES_ROOT.rglob("*.py")):
-        relative = path.relative_to(SERVICES_ROOT).as_posix()
-        adapters = _shared_validation_adapters(
-            path,
-            binding_cache=binding_cache,
-        )
-        family = _service_family(path)
-        if adapters:
-            covered_adapters.setdefault(family, set()).update(
-                name for name, _line in adapters
+    with PythonSourceInventory([SERVICES_ROOT]) as inventory:
+        analysis = _ValidationAnalysis(inventory, VALIDATION_PATH)
+        for path in inventory.paths:
+            relative = path.relative_to(SERVICES_ROOT).as_posix()
+            parsed = inventory.module(path)
+            adapters = _shared_validation_adapters(
+                path,
+                analysis=analysis,
+                parsed=parsed,
             )
-        required = REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY.get(
-            family, frozenset()
-        )
-        missing_delegations = _unshared_required_adapter_definitions(
-            path,
-            adapters=adapters,
-            required=required,
-        )
-        if missing_delegations:
-            unshared_required[relative] = missing_delegations
-        for (name, line), (statement_count, helpers) in adapters.items():
-            if statement_count > 3:
-                violations.setdefault(relative, {})[name] = {
-                    "line": line,
-                    "statements": statement_count,
-                    "helpers": sorted(helpers),
-                }
+            family = _service_family(path)
+            if adapters:
+                covered_adapters.setdefault(family, set()).update(
+                    name for name, _line in adapters
+                )
+            required = REQUIRED_SHARED_VALIDATION_ADAPTERS_BY_FAMILY.get(
+                family, frozenset()
+            )
+            missing_delegations = _unshared_required_adapter_definitions(
+                path,
+                adapters=adapters,
+                required=required,
+                parsed=parsed,
+            )
+            if missing_delegations:
+                unshared_required[relative] = missing_delegations
+            for (name, line), (statement_count, helpers) in adapters.items():
+                if statement_count > 3:
+                    violations.setdefault(relative, {})[name] = {
+                        "line": line,
+                        "statements": statement_count,
+                        "helpers": sorted(helpers),
+                    }
     assert violations == {}
     assert unshared_required == {}
     missing = {

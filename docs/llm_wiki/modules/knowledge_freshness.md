@@ -15,6 +15,7 @@ the resulting freshness state.
 
 | Source | Symbols |
 |--------|---------|
+| `.` | `analysis_compatibility` |
 | `.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_evidence` | `UNKNOWN_ENTITY_NOT_FOUND`, `ConceptObservationBasis`, `hash_json`, `is_valid_sha256` |
@@ -45,21 +46,21 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (7) |
-| Outbound | `src` (6) |
+| Inbound | `src` (9) |
+| Outbound | `src` (7) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 150 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
-| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 160 | — | Already evaluated live inputs required for freshness comparison. |
-| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 178 | — | Normalized recorded or live concept basis returned to consumers. |
-| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 191 | — | One consumer-computed freshness outcome. |
-| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 204 | — | Freshness results for every recorded concept and aggregate counts. |
-| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 212 | — | — |
+| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 164 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
+| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 174 | — | Already evaluated live inputs required for freshness comparison. |
+| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 194 | — | Normalized recorded or live concept basis returned to consumers. |
+| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 207 | — | One consumer-computed freshness outcome. |
+| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 220 | — | Freshness results for every recorded concept and aggregate counts. |
+| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 234 | — | — |
 
 ## Functions
 
@@ -74,7 +75,7 @@ flowchart LR
 | `_evaluate_concept` | `(knowledge: KnowledgeIndex, concept: ConceptRecord, live: _ValidatedLiveEvaluation \| None) -> ConceptFreshnessResult` | — | — |
 | `_reliable_recorded_basis` | `(concept: ConceptRecord) -> EvidenceBasis \| None` | — | — |
 | `_basis_incompatibility_reason` | `(recorded: KnowledgeIndex, recorded_basis: EvidenceBasis, live: _ValidatedLiveEvaluation) -> str \| None` | — | — |
-| `_component_change_reason` | `(recorded: ProducerComponent, live: ProducerComponent, *, prefix: str) -> str \| None` | — | — |
+| `_component_change_reason` | `(recorded: ProducerComponent, live: ProducerComponent, *, prefix: str, policy: str = 'auto', plugins: bool = False) -> str \| None` | — | — |
 | `_recorded_basis_details` | `(knowledge: KnowledgeIndex, basis: EvidenceBasis \| None) -> ConceptFreshnessBasis \| None` | — | — |
 | `_live_basis_details` | `(live: _ValidatedLiveEvaluation, basis: ConceptObservationBasis) -> ConceptFreshnessBasis` | — | — |
 | `_analysis_basis_hash` | `(schema_version: str, producer: ProducerRecord, generation_options_hash: str, extractor_ref: str) -> str \| None` | — | — |
@@ -83,5 +84,6 @@ flowchart LR
 | `_configuration_unknown` | `(component: ProducerComponent) -> bool` | — | — |
 | `_configuration_marked_unknown` | `(component: ProducerComponent) -> bool` | — | — |
 | `_version_unknown` | `(component: ProducerComponent) -> bool` | — | — |
+| `comparable_producer_components` | `(recorded: ProducerComponent, live: ProducerComponent, *, configuration_required: bool = True) -> bool` | — | Apply the same conservative component rule to report consistency checks. |
 | `_result` | `(locator: str, state: ComputedFreshness, reason_code: str, recorded_basis: ConceptFreshnessBasis \| None, live_basis: ConceptFreshnessBasis \| None, *, compared: bool) -> ConceptFreshnessResult` | — | — |
 | `_validate_source_path` | `(value: object, field_name: str) -> None` | — | — |

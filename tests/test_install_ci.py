@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -139,6 +140,8 @@ def test_workflow_contract_is_portable_read_only_and_checksum_owned():
     workflow = yaml.safe_load(text)
     assert workflow[True] == {"push": None, "pull_request": None}
     job = workflow["jobs"]["integrity"]
+    assert job["steps"][1]["with"]["report-schema"] == "v4"
+    assert job["steps"][1]["with"]["comparison-policy"] == "auto"
     assert job["permissions"] == {"contents": "read"}
     assert [step["name"] for step in job["steps"]] == [
         "Check out the repository without credentials",
@@ -206,6 +209,105 @@ def test_unmodified_managed_workflow_auto_updates_to_new_action_ref(tmp_path):
     assert f"@{NEXT_ACTION_REF}".encode() in content
     assert f"@{CANONICAL_ACTION_REF}".encode() not in content
     assert is_unmodified_managed_workflow(content)
+
+
+@pytest.mark.parametrize("crlf", [False, True])
+@pytest.mark.parametrize("modified", [False, True])
+def test_prior_workflow_upgrades_without_overwriting_user_changes(
+    tmp_path, crlf, modified
+):
+    root = _managed_project(tmp_path)
+    target = root / MANAGED_WORKFLOW_PATH
+    target.parent.mkdir(parents=True)
+    # Exact installer output from a55a3973, before explicit schema/policy inputs.
+    old = (Path(__file__).parent / "fixtures/install-ci-legacy.yml").read_bytes()
+    if modified:
+        old = old.replace(b"timeout-minutes: 45", b"timeout-minutes: 60")
+    if crlf:
+        old = old.replace(b"\n", b"\r\n")
+    target.write_bytes(old)
+    if modified:
+        with pytest.raises(InstallCiError, match="--force"):
+            install_ci_workflow(action_ref=ACTION_REF, project_root=root)
+        assert target.read_bytes() == old
+        return
+    preview = install_ci_workflow(action_ref=ACTION_REF, project_root=root, dry_run=True)
+    assert preview.operation == "update" and target.read_bytes() == old
+    applied = install_ci_workflow(action_ref=ACTION_REF, project_root=root)
+    assert applied.operation == "update"
+    assert target.read_bytes() == render_managed_workflow(action_ref=ACTION_REF)
+    unchanged = install_ci_workflow(action_ref=ACTION_REF, project_root=root)
+    assert unchanged.operation == "unchanged"
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+def test_generated_workflow_evaluates_migrated_and_legacy_knowledge(
+    tmp_path, monkeypatch, legacy
+):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services import analysis_capture, analysis_compatibility, ci_report
+    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from tests.test_knowledge_health_refresh import _version
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".git").write_text("gitdir: absent\n", encoding="utf-8")
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "model.py").write_text("class User:\n    name: str\n", encoding="utf-8")
+    with monkeypatch.context() as producer:
+        if legacy:
+            # Produce the historical configuration form before writing artifacts.
+            producer.setattr(analysis_capture, "capture_analysis", lambda *a, **kw: None)
+        api.bootstrap_wiki(
+            "source", "wiki", skip_workflows=True,
+            skip_flows=True, skip_dependencies=True,
+        )
+        producer.setattr(sys, "argv", [
+            "llm-wiki", "sync", "--src-dir", "source", "--wiki-dir", "wiki",
+            "--no-cache", "--no-plugins",
+        ])
+        cli.main()
+    knowledge = load_knowledge_state("wiki").knowledge
+    assert knowledge is not None
+    assert analysis_compatibility.has_contract(knowledge.bundle.producer) is not legacy
+    install_ci_workflow(
+        action_ref=ACTION_REF, src_dir="source", wiki_dir="wiki", project_root=tmp_path
+    )
+    workflow = yaml.safe_load((tmp_path / MANAGED_WORKFLOW_PATH).read_text(encoding="utf-8"))
+    configured = workflow["jobs"]["integrity"]["steps"][1]["with"]
+    action_path = Path(__file__).parents[1] / "integrations/wiki-integrity/action.yml"
+    action = yaml.safe_load(action_path.read_text(encoding="utf-8"))
+    inputs = {
+        name: configured.get(name, row.get("default"))
+        for name, row in action["inputs"].items()
+    }
+    command = [
+        sys.executable, "-I", "-m", "llm_wiki_cli.cli", "ci-check",
+        "--format", "json", "--no-report", "--no-cache", "--no-plugins",
+    ]
+    for name in ("src-dir", "wiki-dir", "report-schema", "comparison-policy"):
+        command.extend(["--" + name, inputs[name]])
+    result = subprocess.run(
+        command, cwd=tmp_path, stdin=subprocess.DEVNULL, capture_output=True,
+        text=True, check=False, timeout=60,
+    )
+    assert result.returncode == 0, result.stderr
+    report = ci_report.validate_ci_check_payload(json.loads(result.stdout), cli_exit=0)
+    assert report["schema_version"] == "llm-wiki-ci-check/v4"
+    health = report["knowledge_health"]
+    assert health["status"] == "healthy"
+    details = health["health_details"]
+    assert details["basis"]["policy"] == ("exact-v1" if legacy else "auto")
+    assert details["coverage"]["modeled"] > 0
+    assert details["coverage"]["outcomes"]["current"] == details["coverage"]["modeled"]
+    if legacy:
+        _version(monkeypatch, "9.8.7")
+        changed = api.doctor(
+            "source", wiki_dir="wiki", strict=True,
+            report_schema="v4", comparison_policy="auto",
+        )
+        assert changed["status"] == "unhealthy"
+        assert "producer-tool-version-changed" in changed["drift"]["reasons"]
 
 
 def test_modified_managed_workflow_requires_force_and_dry_run_is_read_only(
@@ -607,6 +709,8 @@ def test_cli_help_exposes_only_default_source_selection_discovery(
     assert exc_info.value.code == 0
     help_text = capsys.readouterr().out
     assert "--action-ref SHA" in help_text
+    assert "v4-capable" in help_text
+    assert "SHA spelling checked offline" in " ".join(help_text.split())
     assert "--src-dir" in help_text
     assert "--wiki-dir" in help_text
     assert "--dry-run" in help_text

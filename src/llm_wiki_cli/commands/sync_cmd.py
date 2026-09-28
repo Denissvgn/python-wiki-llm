@@ -4379,6 +4379,7 @@ def _finalize_prepared_sync(
             regenerated_evidence_page_paths=frozenset(
                 result.regenerated_evidence_page_paths
             ),
+            analysis_components=prepared.inventory_result.analysis_components,
             extractor_registry=prepared.inventory_result.extractor_registry,
             plugin_extractor_components=(prepared.inventory_result.plugin_components),
             plugin_components=(prepared.inventory_result.producer_plugin_components),

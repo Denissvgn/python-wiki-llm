@@ -894,6 +894,14 @@ def _parse_component(value: object, path: str) -> ProducerComponent:
             _child(path, "limitations"),
             "must be sorted in ascending code order",
         )
+    from .analysis_compatibility import EXTENSION, validate_record, configuration_commitment
+    if EXTENSION in extensions:
+        try:
+            record = validate_record(extensions[EXTENSION], component_id)
+            if configuration_hash != configuration_commitment(record):
+                raise ValueError("analysis metadata is not bound by configuration")
+        except ValueError as exc:
+            raise KnowledgeModelError(_child(path, "extensions." + EXTENSION), str(exc)) from exc
     return ProducerComponent(
         component_id=component_id,
         version=_nonempty_string(data["version"], _child(path, "version")),

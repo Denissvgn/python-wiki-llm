@@ -144,15 +144,15 @@ flowchart LR
 |---|---|---:|---|
 | knowledge_index_to_payload | _model_to_payload | 277 | `_model_to_payload(validate_knowledge_index(...))` |
 | _model_to_payload | _knowledge_index_to_payload_unchecked | 283 | `_knowledge_index_to_payload_unchecked(model)` |
-| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2197 | `_bundle_to_payload(model.bundle)` |
-| _bundle_to_payload | _emit_extensions | 2016 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
-| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 1976 | `isinstance(extensions, FrozenDict)` |
-| _emit_extensions | _parse_extensions | 1977 | `_parse_extensions(extensions, path)` |
-| _parse_extensions | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1600 | `_object(value, path)` |
-| _parse_extensions | sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions) | 1602 | `sorted(data)` |
-| _parse_extensions | _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions) | 1603 | `_QUALIFIED_NAME_RE.fullmatch(key)` |
-| _parse_extensions | KnowledgeModelError | 1604 | `KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')` |
-| _parse_extensions | _child | 1605 | `_child(path, key)` |
+| _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2205 | `_bundle_to_payload(model.bundle)` |
+| _bundle_to_payload | _emit_extensions | 2024 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
+| _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 1984 | `isinstance(extensions, FrozenDict)` |
+| _emit_extensions | _parse_extensions | 1985 | `_parse_extensions(extensions, path)` |
+| _parse_extensions | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1608 | `_object(value, path)` |
+| _parse_extensions | sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions) | 1610 | `sorted(data)` |
+| _parse_extensions | _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions) | 1611 | `_QUALIFIED_NAME_RE.fullmatch(key)` |
+| _parse_extensions | KnowledgeModelError | 1612 | `KnowledgeModelError(_child(...), 'extension key must use namespace/name syntax')` |
+| _parse_extensions | _child | 1613 | `_child(path, key)` |
 
 ### Boundary effects
 
@@ -162,9 +162,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_emit_extensions` | `isinstance` | 1976 |
-| external_call | `_parse_extensions` | `sorted` | 1602 |
-| unresolved_call | `_parse_extensions` | `_QUALIFIED_NAME_RE.fullmatch` | 1603 |
+| external_call | `_emit_extensions` | `isinstance` | 1984 |
+| external_call | `_parse_extensions` | `sorted` | 1610 |
+| unresolved_call | `_parse_extensions` | `_QUALIFIED_NAME_RE.fullmatch` | 1611 |
 | step_limit | `knowledge_index_to_payload` | `first 12 steps` | 0 |
 | truncated_flow | `knowledge_index_to_payload` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # McpServerConfig
 
-**Location:** `src/llm_wiki_cli/services/mcp_server.py:240`
+**Location:** `src/llm_wiki_cli/services/mcp_server.py:242`
 **Kind:** Class
 **Bases:** —
 **Module:** [mcp_server](../modules/mcp_server.md)
@@ -30,6 +30,7 @@ _Auto-generated from `McpServerConfig` in `src/llm_wiki_cli/services/mcp_server.
 | `workflow_profile` | `WorkflowProfile \| None` | `None` | — |
 | `enable_sessions` | `bool` | `False` | — |
 | `max_sessions` | `int` | `8` | — |
+| `comparison_policy` | `str` | `'auto'` | — |
 
 ## Methods
 
@@ -54,7 +55,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 0 | `allow_external_src`, `allowed_origins`, `counter`, `enable_sessions`, `host`, `max_sessions`, `path`, `port`, `source_selection`, `src_dir`, `tokenizer`, `transport` |
+| [mcp_server](../modules/mcp_server.md) | 0 | `allow_external_src`, `allowed_origins`, `comparison_policy`, `counter`, `enable_sessions`, `host`, `max_sessions`, `path`, `port`, `source_selection`, `src_dir`, `tokenizer` |
 
 ### References
 
