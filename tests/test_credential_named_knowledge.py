@@ -1,15 +1,18 @@
 """Credential-related identifiers survive storage and governance operations."""
 
+import hashlib
 import sys
 
 import pytest
 
 from llm_wiki_cli import api
 from llm_wiki_cli.cli import main
+from llm_wiki_cli.services.io import read_md, write_md
 from llm_wiki_cli.services.knowledge_governance import (
     GOVERNANCE_FILENAME, load_governance,
 )
 from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
 from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
 from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
 from llm_wiki_cli.services.knowledge_storage_lifecycle import (
@@ -47,10 +50,13 @@ def credential_named_wiki(tmp_path, monkeypatch, capsys, request):
         return capsys.readouterr()
 
     page = root / "entities" / "RuntimeSecretField.md"
-    content = page.read_text(encoding="utf-8")
+    content = read_md(page)
     assert "## Description" in content
-    page.write_text(content.replace("## Description", "## Description\n\nPreserve this authored explanation.", 1),
-                    encoding="utf-8")
+    authored = content.replace("## Description", "## Description\n\nPreserve this authored explanation.", 1)
+    # Exercise Windows-style input on every host. The owning writer emits the
+    # canonical UTF-8/LF bytes required by storage and task receipt commitments.
+    write_md(page, authored.replace("\n", "\r\n"))
+    assert page.read_bytes() == authored.encode("utf-8")
     command("sync", "--src-dir", "source", "--wiki-dir", "wiki", "--jobs", "1",
             "--no-plugins", "--progress", "never")
     selectors = [f"code-entity:entities/{name}.md" for name in NAMES]
@@ -71,6 +77,11 @@ def credential_named_wiki(tmp_path, monkeypatch, capsys, request):
         selectors.extend([allocation.uid, historical])
     else:
         assert not (root / GOVERNANCE_FILENAME).exists()
+    knowledge = load_knowledge_state(root).knowledge
+    assert knowledge is not None
+    for concept in knowledge.concepts:
+        raw = (root / concept.document.canonical_path).read_bytes()
+        assert concept.facets.semantics.page_hash == "sha256:" + hashlib.sha256(raw).hexdigest()
     return root, selectors, command
 
 
@@ -144,3 +155,18 @@ def test_sync_preserves_named_concepts_and_governance_after_migration(credential
     command("sync", "--src-dir", "source", "--wiki-dir", "wiki", "--jobs", "1",
             "--no-plugins", "--progress", "never")
     assert snapshot(root) == first_sync
+
+
+def test_migration_rejects_newline_changes_after_commit(credential_named_wiki, tmp_path):
+    root, _selectors, _command = credential_named_wiki
+    page = root / "entities" / "RuntimeSecretField.md"
+    raw = page.read_bytes()
+    assert b"\r" not in raw and b"\n" in raw
+    page.write_bytes(raw.replace(b"\n", b"\r\n"))
+    before = snapshot(root)
+    recovery = tmp_path / "recovery"
+    with pytest.raises(KnowledgeStorageError, match="authored input changed") as raised:
+        migrate_knowledge_storage(root, to="packed-v4-deflate", dry_run=True, recovery_dir=recovery)
+    assert raised.value.code == "storage-mutation"
+    assert snapshot(root) == before
+    assert not recovery.exists()
