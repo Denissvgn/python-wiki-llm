@@ -1,7 +1,7 @@
 # capture_slice
 
 **Entry point:** `knowledge_storage_access._capture_slice`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [manifest_storage](../modules/manifest_storage.md)
+**Modules involved:** [concept_identity](../modules/concept_identity.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_model](../modules/knowledge_model.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [manifest_storage](../modules/manifest_storage.md)
 
 ## Sequence
 
@@ -29,7 +29,7 @@
 21. `knowledge_governance.lifecycle_state_by_uid`
 22. `knowledge_storage.KnowledgeStorageError`
 23. `knowledge_storage.KnowledgeStorageError`
-24. `knowledge_governance.natural_key_for`
+24. `concept_identity.natural_key_for`
 25. `knowledge_storage.KnowledgeStorageError`
 26. `knowledge_storage.KnowledgeStorageError`
 27. `knowledge_storage.KnowledgeStorageError`
@@ -37,6 +37,7 @@
 
 ## Touches
 
+- [concept_identity](../modules/concept_identity.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_governance](../modules/knowledge_governance.md)

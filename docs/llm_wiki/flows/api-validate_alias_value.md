@@ -128,17 +128,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_alias_value | validate_alias_type | 456 | `validate_alias_type(alias_type)` |
-| validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 445 | `isinstance(value, AliasType)` |
-| validate_alias_type | AliasType | 445 | `AliasType(value)` |
-| validate_alias_type | ConceptIdentityError | 447 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
-| validate_alias_value | validate_locator | 458 | `validate_locator(value)` |
-| validate_locator | _machine_text | 408 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 914 | `len(value)` |
-| _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 916 | `value.strip(data not statically known)` |
+| validate_alias_value | validate_alias_type | 486 | `validate_alias_type(alias_type)` |
+| validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
+| validate_alias_type | AliasType | 475 | `AliasType(value)` |
+| validate_alias_type | ConceptIdentityError | 477 | `ConceptIdentityError('alias_type', "must be 'locator' or 'natural-key'")` |
+| validate_alias_value | validate_locator | 488 | `validate_locator(value)` |
+| validate_locator | _machine_text | 438 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
+| _machine_text | value.strip (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -148,9 +148,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_alias_type` | `isinstance` | 445 |
-| external_call | `_machine_text` | `isinstance` | 912 |
-| unresolved_call | `_machine_text` | `value.strip` | 916 |
+| external_call | `validate_alias_type` | `isinstance` | 475 |
+| external_call | `_machine_text` | `isinstance` | 942 |
+| unresolved_call | `_machine_text` | `value.strip` | 946 |
 | step_limit | `validate_alias_value` | `first 12 steps` | 0 |
 | truncated_flow | `validate_alias_value` | `depth limit` | 0 |
 

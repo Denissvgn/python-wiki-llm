@@ -6,14 +6,19 @@
 
 Encodes the logical native knowledge model as a bounded root and immutable JSON objects. Owner-based partitions, shared descriptors and indexed references preserve identities and repeated observations. Full reads reconstruct and audit the complete model; selected reads validate consumed records and disclose unverified scope. Byte, object and expansion limits reject incomplete data without claiming full validity.
 
+Lookup aliases use shared concept identity validation in both governed and
+ungoverned wikis. Legitimate credential-related page names are accepted. Invalid
+coordinates produce storage-specific identity errors with unsafe input omitted
+from diagnostics.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `.canonical_json` | `canonical_chunks`, `scalar_size` |
+| `.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_governance` | `natural_key_for` |
 | `.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge` |
 | `.knowledge_model` | `_parse_bundle`, `_parse_concept`, `_parse_relationship`, `_parse_extensions` |
 | `.section_ownership` | `validate_section_ownership` |
@@ -54,11 +59,11 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 45 | `ValueError` | A storage contract, integrity or bounded-work failure. |
-| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 179 | — | — |
-| [_Encoder](../entities/Encoder.md) | 186 | — | — |
-| [_TreeBuilder](../entities/TreeBuilder.md) | 212 | — | — |
-| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 456 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
-| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 465 | — | Read committed objects through a caller-owned bounded I/O boundary. |
+| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 195 | — | — |
+| [_Encoder](../entities/Encoder.md) | 202 | — | — |
+| [_TreeBuilder](../entities/TreeBuilder.md) | 228 | — | — |
+| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 472 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
+| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 481 | — | Read committed objects through a caller-owned bounded I/O boundary. |
 
 ## Functions
 

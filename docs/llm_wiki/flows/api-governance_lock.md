@@ -121,9 +121,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| governance_lock | GovernanceError | 860 | `GovernanceError('lock', 'unknown mutation lock')` |
-| governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 861 | `Path(wiki_dir)` |
-| governance_lock | first_unsafe_path_component | 862 | `first_unsafe_path_component(root)` |
+| governance_lock | GovernanceError | 862 | `GovernanceError('lock', 'unknown mutation lock')` |
+| governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 863 | `Path(wiki_dir)` |
+| governance_lock | first_unsafe_path_component | 864 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |

@@ -1,6 +1,6 @@
 # ConceptAllocation
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:115`
+**Location:** `src/llm_wiki_cli/services/concept_identity.py:116`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)

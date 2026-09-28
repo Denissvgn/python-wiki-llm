@@ -133,35 +133,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| allocate_concept | isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept) | 537 | `isinstance(reference, ConceptReference)` |
-| allocate_concept | TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept) | 538 | `TypeError('reference must be a ConceptReference')` |
-| allocate_concept | validate_bundle_id | 539 | `validate_bundle_id(bundle_id)` |
-| validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 914 | `len(value)` |
-| _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
-| _machine_text | value.strip | 916 | `value.strip(data not statically known)` |
-| _machine_text | any (src/llm_wiki_cli/services…identity.py:_machine_text) | 916 | `any(...)` |
-| _machine_text | character.isspace | 916 | `character.isspace(data not statically known)` |
+| allocate_concept | isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept) | 567 | `isinstance(reference, ConceptReference)` |
+| allocate_concept | TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept) | 568 | `TypeError('reference must be a ConceptReference')` |
+| allocate_concept | validate_bundle_id | 569 | `validate_bundle_id(bundle_id)` |
+| validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
+| _machine_text | value.strip | 946 | `value.strip(data not statically known)` |
+| _machine_text | any (src/llm_wiki_cli/services…identity.py:_machine_text) | 946 | `any(...)` |
+| _machine_text | character.isspace | 946 | `character.isspace(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `candidates.add` | `allocate_concept` | 556 |
-| mutation | `candidates.add` | `allocate_concept` | 566 |
+| mutation | `candidates.add` | `allocate_concept` | 586 |
+| mutation | `candidates.add` | `allocate_concept` | 596 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `allocate_concept` | `isinstance` | 537 |
-| external_call | `allocate_concept` | `TypeError` | 538 |
-| external_call | `_machine_text` | `isinstance` | 912 |
-| unresolved_call | `_machine_text` | `value.strip` | 916 |
-| external_call | `_machine_text` | `any` | 916 |
-| unresolved_call | `_machine_text` | `character.isspace` | 916 |
+| external_call | `allocate_concept` | `isinstance` | 567 |
+| external_call | `allocate_concept` | `TypeError` | 568 |
+| external_call | `_machine_text` | `isinstance` | 942 |
+| unresolved_call | `_machine_text` | `value.strip` | 946 |
+| external_call | `_machine_text` | `any` | 946 |
+| unresolved_call | `_machine_text` | `character.isspace` | 946 |
 | step_limit | `allocate_concept` | `first 12 steps` | 0 |
 | truncated_flow | `allocate_concept` | `depth limit` | 0 |
 

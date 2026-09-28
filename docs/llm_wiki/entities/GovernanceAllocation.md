@@ -1,6 +1,6 @@
 # GovernanceAllocation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:154`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:155`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 619 | [Open section](#entities) |
 | Modules | 210 | [Open section](#modules) |
-| Workflows | 159 | [Open section](#workflows) |
+| Workflows | 160 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 454 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -663,7 +663,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
 - [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
-- [concept_identity](modules/concept_identity.md) - Pure stable-identity primitives for governed knowledge concepts.
+- [concept_identity](modules/concept_identity.md) - Pure stable-identity primitives for knowledge concepts.
 - [config](modules/config.md) - Shared constants and utilities for agent-wiki-cli.
 - [context_budget](modules/context_budget.md) - Opt-in full-render context budgets over the existing captured-read contract.
 - [context_knowledge_contract](modules/context_knowledge_contract.md) - Frozen compatibility and failure contracts for context knowledge selection.
@@ -989,6 +989,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [runtime_flow_entries](workflows/runtime_flow_entries.md) - entry: `documentation_native._runtime_flow_entries`
 - [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
 - [search_wiki](workflows/search_wiki.md) - entry: `search_service.search_wiki`
+- [section_locator](workflows/section_locator.md) - entry: `knowledge_governance._section_locator`
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
 - [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics.storage_report`

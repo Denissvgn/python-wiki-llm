@@ -1,6 +1,6 @@
 # ConceptReference
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:93`
+**Location:** `src/llm_wiki_cli/services/concept_identity.py:94`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)

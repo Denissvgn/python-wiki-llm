@@ -2,15 +2,7 @@
 
 **Entry point:** `concept_references_from_knowledge` (`api`)
 **Source:** [knowledge_governance](../modules/knowledge_governance.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_governance](../modules/knowledge_governance.md), [validation](../modules/validation.md), [wiki_media](../modules/wiki_media.md), and 1 more
-
-**Complete modules touched:**
-
-- [concept_identity](../modules/concept_identity.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
-- [validation](../modules/validation.md)
-- [wiki_media](../modules/wiki_media.md)
-- [wiki_surface](../modules/wiki_surface.md)
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_governance](../modules/knowledge_governance.md), [validation](../modules/validation.md), [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -22,8 +14,8 @@ sequenceDiagram
     participant p2 as TypeError
     participant p3 as references.append (src/llm_wiki_cli/services…references_from_knowledge)
     participant p4 as ConceptGovernanceReference
-    participant p5 as natural_key_for
-    participant p6 as _concept_kind
+    participant p5 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p6 as natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
     participant p7 as validate_concept_kind
     participant p8 as _machine_text
     participant p9 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
@@ -36,18 +28,18 @@ sequenceDiagram
     participant p16 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
     participant p17 as unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
     participant p18 as _QUALIFIED_KIND_RE.fullmatch
-    participant p19 as GovernanceError
-    participant p20 as _relative_path
-    participant p21 as require_repository_relative_path
-    participant p22 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p23 as _syntax_key
+    participant p19 as require_repository_relative_path
+    participant p20 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p21 as _syntax_key
+    participant p22 as type
+    participant p23 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
     p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)
     p0-->>p2: TypeError
     p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)
     p0-->>p3: references.append (src/llm_wiki_cli/services…references_from_knowledge)
     p0->>p4: ConceptGovernanceReference
-    p0->>p5: natural_key_for
-    p5->>p6: _concept_kind
+    p0->>p5: natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    p5->>p6: natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
     p6->>p7: validate_concept_kind
     p7->>p8: _machine_text
     p8-->>p9: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
@@ -66,14 +58,14 @@ sequenceDiagram
     p8->>p10: ConceptIdentityError
     p7-->>p18: _QUALIFIED_KIND_RE.fullmatch
     p7->>p10: ConceptIdentityError
-    p6->>p19: GovernanceError
-    p5->>p20: _relative_path
-    p20->>p21: require_repository_relative_path
-    p21-->>p22: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p21->>p23: _syntax_key
+    p6->>p19: require_repository_relative_path
+    p19-->>p20: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    p19->>p21: _syntax_key
+    p21-->>p22: type
+    p21-->>p23: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
 ```
 
-> Call sequence diagram shows 30 of 238 interactions; 208 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 203 interactions; 173 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -88,8 +80,8 @@ flowchart LR
     s4["4. isinstance (src/llm_wiki_cli/services…references_from_knowledge)"]
     s5["5. references.append (src/llm_wiki_cli/services…references_from_knowledge)"]
     s6["6. ConceptGovernanceReference"]
-    s7["7. natural_key_for"]
-    s8["8. _concept_kind"]
+    s7["7. natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    s8["8. natural_key_for (src/llm_wiki_cli/services/concept_identity.py)"]
     s9["9. validate_concept_kind"]
     s10["10. _machine_text"]
     s11["11. isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)"]
@@ -99,9 +91,9 @@ flowchart LR
     s1 -. "isinstance (src/llm_wiki_cli/services…references_from_knowledge)(concept.concept_kind, ConceptKind)" .-> s4
     s1 -. "references.append (src/llm_wiki_cli/services…references_from_knowledge)(ConceptGovernanceReference(...))" .-> s5
     s1 -->|"ConceptGovernanceReference(locator=concept.locator, concept_kind=kind, natural_key=natural_key_for(...))"| s6
-    s1 -->|"natural_key_for(kind, concept.document.canonical_path)"| s7
-    s7 -->|"_concept_kind(concept_kind, 'concept_kind')"| s8
-    s8 -->|"validate_concept_kind(value)"| s9
+    s1 -->|"natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)(kind, concept.document.canonical_path)"| s7
+    s7 -->|"natural_key_for (src/llm_wiki_cli/services/concept_identity.py)(concept_kind, canonical_path)"| s8
+    s8 -->|"validate_concept_kind(concept_kind)"| s9
     s9 -->|"_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)"| s10
     s10 -. "isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)(value, str)" .-> s11
     s10 -->|"ConceptIdentityError(field, 'must be a non-empty string')"| s12
@@ -110,7 +102,7 @@ flowchart LR
     click s1 "../modules/knowledge_governance.md"
     click s6 "../modules/knowledge_governance.md"
     click s7 "../modules/knowledge_governance.md"
-    click s8 "../modules/knowledge_governance.md"
+    click s8 "../modules/concept_identity.md"
     click s9 "../modules/concept_identity.md"
     click s10 "../modules/concept_identity.md"
     click s12 "../modules/concept_identity.md"
@@ -128,8 +120,8 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…references_from_knowledge)` | - | - | - | - |
 | `references.append (src/llm_wiki_cli/services…references_from_knowledge)` | - | - | - | - |
 | `ConceptGovernanceReference` | - | - | - | - |
-| `natural_key_for` | `concept_kind: str`, `canonical_path: str` | - | - | `_natural_key(...)` |
-| `_concept_kind` | `value: object`, `path: str` | `ConceptIdentityError` | - | `validate_concept_kind(...)` |
+| `natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)` | `concept_kind: str`, `canonical_path: str` | `ConceptIdentityError` | - | `_identity_natural_key_for(...)` |
+| `natural_key_for (src/llm_wiki_cli/services/concept_identity.py)` | `concept_kind: str`, `canonical_path: str` | - | - | `validate_natural_key(...)` |
 | `validate_concept_kind` | `value: object` | `_MAX_CONCEPT_KIND_LENGTH`, `_UID_TAG_BY_KIND` | - | `text` |
 | `_machine_text` | `value: object`, `field: str`, `maximum: int` | - | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | - | - | - | - |
@@ -139,32 +131,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1472 | `isinstance(knowledge, KnowledgeIndex)` |
-| concept_references_from_knowledge | TypeError | 1473 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1478 | `isinstance(concept.concept_kind, ConceptKind)` |
-| concept_references_from_knowledge | references.append (src/llm_wiki_cli/services…references_from_knowledge) | 1481 | `references.append(ConceptGovernanceReference(...))` |
-| concept_references_from_knowledge | ConceptGovernanceReference | 1482 | `ConceptGovernanceReference(locator=concept.locator, concept_kind=kind, natural_key=natural_key_for(...))` |
-| concept_references_from_knowledge | natural_key_for | 1485 | `natural_key_for(kind, concept.document.canonical_path)` |
-| natural_key_for | _concept_kind | 394 | `_concept_kind(concept_kind, 'concept_kind')` |
-| _concept_kind | validate_concept_kind | 3375 | `validate_concept_kind(value)` |
-| validate_concept_kind | _machine_text | 305 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1474 | `isinstance(knowledge, KnowledgeIndex)` |
+| concept_references_from_knowledge | TypeError | 1475 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| concept_references_from_knowledge | isinstance (src/llm_wiki_cli/services…references_from_knowledge) | 1480 | `isinstance(concept.concept_kind, ConceptKind)` |
+| concept_references_from_knowledge | references.append (src/llm_wiki_cli/services…references_from_knowledge) | 1483 | `references.append(ConceptGovernanceReference(...))` |
+| concept_references_from_knowledge | ConceptGovernanceReference | 1484 | `ConceptGovernanceReference(locator=concept.locator, concept_kind=kind, natural_key=natural_key_for(...))` |
+| concept_references_from_knowledge | natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py) | 1487 | `natural_key_for(kind, concept.document.canonical_path)` |
+| natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py) | natural_key_for (src/llm_wiki_cli/services/concept_identity.py) | 396 | `_identity_natural_key_for(concept_kind, canonical_path)` |
+| natural_key_for (src/llm_wiki_cli/services/concept_identity.py) | validate_concept_kind | 327 | `validate_concept_kind(concept_kind)` |
+| validate_concept_kind | _machine_text | 306 | `_machine_text(value, 'concept_kind', maximum=_MAX_CONCEPT_KIND_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `references.append` | `concept_references_from_knowledge` | 1481 |
+| mutation | `references.append` | `concept_references_from_knowledge` | 1483 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `concept_references_from_knowledge` | `isinstance` | 1472 |
-| external_call | `concept_references_from_knowledge` | `TypeError` | 1473 |
-| external_call | `concept_references_from_knowledge` | `isinstance` | 1478 |
-| external_call | `_machine_text` | `isinstance` | 912 |
+| external_call | `concept_references_from_knowledge` | `isinstance` | 1474 |
+| external_call | `concept_references_from_knowledge` | `TypeError` | 1475 |
+| external_call | `concept_references_from_knowledge` | `isinstance` | 1480 |
+| external_call | `_machine_text` | `isinstance` | 942 |
 | step_limit | `concept_references_from_knowledge` | `first 12 steps` | 0 |
 | truncated_flow | `concept_references_from_knowledge` | `depth limit` | 0 |
 

@@ -119,17 +119,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| move_allocation | isinstance (src/llm_wiki_cli/services…entity.py:move_allocation) | 820 | `isinstance(allocation, ConceptAllocation)` |
-| move_allocation | TypeError (src/llm_wiki_cli/services…entity.py:move_allocation) | 821 | `TypeError('allocation must be a ConceptAllocation')` |
-| move_allocation | _typed_tuple | 822 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 983 | `isinstance(values, (...))` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 984 | `TypeError(...)` |
-| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 986 | `tuple(values)` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 988 | `TypeError(...)` |
-| _typed_tuple | enumerate | 991 | `enumerate(result)` |
-| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 992 | `isinstance(value, expected_type)` |
-| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 993 | `TypeError(...)` |
-| move_allocation | all | 823 | `all(...)` |
+| move_allocation | isinstance (src/llm_wiki_cli/services…entity.py:move_allocation) | 850 | `isinstance(allocation, ConceptAllocation)` |
+| move_allocation | TypeError (src/llm_wiki_cli/services…entity.py:move_allocation) | 851 | `TypeError('allocation must be a ConceptAllocation')` |
+| move_allocation | _typed_tuple | 852 | `_typed_tuple(allocations, ConceptAllocation, 'allocations')` |
+| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1013 | `isinstance(values, (...))` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1014 | `TypeError(...)` |
+| _typed_tuple | tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1016 | `tuple(values)` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1018 | `TypeError(...)` |
+| _typed_tuple | enumerate | 1021 | `enumerate(result)` |
+| _typed_tuple | isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1022 | `isinstance(value, expected_type)` |
+| _typed_tuple | TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple) | 1023 | `TypeError(...)` |
+| move_allocation | all | 853 | `all(...)` |
 
 ### Boundary effects
 
@@ -139,15 +139,15 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `move_allocation` | `isinstance` | 820 |
-| external_call | `move_allocation` | `TypeError` | 821 |
-| external_call | `_typed_tuple` | `isinstance` | 983 |
-| external_call | `_typed_tuple` | `TypeError` | 984 |
-| external_call | `_typed_tuple` | `TypeError` | 988 |
-| external_call | `_typed_tuple` | `enumerate` | 991 |
-| external_call | `_typed_tuple` | `isinstance` | 992 |
-| external_call | `_typed_tuple` | `TypeError` | 993 |
-| external_call | `move_allocation` | `all` | 823 |
+| external_call | `move_allocation` | `isinstance` | 850 |
+| external_call | `move_allocation` | `TypeError` | 851 |
+| external_call | `_typed_tuple` | `isinstance` | 1013 |
+| external_call | `_typed_tuple` | `TypeError` | 1014 |
+| external_call | `_typed_tuple` | `TypeError` | 1018 |
+| external_call | `_typed_tuple` | `enumerate` | 1021 |
+| external_call | `_typed_tuple` | `isinstance` | 1022 |
+| external_call | `_typed_tuple` | `TypeError` | 1023 |
+| external_call | `move_allocation` | `all` | 853 |
 | step_limit | `move_allocation` | `first 12 steps` | 0 |
 | truncated_flow | `move_allocation` | `depth limit` | 0 |
 

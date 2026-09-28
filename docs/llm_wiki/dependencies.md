@@ -31,7 +31,7 @@ flowchart TD
 
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
-| [validation](modules/validation.md) | 57 | 0 |
+| [validation](modules/validation.md) | 58 | 0 |
 | [config](modules/config.md) | 56 | 3 |
 | [services_contracts](modules/services_contracts.md) | 42 | 0 |
 | [source_snapshot](modules/source_snapshot.md) | 41 | 7 |
@@ -47,7 +47,7 @@ flowchart TD
 | [extraction_service](modules/extraction_service.md) | 21 | 27 |
 | [filesystem_guard](modules/filesystem_guard.md) | 21 | 0 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 21 | 6 |
-| [knowledge_governance](modules/knowledge_governance.md) | 20 | 9 |
+| [knowledge_governance](modules/knowledge_governance.md) | 19 | 9 |
 | [plugins](modules/plugins.md) | 17 | 3 |
 | [analysis_compatibility](modules/analysis_compatibility.md) | 16 | 0 |
 | [knowledge_storage](modules/knowledge_storage.md) | 16 | 7 |
@@ -85,6 +85,7 @@ flowchart TD
 | [knowledge_orchestration](modules/knowledge_orchestration.md) | 8 | 21 |
 | [lint_service](modules/lint_service.md) | 8 | 37 |
 | [markdown_sections](modules/markdown_sections.md) | 8 | 1 |
+| [concept_identity](modules/concept_identity.md) | 7 | 2 |
 | [integrity](modules/integrity.md) | 7 | 7 |
 | [infrastructure_sync](modules/infrastructure_sync.md) | 7 | 4 |
 | [wiki_lifecycle](modules/wiki_lifecycle.md) | 7 | 8 |
@@ -97,7 +98,6 @@ flowchart TD
 | [python_imports](modules/python_imports.md) | 6 | 1 |
 | [section_ownership](modules/section_ownership.md) | 6 | 5 |
 | [api](modules/api.md) | 5 | 42 |
-| [concept_identity](modules/concept_identity.md) | 5 | 1 |
 | [refresh](modules/refresh.md) | 5 | 9 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
 | [legacy_hooks](modules/legacy_hooks.md) | 5 | 4 |
@@ -148,7 +148,7 @@ flowchart TD
 | [health_details](modules/health_details.md) | 2 | 10 |
 | [health_policy](modules/health_policy.md) | 2 | 2 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
-| [knowledge_storage_access](modules/knowledge_storage_access.md) | 2 | 10 |
+| [knowledge_storage_access](modules/knowledge_storage_access.md) | 2 | 11 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
 | [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 2 | 12 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |

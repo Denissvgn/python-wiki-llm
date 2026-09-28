@@ -74,7 +74,7 @@ sequenceDiagram
     p5->>p4: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 350 interactions; 320 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 357 interactions; 327 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -156,36 +156,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluate_review_event | validate_governance_ledger | 1574 | `validate_governance_ledger(ledger)` |
-| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 523 | `isinstance(ledger, GovernanceLedger)` |
-| validate_governance_ledger | TypeError (src/llm_wiki_cli/services…alidate_governance_ledger) | 524 | `TypeError('ledger must be a GovernanceLedger')` |
-| validate_governance_ledger | GovernanceError | 526 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
-| validate_governance_ledger | _bundle_id | 531 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3368 | `validate_bundle_id(value)` |
-| validate_bundle_id | _machine_text | 288 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
-| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 912 | `isinstance(value, str)` |
-| _machine_text | ConceptIdentityError | 913 | `ConceptIdentityError(field, 'must be a non-empty string')` |
-| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 914 | `len(value)` |
-| _machine_text | ConceptIdentityError | 915 | `ConceptIdentityError(field, ...)` |
+| evaluate_review_event | validate_governance_ledger | 1576 | `validate_governance_ledger(ledger)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 525 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | TypeError (src/llm_wiki_cli/services…alidate_governance_ledger) | 526 | `TypeError('ledger must be a GovernanceLedger')` |
+| validate_governance_ledger | GovernanceError | 528 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
+| validate_governance_ledger | _bundle_id | 533 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
+| _bundle_id | validate_bundle_id | 3363 | `validate_bundle_id(value)` |
+| validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
+| _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
+| _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
+| _machine_text | len (src/llm_wiki_cli/services…identity.py:_machine_text) | 944 | `len(value)` |
+| _machine_text | ConceptIdentityError | 945 | `ConceptIdentityError(field, ...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `reasons.append` | `evaluate_review_event` | 1585 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1588 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1592 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1587 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1590 |
 | mutation | `reasons.append` | `evaluate_review_event` | 1594 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1598 |
-| mutation | `reasons.append` | `evaluate_review_event` | 1603 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1596 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1600 |
+| mutation | `reasons.append` | `evaluate_review_event` | 1605 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_governance_ledger` | `isinstance` | 523 |
-| external_call | `validate_governance_ledger` | `TypeError` | 524 |
-| external_call | `_machine_text` | `isinstance` | 912 |
+| external_call | `validate_governance_ledger` | `isinstance` | 525 |
+| external_call | `validate_governance_ledger` | `TypeError` | 526 |
+| external_call | `_machine_text` | `isinstance` | 942 |
 | step_limit | `evaluate_review_event` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_review_event` | `depth limit` | 0 |
 

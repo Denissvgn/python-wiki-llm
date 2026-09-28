@@ -97,7 +97,7 @@ sequenceDiagram
     p18->>p12: SyncManifestError
 ```
 
-> Call sequence diagram shows 30 of 2790 interactions; 2760 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2815 interactions; 2785 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -95,7 +95,7 @@ sequenceDiagram
     p16-->>p23: pending_parts.pop
 ```
 
-> Call sequence diagram shows 30 of 2489 interactions; 2459 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2487 interactions; 2457 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

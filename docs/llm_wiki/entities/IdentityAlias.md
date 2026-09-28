@@ -1,6 +1,6 @@
 # IdentityAlias
 
-**Location:** `src/llm_wiki_cli/services/concept_identity.py:153`
+**Location:** `src/llm_wiki_cli/services/concept_identity.py:154`
 **Kind:** Class
 **Bases:** —
 **Module:** [concept_identity](../modules/concept_identity.md)

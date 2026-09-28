@@ -1,6 +1,6 @@
 # GovernanceConflictError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:127`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:128`
 **Kind:** Class
 **Bases:** `GovernanceError`
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)
