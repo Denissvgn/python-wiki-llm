@@ -15,6 +15,14 @@ to read that snapshot.
 Markdown and `.llm-wiki-governance.json` remain the authority for authored content,
 stable identity and review history. Storage migration preserves them.
 
+Canonical page names may contain words such as `Secret`, `Password` or `ApiKey`.
+These are valid identifiers in both governed and ungoverned wikis. Paths still
+must be normalized and relative, without traversal, control characters or URI
+credentials. If an older reader or writer rejects an ordinary page name as
+`credential-like fields`, upgrade every consumer to a build containing the
+identity-validation correction before migrating. Preserve the page names and
+the complete snapshot; initializing governance does not resolve that error.
+
 ## Choose a format for a large repository
 
 | Format | Use it when |

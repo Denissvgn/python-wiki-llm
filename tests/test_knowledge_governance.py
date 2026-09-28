@@ -1133,3 +1133,57 @@ def test_ledger_rejects_credentials_absolute_paths_and_prose_fields():
             authored_at=FIXED_TIME,
             reason="This is explanatory prose.",
         )
+
+
+@pytest.mark.parametrize("name", ["RuntimeSecretField", "SecretMaterialError", "OrdinaryField"])
+def test_review_locators_accept_credential_related_page_and_heading_names(name):
+    locator = f"llm-wiki://entities/{name}"
+    ledger = reconcile_concepts(
+        GovernanceLedger.empty("kb_credential-words"),
+        (_reference(locator, f"entities/{name}.md", "code-entity"),),
+    )
+    uid = next(iter(ledger.concepts))
+    reviewed = add_review_event(
+        ledger, uid,
+        section_locator=f"{locator}#section/{name}~1/Secret%20handling~1",
+        scope_hash="sha256:" + "a" * 64,
+        evidence=ReviewEvidence(mode="no-source"),
+        reviewer=HUMAN, method="manual-review", method_version="1",
+        authored_at=FIXED_TIME,
+    )
+    assert governance.parse_governance_ledger(reviewed.to_payload()) == reviewed
+    assert reviewed.concepts == ledger.concepts
+
+
+@pytest.mark.parametrize("locator", [
+    "llm-wiki://user:CREDENTIAL_SENTINEL@modules/alpha#section/Description~1",
+    "llm-wiki://modules/../alpha#section/Description~1",
+    "llm-wiki://modules/alpha?access_token=CREDENTIAL_SENTINEL#section/Description~1",
+    "llm-wiki://modules/alpha#section/Description\x00~1",
+    "llm-wiki://modules/alpha#section/Description\x7f~1",
+    "llm-wiki://modules/alpha#section/Description~1 https://user:CREDENTIAL_SENTINEL@example.test",
+    "llm-wiki://modules/alpha#section/",
+    "/tmp/alpha#section/Description~1",
+])
+def test_review_locator_rejects_unsafe_coordinates_without_echoing_them(locator):
+    ledger = _two_concept_ledger()
+    uid = next(uid for uid, allocation in ledger.concepts.items()
+               if allocation.locator == "llm-wiki://modules/alpha")
+    with pytest.raises(GovernanceError) as raised:
+        add_review_event(
+            ledger, uid, section_locator=locator,
+            scope_hash="sha256:" + "a" * 64, evidence=ReviewEvidence(mode="no-source"),
+            reviewer=HUMAN, method="manual-review", method_version="1", authored_at=FIXED_TIME,
+        )
+    assert raised.value.field == "section_locator"
+    assert "CREDENTIAL_SENTINEL" not in str(raised.value)
+
+
+@pytest.mark.parametrize("actor_id", ["secret-owner", "password-owner", "api-key-owner", "access-token-owner"])
+def test_identity_fix_preserves_actor_metadata_credential_policy(actor_id):
+    ledger = _two_concept_ledger()
+    with pytest.raises(GovernanceError, match="credential-like fields"):
+        set_lifecycle(
+            ledger, next(iter(ledger.concepts)), Lifecycle.ACTIVE,
+            actor=GovernanceActor(kind="human", actor_id=actor_id), authored_at=FIXED_TIME,
+        )

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Indexed and packed knowledge migration accepts legitimate page names such as
+  `RuntimeSecretField` and `SecretMaterialError`. Governance review locators also
+  accept credential-related page and heading names, while unsafe paths, URI
+  credentials and protected governance metadata remain validated.
+
 ## [2.3.0] - 2026-09-21
 
 This release adds native task context, reusable context sessions, and indexed

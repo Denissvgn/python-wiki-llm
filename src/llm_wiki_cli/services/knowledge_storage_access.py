@@ -8,9 +8,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .concept_identity import natural_key_for
 from .knowledge_envelope import EvaluatedEnvelope
 from .knowledge_governance import (
-    GOVERNANCE_FILENAME, parse_governance_ledger, lifecycle_state_by_uid, natural_key_for,
+    GOVERNANCE_FILENAME, parse_governance_ledger, lifecycle_state_by_uid,
 )
 from .contracts import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import _parse_bundle

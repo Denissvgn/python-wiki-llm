@@ -56,6 +56,29 @@ def test_identical_builds_are_byte_identical(logical):
     assert second == first
 
 
+@pytest.mark.parametrize("path,kind,field,expected_path", [
+    ("https://user:CREDENTIAL_SENTINEL@example.test/page.md", "code-entity", "canonical_path", False),
+    ("entities/../page.md", "code-entity", "canonical_path", False),
+    ("entities/page.md", "invalid-kind", "concept_kind", True),
+])
+def test_alias_identity_errors_identify_storage_stage_without_leaking_input(
+    logical, path, kind, field, expected_path,
+):
+    logical["concepts"][0]["document"]["canonical_path"] = path
+    logical["concepts"][0]["concept_kind"] = kind
+    with pytest.raises(KnowledgeStorageError) as raised:
+        build_knowledge_store(logical)
+    error = raised.value
+    assert error.code == "storage-identity-invalid"
+    assert error.field == f"concepts.aliases.{field}"
+    assert "cannot build lookup identity" in str(error)
+    assert "CREDENTIAL_SENTINEL" not in str(error)
+    if expected_path:
+        assert path in str(error)
+    else:
+        assert "invalid canonical path omitted" in str(error)
+
+
 def test_repeated_observations_are_not_collapsed(logical):
     logical["relationships"].append(deepcopy(logical["relationships"][0]))
     logical["relationships"].sort(key=canonical_bytes)

@@ -41,10 +41,12 @@ from .concept_identity import (
     ConceptIdentityError,
     derive_concept_uid as _derive_identity_uid,
     identity_coordinate_key,
+    natural_key_for as _identity_natural_key_for,
     validate_alias_value,
     validate_bundle_id,
     validate_concept_kind,
     validate_concept_uid,
+    validate_locator,
     validate_natural_key,
 )
 from .knowledge_evidence import (
@@ -68,7 +70,6 @@ from .validation import (
     require_mapping,
     require_no_control_characters,
     require_nonnegative_int,
-    require_repository_relative_path,
     require_sha256,
 )
 from .wiki_media import contains_uri_authority_userinfo
@@ -389,11 +390,12 @@ def natural_key_for(
     concept_kind: str,
     canonical_path: str,
 ) -> str:
-    """Build the initial natural key without using an absolute checkout path."""
+    """Build a shared natural key with governance-compatible diagnostics."""
 
-    kind = _concept_kind(concept_kind, "concept_kind")
-    path = _relative_path(canonical_path, "canonical_path")
-    return _natural_key(f"{kind}:{path}", "natural_key")
+    try:
+        return _identity_natural_key_for(concept_kind, canonical_path)
+    except ConceptIdentityError as exc:
+        raise GovernanceError(exc.field, exc.message) from exc
 
 
 def derive_concept_uid(
@@ -3307,28 +3309,6 @@ def _identity_ownership_key(alias_type: str, value: str) -> str:
         raise GovernanceError("identity", exc.message) from exc
 
 
-def _relative_path(value: object, path: str) -> str:
-    result = require_repository_relative_path(
-        value,
-        text_error=GovernanceError(
-            path, "must be a repository-relative POSIX path"
-        ),
-        posix_error=GovernanceError(
-            path, "must be a repository-relative POSIX path"
-        ),
-        normalized_error=GovernanceError(
-            path, "must be a normalized relative path"
-        ),
-        control_error=GovernanceError(
-            path, "must not contain control characters"
-        ),
-        reject_delete_character=True,
-        control_after_normalization=True,
-    )
-    _safe_text(result, path)
-    return result
-
-
 def _section_locator(value: object, path: str) -> str:
     if (
         not isinstance(value, str)
@@ -3341,7 +3321,22 @@ def _section_locator(value: object, path: str) -> str:
             path,
             "must be an exact llm-wiki section locator",
         )
-    _safe_text(value, path)
+    page_locator, _, section_path = value.partition("#section/")
+    if not section_path:
+        raise GovernanceError(path, "must contain a section coordinate")
+    try:
+        validate_locator(page_locator)
+    except ConceptIdentityError as exc:
+        raise GovernanceError(path, exc.message) from exc
+    # Page identifiers and heading text may legitimately discuss credentials.
+    # Validate coordinates independently of actor/method metadata safeguards.
+    require_no_control_characters(
+        value,
+        error=GovernanceError(path, "must not contain control characters"),
+        reject_delete_character=True,
+    )
+    if contains_uri_authority_userinfo(value):
+        raise GovernanceError(path, "must not contain URI credentials")
     return value
 
 

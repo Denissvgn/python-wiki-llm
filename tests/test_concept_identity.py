@@ -22,6 +22,7 @@ from llm_wiki_cli.services.concept_identity import (
     find_identity_collisions,
     identity_coordinate_key,
     move_allocation,
+    natural_key_for,
     validate_alias_value,
     validate_bundle_id,
     validate_concept_kind,
@@ -193,6 +194,50 @@ def test_natural_key_accepts_occurrence_fragments_and_canonical_utf8_escapes():
     assert validate_natural_key("entity:src/models.py#%C3%89tat") == (
         "entity:src/models.py#%C3%89tat"
     )
+
+
+@pytest.mark.parametrize("name", [
+    "RuntimeSecretField", "SecretMaterialError", "ResetPasswordForm",
+    "PasswdEntry", "ApiKeySettings", "AccessTokenProvider", "PrivateKeyStore",
+])
+def test_natural_key_construction_accepts_credential_related_identifiers(name):
+    from llm_wiki_cli.services import knowledge_governance
+
+    path = f"entities/{name}.md"
+    expected = f"code-entity:{path}"
+    assert natural_key_for("code-entity", path) == expected
+    assert knowledge_governance.natural_key_for("code-entity", path) == expected
+    assert validate_locator(f"llm-wiki://entities/{name}") == f"llm-wiki://entities/{name}"
+
+
+def test_natural_key_construction_preserves_existing_identity_bytes():
+    key = natural_key_for("source-module", "modules/core.md")
+    assert key == "source-module:modules/core.md"
+    assert derive_concept_uid("bundle:project-1", "source-module", key) == (
+        "lw:module:27b9ae241cad1427564442436cbc22a2"
+    )
+
+
+@pytest.mark.parametrize("path", [
+    "", None, "/tmp/entities/core.md", "C:/wiki/entities/core.md", "C:core.md",
+    r"entities\core.md", "entities/../core.md", "entities/./core.md",
+    "entities//core.md", "entities/core.md/", "entities/CON.md",
+    "entities/core.md ", "entities/core\x00.md", "entities/core\x7f.md",
+    "entities/core\u200b.md", "entities/%2E%2E/core.md", "entities/%GG.md",
+    "https://user:CREDENTIAL_SENTINEL@example.test/core.md",
+    "user:CREDENTIAL_SENTINEL@example.test/core.md",
+    "git@example.test/core.md",
+])
+def test_natural_key_construction_keeps_path_and_credential_safeguards(path):
+    from llm_wiki_cli.services import knowledge_governance
+
+    with pytest.raises(ConceptIdentityError) as identity_error:
+        natural_key_for("code-entity", path)
+    with pytest.raises(knowledge_governance.GovernanceError) as governance_error:
+        knowledge_governance.natural_key_for("code-entity", path)
+    assert identity_error.value.field in {"canonical_path", "natural_key"}
+    assert str(identity_error.value) == str(governance_error.value)
+    assert "CREDENTIAL_SENTINEL" not in str(identity_error.value)
 
 
 @pytest.mark.parametrize(

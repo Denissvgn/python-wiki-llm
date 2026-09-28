@@ -1,4 +1,4 @@
-"""Pure stable-identity primitives for governed knowledge concepts.
+"""Pure stable-identity primitives for knowledge concepts.
 
 The records in this module deliberately contain no filesystem behavior.  They
 validate the small identity vocabulary used by a governance ledger, derive an
@@ -20,6 +20,7 @@ from enum import Enum
 from typing import TypeVar, cast
 from urllib.parse import quote, unquote, urlsplit
 
+from .validation import require_repository_relative_path
 from .wiki_surface import (
     WikiSurfaceError,
     canonical_path,
@@ -313,6 +314,35 @@ def validate_concept_kind(value: object) -> str:
             "must be a supported core kind or a qualified namespace/name",
         )
     return text
+
+
+def natural_key_for(concept_kind: str, canonical_path: str) -> str:
+    """Build a natural key from safe coordinates, independent of governance.
+
+    Credential-related words are ordinary identifier text. Coordinate grammar
+    rejects unsafe paths and credential-bearing authorities; it does not apply
+    the separate policy for credential-like governance metadata fields.
+    """
+
+    kind = validate_concept_kind(concept_kind)
+    path = require_repository_relative_path(
+        canonical_path,
+        text_error=ConceptIdentityError(
+            "canonical_path", "must be a repository-relative POSIX path"
+        ),
+        posix_error=ConceptIdentityError(
+            "canonical_path", "must be a repository-relative POSIX path"
+        ),
+        normalized_error=ConceptIdentityError(
+            "canonical_path", "must be a normalized relative path"
+        ),
+        control_error=ConceptIdentityError(
+            "canonical_path", "must not contain control characters"
+        ),
+        reject_delete_character=True,
+        control_after_normalization=True,
+    )
+    return validate_natural_key(f"{kind}:{path}")
 
 
 def validate_natural_key(value: object) -> str:

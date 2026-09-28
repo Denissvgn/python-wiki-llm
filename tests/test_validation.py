@@ -349,15 +349,15 @@ def test_legacy_observational_normalizer_is_loose_only_before_strict_output(
             id="graph-traversal",
         ),
         pytest.param(
-            lambda value: knowledge_governance._relative_path(value, "p"),
+            lambda value: knowledge_governance.natural_key_for("code-entity", value),
             "docs//\npage.md",
-            "p: must be a normalized relative path",
+            "canonical_path: must be a normalized relative path",
             id="governance-structure-before-control",
         ),
         pytest.param(
-            lambda value: knowledge_governance._relative_path(value, "p"),
+            lambda value: knowledge_governance.natural_key_for("code-entity", value),
             "docs/\npage.md",
-            "p: must not contain control characters",
+            "canonical_path: must not contain control characters",
             id="governance-control",
         ),
         pytest.param(
@@ -502,7 +502,7 @@ def test_all_migrated_path_adapters_reject_only_cross_platform_hazards(
         lambda: knowledge_model._relative_path(value, "p"),
         lambda: knowledge_index._relative_path(value, "p"),
         lambda: knowledge_graph._relative_path(value, "p"),
-        lambda: knowledge_governance._relative_path(value, "p"),
+        lambda: knowledge_governance.natural_key_for("code-entity", value),
         lambda: knowledge_links._canonical_relative_path(value, "p"),
         lambda: knowledge_freshness._validate_source_path(value, "p"),
         lambda: documentation_queries._normalise_source_path(
@@ -533,7 +533,6 @@ def test_all_migrated_path_adapters_accept_canonical_portable_input() -> None:
     assert knowledge_model._relative_path(value, "p") == value
     assert knowledge_index._relative_path(value, "p") == value
     assert knowledge_graph._relative_path(value, "p") == value
-    assert knowledge_governance._relative_path(value, "p") == value
     assert knowledge_links._canonical_relative_path(value, "p") == value
     assert knowledge_freshness._validate_source_path(value, "p") is None
     assert knowledge_artifacts._is_safe_relative_path(value) is True
