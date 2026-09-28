@@ -101,6 +101,7 @@ def test_default_checks_use_current_interpreter_and_preserve_blocking_scanners(
         "bandit-full",
         "bandit-blocking",
         "pip-audit",
+        "pip-audit-contract",
         "actionlint",
     }
     assert by_name["pyright"].command[-2:] == ("--pythonpath", sys.executable)
