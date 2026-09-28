@@ -7,12 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-09-28
+
 ### Fixed
 
 - Indexed and packed knowledge migration accepts legitimate page names such as
   `RuntimeSecretField` and `SecretMaterialError`. Governance review locators also
   accept credential-related page and heading names, while unsafe paths, URI
   credentials and protected governance metadata remain validated.
+- Storage identity errors identify the lookup-building field and safely omit
+  invalid coordinates from diagnostics.
+- Release dependency audits verify the local candidate separately from
+  third-party advisory lookups and retry transient service failures while
+  continuing to reject incomplete audit results.
+
+### Compatibility
+
+- Existing storage formats, natural keys and stable concept IDs are preserved.
+  Use 2.3.1 or newer for every reader and writer of indexed or packed snapshots
+  containing the affected credential-related page names.
 
 ## [2.3.0] - 2026-09-21
 
@@ -1153,7 +1166,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.0.2...v2.1.0

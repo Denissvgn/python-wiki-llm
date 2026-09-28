@@ -19,8 +19,8 @@ Canonical page names may contain words such as `Secret`, `Password` or `ApiKey`.
 These are valid identifiers in both governed and ungoverned wikis. Paths still
 must be normalized and relative, without traversal, control characters or URI
 credentials. If an older reader or writer rejects an ordinary page name as
-`credential-like fields`, upgrade every consumer to a build containing the
-identity-validation correction before migrating. Preserve the page names and
+`credential-like fields`, upgrade every reader and writer to `agent-wiki-cli`
+2.3.1 or newer before migrating. Preserve the page names and
 the complete snapshot; initializing governance does not resolve that error.
 
 ## Choose a format for a large repository
