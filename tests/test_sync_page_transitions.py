@@ -152,8 +152,14 @@ def _assert_module_page(wiki_dir: Path, page_name: str, source_path: str) -> Non
 
 
 def _check_added_twin(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, existing_module: bool
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, existing_module: bool,
+    governed: bool = False,
 ) -> None:
+    from llm_wiki_cli import cli
+    from llm_wiki_cli.commands import knowledge_cmd
+    from llm_wiki_cli.services.knowledge_governance import load_governance
+    from llm_wiki_cli.services.wiki_surface import PageKind, mcp_uri
+
     original_doc = "A draft in module alpha."
     new_doc = "A draft in module beta."
     authored = "HAND-WRITTEN: alpha alone owns this description."
@@ -162,6 +168,16 @@ def _check_added_twin(
     if existing_module:
         sources["beta.py"] = other_source
     project, wiki_dir = _bootstrap_project(tmp_path, monkeypatch, sources)
+    original_uid = None
+    if governed:
+        knowledge_cmd.run(cli._build_parser().parse_args([
+            "knowledge", "init", "--wiki-dir", str(wiki_dir),
+            "--bundle-id", "kb_added_twin",
+        ]))
+        original_uid = next(
+            uid for uid, allocation in load_governance(wiki_dir).ledger.concepts.items()
+            if allocation.locator == mcp_uri(PageKind.ENTITIES, "Draft")
+        )
     # Setup uses ordinary assertions, outside the expected defect exception types.
     _assert_page_mapping(
         wiki_dir, "entities/Draft.md", "pkg/alpha.py", entity_name="Draft"
@@ -196,6 +212,15 @@ def _check_added_twin(
     for module in ("alpha", "beta"):
         _assert_module_page(wiki_dir, module, f"pkg/{module}.py")
     _assert_consistent(wiki_dir)
+    if governed:
+        assert original_uid is not None
+        ledger = load_governance(wiki_dir).ledger
+        assert ledger.concepts[original_uid].locator == mcp_uri(PageKind.ENTITIES, "alpha_Draft")
+        beta_uid = next(
+            uid for uid, allocation in ledger.concepts.items()
+            if allocation.locator == mcp_uri(PageKind.ENTITIES, "beta_Draft")
+        )
+        assert beta_uid != original_uid
 
 
 def _check_private_twin(
@@ -237,12 +262,14 @@ def _check_private_twin(
     _assert_consistent(wiki_dir)
 
 
-def test_new_module_twin_preserves_original_page_owner(tmp_path, monkeypatch):
-    _check_added_twin(tmp_path, monkeypatch, existing_module=False)
+@pytest.mark.parametrize("governed", [False, True])
+def test_new_module_twin_preserves_original_page_owner(tmp_path, monkeypatch, governed):
+    _check_added_twin(tmp_path, monkeypatch, existing_module=False, governed=governed)
 
 
-def test_existing_module_twin_preserves_original_page_owner(tmp_path, monkeypatch):
-    _check_added_twin(tmp_path, monkeypatch, existing_module=True)
+@pytest.mark.parametrize("governed", [False, True])
+def test_existing_module_twin_preserves_original_page_owner(tmp_path, monkeypatch, governed):
+    _check_added_twin(tmp_path, monkeypatch, existing_module=True, governed=governed)
     from llm_wiki_cli.services.doctor_service import build_doctor_report
 
     report = build_doctor_report(
@@ -261,6 +288,36 @@ def test_three_way_private_twin_preserves_all_page_owners_and_converges(tmp_path
     before = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
     _sync(wiki)
     assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == before
+
+
+def test_rename_and_unchanged_page_repairs_share_one_sync(tmp_path, monkeypatch):
+    project, wiki = _bootstrap_project(
+        tmp_path, monkeypatch,
+        {
+            "model.py": _draft_source("Original model."),
+            "stable.py": _draft_source("Unchanged source.", name="Stable"),
+        },
+    )
+    _author_description(wiki / "entities/Draft.md", "Original model.", "Authored model.")
+    (wiki / "modules/model.md").unlink()
+    (wiki / "entities/Stable.md").unlink()
+    (project / "pkg/composer.py").write_text(_draft_source("New public draft."), encoding="utf-8")
+    (project / "pkg/fakes.py").write_text(_draft_source("New private draft.", name="_Draft"), encoding="utf-8")
+    before = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
+
+    _sync(wiki, dry_run=True)
+    assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == before
+    _sync(wiki)
+
+    _assert_entity_page(wiki, "model_Draft", "pkg/model.py", "Authored model.")
+    _assert_entity_page(wiki, "composer_Draft", "pkg/composer.py", "New public draft.")
+    _assert_entity_page(wiki, "Draft", "pkg/fakes.py", "New private draft.", entity_name="_Draft")
+    _assert_entity_page(wiki, "Stable", "pkg/stable.py", "Unchanged source.", entity_name="Stable")
+    _assert_module_page(wiki, "model", "pkg/model.py")
+    _assert_consistent(wiki)
+    stable = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
+    _sync(wiki)
+    assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == stable
 
 
 @pytest.mark.parametrize("dry_run", [False, True])

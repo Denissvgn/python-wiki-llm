@@ -36,14 +36,19 @@ def _ownership_error(owner: EntityOwner, reason: str) -> SyncOwnershipError:
     )
 
 
+def _validated_recorded_page(owner: EntityOwner, page: object) -> str:
+    if not isinstance(page, str) or not is_portable_path_component(page):
+        raise _ownership_error(owner, "recorded page name is not portable")
+    return page
+
+
 @dataclass
 class _RecordedEntityPages:
     pages: dict[EntityOwner, set[str]] = field(default_factory=dict)
     owners: dict[str, set[EntityOwner]] = field(default_factory=dict)
 
     def add(self, owner: EntityOwner, page: object, *, candidate: bool = True) -> None:
-        if not isinstance(page, str) or not is_portable_path_component(page):
-            raise _ownership_error(owner, "recorded page name is not portable")
+        page = _validated_recorded_page(owner, page)
         if candidate:
             self.pages.setdefault(owner, set()).add(page)
         self.owners.setdefault(portable_path_key(page), set()).add(owner)

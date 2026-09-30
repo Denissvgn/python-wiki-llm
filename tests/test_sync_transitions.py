@@ -87,6 +87,46 @@ def test_three_way_collision_reserves_old_content_before_reusing_its_path(tmp_pa
     assert len(plan.staged_moves) == 1
 
 
+@pytest.mark.parametrize("original_language", ["python", "typescript"])
+@pytest.mark.parametrize("reverse", [False, True])
+def test_mixed_language_collision_preserves_source_ownership(
+    tmp_path, original_language, reverse
+):
+    def entry(language, name):
+        return {"language": language, "classes": [{"name": name, "line": 1}]}
+
+    other_language = "typescript" if original_language == "python" else "python"
+    original_path = "pkg/model." + ("py" if original_language == "python" else "ts")
+    added_path = "pkg/composer." + ("ts" if other_language == "typescript" else "py")
+    original = {original_path: entry(original_language, "Draft")}
+    manifest = _manifest(original)
+    wiki = _wiki(tmp_path, manifest)
+    current = {
+        **original,
+        added_path: entry(other_language, "Draft"),
+        "pkg/fakes.py": entry("python", "_Draft"),
+    }
+    if reverse:
+        current = dict(reversed(list(current.items())))
+    before = _snapshot(wiki)
+
+    plan = _plan(wiki, manifest, current)
+    entities = {item.final_path: item for item in plan.transitions if item.owner.scope == "entity"}
+
+    original_page = entities["entities/model_Draft.md"]
+    assert original_page.owner.source_path == original_path
+    assert original_page.previous_owner == original_page.owner
+    assert original_page.source_path == "entities/Draft.md"
+    assert original_page.action == "rename"
+    for target, source in [("composer_Draft", added_path), ("Draft", "pkg/fakes.py")]:
+        new_page = entities[f"entities/{target}.md"]
+        assert new_page.owner.source_path == source
+        assert new_page.previous_owner is None and new_page.source_path is None
+        assert new_page.action == "create"
+    assert len(plan.staged_moves) == 1
+    assert _snapshot(wiki) == before
+
+
 @pytest.mark.parametrize("scope", ["entity", "module"])
 @pytest.mark.parametrize("cycle", [False, True])
 def test_chains_and_cycles_use_two_phase_staging_independent_of_order(tmp_path, scope, cycle):
