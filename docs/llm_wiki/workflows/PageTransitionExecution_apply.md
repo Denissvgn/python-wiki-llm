@@ -8,12 +8,14 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `sync_transitions.PageTransitionError`
 2. `knowledge_storage_io.StorageReadSession`
-3. `protected_artifacts.ProtectedArtifactStore`
-4. `filesystem_guard.atomic_write_private_bytes`
-5. `filesystem_guard.unlink_guarded_bytes`
-6. `filesystem_guard.ensure_guarded_directory`
-7. `filesystem_guard.atomic_write_guarded_bytes`
-8. `sync_transitions.PageTransitionError`
+3. `sync_transitions.PageTransitionError`
+4. `protected_artifacts.ProtectedArtifactStore`
+5. `filesystem_guard.atomic_write_private_bytes`
+6. `filesystem_guard.atomic_write_private_bytes`
+7. `filesystem_guard.unlink_guarded_bytes`
+8. `filesystem_guard.ensure_guarded_directory`
+9. `filesystem_guard.atomic_write_guarded_bytes`
+10. `sync_transitions.PageTransitionError`
 
 ## Touches
 

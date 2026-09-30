@@ -95,4 +95,4 @@ flowchart LR
 | `_concept_aliases` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 | `_fail` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 
-> References: showing 12 of 73 logical references; 61 omitted by the 12-row generated summary limit.
+> References: showing 12 of 74 logical references; 62 omitted by the 12-row generated summary limit.

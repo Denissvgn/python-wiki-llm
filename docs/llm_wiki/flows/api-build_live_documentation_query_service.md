@@ -81,7 +81,7 @@ sequenceDiagram
     p4->>p6: _default_path_error
 ```
 
-> Call sequence diagram shows 30 of 1031 interactions; 1001 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1033 interactions; 1003 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

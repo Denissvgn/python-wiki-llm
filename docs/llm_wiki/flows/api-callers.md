@@ -83,7 +83,7 @@ sequenceDiagram
     p22-->>p23: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
 ```
 
-> Call sequence diagram shows 30 of 474 interactions; 444 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 476 interactions; 446 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

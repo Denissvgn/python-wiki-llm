@@ -16,6 +16,7 @@ Guarded execution of source-page moves, with retained failure recovery data.
 | `.markdown_sections` | `normalize_markdown` |
 | `.protected_artifacts` | `ProtectedArtifactStore` |
 | `.sync_transitions` | `PageTransitionError`, `PageTransitionPlan` |
+| `.validation` | `portable_path_key` |
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
@@ -37,18 +38,27 @@ flowchart LR
     n5["src/llm_wiki_cli/services/protected_artifacts.py"]
     n6["src/llm_wiki_cli/services/sync_transition_execution.py"]
     n7["src/llm_wiki_cli/services/sync_transitions.py"]
+    n8["src/llm_wiki_cli/services/validation.py"]
     n0 --> n4
     n0 --> n6
     n0 --> n7
+    n0 --> n8
     n3 --> n1
     n3 --> n2
+    n3 --> n8
     n5 --> n1
+    n5 --> n8
     n6 --> n1
     n6 --> n2
     n6 --> n3
     n6 --> n4
     n6 --> n5
     n6 --> n7
+    n6 --> n8
+    n7 --> n2
+    n7 --> n3
+    n7 --> n4
+    n7 --> n8
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/filesystem_guard.md"
     click n2 "../modules/knowledge_storage.md"
@@ -57,6 +67,7 @@ flowchart LR
     click n5 "../modules/protected_artifacts.md"
     click n6 "../modules/sync_transition_execution.md"
     click n7 "../modules/sync_transitions.md"
+    click n8 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -70,12 +81,13 @@ flowchart LR
 | Outbound | [markdown_sections](../modules/markdown_sections.md) |
 | Outbound | [protected_artifacts](../modules/protected_artifacts.md) |
 | Outbound | [sync_transitions](../modules/sync_transitions.md) |
+| Outbound | [validation](../modules/validation.md) |
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PageTransitionExecution](../entities/PageTransitionExecution.md) | 47 | — | Keep rename originals until the surrounding generation/commit succeeds. |
+| [PageTransitionExecution](../entities/PageTransitionExecution.md) | 48 | — | Keep rename originals until the surrounding generation/commit succeeds. |
 
 ## Functions
 

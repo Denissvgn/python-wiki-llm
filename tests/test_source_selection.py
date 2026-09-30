@@ -163,6 +163,35 @@ def test_explicit_override_is_root_relative_and_has_explicit_origin(tmp_path):
     }
 
 
+def test_native_path_override_has_the_same_identity_as_posix_text(tmp_path):
+    _write(tmp_path, "selected/app.py")
+    profile = _write_policy(tmp_path, rel_path="config/sources.json")
+    native = resolve_source_selection(tmp_path, profile.relative_to(tmp_path))
+    canonical = resolve_source_selection(tmp_path, "config/sources.json")
+    assert native is not None and canonical is not None
+    assert native.identity == canonical.identity
+
+
+def test_path_override_uses_posix_serialization_even_with_native_backslashes(monkeypatch):
+    relative = Path("config") / "sources.json"
+    # Exercise the Windows serialization boundary on every host, without
+    # changing string validation or requiring WindowsPath construction.
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "__fspath__", lambda path: path.as_posix().replace("/", "\\"))
+        assert source_selection_module._override_text(relative) == "config/sources.json"
+
+
+@pytest.mark.parametrize("relative", ["../sources.json", "config/*.json", "config/bad:name.json"])
+def test_path_objects_still_receive_strict_selection_validation(relative):
+    with pytest.raises(SourceSelectionError):
+        source_selection_module._override_text(Path(relative))
+
+
+def test_absolute_path_object_is_rejected(tmp_path):
+    with pytest.raises(SourceSelectionError, match="absolute"):
+        source_selection_module._override_text(tmp_path / "sources.json")
+
+
 @pytest.mark.parametrize(
     "override",
     (
@@ -1328,13 +1357,13 @@ def test_committed_profile_freezes_intended_product_census():
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 221,
+        "python": 222,
         "typescript": 2,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 223
+    assert len(snapshot.all_source_paths) == 224
     assert {
         "src/llm_wiki_cli/services/analysis_compatibility.py",
         "src/llm_wiki_cli/services/analysis_capture.py",
@@ -1347,6 +1376,7 @@ def test_committed_profile_freezes_intended_product_census():
         "src/llm_wiki_cli/services/storage_receipts.py",
         "src/llm_wiki_cli/services/sync_transitions.py",
         "src/llm_wiki_cli/services/sync_transition_execution.py",
+        "src/llm_wiki_cli/services/sync_retained_links.py",
         "src/llm_wiki_cli/services/task_context_v2.py",
         "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
     } <= set(snapshot.all_source_paths)

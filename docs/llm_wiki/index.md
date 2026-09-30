@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 627 | [Open section](#entities) |
-| Modules | 212 | [Open section](#modules) |
-| Workflows | 163 | [Open section](#workflows) |
+| Entities | 628 | [Open section](#entities) |
+| Modules | 213 | [Open section](#modules) |
+| Workflows | 164 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 454 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -491,6 +491,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [Resolution](entities/Resolution.md)
 - [ResultArtifactError](entities/ResultArtifactError.md)
 - [ResultBounds](entities/ResultBounds.md)
+- [RetainedPageRepair](entities/RetainedPageRepair.md)
 - [ReusedSync](entities/ReusedSync.md)
 - [ReviewAnalysis](entities/ReviewAnalysis.md)
 - [ReviewEvent](entities/ReviewEvent.md)
@@ -834,6 +835,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
 - [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
 - [sync_manifest](modules/sync_manifest.md) - Service-level persistence boundary for the sync manifest v5 contract.
+- [sync_retained_links](modules/sync_retained_links.md) - Pure, ownership-scoped link repairs for retained source pages.
 - [sync_transition_execution](modules/sync_transition_execution.md) - Guarded execution of source-page moves, with retained failure recovery data.
 - [sync_transitions](modules/sync_transitions.md) - Read-only ownership and filesystem preflight for entity/module page writes.
 - [task_cmd](modules/task_cmd.md) - CLI for explicit task-context requests and canonical counted output.
@@ -991,6 +993,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [resolve_call_observation](workflows/resolve_call_observation.md) - entry: `extraction_service._resolve_call_observation`
 - [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
 - [restore_pruned_storage](workflows/restore_pruned_storage.md) - entry: `knowledge_storage_lifecycle.restore_pruned_storage`
+- [retained_page_repairs](workflows/retained_page_repairs.md) - entry: `sync_transitions._retained_page_repairs`
 - [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
 - [review_records](workflows/review_records.md) - entry: `knowledge_storage_diagnostics._review_records`
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`

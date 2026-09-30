@@ -48,6 +48,10 @@ def _assert_originals(wiki, originals):
         data = (root / move["backup"]).read_bytes()
         assert data == originals[move["source"]][0]
         assert hashlib.sha256(data).hexdigest() == move["sha256"]
+    for repair in record.get("retained_pages", []):
+        data = (root / repair["backup"]).read_bytes()
+        assert data == originals[repair["source"]][0]
+        assert hashlib.sha256(data).hexdigest() == repair["sha256"]
     return root, record
 
 
@@ -497,6 +501,9 @@ def test_source_move_with_case_only_page_rename_does_not_deprecate_live_page(tmp
     manifest = SyncManifest.load(wiki)
     assert manifest.page_source_mappings["entities/Draft.md"].source_path == "pkg/beta.py"
     assert "entities/Draft.md" not in manifest.tombstones
+    retired_module = read_md(wiki / "modules/alpha.md")
+    assert "../entities/Draft.md" in retired_module
+    assert "../entities/draft.md" not in retired_module
     from llm_wiki_cli.commands import lint_cmd
     report = lint_cmd.build_report(wiki, ".", strict=True, parallel_jobs=1, include_plugins=False)
     # Source removal intentionally retains the old module with a stale marker.

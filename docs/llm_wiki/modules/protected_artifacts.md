@@ -54,6 +54,7 @@ flowchart LR
     n2 --> n4
     n3 --> n1
     n3 --> n2
+    n3 --> n4
     click n0 "../modules/controller.md"
     click n1 "../modules/filesystem_guard.md"
     click n2 "../modules/protected_artifacts.md"

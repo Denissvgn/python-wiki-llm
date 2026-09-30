@@ -1,6 +1,6 @@
 # PageTransitionExecution
 
-**Location:** `src/llm_wiki_cli/services/sync_transition_execution.py:47`
+**Location:** `src/llm_wiki_cli/services/sync_transition_execution.py:48`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transition_execution](../modules/sync_transition_execution.md)
@@ -41,16 +41,25 @@ flowchart LR
     n1["_apply_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n2["_apply_planned_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n3["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n4["_execute_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n4["_deprecate_existing_page (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n5["_deprecate_removed_entities (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n6["_deprecate_removed_module (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n7["_execute_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
+    n6 --> n0
+    n7 --> n0
     click n0 "../modules/sync_transition_execution.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
     click n3 "../modules/sync_cmd.md"
     click n4 "../modules/sync_cmd.md"
+    click n5 "../modules/sync_cmd.md"
+    click n6 "../modules/sync_cmd.md"
+    click n7 "../modules/sync_cmd.md"
 ```
 
 ### Summary
@@ -66,4 +75,7 @@ flowchart LR
 | `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_apply_planned_diff` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_deprecate_existing_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_deprecate_removed_entities` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_deprecate_removed_module` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_execute_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |

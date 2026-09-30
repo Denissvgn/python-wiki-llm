@@ -1130,7 +1130,21 @@ def _deprecate_existing_page(
     result: SyncResult,
     page_kind: str,
     page_name: str,
+    *,
+    execution: PageTransitionExecution | None = None,
 ) -> None:
+    relative = (
+        execution.retained_paths.get(portable_path_key(f"{path.parent.name}/{path.name}"))
+        if execution is not None else None
+    )
+    if execution is not None and relative is not None:
+        text = execution.read_text(relative)
+        assert text is not None
+        if _DEPRECATION_HEADER not in text:
+            if execution.write(relative, _DEPRECATION_HEADER + text) != "unchanged":
+                result.deprecated += 1
+                print(f"  DEPRECATE {page_kind}: {page_name}")
+        return
     if not path.exists():
         return
     text = read_md(path)
@@ -1149,6 +1163,7 @@ def _deprecate_removed_entities(
     result: SyncResult,
     *,
     retained_page_names: frozenset[str] = frozenset(),
+    execution: PageTransitionExecution | None = None,
 ) -> None:
     retained_page_keys = {portable_path_key(name) for name in retained_page_names}
     for cls_name in old_info.get("entities", []):
@@ -1157,7 +1172,7 @@ def _deprecate_removed_entities(
         )
         if entity_page_name and portable_path_key(entity_page_name) not in retained_page_keys:
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
-            _deprecate_existing_page(entity_path, result, "entity", entity_page_name)
+            _deprecate_existing_page(entity_path, result, "entity", entity_page_name, execution=execution)
 
 
 def _deprecate_removed_module(
@@ -1165,10 +1180,12 @@ def _deprecate_removed_module(
     filepath: str,
     old_info: dict,
     result: SyncResult,
+    *,
+    execution: PageTransitionExecution | None = None,
 ) -> None:
     old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
     mod_page_path = wiki_dir / "modules" / f"{old_mod_page}.md"
-    _deprecate_existing_page(mod_page_path, result, "module", mod_page_path.stem)
+    _deprecate_existing_page(mod_page_path, result, "module", mod_page_path.stem, execution=execution)
 
 
 def _deprecate_removed_files(
@@ -1197,10 +1214,11 @@ def _deprecate_removed_files(
             old_info,
             result,
             retained_page_names=retained_entity_pages | frozenset(ctx.current_entity_page_keys),
+            execution=ctx.transition_execution,
         )
         old_module = str(old_info.get("module_page") or _module_name_from_path(filepath))
         if portable_path_key(old_module) not in ctx.current_module_page_keys:
-            _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result)
+            _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result, execution=ctx.transition_execution)
 
 
 def _remove_deselected_file_pages(
@@ -1509,7 +1527,8 @@ def _build_apply_diff_context(
     source_selection_policy: SourceSelectionPolicy | None,
 ) -> _ApplyDiffContext:
     transitions = _plan_source_page_transitions(
-        wiki_dir, manifest, inventory, diff, module_page_map, entity_occurrence_page_cache
+        wiki_dir, manifest, inventory, diff, module_page_map, entity_occurrence_page_cache,
+        source_selection_policy=source_selection_policy,
     )
     return _ApplyDiffContext(
         wiki_dir=wiki_dir,
@@ -1539,6 +1558,10 @@ def _apply_planned_diff(ctx, diff, result, refresh_files, execution=None, *, ref
         return
     execution.apply(ctx.page_transitions)
     ctx = replace(ctx, transition_execution=execution)
+    for repair in ctx.page_transitions.retained_page_repairs:
+        if execution.write(repair.path, repair.text) == "updated":
+            result.updated += 1
+            print(f"  UPDATE retained page links: {repair.path}")
     refresh_files = list(dict.fromkeys(refresh_files + [
         item.owner.source_path for item in ctx.page_transitions.transitions
         if item.action == "rename" or (item.old_path is not None and item.old_path != item.final_path)
@@ -3616,7 +3639,15 @@ def _plan_source_page_transitions(
     diff: SyncDiff,
     module_page_map: Mapping[str, str],
     entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
+    *,
+    source_selection_policy: SourceSelectionPolicy | None = None,
 ) -> PageTransitionPlan:
+    deleted_sources = frozenset(
+        source for source in {
+            *manifest.sources, *(owner.source_path for owner in manifest.page_source_mappings.values()),
+        }
+        if source_selection_policy is not None and not path_is_selected(source_selection_policy, source)
+    )
     plan = plan_page_transitions(
         wiki_dir,
         manifest,
@@ -3625,6 +3656,7 @@ def _plan_source_page_transitions(
         entity_occurrence_page_map=entity_occurrence_page_map,
         refresh_sources=frozenset(_refresh_files_for_diff(diff)),
         moved_entities=diff.moved_entities,
+        deleted_source_paths=deleted_sources,
     )
     _preflight_page_transition_governance(wiki_dir, plan, diff)
     return plan
@@ -3965,6 +3997,7 @@ def _prepare_sync_run(
         page_transitions = _plan_source_page_transitions(
             options.wiki_dir, manifest, inventory, application_diff,
             maps.module_page_map, maps.entity_occurrence_page_cache,
+            source_selection_policy=source_snapshot.source_selection_policy,
         )
     return _PreparedSyncRun(
         manifest=manifest,

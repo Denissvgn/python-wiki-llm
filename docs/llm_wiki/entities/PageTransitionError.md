@@ -1,6 +1,6 @@
 # PageTransitionError
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:18`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:22`
 **Kind:** Class
 **Bases:** `SyncOwnershipError`
 **Module:** [sync_transitions](../modules/sync_transitions.md)
@@ -86,7 +86,7 @@ flowchart LR
 | `PageTransitionExecution._cleanup` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
 | `PageTransitionExecution._expected` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
 | `PageTransitionExecution._verified_recovery_manifest` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 2 |
-| `PageTransitionExecution.apply` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 2 |
+| `PageTransitionExecution.apply` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 3 |
 | `PageTransitionExecution.read_text` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 3 |
 | `PageTransitionExecution.write` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
 | `_current_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 3 |
@@ -94,4 +94,4 @@ flowchart LR
 | `_Ownership.resolve` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
 | `_page_path` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
 
-> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

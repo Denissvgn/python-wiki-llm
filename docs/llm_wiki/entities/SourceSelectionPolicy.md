@@ -39,15 +39,15 @@ flowchart LR
     n0["SourceSelectionPolicy (src/llm_wiki_cli/services/source_selection.py)"]
     n1["_apply_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n2["_build_apply_diff_context (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n3["src/llm_wiki_cli/services/documentation_policy.py"]
-    n4["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
-    n5["_build_extract_source_snapshot (src/llm_wiki_cli/services/extraction_service.py)"]
-    n6["_diff_block_is_selected (src/llm_wiki_cli/services/extraction_service.py)"]
-    n7["filter_source_diff (src/llm_wiki_cli/services/extraction_service.py)"]
-    n8["_source_selection_pin (src/llm_wiki_cli/services/mcp_server.py)"]
-    n9["McpWikiService._assert_source_selection_pin_current (src/llm_wiki_cli/services/mcp_server.py)"]
-    n10["_policy_from_content (src/llm_wiki_cli/services/source_selection.py)"]
-    n11["_validate_policy_filesystem (src/llm_wiki_cli/services/source_selection.py)"]
+    n3["_plan_source_page_transitions (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n4["src/llm_wiki_cli/services/documentation_policy.py"]
+    n5["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n6["_build_extract_source_snapshot (src/llm_wiki_cli/services/extraction_service.py)"]
+    n7["_diff_block_is_selected (src/llm_wiki_cli/services/extraction_service.py)"]
+    n8["filter_source_diff (src/llm_wiki_cli/services/extraction_service.py)"]
+    n9["_source_selection_pin (src/llm_wiki_cli/services/mcp_server.py)"]
+    n10["McpWikiService._assert_source_selection_pin_current (src/llm_wiki_cli/services/mcp_server.py)"]
+    n11["_policy_from_content (src/llm_wiki_cli/services/source_selection.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -62,14 +62,14 @@ flowchart LR
     click n0 "../modules/source_selection.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/documentation_policy.md"
-    click n4 "../modules/documentation_run_dependencies.md"
-    click n5 "../modules/extraction_service.md"
+    click n3 "../modules/sync_cmd.md"
+    click n4 "../modules/documentation_policy.md"
+    click n5 "../modules/documentation_run_dependencies.md"
     click n6 "../modules/extraction_service.md"
     click n7 "../modules/extraction_service.md"
-    click n8 "../modules/mcp_server.md"
+    click n8 "../modules/extraction_service.md"
     click n9 "../modules/mcp_server.md"
-    click n10 "../modules/source_selection.md"
+    click n10 "../modules/mcp_server.md"
     click n11 "../modules/source_selection.md"
 ```
 
@@ -85,6 +85,7 @@ flowchart LR
 |---|---|---|---:|
 | `_apply_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_build_apply_diff_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_plan_source_page_transitions` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `documentation_policy` | import | [documentation_policy](../modules/documentation_policy.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
 | `_build_extract_source_snapshot` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
@@ -94,6 +95,5 @@ flowchart LR
 | `McpWikiService._assert_source_selection_pin_current` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
 | `_policy_from_content` | call | [source_selection](../modules/source_selection.md) | 1 |
 | `_policy_from_content` | type_reference | [source_selection](../modules/source_selection.md) | — |
-| `_validate_policy_filesystem` | type_reference | [source_selection](../modules/source_selection.md) | — |
 
-> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.
+> References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.

@@ -580,7 +580,7 @@ def _validate_policy_filesystem(policy: SourceSelectionPolicy) -> None:
 
 def _override_text(override: str | Path) -> str:
     try:
-        value = os.fspath(override)
+        value = override.as_posix() if isinstance(override, Path) else os.fspath(override)
     except TypeError as exc:
         raise SourceSelectionError(
             "source_selection", "override must be a repository-relative path"

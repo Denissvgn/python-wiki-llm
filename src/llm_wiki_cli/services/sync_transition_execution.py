@@ -22,6 +22,7 @@ from .knowledge_storage_io import StorageReadSession, read_guarded
 from .markdown_sections import normalize_markdown
 from .protected_artifacts import ProtectedArtifactStore
 from .sync_transitions import PageTransitionError, PageTransitionPlan
+from .validation import portable_path_key
 
 
 RECOVERY_PREFIX = ".llm-wiki-page-moves-"
@@ -57,6 +58,7 @@ class PageTransitionExecution:
         self.plan = plan
         self.preview = preview
         self.by_path = {item.final_path: item for item in plan.transitions}
+        self.retained_paths = {portable_path_key(item.path): item.path for item in plan.retained_page_repairs}
         self.expected: dict[str, bytes | None] = {}
         self.modes: dict[str, int] = {}
         self.recovery_dir: Path | None = None
@@ -101,6 +103,12 @@ class PageTransitionExecution:
                 "sha256": hashlib.sha256(self.originals[move.source_path]).hexdigest(),
                 "mode": self.modes[move.final_path],
             } for move in self.plan.staged_moves],
+            "retained_pages": [{
+                "source": repair.path,
+                "backup": repair.staging_slot,
+                "sha256": hashlib.sha256(self.originals[repair.path]).hexdigest(),
+                "mode": self.modes[repair.path],
+            } for repair in self.plan.retained_page_repairs],
         }, indent=2, sort_keys=True) + "\n").encode("utf-8")
         atomic_write_private_bytes(
             self.recovery_dir / "recovery.json", content,
@@ -150,7 +158,14 @@ class PageTransitionExecution:
                     self.originals[move.source_path] = captured.read(move.source_path, MAX_EXPANDED_BYTES)
                     observed = captured.observations[move.source_path]
                     self.modes[move.final_path] = stat.S_IMODE(observed.identity[2])
-            if self.plan.staged_moves:
+                for repair in self.plan.retained_page_repairs:
+                    content = captured.read(repair.path, MAX_EXPANDED_BYTES)
+                    if content != repair.expected_bytes:
+                        raise PageTransitionError(f"Retained page changed before application: {repair.path}")
+                    self.originals[repair.path] = content
+                    self.expected[repair.path] = content
+                    self.modes[repair.path] = stat.S_IMODE(captured.observations[repair.path].identity[2])
+            if self.plan.staged_moves or self.plan.retained_page_repairs:
                 store = ProtectedArtifactStore(
                     self.root / f"{RECOVERY_PREFIX}{uuid.uuid4().hex}", create=True
                 )
@@ -164,6 +179,12 @@ class PageTransitionExecution:
                         self.recovery_dir / move.staging_slot, data, expected_existing=None
                     )
                     self.recovery_files[move.staging_slot] = data
+                for repair in self.plan.retained_page_repairs:
+                    data = self.originals[repair.path]
+                    atomic_write_private_bytes(
+                        self.recovery_dir / repair.staging_slot, data, expected_existing=None
+                    )
+                    self.recovery_files[repair.staging_slot] = data
                 self._journal("prepared")
                 self._verified_recovery_manifest()
                 for move in self.plan.staged_moves:

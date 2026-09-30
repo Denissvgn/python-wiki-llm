@@ -90,7 +90,7 @@ sequenceDiagram
     p18->>p3: InvalidRequestError
 ```
 
-> Call sequence diagram shows 30 of 1376 interactions; 1346 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1378 interactions; 1348 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -54,24 +54,23 @@ sequenceDiagram
     participant p5 as Path (src/llm_wiki_cli/services…:resolve_source_selection)
     participant p6 as SourceSelectionError
     participant p7 as _override_text
-    participant p8 as os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)
-    participant p9 as isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
-    participant p10 as _selection_path
-    participant p11 as _require_selection_path
-    participant p12 as require_repository_relative_path
-    participant p13 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p14 as _syntax_key
-    participant p15 as _known_syntax
-    participant p16 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p17 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p18 as ord
-    participant p19 as value.startswith
-    participant p20 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p21 as value.split
-    participant p22 as PurePosixPath
-    participant p23 as posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p24 as require_portable_relative_path
-    participant p25 as _remember_syntax
+    participant p8 as isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    participant p9 as override.as_posix
+    participant p10 as os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)
+    participant p11 as _selection_path
+    participant p12 as _require_selection_path
+    participant p13 as require_repository_relative_path
+    participant p14 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p15 as _syntax_key
+    participant p16 as _known_syntax
+    participant p17 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p18 as any (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p19 as ord
+    participant p20 as value.startswith
+    participant p21 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p22 as value.split
+    participant p23 as PurePosixPath
+    participant p24 as posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
     p0-->>p1: time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)
     p0-->>p2: Path (src/llm_wiki_cli/services…t_knowledge_observability)
     p0->>p3: resolve_source_selection
@@ -79,32 +78,32 @@ sequenceDiagram
     p3-->>p5: Path (src/llm_wiki_cli/services…:resolve_source_selection)
     p3->>p6: SourceSelectionError
     p3->>p7: _override_text
-    p7-->>p8: os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    p7-->>p9: override.as_posix
+    p7-->>p10: os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)
     p7->>p6: SourceSelectionError
-    p7-->>p9: isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    p7-->>p8: isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
     p7->>p6: SourceSelectionError
-    p7->>p10: _selection_path
-    p10->>p11: _require_selection_path
-    p11->>p12: require_repository_relative_path
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p12->>p14: _syntax_key
-    p12->>p15: _known_syntax
-    p12-->>p16: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p12-->>p17: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p12-->>p18: ord
-    p12-->>p18: ord
-    p12-->>p19: value.startswith
-    p12-->>p19: value.startswith
-    p12-->>p20: _WINDOWS_DRIVE_PREFIX_RE.match
-    p12-->>p21: value.split
-    p12-->>p22: PurePosixPath
-    p12-->>p17: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p12-->>p23: posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
-    p12->>p24: require_portable_relative_path
-    p12->>p25: _remember_syntax
+    p7->>p11: _selection_path
+    p11->>p12: _require_selection_path
+    p12->>p13: require_repository_relative_path
+    p13-->>p14: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    p13->>p15: _syntax_key
+    p13->>p16: _known_syntax
+    p13-->>p17: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    p13-->>p18: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p13-->>p19: ord
+    p13-->>p19: ord
+    p13-->>p20: value.startswith
+    p13-->>p20: value.startswith
+    p13-->>p21: _WINDOWS_DRIVE_PREFIX_RE.match
+    p13-->>p22: value.split
+    p13-->>p23: PurePosixPath
+    p13-->>p18: any (src/llm_wiki_cli/services…_repository_relative_path)
+    p13-->>p24: posixpath.normpath (src/llm_wiki_cli/services…_repository_relative_path)
 ```
 
-> Call sequence diagram shows 30 of 2165 interactions; 2135 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2167 interactions; 2137 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -121,9 +120,9 @@ flowchart LR
     s6["6. Path (src/llm_wiki_cli/services…:resolve_source_selection)"]
     s7["7. SourceSelectionError"]
     s8["8. _override_text"]
-    s9["9. os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)"]
-    s10["10. SourceSelectionError"]
-    s11["11. isinstance (src/llm_wiki_cli/services…lection.py:_override_text)"]
+    s9["9. isinstance (src/llm_wiki_cli/services…lection.py:_override_text)"]
+    s10["10. override.as_posix"]
+    s11["11. os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)"]
     s12["12. SourceSelectionError"]
     s1 -. "time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)(data not statically known)" .-> s2
     s1 -. "Path (src/llm_wiki_cli/services…t_knowledge_observability)(wiki_dir)" .-> s3
@@ -132,15 +131,14 @@ flowchart LR
     s4 -. "Path (src/llm_wiki_cli/services…:resolve_source_selection)(root)" .-> s6
     s4 -->|"SourceSelectionError('source_root', 'must resolve to a repository path')"| s7
     s4 -->|"_override_text(override)"| s8
-    s8 -. "os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)(override)" .-> s9
-    s8 -->|"SourceSelectionError('source_selection', 'override must be a repository-relative path')"| s10
-    s8 -. "isinstance (src/llm_wiki_cli/services…lection.py:_override_text)(value, str)" .-> s11
-    s8 -->|"SourceSelectionError('source_selection', 'override must be a repository-relative text path')"| s12
+    s8 -. "isinstance (src/llm_wiki_cli/services…lection.py:_override_text)(override, Path)" .-> s9
+    s8 -. "override.as_posix(data not statically known)" .-> s10
+    s8 -. "os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)(override)" .-> s11
+    s8 -->|"SourceSelectionError('source_selection', 'override must be a repository-relative path')"| s12
     click s1 "../modules/knowledge_observability.md"
     click s4 "../modules/source_selection.md"
     click s7 "../modules/source_selection.md"
     click s8 "../modules/source_selection.md"
-    click s10 "../modules/source_selection.md"
     click s12 "../modules/source_selection.md"
 ```
 
@@ -155,10 +153,10 @@ flowchart LR
 | `Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…:resolve_source_selection)` | - | - | - | - |
 | `SourceSelectionError` | - | - | - | - |
-| `_override_text` | `override: str \| Path` | - | - | `_selection_path(...)` |
-| `os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)` | - | - | - | - |
-| `SourceSelectionError` | - | - | - | - |
+| `_override_text` | `override: str \| Path` | `Path` | - | `_selection_path(...)` |
 | `isinstance (src/llm_wiki_cli/services…lection.py:_override_text)` | - | - | - | - |
+| `override.as_posix` | - | - | - | - |
+| `os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)` | - | - | - | - |
 | `SourceSelectionError` | - | - | - | - |
 
 ### Call data
@@ -172,10 +170,10 @@ flowchart LR
 | resolve_source_selection | Path (src/llm_wiki_cli/services…:resolve_source_selection) | 606 | `Path(root)` |
 | resolve_source_selection | SourceSelectionError | 608 | `SourceSelectionError('source_root', 'must resolve to a repository path')` |
 | resolve_source_selection | _override_text | 615 | `_override_text(override)` |
+| _override_text | isinstance (src/llm_wiki_cli/services…lection.py:_override_text) | 583 | `isinstance(override, Path)` |
+| _override_text | override.as_posix | 583 | `override.as_posix(data not statically known)` |
 | _override_text | os.fspath (src/llm_wiki_cli/services…lection.py:_override_text) | 583 | `os.fspath(override)` |
 | _override_text | SourceSelectionError | 585 | `SourceSelectionError('source_selection', 'override must be a repository-relative path')` |
-| _override_text | isinstance (src/llm_wiki_cli/services…lection.py:_override_text) | 588 | `isinstance(value, str)` |
-| _override_text | SourceSelectionError | 589 | `SourceSelectionError('source_selection', 'override must be a repository-relative text path')` |
 
 ### Boundary effects
 
@@ -187,8 +185,9 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `load_snapshot_knowledge_observability` | `time.perf_counter` | 525 |
 | unresolved_call | `resolve_source_selection` | `Path(root).resolve` | 606 |
+| external_call | `_override_text` | `isinstance` | 583 |
+| unresolved_call | `_override_text` | `override.as_posix` | 583 |
 | external_call | `_override_text` | `os.fspath` | 583 |
-| external_call | `_override_text` | `isinstance` | 588 |
 | step_limit | `load_snapshot_knowledge_observability` | `first 12 steps` | 0 |
 | truncated_flow | `load_snapshot_knowledge_observability` | `depth limit` | 0 |
 

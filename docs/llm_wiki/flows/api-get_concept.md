@@ -85,7 +85,7 @@ sequenceDiagram
     p23-->>p24: isinstance (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
 ```
 
-> Call sequence diagram shows 30 of 527 interactions; 497 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 529 interactions; 499 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

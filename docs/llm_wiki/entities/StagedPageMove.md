@@ -1,6 +1,6 @@
 # StagedPageMove
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:47`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:51`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transitions](../modules/sync_transitions.md)

@@ -32,62 +32,23 @@ duplicate-table-row behavior that predates the hierarchy parser.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/documentation_run/record.py"]
-    n3["src/llm_wiki_cli/services/documentation_run/refresh.py"]
-    n4["src/llm_wiki_cli/services/documentation_worklist.py"]
-    n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n6["src/llm_wiki_cli/services/markdown_sections.py"]
-    n7["src/llm_wiki_cli/services/section_ownership.py"]
-    n8["src/llm_wiki_cli/services/sync_transition_execution.py"]
-    n9["src/llm_wiki_cli/services/task_context_v2.py"]
-    n10["src/llm_wiki_cli/services/task_evidence.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/markdown_sections.py"]
     n0 --> n1
-    n0 --> n5
-    n0 --> n6
-    n0 --> n7
-    n0 --> n8
-    n1 --> n6
-    n2 --> n3
-    n2 --> n6
-    n3 --> n6
-    n4 --> n6
-    n6 --> n5
-    n7 --> n5
-    n7 --> n6
-    n8 --> n6
-    n9 --> n6
-    n9 --> n7
-    n9 --> n10
-    n10 --> n6
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/record.md"
-    click n3 "../modules/refresh.md"
-    click n4 "../modules/documentation_worklist.md"
-    click n5 "../modules/knowledge_evidence.md"
-    click n6 "../modules/markdown_sections.md"
-    click n7 "../modules/section_ownership.md"
-    click n8 "../modules/sync_transition_execution.md"
-    click n9 "../modules/task_context_v2.md"
-    click n10 "../modules/task_evidence.md"
+    n1 --> n0
+    click n1 "../modules/markdown_sections.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| Inbound | [record](../modules/record.md) |
-| Inbound | [refresh](../modules/refresh.md) |
-| Inbound | [documentation_worklist](../modules/documentation_worklist.md) |
-| Inbound | [section_ownership](../modules/section_ownership.md) |
-| Inbound | [sync_transition_execution](../modules/sync_transition_execution.md) |
-| Inbound | [task_context_v2](../modules/task_context_v2.md) |
-| Inbound | [task_evidence](../modules/task_evidence.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
+| Inbound | `src` (11) |
+| Outbound | `src` (1) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

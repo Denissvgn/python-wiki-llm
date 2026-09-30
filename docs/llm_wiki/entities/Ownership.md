@@ -1,6 +1,6 @@
 # _Ownership
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:70`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:131`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transitions](../modules/sync_transitions.md)
@@ -32,9 +32,12 @@ _Auto-generated from `_Ownership` in `src/llm_wiki_cli/services/sync_transitions
 flowchart LR
     n0["_Ownership (src/llm_wiki_cli/services/sync_transitions.py)"]
     n1["_prior_ownership (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n2["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
     n1 --> n0
+    n2 --> n0
     click n0 "../modules/sync_transitions.md"
     click n1 "../modules/sync_transitions.md"
+    click n2 "../modules/sync_transitions.md"
 ```
 
 ### Summary
@@ -49,3 +52,4 @@ flowchart LR
 |---|---|---|---:|
 | `_prior_ownership` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
 | `_prior_ownership` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |
+| `_retained_page_repairs` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |

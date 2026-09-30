@@ -82,7 +82,7 @@ sequenceDiagram
     p9-->>p24: PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
 ```
 
-> Call sequence diagram shows 30 of 634 interactions; 604 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 636 interactions; 606 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

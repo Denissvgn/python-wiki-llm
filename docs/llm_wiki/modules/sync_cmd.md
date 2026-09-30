@@ -104,15 +104,15 @@ flowchart LR
 | [SyncResult](../entities/SyncResult.md) | 616 | — | — |
 | [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 655 | — | — |
 | [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 677 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1651 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1677 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1684 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1690 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1696 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1712 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1755 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1781 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1787 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1674 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1700 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1707 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1713 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1719 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1735 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1778 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1804 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1810 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -165,9 +165,9 @@ flowchart LR
 | `_apply_module_page` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult, filepath: str, file_data: dict, mod_page_name: str, old_generated_semantics: dict, file_entity_page_map: dict[str, str]) -> None` | — | — |
 | `_apply_refreshed_file_pages` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult, refresh_files: list[str], *, only_pages: frozenset[str] \| None = None) -> None` | — | — |
 | `_record_unchanged_file_skips` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult, refresh_files: list[str]) -> None` | — | — |
-| `_deprecate_existing_page` | `(path: Path, result: SyncResult, page_kind: str, page_name: str) -> None` | — | — |
-| `_deprecate_removed_entities` | `(wiki_dir: Path, filepath: str, old_info: dict, result: SyncResult, *, retained_page_names: frozenset[str] = frozenset()) -> None` | — | — |
-| `_deprecate_removed_module` | `(wiki_dir: Path, filepath: str, old_info: dict, result: SyncResult) -> None` | — | — |
+| `_deprecate_existing_page` | `(path: Path, result: SyncResult, page_kind: str, page_name: str, *, execution: PageTransitionExecution \| None = None) -> None` | — | — |
+| `_deprecate_removed_entities` | `(wiki_dir: Path, filepath: str, old_info: dict, result: SyncResult, *, retained_page_names: frozenset[str] = frozenset(), execution: PageTransitionExecution \| None = None) -> None` | — | — |
+| `_deprecate_removed_module` | `(wiki_dir: Path, filepath: str, old_info: dict, result: SyncResult, *, execution: PageTransitionExecution \| None = None) -> None` | — | — |
 | `_deprecate_removed_files` | `(ctx: _ApplyDiffContext, diff: SyncDiff, result: SyncResult) -> None` | — | — |
 | `_remove_deselected_file_pages` | `(ctx: _ApplyDiffContext, filepath: str, old_info: Mapping[str, object], result: SyncResult) -> None` | — | Remove generated pages whose still-existing source left the policy set. |
 | `_moved_entity_retained_page_names` | `(ctx: _ApplyDiffContext, diff: SyncDiff, old_source_path: str, old_info: Mapping[str, object]) -> frozenset[str]` | — | Return moved entity pages whose current path rule keeps the locator. |
@@ -227,7 +227,7 @@ flowchart LR
 | `_sync_reuse_input_basis` | `(options: _SyncRunOptions, manifest: SyncManifest, inventory_result: InventoryResult, source_snapshot: SourceSnapshot, surface_plan: _SurfaceInitializationPlan, repository_evidence: RepositoryEvidence, observation_inputs_hash: str \| None = None) -> dict[str, object] \| None` | — | — |
 | `_try_sync_knowledge_reuse` | `(options: _SyncRunOptions, manifest: SyncManifest, inventory_result: InventoryResult, source_snapshot: SourceSnapshot, surface_plan: _SurfaceInitializationPlan, repository_evidence: RepositoryEvidence, committed_state: CommittedKnowledgeState, observation_inputs_hash: str \| None = None) -> _ReusedSync \| None` | `@observed_phase('knowledge_reuse')` | — |
 | `_preflight_page_transition_governance` | `(wiki_dir, plan, diff) -> None` | — | — |
-| `_plan_source_page_transitions` | `(wiki_dir: Path, manifest: SyncManifest, inventory: dict, diff: SyncDiff, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str]) -> PageTransitionPlan` | — | — |
+| `_plan_source_page_transitions` | `(wiki_dir: Path, manifest: SyncManifest, inventory: dict, diff: SyncDiff, module_page_map: Mapping[str, str], entity_occurrence_page_map: Mapping[tuple[str, str, int], str], *, source_selection_policy: SourceSelectionPolicy \| None = None) -> PageTransitionPlan` | — | — |
 | `_prepare_sync_run` | `(options: _SyncRunOptions) -> _PreparedSyncRun \| _ReusedSync \| None` | — | — |
 | `_preflight_sync_governance` | `(wiki_dir: Path, manifest: SyncManifest, *, committed_state: CommittedKnowledgeState \| None = None) -> None` | — | Reject corrupt or missing committed governance before page mutation. |
 | `_infrastructure_page_path` | `(wiki_dir: Path, record: Mapping[str, object]) -> Path` | — | — |

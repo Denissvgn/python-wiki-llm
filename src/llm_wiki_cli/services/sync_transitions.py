@@ -9,8 +9,12 @@ import stat
 from typing import Mapping
 
 from .bootstrap_runtime import _module_name_from_path
+from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
+from .knowledge_storage_io import StorageReadSession
+from .markdown_sections import normalize_markdown
 from .sync_analysis import SyncOwnershipError, _recorded_entity_pages
 from .sync_manifest import ManifestPageSource, SyncManifest
+from .sync_retained_links import repair_retained_page_links
 from .validation import portable_path_key
 from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
 
@@ -51,12 +55,69 @@ class StagedPageMove:
 
 
 @dataclass(frozen=True)
+class RetainedPageRepair:
+    path: str
+    expected_bytes: bytes
+    text: str
+    staging_slot: str
+
+
+@dataclass(frozen=True)
 class PageTransitionPlan:
     transitions: tuple[PageTransition, ...]
     # The executor fills ALL slots before placing ANY final target.
     # Slots are names within a private temporary directory, never wiki paths.
     staged_moves: tuple[StagedPageMove, ...]
     reserved_path_keys: tuple[str, ...]
+    retained_page_repairs: tuple[RetainedPageRepair, ...] = ()
+
+
+def _retained_page_repairs(
+    wiki_dir: Path,
+    transitions: list[PageTransition],
+    prior: _Ownership,
+    existing: Mapping[str, tuple[str, bool]],
+    deleted_source_paths: frozenset[str],
+) -> tuple[RetainedPageRepair, ...]:
+    moves = {
+        portable_path_key(old): item.final_path
+        for item in transitions
+        for old in (item.old_path, item.source_path)
+        if old is not None and old != item.final_path
+    }
+    if not moves:
+        return ()
+    # Live pages are regenerated from their current owners. Never remap links
+    # in newly rendered output, especially when old names are reused in a cycle.
+    live = {portable_path_key(item.final_path) for item in transitions}
+    outgoing = {portable_path_key(item.source_path) for item in transitions if item.source_path}
+    repairs = []
+    try:
+        reader = StorageReadSession(wiki_dir)
+        with reader.phase():
+            for key, (relative, _regular) in sorted(existing.items()):
+                owners = prior.claims.get(key)
+                if not owners or key in live or key in outgoing:
+                    continue
+                if any(owner.source_path in deleted_source_paths for owner in owners):
+                    continue
+                if len(owners) != 1:
+                    raise PageTransitionError(f"Multiple recorded owners claim retained page {relative!r}")
+                content = reader.read(relative, MAX_EXPANDED_BYTES)
+                try:
+                    text = content.decode("utf-8")
+                except UnicodeDecodeError:
+                    text = content.decode("cp1252")
+                text = normalize_markdown(text)
+                kind = PageKind.ENTITIES if relative.startswith("entities/") else PageKind.MODULES
+                repaired = repair_retained_page_links(text, relative, kind, moves)
+                if repaired != text:
+                    repairs.append(RetainedPageRepair(
+                        relative, content, repaired, f"retained-{len(repairs):06d}"
+                    ))
+    except (OSError, KnowledgeStorageError) as exc:
+        raise PageTransitionError(f"Cannot inspect retained source pages: {exc}") from exc
+    return tuple(repairs)
 
 def _page_path(scope: str, page: str) -> str:
     try:
@@ -187,6 +248,7 @@ def plan_page_transitions(
     entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
     refresh_sources: frozenset[str] = frozenset(),
     moved_entities: Mapping[str, tuple[str, str]] | None = None,
+    deleted_source_paths: frozenset[str] = frozenset(),
 ) -> PageTransitionPlan:
     """Plan every live source-owned page using supplied names, without mutations.
 
@@ -284,6 +346,9 @@ def plan_page_transitions(
         transitions=tuple(transitions),
         staged_moves=staged,
         reserved_path_keys=tuple(sorted(prior.claims)),
+        retained_page_repairs=_retained_page_repairs(
+            wiki_dir, transitions, prior, existing, deleted_source_paths
+        ),
     )
 
 
