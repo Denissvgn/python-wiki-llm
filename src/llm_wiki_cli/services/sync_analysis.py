@@ -16,7 +16,7 @@ from .bootstrap_runtime import (
     build_module_page_map,
 )
 from .knowledge_evidence import hash_file, semantic_hash_for_file
-from .sync_manifest import SyncManifest
+from .sync_manifest import ManifestPageSource, SyncManifest
 from .validation import is_portable_path_component, portable_path_key
 
 
@@ -144,6 +144,8 @@ class SyncDiff:
     )
     renamed_module_pages: dict[str, tuple[str, str]] = field(default_factory=dict)
     renamed_entity_occurrences: dict[tuple[str, str, int], tuple[str, str]] = field(default_factory=dict)
+    # Apply-only output work; it does not reclassify unchanged source files.
+    missing_pages: dict[str, ManifestPageSource] = field(default_factory=dict)
 
     @property
     def entity_page_renames(self) -> dict[tuple[str, str, int], tuple[str, str]]:
@@ -161,6 +163,7 @@ class SyncDiff:
             or self.moved_entities
             or self.renamed_entity_pages
             or self.renamed_entity_occurrences
+            or self.missing_pages
             or self.renamed_module_pages
         )
 

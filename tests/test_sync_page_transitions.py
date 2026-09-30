@@ -35,6 +35,8 @@ def _bootstrap_project(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     sources: dict[str, str],
+    *,
+    skip_dependencies: bool = True,
 ) -> tuple[Path, Path]:
     project = tmp_path / "project"
     (project / "pkg").mkdir(parents=True)
@@ -48,7 +50,7 @@ def _bootstrap_project(
             jobs=1,
             no_plugins=True,
             skip_flows=True,
-            skip_dependencies=True,
+            skip_dependencies=skip_dependencies,
         )
     )
     _assert_consistent(wiki_dir)

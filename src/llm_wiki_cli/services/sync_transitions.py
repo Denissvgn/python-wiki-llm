@@ -280,3 +280,57 @@ def plan_page_transitions(
         staged_moves=staged,
         reserved_path_keys=tuple(sorted(prior.claims)),
     )
+
+
+def find_missing_source_pages(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+    inventory: Mapping[str, Mapping],
+    *,
+    module_page_map: Mapping[str, str],
+    entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
+    refresh_sources: frozenset[str] = frozenset(),
+    moved_entities: Mapping[str, tuple[str, str]] | None = None,
+) -> dict[str, ManifestPageSource]:
+    """Find absent managed pages without inventing source changes or ownership.
+
+    Healthy wikis need only a filename/kind inventory. If a candidate is absent,
+    the transition planner verifies its prior owner before it becomes repair work.
+    Ordinary new/changed source generation already handles its own missing output.
+    """
+    expected = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
+    candidates = {
+        path for owner, path in expected.items()
+        if owner.source_path in manifest.sources
+        and owner.source_path not in refresh_sources
+        and path not in manifest.tombstones
+    }
+    if not candidates:
+        return {}
+    try:
+        existing = _existing_pages(wiki_dir)
+    except OSError as exc:
+        raise PageTransitionError(f"Cannot inspect entity/module page paths: {exc}") from exc
+    absent = set()
+    for path in sorted(candidates):
+        current = existing.get(portable_path_key(path))
+        if current is None:
+            absent.add(path)
+        elif not current[1]:
+            raise PageTransitionError(f"Managed page is not a regular file: {path!r}")
+    if not absent:
+        return {}
+    plan = plan_page_transitions(
+        wiki_dir, manifest, inventory,
+        module_page_map=module_page_map,
+        entity_occurrence_page_map=entity_occurrence_page_map,
+        refresh_sources=refresh_sources,
+        moved_entities=moved_entities,
+    )
+    return {
+        item.final_path: item.owner for item in plan.transitions
+        if item.final_path in absent
+        and item.source_missing
+        and item.old_path == item.final_path
+        and item.previous_owner == item.owner
+    }

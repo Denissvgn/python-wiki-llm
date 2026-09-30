@@ -167,7 +167,9 @@ from ..services.sync_analysis import (
     SyncOwnershipError,
     compute_sync_diff as _compute_diff,
 )
-from ..services.sync_transitions import PageTransitionPlan, plan_page_transitions
+from ..services.sync_transitions import (
+    PageTransitionPlan, find_missing_source_pages, plan_page_transitions,
+)
 from ..services.sync_transition_execution import (
     PageTransitionExecution,
     assert_no_pending_page_moves,
@@ -721,6 +723,7 @@ def _build_generated_section_context(
     call_edges: list[dict] | None = None,
     dependency_analysis: dict | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    restore_module_dependencies: bool = False,
 ) -> "_GeneratedSectionContext":
     call_edges = call_edges if call_edges is not None else resolve_call_edges(inventory)
     entity_relationship_summaries = _build_entity_relationship_summary_map(
@@ -728,7 +731,7 @@ def _build_generated_section_context(
         call_edges,
     )
     module_dependency_maps = None
-    if _has_existing_module_dependency_sections(options.wiki_dir):
+    if restore_module_dependencies or _has_existing_module_dependency_sections(options.wiki_dir):
         dependency_analysis = dependency_analysis or _fallback_dependency_analysis(
             options,
             inventory,
@@ -755,6 +758,10 @@ def _target_entities_for_diff(diff: SyncDiff, inventory: dict) -> set[tuple[str,
         if new_path in inventory:
             target_entities.add((cls_name, new_path))
     target_entities.update((name, path) for name, path, _ in diff.entity_page_renames)
+    target_entities.update(
+        (owner.entity_name, owner.source_path)
+        for owner in diff.missing_pages.values() if owner.entity_name is not None
+    )
     for filepath in diff.renamed_module_pages:
         if filepath in inventory:
             for cls in inventory[filepath].get("classes", []):
@@ -1034,6 +1041,8 @@ def _apply_refreshed_file_pages(
     diff: SyncDiff,
     result: SyncResult,
     refresh_files: list[str],
+    *,
+    only_pages: frozenset[str] | None = None,
 ) -> None:
     for filepath in refresh_files:
         file_data = ctx.inventory[filepath]
@@ -1058,6 +1067,8 @@ def _apply_refreshed_file_pages(
                 (name, filepath, seen_names[name]),
                 file_entity_page_map[name],
             )
+            if only_pages is not None and canonical_path(PageKind.ENTITIES, entity_page_name) not in only_pages:
+                continue
             _apply_entity_page(
                 ctx,
                 diff,
@@ -1067,6 +1078,8 @@ def _apply_refreshed_file_pages(
                 mod_page_name,
                 entity_page_name,
             )
+        if only_pages is not None and canonical_path(PageKind.MODULES, mod_page_name) not in only_pages:
+            continue
         _apply_module_page(
             ctx,
             diff,
@@ -1096,12 +1109,19 @@ def _record_unchanged_file_skips(
         for filepath in unchanged_files
         if filepath in ctx.inventory
     )
+    unchanged_sources = set(unchanged_files)
+    unchanged_pages -= sum(
+        owner.source_path in unchanged_sources for owner in diff.missing_pages.values()
+    )
     result.skipped += unchanged_pages
     if unchanged_files:
-        print(
-            f"  SKIP unchanged source files: {len(unchanged_files)} "
-            f"file(s), {unchanged_pages} generated page(s)"
-        )
+        if diff.missing_pages:
+            print(f"  SKIP surviving source pages: {unchanged_pages} generated page(s)")
+        else:
+            print(
+                f"  SKIP unchanged source files: {len(unchanged_files)} "
+                f"file(s), {unchanged_pages} generated page(s)"
+            )
 
 
 def _deprecate_existing_page(
@@ -1509,11 +1529,11 @@ def _build_apply_diff_context(
     )
 
 
-def _apply_planned_diff(ctx, diff, result, refresh_files, execution=None) -> None:
+def _apply_planned_diff(ctx, diff, result, refresh_files, execution=None, *, refresh_unchanged_sections=True) -> None:
     assert ctx.page_transitions is not None
     if execution is None:
         with PageTransitionExecution(ctx.wiki_dir, ctx.page_transitions) as local:
-            _apply_planned_diff(ctx, diff, result, refresh_files, local)
+            _apply_planned_diff(ctx, diff, result, refresh_files, local, refresh_unchanged_sections=refresh_unchanged_sections)
         return
     execution.apply(ctx.page_transitions)
     ctx = replace(ctx, transition_execution=execution)
@@ -1522,8 +1542,17 @@ def _apply_planned_diff(ctx, diff, result, refresh_files, execution=None) -> Non
         if item.action == "rename" or (item.old_path is not None and item.old_path != item.final_path)
     ]))
     _apply_refreshed_file_pages(ctx, diff, result, refresh_files)
+    repair_sources = sorted({
+        owner.source_path for owner in diff.missing_pages.values()
+    } - set(refresh_files))
+    if repair_sources:
+        print(f"Repairing {len(diff.missing_pages)} missing managed source page(s)...")
+        _apply_refreshed_file_pages(
+            ctx, diff, result, repair_sources, only_pages=frozenset(diff.missing_pages)
+        )
     _record_unchanged_file_skips(ctx, diff, result, refresh_files)
-    _refresh_generated_sections(ctx, diff, result)
+    if refresh_unchanged_sections:
+        _refresh_generated_sections(ctx, diff, result)
     _deprecate_removed_files(ctx, diff, result)
 
 
@@ -1542,6 +1571,7 @@ def _apply_diff(
     include_plugins: bool = True,
     source_selection_policy: SourceSelectionPolicy | None = None,
     transition_execution: PageTransitionExecution | None = None,
+    refresh_unchanged_sections: bool = True,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
     entity_page_cache, entity_occurrence_page_cache, module_page_map = (
@@ -1577,7 +1607,7 @@ def _apply_diff(
     )
 
     print("Applying wiki page changes...", flush=True)
-    _apply_planned_diff(ctx, diff, result, refresh_files, transition_execution)
+    _apply_planned_diff(ctx, diff, result, refresh_files, transition_execution, refresh_unchanged_sections=refresh_unchanged_sections)
 
     print("Applied wiki page changes.", flush=True)
     return result
@@ -2180,6 +2210,9 @@ def _print_dry_run_plan(
         _affected_source_files(application_diff) - _affected_source_files(diff)
     )
     print(f"  generator refresh sources: {generator_refresh_count}")
+    print(f"  missing source pages: {len(application_diff.missing_pages)} repair")
+    for path in sorted(application_diff.missing_pages):
+        print(f"    REPAIR {path}")
     ancillary = [
         "index.md",
         "log.md",
@@ -2594,6 +2627,7 @@ def _apply_sync_changes(
     log_diff: SyncDiff | None = None,
     apply_infrastructure: bool = True,
     transition_execution: PageTransitionExecution | None = None,
+    refresh_unchanged_sections: bool = True,
 ) -> "SyncResult":
     generated_sections = _build_generated_section_context(
         options,
@@ -2601,6 +2635,10 @@ def _apply_sync_changes(
         call_edges=graph_observations.resolved_call_edges,
         dependency_analysis=graph_observations.dependency_analysis,
         source_snapshot=source_snapshot,
+        restore_module_dependencies=(
+            surface_plan.dependency_analysis is not None
+            and any(owner.scope == "module" for owner in diff.missing_pages.values())
+        ),
     )
     result = _apply_diff(
         diff,
@@ -2616,6 +2654,7 @@ def _apply_sync_changes(
         include_plugins=options.include_plugins,
         source_selection_policy=source_snapshot.source_selection_policy,
         transition_execution=transition_execution,
+        refresh_unchanged_sections=refresh_unchanged_sections,
     )
     _apply_source_selection_prune(
         options.wiki_dir,
@@ -3674,6 +3713,17 @@ def _prepare_sync_run(
         maps,
         source_content_hashes,
     )
+    missing_pages = (
+        find_missing_source_pages(
+            options.wiki_dir, manifest, inventory,
+            module_page_map=maps.module_page_map,
+            entity_occurrence_page_map=maps.entity_occurrence_page_cache,
+            refresh_sources=frozenset(_refresh_files_for_diff(diff)),
+            moved_entities=diff.moved_entities,
+        )
+        if not seed_manifest and not repair_only and not options.initialize_surfaces
+        else {}
+    )
     surface_plan = _build_surface_initialization_plan(
         options,
         manifest,
@@ -3777,6 +3827,7 @@ def _prepare_sync_run(
         and not runtime_provenance_changed
         and not diff.has_changes
         and not surface_plan.has_work
+        and not missing_pages
         and not infrastructure_plan.has_changes
         and not source_selection_prune.deselected_source_paths
         and not source_selection_prune.deselected_page_paths
@@ -3899,12 +3950,15 @@ def _prepare_sync_run(
         and (not options.initialize_surfaces or runtime_basis_refresh)
         else diff
     )
+    if missing_pages:
+        application_diff = deepcopy(application_diff)
+        application_diff.missing_pages = missing_pages
     page_transitions = None
     if (
         not seed_manifest
         and not repair_only
         and (not options.initialize_surfaces or runtime_basis_refresh)
-        and (diff.has_changes or runtime_provenance_changed or runtime_basis_refresh)
+        and (application_diff.has_changes or runtime_provenance_changed or runtime_basis_refresh)
     ):
         page_transitions = _plan_source_page_transitions(
             options.wiki_dir, manifest, inventory, application_diff,
@@ -4251,7 +4305,7 @@ def _apply_prepared_sync(
         )
         return result
     if (
-        prepared.diff.has_changes or prepared.runtime_provenance_changed
+        prepared.application_diff.has_changes or prepared.runtime_provenance_changed
     ) and not options.initialize_surfaces:
         return _apply_sync_changes(
             options,
@@ -4267,6 +4321,7 @@ def _apply_prepared_sync(
             prepared.source_selection_prune,
             log_diff=prepared.diff,
             transition_execution=prepared.transition_execution,
+            refresh_unchanged_sections=(prepared.diff.has_changes or prepared.runtime_provenance_changed),
         )
     if prepared.runtime_basis_refresh:
         application_options = replace(options, initialize_surfaces=frozenset())
