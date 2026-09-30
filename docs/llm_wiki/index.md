@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 619 | [Open section](#entities) |
-| Modules | 210 | [Open section](#modules) |
-| Workflows | 160 | [Open section](#workflows) |
+| Entities | 628 | [Open section](#entities) |
+| Modules | 213 | [Open section](#modules) |
+| Workflows | 164 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 454 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -411,6 +411,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [Origin](entities/Origin.md)
 - [OriginValidationMiddleware](entities/OriginValidationMiddleware.md)
 - [OutputModal](entities/OutputModal.md)
+- [Ownership](entities/Ownership.md)
 - [P0CalibrationAgentPacket](entities/P0CalibrationAgentPacket.md)
 - [P0CalibrationAgentResult](entities/P0CalibrationAgentResult.md)
 - [P0CalibrationDispatchReceipt](entities/P0CalibrationDispatchReceipt.md)
@@ -428,6 +429,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [PageKind](entities/PageKind.md)
 - [PageRegistry](entities/PageRegistry.md)
 - [PageSectionObservations](entities/PageSectionObservations.md)
+- [PageTransition](entities/PageTransition.md)
+- [PageTransitionError](entities/PageTransitionError.md)
+- [PageTransitionExecution](entities/PageTransitionExecution.md)
+- [PageTransitionPlan](entities/PageTransitionPlan.md)
 - [PagesForSymbolResult](entities/PagesForSymbolResult.md)
 - [PathValidationError](entities/PathValidationError.md)
 - [Phase](entities/Phase.md)
@@ -459,6 +464,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [RankingPolicy](entities/RankingPolicy.md)
 - [ReadObservation](entities/ReadObservation.md)
 - [ReadPhase](entities/ReadPhase.md)
+- [RecordedEntityPages](entities/RecordedEntityPages.md)
 - [ReferenceCleanupOutcome](entities/ReferenceCleanupOutcome.md)
 - [ReferenceSkillInspection](entities/ReferenceSkillInspection.md)
 - [ReferenceSkillProvisionResult](entities/ReferenceSkillProvisionResult.md)
@@ -485,6 +491,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [Resolution](entities/Resolution.md)
 - [ResultArtifactError](entities/ResultArtifactError.md)
 - [ResultBounds](entities/ResultBounds.md)
+- [RetainedPageRepair](entities/RetainedPageRepair.md)
 - [ReusedSync](entities/ReusedSync.md)
 - [ReviewAnalysis](entities/ReviewAnalysis.md)
 - [ReviewEvent](entities/ReviewEvent.md)
@@ -547,6 +554,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SourceSnapshotError](entities/SourceSnapshotError.md)
 - [SourceSnapshotMutationError](entities/SourceSnapshotMutationError.md)
 - [SpooledArtifactWrite](entities/SpooledArtifactWrite.md)
+- [StagedPageMove](entities/StagedPageMove.md)
 - [StorageReadSession](entities/StorageReadSession.md)
 - [StreamCapture](entities/StreamCapture.md)
 - [StructuralFacet](entities/StructuralFacet.md)
@@ -560,6 +568,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SyncEntryPointAnalysis](entities/SyncEntryPointAnalysis.md)
 - [SyncManifest](entities/SyncManifest.md)
 - [SyncManifestError](entities/SyncManifestError.md)
+- [SyncOwnershipError](entities/SyncOwnershipError.md)
 - [SyncPageMaps](entities/SyncPageMaps.md)
 - [SyncResult](entities/SyncResult.md)
 - [SyncRunOptions](entities/SyncRunOptions.md)
@@ -826,6 +835,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
 - [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
 - [sync_manifest](modules/sync_manifest.md) - Service-level persistence boundary for the sync manifest v5 contract.
+- [sync_retained_links](modules/sync_retained_links.md) - Pure, ownership-scoped link repairs for retained source pages.
+- [sync_transition_execution](modules/sync_transition_execution.md) - Guarded execution of source-page moves, with retained failure recovery data.
+- [sync_transitions](modules/sync_transitions.md) - Read-only ownership and filesystem preflight for entity/module page writes.
 - [task_cmd](modules/task_cmd.md) - CLI for explicit task-context requests and canonical counted output.
 - [task_context](modules/task_context.md) - Bounded task-context composition over existing capture, query and v3 owners.
 - [task_context_v2](modules/task_context_v2.md) - Explicit task v2: selected native storage plus independently captured source.
@@ -858,6 +870,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [McpWikiService_build_budgeted_context](workflows/McpWikiService_build_budgeted_context.md) - entry: `mcp_server.McpWikiService.build_budgeted_context`
 - [McpWikiService_build_task_context](workflows/McpWikiService_build_task_context.md) - entry: `mcp_server.McpWikiService.build_task_context`
 - [McpWikiService_get_status](workflows/McpWikiService_get_status.md) - entry: `mcp_server.McpWikiService.get_status`
+- [PageTransitionExecution_apply](workflows/PageTransitionExecution_apply.md) - entry: `sync_transition_execution.PageTransitionExecution.apply`
+- [PageTransitionExecution_write](workflows/PageTransitionExecution_write.md) - entry: `sync_transition_execution.PageTransitionExecution.write`
 - [ScopedTaskState_revalidate](workflows/ScopedTaskState_revalidate.md) - entry: `task_context_v2.ScopedTaskState.revalidate`
 - [SourceSnapshot_path_is_effectively_selected](workflows/SourceSnapshot_path_is_effectively_selected.md) - entry: `source_snapshot.SourceSnapshot.path_is_effectively_selected`
 - [SourceSnapshot_with_captured_inventory_paths](workflows/SourceSnapshot_with_captured_inventory_paths.md) - entry: `source_snapshot.SourceSnapshot.with_captured_inventory_paths`
@@ -916,6 +930,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [context_service_flow](workflows/context_service_flow.md) - entry: `context_service.run`
 - [current_coverage](workflows/current_coverage.md) - entry: `metrics.current_coverage`
 - [current_markdown](workflows/current_markdown.md) - entry: `knowledge_loader._current_markdown`
+- [deprecate_removed_files](workflows/deprecate_removed_files.md) - entry: `sync_cmd._deprecate_removed_files`
 - [discover_infrastructure_plan](workflows/discover_infrastructure_plan.md) - entry: `sync_cmd._discover_infrastructure_plan`
 - [doctor_cmd_flow](workflows/doctor_cmd_flow.md) - entry: `doctor_cmd.run`
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
@@ -951,6 +966,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [preflight_bootstrap_governance](workflows/preflight_bootstrap_governance.md) - entry: `bootstrap_runtime._preflight_bootstrap_governance`
 - [preflight_bootstrap_source_selection](workflows/preflight_bootstrap_source_selection.md) - entry: `bootstrap_runtime._preflight_bootstrap_source_selection`
 - [preflight_lint_source_selection](workflows/preflight_lint_source_selection.md) - entry: `lint_service._preflight_lint_source_selection`
+- [preflight_page_transition_governance](workflows/preflight_page_transition_governance.md) - entry: `sync_cmd._preflight_page_transition_governance`
 - [preflight_review_source_selection](workflows/preflight_review_source_selection.md) - entry: `review_service._preflight_review_source_selection`
 - [preflight_team_source_selection](workflows/preflight_team_source_selection.md) - entry: `team_cmd._preflight_team_source_selection`
 - [preflight_trigger_source_selection](workflows/preflight_trigger_source_selection.md) - entry: `trigger_cmd._preflight_trigger_source_selection`
@@ -959,6 +975,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prepare_migration_governance_plan](workflows/prepare_migration_governance_plan.md) - entry: `migrate_cmd._prepare_migration_governance_plan`
 - [prepare_sync_run](workflows/prepare_sync_run.md) - entry: `sync_cmd._prepare_sync_run`
 - [print_managed_lifecycle](workflows/print_managed_lifecycle.md) - entry: `status_cmd._print_managed_lifecycle`
+- [prior_ownership](workflows/prior_ownership.md) - entry: `sync_transitions._prior_ownership`
 - [prune_backup](workflows/prune_backup.md) - entry: `knowledge_storage_lifecycle._prune_backup`
 - [prune_storage](workflows/prune_storage.md) - entry: `knowledge_storage_lifecycle._prune_storage`
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
@@ -969,8 +986,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [record_source_file](workflows/record_source_file.md) - entry: `source_snapshot._record_source_file`
 - [recover_knowledge_storage](workflows/recover_knowledge_storage.md) - entry: `knowledge_storage_lifecycle.recover_knowledge_storage`
 - [refresh_documentation_native_projection](workflows/refresh_documentation_native_projection.md) - entry: `documentation_native.refresh_documentation_native_projection`
-- [refresh_entity_relationship_sections](workflows/refresh_entity_relationship_sections.md) - entry: `sync_cmd._refresh_entity_relationship_sections`
-- [refresh_module_dependency_sections](workflows/refresh_module_dependency_sections.md) - entry: `sync_cmd._refresh_module_dependency_sections`
 - [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_cmd._regenerate_dependency_pages`
 - [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_cmd._regenerate_flow_pages`
 - [regenerate_workflow_pages](workflows/regenerate_workflow_pages.md) - entry: `sync_cmd._regenerate_workflow_pages`
@@ -978,6 +993,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [resolve_call_observation](workflows/resolve_call_observation.md) - entry: `extraction_service._resolve_call_observation`
 - [resolve_conflicts](workflows/resolve_conflicts.md) - entry: `team.resolve_conflicts`
 - [restore_pruned_storage](workflows/restore_pruned_storage.md) - entry: `knowledge_storage_lifecycle.restore_pruned_storage`
+- [retained_page_repairs](workflows/retained_page_repairs.md) - entry: `sync_transitions._retained_page_repairs`
 - [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
 - [review_records](workflows/review_records.md) - entry: `knowledge_storage_diagnostics._review_records`
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`

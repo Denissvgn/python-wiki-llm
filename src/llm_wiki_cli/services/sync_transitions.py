@@ -1,0 +1,409 @@
+"""Read-only ownership and filesystem preflight for entity/module page writes."""
+
+from __future__ import annotations
+
+from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
+import stat
+from typing import Mapping
+
+from .bootstrap_runtime import _module_name_from_path
+from .knowledge_storage import MAX_EXPANDED_BYTES, KnowledgeStorageError
+from .knowledge_storage_io import StorageReadSession
+from .markdown_sections import normalize_markdown
+from .sync_analysis import SyncOwnershipError, _recorded_entity_pages
+from .sync_manifest import ManifestPageSource, SyncManifest
+from .sync_retained_links import repair_retained_page_links
+from .validation import portable_path_key
+from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
+
+
+class PageTransitionError(SyncOwnershipError):
+    """The intended page writes cannot preserve verified ownership."""
+
+
+@dataclass(frozen=True)
+class PageTransition:
+    owner: ManifestPageSource
+    previous_owner: ManifestPageSource | None
+    old_path: str | None
+    source_path: str | None  # actual existing file, including its recorded casing
+    final_path: str
+    refresh_requested: bool
+
+    @property
+    def action(self) -> str:
+        if self.source_path is None:
+            return "create"
+        if self.source_path != self.final_path:
+            return "rename"
+        if self.refresh_requested or self.owner != self.previous_owner:
+            return "refresh"
+        return "retain"
+
+    @property
+    def source_missing(self) -> bool:
+        return self.old_path is not None and self.source_path is None
+
+
+@dataclass(frozen=True)
+class StagedPageMove:
+    source_path: str
+    staging_slot: str
+    final_path: str
+
+
+@dataclass(frozen=True)
+class RetainedPageRepair:
+    path: str
+    expected_bytes: bytes
+    text: str
+    staging_slot: str
+
+
+@dataclass(frozen=True)
+class PageTransitionPlan:
+    transitions: tuple[PageTransition, ...]
+    # The executor fills ALL slots before placing ANY final target.
+    # Slots are names within a private temporary directory, never wiki paths.
+    staged_moves: tuple[StagedPageMove, ...]
+    reserved_path_keys: tuple[str, ...]
+    retained_page_repairs: tuple[RetainedPageRepair, ...] = ()
+
+
+def _retained_page_repairs(
+    wiki_dir: Path,
+    transitions: list[PageTransition],
+    prior: _Ownership,
+    existing: Mapping[str, tuple[str, bool]],
+    deleted_source_paths: frozenset[str],
+) -> tuple[RetainedPageRepair, ...]:
+    moves = {
+        portable_path_key(old): item.final_path
+        for item in transitions
+        for old in (item.old_path, item.source_path)
+        if old is not None and old != item.final_path
+    }
+    if not moves:
+        return ()
+    # Live pages are regenerated from their current owners. Never remap links
+    # in newly rendered output, especially when old names are reused in a cycle.
+    live = {portable_path_key(item.final_path) for item in transitions}
+    outgoing = {portable_path_key(item.source_path) for item in transitions if item.source_path}
+    repairs = []
+    try:
+        reader = StorageReadSession(wiki_dir)
+        with reader.phase():
+            for key, (relative, _regular) in sorted(existing.items()):
+                owners = prior.claims.get(key)
+                if not owners or key in live or key in outgoing:
+                    continue
+                if any(owner.source_path in deleted_source_paths for owner in owners):
+                    continue
+                if len(owners) != 1:
+                    raise PageTransitionError(f"Multiple recorded owners claim retained page {relative!r}")
+                content = reader.read(relative, MAX_EXPANDED_BYTES)
+                try:
+                    text = content.decode("utf-8")
+                except UnicodeDecodeError:
+                    text = content.decode("cp1252")
+                text = normalize_markdown(text)
+                kind = PageKind.ENTITIES if relative.startswith("entities/") else PageKind.MODULES
+                repaired = repair_retained_page_links(text, relative, kind, moves)
+                if repaired != text:
+                    repairs.append(RetainedPageRepair(
+                        relative, content, repaired, f"retained-{len(repairs):06d}"
+                    ))
+    except (OSError, KnowledgeStorageError) as exc:
+        raise PageTransitionError(f"Cannot inspect retained source pages: {exc}") from exc
+    return tuple(repairs)
+
+def _page_path(scope: str, page: str) -> str:
+    try:
+        kind = PageKind.ENTITIES if scope == "entity" else PageKind.MODULES
+        return canonical_path(kind, page)
+    except WikiSurfaceError as exc:
+        raise PageTransitionError(f"Invalid recorded {scope} page: {page!r}") from exc
+
+
+@dataclass
+class _Ownership:
+    candidates: dict[ManifestPageSource, set[str]] = field(default_factory=dict)
+    claims: dict[str, set[ManifestPageSource]] = field(default_factory=dict)
+
+    def add(self, owner: ManifestPageSource, path: str, *, candidate: bool = True) -> None:
+        if candidate:
+            self.candidates.setdefault(owner, set()).add(path)
+        self.claims.setdefault(portable_path_key(path), set()).add(owner)
+
+    def resolve(self, owner: ManifestPageSource) -> str | None:
+        paths = self.candidates.get(owner, set())
+        if not paths:
+            return None
+        if len(paths) != 1:
+            raise PageTransitionError(
+                f"Conflicting recorded {owner.scope} pages for {owner.source_path!r}: {sorted(paths)!r}"
+            )
+        path = next(iter(paths))
+        if self.claims[portable_path_key(path)] != {owner}:
+            raise PageTransitionError(f"Multiple recorded owners claim {path!r}")
+        return path
+
+
+def _prior_ownership(manifest: SyncManifest) -> _Ownership:
+    prior = _Ownership()
+    for path, owner in manifest.page_source_mappings.items():
+        if path != _page_path(owner.scope, Path(path).stem):
+            raise PageTransitionError(f"Invalid recorded page path: {path!r}")
+    entities = _recorded_entity_pages(manifest)
+    for (source, name, occurrence), pages in entities.pages.items():
+        owner = ManifestPageSource("entity", source, name, occurrence)
+        for page in pages:
+            prior.add(owner, _page_path("entity", page))
+    for key, owners in entities.owners.items():
+        for source, name, occurrence in owners:
+            prior.add(
+                ManifestPageSource("entity", source, name, occurrence),
+                f"entities/{key}.md",
+                candidate=False,
+            )
+    for source, info in sorted(manifest.sources.items()):
+        if info.get("module_page"):
+            prior.add(
+                ManifestPageSource("module", source),
+                _page_path("module", info["module_page"]),
+            )
+    for path, owner in sorted(manifest.page_source_mappings.items()):
+        if owner.scope == "module":
+            prior.add(owner, path, candidate=path not in manifest.tombstones)
+    for source in sorted(manifest.sources):
+        owner = ManifestPageSource("module", source)
+        if owner not in prior.candidates:
+            prior.add(owner, _page_path("module", _module_name_from_path(source)))
+    return prior
+
+
+def _existing_pages(wiki_dir: Path) -> dict[str, tuple[str, bool]]:
+    """Inventory names and file kinds without reading content or following links."""
+    existing: dict[str, tuple[str, bool]] = {}
+    for directory in ("entities", "modules"):
+        parent = wiki_dir / directory
+        try:
+            mode = parent.lstat().st_mode
+        except FileNotFoundError:
+            continue
+        if not stat.S_ISDIR(mode):
+            raise PageTransitionError(
+                f"sync cannot safely stage page transitions under {directory!r}: "
+                "not a regular directory"
+            )
+        for path in sorted(parent.iterdir()):
+            if path.suffix.casefold() != ".md":
+                continue
+            relative = f"{directory}/{path.name}"
+            key = portable_path_key(relative)
+            if key in existing:
+                raise PageTransitionError(
+                    f"Portable page filename collision: {existing[key][0]!r} and {relative!r}"
+                )
+            existing[key] = (relative, stat.S_ISREG(path.lstat().st_mode))
+    return existing
+
+
+def _current_pages(
+    inventory: Mapping[str, Mapping],
+    module_pages: Mapping[str, str],
+    entity_pages: Mapping[tuple[str, str, int], str],
+) -> dict[ManifestPageSource, str]:
+    pages: dict[ManifestPageSource, str] = {}
+    entity_keys = set()
+    for source, data in sorted(inventory.items()):
+        if source not in module_pages:
+            raise PageTransitionError(f"Missing module page mapping for {source!r}")
+        pages[ManifestPageSource("module", source)] = _page_path(
+            "module", module_pages[source]
+        )
+        occurrences: Counter[str] = Counter()
+        for cls in data.get("classes", []):
+            name = cls["name"]
+            occurrences[name] += 1
+            key = (name, source, occurrences[name])
+            entity_keys.add(key)
+            if key not in entity_pages:
+                raise PageTransitionError(f"Missing entity occurrence page mapping: {key!r}")
+            owner = ManifestPageSource("entity", source, name, occurrences[name])
+            pages[owner] = _page_path("entity", entity_pages[key])
+    if set(module_pages) != set(inventory) or set(entity_pages) != entity_keys:
+        raise PageTransitionError("Page maps contain owners absent from the current inventory")
+    return pages
+
+
+def plan_page_transitions(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+    inventory: Mapping[str, Mapping],
+    *,
+    module_page_map: Mapping[str, str],
+    entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
+    refresh_sources: frozenset[str] = frozenset(),
+    moved_entities: Mapping[str, tuple[str, str]] | None = None,
+    deleted_source_paths: frozenset[str] = frozenset(),
+) -> PageTransitionPlan:
+    """Plan every live source-owned page using supplied names, without mutations.
+
+    Occupied targets must belong to their incoming owner or to another verified
+    owner that this same plan moves away. Missing originals never acquire the
+    content of a different page. This plan describes missing-page creation even
+    when an unchanged source has not yet been scheduled by sync for refresh.
+    """
+    prior = _prior_ownership(manifest)
+    try:
+        existing = _existing_pages(wiki_dir)
+    except OSError as exc:
+        raise PageTransitionError(f"Cannot inspect entity/module page paths: {exc}") from exc
+    # Retired owners are not in the live transition list, but sync can still
+    # deprecate or remove their pages after staging. Validate those paths too.
+    for key, (path, regular) in existing.items():
+        if key in prior.claims and not regular:
+            raise PageTransitionError(f"Recorded source page is not a regular file: {path!r}")
+    current = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
+    old_counts = {
+        source: Counter(info.get("entities", []))
+        for source, info in manifest.sources.items()
+    }
+    new_names = Counter(owner.entity_name for owner in current if owner.scope == "entity")
+    old_names: Counter[str] = Counter()
+    for counts in old_counts.values():
+        old_names.update(counts)
+    moves = moved_entities or {}
+    targets: set[str] = set()
+    origins: dict[str, PageTransition] = {}
+    transitions = []
+    for owner, target in sorted(current.items(), key=lambda item: item[1]):
+        target_key = portable_path_key(target)
+        if target_key in targets:
+            raise PageTransitionError(f"Multiple current owners target {target!r}")
+        targets.add(target_key)
+        previous = None
+        if owner.scope == "module" and owner.source_path in manifest.sources:
+            previous = owner
+        elif owner.scope == "entity":
+            name, occurrence = str(owner.entity_name), int(owner.occurrence or 0)
+            if old_counts.get(owner.source_path, {}).get(name, 0) >= occurrence:
+                previous = owner
+            elif name in moves and moves[name][1] == owner.source_path:
+                old_source = moves[name][0]
+                if (
+                    old_names[name] != 1
+                    or new_names[name] != 1
+                    or old_counts.get(old_source, {}).get(name) != 1
+                ):
+                    raise PageTransitionError(f"Ambiguous source move for {name!r}")
+                previous = ManifestPageSource("entity", old_source, name, 1)
+        old_path = prior.resolve(previous) if previous is not None else None
+        source_path = None
+        if old_path is not None and portable_path_key(old_path) in existing:
+            source_path, regular = existing[portable_path_key(old_path)]
+            if not regular:
+                raise PageTransitionError(f"Rename source is not a regular file: {source_path!r}")
+        item = PageTransition(
+            owner=owner,
+            previous_owner=previous,
+            old_path=old_path,
+            source_path=source_path,
+            final_path=target,
+            refresh_requested=owner.source_path in refresh_sources,
+        )
+        transitions.append(item)
+        if old_path is not None:
+            key = portable_path_key(old_path)
+            if key in origins:
+                raise PageTransitionError(f"Multiple current owners claim old page {old_path!r}")
+            origins[key] = item
+
+    for item in transitions:
+        key = portable_path_key(item.final_path)
+        if key not in existing:
+            continue
+        occupant, regular = existing[key]
+        if not regular:
+            raise PageTransitionError(f"Write target is not a regular file: {occupant!r}")
+        outgoing = origins.get(key)
+        if outgoing is None or prior.claims.get(key) != {outgoing.previous_owner}:
+            raise PageTransitionError(
+                f"Occupied target has no verified outgoing owner: {occupant!r}"
+            )
+        if outgoing.owner != item.owner and portable_path_key(outgoing.final_path) == key:
+            raise PageTransitionError(f"Occupied target is retained by another owner: {occupant!r}")
+
+    staged = tuple(
+        StagedPageMove(item.source_path, f"page-{index:06d}", item.final_path)
+        for index, item in enumerate(sorted(transitions, key=lambda item: item.old_path or ""))
+        if item.source_path is not None and item.action == "rename"
+    )
+    return PageTransitionPlan(
+        transitions=tuple(transitions),
+        staged_moves=staged,
+        reserved_path_keys=tuple(sorted(prior.claims)),
+        retained_page_repairs=_retained_page_repairs(
+            wiki_dir, transitions, prior, existing, deleted_source_paths
+        ),
+    )
+
+
+def find_missing_source_pages(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+    inventory: Mapping[str, Mapping],
+    *,
+    module_page_map: Mapping[str, str],
+    entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
+    refresh_sources: frozenset[str] = frozenset(),
+    moved_entities: Mapping[str, tuple[str, str]] | None = None,
+) -> dict[str, ManifestPageSource]:
+    """Find missing canonical paths without inventing source changes or ownership.
+
+    Healthy wikis need only a filename/kind inventory. If a candidate is absent
+    or has different casing, the planner verifies ownership before repair work.
+    A case alias must be staged back to its canonical name, preserving its text.
+    Ordinary new/changed source generation already handles its own missing output.
+    """
+    expected = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
+    candidates = {
+        path for owner, path in expected.items()
+        if owner.source_path in manifest.sources
+        and owner.source_path not in refresh_sources
+        and path not in manifest.tombstones
+    }
+    if not candidates:
+        return {}
+    try:
+        existing = _existing_pages(wiki_dir)
+    except OSError as exc:
+        raise PageTransitionError(f"Cannot inspect entity/module page paths: {exc}") from exc
+    absent = set()
+    for path in sorted(candidates):
+        current = existing.get(portable_path_key(path))
+        if current is None:
+            absent.add(path)
+        elif not current[1]:
+            raise PageTransitionError(f"Managed page is not a regular file: {path!r}")
+        elif current[0] != path:
+            absent.add(path)
+    if not absent:
+        return {}
+    plan = plan_page_transitions(
+        wiki_dir, manifest, inventory,
+        module_page_map=module_page_map,
+        entity_occurrence_page_map=entity_occurrence_page_map,
+        refresh_sources=refresh_sources,
+        moved_entities=moved_entities,
+    )
+    return {
+        item.final_path: item.owner for item in plan.transitions
+        if item.final_path in absent
+        and (item.source_missing or item.source_path != item.final_path)
+        and item.old_path == item.final_path
+        and item.previous_owner == item.owner
+    }

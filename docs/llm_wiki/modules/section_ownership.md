@@ -33,86 +33,23 @@ behavior can identify without guessing.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/contracts.py"]
-    n2["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n3["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n4["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n5["src/llm_wiki_cli/services/knowledge_model.py"]
-    n6["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n7["src/llm_wiki_cli/services/markdown_sections.py"]
-    n8["src/llm_wiki_cli/services/section_ownership.py"]
-    n9["src/llm_wiki_cli/services/task_context_v2.py"]
-    n10["src/llm_wiki_cli/services/validation.py"]
-    n11["src/llm_wiki_cli/services/wiki_surface.py"]
-    n0 --> n2
-    n0 --> n3
-    n0 --> n7
-    n0 --> n8
-    n0 --> n10
-    n0 --> n11
-    n2 --> n1
-    n2 --> n3
-    n2 --> n5
-    n2 --> n6
-    n2 --> n8
-    n2 --> n10
-    n2 --> n11
-    n3 --> n10
-    n4 --> n1
-    n4 --> n2
-    n4 --> n3
-    n4 --> n5
-    n4 --> n8
-    n4 --> n11
-    n5 --> n1
-    n5 --> n3
-    n5 --> n8
-    n5 --> n10
-    n5 --> n11
-    n6 --> n1
-    n6 --> n5
-    n6 --> n8
-    n7 --> n3
-    n8 --> n1
-    n8 --> n3
-    n8 --> n7
-    n8 --> n10
-    n8 --> n11
-    n9 --> n6
-    n9 --> n7
-    n9 --> n8
-    n9 --> n10
-    n11 --> n10
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/services_contracts.md"
-    click n2 "../modules/knowledge_artifacts.md"
-    click n3 "../modules/knowledge_evidence.md"
-    click n4 "../modules/knowledge_generation.md"
-    click n5 "../modules/knowledge_model.md"
-    click n6 "../modules/knowledge_storage.md"
-    click n7 "../modules/markdown_sections.md"
-    click n8 "../modules/section_ownership.md"
-    click n9 "../modules/task_context_v2.md"
-    click n10 "../modules/validation.md"
-    click n11 "../modules/wiki_surface.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/section_ownership.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/section_ownership.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Inbound | [knowledge_generation](../modules/knowledge_generation.md) |
-| Inbound | [knowledge_model](../modules/knowledge_model.md) |
-| Inbound | [knowledge_storage](../modules/knowledge_storage.md) |
-| Inbound | [task_context_v2](../modules/task_context_v2.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| Outbound | [markdown_sections](../modules/markdown_sections.md) |
-| Outbound | [validation](../modules/validation.md) |
-| Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Inbound | `src` (7) |
+| Outbound | `src` (5) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

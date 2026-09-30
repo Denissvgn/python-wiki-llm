@@ -67,11 +67,12 @@ sequenceDiagram
     participant p14 as Path (src/llm_wiki_cli/services…:resolve_source_selection)
     participant p15 as SourceSelectionError
     participant p16 as _override_text
-    participant p17 as os.fspath
-    participant p18 as isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
-    participant p19 as _selection_path
-    participant p20 as _require_selection_path
-    participant p21 as require_repository_relative_path
+    participant p17 as isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    participant p18 as override.as_posix
+    participant p19 as os.fspath
+    participant p20 as _selection_path
+    participant p21 as _require_selection_path
+    participant p22 as require_repository_relative_path
     p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)
     p0-->>p2: TypeError (src/llm_wiki_cli/services…entation_native_freshness)
     p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)
@@ -91,20 +92,20 @@ sequenceDiagram
     p12-->>p14: Path (src/llm_wiki_cli/services…:resolve_source_selection)
     p12->>p15: SourceSelectionError
     p12->>p16: _override_text
-    p16-->>p17: os.fspath
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    p16-->>p18: override.as_posix
+    p16-->>p19: os.fspath
     p16->>p15: SourceSelectionError
-    p16-->>p18: isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
+    p16-->>p17: isinstance (src/llm_wiki_cli/services…lection.py:_override_text)
     p16->>p15: SourceSelectionError
-    p16->>p19: _selection_path
-    p19->>p20: _require_selection_path
-    p20->>p21: require_repository_relative_path
-    p20->>p15: SourceSelectionError
-    p20->>p15: SourceSelectionError
-    p20->>p15: SourceSelectionError
-    p20->>p15: SourceSelectionError
+    p16->>p20: _selection_path
+    p20->>p21: _require_selection_path
+    p21->>p22: require_repository_relative_path
+    p21->>p15: SourceSelectionError
+    p21->>p15: SourceSelectionError
 ```
 
-> Call sequence diagram shows 30 of 3166 interactions; 3136 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3168 interactions; 3138 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

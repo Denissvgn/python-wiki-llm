@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-09-30
+
+### Fixed
+
+- Sync binds renamed entity pages to their recorded source owner, preserving
+  authored descriptions when another module gains a same-named class.
+- Entity and module renames are planned before page writes and staged together,
+  preserving content through filename reuse, rename chains, and cycles.
+  Conflicting destinations and nonregular managed pages are rejected before
+  mutation, including pages belonging to removed sources.
+- Ordinary sync restores missing managed entity and module pages even when
+  sources are unchanged, including missing pages left by earlier syncs.
+- Case-only filename changes are repaired without losing authored content, and
+  source moves no longer incorrectly mark a live case-renamed page stale.
+- Occurrence-specific descriptions, source mappings, evidence, and supported
+  governance identities stay associated with their original owners.
+
+### Recovery and compatibility
+
+- Interrupted staged renames retain original content and a recovery journal.
+  Resolve the recorded recovery state before retrying sync.
+- Existing page naming, storage formats, and `--force`/`--rebuild-cache`
+  semantics are unchanged. Restored missing pages use current generated
+  content; previously lost or misassigned authored text still requires history
+  or backups. Ambiguous ownership and governance identity conflicts are refused.
+
 ## [2.3.1] - 2026-09-28
 
 ### Fixed
@@ -1166,7 +1192,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...HEAD
+[2.3.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.1.0...v2.2.0

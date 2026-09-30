@@ -1,6 +1,6 @@
 # _SyncRunOptions
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1591`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1674`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -110,4 +110,4 @@ flowchart LR
 | `_canonical_sync_surface_flow_targets` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 40 logical references; 28 omitted by the 12-row generated summary limit.
+> References: showing 12 of 41 logical references; 29 omitted by the 12-row generated summary limit.

@@ -125,7 +125,7 @@ sequenceDiagram
     p5-->>p21: len (src/llm_wiki_cli/services…:build_knowledge_coverage)
 ```
 
-> Call sequence diagram shows 30 of 3663 interactions; 3633 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3665 interactions; 3635 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

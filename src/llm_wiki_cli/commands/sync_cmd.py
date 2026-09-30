@@ -14,6 +14,8 @@ Workflow:
 
 from __future__ import annotations
 
+from contextlib import nullcontext
+
 from ..services.progress import observed_phase, record_counts
 
 import os
@@ -81,6 +83,7 @@ from ..services.infrastructure_sync import (
     with_infrastructure_generation_input,
 )
 from ..services.io import read_md, write_md
+from ..services.validation import portable_path_key
 from ..services.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
@@ -160,7 +163,18 @@ from ..services.sync_manifest import (
     prune_manifest_for_source_selection,
     retained_concept_page_paths,
 )
-from ..services.sync_analysis import SyncDiff, compute_sync_diff as _compute_diff
+from ..services.sync_analysis import (
+    SyncDiff,
+    SyncOwnershipError,
+    compute_sync_diff as _compute_diff,
+)
+from ..services.sync_transitions import (
+    PageTransitionPlan, find_missing_source_pages, plan_page_transitions,
+)
+from ..services.sync_transition_execution import (
+    PageTransitionExecution,
+    assert_no_pending_page_moves,
+)
 from ..services.wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,
@@ -471,14 +485,22 @@ def _governance_moves_for_sync(
     manifest: SyncManifest,
     *,
     entity_page_cache: Mapping[tuple[str, str], str],
+    page_transitions: PageTransitionPlan | None = None,
 ) -> dict[str, str]:
-    """Return only unambiguous old-to-current concept locator moves.
+    """Carry identity from the executed plan, or a compatibility diff.
 
-    Diff detection is the source of authority for automatic carry-forward.
-    Multiple candidates for one prior route are intentionally omitted: a
-    collision expansion is not enough evidence to decide which new concept
-    should inherit the old UID and must be handled by ``knowledge move``.
+    Older internal callers may supply only a diff; ambiguous route candidates
+    in that projection remain excluded. Runtime generation supplies its complete
+    validated page plan so occurrence and source ownership stay aligned.
     """
+
+    if page_transitions is not None:
+        return {
+            mcp_uri(PageKind.ENTITIES if item.owner.scope == "entity" else PageKind.MODULES, Path(item.old_path).stem):
+                mcp_uri(PageKind.ENTITIES if item.owner.scope == "entity" else PageKind.MODULES, Path(item.final_path).stem)
+            for item in page_transitions.transitions
+            if item.old_path is not None and item.old_path != item.final_path
+        }
 
     candidates: dict[str, set[str]] = {}
 
@@ -492,8 +514,8 @@ def _governance_moves_for_sync(
             return
         candidates.setdefault(old_locator, set()).add(new_locator)
 
-    for (_entity_name, _filepath), (old_page, new_page) in sorted(
-        diff.renamed_entity_pages.items()
+    for (_entity_name, _filepath, _occurrence), (old_page, new_page) in sorted(
+        diff.entity_page_renames.items()
     ):
         add(PageKind.ENTITIES, old_page, new_page)
 
@@ -539,7 +561,7 @@ def _affected_source_files(diff: SyncDiff) -> set[str]:
     for old_path, new_path in diff.moved_entities.values():
         affected.add(old_path)
         affected.add(new_path)
-    for _, filepath in diff.renamed_entity_pages:
+    for _, filepath, _ in diff.entity_page_renames:
         affected.add(filepath)
     affected.update(diff.renamed_module_pages)
     return affected
@@ -641,11 +663,14 @@ class _ApplyDiffContext:
     relationships: dict
     generated_sections: "_GeneratedSectionContext"
     metadata_only_files: set[str]
-    current_entity_pages: set[str]
-    current_module_pages: set[str]
+    current_entity_page_keys: set[str]
+    current_module_page_keys: set[str]
     preserve_semantic: bool
     include_plugins: bool = True
     source_selection_policy: SourceSelectionPolicy | None = None
+    page_transitions: PageTransitionPlan | None = None
+    transition_execution: PageTransitionExecution | None = None
+    previous_entity_counts: dict[str, Counter[str]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -699,6 +724,7 @@ def _build_generated_section_context(
     call_edges: list[dict] | None = None,
     dependency_analysis: dict | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    restore_module_dependencies: bool = False,
 ) -> "_GeneratedSectionContext":
     call_edges = call_edges if call_edges is not None else resolve_call_edges(inventory)
     entity_relationship_summaries = _build_entity_relationship_summary_map(
@@ -706,7 +732,7 @@ def _build_generated_section_context(
         call_edges,
     )
     module_dependency_maps = None
-    if _has_existing_module_dependency_sections(options.wiki_dir):
+    if restore_module_dependencies or _has_existing_module_dependency_sections(options.wiki_dir):
         dependency_analysis = dependency_analysis or _fallback_dependency_analysis(
             options,
             inventory,
@@ -732,7 +758,11 @@ def _target_entities_for_diff(diff: SyncDiff, inventory: dict) -> set[tuple[str,
     for cls_name, (_, new_path) in diff.moved_entities.items():
         if new_path in inventory:
             target_entities.add((cls_name, new_path))
-    target_entities.update(diff.renamed_entity_pages)
+    target_entities.update((name, path) for name, path, _ in diff.entity_page_renames)
+    target_entities.update(
+        (owner.entity_name, owner.source_path)
+        for owner in diff.missing_pages.values() if owner.entity_name is not None
+    )
     for filepath in diff.renamed_module_pages:
         if filepath in inventory:
             for cls in inventory[filepath].get("classes", []):
@@ -769,7 +799,7 @@ def _refresh_files_for_diff(diff: SyncDiff) -> list[str]:
             diff.new_files
             + diff.changed_files
             + diff.metadata_only_files
-            + [filepath for _, filepath in diff.renamed_entity_pages]
+            + [filepath for _, filepath, _ in diff.entity_page_renames]
             + list(diff.renamed_module_pages)
         )
     )
@@ -796,44 +826,38 @@ def _file_entity_page_map(
     return page_map
 
 
-def _move_renamed_entity_page(
-    wiki_dir: Path,
-    rename: tuple[str, str] | None,
-    current_entity_pages: set[str],
-) -> None:
-    if not rename:
-        return
-    old_page_name, new_page_name = rename
-    old_entity_path = wiki_dir / "entities" / f"{old_page_name}.md"
-    new_entity_path = wiki_dir / "entities" / f"{new_page_name}.md"
-    if old_entity_path == new_entity_path or not old_entity_path.exists():
-        return
-    if not new_entity_path.exists():
-        old_entity_path.replace(new_entity_path)
-        print(f"  RENAME entity: {old_page_name} -> {new_page_name}")
-    elif old_page_name not in current_entity_pages:
-        old_entity_path.unlink()
-        print(f"  REMOVE stale entity page: {old_page_name}")
+def _read_transition_page(ctx: _ApplyDiffContext, path: Path) -> str | None:
+    assert ctx.transition_execution is not None
+    return ctx.transition_execution.read_text(path.relative_to(ctx.wiki_dir).as_posix())
 
 
-def _move_renamed_module_page(
-    wiki_dir: Path,
-    rename: tuple[str, str] | None,
-    current_module_pages: set[str],
-) -> None:
-    if not rename:
-        return
-    old_page_name, new_page_name = rename
-    old_module_path = wiki_dir / "modules" / f"{old_page_name}.md"
-    new_module_path = wiki_dir / "modules" / f"{new_page_name}.md"
-    if old_module_path == new_module_path or not old_module_path.exists():
-        return
-    if not new_module_path.exists():
-        old_module_path.replace(new_module_path)
-        print(f"  RENAME module: {old_page_name} -> {new_page_name}")
-    elif old_page_name not in current_module_pages:
-        old_module_path.unlink()
-        print(f"  REMOVE stale module page: {old_page_name}")
+def _write_transition_page(ctx: _ApplyDiffContext, path: Path, text: str) -> str:
+    assert ctx.transition_execution is not None
+    return ctx.transition_execution.write(path.relative_to(ctx.wiki_dir).as_posix(), text)
+
+
+def _previous_entity_semantics(ctx: _ApplyDiffContext, path: Path) -> dict | None:
+    assert ctx.transition_execution is not None
+    item = ctx.transition_execution.by_path[path.relative_to(ctx.wiki_dir).as_posix()]
+    owner = item.previous_owner
+    if owner is None or owner.entity_name is None:
+        return None
+    source = ctx.manifest.sources.get(owner.source_path, {})
+    semantics = source.get("generated_semantics", {})
+    if not isinstance(semantics, Mapping):
+        return None
+    by_occurrence = semantics.get("entity_occurrences", {})
+    occurrences = by_occurrence.get(owner.entity_name) if isinstance(by_occurrence, Mapping) else None
+    if isinstance(occurrences, list) and owner.occurrence is not None:
+        previous = occurrences[owner.occurrence - 1] if owner.occurrence <= len(occurrences) else None
+        return previous if isinstance(previous, dict) else None
+    if owner.source_path not in ctx.previous_entity_counts:
+        ctx.previous_entity_counts[owner.source_path] = Counter(source.get("entities", []))
+    if ctx.previous_entity_counts[owner.source_path][owner.entity_name] != 1:
+        return None
+    entities = semantics.get("entities", {})
+    previous = entities.get(owner.entity_name) if isinstance(entities, Mapping) else None
+    return previous if isinstance(previous, dict) else None
 
 
 def _record_page_write(
@@ -863,21 +887,15 @@ def _merge_entity_page(
     ctx: _ApplyDiffContext,
     entity_path: Path,
     generated: str,
-    old_generated_semantics: dict,
-    cls_name: str,
     result: SyncResult,
 ) -> SemanticMergeResult:
     merge_result = SemanticMergeResult(generated)
-    if ctx.preserve_semantic and entity_path.exists():
-        old_entity_semantics = (
-            old_generated_semantics.get("entities", {}).get(cls_name)
-            if isinstance(old_generated_semantics, dict)
-            else None
-        )
+    existing = _read_transition_page(ctx, entity_path)
+    if ctx.preserve_semantic and existing is not None:
         merge_result = _merge_entity_semantics(
-            read_md(entity_path),
+            existing,
             generated,
-            old_entity_semantics,
+            _previous_entity_semantics(ctx, entity_path),
         )
         result.preserved_semantic += merge_result.preserved
     return merge_result
@@ -891,14 +909,15 @@ def _merge_module_page(
     result: SyncResult,
 ) -> SemanticMergeResult:
     merge_result = SemanticMergeResult(generated)
-    if ctx.preserve_semantic and module_path.exists():
+    existing = _read_transition_page(ctx, module_path)
+    if ctx.preserve_semantic and existing is not None:
         old_module_semantics = (
             old_generated_semantics.get("module")
             if isinstance(old_generated_semantics, dict)
             else None
         )
         merge_result = _merge_module_semantics(
-            read_md(module_path),
+            existing,
             generated,
             old_module_semantics,
         )
@@ -913,13 +932,10 @@ def _apply_entity_page(
     filepath: str,
     cls: dict,
     mod_page_name: str,
-    old_generated_semantics: dict,
     entity_page_name: str,
 ) -> None:
     relative_path = canonical_path(PageKind.ENTITIES, entity_page_name)
     entity_path = ctx.wiki_dir / relative_path
-    rename = diff.renamed_entity_pages.get((cls["name"], filepath))
-    _move_renamed_entity_page(ctx.wiki_dir, rename, ctx.current_entity_pages)
 
     relationship_summary = ctx.generated_sections.entity_relationship_summaries.get(
         (cls["name"], filepath),
@@ -952,11 +968,9 @@ def _apply_entity_page(
         ctx,
         entity_path,
         generated,
-        old_generated_semantics,
-        cls["name"],
         result,
     )
-    write_state = _write_md_if_changed(entity_path, merge_result.text)
+    write_state = _write_transition_page(ctx, entity_path, merge_result.text)
     _record_page_write(
         result,
         "entity",
@@ -979,11 +993,6 @@ def _apply_module_page(
 ) -> None:
     relative_path = canonical_path(PageKind.MODULES, mod_page_name)
     module_path = ctx.wiki_dir / relative_path
-    _move_renamed_module_page(
-        ctx.wiki_dir,
-        diff.renamed_module_pages.get(filepath),
-        ctx.current_module_pages,
-    )
 
     module_dependency_map = None
     if ctx.generated_sections.module_dependency_maps is not None:
@@ -1017,7 +1026,7 @@ def _apply_module_page(
     merge_result = _merge_module_page(
         ctx, module_path, generated, old_generated_semantics, result
     )
-    write_state = _write_md_if_changed(module_path, merge_result.text)
+    write_state = _write_transition_page(ctx, module_path, merge_result.text)
     _record_page_write(
         result,
         "module",
@@ -1033,6 +1042,8 @@ def _apply_refreshed_file_pages(
     diff: SyncDiff,
     result: SyncResult,
     refresh_files: list[str],
+    *,
+    only_pages: frozenset[str] | None = None,
 ) -> None:
     for filepath in refresh_files:
         file_data = ctx.inventory[filepath]
@@ -1057,6 +1068,8 @@ def _apply_refreshed_file_pages(
                 (name, filepath, seen_names[name]),
                 file_entity_page_map[name],
             )
+            if only_pages is not None and canonical_path(PageKind.ENTITIES, entity_page_name) not in only_pages:
+                continue
             _apply_entity_page(
                 ctx,
                 diff,
@@ -1064,9 +1077,10 @@ def _apply_refreshed_file_pages(
                 filepath,
                 cls,
                 mod_page_name,
-                old_generated_semantics,
                 entity_page_name,
             )
+        if only_pages is not None and canonical_path(PageKind.MODULES, mod_page_name) not in only_pages:
+            continue
         _apply_module_page(
             ctx,
             diff,
@@ -1096,12 +1110,19 @@ def _record_unchanged_file_skips(
         for filepath in unchanged_files
         if filepath in ctx.inventory
     )
+    unchanged_sources = set(unchanged_files)
+    unchanged_pages -= sum(
+        owner.source_path in unchanged_sources for owner in diff.missing_pages.values()
+    )
     result.skipped += unchanged_pages
     if unchanged_files:
-        print(
-            f"  SKIP unchanged source files: {len(unchanged_files)} "
-            f"file(s), {unchanged_pages} generated page(s)"
-        )
+        if diff.missing_pages:
+            print(f"  SKIP surviving source pages: {unchanged_pages} generated page(s)")
+        else:
+            print(
+                f"  SKIP unchanged source files: {len(unchanged_files)} "
+                f"file(s), {unchanged_pages} generated page(s)"
+            )
 
 
 def _deprecate_existing_page(
@@ -1109,7 +1130,21 @@ def _deprecate_existing_page(
     result: SyncResult,
     page_kind: str,
     page_name: str,
+    *,
+    execution: PageTransitionExecution | None = None,
 ) -> None:
+    relative = (
+        execution.retained_paths.get(portable_path_key(f"{path.parent.name}/{path.name}"))
+        if execution is not None else None
+    )
+    if execution is not None and relative is not None:
+        text = execution.read_text(relative)
+        assert text is not None
+        if _DEPRECATION_HEADER not in text:
+            if execution.write(relative, _DEPRECATION_HEADER + text) != "unchanged":
+                result.deprecated += 1
+                print(f"  DEPRECATE {page_kind}: {page_name}")
+        return
     if not path.exists():
         return
     text = read_md(path)
@@ -1128,14 +1163,16 @@ def _deprecate_removed_entities(
     result: SyncResult,
     *,
     retained_page_names: frozenset[str] = frozenset(),
+    execution: PageTransitionExecution | None = None,
 ) -> None:
+    retained_page_keys = {portable_path_key(name) for name in retained_page_names}
     for cls_name in old_info.get("entities", []):
         entity_page_name = _removed_entity_page_name(
             wiki_dir, cls_name, filepath, old_info
         )
-        if entity_page_name and entity_page_name not in retained_page_names:
+        if entity_page_name and portable_path_key(entity_page_name) not in retained_page_keys:
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
-            _deprecate_existing_page(entity_path, result, "entity", entity_page_name)
+            _deprecate_existing_page(entity_path, result, "entity", entity_page_name, execution=execution)
 
 
 def _deprecate_removed_module(
@@ -1143,10 +1180,12 @@ def _deprecate_removed_module(
     filepath: str,
     old_info: dict,
     result: SyncResult,
+    *,
+    execution: PageTransitionExecution | None = None,
 ) -> None:
     old_mod_page = old_info.get("module_page", _module_name_from_path(filepath))
     mod_page_path = wiki_dir / "modules" / f"{old_mod_page}.md"
-    _deprecate_existing_page(mod_page_path, result, "module", mod_page_path.stem)
+    _deprecate_existing_page(mod_page_path, result, "module", mod_page_path.stem, execution=execution)
 
 
 def _deprecate_removed_files(
@@ -1174,9 +1213,12 @@ def _deprecate_removed_files(
             filepath,
             old_info,
             result,
-            retained_page_names=retained_entity_pages,
+            retained_page_names=retained_entity_pages | frozenset(ctx.current_entity_page_keys),
+            execution=ctx.transition_execution,
         )
-        _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result)
+        old_module = str(old_info.get("module_page") or _module_name_from_path(filepath))
+        if portable_path_key(old_module) not in ctx.current_module_page_keys:
+            _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result, execution=ctx.transition_execution)
 
 
 def _remove_deselected_file_pages(
@@ -1196,7 +1238,7 @@ def _remove_deselected_file_pages(
             filepath,
             dict(old_info),
         )
-        if page_name is None or page_name in ctx.current_entity_pages:
+        if page_name is None or portable_path_key(page_name) in ctx.current_entity_page_keys:
             continue
         page = ctx.wiki_dir / "entities" / f"{page_name}.md"
         if page.is_file():
@@ -1205,7 +1247,7 @@ def _remove_deselected_file_pages(
             print(f"  REMOVE deselected entity: {page_name}")
 
     module_name = str(old_info.get("module_page") or _module_name_from_path(filepath))
-    if module_name in ctx.current_module_pages:
+    if portable_path_key(module_name) in ctx.current_module_page_keys:
         return
     module_page = ctx.wiki_dir / "modules" / f"{module_name}.md"
     if module_page.is_file():
@@ -1353,12 +1395,15 @@ def _refresh_entity_relationship_sections(
                     file=relationship_summary.get("file"),
                 ),
             )
+            existing = _read_transition_page(ctx, entity_path)
+            if existing is None:
+                continue
             refreshed = _replace_generated_section(
-                read_md(entity_path),
+                existing,
                 generated,
                 "Relationships",
             )
-            if _write_md_if_changed(entity_path, refreshed) == "updated":
+            if _write_transition_page(ctx, entity_path, refreshed) == "updated":
                 _record_generated_section_write(
                     result,
                     diff,
@@ -1415,12 +1460,15 @@ def _refresh_module_dependency_sections(
                 file=filepath,
             ),
         )
+        existing = _read_transition_page(ctx, module_path)
+        if existing is None:
+            continue
         refreshed = _replace_generated_section(
-            read_md(module_path),
+            existing,
             generated,
             "Local dependency map",
         )
-        if _write_md_if_changed(module_path, refreshed) == "updated":
+        if _write_transition_page(ctx, module_path, refreshed) == "updated":
             _record_generated_section_write(
                 result,
                 diff,
@@ -1478,6 +1526,10 @@ def _build_apply_diff_context(
     include_plugins: bool,
     source_selection_policy: SourceSelectionPolicy | None,
 ) -> _ApplyDiffContext:
+    transitions = _plan_source_page_transitions(
+        wiki_dir, manifest, inventory, diff, module_page_map, entity_occurrence_page_cache,
+        source_selection_policy=source_selection_policy,
+    )
     return _ApplyDiffContext(
         wiki_dir=wiki_dir,
         src_dir=src_dir,
@@ -1489,12 +1541,44 @@ def _build_apply_diff_context(
         relationships=relationships,
         generated_sections=generated_sections or _empty_generated_section_context(),
         metadata_only_files=set(diff.metadata_only_files),
-        current_entity_pages=set(entity_occurrence_page_cache.values()),
-        current_module_pages=set(module_page_map.values()),
+        current_entity_page_keys={portable_path_key(name) for name in entity_occurrence_page_cache.values()},
+        current_module_page_keys={portable_path_key(name) for name in module_page_map.values()},
         preserve_semantic=preserve_semantic,
+        page_transitions=transitions,
         include_plugins=include_plugins,
         source_selection_policy=source_selection_policy,
     )
+
+
+def _apply_planned_diff(ctx, diff, result, refresh_files, execution=None, *, refresh_unchanged_sections=True) -> None:
+    assert ctx.page_transitions is not None
+    if execution is None:
+        with PageTransitionExecution(ctx.wiki_dir, ctx.page_transitions) as local:
+            _apply_planned_diff(ctx, diff, result, refresh_files, local, refresh_unchanged_sections=refresh_unchanged_sections)
+        return
+    execution.apply(ctx.page_transitions)
+    ctx = replace(ctx, transition_execution=execution)
+    for repair in ctx.page_transitions.retained_page_repairs:
+        if execution.write(repair.path, repair.text) == "updated":
+            result.updated += 1
+            print(f"  UPDATE retained page links: {repair.path}")
+    refresh_files = list(dict.fromkeys(refresh_files + [
+        item.owner.source_path for item in ctx.page_transitions.transitions
+        if item.action == "rename" or (item.old_path is not None and item.old_path != item.final_path)
+    ]))
+    _apply_refreshed_file_pages(ctx, diff, result, refresh_files)
+    repair_sources = sorted({
+        owner.source_path for owner in diff.missing_pages.values()
+    } - set(refresh_files))
+    if repair_sources:
+        print(f"Repairing {len(diff.missing_pages)} missing managed source page(s)...")
+        _apply_refreshed_file_pages(
+            ctx, diff, result, repair_sources, only_pages=frozenset(diff.missing_pages)
+        )
+    _record_unchanged_file_skips(ctx, diff, result, refresh_files)
+    if refresh_unchanged_sections:
+        _refresh_generated_sections(ctx, diff, result)
+    _deprecate_removed_files(ctx, diff, result)
 
 
 def _apply_diff(
@@ -1511,6 +1595,8 @@ def _apply_diff(
     preserve_semantic: bool = True,
     include_plugins: bool = True,
     source_selection_policy: SourceSelectionPolicy | None = None,
+    transition_execution: PageTransitionExecution | None = None,
+    refresh_unchanged_sections: bool = True,
 ) -> SyncResult:
     """Regenerate pages for new/changed files, deprecate pages for removed files."""
     entity_page_cache, entity_occurrence_page_cache, module_page_map = (
@@ -1546,10 +1632,7 @@ def _apply_diff(
     )
 
     print("Applying wiki page changes...", flush=True)
-    _apply_refreshed_file_pages(ctx, diff, result, refresh_files)
-    _record_unchanged_file_skips(ctx, diff, result, refresh_files)
-    _refresh_generated_sections(ctx, diff, result)
-    _deprecate_removed_files(ctx, diff, result)
+    _apply_planned_diff(ctx, diff, result, refresh_files, transition_execution, refresh_unchanged_sections=refresh_unchanged_sections)
 
     print("Applied wiki page changes.", flush=True)
     return result
@@ -1713,6 +1796,8 @@ class _PreparedSyncRun:
     log_missing: bool
     committed_state: CommittedKnowledgeState | None = None
     reuse_observations_hash: str | None = None
+    page_transitions: PageTransitionPlan | None = None
+    transition_execution: PageTransitionExecution | None = None
 
 
 @dataclass(frozen=True)
@@ -2150,6 +2235,9 @@ def _print_dry_run_plan(
         _affected_source_files(application_diff) - _affected_source_files(diff)
     )
     print(f"  generator refresh sources: {generator_refresh_count}")
+    print(f"  missing source pages: {len(application_diff.missing_pages)} repair")
+    for path in sorted(application_diff.missing_pages):
+        print(f"    REPAIR {path}")
     ancillary = [
         "index.md",
         "log.md",
@@ -2563,6 +2651,8 @@ def _apply_sync_changes(
     *,
     log_diff: SyncDiff | None = None,
     apply_infrastructure: bool = True,
+    transition_execution: PageTransitionExecution | None = None,
+    refresh_unchanged_sections: bool = True,
 ) -> "SyncResult":
     generated_sections = _build_generated_section_context(
         options,
@@ -2570,6 +2660,10 @@ def _apply_sync_changes(
         call_edges=graph_observations.resolved_call_edges,
         dependency_analysis=graph_observations.dependency_analysis,
         source_snapshot=source_snapshot,
+        restore_module_dependencies=(
+            surface_plan.dependency_analysis is not None
+            and any(owner.scope == "module" for owner in diff.missing_pages.values())
+        ),
     )
     result = _apply_diff(
         diff,
@@ -2584,6 +2678,8 @@ def _apply_sync_changes(
         preserve_semantic=options.preserve_semantic,
         include_plugins=options.include_plugins,
         source_selection_policy=source_snapshot.source_selection_policy,
+        transition_execution=transition_execution,
+        refresh_unchanged_sections=refresh_unchanged_sections,
     )
     _apply_source_selection_prune(
         options.wiki_dir,
@@ -3512,9 +3608,64 @@ def _try_sync_knowledge_reuse(
     )
 
 
+def _preflight_page_transition_governance(wiki_dir, plan, diff) -> None:
+    if not (wiki_dir / GOVERNANCE_FILENAME).is_file():
+        return
+    from ..services.knowledge_governance import (
+        ConceptGovernanceReference, natural_key_for, reconcile_concepts,
+    )
+    from ..services.knowledge_model import PAGE_KIND_TO_CONCEPT_KIND
+
+    ledger = load_governance(wiki_dir).ledger
+    references = []
+    for item in plan.transitions:
+        page_kind = PageKind.ENTITIES if item.owner.scope == "entity" else PageKind.MODULES
+        concept_kind = PAGE_KIND_TO_CONCEPT_KIND[page_kind].value
+        references.append(ConceptGovernanceReference(
+            locator=mcp_uri(page_kind, Path(item.final_path).stem),
+            concept_kind=concept_kind,
+            natural_key=natural_key_for(concept_kind, item.final_path),
+        ))
+    reconcile_concepts(
+        ledger, references,
+        moves=_governance_moves_for_sync(diff, SyncManifest(), entity_page_cache={}, page_transitions=plan),
+    )
+
+
+def _plan_source_page_transitions(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+    inventory: dict,
+    diff: SyncDiff,
+    module_page_map: Mapping[str, str],
+    entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
+    *,
+    source_selection_policy: SourceSelectionPolicy | None = None,
+) -> PageTransitionPlan:
+    deleted_sources = frozenset(
+        source for source in {
+            *manifest.sources, *(owner.source_path for owner in manifest.page_source_mappings.values()),
+        }
+        if source_selection_policy is not None and not path_is_selected(source_selection_policy, source)
+    )
+    plan = plan_page_transitions(
+        wiki_dir,
+        manifest,
+        inventory,
+        module_page_map=module_page_map,
+        entity_occurrence_page_map=entity_occurrence_page_map,
+        refresh_sources=frozenset(_refresh_files_for_diff(diff)),
+        moved_entities=diff.moved_entities,
+        deleted_source_paths=deleted_sources,
+    )
+    _preflight_page_transition_governance(wiki_dir, plan, diff)
+    return plan
+
+
 def _prepare_sync_run(
     options: _SyncRunOptions,
 ) -> _PreparedSyncRun | _ReusedSync | None:
+    assert_no_pending_page_moves(options.wiki_dir)
     manifest, seed_manifest = _load_or_seed_manifest(options)
     if manifest is None and not seed_manifest:
         return None
@@ -3595,6 +3746,17 @@ def _prepare_sync_run(
         options,
         maps,
         source_content_hashes,
+    )
+    missing_pages = (
+        find_missing_source_pages(
+            options.wiki_dir, manifest, inventory,
+            module_page_map=maps.module_page_map,
+            entity_occurrence_page_map=maps.entity_occurrence_page_cache,
+            refresh_sources=frozenset(_refresh_files_for_diff(diff)),
+            moved_entities=diff.moved_entities,
+        )
+        if not seed_manifest and not repair_only and not options.initialize_surfaces
+        else {}
     )
     surface_plan = _build_surface_initialization_plan(
         options,
@@ -3699,6 +3861,7 @@ def _prepare_sync_run(
         and not runtime_provenance_changed
         and not diff.has_changes
         and not surface_plan.has_work
+        and not missing_pages
         and not infrastructure_plan.has_changes
         and not source_selection_prune.deselected_source_paths
         and not source_selection_prune.deselected_page_paths
@@ -3821,6 +3984,21 @@ def _prepare_sync_run(
         and (not options.initialize_surfaces or runtime_basis_refresh)
         else diff
     )
+    if missing_pages:
+        application_diff = deepcopy(application_diff)
+        application_diff.missing_pages = missing_pages
+    page_transitions = None
+    if (
+        not seed_manifest
+        and not repair_only
+        and (not options.initialize_surfaces or runtime_basis_refresh)
+        and (application_diff.has_changes or runtime_provenance_changed or runtime_basis_refresh)
+    ):
+        page_transitions = _plan_source_page_transitions(
+            options.wiki_dir, manifest, inventory, application_diff,
+            maps.module_page_map, maps.entity_occurrence_page_cache,
+            source_selection_policy=source_snapshot.source_selection_policy,
+        )
     return _PreparedSyncRun(
         manifest=manifest,
         seed_manifest=seed_manifest,
@@ -3842,6 +4020,7 @@ def _prepare_sync_run(
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
         committed_state=committed_state,
         reuse_observations_hash=reuse_observations_hash,
+        page_transitions=page_transitions,
     )
 
 
@@ -4161,7 +4340,7 @@ def _apply_prepared_sync(
         )
         return result
     if (
-        prepared.diff.has_changes or prepared.runtime_provenance_changed
+        prepared.application_diff.has_changes or prepared.runtime_provenance_changed
     ) and not options.initialize_surfaces:
         return _apply_sync_changes(
             options,
@@ -4176,6 +4355,8 @@ def _apply_prepared_sync(
             prepared.inventory_result,
             prepared.source_selection_prune,
             log_diff=prepared.diff,
+            transition_execution=prepared.transition_execution,
+            refresh_unchanged_sections=(prepared.diff.has_changes or prepared.runtime_provenance_changed),
         )
     if prepared.runtime_basis_refresh:
         application_options = replace(options, initialize_surfaces=frozenset())
@@ -4193,6 +4374,7 @@ def _apply_prepared_sync(
             prepared.source_selection_prune,
             log_diff=prepared.diff,
             apply_infrastructure=False,
+            transition_execution=prepared.transition_execution,
         )
     result = SyncResult()
     _apply_source_selection_prune(
@@ -4410,8 +4592,9 @@ def _finalize_prepared_sync(
                 prepared.diff,
                 prepared.manifest,
                 entity_page_cache=prepared.page_maps.entity_page_cache,
+                page_transitions=prepared.page_transitions,
             )
-            if (target / GOVERNANCE_FILENAME).is_file()
+            if prepared.page_transitions is not None and (target / GOVERNANCE_FILENAME).is_file()
             else {},
         ),
         dry_run=dry_run,
@@ -4573,11 +4756,8 @@ def _run_sync_dry_run(
             wiki_dir=staged_wiki,
             dry_run=False,
         )
-        result = _apply_prepared_sync(staged_options, prepared)
-        _finalize_prepared_sync(
-            staged_options,
-            prepared,
-            result,
+        _execute_prepared_sync(
+            staged_options, prepared,
             target_wiki_dir=options.wiki_dir,
             dry_run=True,
         )
@@ -4652,6 +4832,31 @@ def _enforce_sync_write_safety(
         )
 
 
+def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=False) -> None:
+    boundary = (
+        PageTransitionExecution(options.wiki_dir, prepared.page_transitions, preview=dry_run)
+        if prepared.page_transitions is not None else nullcontext(None)
+    )
+    with boundary as execution:
+        active = replace(prepared, transition_execution=execution)
+        result = _apply_prepared_sync(options, active)
+        _finalize_prepared_sync(
+            options, active, result, target_wiki_dir=target_wiki_dir, dry_run=dry_run
+        )
+
+
+def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    try:
+        if options.dry_run:
+            _run_sync_dry_run(options, prepared)
+            return
+        _enforce_sync_write_safety(options, prepared)
+        _execute_prepared_sync(options, prepared)
+    except SyncOwnershipError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+
 def run(args) -> None:
     options = _sync_run_options_from_args(args)
     try:
@@ -4661,6 +4866,7 @@ def run(args) -> None:
         GeneratedSurfacePruneError,
         GovernanceError,
         InfrastructureSyncError,
+        SyncOwnershipError,
         SyncRuntimeRefreshError,
     ) as exc:
         print(f"Error: {exc}", file=sys.stderr)
@@ -4675,12 +4881,7 @@ def run(args) -> None:
         _print_cache_stats(prepared.cache_stats, enabled=options.cache_stats_enabled)
         return
 
-    if options.dry_run:
-        _run_sync_dry_run(options, prepared)
-        return
-    _enforce_sync_write_safety(options, prepared)
-    result = _apply_prepared_sync(options, prepared)
-    _finalize_prepared_sync(options, prepared, result)
+    _run_prepared_sync(options, prepared)
 
 
 # ── Index + log helpers ───────────────────────────────────────────────────────

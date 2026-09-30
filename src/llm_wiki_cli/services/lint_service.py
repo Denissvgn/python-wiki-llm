@@ -777,7 +777,7 @@ def _check_sync_manifest(
         or unproven_metadata
         or diff.removed_files
         or diff.moved_entities
-        or diff.renamed_entity_pages
+        or diff.entity_page_renames
         or diff.renamed_module_pages
     )
     if has_hard_changes:
@@ -787,7 +787,7 @@ def _check_sync_manifest(
             f"{len(unproven_metadata)} metadata-only",
             f"{len(diff.removed_files)} removed",
             f"{len(diff.moved_entities)} moved",
-            f"{len(diff.renamed_entity_pages)} renamed entity pages",
+            f"{len(diff.entity_page_renames)} renamed entity pages",
             f"{len(diff.renamed_module_pages)} renamed module pages",
         ]
         _add(

@@ -84,7 +84,7 @@ sequenceDiagram
     p13-->>p24: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
 ```
 
-> Call sequence diagram shows 30 of 1777 interactions; 1747 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1779 interactions; 1749 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

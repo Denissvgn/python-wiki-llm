@@ -1,6 +1,6 @@
 # SyncDiff
 
-**Location:** `src/llm_wiki_cli/services/sync_analysis.py:20`
+**Location:** `src/llm_wiki_cli/services/sync_analysis.py:138`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_analysis](../modules/sync_analysis.md)
@@ -23,11 +23,14 @@ Categorised difference between a persisted manifest and live inventory.
 | `moved_entities` | `dict[str, tuple[str, str]]` | `field(default_factory=dict)` | — |
 | `renamed_entity_pages` | `dict[tuple[str, str], tuple[str, str]]` | `field(default_factory=dict)` | — |
 | `renamed_module_pages` | `dict[str, tuple[str, str]]` | `field(default_factory=dict)` | — |
+| `renamed_entity_occurrences` | `dict[tuple[str, str, int], tuple[str, str]]` | `field(default_factory=dict)` | — |
+| `missing_pages` | `dict[str, ManifestPageSource]` | `field(default_factory=dict)` | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
+| `entity_page_renames` | `() -> dict[tuple[str, str, int], tuple[str, str]]` | `@property` | — |
 | `has_changes` | `() -> bool` | `@property` | — |
 
 ## Relationships
@@ -79,7 +82,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_analysis](../modules/sync_analysis.md) | 1 | `changed_files`, `metadata_only_files`, `moved_entities`, `new_files`, `removed_files`, `renamed_entity_pages`, `renamed_module_pages`, `unchanged_files` |
+| [sync_analysis](../modules/sync_analysis.md) | 2 | `changed_files`, `metadata_only_files`, `missing_pages`, `moved_entities`, `new_files`, `removed_files`, `renamed_entity_occurrences`, `renamed_entity_pages`, `renamed_module_pages`, `unchanged_files` |
 
 ### References
 
@@ -98,4 +101,4 @@ flowchart LR
 | `_exit_if_large_unforced_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_generator_refresh_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.
+> References: showing 12 of 28 logical references; 16 omitted by the 12-row generated summary limit.

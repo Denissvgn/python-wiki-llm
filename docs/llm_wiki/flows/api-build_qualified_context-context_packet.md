@@ -126,7 +126,7 @@ sequenceDiagram
     p14-->>p17: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
 ```
 
-> Call sequence diagram shows 30 of 4949 interactions; 4919 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4951 interactions; 4921 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
