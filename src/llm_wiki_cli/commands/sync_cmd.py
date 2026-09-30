@@ -83,6 +83,7 @@ from ..services.infrastructure_sync import (
     with_infrastructure_generation_input,
 )
 from ..services.io import read_md, write_md
+from ..services.validation import portable_path_key
 from ..services.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
@@ -662,8 +663,8 @@ class _ApplyDiffContext:
     relationships: dict
     generated_sections: "_GeneratedSectionContext"
     metadata_only_files: set[str]
-    current_entity_pages: set[str]
-    current_module_pages: set[str]
+    current_entity_page_keys: set[str]
+    current_module_page_keys: set[str]
     preserve_semantic: bool
     include_plugins: bool = True
     source_selection_policy: SourceSelectionPolicy | None = None
@@ -1149,11 +1150,12 @@ def _deprecate_removed_entities(
     *,
     retained_page_names: frozenset[str] = frozenset(),
 ) -> None:
+    retained_page_keys = {portable_path_key(name) for name in retained_page_names}
     for cls_name in old_info.get("entities", []):
         entity_page_name = _removed_entity_page_name(
             wiki_dir, cls_name, filepath, old_info
         )
-        if entity_page_name and entity_page_name not in retained_page_names:
+        if entity_page_name and portable_path_key(entity_page_name) not in retained_page_keys:
             entity_path = wiki_dir / "entities" / f"{entity_page_name}.md"
             _deprecate_existing_page(entity_path, result, "entity", entity_page_name)
 
@@ -1194,10 +1196,10 @@ def _deprecate_removed_files(
             filepath,
             old_info,
             result,
-            retained_page_names=retained_entity_pages | frozenset(ctx.current_entity_pages),
+            retained_page_names=retained_entity_pages | frozenset(ctx.current_entity_page_keys),
         )
         old_module = str(old_info.get("module_page") or _module_name_from_path(filepath))
-        if old_module not in ctx.current_module_pages:
+        if portable_path_key(old_module) not in ctx.current_module_page_keys:
             _deprecate_removed_module(ctx.wiki_dir, filepath, old_info, result)
 
 
@@ -1218,7 +1220,7 @@ def _remove_deselected_file_pages(
             filepath,
             dict(old_info),
         )
-        if page_name is None or page_name in ctx.current_entity_pages:
+        if page_name is None or portable_path_key(page_name) in ctx.current_entity_page_keys:
             continue
         page = ctx.wiki_dir / "entities" / f"{page_name}.md"
         if page.is_file():
@@ -1227,7 +1229,7 @@ def _remove_deselected_file_pages(
             print(f"  REMOVE deselected entity: {page_name}")
 
     module_name = str(old_info.get("module_page") or _module_name_from_path(filepath))
-    if module_name in ctx.current_module_pages:
+    if portable_path_key(module_name) in ctx.current_module_page_keys:
         return
     module_page = ctx.wiki_dir / "modules" / f"{module_name}.md"
     if module_page.is_file():
@@ -1520,8 +1522,8 @@ def _build_apply_diff_context(
         relationships=relationships,
         generated_sections=generated_sections or _empty_generated_section_context(),
         metadata_only_files=set(diff.metadata_only_files),
-        current_entity_pages=set(entity_occurrence_page_cache.values()),
-        current_module_pages=set(module_page_map.values()),
+        current_entity_page_keys={portable_path_key(name) for name in entity_occurrence_page_cache.values()},
+        current_module_page_keys={portable_path_key(name) for name in module_page_map.values()},
         preserve_semantic=preserve_semantic,
         page_transitions=transitions,
         include_plugins=include_plugins,

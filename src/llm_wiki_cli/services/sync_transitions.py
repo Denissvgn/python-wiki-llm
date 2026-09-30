@@ -200,6 +200,11 @@ def plan_page_transitions(
         existing = _existing_pages(wiki_dir)
     except OSError as exc:
         raise PageTransitionError(f"Cannot inspect entity/module page paths: {exc}") from exc
+    # Retired owners are not in the live transition list, but sync can still
+    # deprecate or remove their pages after staging. Validate those paths too.
+    for key, (path, regular) in existing.items():
+        if key in prior.claims and not regular:
+            raise PageTransitionError(f"Recorded source page is not a regular file: {path!r}")
     current = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
     old_counts = {
         source: Counter(info.get("entities", []))
@@ -292,10 +297,11 @@ def find_missing_source_pages(
     refresh_sources: frozenset[str] = frozenset(),
     moved_entities: Mapping[str, tuple[str, str]] | None = None,
 ) -> dict[str, ManifestPageSource]:
-    """Find absent managed pages without inventing source changes or ownership.
+    """Find missing canonical paths without inventing source changes or ownership.
 
-    Healthy wikis need only a filename/kind inventory. If a candidate is absent,
-    the transition planner verifies its prior owner before it becomes repair work.
+    Healthy wikis need only a filename/kind inventory. If a candidate is absent
+    or has different casing, the planner verifies ownership before repair work.
+    A case alias must be staged back to its canonical name, preserving its text.
     Ordinary new/changed source generation already handles its own missing output.
     """
     expected = _current_pages(inventory, module_page_map, entity_occurrence_page_map)
@@ -318,6 +324,8 @@ def find_missing_source_pages(
             absent.add(path)
         elif not current[1]:
             raise PageTransitionError(f"Managed page is not a regular file: {path!r}")
+        elif current[0] != path:
+            absent.add(path)
     if not absent:
         return {}
     plan = plan_page_transitions(
@@ -330,7 +338,7 @@ def find_missing_source_pages(
     return {
         item.final_path: item.owner for item in plan.transitions
         if item.final_path in absent
-        and item.source_missing
+        and (item.source_missing or item.source_path != item.final_path)
         and item.old_path == item.final_path
         and item.previous_owner == item.owner
     }

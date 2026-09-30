@@ -24,6 +24,40 @@ from tests.test_sync_page_transitions import (
 )
 
 
+@pytest.mark.parametrize("scope", ["entity", "module"])
+def test_sync_restores_recorded_filename_case_without_source_changes(tmp_path, monkeypatch, scope):
+    project, wiki = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original model.")}
+    )
+    relative = "entities/Draft.md" if scope == "entity" else "modules/model.md"
+    page = wiki / relative
+    original_description = "Original model." if scope == "entity" else "_Auto-generated from `pkg/model.py`._"
+    _author_description(page, original_description, "AUTHORED: keep this page.")
+    alias = page.with_name(page.name.upper())
+    page.rename(alias)
+    before = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
+    survivors = {
+        p: (p.read_bytes(), p.stat().st_mtime_ns)
+        for directory in ("entities", "modules") for p in (wiki / directory).iterdir()
+        if p.name != alias.name
+    }
+    source = (project / "pkg/model.py").read_bytes()
+
+    _sync(wiki, dry_run=True)
+    assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == before
+    _sync(wiki)
+
+    assert page.name in {p.name for p in page.parent.iterdir()}
+    assert alias.name not in {p.name for p in page.parent.iterdir()}
+    assert "AUTHORED: keep this page." in read_md(page)
+    assert all((p.read_bytes(), p.stat().st_mtime_ns) == contents for p, contents in survivors.items())
+    assert (project / "pkg/model.py").read_bytes() == source
+    _assert_consistent(wiki)
+    stable = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
+    _sync(wiki)
+    assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == stable
+
+
 @pytest.mark.parametrize("page_kind", ["entity", "module"])
 @pytest.mark.parametrize("mode", ["ordinary", "no-cache", "rebuild-cache", "force-rebuild-cache", "mtime-only"])
 def test_sync_restores_missing_page_without_source_changes(

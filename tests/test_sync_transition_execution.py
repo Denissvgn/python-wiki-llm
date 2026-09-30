@@ -192,6 +192,36 @@ def test_generated_write_cannot_overwrite_a_concurrent_author_edit(tmp_path):
     _assert_originals(wiki, before)
 
 
+@pytest.mark.parametrize("scope", ["entity", "module"])
+@pytest.mark.parametrize("kind", ["symlink", "directory"])
+def test_nonregular_retired_page_is_rejected_before_live_renames(tmp_path, monkeypatch, scope, kind):
+    project, wiki = _bootstrap_project(tmp_path, monkeypatch, {
+        "model.py": _draft_source("Original model."),
+        "retired.py": _draft_source("Retiring class.", name="Retired"),
+    })
+    external = project / "notes.txt"
+    external.write_text("Unrelated external notes.", encoding="utf-8")
+    retired = wiki / ("entities/Retired.md" if scope == "entity" else "modules/retired.md")
+    retired.unlink()
+    if kind == "symlink":
+        retired.symlink_to(external)
+    else:
+        retired.mkdir()
+        (retired / "keep.txt").write_text("Preserve directory content.", encoding="utf-8")
+    (project / "pkg/retired.py").unlink()
+    (project / "pkg/composer.py").write_text(_draft_source("New collision."), encoding="utf-8")
+    before = _snapshot(wiki)
+
+    with pytest.raises(SystemExit) as exc:
+        _sync(wiki)
+
+    assert exc.value.code == 2
+    assert retired.is_symlink() if kind == "symlink" else retired.is_dir()
+    assert external.read_text() == "Unrelated external notes."
+    assert _snapshot(wiki) == before
+    assert not list(wiki.glob(f"{execution.RECOVERY_PREFIX}*"))
+
+
 @pytest.mark.parametrize("failure", ["generation", "metadata"])
 def test_command_failure_retains_backups_without_publishing_success_metadata(tmp_path, monkeypatch, capsys, failure):
     project, wiki = _bootstrap_project(tmp_path, monkeypatch, {"model.py": _draft_source("Original.")})
@@ -431,6 +461,52 @@ def test_only_the_second_occurrence_rename_still_refreshes_module_links(tmp_path
     mapping = SyncManifest.load(wiki).page_source_mappings["entities/alpha_Draft_2.md"]
     assert mapping.occurrence == 2 and mapping.source_path == "pkg/alpha.py"
     _assert_consistent(wiki)
+
+
+def test_source_move_with_case_only_page_rename_does_not_deprecate_live_page(tmp_path, monkeypatch):
+    from dataclasses import replace
+    from llm_wiki_cli.commands import bootstrap_cmd
+    from tests.test_sync import _make_bootstrap_args
+
+    project = tmp_path / "project"
+    (project / "pkg").mkdir(parents=True)
+    (project / "pkg/alpha.py").write_text(_draft_source("Original draft."), encoding="utf-8")
+    wiki = project / "docs/llm_wiki"
+    monkeypatch.chdir(project)
+    real_maps = bootstrap_cmd._prepare_bootstrap_page_maps
+
+    def legacy_maps(inventory):
+        return replace(
+            real_maps(inventory),
+            entity_page_name_cache={("Draft", "pkg/alpha.py"): "draft"},
+            entity_occurrence_page_name_cache={("Draft", "pkg/alpha.py", 1): "draft"},
+        )
+
+    with monkeypatch.context() as setup:
+        setup.setattr(bootstrap_cmd, "_prepare_bootstrap_page_maps", legacy_maps)
+        bootstrap_cmd.run(_make_bootstrap_args(wiki_dir=str(wiki), skip_flows=True, skip_dependencies=True, jobs=1))
+    _author_description(wiki / "entities/draft.md", "Original draft.", "AUTHORED moved draft.")
+    (project / "pkg/alpha.py").rename(project / "pkg/beta.py")
+
+    _sync(wiki, force=True)
+
+    content = read_md(wiki / "entities/Draft.md")
+    assert sync_cmd._DEPRECATION_HEADER not in content
+    assert "AUTHORED moved draft." in content
+    assert "pkg/beta.py:1" in content
+    manifest = SyncManifest.load(wiki)
+    assert manifest.page_source_mappings["entities/Draft.md"].source_path == "pkg/beta.py"
+    assert "entities/Draft.md" not in manifest.tombstones
+    from llm_wiki_cli.commands import lint_cmd
+    report = lint_cmd.build_report(wiki, ".", strict=True, parallel_jobs=1, include_plugins=False)
+    # Source removal intentionally retains the old module with a stale marker.
+    assert {(issue.category, issue.path, issue.target) for issue in report.issues} == {
+        ("orphan_pages", "modules/alpha.md", None),
+        ("stale_modules", None, "alpha"),
+    }
+    stable = _snapshot(wiki)
+    _sync(wiki)
+    assert _snapshot(wiki) == stable
 
 
 @pytest.mark.parametrize("scope", ["entity", "module"])
