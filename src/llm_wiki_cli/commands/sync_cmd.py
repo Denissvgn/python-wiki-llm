@@ -165,6 +165,7 @@ from ..services.sync_analysis import (
     SyncOwnershipError,
     compute_sync_diff as _compute_diff,
 )
+from ..services.sync_transitions import PageTransitionPlan, plan_page_transitions
 from ..services.wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,
@@ -650,6 +651,7 @@ class _ApplyDiffContext:
     preserve_semantic: bool
     include_plugins: bool = True
     source_selection_policy: SourceSelectionPolicy | None = None
+    page_transitions: PageTransitionPlan | None = None
 
 
 @dataclass(frozen=True)
@@ -1482,6 +1484,9 @@ def _build_apply_diff_context(
     include_plugins: bool,
     source_selection_policy: SourceSelectionPolicy | None,
 ) -> _ApplyDiffContext:
+    transitions = _plan_source_page_transitions(
+        wiki_dir, manifest, inventory, diff, module_page_map, entity_occurrence_page_cache
+    )
     return _ApplyDiffContext(
         wiki_dir=wiki_dir,
         src_dir=src_dir,
@@ -1496,6 +1501,7 @@ def _build_apply_diff_context(
         current_entity_pages=set(entity_occurrence_page_cache.values()),
         current_module_pages=set(module_page_map.values()),
         preserve_semantic=preserve_semantic,
+        page_transitions=transitions,
         include_plugins=include_plugins,
         source_selection_policy=source_selection_policy,
     )
@@ -1717,6 +1723,7 @@ class _PreparedSyncRun:
     log_missing: bool
     committed_state: CommittedKnowledgeState | None = None
     reuse_observations_hash: str | None = None
+    page_transitions: PageTransitionPlan | None = None
 
 
 @dataclass(frozen=True)
@@ -3516,6 +3523,27 @@ def _try_sync_knowledge_reuse(
     )
 
 
+def _plan_source_page_transitions(
+    wiki_dir: Path,
+    manifest: SyncManifest,
+    inventory: dict,
+    diff: SyncDiff,
+    module_page_map: Mapping[str, str],
+    entity_occurrence_page_map: Mapping[tuple[str, str, int], str],
+) -> PageTransitionPlan:
+    plan = plan_page_transitions(
+        wiki_dir,
+        manifest,
+        inventory,
+        module_page_map=module_page_map,
+        entity_occurrence_page_map=entity_occurrence_page_map,
+        refresh_sources=frozenset(_refresh_files_for_diff(diff)),
+        moved_entities=diff.moved_entities,
+    )
+    plan.require_legacy_compatible(diff)
+    return plan
+
+
 def _prepare_sync_run(
     options: _SyncRunOptions,
 ) -> _PreparedSyncRun | _ReusedSync | None:
@@ -3825,6 +3853,17 @@ def _prepare_sync_run(
         and (not options.initialize_surfaces or runtime_basis_refresh)
         else diff
     )
+    page_transitions = None
+    if (
+        not seed_manifest
+        and not repair_only
+        and (not options.initialize_surfaces or runtime_basis_refresh)
+        and (diff.has_changes or runtime_provenance_changed or runtime_basis_refresh)
+    ):
+        page_transitions = _plan_source_page_transitions(
+            options.wiki_dir, manifest, inventory, application_diff,
+            maps.module_page_map, maps.entity_occurrence_page_cache,
+        )
     return _PreparedSyncRun(
         manifest=manifest,
         seed_manifest=seed_manifest,
@@ -3846,6 +3885,7 @@ def _prepare_sync_run(
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
         committed_state=committed_state,
         reuse_observations_hash=reuse_observations_hash,
+        page_transitions=page_transitions,
     )
 
 
@@ -4656,6 +4696,19 @@ def _enforce_sync_write_safety(
         )
 
 
+def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    try:
+        if options.dry_run:
+            _run_sync_dry_run(options, prepared)
+            return
+        _enforce_sync_write_safety(options, prepared)
+        result = _apply_prepared_sync(options, prepared)
+        _finalize_prepared_sync(options, prepared, result)
+    except SyncOwnershipError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+
 def run(args) -> None:
     options = _sync_run_options_from_args(args)
     try:
@@ -4680,12 +4733,7 @@ def run(args) -> None:
         _print_cache_stats(prepared.cache_stats, enabled=options.cache_stats_enabled)
         return
 
-    if options.dry_run:
-        _run_sync_dry_run(options, prepared)
-        return
-    _enforce_sync_write_safety(options, prepared)
-    result = _apply_prepared_sync(options, prepared)
-    _finalize_prepared_sync(options, prepared, result)
+    _run_prepared_sync(options, prepared)
 
 
 # ── Index + log helpers ───────────────────────────────────────────────────────

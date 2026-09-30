@@ -241,6 +241,12 @@ def test_new_module_twin_preserves_original_page_owner(tmp_path, monkeypatch):
 
 def test_existing_module_twin_preserves_original_page_owner(tmp_path, monkeypatch):
     _check_added_twin(tmp_path, monkeypatch, existing_module=True)
+    from llm_wiki_cli.services.doctor_service import build_doctor_report
+
+    report = build_doctor_report(
+        src_dir=".", wiki_dir="docs/llm_wiki", strict=True, parallel_jobs=1
+    )
+    assert report.exit_code == 0, report.to_payload()
 
 
 def test_two_way_private_twin_preserves_both_page_owners(tmp_path, monkeypatch):
@@ -282,3 +288,81 @@ def test_ownership_conflict_stops_sync_before_wiki_mutation(
         path.relative_to(wiki_dir): path.read_bytes()
         for path in wiki_dir.rglob("*") if path.is_file()
     } == before
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+@pytest.mark.parametrize("scope", ["entity", "module", "staging"])
+def test_transition_preflight_preserves_all_pages_on_conflict(
+    tmp_path, monkeypatch, capsys, dry_run, scope
+):
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    _author_description(
+        wiki_dir / "entities/Draft.md", "Original description.", "AUTHORED: original owner."
+    )
+    if scope == "module":
+        (project / "other").mkdir()
+        (project / "other/model.py").write_text(
+            _draft_source("Another class.", name="Other"), encoding="utf-8"
+        )
+        target = wiki_dir / "modules/pkg_model.md"
+    else:
+        (project / "pkg/composer.py").write_text(
+            _draft_source("Another draft."), encoding="utf-8"
+        )
+        target = wiki_dir / "entities/model_Draft.md"
+    if scope == "staging":
+        (project / "pkg/fakes.py").write_text(
+            _draft_source("Private twin.", name="_Draft"), encoding="utf-8"
+        )
+    else:
+        target.write_text("AUTHORED: unrelated destination.", encoding="utf-8")
+    before = {
+        path.relative_to(wiki_dir): (path.read_bytes(), path.stat().st_mtime_ns)
+        for path in wiki_dir.rglob("*") if path.is_file()
+    }
+    capsys.readouterr()
+
+    with pytest.raises(SystemExit) as exc:
+        _sync(wiki_dir, dry_run=dry_run)
+
+    assert exc.value.code == 2
+    stderr = capsys.readouterr().err
+    assert ("Staged page renames required" if scope == "staging" else "Occupied target") in stderr
+    assert {
+        path.relative_to(wiki_dir): (path.read_bytes(), path.stat().st_mtime_ns)
+        for path in wiki_dir.rglob("*") if path.is_file()
+    } == before
+
+
+def test_transition_preflight_rechecks_occupied_targets_at_application(tmp_path, monkeypatch, capsys):
+    project, wiki_dir = _bootstrap_project(
+        tmp_path, monkeypatch, {"model.py": _draft_source("Original description.")}
+    )
+    (project / "pkg/composer.py").write_text(
+        _draft_source("Another draft."), encoding="utf-8"
+    )
+    real_apply = sync_cmd._apply_prepared_sync
+    snapshots = []
+
+    def occupy_after_preparation(options, prepared):
+        assert prepared.page_transitions is not None
+        (wiki_dir / "entities/model_Draft.md").write_text("Late authored destination.", encoding="utf-8")
+        snapshots.append({
+            path.relative_to(wiki_dir): path.read_bytes()
+            for path in wiki_dir.rglob("*") if path.is_file()
+        })
+        return real_apply(options, prepared)
+
+    monkeypatch.setattr(sync_cmd, "_apply_prepared_sync", occupy_after_preparation)
+    capsys.readouterr()
+    with pytest.raises(SystemExit) as exc:
+        _sync(wiki_dir)
+    assert exc.value.code == 2
+    assert "Occupied target" in capsys.readouterr().err
+    assert len(snapshots) == 1
+    assert {
+        path.relative_to(wiki_dir): path.read_bytes()
+        for path in wiki_dir.rglob("*") if path.is_file()
+    } == snapshots[0]
