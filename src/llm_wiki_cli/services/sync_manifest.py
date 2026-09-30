@@ -674,7 +674,7 @@ def generated_semantics_for_file(
 
     module_docstring = file_data.get("module_docstring", "")
     module_description = module_docstring or f"_Auto-generated from `{filepath}`._"
-    return {
+    result = {
         "module": {
             "description": module_description,
             "classes": {
@@ -701,6 +701,18 @@ def generated_semantics_for_file(
             for cls in file_data.get("classes", [])
         },
     }
+    counts = Counter(cls["name"] for cls in file_data.get("classes", []))
+    duplicate_semantics: dict[str, list] = {}
+    for cls in file_data.get("classes", []):
+        name = cls["name"]
+        if counts[name] > 1:
+            # Keep the legacy projection, but retain each declaration's own
+            # baseline so a later rename cannot merge against another one.
+            semantics = generated_semantics_for_file(filepath, {"classes": [cls]})
+            duplicate_semantics.setdefault(name, []).append(semantics["entities"][name])
+    if duplicate_semantics:
+        result["entity_occurrences"] = duplicate_semantics
+    return result
 
 
 def retained_concept_page_paths(wiki_dir: Path) -> tuple[str, ...]:

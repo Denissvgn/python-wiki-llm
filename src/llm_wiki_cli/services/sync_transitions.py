@@ -9,7 +9,7 @@ import stat
 from typing import Mapping
 
 from .bootstrap_runtime import _module_name_from_path
-from .sync_analysis import SyncDiff, SyncOwnershipError, _recorded_entity_pages
+from .sync_analysis import SyncOwnershipError, _recorded_entity_pages
 from .sync_manifest import ManifestPageSource, SyncManifest
 from .validation import portable_path_key
 from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
@@ -17,10 +17,6 @@ from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
 
 class PageTransitionError(SyncOwnershipError):
     """The intended page writes cannot preserve verified ownership."""
-
-
-class StagedRenamesRequired(PageTransitionError):
-    """A valid transition requires staging that the current writer lacks."""
 
 
 @dataclass(frozen=True)
@@ -57,41 +53,10 @@ class StagedPageMove:
 @dataclass(frozen=True)
 class PageTransitionPlan:
     transitions: tuple[PageTransition, ...]
-    # A future executor must fill ALL slots before placing ANY final target.
+    # The executor fills ALL slots before placing ANY final target.
     # Slots are names within a private temporary directory, never wiki paths.
     staged_moves: tuple[StagedPageMove, ...]
     reserved_path_keys: tuple[str, ...]
-
-    def require_legacy_compatible(self, diff: SyncDiff) -> None:
-        """Do not give the per-page writer a plan that needs staged execution."""
-        origins = {
-            portable_path_key(item.old_path): item
-            for item in self.transitions
-            if item.old_path is not None and item.old_path != item.final_path
-        }
-        for item in self.transitions:
-            other = origins.get(portable_path_key(item.final_path))
-            unsupported = other is not None and other.owner != item.owner
-            if item.action == "rename":
-                expected = (
-                    diff.renamed_module_pages.get(item.owner.source_path)
-                    if item.owner.scope == "module"
-                    else diff.renamed_entity_pages.get(
-                        (str(item.owner.entity_name), item.owner.source_path)
-                    )
-                )
-                actual = (Path(item.source_path or "").stem, Path(item.final_path).stem)
-                unsupported = unsupported or expected != actual
-                unsupported = unsupported or (
-                    portable_path_key(item.source_path or "")
-                    == portable_path_key(item.final_path)
-                )
-            if unsupported:
-                raise StagedRenamesRequired(
-                    f"Staged page renames required before writing {item.final_path!r}; "
-                    "this transition cannot be applied safely by the current writer."
-                )
-
 
 def _page_path(scope: str, page: str) -> str:
     try:

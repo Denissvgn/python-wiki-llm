@@ -3,7 +3,7 @@
 Run with .venv/bin/pytest tests/sync_page_transition_acceptance.py --runxfail.
 The filename keeps known failures out of default collection and the release
 skip contract. Promote each case to default collection when fixing its defect.
-Strict xfail markers accept only the specific missing-page or staging limitation;
+Strict xfail markers accept only the specific missing-page failure;
 other assertions, setup failures, and unexpected passes must remain failures.
 """
 
@@ -24,29 +24,10 @@ from tests.test_sync_page_transitions import (
     _assert_page_mapping,
     _author_description,
     _bootstrap_project,
-    _check_private_twin,
     _draft_source,
     _require_page,
     _sync,
 )
-
-
-class _StagingPending(AssertionError):
-    """The three-way transition is protected until staged application exists."""
-
-
-@pytest.mark.xfail(
-    strict=True,
-    raises=_StagingPending,
-    reason="The three-way transition requires staged page application",
-)
-def test_three_way_private_twin_preserves_all_page_owners(tmp_path, monkeypatch, capsys):
-    try:
-        _check_private_twin(tmp_path, monkeypatch, second_public=True)
-    except SystemExit as exc:
-        assert exc.code == 2
-        assert "Staged page renames required before writing 'entities/Draft.md'" in capsys.readouterr().err
-        raise _StagingPending("Staged application is not yet supported") from exc
 
 
 @pytest.mark.xfail(

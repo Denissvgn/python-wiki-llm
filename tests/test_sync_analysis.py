@@ -172,10 +172,14 @@ def test_new_occurrence_has_no_claim_on_the_first_declarations_old_page():
     assert diff.renamed_entity_pages == {}
 
 
-def test_repeated_declarations_requiring_separate_renames_fail_conservatively():
+def test_repeated_declarations_receive_separate_rename_coordinates():
     manifest = _manifest(_inventory(alpha=["Draft", "Draft"]))
-    with pytest.raises(SyncOwnershipError, match="occurrence-specific moves"):
-        _diff(manifest, _inventory(alpha=["Draft", "Draft"], beta=["Draft"]))
+    diff = _diff(manifest, _inventory(alpha=["Draft", "Draft"], beta=["Draft"]))
+    assert diff.entity_page_renames == {
+        ("Draft", "pkg/alpha.py", 1): ("Draft", "alpha_Draft"),
+        ("Draft", "pkg/alpha.py", 2): ("Draft_2", "alpha_Draft_2"),
+    }
+    assert diff.renamed_entity_pages == {("Draft", "pkg/alpha.py"): ("Draft", "alpha_Draft")}
 
 
 def test_unique_source_move_keeps_existing_diff_contract():

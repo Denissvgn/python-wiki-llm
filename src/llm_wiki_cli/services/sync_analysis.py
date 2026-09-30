@@ -143,6 +143,13 @@ class SyncDiff:
         default_factory=dict
     )
     renamed_module_pages: dict[str, tuple[str, str]] = field(default_factory=dict)
+    renamed_entity_occurrences: dict[tuple[str, str, int], tuple[str, str]] = field(default_factory=dict)
+
+    @property
+    def entity_page_renames(self) -> dict[tuple[str, str, int], tuple[str, str]]:
+        renames = {(name, path, 1): pages for (name, path), pages in self.renamed_entity_pages.items()}
+        renames.update(self.renamed_entity_occurrences)
+        return renames
 
     @property
     def has_changes(self) -> bool:
@@ -153,6 +160,7 @@ class SyncDiff:
             or self.removed_files
             or self.moved_entities
             or self.renamed_entity_pages
+            or self.renamed_entity_occurrences
             or self.renamed_module_pages
         )
 
@@ -246,7 +254,6 @@ def compute_sync_diff(
             )
 
         old_counts = Counter(old_info.get("entities", []))
-        new_counts = Counter(cls["name"] for cls in file_data.get("classes", []))
         seen: dict[str, int] = defaultdict(int)
         for class_record in file_data.get("classes", []):
             class_name = str(class_record["name"])
@@ -268,17 +275,9 @@ def compute_sync_diff(
                     occurrence_pages = build_entity_occurrence_page_map(inventory)
                 new_page = occurrence_pages[(class_name, filepath, occurrence)]
             if old_page != new_page:
-                if max(old_counts[class_name], new_counts[class_name]) > 1:
-                    # SyncDiff's rename key cannot address separate occurrences.
-                    # Refuse rather than replay one occurrence's move for another.
-                    raise _ownership_error(
-                        owner,
-                        "renaming repeated declarations requires occurrence-specific moves",
-                    )
-                diff.renamed_entity_pages[(class_name, filepath)] = (
-                    old_page,
-                    new_page,
-                )
+                diff.renamed_entity_occurrences[(class_name, filepath, occurrence)] = (old_page, new_page)
+                if occurrence == 1:
+                    diff.renamed_entity_pages[(class_name, filepath)] = (old_page, new_page)
 
     return diff
 

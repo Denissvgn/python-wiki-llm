@@ -253,6 +253,14 @@ def test_two_way_private_twin_preserves_both_page_owners(tmp_path, monkeypatch):
     _check_private_twin(tmp_path, monkeypatch, second_public=False)
 
 
+def test_three_way_private_twin_preserves_all_page_owners_and_converges(tmp_path, monkeypatch):
+    _check_private_twin(tmp_path, monkeypatch, second_public=True)
+    wiki = Path.cwd() / "docs/llm_wiki"
+    before = {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()}
+    _sync(wiki)
+    assert {p.relative_to(wiki): (p.read_bytes(), p.stat().st_mtime_ns) for p in wiki.rglob("*") if p.is_file()} == before
+
+
 @pytest.mark.parametrize("dry_run", [False, True])
 def test_ownership_conflict_stops_sync_before_wiki_mutation(
     tmp_path, monkeypatch, capsys, dry_run
@@ -291,7 +299,7 @@ def test_ownership_conflict_stops_sync_before_wiki_mutation(
 
 
 @pytest.mark.parametrize("dry_run", [False, True])
-@pytest.mark.parametrize("scope", ["entity", "module", "staging"])
+@pytest.mark.parametrize("scope", ["entity", "module"])
 def test_transition_preflight_preserves_all_pages_on_conflict(
     tmp_path, monkeypatch, capsys, dry_run, scope
 ):
@@ -312,12 +320,7 @@ def test_transition_preflight_preserves_all_pages_on_conflict(
             _draft_source("Another draft."), encoding="utf-8"
         )
         target = wiki_dir / "entities/model_Draft.md"
-    if scope == "staging":
-        (project / "pkg/fakes.py").write_text(
-            _draft_source("Private twin.", name="_Draft"), encoding="utf-8"
-        )
-    else:
-        target.write_text("AUTHORED: unrelated destination.", encoding="utf-8")
+    target.write_text("AUTHORED: unrelated destination.", encoding="utf-8")
     before = {
         path.relative_to(wiki_dir): (path.read_bytes(), path.stat().st_mtime_ns)
         for path in wiki_dir.rglob("*") if path.is_file()
@@ -329,7 +332,7 @@ def test_transition_preflight_preserves_all_pages_on_conflict(
 
     assert exc.value.code == 2
     stderr = capsys.readouterr().err
-    assert ("Staged page renames required" if scope == "staging" else "Occupied target") in stderr
+    assert "Occupied target" in stderr
     assert {
         path.relative_to(wiki_dir): (path.read_bytes(), path.stat().st_mtime_ns)
         for path in wiki_dir.rglob("*") if path.is_file()

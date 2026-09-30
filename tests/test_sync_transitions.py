@@ -1,4 +1,4 @@
-"""Read-only page transition plans and conservative legacy application gates."""
+"""Read-only page transition plans and ownership preflight."""
 
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
@@ -10,10 +10,8 @@ from llm_wiki_cli.services.bootstrap_runtime import (
     build_entity_occurrence_page_map,
     build_module_page_map,
 )
-from llm_wiki_cli.services.sync_analysis import SyncDiff
 from llm_wiki_cli.services.sync_transitions import (
     PageTransitionError,
-    StagedRenamesRequired,
     plan_page_transitions,
 )
 from tests.test_sync_analysis import _inventory, _manifest
@@ -87,8 +85,6 @@ def test_three_way_collision_reserves_old_content_before_reusing_its_path(tmp_pa
     assert private.final_path == original.old_path == "entities/Draft.md"
     assert original.source_path == "entities/Draft.md"
     assert len(plan.staged_moves) == 1
-    with pytest.raises(StagedRenamesRequired, match="Staged page renames required"):
-        plan.require_legacy_compatible(SyncDiff())
 
 
 @pytest.mark.parametrize("scope", ["entity", "module"])
@@ -127,8 +123,6 @@ def test_chains_and_cycles_use_two_phase_staging_independent_of_order(tmp_path, 
     assert contents[target] == before[second][0]
     assert _snapshot(wiki) == before
     assert (modules, entities) == original_maps
-    with pytest.raises(StagedRenamesRequired):
-        plan.require_legacy_compatible(SyncDiff())
 
 
 @pytest.mark.parametrize("scope", ["entity", "module"])
@@ -188,11 +182,9 @@ def test_missing_rename_source_is_creation_and_never_borrows_new_owners_content(
     assert original.old_path == "entities/Draft.md"
     assert original.source_missing and original.action == "create"
     assert plan.staged_moves == ()
-    with pytest.raises(StagedRenamesRequired):
-        plan.require_legacy_compatible(SyncDiff())
 
 
-def test_repeated_declarations_have_separate_moves_but_still_require_safe_application(tmp_path):
+def test_repeated_declarations_have_separate_staged_moves(tmp_path):
     inventory = _inventory(alpha=["Draft", "Draft"])
     manifest = _manifest(inventory)
     wiki = _wiki(tmp_path, manifest)
@@ -203,20 +195,17 @@ def test_repeated_declarations_have_separate_moves_but_still_require_safe_applic
         (2, "entities/Draft_2.md", "entities/Second.md"),
     }
     assert len(plan.staged_moves) == 2
-    with pytest.raises(StagedRenamesRequired):
-        plan.require_legacy_compatible(SyncDiff(renamed_entity_pages={("Draft", "pkg/alpha.py"): ("Draft", "First")}))
 
 
-def test_same_path_is_noop_and_simple_rename_remains_legacy_compatible(tmp_path):
+def test_same_path_is_noop_and_simple_rename_is_planned(tmp_path):
     inventory = _inventory(alpha=["A"])
     manifest = _manifest(inventory)
     wiki = _wiki(tmp_path, manifest)
     unchanged = _plan(wiki, manifest, inventory)
     assert all(item.action == "retain" for item in unchanged.transitions)
     assert unchanged.staged_moves == ()
-    unchanged.require_legacy_compatible(SyncDiff())
     rename = _plan(wiki, manifest, inventory, entities={("A", "pkg/alpha.py", 1): "NewA"})
-    rename.require_legacy_compatible(SyncDiff(renamed_entity_pages={("A", "pkg/alpha.py"): ("A", "NewA")}))
+    assert [(move.source_path, move.final_path) for move in rename.staged_moves] == [("entities/A.md", "entities/NewA.md")]
 
 
 @pytest.mark.parametrize("extra", [False, True])
