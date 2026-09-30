@@ -1,4 +1,4 @@
-"""Passing controls and shared contracts for source-owned page transitions."""
+"""Ownership and page-transition contracts for incremental sync."""
 
 from __future__ import annotations
 
@@ -239,5 +239,46 @@ def test_new_module_twin_preserves_original_page_owner(tmp_path, monkeypatch):
     _check_added_twin(tmp_path, monkeypatch, existing_module=False)
 
 
+def test_existing_module_twin_preserves_original_page_owner(tmp_path, monkeypatch):
+    _check_added_twin(tmp_path, monkeypatch, existing_module=True)
+
+
 def test_two_way_private_twin_preserves_both_page_owners(tmp_path, monkeypatch):
     _check_private_twin(tmp_path, monkeypatch, second_public=False)
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_ownership_conflict_stops_sync_before_wiki_mutation(
+    tmp_path, monkeypatch, capsys, dry_run
+):
+    project, wiki_dir = _bootstrap_project(
+        tmp_path,
+        monkeypatch,
+        {
+            "alpha.py": _draft_source("Alpha's draft."),
+            "beta.py": _draft_source("An unrelated class.", name="Other"),
+        },
+    )
+    _author_description(
+        wiki_dir / "entities/Draft.md", "Alpha's draft.", "AUTHORED: keep alpha's text."
+    )
+    manifest = SyncManifest.load(wiki_dir)
+    manifest.sources["pkg/beta.py"]["entity_pages"]["Other"] = "Draft"
+    manifest.save(wiki_dir)
+    with (project / "pkg/beta.py").open("a", encoding="utf-8") as stream:
+        stream.write("\n\n" + _draft_source("Beta's draft."))
+    before = {
+        path.relative_to(wiki_dir): path.read_bytes()
+        for path in wiki_dir.rglob("*") if path.is_file()
+    }
+    capsys.readouterr()
+
+    with pytest.raises(SystemExit) as exc:
+        _sync(wiki_dir, dry_run=dry_run)
+
+    assert exc.value.code == 2
+    assert "Entity page ownership conflict" in capsys.readouterr().err
+    assert {
+        path.relative_to(wiki_dir): path.read_bytes()
+        for path in wiki_dir.rglob("*") if path.is_file()
+    } == before

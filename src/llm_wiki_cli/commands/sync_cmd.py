@@ -160,7 +160,11 @@ from ..services.sync_manifest import (
     prune_manifest_for_source_selection,
     retained_concept_page_paths,
 )
-from ..services.sync_analysis import SyncDiff, compute_sync_diff as _compute_diff
+from ..services.sync_analysis import (
+    SyncDiff,
+    SyncOwnershipError,
+    compute_sync_diff as _compute_diff,
+)
 from ..services.wiki_lifecycle import (
     WikiLifecycleState,
     bootstrap_guidance,
@@ -4661,6 +4665,7 @@ def run(args) -> None:
         GeneratedSurfacePruneError,
         GovernanceError,
         InfrastructureSyncError,
+        SyncOwnershipError,
         SyncRuntimeRefreshError,
     ) as exc:
         print(f"Error: {exc}", file=sys.stderr)

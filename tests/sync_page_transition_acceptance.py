@@ -3,7 +3,7 @@
 Run with .venv/bin/pytest tests/sync_page_transition_acceptance.py --runxfail.
 The filename keeps known failures out of default collection and the release
 skip contract. Promote each case to default collection when fixing its defect.
-Strict xfail markers accept only the specific missing-page or prose mismatch;
+Strict xfail markers accept only the specific missing-page failure;
 other assertions, setup failures, and unexpected passes must remain failures.
 """
 
@@ -18,28 +18,17 @@ from llm_wiki_cli.services.io import read_md
 from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests.test_sync_page_transitions import (
     _MissingManagedPage,
-    _UnexpectedEntityDescription,
     _assert_consistent,
     _assert_entity_page,
     _assert_module_page,
     _assert_page_mapping,
     _author_description,
     _bootstrap_project,
-    _check_added_twin,
     _check_private_twin,
     _draft_source,
     _require_page,
     _sync,
 )
-
-
-@pytest.mark.xfail(
-    strict=True,
-    raises=_UnexpectedEntityDescription,
-    reason="Existing-module addition gives the original owner's prose to its new twin",
-)
-def test_existing_module_twin_preserves_original_page_owner(tmp_path, monkeypatch):
-    _check_added_twin(tmp_path, monkeypatch, existing_module=True)
 
 
 @pytest.mark.xfail(
